@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * DAO layer for the improved ACL implementation. This layer is responsible for setting ACLs and any cascade behaviour
@@ -369,7 +370,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                         }
                         else if (dbAcl.getAclType() == ACLType.SHARED)
                         {
-                            throw new IllegalStateException();
+                            throw new ConcurrencyFailureException("setFixedAcls: unexpected shared acl: "+dbAcl);
                         }
                     }
                 }

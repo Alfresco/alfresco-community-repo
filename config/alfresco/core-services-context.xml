@@ -163,6 +163,10 @@
         <property name="locateExistingServerIfPossible" value="${mbean.server.locateExistingServerIfPossible}" />
     </bean>
 
+    <bean id="dynamicExporter" class="org.alfresco.repo.management.DynamicMBeanExporter">
+       <property name="server" ref="alfrescoMBeanServer"/>
+    </bean>
+
     <!--  
         The local in process RMI registry which will be bound to the address in
         java.rmi.server.hostname 

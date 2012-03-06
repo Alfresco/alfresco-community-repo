@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1223,7 +1223,7 @@ public class WorkflowServiceImpl implements WorkflowService
             final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(workflowPackage).getSecond();
             if (logger.isDebugEnabled())
                 logger.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
-            for (AVMDifference d : avmSyncService.compare(-1, packageAvmPath, -1, stagingAvmPath, null))
+            for (AVMDifference d : avmSyncService.compare(-1, packageAvmPath, -1, stagingAvmPath, null, true))
             {
                 if (logger.isDebugEnabled())
                     logger.debug("got difference " + d);

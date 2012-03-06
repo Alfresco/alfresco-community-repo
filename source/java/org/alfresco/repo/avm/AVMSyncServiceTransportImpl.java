@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -67,6 +67,13 @@ public class AVMSyncServiceTransportImpl implements AVMSyncServiceTransport
     {
         fAuthenticationService.validate(ticket);
         return fSyncService.compare(srcVersion, srcPath, dstVersion, dstPath, excluder);
+    }
+
+    @Override
+    public List<AVMDifference> compare(String ticket, int srcVersion, String srcPath, int dstVersion, String dstPath, NameMatcher excluder, boolean expandDirs)
+    {
+        fAuthenticationService.validate(ticket);
+        return fSyncService.compare(srcVersion, srcPath, dstVersion, dstPath, excluder, expandDirs);
     }
 
     /* (non-Javadoc)

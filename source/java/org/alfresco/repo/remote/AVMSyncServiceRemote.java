@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -99,5 +99,11 @@ public class AVMSyncServiceRemote implements AVMSyncService
                        boolean overrideOlder, String tag, String description) 
     {
         fTransport.update(fTicketHolder.getTicket(), diffList, excluder, ignoreConflicts, ignoreOlder, overrideConflicts, overrideOlder, tag, description);
+    }
+
+    @Override
+    public List<AVMDifference> compare(int srcVersion, String srcPath, int dstVersion, String dstPath, NameMatcher excluder, boolean expandDirs)
+    {
+        return fTransport.compare(fTicketHolder.getTicket(), srcVersion, srcPath, dstVersion, dstPath, excluder, expandDirs);
     }
 }

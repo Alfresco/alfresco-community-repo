@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -111,8 +111,14 @@ public class AVMSyncServiceImpl implements AVMSyncService
                                        int dstVersion, String dstPath,
                                        NameMatcher excluder)
     {
+        return compare(srcVersion, srcPath, dstVersion, dstPath, excluder, false);
+    }
+
+    @Override
+    public List<AVMDifference> compare(int srcVersion, String srcPath, int dstVersion, String dstPath, NameMatcher excluder, boolean expandDirs)
+    {
         long start = System.currentTimeMillis();
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug(srcPath + " : " + dstPath);
@@ -131,21 +137,20 @@ public class AVMSyncServiceImpl implements AVMSyncService
         if (dstDesc == null)
         {
             // Special case: no pre-existing version in the destination.
-            result.add(new AVMDifference(srcVersion, srcPath,
-                                         dstVersion, dstPath,
-                                         AVMDifference.NEWER));
+            result.add(new AVMDifference(srcVersion, srcPath, dstVersion, dstPath, AVMDifference.NEWER));
         }
         else
         {
             // Invoke the recursive implementation.
-            compare(srcVersion, srcDesc, dstVersion, dstDesc, result, excluder, true);
+            compare(srcVersion, srcDesc, dstVersion, dstDesc, result, excluder, true, expandDirs);
         }
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Raw compare: ["+srcVersion+","+srcPath+"]["+dstVersion+","+dstPath+"]["+result.size()+"] in "+(System.currentTimeMillis()-start)+" msecs");
+            logger.debug("Raw compare: [" + srcVersion + "," + srcPath + "][" + dstVersion + "," + dstPath + "][" + result.size() + "] in " + (System.currentTimeMillis() - start)
+                    + " msecs");
         }
-        
+
         return result;
     }
 
@@ -158,7 +163,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
      */
     private void compare(int srcVersion, AVMNodeDescriptor srcDesc,
                          int dstVersion, AVMNodeDescriptor dstDesc,
-                         List<AVMDifference> result, NameMatcher excluder, boolean firstLevel)
+                         List<AVMDifference> result, NameMatcher excluder, boolean firstLevel, boolean expandDirs)
     {
         String srcPath = srcDesc.getPath();
         String dstPath = dstDesc.getPath();
@@ -225,6 +230,13 @@ public class AVMSyncServiceImpl implements AVMSyncService
                                 result.add(new AVMDifference(srcVersion, srcPath,
                                                              dstVersion, dstPath,
                                                              dirDiffCode));
+
+                                // Also add all child items if necessary and any exists
+                                if (expandDirs)
+                                {
+                                    addNewChildrenIfAny(srcVersion, srcDesc, dstVersion, AVMNodeConverter.ExtendAVMPath(dstPath, dstDesc.getName()), result);
+                                }
+
                                 return; // short circuit
                             }
                             case AVMDifference.SAME :
@@ -269,12 +281,19 @@ public class AVMSyncServiceImpl implements AVMSyncService
                             result.add(new AVMDifference(srcVersion, srcChildPath,
                                                          dstVersion, dstChildPath,
                                                          AVMDifference.NEWER));
+
+                            // Also add all child items if necessary and any exists
+                            if (expandDirs)
+                            {
+                                addNewChildrenIfAny(srcVersion, srcChild, dstVersion, dstChildPath, result);
+                            }
+
                             continue;
                         }
                         // Otherwise recursively invoke.
                         compare(srcVersion, srcChild,
                                 dstVersion, dstChild,
-                                result, excluder, false);
+                                result, excluder, false, expandDirs);
                     }
                     return;
                 }
@@ -344,7 +363,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                         // Otherwise, recursively invoke.
                         compare(srcVersion, srcChild,
                                 dstVersion, dstChild,
-                                result, excluder, false);
+                                result, excluder, false, expandDirs);
                     }
                     return;
                 }
@@ -378,7 +397,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                     // Otherwise recursive invocation.
                     compare(srcVersion, srcChild,
                             dstVersion, dstChild,
-                            result, excluder, false);
+                            result, excluder, false, expandDirs);
                 }
                 // Iterate over the destination.
                 for (String name : dstList.keySet())
@@ -408,6 +427,32 @@ public class AVMSyncServiceImpl implements AVMSyncService
             default :
             {
                 throw new AVMSyncException("Invalid Difference Code " + diffCode + " - Internal Error.");
+            }
+        }
+    }
+
+    private void addNewChildrenIfAny(int srcVersion, AVMNodeDescriptor srcChild, int dstVersion, String dstChildPath, List<AVMDifference> result)
+    {
+        Map<String, AVMNodeDescriptor> srcList = fAVMService.getDirectoryListingDirect(srcChild, true);
+
+        for (String name : srcList.keySet())
+        {
+            srcChild = srcList.get(name);
+            String srcChildPath = srcChild.getPath();
+
+            String dstPath = AVMNodeConverter.ExtendAVMPath(dstChildPath, name);
+            AVMNodeDescriptor dstDesc = fAVMService.lookup(dstVersion, dstChildPath, true);
+
+            int diffCode = AVMDifference.NEWER;
+            if (null == dstDesc)
+            {
+                diffCode = AVMDifference.NEWER;
+            }
+            result.add(new AVMDifference(srcVersion, srcChildPath, dstVersion, dstPath, diffCode));
+
+            if (srcChild.isDirectory())
+            {
+                addNewChildrenIfAny(srcVersion, srcChild, dstVersion, dstPath, result);
             }
         }
     }

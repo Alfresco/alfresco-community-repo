@@ -952,7 +952,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     }
 
     /**
-     * Set flags to the specified imapFolder.
+     * Set flags to the specified message.
      * 
      * @param messageInfo FileInfo of imap Folder
      * @param flag flag to set.
@@ -965,9 +965,8 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
 
     private void setFlag(NodeRef nodeRef, Flag flag, boolean value)
     {
-        checkForFlaggableAspect(nodeRef);
-        
         String permission = (flag == Flag.DELETED ? PermissionService.DELETE_NODE : PermissionService.WRITE_PROPERTIES);
+        
         
         AccessStatus status = permissionService.hasPermission(nodeRef, permission);
         if (status == AccessStatus.DENIED)
@@ -985,19 +984,25 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             }
             else
             {
+               
                 logger.debug("[setFlag] Access denied to set flag:" + nodeRef);
                 throw new AccessDeniedException("No permission to set flag:" + flag.toString());
             }
         }
         else
         {
+            policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+            
+            checkForFlaggableAspect(nodeRef);
+
             if(logger.isDebugEnabled())
             {
                 logger.debug("set flag nodeRef:" + nodeRef + ",flag:" + flagToQname.get(flag) + ", value:" + value);
             }
             nodeService.setProperty(nodeRef, flagToQname.get(flag), value);
+            messageCache.remove(nodeRef);
         }
-        messageCache.remove(nodeRef);
     }
 
     /**

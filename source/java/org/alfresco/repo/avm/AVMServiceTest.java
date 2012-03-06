@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -163,7 +163,202 @@ public class AVMServiceTest extends AVMServiceTestBase
         }
 
     }
-    
+
+    private enum DiffActionEnum
+    {
+        CREATION, MODIFICATION, DELETION, DELETION_AND_MODIFICATION
+    }
+
+    /**
+     * Test is related to ALF-4098
+     * 
+     * @throws Exception
+     */
+    public void testDiffOfNewItems() throws Exception
+    {
+        try
+        {
+            performeDiffTesting(DiffActionEnum.CREATION);
+        }
+        finally
+        {
+            fService.purgeStore("testStore");
+            fService.purgeStore("submitStore");
+        }
+    }
+
+    /**
+     * Test is related to ALF-4098
+     * 
+     * @throws Exception
+     */
+    public void testDiffOfModifiedItems() throws Exception
+    {
+        try
+        {
+            performeDiffTesting(DiffActionEnum.MODIFICATION);
+        }
+        finally
+        {
+            fService.purgeStore("testStore");
+            fService.purgeStore("submitStore");
+        }
+    }
+
+    /**
+     * Test is related to ALF-4098
+     * 
+     * @throws Exception
+     */
+    public void testDiffOfDeletedItems() throws Exception
+    {
+        try
+        {
+            performeDiffTesting(DiffActionEnum.DELETION);
+        }
+        finally
+        {
+            fService.purgeStore("testStore");
+            fService.purgeStore("submitStore");
+        }
+    }
+
+    public void testDiffOfDeletedItemsInModifiedDirectory() throws Exception
+    {
+        try
+        {
+            performeDiffTesting(DiffActionEnum.DELETION_AND_MODIFICATION);
+        }
+        finally
+        {
+            fService.purgeStore("testStore");
+            fService.purgeStore("submitStore");
+        }
+    }
+
+    private void performeDiffTesting(DiffActionEnum action) throws IOException
+    {
+        fService.createStore("testStore");
+        fService.createStore("submitStore");
+
+        fService.createDirectory("submitStore:/", "root");
+        fService.createLayeredDirectory("submitStore:/root", "testStore:/", "root");
+        fService.createSnapshot("testStore", null, null);
+
+        fService.createDirectory("testStore:/root", "test");
+
+        for (int i = 0; i < 10; i++)
+        {
+            fService.createFile("testStore:/root/test", ("testFileN" + i + ".txt")).close();
+        }
+
+        List<AVMDifference> diffs = fSyncService.compare(-1, "testStore:/root/", -1, "submitStore:/root/", null);
+        if (DiffActionEnum.CREATION != action)
+        {
+            fSyncService.update(diffs, null, true, true, false, true, null, null);
+            fSyncService.flatten("testStore:/root/", "submitStore:/root/");
+            diffs = fSyncService.compare(-1, "testStore:/root/", -1, "submitStore:/root/", null);
+        }
+
+        List<AVMDifference> actual = fSyncService.compare(-1, "testStore:/root/", -1, "submitStore:/root/", null, true);
+
+        if (DiffActionEnum.CREATION == action)
+        {
+            assertEquals(11, actual.size());
+
+            assertEquals(1, diffs.size());
+            List<AVMDifference> newDiff = fSyncService.compare(-1, "testStore:/root/", -1, "submitStore:/root/", null, false);
+            assertEquals(diffs.toString(), newDiff.toString());
+        }
+        else
+        {
+            assertEquals(0, actual.size());
+            assertEquals(0, diffs.size());
+        }
+
+        String parentPath = "testStore:/root/test/";
+        if (DiffActionEnum.CREATION == action)
+        {
+            fService.createDirectory(parentPath, "inner");
+            parentPath += "inner/";
+        }
+
+        int start = (DiffActionEnum.DELETION == action) ? (1) : (0);
+        int incrementingStep = start + 1;
+
+        for (int i = start; i < 10; i += incrementingStep)
+        {
+            String name = "testFileN" + i + ".txt";
+            String path = parentPath + name;
+
+            switch (action)
+            {
+            case CREATION:
+            {
+                fService.createFile(parentPath, name).close();
+                break;
+            }
+            case MODIFICATION:
+            {
+                fService.setNodeProperty(path, WCMModel.PROP_REVERTED_ID, new PropertyValue(WCMModel.PROP_REVERTED_ID, null));
+                break;
+            }
+            default:
+            {
+                fService.removeNode(path);
+            }
+            }
+        }
+
+        int actualModificationsCount = (DiffActionEnum.DELETION == action) ? (5) : ((DiffActionEnum.CREATION == action) ? (22) : (10));
+        int diffModificationsCount = (DiffActionEnum.DELETION == action) ? (5) : ((DiffActionEnum.CREATION == action) ? (1) : (10));
+
+        actual = fSyncService.compare(-1, "testStore:/root", -1, "submitStore:/root", null, true);
+        diffs = fSyncService.compare(-1, "testStore:/root", -1, "submitStore:/root", null);
+
+        assertEquals(actualModificationsCount, actual.size());
+        assertEquals(diffModificationsCount, diffs.size());
+
+        if (DiffActionEnum.CREATION != action)
+        {
+            assertDiffsList(AVMDifference.NEWER, diffs);
+            assertEquals(diffs.toString(), actual.toString());
+        }
+
+        if (DiffActionEnum.CREATION != action)
+        {
+            if (DiffActionEnum.DELETION == action)
+            {
+                fService.removeNode("testStore:/root/test");
+            }
+            else
+            {
+                fService.setNodeProperty("testStore:/root/test", WCMModel.PROP_REVERTED_ID, new PropertyValue(WCMModel.PROP_REVERTED_ID, null));
+            }
+
+            actual = fSyncService.compare(-1, "testStore:/root/", -1, "submitStore:/root/", null, true);
+            diffs = fSyncService.compare(-1, "testStore:/root/", -1, "submitStore:/root/", null);
+
+            actualModificationsCount = (DiffActionEnum.DELETION == action) ? (1) : (actualModificationsCount + 1);
+
+            assertEquals(actualModificationsCount, actual.size());
+            assertEquals(1, diffs.size());
+
+            assertDiffsList(AVMDifference.NEWER, actual);
+            assertDiffsList(AVMDifference.NEWER, diffs);
+        }
+    }
+
+    private void assertDiffsList(int expectedCode, List<AVMDifference> actual)
+    {
+        for (AVMDifference diff : actual)
+        {
+            assertNotNull(diff);
+            assertTrue(diff.isValid());
+            assertEquals(expectedCode, diff.getDifferenceCode());
+        }
+    }
+
     public void test_ETWOTWO_570() throws Exception
     {
         // Check that read-write methods are properly intercepted

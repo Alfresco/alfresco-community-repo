@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -180,7 +180,7 @@ public class WCMWorkflowUtil
             String wfPath = AVMNodeConverter.ToAVMVersionPath(ref).getSecond();
             String stagingSandboxPath = WCMUtil.getCorrespondingPath(wfPath, stagingSandboxName);
             
-            List<AVMDifference> diffs = avmSyncService.compare(-1, wfPath, -1, stagingSandboxPath, null);
+            List<AVMDifference> diffs = avmSyncService.compare(-1, wfPath, -1, stagingSandboxPath, null, true);
             
             for (AVMDifference diff : diffs)
             {

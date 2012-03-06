@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,7 +42,17 @@ public interface AVMSyncService
     public List<AVMDifference> compare(int srcVersion, String srcPath, 
                                        int dstVersion, String dstPath,
                                        NameMatcher excluder);
-    
+
+    /**
+     * Get a difference list between two corresponding node trees
+     *
+     * Note: new/modified directories can be optionally expanded to include new/modified children
+     */
+    public List<AVMDifference> compare(int srcVersion, String srcPath,
+                                       int dstVersion, String dstPath,
+                                       NameMatcher excluder,
+                                       boolean expandDirs);
+
     /**
      * Updates the destination nodes in the AVMDifferences
      * with the source nodes. Normally any conflicts or cases in

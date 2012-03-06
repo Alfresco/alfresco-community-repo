@@ -259,7 +259,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                     logger.debug("Setting the current user to the guest user of tenant domain \"" + tenantDomain + '"');
                 }
                 GrantedAuthority[] gas = new GrantedAuthority[0];
-                ud = new User(getGuestUserName(tenantDomain), "", true, true, true, true, gas);
+                ud = new User(userName, "", true, true, true, true, gas);
             }
             else
             {

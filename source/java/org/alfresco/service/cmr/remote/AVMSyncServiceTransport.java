@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,7 +42,23 @@ public interface AVMSyncServiceTransport
                                        int srcVersion, String srcPath, 
                                        int dstVersion, String dstPath,
                                        NameMatcher excluder);
-    
+
+    /**
+     * Get a difference list between two corresponding node trees. New/modified children in new/modified directories will be also included
+     * 
+     * @param srcVersion The version id for the source tree.
+     * @param srcPath The avm path to the source tree.
+     * @param dstVersion The version id for the destination tree.
+     * @param dstPath The avm path to the destination tree.
+     * @param expandDirs {@link Boolean} value that determines whether new/modified children in new/modified directories be included into result
+     * @return A List of AVMDifference structs which can be used for
+     * the update operation.
+     */
+    public List<AVMDifference> compare(String ticket,
+                                       int srcVersion, String srcPath, 
+                                       int dstVersion, String dstPath,
+                                       NameMatcher excluder, boolean expandDirs);
+
     /**
      * Updates the destination nodes in the AVMDifferences
      * with the source nodes. Normally any conflicts or cases in

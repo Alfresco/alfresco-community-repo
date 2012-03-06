@@ -81,10 +81,13 @@ var Evaluator =
                   workingCopy["hasWorkingCopy"] = true;
                   workingCopy["workingCopyNodeRef"] = srcNode.nodeRef;
 
-                  // Google Doc?
-                  if (srcNode.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
+                  if (srcNode.hasPermission("Read"))
                   {
-                     workingCopy["googleDocUrl"] = srcNode.properties["gd:url"];
+                     // Google Doc?
+                     if (srcNode.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
+                     {
+                        workingCopy["googleDocUrl"] = srcNode.properties["gd:url"];
+                     }
                   }
                }
          }

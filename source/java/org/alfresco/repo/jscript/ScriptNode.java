@@ -30,6 +30,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -97,6 +98,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -3153,8 +3155,26 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                    json.put("type", typeString);
                    json.put("mimetype", this.getMimetype());
                    
-                   // add properties
+                   // Fetch all properties
                    Map<QName, Serializable> nodeProperties = this.nodeService.getProperties(this.nodeRef);
+                   
+                   // Do any special conversion steps that are needed
+                   for (QName longQName : nodeProperties.keySet())
+                   {
+                       Serializable value = nodeProperties.get(longQName);
+                       
+                       if (value instanceof Date)
+                       {
+                           value = ISO8601DateFormat.format((Date)value);
+                           nodeProperties.put(longQName, value);
+                       }
+                       if (value instanceof NodeRef)
+                       {
+                           value = ((NodeRef)value).toString();
+                           nodeProperties.put(longQName, value);
+                       }
+                   }
+                   
                    if (useShortQNames)
                    {
                        Map<String, Serializable> nodePropertiesShortQNames

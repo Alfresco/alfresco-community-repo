@@ -40,9 +40,11 @@ import org.xml.sax.Attributes;
  */
 public class PropPatchMethod extends PropFindMethod
 {
-
     // Properties to patch
     protected ArrayList<PropertyAction> m_propertyActions = null;
+    private String strHRef;
+    private WebDAVProperty failedProperty;
+    private String basePath;
     
     /**
      * @return          Returns <tt>false</tt> always
@@ -56,9 +58,6 @@ public class PropPatchMethod extends PropFindMethod
     @Override
     protected void executeImpl() throws WebDAVServerException, Exception
     {
-
-        m_response.setStatus(WebDAV.WEBDAV_SC_MULTI_STATUS);
-
         FileInfo pathNodeInfo = null;
         try
         {
@@ -72,10 +71,33 @@ public class PropPatchMethod extends PropFindMethod
         }
 
         checkNode(pathNodeInfo);
+        
+        // Create the path for the current location in the tree
+        StringBuilder baseBuild = new StringBuilder(256);
+        baseBuild.append(getPath());
+        if (baseBuild.length() == 0 || baseBuild.charAt(baseBuild.length() - 1) != WebDAVHelper.PathSeperatorChar)
+        {
+            baseBuild.append(WebDAVHelper.PathSeperatorChar);
+        }
+        basePath = baseBuild.toString();
+        
+        // Build the href string for the current node
+        boolean isFolder = pathNodeInfo.isFolder();
+        strHRef = getURLForPath(m_request, basePath, isFolder);
+        
+        // Do the real work: patch the properties
+        patchProperties(pathNodeInfo, basePath);
+    }
 
+    
+    @Override
+    protected void generateResponseImpl() throws Exception
+    {
+        m_response.setStatus(WebDAV.WEBDAV_SC_MULTI_STATUS);
+        
         // Set the response content type
         m_response.setContentType(WebDAV.XML_CONTENT_TYPE);
-
+        
         // Create multistatus response
         XMLWriter xml = createXMLWriter();
 
@@ -87,19 +109,34 @@ public class PropPatchMethod extends PropFindMethod
                 WebDAV.XML_MULTI_STATUS + nsdec,
                 WebDAV.XML_NS_MULTI_STATUS + nsdec,
                 getDAVHelper().getNullAttributes());
+        
+        // Output the response block for the current node
+        xml.startElement(
+                WebDAV.DAV_NS,
+                WebDAV.XML_RESPONSE,
+                WebDAV.XML_NS_RESPONSE,
+                getDAVHelper().getNullAttributes());
 
-        // Create the path for the current location in the tree
-        StringBuilder baseBuild = new StringBuilder(256);
-        baseBuild.append(getPath());
-        if (baseBuild.length() == 0 || baseBuild.charAt(baseBuild.length() - 1) != WebDAVHelper.PathSeperatorChar)
+        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF, getDAVHelper().getNullAttributes());
+        xml.write(strHRef);
+        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF);
+
+        if (failedProperty != null)
         {
-            baseBuild.append(WebDAVHelper.PathSeperatorChar);
+            generateError(xml);
         }
-        String basePath = baseBuild.toString();
 
-        // Output the response for the root node, depth zero
-        generateResponse(xml, pathNodeInfo, basePath);
-
+        for (PropertyAction propertyAction : m_propertyActions)
+        {
+            WebDAVProperty property = propertyAction.getProperty();
+            int statusCode = propertyAction.getStatusCode();
+            String statusCodeDescription = propertyAction.getStatusCodeDescription();
+            generatePropertyResponse(xml, property, statusCode, statusCodeDescription);
+        }
+        
+        // Close off the response element
+        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_RESPONSE, WebDAV.XML_NS_RESPONSE);
+        
         // Close the outer XML element
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_MULTI_STATUS, WebDAV.XML_NS_MULTI_STATUS);
 
@@ -107,6 +144,7 @@ public class PropPatchMethod extends PropFindMethod
         flushXML(xml);
     }
 
+    
     /**
      * Parse the request body
      * 
@@ -208,42 +246,13 @@ public class PropPatchMethod extends PropFindMethod
     }
     
     
-    
-    
-    /**
-     * Generates the required response XML
-     * 
-     * @param xml XMLWriter
-     * @param node NodeRef
-     * @param path String
-     */
-    protected void generateResponse(XMLWriter xml, FileInfo nodeInfo, String path) throws Exception
+    protected void patchProperties(FileInfo nodeInfo, String path) throws WebDAVServerException
     {
-        boolean isFolder = nodeInfo.isFolder();
-        
-        // Output the response block for the current node
-        xml.startElement(
-                WebDAV.DAV_NS,
-                WebDAV.XML_RESPONSE,
-                WebDAV.XML_NS_RESPONSE,
-                getDAVHelper().getNullAttributes());
-
-        // Build the href string for the current node
-        String strHRef = getURLForPath(m_request, path, isFolder);
-
-        xml.startElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF, getDAVHelper().getNullAttributes());
-        xml.write(strHRef);
-        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF);
-
-        
-        boolean failed = false;
-        WebDAVProperty failedProperty = null;
+        failedProperty = null;
         for (PropertyAction action : m_propertyActions)
         {
             if (action.getProperty().isProtected())
             {
-                generateError(xml);
-                failed = true;
                 failedProperty = action.getProperty();
                 break;
             }
@@ -255,7 +264,7 @@ public class PropPatchMethod extends PropFindMethod
             String statusCodeDescription;
             WebDAVProperty property = propertyAction.getProperty();
 
-            if (!failed)
+            if (failedProperty == null)
             {
                 if (PropertyAction.SET == propertyAction.getAction())
                 {
@@ -283,13 +292,9 @@ public class PropPatchMethod extends PropFindMethod
                 statusCodeDescription = WebDAV.WEBDAV_SC_FAILED_DEPENDENCY_DESC;
             }
 
-            generatePropertyResponse(xml, property, statusCode, statusCodeDescription);
+            propertyAction.setResult(statusCode, statusCodeDescription);
         }
-
-        // Close off the response element
-        xml.endElement(WebDAV.DAV_NS, WebDAV.XML_RESPONSE, WebDAV.XML_NS_RESPONSE);
     }
-
     
     
     /**
@@ -378,6 +383,9 @@ public class PropPatchMethod extends PropFindMethod
         // Action
         private int action;
         
+        private int statusCode;
+        
+        private String statusCodeDescription;
         
         /**
          * Constructor
@@ -391,6 +399,22 @@ public class PropPatchMethod extends PropFindMethod
             this.property = property;
         }
         
+        public void setResult(int statusCode, String statusCodeDescription)
+        {
+            this.statusCode = statusCode;
+            this.statusCodeDescription = statusCodeDescription;
+        }
+
+        public int getStatusCode()
+        {
+            return this.statusCode;
+        }
+
+        public String getStatusCodeDescription()
+        {
+            return this.statusCodeDescription;
+        }
+
         public int getAction()
         {
             return action;
@@ -410,6 +434,10 @@ public class PropPatchMethod extends PropFindMethod
             str.append(getAction() == 0 ? "SET" : "REMOVE");
             str.append(",property=");
             str.append(getProperty());
+            str.append(",statusCode=");
+            str.append(getStatusCode());
+            str.append(",statusCodeDescription=");
+            str.append(getStatusCodeDescription());
             str.append("]");
             
             return str.toString();

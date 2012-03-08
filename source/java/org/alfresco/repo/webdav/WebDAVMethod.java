@@ -335,6 +335,7 @@ public abstract class WebDAVMethod
             boolean isReadOnly = isReadOnly();
             // Execute the method
             getTransactionService().getRetryingTransactionHelper().doInTransaction(executeImplCallback, isReadOnly);
+            generateResponseImpl();
         }
         catch (AccessDeniedException e)
         {
@@ -384,6 +385,20 @@ public abstract class WebDAVMethod
      */
     protected abstract void executeImpl() throws WebDAVServerException, Exception;
 
+    /**
+     * Does nothing unless overridden - for reasons of backwards compatibility. Subclasses
+     * implementing this method should separate the WebDAV method execution logic from
+     * response generation logic. Execution logic should be contained in the {@link #executeImpl} method
+     * and should NOT contain any code that writes to the response. Conversely response generation logic
+     * should NOT contain any code relating to the desired effect of the WebDAV method (e.g. setting properties
+     * on a node) and should be contained purely within this method.
+     * <p>
+     * Older methods, until refactored will not override this method, relying only on {@link #executeImpl()}.
+     */
+    protected void generateResponseImpl() throws Exception
+    {
+    }
+    
     /**
      * Parses the given request body represented as an XML document and sets any necessary context
      * ready for execution.

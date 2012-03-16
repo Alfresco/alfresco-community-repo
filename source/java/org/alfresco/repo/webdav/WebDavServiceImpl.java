@@ -36,7 +36,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
 
 /**
  * The WebDav client is used by the repository to generate webdav URLs
- * 
+ * <p>
  * This is a bog standard spring bean for the repo side of WebDav.
  * 
  * @See org.alfresco.repo.webdav.WebDavServlet the server side of webdav.
@@ -45,30 +45,23 @@ import org.springframework.extensions.surf.util.URLEncoder;
  */
 public class WebDavServiceImpl implements WebDavService
 {
+    public static final String WEBDAV_PREFIX = "webdav"; 
+    
+    private static Log logger = LogFactory.getLog(WebDavServiceImpl.class);
+    
     private boolean enabled = false;
-
     
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private FileFolderService fileFolderService;
   
-    
-    private static Log logger = LogFactory.getLog(WebDavServiceImpl.class);
-    
     // Root nodes
     private MTNodesCache2 rootNode;
     
-    public static final String WEBDAV_PREFIX = "webdav"; 
     
-    public boolean getEnabled()
-    {
-        return enabled;
-    }
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
-    
+    /**
+     * Spring bean init method
+     */
     public void init()
     {
         PropertyCheck.mandatory(this, "nodeService", getNodeService());
@@ -85,11 +78,13 @@ public class WebDavServiceImpl implements WebDavService
      */
     public String getWebdavUrl(NodeRef nodeRef)
     {
-        if(!enabled)
+        String url = "";
+        
+        if (!enabled)
         {
-            return "";
+            return url;
         }
-      
+        
         try
         {
             QName typeName = nodeService.getType(nodeRef);
@@ -107,15 +102,14 @@ public class WebDavServiceImpl implements WebDavService
                     path.append("/")
                         .append(URLEncoder.encode(paths.get(i).getName()));
                 }
-                return path.toString();
+                url = path.toString();
             }
         }
         catch (FileNotFoundException nodeErr)
         {
-            // cannot build path if file no longer exists
-            return "";
+            // cannot build path if file no longer exists, return default
         }
-        return "";
+        return url;
     }
     
     /**
@@ -138,34 +132,51 @@ public class WebDavServiceImpl implements WebDavService
         return isDocument;
     }
     
+    public boolean getEnabled()
+    {
+        return enabled;
+    }
+    
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
+    
     public NodeService getNodeService()
     {
         return nodeService;
     }
+    
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
+    
     public DictionaryService getDictionaryService()
     {
         return dictionaryService;
     }
+    
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
     }
+    
     public FileFolderService getFileFolderService()
     {
         return fileFolderService;
     }
+    
     public void setRootNode(MTNodesCache2 rootNode)
     {
         this.rootNode = rootNode;
     }
+    
     public MTNodesCache2 getRootNode()
     {
         return rootNode;

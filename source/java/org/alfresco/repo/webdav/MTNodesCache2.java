@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.alfresco.repo.security.authentication.AuthenticationContext;
+import javax.servlet.ServletException;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -42,22 +43,19 @@ import org.alfresco.util.PropertyCheck;
 public class MTNodesCache2
 {
     private boolean enabled = false;
-    
     private NodeService nodeService;
-
     private SearchService searchService;
-
     private NamespaceService namespaceService;
-
     private TenantService tenantService;
-
     private Map<String, NodeRef> nodesCache = new ConcurrentHashMap<String, NodeRef>();
-
     private NodeRef defaultNode = null;
-    
     private String storeName;
     private String rootPath;
     
+    
+    /**
+     * Spring bean init method
+     */
     public void init()
     {
         PropertyCheck.mandatory(this, "nodeService", getNodeService());
@@ -72,6 +70,7 @@ public class MTNodesCache2
     {
         this.nodeService = nodeService;
     }
+    
     public NodeService getNodeService()
     {
         return nodeService;
@@ -106,10 +105,9 @@ public class MTNodesCache2
         return result;
     }
 
-    
     public void onBootstrap()
     {
-        if(!enabled)
+        if (!enabled)
         {
             return;
         }
@@ -146,29 +144,30 @@ public class MTNodesCache2
             AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
-
     
     /**
-     * @return              Returns the name of the store
+     * @return Returns the name of the store
      * @throws ServletException if the store name was not set
      */
     public String getStoreName()
     {
         return storeName;
     }
+    
     public void setStoreName(String storeName)
     {
         this.storeName = storeName;
     }
     
     /**
-     * @return              Returns the WebDAV root path within the store
+     * @return Returns the WebDAV root path within the store
      * @throws ServletException if the root path was not set
      */
     public String getRootPath()
     {
         return rootPath;
     }
+    
     public void setRootPath(String rootPath)
     {
         this.rootPath = rootPath;
@@ -203,15 +202,14 @@ public class MTNodesCache2
     {
         return tenantService;
     }
+    
     public boolean getEnabled()
     {
         return enabled;
     }
+    
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
     }
-    
-
-
 }

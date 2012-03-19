@@ -62,7 +62,7 @@ public class AlfrescoJGroupsChannelFactoryTest extends TestCase
     
     public void testNoCluster() throws Exception
     {
-        Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
+        Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion, false);
         stressChannel(channel);
     }
     
@@ -70,7 +70,7 @@ public class AlfrescoJGroupsChannelFactoryTest extends TestCase
     {
         AlfrescoJGroupsChannelFactory.changeClusterNamePrefix("blah");
         AlfrescoJGroupsChannelFactory.rebuildChannels();
-        Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
+        Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion, false);
         stressChannel(channel);
     }
     
@@ -78,11 +78,11 @@ public class AlfrescoJGroupsChannelFactoryTest extends TestCase
     {
         AlfrescoJGroupsChannelFactory.changeClusterNamePrefix("ONE");
         AlfrescoJGroupsChannelFactory.rebuildChannels();
-        Channel channel1 = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
+        Channel channel1 = AlfrescoJGroupsChannelFactory.getChannel(appRegion, false);
         stressChannel(channel1);
         AlfrescoJGroupsChannelFactory.changeClusterNamePrefix("TWO");
         AlfrescoJGroupsChannelFactory.rebuildChannels();
-        Channel channel2 = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
+        Channel channel2 = AlfrescoJGroupsChannelFactory.getChannel(appRegion, false);
         stressChannel(channel1);
         assertTrue("Channel reference must be the same", channel1 == channel2);
     }

@@ -36,5 +36,7 @@ public interface MessengerFactory
     
     <T extends Serializable> Messenger<T> createMessenger(String appRegion);
     
+    <T extends Serializable> Messenger<T> createMessenger(String appRegion, boolean acceptLocalMessages);
+    
     boolean isClusterActive();
 }

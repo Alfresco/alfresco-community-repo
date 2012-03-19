@@ -189,6 +189,14 @@
         <property name="instance" ref="messengerFactory"/>
     </bean>
 
+    <bean id="clusterChecker" class="org.alfresco.repo.cluster.ClusterChecker" init-method="init" destroy-method="shutdown">
+       <property name="authenticationService" ref="authenticationService"/>
+       <property name="jobLockService" ref="jobLockService"/>
+       <property name="transactionService" ref="transactionService"/>
+       <property name="messengerFactory" ref="messengerFactory"/>
+       <property name="timeout" value="${alfresco.clusterCheck.timeout}"/>
+    </bean>
+        
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">
        <property name="transactionService" ref="transactionService"/>
        <property name="keyStoreChecker" ref="keyStoreChecker"/>

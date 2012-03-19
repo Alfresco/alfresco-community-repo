@@ -35,8 +35,14 @@ public class JGroupsMessengerFactory implements MessengerFactory
     @Override
     public <T extends Serializable> Messenger<T> createMessenger(String appRegion)
     {
+        return createMessenger(appRegion, false);
+    }
+
+    @Override
+    public <T extends Serializable> Messenger<T> createMessenger(String appRegion, boolean acceptLocalMessages)
+    {
         ParameterCheck.mandatory("appRegion", appRegion);
-        Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion);
+        Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion, acceptLocalMessages);
         return new JGroupsMessenger<T>(channel);
     }
 

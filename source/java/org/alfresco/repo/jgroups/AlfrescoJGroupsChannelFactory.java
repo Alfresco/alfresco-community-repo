@@ -195,7 +195,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
      * @param appRegion             the application region identifier.
      * @return                      Returns a channel
      */
-    public static Channel getChannel(String appRegion)
+    public static Channel getChannel(String appRegion, boolean acceptLocalMessages)
     {
         readLock.lock();
         try
@@ -223,7 +223,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
                 return channelProxy;
             }
             // Get the channel
-            Channel channel = getChannelInternal(appRegion);
+            Channel channel = getChannelInternal(appRegion, acceptLocalMessages);
             // Proxy the channel
             channelProxy = new ChannelProxy(channel);
             // Store the channel to the map
@@ -245,7 +245,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
      * @return                      Returns a channel
      */
     /* All calls to this are ultimately wrapped in the writeLock. */
-    private static /*synchronized*/ Channel getChannelInternal(String appRegion)
+    private static /*synchronized*/ Channel getChannelInternal(String appRegion, boolean acceptLocalMessages)
     {
         Channel channel;
         URL configUrl = null;
@@ -291,7 +291,15 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
         {
             String clusterName = clusterNamePrefix + ":" + appRegion;
             // Don't accept messages from self
-            channel.setOpt(Channel.LOCAL, Boolean.FALSE);
+            if(acceptLocalMessages)
+            {
+                channel.setOpt(Channel.LOCAL, Boolean.TRUE);
+            }
+            else
+            {
+                channel.setOpt(Channel.LOCAL, Boolean.FALSE);
+            }
+
             // Connect
             channel.connect(clusterName);
             // Done
@@ -355,6 +363,9 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             
             // Get the old channel
             Channel oldChannel = channelProxy.getDelegate();
+            
+            Boolean acceptLocalMessages = (Boolean)oldChannel.getOpt(Channel.LOCAL);
+            
             // Close the old channel.
             try
             {
@@ -375,7 +386,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             }
             
             // Create the new channel
-            Channel newChannel = getChannelInternal(appRegion);
+            Channel newChannel = getChannelInternal(appRegion, acceptLocalMessages.booleanValue());
             
             // Now do the hot-swap
             channelProxy.swap(newChannel);
@@ -597,6 +608,7 @@ public class AlfrescoJGroupsChannelFactory extends AbstractLifecycleBean
             // Assign the new delegate and carry the listeners over
             delegate = channel;
             delegate.setReceiver(delegateReceiver);
+            delegate.setOpt(Channel.LOCAL, oldDelegate.getOpt(Channel.LOCAL));
             for (ChannelListener delegateChannelListener : delegateChannelListeners)
             {
                 delegate.addChannelListener(delegateChannelListener);

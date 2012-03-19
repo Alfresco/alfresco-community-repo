@@ -38,9 +38,15 @@ import com.hazelcast.core.ITopic;
 public class HazelcastMessengerFactory implements MessengerFactory
 {
     private HazelcastInstance hazelcast;
-    
+
     @Override
     public <T extends Serializable> Messenger<T> createMessenger(String appRegion)
+    {
+        return createMessenger(appRegion);
+    }
+
+    @Override
+    public <T extends Serializable> Messenger<T> createMessenger(String appRegion, boolean acceptLocalMessages)
     {
         ITopic<T> topic = hazelcast.getTopic(appRegion);
         String address = hazelcast.getCluster().getLocalMember().getInetSocketAddress().toString();

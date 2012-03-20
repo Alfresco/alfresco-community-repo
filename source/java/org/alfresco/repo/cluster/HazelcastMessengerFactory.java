@@ -42,7 +42,7 @@ public class HazelcastMessengerFactory implements MessengerFactory
     @Override
     public <T extends Serializable> Messenger<T> createMessenger(String appRegion)
     {
-        return createMessenger(appRegion);
+        return createMessenger(appRegion, false);
     }
 
     @Override

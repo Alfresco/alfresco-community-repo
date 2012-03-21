@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.BaseAlfrescoTestCase;
+import org.alfresco.util.GUID;
 import org.alfresco.util.VersionNumber;
 
 /**
@@ -44,18 +45,18 @@ import org.alfresco.util.VersionNumber;
  */
 public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
 {
-    private final String CURRENT_TIME = "" + System.currentTimeMillis() + "-" + System.nanoTime();
+    private final String SOME_GUID = "" + GUID.generate();
     private final String[] MODULE_IDS =
     {
-        "M0 @ " + CURRENT_TIME,
-        "M1 @ " + CURRENT_TIME,
-        "M2 @ " + CURRENT_TIME
+        "M0 @ " + SOME_GUID,
+        "M1 @ " + SOME_GUID,
+        "M2 @ " + SOME_GUID
     };
     private final String[] COMPONENT_NAMES =
     {
-        "C0 @ " + CURRENT_TIME,
-        "C1 @ " + CURRENT_TIME,
-        "C2 @ " + CURRENT_TIME
+        "C0 @ " + SOME_GUID,
+        "C1 @ " + SOME_GUID,
+        "C2 @ " + SOME_GUID
     };
     private final VersionNumber[] VERSIONS =
     {
@@ -147,7 +148,10 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         	tenantCount = tenantDeployerService.getAllTenants().size();
         }
         // Check
-        assertEquals("Incorrent number of executions (version " + moduleVersion + ")", expectedCount+(expectedCount*tenantCount), executed);
+        assertEquals(
+                "Incorrent number of executions (version " + moduleVersion + ")",
+                expectedCount + (expectedCount * tenantCount),
+                executed);
     }
     
     public void testStartComponentsV00()
@@ -246,7 +250,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
     }
     
     /** Keep track of the execution count */
-    static int executed = 0;
+    private volatile int executed = 0;
     
     /**
      * A dummy 

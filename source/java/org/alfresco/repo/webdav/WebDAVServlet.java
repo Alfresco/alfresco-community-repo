@@ -199,7 +199,7 @@ public class WebDAVServlet extends HttpServlet
      * @param response HttpServletResponse
      * @return WebDAVMethod
      */
-    private WebDAVMethod createMethod(HttpServletRequest request, HttpServletResponse response)
+    protected WebDAVMethod createMethod(HttpServletRequest request, HttpServletResponse response)
     {
         // Get the type of the current request
         

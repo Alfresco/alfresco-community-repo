@@ -20,10 +20,14 @@ package org.alfresco.repo.activities;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.feed.cleanup.FeedCleaner;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
@@ -35,11 +39,16 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityPostService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -62,6 +71,8 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     private TenantService tenantService;
     private SiteService siteService;
     private ActivityPostService activityPostService;
+    private PersonService personService;
+    private NodeService nodeService;
     
     private int maxFeedItems = 100;
     
@@ -110,6 +121,16 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     public void setActivityPostService(ActivityPostService activityPostService)
     {
         this.activityPostService = activityPostService;
+    }
+    
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+    
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
     
     
@@ -253,6 +274,12 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
             }
             
             List<ActivityFeedEntity> activityFeeds = feedDAO.selectUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, minFeedId, maxFeedItems);
+
+            // Create a local cache just for this method to map IDs of users to their avatar NodeRef. This
+            // is local to the method because we only want to cache per request - there is not point in keeping
+            // an instance cache because the data will become stale if a user changes their avatar.
+            Map<String, NodeRef> userIdToAvatarNodeRefCache = new HashMap<String, NodeRef>();
+            
             
             for (ActivityFeedEntity activityFeed : activityFeeds)
             {
@@ -262,6 +289,36 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                 
                 if (userFilter != null && !userFilter.contains(activityFeed.getPostUserId())) {
                     continue;
+                }
+                
+                // In order to prevent unnecessary 304 revalidations on user avatars in the activity stream the 
+                // activity posting user avatars will be retrieved and added to the activity feed. This will enable
+                // avatars to be requested using the unique nodeRef which can be safely cached by the browser and
+                // improve performance...
+                if (userIdToAvatarNodeRefCache.containsKey(activityFeed.getPostUserId()))
+                {
+                    // If we've previously cached the users avatar, or if we've determine that the user doesn't
+                    // have an avatar then use the cached data.
+                    activityFeed.setPostUserAvatarNodeRef(userIdToAvatarNodeRefCache.get(activityFeed.getPostUserId()));
+                }
+                else
+                {
+                    // Get the avatar for the user id, set it in the activity feed and update the cache
+                    NodeRef avatarNodeRef = null;
+                    NodeRef postPerson = this.personService.getPerson(activityFeed.getPostUserId());
+                    List<AssociationRef> assocRefs = this.nodeService.getTargetAssocs(postPerson, ContentModel.ASSOC_AVATAR);
+                    if (!assocRefs.isEmpty())
+                    {
+                        avatarNodeRef = assocRefs.get(0).getTargetRef();
+                        activityFeed.setPostUserAvatarNodeRef(avatarNodeRef);
+                    }
+                    else
+                    {
+                        activityFeed.setPostUserAvatarNodeRef(null);
+                    }
+                    
+                    // Update the cache (setting null if there is no avatar for the user)...
+                    userIdToAvatarNodeRefCache.put(activityFeed.getPostUserId(), avatarNodeRef);
                 }
                 
                 activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));

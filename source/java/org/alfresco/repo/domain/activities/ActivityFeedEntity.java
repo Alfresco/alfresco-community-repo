@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.JSONtoFmModel;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +38,7 @@ public class ActivityFeedEntity
     public static final String KEY_ACTIVITY_FEED_ID = "id";
     public static final String KEY_ACTIVITY_FEED_POST_DATE = "postDate";
     public static final String KEY_ACTIVITY_FEED_POST_USERID = "postUserId";
+    public static final String KEY_ACTIVITY_FEED_POST_USER_AVATAR_NODE = "postUserAvatar";
     public static final String KEY_ACTIVITY_FEED_USERID = "feedUserId";
     public static final String KEY_ACTIVITY_FEED_SITE = "siteNetwork";
     public static final String KEY_ACTIVITY_FEED_TYPE = "activityType";
@@ -49,6 +51,7 @@ public class ActivityFeedEntity
     private String activitySummaryFormat;
     private String feedUserId;
     private String postUserId;
+    private NodeRef postUserAvatarNodeRef;
     private String siteNetwork;
     private String appTool;
     private Date postDate;
@@ -155,6 +158,16 @@ public class ActivityFeedEntity
         this.feedDate = feedDate;
     }
 
+    public NodeRef getPostUserAvatarNodeRef()
+    {
+        return postUserAvatarNodeRef;
+    }
+
+    public void setPostUserAvatarNodeRef(NodeRef postUserAvatarNodeRef)
+    {
+        this.postUserAvatarNodeRef = postUserAvatarNodeRef;
+    }
+
     public String getAppTool()
     {
         return appTool;
@@ -172,6 +185,10 @@ public class ActivityFeedEntity
         jo.put(KEY_ACTIVITY_FEED_ID, id);
         
         jo.put(KEY_ACTIVITY_FEED_POST_USERID, postUserId);
+        if (postUserAvatarNodeRef != null)
+        {
+            jo.put(KEY_ACTIVITY_FEED_POST_USER_AVATAR_NODE, postUserAvatarNodeRef.toString());
+        }
         jo.put(KEY_ACTIVITY_FEED_POST_DATE, ISO8601DateFormat.format(postDate));
         
         if (getFeedUserId() != null) { jo.put(KEY_ACTIVITY_FEED_USERID, getFeedUserId()); } // eg. site feed

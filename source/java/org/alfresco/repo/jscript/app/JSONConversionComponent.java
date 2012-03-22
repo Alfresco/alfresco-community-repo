@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -300,6 +301,10 @@ public class JSONConversionComponent
                             dateObj.put("value", JSONObject.escape(value.toString()));
                             dateObj.put("iso8601", JSONObject.escape(ISO8601DateFormat.format((Date)value)));
                             propertiesJSON.put(key, dateObj);
+                        }
+                        else if (value instanceof List)
+                        {
+                            propertiesJSON.put(key, value);
                         }
                         else
                         {

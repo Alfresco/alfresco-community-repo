@@ -1355,6 +1355,17 @@
          </associations>
       </aspect>
       
+      <aspect name="cm:thumbnailModification">
+         <title>Thumbnail Modification Data</title>
+         <properties>
+             <property name="cm:lastThumbnailModification">
+                <title>Last thumbnail modifcation data</title>
+                <type>d:text</type>
+                <multiple>true</multiple>
+             </property>
+         </properties>
+      </aspect>
+      
       <!--       -->
       <!--  EXIF -->
       <!--       -->

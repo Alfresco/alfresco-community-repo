@@ -189,6 +189,9 @@ public class ThumbnailServiceImpl implements ThumbnailService,
         // When a thumbnail succeeds, we must delete any existing thumbnail failure nodes.
         String thumbnailName = (String) nodeService.getProperty(childAssoc.getChildRef(), ContentModel.PROP_NAME);
         
+        // Update the parent node with the thumbnail update...
+        addThumbnailModificationData(childAssoc.getChildRef(), thumbnailName);
+        
         // In fact there should only be zero or one such failedThumbnails
         Map<String, FailedThumbnailInfo> failures = getFailedThumbnails(childAssoc.getParentRef());
         FailedThumbnailInfo existingFailedThumbnail = failures.get(thumbnailName);
@@ -608,6 +611,80 @@ public class ThumbnailServiceImpl implements ThumbnailService,
             {
                 nodeService.setProperty(thumbnail, ContentModel.PROP_THUMBNAIL_NAME, thumbnailName);
             }
+        }
+    }
+    
+    /**
+     * <p>Updates the parent of the supplied {@link NodeRef} to ensure that it has the "cm:thumbnailModification" aspect
+     * and sets the last modification data for it.</p>
+     * @param nodeRef A {@link NodeRef} representing a thumbnail to provide last modification data for.
+     */
+    @SuppressWarnings("unchecked")
+    public void addThumbnailModificationData(NodeRef nodeRef, String thumbnailName)
+    {
+        if (nodeService.exists(nodeRef))
+        {
+           if (thumbnailName != null && !nodeRef.toString().endsWith(thumbnailName))
+           {
+               Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+               if (modified != null)
+               {
+                   // Get the last modified value as a timestamp...
+                   Long timestamp = modified.getTime();
+                   
+                   // Create the value we want to set...
+                   String lastModifiedValue = thumbnailName + ":" + timestamp;
+                   
+                   // Get the parent node (there should be only one) and apply the aspect and
+                   // set the property to indicate which thumbnail the checksum refers to...
+                   for (ChildAssociationRef parent: nodeService.getParentAssocs(nodeRef))
+                   {
+                      List<String> thumbnailMods = null;
+                       
+                      NodeRef parentNode = parent.getParentRef();
+                      if (nodeService.hasAspect(parentNode, ContentModel.ASPECT_THUMBNAIL_MODIFICATION))
+                      {
+                          // The node already has the aspect, check to see if the current thumbnail modification exists...
+                          thumbnailMods = (List<String>) nodeService.getProperty(parentNode, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA);
+                          
+                          // If we have previously set last modified thumbnail data then it will exist as part of the multi-value
+                          // property. The value will consist of the "cm:thumbnailName" value delimited with a ":" and then the
+                          // timestamp. We need to find the appropriate entry in the multivalue property and then update it
+                          String target = null;
+                          for (String currThumbnailMod: thumbnailMods)
+                          {
+                              if (currThumbnailMod.startsWith(thumbnailName))
+                              {
+                                  target = currThumbnailMod;
+                              }
+                          }
+                          
+                          // Remove the previous value
+                          if (target != null)
+                          {
+                              thumbnailMods.remove(target);
+                          }
+                          
+                          // Add the timestamp...
+                          thumbnailMods.add(lastModifiedValue);
+                          
+                          // Set the property...
+                          nodeService.setProperty(parentNode, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA, (Serializable) thumbnailMods);
+                      }
+                      else
+                      {
+                          // If the aspect has not previously been added then we'll need to set it now...
+                          thumbnailMods = new ArrayList<String>();
+                          thumbnailMods.add(lastModifiedValue);
+                          
+                          // Add the aspect with the new property...
+                          Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                          properties.put(ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA, (Serializable) thumbnailMods);
+                          nodeService.addAspect(parentNode, ContentModel.ASPECT_THUMBNAIL_MODIFICATION, properties);
+                      }
+                   }
+               }
+           }
         }
     }
 }

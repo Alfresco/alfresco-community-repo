@@ -19,6 +19,8 @@
       <property name="tenantService" ref="tenantService"/>
       <property name="siteService" ref="siteService"/>
       <property name="activityPostService" ref="activityPostService"/>
+      <property name="nodeService" ref="NodeService" />
+      <property name="personService" ref="PersonService"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="maxFeedItems" value="${activities.feed.max.size}"/>
    </bean>

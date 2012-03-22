@@ -45,11 +45,11 @@ public class PutMethod extends WebDAVMethod
     // Request parameters
     private String m_strContentType = null;
     private boolean m_expectHeaderPresent = false;
-    
     // Indicates if a zero byte node was created by a LOCK call.
     // Try to delete the node if the PUT fails
     private boolean noContent = false;
-
+    private boolean created = false;
+    
     /**
      * Default constructor
      */
@@ -150,7 +150,6 @@ public class PutMethod extends WebDAVMethod
 
         // Get the status for the request path
         FileInfo contentNodeInfo = null;
-        boolean created = false;
         try
         {
             contentNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
@@ -265,5 +264,17 @@ public class PutMethod extends WebDAVMethod
             }
             throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
         }
+    }
+    
+    /**
+     * Can be used after a successful {@link #execute()} invocation to
+     * check whether the resource was new (created) or over-writing existing
+     * content.
+     * 
+     * @return true if the content was newly created, false if existing.
+     */
+    public boolean isCreated()
+    {
+        return created;
     }
 }

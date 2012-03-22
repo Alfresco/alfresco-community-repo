@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>rmsavedsearches</shortname>
+  <description>RM Saved Searches</description>
+  <url>/slingshot/rmsavedsearches/site/{site}</url>
+  <format default="json">argument</format>
+  <authentication runas="admin">user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

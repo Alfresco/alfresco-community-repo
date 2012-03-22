@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Records Management Transfer</shortname>
+  <description>Streams an Alfresco Content Pacakge (ACP) file containing the contents of a transfer</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/transfers/{transfer_id}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

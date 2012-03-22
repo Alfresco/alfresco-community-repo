@@ -1,0 +1,71 @@
+{
+   "events" :
+   [
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "case_closed",
+         "eventDisplayLabel" : "Case Closed"
+      },
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "abolished",
+         "eventDisplayLabel" : "Abolished"
+      },
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "re_designated",
+         "eventDisplayLabel" : "Redesignated"
+      },
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "no_longer_needed",
+         "eventDisplayLabel" : "No longer needed"
+      },
+      {
+         "eventType" : "rmEventType.superseded",
+         "eventName" : "superseded",
+         "eventDisplayLabel" : "Superseded"
+      },
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "study_complete",
+         "eventDisplayLabel" : "Study Complete"
+      },
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "training_complete",
+         "eventDisplayLabel" : "Training Complete"
+      },
+      {
+         "eventType" : "rmEventType.crossReferencedRecordTransfered",
+         "eventName" : "related_record_trasfered_inactive_storage",
+         "eventDisplayLabel" : "Related Record Transfered To Inactive Storage"
+      },
+      {
+         "eventType" : "rmEventType.obsolete",
+         "eventName" : "obsolete",
+         "eventDisplayLabel" : "Obsolete"
+      },
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "all_allowances_granted_are_terminated",
+         "eventDisplayLabel" : "All Allowances Granted Are Terminated"
+      },
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "WGI_action_complete",
+         "eventDisplayLabel" : "WGI action complete"
+      },
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "separation",
+         "eventDisplayLabel" : "Separation"
+      },
+      {
+         "eventType" : "rmEventType.simple",
+         "eventName" : "case_complete",
+         "eventDisplayLabel" : "Case Complete"
+      }
+   ]
+}
+

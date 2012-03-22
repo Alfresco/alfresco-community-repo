@@ -1,0 +1,16 @@
+<webscript>
+  <shortname>Files a Records Management Transfer Report</shortname>
+  <description><![CDATA[
+  Files a transfer report as a record in a record folder.
+  <br/>A JSON structure is expected as follows:<br/>
+  {<br/>
+  &nbsp;&nbsp;&nbsp;"destination" : NodeRef of record folder to file the transfer report in<br/>
+  }<br/>
+  ]]>
+  </description>
+  <url>/api/node/{store_type}/{store_id}/{id}/transfers/{transfer_id}/report</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

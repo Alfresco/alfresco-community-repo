@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+	<!--  test model -->
+	<bean id="org_alfresco_module_dod5015_rmTestdictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>org/alfresco/module/org_alfresco_module_rm/test/util/test-model.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Test actions -->
+     <bean id="testAction_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="testAction"/>
+        </property>
+    </bean>
+    <bean id="testAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction" parent="rmAction"/>
+    <bean id="testAction2_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="testAction2"/>
+        </property>
+    </bean>
+    <bean id="testAction2" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction"/>
+    <bean id="testActionParams_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="testActionParams"/>
+        </property>
+    </bean>
+    <bean id="testActionParams" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams" parent="rmAction"/>  
+    
+    <!--  Make sure the job doesn't fire during the test -->
+    <bean id="scheduledPublishUpdatesJobTrigger" class="org.alfresco.util.CronTriggerBean">
+      <property name="jobDetail">
+         <ref bean="scheduledPublishUpdatesJobDetail" />
+      </property>
+      <property name="scheduler">
+         <ref bean="schedulerFactory" />
+      </property>
+      <property name="cronExpression">
+         <value>0 30 3 * * ?</value>         
+      </property>
+   </bean> 
+   
+   <bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
+      <property name="dictionaryDAO" ref="dictionaryDAO"/>
+      <property name="namespaceDAO" ref="namespaceDAO"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="contentService" ref="contentService"/>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="workflowService" ref="WorkflowService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="tenantAdminService" ref="tenantAdminService"/>
+      <property name="transactionService" ref="TransactionService"/>
+      <property name="jobLockService" ref="jobLockService"/>
+      <property name="doValidation" value="false"/>
+      
+      <property name="storeUrls">
+            <list>
+                <value>${spaces.store}</value>
+                <value>${spaces.archive.store}</value>
+            </list>
+      </property>
+    </bean> 
+</beans> 

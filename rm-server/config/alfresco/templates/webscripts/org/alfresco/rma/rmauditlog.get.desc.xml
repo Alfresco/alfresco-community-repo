@@ -1,0 +1,22 @@
+<webscript>
+  <shortname>Records Management Audit Log</shortname>
+  <description><![CDATA[
+  Returns an audit log of Records Management events.
+  <br/>The following parameters can also be passed:
+  <ul>
+  <li>size: Maximum number of log entries to return</li>
+  <li>user: Only return log entries by the specified user</li>
+  <li>event: Only return log entries matching this event</li>
+  <li>from: Only return log entries after the specified date, date should be in yyyy-MM-dd format</li>
+  <li>to: Only return log entries before the specified date, date should be in yyyy-MM-dd format</li>
+  <li>export: Set this to 'true' to force the browser to display the Save As dialog</li>
+  </ul>
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmauditlog</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/rmauditlog</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

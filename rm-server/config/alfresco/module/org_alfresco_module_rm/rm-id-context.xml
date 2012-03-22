@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!--  Identifier Service Implementation Bean -->
+    <bean id="recordsManagementIdentifierService" class="org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierServiceImpl">    
+        <property name="nodeService" ref="NodeService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>        
+    </bean>
+    
+    <bean id="baseRecordsManagementIdentifierGenerator" abstract="true" init-method="init">
+    	<property name="identifierService" ref="recordsManagementIdentifierService"/>
+    	<property name="nodeService" ref="NodeService"/>
+    </bean>
+
+    <bean id="recordContainerIdentifierGenerator" 
+          parent="baseRecordsManagementIdentifierGenerator" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.identifier.BasicIdentifierGenerator">
+      <property name="typeAsString" value="{http://www.alfresco.org/model/recordsmanagement/1.0}recordsManagementContainer"/>
+    </bean>
+
+    <bean id="recordFolderIdentifierGenerator" 
+          parent="baseRecordsManagementIdentifierGenerator" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.identifier.BasicIdentifierGenerator">
+      <property name="typeAsString" value="{http://www.alfresco.org/model/recordsmanagement/1.0}recordFolder"/>
+    </bean>    
+
+    <bean id="recordIdentifierGenerator" 
+          parent="baseRecordsManagementIdentifierGenerator" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.identifier.BasicIdentifierGenerator">
+      <property name="typeAsString" value="{http://www.alfresco.org/model/recordsmanagement/1.0}record"/>
+    </bean>
+    
+</beans>    

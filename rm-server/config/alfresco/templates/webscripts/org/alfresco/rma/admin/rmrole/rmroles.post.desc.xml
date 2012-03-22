@@ -1,0 +1,14 @@
+<webscript>
+  <shortname>Create a new records managment role</shortname>
+  <description>
+  <![CDATA[
+
+
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmroles</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

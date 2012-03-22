@@ -1,0 +1,64 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.alfresco.module.org_alfresco_module_rm.script;
+
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.service.namespace.QName;
+
+/**
+ * Base class for all custom property webscripts.
+ * 
+ * @author Roy Wetherall
+ */
+public class BaseCustomPropertyWebScript extends AbstractRmWebScript
+{
+    /**
+     * Takes the element name and maps it to the QName of the customisable type.  The passed element name should be a prefixed 
+     * qname string, but to support previous versions of this API a couple of hard coded checks are made first.
+     * 
+     * @param elementName
+     * @return
+     */
+    protected QName mapToTypeQName(String elementName)
+    {
+        // Direct matching provided for backward compatibility with RM 1.0
+        if ("recordFolder".equalsIgnoreCase(elementName) == true)
+        {
+            return RecordsManagementModel.TYPE_RECORD_FOLDER;
+        }
+        else if ("record".equalsIgnoreCase(elementName) == true)
+        {
+            return RecordsManagementModel.ASPECT_RECORD;
+        }
+        else if ("recordCategory".equalsIgnoreCase(elementName) == true)
+        {
+            return RecordsManagementModel.TYPE_RECORD_CATEGORY;
+        }
+        else if ("recordSeries".equalsIgnoreCase(elementName) == true)
+        {
+            return DOD5015Model.TYPE_RECORD_SERIES;
+        }
+        else
+        {
+            // Try and convert the string to a qname
+            return QName.createQName(elementName, namespaceService);
+        }       
+    }
+}

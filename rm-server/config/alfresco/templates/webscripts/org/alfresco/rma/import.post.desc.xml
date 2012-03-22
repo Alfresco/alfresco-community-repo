@@ -1,0 +1,17 @@
+<webscript>
+  <shortname>Records Management Import</shortname>
+  <description><![CDATA[
+  Imports an ACP file into a records management container.<br/>
+  The body of the post should be multipart/form-data and contain the following fields.<br/>
+  <ul>
+  <li>destination: array of nodeRefs to export</li>
+  <li>archive: array of nodeRefs to export</li>
+  </ul>
+  ]]>
+  </description>
+  <url>/api/rma/admin/import</url>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

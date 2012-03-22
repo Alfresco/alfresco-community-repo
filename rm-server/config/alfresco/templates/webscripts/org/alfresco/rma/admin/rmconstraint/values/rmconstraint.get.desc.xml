@@ -1,0 +1,63 @@
+<webscript>
+  <shortname>Get an RM Constraint</shortname>
+  <description>
+  <![CDATA[
+   Get an RM Constraint including the values.
+   <BR />
+   The list name is qualified with an underscore between prefix and name to be compatible with Java Script and URLs
+   <BR />
+   e.g. rma_listName rather than rma:listName
+   <BR />
+   Constraint object
+   <dl>
+   <dt>constraintName</dt> <dd>the name of the constraint. The underscore character is used instead of the colon</dd>
+   <dt>caseSensitive</dt> <dd>is the constraint case sensitive</dd>
+   <dt>constraintTitle</dt> <dd>the display name of the constraint</dd>
+   <dt>allowedValues</dt> <dd>array of the allowed values, this is the complete unrestricted list of all values</dd>
+   <dt>values</dt> <dd>array of constraint values</dd>
+   </dl>
+   Constraint values object
+   <dl>
+   <dt>valueName</dt><dd>the full name of the value</dd>
+   <dt>valueTitle</dt><dd>the display name of the value</dd>
+   <dt>authorities</dt><dd>array of constraint authorities</dd>
+   </dl>
+   Example JSON data
+   <pre>
+   {
+      "data":
+      {
+         "url" : "\/alfresco\/service\/api\/rma\/admin\/rmconstraints\/rma_smList",
+         "constraintName" : "rma_smList",
+         "caseSensitive" :  "true",
+         "constraintTitle" : "Display title for rma:smList",
+         "allowedValues" : [ "Alpha" ,  "Beta" ,  "Gamma" ],
+         "values" :
+         [
+            {
+               "valueName":"NOCON",
+               "valueTitle":"NOCON",
+               "authorities" : [  { "authorityName" : "jrogers", "authorityTitle" : "jrogers"} ]
+            },
+            {
+               "valueName":"NOFORN",
+               "valueTitle":"NOFORN",
+               "authorities" : [  { "authorityName" : "jrogers", "authorityTitle" : "jrogers"} , { "authorityName" : "fbloggs", "authorityTitle" : "fbloggs"} , { "authorityName" : "jdoe", "authorityTitle" : "jdoe"} ]
+            },
+            {
+               "valueName":"FGI",
+               "valueTitle":"FGI",
+               "authorities" : [  { "authorityName" : "fbloggs", "authorityTitle" : "fbloggs"} , { "authorityName" : "jdoe", "authorityTitle" : "jdoe"} ]
+            }
+         ]
+      }
+   }
+   </pre>
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmconstraints/{listName}/values</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

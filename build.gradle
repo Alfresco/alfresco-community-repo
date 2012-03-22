@@ -1,0 +1,46 @@
+subprojects {
+
+	apply plugin: 'java'	
+	
+	sourceSets {
+		main {
+			java {
+				srcDir 'source/java'
+			}
+		}
+	}
+
+	repositories { 
+		flatDir {
+			dirs 'libs'
+		}
+		mavenCentral()  
+	}
+
+	dependencies {
+		
+		compile fileTree(dir: 'libs', include: '*.jar')
+		
+		compile fileTree(dir: 'libs/test', include: '*.jar')
+		compile group: 'javax.servlet', name: 'servlet-api', version: '2.5'		
+		compile 'org.springframework:spring-test:2.5'            
+	}
+	
+	task unpackWar << {		
+		
+		println 'Unpacking ' + warFileName + ' WAR ...'
+				
+		// Clean out any existing jars
+		ant.delete {
+			ant.fileset(dir: 'libs', includes: '*.jar')
+		}		
+	
+		// Unpack WAR
+		ant.unzip(src: warFile, dest: 'libs') {
+			ant.patternset {
+				ant.include(name: '**/*.jar')
+			}
+			ant.mapper(type: 'flatten')	
+		}
+	}
+}

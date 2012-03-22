@@ -1,0 +1,12 @@
+<webscript>
+   <shortname>Record Metadata Aspects</shortname>
+   <description><![CDATA[
+   Gets all the record meta data aspects available.
+   ]]>
+   </description>
+   <url>/api/rma/recordmetadataaspects</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

@@ -1,0 +1,600 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   
+    <bean id="jsonConversionComponent" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent" 
+    	  parent="baseJsonConversionComponent">       
+        <property name="recordsManagementService" ref="RecordsManagementService"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.baseEvaluator" 
+	      abstract="true">
+		<property name="jsonConversionComponent" ref="jsonConversionComponent"/>
+		<property name="recordsManagementService" ref="RecordsManagementService"/>
+	    <property name="nodeService" ref="NodeService"/>
+	    <property name="namespaceService" ref="NamespaceService"/>
+	    <property name="capabilityService" ref="CapabilityService"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.baseIndicator" 
+		  abstract="true" 
+		  parent="jsonConversionComponent.baseEvaluator" 
+		  init-method="registerIndicator"/>
+		  
+    <bean id="jsonConversionComponent.baseAction" 
+		  abstract="true" 
+		  parent="jsonConversionComponent.baseEvaluator" 
+		  init-method="registerAction"
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TrueEvaluator"/>
+	
+	<!--  Indicator evaluators -->
+	
+	<bean id="jsonConversionComponent.closedIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FolderOpenClosedEvaluator">
+		<property name="name" value="closed"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.openIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FolderOpenClosedEvaluator">
+		<property name="name" value="open"/>
+		<property name="expected" value="false"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.cutoffIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.CutoffEvaluator">
+		<property name="name" value="cutoff"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.folderCutoffIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.CutoffEvaluator">
+		<property name="name" value="cutoffFolder"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.frozenIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FrozenEvaluator">
+		<property name="name" value="frozen"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.multiParentIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.MultiParentEvaluator">
+		<property name="name" value="multiParent"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.transferredIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.HasAspectEvaluator">
+		<property name="name" value="transferred"/>		
+		<property name="aspect" value="rma:transferred"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.accessionedIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.HasAspectEvaluator">	    
+		<property name="name" value="accessioned"/>
+		<property name="aspect" value="rma:ascended"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.destroyedIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.HasAspectEvaluator">	    
+		<property name="name" value="destroyed"/>
+		<property name="aspect" value="rma:ghosted"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.vitalRecordIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.VitalRecordEvaluator">	    
+		<property name="name" value="vitalRecord"/>
+		<property name="vitalRecordService" ref="VitalRecordService"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.transferIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TransferEvaluator">	    
+		<property name="name" value="transfer"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>	
+	
+	<bean id="jsonConversionComponent.accessionIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TransferEvaluator">	    
+		<property name="name" value="accession"/>
+		<property name="transferAccessionIndicator" value="true"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.nonElectronicIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.NonElectronicEvaluator">	    
+		<property name="name" value="nonElectronic"/>
+		<property name="dictionaryService" ref="DictionaryService"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.declaredIndicator" 
+	      parent="jsonConversionComponent.baseIndicator" 
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.HasAspectEvaluator">	    
+		<property name="name" value="declared"/>
+		<property name="aspect" value="rma:declaredRecord"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<!-- Action evaluators -->
+	
+	<bean id="jsonConversionComponent.editDetailsAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="editDetails"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="UpdateProperties"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.managePermissionsAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="managePermissions"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="ManageAccessRights"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.viewAuditLogAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="viewAuditLog"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="AccessAudit"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.closeFolderAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="closeFolder"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>	
+		<property name="capability" value ="CloseFolders"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.openFolderAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="openFolder"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>	
+		<property name="capability" value ="ReOpenFolders"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.reviewAllAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="reviewAll"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>	
+		<property name="capability" value ="CycleVitalRecords"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.cutoffAction"
+	      parent="jsonConversionComponent.baseAction"
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.CutoffEvaluator">
+		<property name="name" value="cutoff"/>
+		<property name="cutoff" value="false"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="ApproveRecordsScheduledForCutoff"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.destroyAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="destroy"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="DestroyRecordsScheduledForDestruction"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.transferAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="transfer"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="AuthorizeAllTransfers"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.accessionAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="accession"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="AuthorizeNominatedTransfers"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.undoCutoffAction"
+	      parent="jsonConversionComponent.baseAction"
+	      class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.CutoffEvaluator">
+		<property name="name" value="undoCutoff"/>
+		<property name="cutoff" value="true"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="ApproveRecordsScheduledForCutoff"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.editDispositionAsOfDateAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="editDispositionAsOfDate"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="ManuallyChangeDispositionDates"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.freezeAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="freeze"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="ExtendRetentionPeriodOrFreeze"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.unfreezeAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="unfreeze"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="Unfreeze"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.fileToAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="fileTo"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.file"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="file"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.reviewedAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="reviewed"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="CycleVitalRecords"/>
+	</bean>
+
+	<bean id="jsonConversionComponent.editReviewAsOfDateAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="editReviewAsOfDate"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="PlanningReviewCycles"/>
+	</bean>
+
+	<bean id="jsonConversionComponent.declareAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="declare"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="Declare"/>
+	</bean>
+
+	<bean id="jsonConversionComponent.undeclareAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="undeclare"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value ="UndeclareRecords"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.newCategory"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="newCategory"/>
+		<property name="kinds">
+			<set>
+			    <value>FILE_PLAN</value>
+				<value>RECORD_CATEGORY</value>
+			</set>
+		</property>
+		<property name="capability" value ="CreateModifyDestroyFileplanMetadata"/>
+	</bean>	
+	
+	<bean id="jsonConversionComponent.newFolder"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="newFolder"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+			</set>
+		</property>
+		<property name="capability" value ="CreateModifyDestroyFolders"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.import"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="import"/>
+		<property name="capability" value="Create"/>
+	</bean>	
+	
+	<bean id="jsonConversionComponent.export"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="export"/>
+		<property name="capability" value="ViewRecords"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.relinquish"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="relinquish"/>
+		<property name="kinds">
+			<set>
+				<value>HOLD</value>
+			</set>
+		</property>
+		<property name="capability" value ="Unfreeze"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.editReason"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="editReason"/>
+		<property name="kinds">
+			<set>
+				<value>HOLD</value>
+			</set>
+		</property>
+		<property name="capability" value="ViewUpdateReasonsForFreeze"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.downloadZip"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="downloadZip"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.fileReport"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="fileReport"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.transferComplete"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="transferComplete"/>
+		<property name="kinds">
+			<set>
+				<value>TRANSFER</value>
+			</set>
+		</property>
+		<property name="capability" value="AuthorizeAllTransfers"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.accessionComplete"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="accessionComplete"/>
+		<property name="kinds">
+			<set>
+				<value>TRANSFER</value>
+			</set>
+		</property>
+		<property name="capability" value="AuthorizeNominatedTransfers"/>
+	</bean>
+
+   <bean id="jsonConversionComponent.createDispositionSchedule"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="createDispositionSchedule"/>
+	  <property name="capability" value="CreateModifyDestroyFileplanMetadata"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.editDispositionSchedule"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="editDispositionSchedule"/>
+	  <property name="capability" value="CreateModifyDestroyFileplanMetadata"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.completeEvent"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="completeEvent"/>
+      <property name="capability" value="AddModifyEventDates"/>  
+   </bean>
+
+   <bean id="jsonConversionComponent.undoEvent"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="undoEvent"/>
+      <property name="capability" value="AddModifyEventDates"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.editReferences"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="editReferences"/>
+	  <property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+	  </property>
+      <property name="capability" value="ChangeOrDeleteReferences"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.addRecordMetadata"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="addRecordMetadata"/>
+	  <property name="kinds">
+		<set>
+			<value>RECORD</value>
+		</set>
+	  </property>
+	  <property name="capability" value="EditRecordMetadata"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.downloadRecord"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="downloadRecord"/>
+	  <property name="kinds">
+		<set>
+			<value>RECORD</value>
+		</set>
+	  </property>
+	  <property name="capability" value="ViewRecords"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.splitEmail"
+         parent="jsonConversionComponent.baseAction"
+         class="org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.SplitEmailActionEvaluator">
+      <property name="name" value="splitEmail"/>
+	  <property name="kinds">
+		<set>
+			<value>RECORD</value>
+		</set>
+	  </property>
+   </bean>
+
+</beans>

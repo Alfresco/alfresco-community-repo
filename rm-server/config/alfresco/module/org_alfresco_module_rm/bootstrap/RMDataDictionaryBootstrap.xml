@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view  xmlns:view="http://www.alfresco.org/view/repository/1.0" 
+            xmlns:nt="http://www.jcp.org/jcr/nt/1.0" 
+            xmlns:alf="http://www.alfresco.org" 
+            xmlns:d="http://www.alfresco.org/model/dictionary/1.0" 
+            xmlns:act="http://www.alfresco.org/model/action/1.0" 
+            xmlns:wf="http://www.alfresco.org/model/workflow/1.0" 
+            xmlns:app="http://www.alfresco.org/model/application/1.0" 
+            xmlns:usr="http://www.alfresco.org/model/user/1.0" 
+            xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" 
+            xmlns:cm="http://www.alfresco.org/model/content/1.0" 
+            xmlns:sv="http://www.jcp.org/jcr/sv/1.0" 
+            xmlns:mix="http://www.jcp.org/jcr/mix/1.0" 
+            xmlns:jcr="http://www.jcp.org/jcr/1.0" 
+            xmlns:sys="http://www.alfresco.org/model/system/1.0" 
+            xmlns:rule="http://www.alfresco.org/model/rule/1.0" 
+            xmlns:fm="http://www.alfresco.org/model/forum/1.0" 
+            xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" 
+            xmlns:rma="http://www.alfresco.org/model/recordsmanagement/1.0"
+            xmlns:custom="custom.model" 
+            xmlns="" >
+  
+   <cm:folder view:childName="cm:records_management">
+   
+      <view:properties>    
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <sys:node-uuid>rm_config_folder</sys:node-uuid>
+         <cm:name>Records Management</cm:name>
+         <cm:title>Records Management</cm:title>
+         <cm:description>Configuration information for the Records Management application.</cm:description>
+      </view:properties>
+      
+      <view:associations>
+         <cm:contains>
+         
+            <cm:content view:childName="cm:rm_event_config.json">
+               <view:aspects>
+                  <cm:titled></cm:titled>
+               </view:aspects>
+               <view:properties>      
+                  <sys:store-protocol>workspace</sys:store-protocol>
+                  <sys:store-identifier>SpacesStore</sys:store-identifier>
+                  <sys:node-uuid>rm_event_config</sys:node-uuid>
+                  <cm:description>Records management event configuration.</cm:description>
+                  <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/content/rmEventConfigBootstrap.json|mimetype=text/plain|encoding=UTF-8</cm:content>
+                  <cm:title>rm_event_config.json</cm:title>
+                  <cm:name>rm_event_config.json</cm:name>
+               </view:properties>
+            </cm:content>
+
+           <cm:dictionaryModel view:childName="cm:recordsCustomModel.xml">
+               <view:aspects>
+                  <cm:titled></cm:titled>
+               </view:aspects>
+              <view:properties>      
+                  <sys:store-protocol>workspace</sys:store-protocol>
+                  <sys:store-identifier>SpacesStore</sys:store-identifier>
+                  <sys:node-uuid>records_management_custom_model</sys:node-uuid>
+                  <cm:description>Records Management Custom Model</cm:description>
+                  <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/content/recordsCustomModel.xml|mimetype=text/plain|encoding=UTF-8</cm:content>
+                  <cm:title>recordsCustomModel.xml</cm:title>
+                  <cm:name>recordsCustomModel.xml</cm:name>
+	              <cm:modelName>{http://www.alfresco.org/model/rmcustom/1.0}rmc</cm:modelName>
+	              <cm:modelDescription>Records Management Custom Model</cm:modelDescription>
+	              <cm:modelAuthor>Alfresco</cm:modelAuthor>
+	              <cm:modelVersion>1.0</cm:modelVersion>
+	              <cm:modelActive>true</cm:modelActive>
+            
+              </view:properties>
+           </cm:dictionaryModel>
+           
+	       <cm:folder view:childName="cm:records_management_scripts">
+	          <view:properties>
+	             <sys:store-protocol>workspace</sys:store-protocol>
+	             <sys:store-identifier>SpacesStore</sys:store-identifier>
+	             <sys:node-uuid>rm_scripts</sys:node-uuid>
+	             <cm:name>Records Management Scripts</cm:name>
+	             <cm:title>Records Management Scripts</cm:title>
+	             <cm:description>Scripts intended for execution in response to RM events.</cm:description>
+	          </view:properties>
+	          <view:associations>
+	             <cm:contains>
+	                <!-- TODO Will likely remove this script. Here for test purposes.
+	                          Or perhaps replace it with a product-ready script -->
+	                <cm:content view:childName="cm:rma_isClosed.js">
+	                   <view:aspects>
+	                      <cm:titled></cm:titled>
+	                   </view:aspects>
+	                   <view:properties>
+	                      <sys:store-protocol>workspace</sys:store-protocol>
+	                      <sys:store-identifier>SpacesStore</sys:store-identifier>
+	                      <cm:description>Records management sample script.</cm:description>
+	                      <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/content/rma_isClosed.js|mimetype=text/javascript|encoding=UTF-8</cm:content>
+	                      <cm:title>rma_isClosed.js</cm:title>
+	                      <cm:name>rma_isClosed.js</cm:name>
+	                   </view:properties>
+	               </cm:content>
+	               
+	               <cm:content view:childName="cm:onCreate_supersedes.js">
+	                   <view:aspects>
+	                      <cm:titled></cm:titled>
+	                   </view:aspects>
+	                   <view:properties>
+	                      <sys:store-protocol>workspace</sys:store-protocol>
+	                      <sys:store-identifier>SpacesStore</sys:store-identifier>
+	                      <cm:description>Records management sample script.</cm:description>
+	                      <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/content/onCreate_supersedes.js|mimetype=text/javascript|encoding=UTF-8</cm:content>
+	                      <cm:title>onCreate_supersedes.js</cm:title>
+	                      <cm:name>onCreate_supersedes.js</cm:name>
+	                   </view:properties>
+	               </cm:content>
+	             </cm:contains>
+	          </view:associations>
+	       </cm:folder>
+          
+          
+         <cm:folder view:childName="cm:records_management_email_templates">
+             <view:properties>
+                <sys:store-protocol>workspace</sys:store-protocol>
+                <sys:store-identifier>SpacesStore</sys:store-identifier>
+                <sys:node-uuid>records_management_email_templates</sys:node-uuid>
+                <cm:name>Records Management Email Templates</cm:name>
+                <cm:title>Records Management Email Templates</cm:title>
+                <cm:description>Email templates for records management.</cm:description>
+             </view:properties>
+            
+            <view:associations>
+               <cm:contains>
+                  <cm:content
+                    view:childName="cm:notify-records-due-for-review-email.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                        <cm:versionable></cm:versionable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>
+                            true
+                        </app:editInline>
+                        <cm:description>Email template for notify records due for review job.</cm:description>
+                        <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/content/notify-records-due-for-review-email.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
+                        <cm:title>notify-records-due-for-review-email.ftl</cm:title>
+                        <cm:author></cm:author>
+                        <cm:name>notify-records-due-for-review-email.ftl</cm:name>
+                        <cm:lastPatchUpdate>org_alfresco_module_rm_notificationTemplatePatch</cm:lastPatchUpdate>
+                    </view:properties>
+                    <view:associations></view:associations>
+                  </cm:content>
+                  <cm:content view:childName="cm:record-superseded-email.ftl">
+	                   <view:aspects>
+	                      <cm:titled></cm:titled>
+	                      <cm:author></cm:author>
+                          <app:inlineeditable></app:inlineeditable>
+                          <cm:versionable></cm:versionable>
+	                   </view:aspects>
+	                   <view:properties>
+	                      <sys:store-protocol>workspace</sys:store-protocol>
+	                      <sys:store-identifier>SpacesStore</sys:store-identifier>	                      
+                  	      <sys:node-uuid>record_superseded_template</sys:node-uuid>
+	                      <cm:description>Record superseded email template.</cm:description>
+	                      <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/content/record-superseded-email.ftl|mimetype=text/plain|encoding=UTF-8</cm:content>
+	                      <cm:title>record-superseded-email.ftl</cm:title>
+	                      <cm:name>record-superseded-email.ftl</cm:name>
+                          <cm:lastPatchUpdate>org_alfresco_module_rm_notificationTemplatePatch</cm:lastPatchUpdate>
+	                   </view:properties>
+	               </cm:content>
+               </cm:contains>
+            </view:associations>
+         </cm:folder>
+         </cm:contains>
+      </view:associations>
+        
+   </cm:folder>
+  
+</view:view>

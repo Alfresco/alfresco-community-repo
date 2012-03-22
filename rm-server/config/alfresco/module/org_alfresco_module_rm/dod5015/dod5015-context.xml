@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+	
+	<!-- Bootstrap Records Management Models -->   
+    <bean id="org_alfresco_module_dod5015_dod5015dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/module/org_alfresco_module_rm/dod5015/dod5015Model.xml</value>
+            </list>
+        </property>
+	    <property name="labels">
+	            <list>
+	                <value>alfresco/module/org_alfresco_module_rm/dod5015/dod5015-model</value>
+	           </list>
+	    </property>        
+    </bean>
+
+</beans>

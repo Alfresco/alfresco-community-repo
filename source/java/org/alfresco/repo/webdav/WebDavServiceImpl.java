@@ -21,6 +21,7 @@ package org.alfresco.repo.webdav;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -104,6 +105,10 @@ public class WebDavServiceImpl implements WebDavService
                 }
                 url = path.toString();
             }
+        }
+        catch (InvalidTypeException typeErr)
+        {
+            // cannot build path if file is a type such as a rendition
         }
         catch (FileNotFoundException nodeErr)
         {

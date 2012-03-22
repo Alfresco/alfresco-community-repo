@@ -47,6 +47,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tagging.script.TagScope;
@@ -96,11 +97,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.FileFilterMode;
-import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
+import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -1301,6 +1302,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      */
     public String getWebdavUrl()
     {
+        String url = "";
         try
         {
             if (getIsContainer() || getIsDocument())
@@ -1317,15 +1319,18 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                     path.append("/")
                         .append(URLEncoder.encode(paths.get(i).getName()));
                 }
-                return path.toString();
+                url = path.toString();
             }
+        }
+        catch (InvalidTypeException typeErr)
+        {
+            // cannot build path if file is a type such as a rendition
         }
         catch (FileNotFoundException nodeErr)
         {
             // cannot build path if file no longer exists
-            return "";
         }
-        return "";
+        return url;
     }
 
     /**

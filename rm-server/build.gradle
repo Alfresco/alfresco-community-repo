@@ -1,0 +1,11 @@
+
+repositories { 
+	mavenCentral()  
+}
+
+dependencies {
+	compile fileTree(dir: 'libs/test', include: '*.jar')
+	compile group: 'javax.servlet', name: 'servlet-api', version: '2.5'		
+	compile 'org.springframework:spring-test:2.5'            
+}
+	

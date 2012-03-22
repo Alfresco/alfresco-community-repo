@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -31,6 +30,8 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.GUID;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @see org.alfresco.repo.ml.MultilingualContentServiceImpl
@@ -73,7 +74,6 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         assertEquals("Incorrect number of child nodes", 2, nodeService.getChildAssocs(mlContainerNodeRef).size());
     }
 
-    @SuppressWarnings("unused")
     public void testGetMissingTranslation() throws Exception
     {
         List<String> langList = contentFilterLanguagesService.getFilterLanguages();
@@ -138,7 +138,6 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
                 multilingualContentService.getTranslationForLocale(chineseContentNodeRef, Locale.ITALIAN));
     }
 
-    @SuppressWarnings("unused")
     public void testGetPivotTranslation() throws Exception
     {
         NodeRef chineseContentNodeRef = createContent();
@@ -407,7 +406,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         // get the actual space
         NodeRef actualSpace = folderNodeRef;
         // create a new space
-        NodeRef destinationSpace = fileFolderService.create(folderNodeRef, "testCopyMLContainerInNewSpace" + System.currentTimeMillis(), ContentModel.TYPE_FOLDER).getNodeRef();
+        NodeRef destinationSpace = fileFolderService.create(folderNodeRef, "testCopyMLContainerInNewSpace" + GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
 
         // Ensure that the new space is created
         assertTrue("The destiation space is not created " + destinationSpace, nodeService.exists(destinationSpace));
@@ -528,7 +527,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         NodeRef actualSpace = folderNodeRef;
 
         // create a new space
-        NodeRef destinationSpace = fileFolderService.create(folderNodeRef, "testCopyMLContainerInNewSpace" + System.currentTimeMillis(), ContentModel.TYPE_FOLDER).getNodeRef();
+        NodeRef destinationSpace = fileFolderService.create(folderNodeRef, "testCopyMLContainerInNewSpace" + GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
 
         // Ensure that the new space is created
         assertTrue("The destiation space is not created " + destinationSpace, nodeService.exists(destinationSpace));

@@ -24,7 +24,9 @@
 		"firstName": "${authority.properties.firstName!""}",
 		"lastName": "${authority.properties.lastName!""}",
 	<#if authority.assocs["cm:avatar"]??>
-		"avatar": "${"api/node/" + authority.assocs["cm:avatar"][0].nodeRef?string?replace('://','/') + "/content/thumbnails/avatar"}",
+	   <#assign avatarNodeRef>${authority.assocs["cm:avatar"][0].nodeRef?string?replace('://','/')}</#assign>
+		"avatar": "${"api/node/" + avatarNodeRef + "/content/thumbnails/avatar"}",
+		"avatarNode": "${avatarNodeRef}",
 	</#if>
 	<#if authority.properties.jobtitle??>
 		"jobtitle": "${authority.properties.jobtitle}",

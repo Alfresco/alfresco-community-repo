@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
@@ -172,6 +173,18 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
             JSONObject statusTimeJson = new JSONObject();
             statusTimeJson.put("iso8601", ISO8601DateFormat.format(statusTime));
             result.put("userStatusTime", statusTimeJson);
+        }
+        
+        // Get the avatar for the user id if one is available
+        List<AssociationRef> assocRefs = this.nodeService.getTargetAssocs(node, ContentModel.ASSOC_AVATAR);
+        if (!assocRefs.isEmpty())
+        {
+            NodeRef avatarNodeRef = assocRefs.get(0).getTargetRef();
+            result.put("avatar", avatarNodeRef.toString());
+        }
+        else
+        {
+            result.put("avatar", "avatar"); // This indicates to just use a placeholder
         }
 
         return result;

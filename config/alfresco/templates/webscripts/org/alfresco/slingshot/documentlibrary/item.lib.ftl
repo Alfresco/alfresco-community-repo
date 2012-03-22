@@ -47,6 +47,13 @@
    "modifiedOn": "<@dateFormat node.properties.modified />",
    "modifiedBy": "${modifiedBy}",
    "modifiedByUser": "${modifiedByUser}",
+   <#if node.hasAspect("cm:thumbnailModification")>
+      <#list node.properties.lastThumbnailModification as thumbnailMod>
+         <#if thumbnailMod?contains("doclib")>
+   "lastThumbnailModification": "${thumbnailMod}",
+         </#if>
+      </#list>
+   </#if>
    "lockedBy": "${lockedBy}",
    "lockedByUser": "${lockedByUser}",
    "size": "${node.size?c}",

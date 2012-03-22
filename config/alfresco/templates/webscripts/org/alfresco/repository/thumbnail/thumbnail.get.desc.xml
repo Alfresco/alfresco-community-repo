@@ -7,6 +7,7 @@
   Please note that Alfresco does not currently use the filename template-arg and that it will be ignored.
   Therefore a GET to these URLs will return the same resource as to the equivalent URLs without it.
   </description>
+  <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}?c={queueforcecreate?}&amp;ph={placeholder?}&amp;lastModified={modified?}</url>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}?c={queueforcecreate?}&amp;ph={placeholder?}</url>  
   <url>/api/path/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}?c={queueforcecreate?}&amp;ph={placeholder?}</url>
   <url>/api/node/{store_type}/{store_id}/{id}/content{property}/thumbnails/{thumbnailname}/{filename}?c={queueforcecreate?}&amp;ph={placeholder?}</url>  

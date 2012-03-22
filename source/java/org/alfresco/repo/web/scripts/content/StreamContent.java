@@ -197,12 +197,12 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
                     }
                 
                     // Stream the content
-                    streamContent(req, res, nodeRef, propertyQName, attach);
+                    streamContent(req, res, nodeRef, propertyQName, attach, model);
                 }
                 else
                 {
                     // Stream the content
-                    streamContent(req, res, contentPath, attach);
+                    streamContent(req, res, contentPath, attach, model);
                 }
             }
         }
@@ -309,10 +309,33 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @throws IOException 
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, QName propertyQName, 
-                boolean attach) throws IOException
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 NodeRef nodeRef, 
+                                 QName propertyQName,
+                                 boolean attach) throws IOException
     {
-        streamContent(req, res, nodeRef, propertyQName, attach, null);
+        streamContent(req, res, nodeRef, propertyQName, attach, null, null);
+    }
+    
+    /**
+     * Streams the content on a given node's content property to the response of the web script.
+     * 
+     * @param req               Request
+     * @param res               Response
+     * @param nodeRef           The node reference
+     * @param propertyQName     The content property name
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @throws IOException 
+     */
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 NodeRef nodeRef, 
+                                 QName propertyQName,
+                                 boolean attach,
+                                 Map<String, Object> model) throws IOException
+    {
+        streamContent(req, res, nodeRef, propertyQName, attach, null, model);
     }
     
     /**
@@ -326,8 +349,33 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param attachFileName    Optional file name to use when attach is <code>true</code>
      * @throws IOException 
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, QName propertyQName, 
-                boolean attach, String attachFileName) throws IOException
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 NodeRef nodeRef, 
+                                 QName propertyQName,
+                                 boolean attach, 
+                                 String attachFileName) throws IOException
+    {
+        streamContent(req, res, nodeRef, propertyQName, attach, attachFileName, null);
+    }
+    /**
+     * Streams the content on a given node's content property to the response of the web script.
+     * 
+     * @param req               Request
+     * @param res               Response
+     * @param nodeRef           The node reference
+     * @param propertyQName     The content property name
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @throws IOException 
+     */
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 NodeRef nodeRef, 
+                                 QName propertyQName,
+                                 boolean attach, 
+                                 String attachFileName,
+                                 Map<String, Object> model) throws IOException
     {
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from node ref " + nodeRef.toString() + " (property: " + propertyQName.toString() + ") (attach: " + attach + ")");
@@ -381,7 +429,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
         }
         
         // Stream the content
-        streamContentImpl(req, res, reader, attach, modified, modified == null ? null : String.valueOf(modified.getTime()), attachFileName);
+        streamContentImpl(req, res, reader, attach, modified, modified == null ? null : String.valueOf(modified.getTime()), attachFileName, model);
     }
 
     /**
@@ -393,10 +441,30 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, String resourcePath, 
-                boolean attach) throws IOException
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 String resourcePath,
+                                 boolean attach) throws IOException
     {
-        streamContent(req, res, resourcePath, attach, null);
+        streamContent(req, res, resourcePath, attach, null, null);
+    }
+    
+    /**
+     * Streams content back to client from a given resource path.
+     * 
+     * @param req               The request
+     * @param res               The response
+     * @param resourcePath      The classpath resource path the content is required for
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 String resourcePath,
+                                 boolean attach,
+                                 Map<String, Object> model) throws IOException
+    {
+        streamContent(req, res, resourcePath, attach, null, model);
     }
     
     /**
@@ -409,8 +477,30 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param attachFileName    Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, String resourcePath, 
-                boolean attach, String attachFileName) throws IOException
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 String resourcePath,
+                                 boolean attach, 
+                                 String attachFileName) throws IOException
+    {
+        streamContent(req, res, resourcePath, attach, attachFileName, null);
+    }
+    /**
+     * Streams content back to client from a given resource path.
+     * 
+     * @param req               The request
+     * @param res               The response
+     * @param resourcePath      The classpath resource path the content is required for.
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 String resourcePath,
+                                 boolean attach, 
+                                 String attachFileName,
+                                 Map<String, Object> model) throws IOException
     {
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from resource path " + resourcePath + " (attach: " + attach + ")");
@@ -437,7 +527,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
         FileCopyUtils.copy(is, os);
         
         // stream the contents of the file, but using the modifiedDate of the original resource.
-        streamContent(req, res, file, resourceLastModified, attach, attachFileName);
+        streamContent(req, res, file, resourceLastModified, attach, attachFileName, model);
     }
     
     /**
@@ -449,10 +539,30 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file, boolean attach) 
-                throws IOException
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 File file, 
+                                 boolean attach) throws IOException
     {
-        streamContent(req, res, file, attach, null);
+        streamContent(req, res, file, attach, null, null);
+    }
+    
+    /**
+     * Streams content back to client from a given resource path.
+     * 
+     * @param req               The request
+     * @param res               The response
+     * @param resourcePath      The resource path the content is required for
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 File file, 
+                                 boolean attach,
+                                 Map<String, Object> model) throws IOException
+    {
+        streamContent(req, res, file, attach, null, model);
     }
     
     /**
@@ -466,10 +576,34 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param attachFileName    Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file, boolean attach, 
-                String attachFileName) throws IOException
+    protected void streamContent(WebScriptRequest req,
+                                 WebScriptResponse res, 
+                                 File file, 
+                                 boolean attach,
+                                 String attachFileName) throws IOException
     {
-        streamContent(req, res, file, null, attach, attachFileName);
+        streamContent(req, res, file, null, attach, attachFileName, null);
+    }
+    
+    /**
+     * Streams content back to client from a given File. The Last-Modified header will reflect the
+     * given file's modification timestamp.
+     * 
+     * @param req               The request
+     * @param res               The response
+     * @param file              The file whose content is to be streamed.
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req,
+                                 WebScriptResponse res, 
+                                 File file, 
+                                 boolean attach,
+                                 String attachFileName,
+                                 Map<String, Object> model) throws IOException
+    {
+        streamContent(req, res, file, null, attach, attachFileName, model);
     }
 
     /**
@@ -484,8 +618,34 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param attachFileName    Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
-    protected void streamContent(WebScriptRequest req, WebScriptResponse res, File file, Long modifiedTime,
-            boolean attach, String attachFileName) throws IOException
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 File file, 
+                                 Long modifiedTime,
+                                 boolean attach, 
+                                 String attachFileName) throws IOException
+    {
+        streamContent(req, res, file, modifiedTime, attach, attachFileName, null);
+    }
+    /**
+     * Streams content back to client from a given File.
+     * 
+     * @param req               The request
+     * @param res               The response
+     * @param file              The file whose content is to be streamed.
+     * @param modifiedTime      The modified datetime to use for the streamed content. If <tt>null</tt> the
+     *                          file's timestamp will be used.
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @throws IOException
+     */
+    protected void streamContent(WebScriptRequest req, 
+                                 WebScriptResponse res, 
+                                 File file, 
+                                 Long modifiedTime,
+                                 boolean attach, 
+                                 String attachFileName,
+                                 Map<String, Object> model) throws IOException
     {
         if (logger.isDebugEnabled())
             logger.debug("Retrieving content from file " + file.getAbsolutePath() + " (attach: " + attach + ")");
@@ -507,8 +667,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
         long lastModified = modifiedTime == null ? file.lastModified() : modifiedTime;
         Date lastModifiedDate = new Date(lastModified);
         
-        streamContentImpl(req, res, reader, attach, lastModifiedDate, 
-                    String.valueOf(lastModifiedDate.getTime()), attachFileName);
+        streamContentImpl(req, res, reader, attach, lastModifiedDate, String.valueOf(lastModifiedDate.getTime()), attachFileName, model);
     }
 
     /**
@@ -523,8 +682,36 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param attachFileName    Optional file name to use when attach is <code>true</code>
      * @throws IOException
      */
-    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, 
-                Date modified, String eTag, String attachFileName) throws IOException
+    protected void streamContentImpl(WebScriptRequest req, 
+                                    WebScriptResponse res, 
+                                    ContentReader reader, 
+                                    boolean attach,
+                                    Date modified, 
+                                    String eTag, 
+                                    String attachFileName) throws IOException
+    {
+        streamContentImpl(req, res, reader, attach, modified, eTag, attachFileName, null);
+    }
+    /**
+     * Stream content implementation
+     * 
+     * @param req               The request
+     * @param res               The response
+     * @param reader            The reader
+     * @param attach            Indicates whether the content should be streamed as an attachment or not
+     * @param modified          Modified date of content
+     * @param eTag              ETag to use
+     * @param attachFileName    Optional file name to use when attach is <code>true</code>
+     * @throws IOException
+     */
+    protected void streamContentImpl(WebScriptRequest req, 
+                                    WebScriptResponse res, 
+                                    ContentReader reader, 
+                                    boolean attach,
+                                    Date modified, 
+                                    String eTag, 
+                                    String attachFileName, 
+                                    Map<String, Object> model) throws IOException
     {
         setAttachment(res, attach, attachFileName);
 
@@ -548,13 +735,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
         res.setHeader("Content-Length", Long.toString(reader.getSize()));
         
         // set caching
-        Cache cache = new Cache();
-        cache.setNeverCache(false);
-        cache.setMustRevalidate(true);
-        cache.setMaxAge(0L);
-        cache.setLastModified(modified);
-        cache.setETag(eTag);
-        res.setCache(cache);
+        setResponseCache(res, modified, eTag, model);
         
         // get the content and stream directly to the response output stream
         // assuming the repository is capable of streaming in chunks, this should allow large files
@@ -576,6 +757,36 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
         }
     }
 
+    /**
+     * Set the cache settings on the response
+     * 
+     * @param res
+     * @param modified
+     * @param eTag
+     */
+    protected void setResponseCache(WebScriptResponse res, Date modified, String eTag, Map<String, Object> model)
+    {
+        Cache cache = new Cache();
+        if (model == null || model.get("allowBrowserToCache") == null || ((String)model.get("allowBrowserToCache")).equals("false"))
+        {
+            cache.setNeverCache(false);
+            cache.setMustRevalidate(true);
+            cache.setMaxAge(0L);
+            cache.setLastModified(modified);
+            cache.setETag(eTag);
+        }
+        else
+        {
+            cache.setNeverCache(false);
+            cache.setMustRevalidate(false);
+            cache.setMaxAge(Long.MAX_VALUE);
+            cache.setLastModified(modified);
+            cache.setETag(eTag);
+            res.setCache(cache);
+        }
+        res.setCache(cache);
+    }
+    
     /**
      * Set attachment header
      * 

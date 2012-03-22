@@ -1,5 +1,17 @@
 function main()
 {
+   // Indicate whether or not the thumbnail can be cached by the browser. Caching is allowed if the lastModified
+   // argument is provided as this is an indication of request uniqueness and therefore the browser will have
+   // the latest thumbnail image.
+   if (args.lastModified != null)
+   {
+      model.allowBrowserToCache = "true";
+   }
+   else
+   {
+      model.allowBrowserToCache = "false";
+   }
+   
    // Get the node from the URL
    var pathSegments = url.match.split("/");
    var reference = [ url.templateArgs.store_type, url.templateArgs.store_id ].concat(url.templateArgs.id.split("/"));

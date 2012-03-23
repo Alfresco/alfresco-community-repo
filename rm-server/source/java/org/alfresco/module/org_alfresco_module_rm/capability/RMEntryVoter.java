@@ -230,7 +230,8 @@ public class RMEntryVoter extends RMSecurityCommon
         return Collections.unmodifiableSet(protectedAspects);
     }
 
-    public int vote(Authentication authentication, Object object, ConfigAttributeDefinition config)
+    @SuppressWarnings("unchecked")
+	public int vote(Authentication authentication, Object object, ConfigAttributeDefinition config)
     {
         if (logger.isDebugEnabled())
         {
@@ -365,7 +366,8 @@ public class RMEntryVoter extends RMSecurityCommon
 
     }
 
-    private static QName getType(NodeService nodeService, MethodInvocation invocation, Class[] params, int position, boolean parent)
+    @SuppressWarnings("unchecked")
+	private static QName getType(NodeService nodeService, MethodInvocation invocation, Class[] params, int position, boolean parent)
     {
         if (QName.class.isAssignableFrom(params[position]))
         {
@@ -387,7 +389,8 @@ public class RMEntryVoter extends RMSecurityCommon
         return null;
     }
 
-    private static QName getQName(MethodInvocation invocation, Class[] params, int position)
+    @SuppressWarnings("unchecked")
+	private static QName getQName(MethodInvocation invocation, Class[] params, int position)
     {
         if (QName.class.isAssignableFrom(params[position]))
         {
@@ -400,7 +403,8 @@ public class RMEntryVoter extends RMSecurityCommon
         throw new ACLEntryVoterException("Unknown type");
     }
 
-    private static Serializable getProperty(MethodInvocation invocation, Class[] params, int position)
+    @SuppressWarnings("unchecked")
+	private static Serializable getProperty(MethodInvocation invocation, Class[] params, int position)
     {
         if (invocation.getArguments()[position] == null)
         {

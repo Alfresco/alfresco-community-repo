@@ -1,6 +1,7 @@
 subprojects {
 
 	apply plugin: 'java'	
+	apply plugin: 'eclipse'
 	
 	sourceSets {
 		main {
@@ -16,64 +17,74 @@ subprojects {
 		}
 	}
 
-	dependencies {		
-		compile fileTree(dir: libsDir, include: '*.jar')         
+	dependencies {		     		
+		compile fileTree(dir: 'war/WEB-INF/lib', include: '*.jar')     	
 	}
 	
 	compileJava.doFirst {
-		if (areLibsUnpacked(file(libsDir)) == false) {
-			tasks.unpackLibs.execute()
+		if (file('war/WEB-INF').exists() == false) {
+			tasks.expandWar.execute()
 		}
 	}
 	
-	task cleanLibs << {
+	task cleanWar << {
 		ant.delete {
-			ant.fileset(dir: libsDir, includes: '*.jar')
+			ant.fileset(dir: 'war', excludes: '*.war')
 		}
 	}
 	
-	task refreshLibs (dependsOn: ['cleanLibs', 'unpackLibs'])
+	task refreshWar (dependsOn: ['cleanWar', 'expandWar'])
 	
-	task unpackLibs << {	
+	task expandWar << {	
 		
 		if (file(warFile).exists()) {
 		
-			println 'Unpacking libs from ' + warFileName + ' WAR'
-		
-			// unpack the jars from the war file
-			ant.unzip(src: warFile, dest: libsDir) {
-				ant.patternset {
-					ant.include(name: '**/*.jar')
-				}
-				ant.mapper(type: 'flatten')	
-			}
+			println 'Expanding ' + warFileName + ' WAR'
+			ant.unzip(src: warFile, dest: 'war') 
 		} 
 		else {
 		
-			// TODO eventually we will be able to retrieve the war file if we don't have it
 			println 'The ' + warFile + ' was not found.'
 		}
 	}	
 	
-//	task amp << {
-//		
-//		ant.zip(destfile: 'build/dist/blar.amp', update: 'true') {
-//			
-//			ant.zipfileset(file: '../module.properties')
-//			ant.zipfileset(file: 'build/libs/rm.jar', prefix: 'lib')
-//			ant.zipfileset(dir: '/config', prefix: 'config') {
-//				ant.exclude(name: '**/module.properties')
-//			}
-//		}		
-//	}
+	task amp << {}
 
+	assemble.doLast {
+		tasks.amp.execute()
+	}	
 }
+
+
+void assembleAmp(amp, module, jar, config, web){	
 	
-Boolean areLibsUnpacked(dir){
-	
-	result = false;
-	dir.eachFileMatch(~/.*\.jar/) {
-		result = true;			
-	}		
-	return result;
+	ant.zip(destfile: amp, update: 'true') {			
+	    
+		def moduleProperties = module + '/module.properties'
+		def fileMapping = module + '/file-mapping.properties'
+		
+		if (file(moduleProperties).exists() == true) {
+			ant.zipfileset(file: moduleProperties)
+		}
+		
+		if (file(fileMapping).exists() == true) {
+			ant.zipfileset(file: fileMapping)
+		}
+		
+		if (jar != null) {
+			ant.zipfileset(file: jar, prefix: 'lib')
+		}
+		
+		if (config != null) {
+			ant.zipfileset(dir: config, prefix: 'config') {
+				ant.exclude(name: '**/module.properties')
+				ant.exclude(name: '**/file-mapping.properties')
+			}
+		}
+		
+		if (web != null) {			
+			ant.zipfileset(file: web, prefix: 'web')
+		}
+	}
 }
+

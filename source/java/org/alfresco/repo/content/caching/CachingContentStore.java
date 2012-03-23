@@ -215,8 +215,18 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
                 
                 if (reader != null)
                 {
-                    quota.afterWritingCacheFile(contentSize);
-                    return reader;
+                    boolean keepCacheFile = quota.afterWritingCacheFile(contentSize);
+                    if (keepCacheFile)
+                    {
+                        return reader;
+                    }
+                    else
+                    {
+                        // Quota strategy has requested cache file not to be kept.
+                        cache.deleteFile(url);
+                        cache.remove(url);
+                        return backingStore.getReader(url);
+                    }
                 }
             }
             // Have tried multiple times to cache the item and read it back from the cache

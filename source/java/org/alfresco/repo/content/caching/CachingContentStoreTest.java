@@ -108,6 +108,7 @@ public class CachingContentStoreTest
         QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
         cachingStore.setQuota(quota);
         when(quota.beforeWritingCacheFile(1274L)).thenReturn(true);
+        when(quota.afterWritingCacheFile(1274L)).thenReturn(true);
         
         ContentReader returnedReader = cachingStore.getReader("url");
         
@@ -286,6 +287,31 @@ public class CachingContentStoreTest
         verify(cache).remove("url");
     }
     
+    @Test
+    public void quotaManagerCanRequestFileDeletionFromCacheAfterWriteWhenNotCacheOnInbound()
+    {
+        when(cache.getReader("url")).thenReturn(cachedContent);
+        when(backingStore.getReader("url")).thenReturn(sourceContent);
+        when(sourceContent.getSize()).thenReturn(1274L);
+        when(cache.put("url", sourceContent)).thenReturn(true);
+        
+        QuotaManagerStrategy quota = mock(QuotaManagerStrategy.class);
+        cachingStore.setQuota(quota);
+        
+        // Don't veto writing the cache file.
+        when(quota.beforeWritingCacheFile(1274L)).thenReturn(true);
+        // Do request cache file deletion.
+        when(quota.afterWritingCacheFile(1234L)).thenReturn(false);
+        
+        ContentReader returnedReader = cachingStore.getReader("url");
+        
+        // Was the file deleted?
+        verify(cache).deleteFile("url");
+        verify(cache).remove("url");
+        // As the cache file has been deleted, the reader must come from the backing store
+        // rather than the cache.
+        assertSame(returnedReader, sourceContent);
+    }
     
     @Test(expected=RuntimeException.class)
     // Check that exceptions raised by the backing store's putContent(ContentReader)

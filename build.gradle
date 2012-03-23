@@ -1,3 +1,39 @@
+class AMPTask extends DefaultTask {
+
+    def String dist = 'build/dist'
+	def String amp = null
+	def String module = null
+	def String jar = null
+	def String config = 'config'
+	def String web = 'source/web'
+	
+	@TaskAction
+	def assembleAMP() {
+	
+		// assemble the AMP file
+		ant.zip(destfile: dist + '/' + amp, update: 'true') {			
+		
+			ant.zipfileset(file: module + '/module.properties')
+			ant.zipfileset(file: module + '/file-mapping.properties')
+			
+			if (jar != null) {
+				ant.zipfileset(file: jar, prefix: 'lib')
+			}
+			
+			if (config != null) {
+				ant.zipfileset(dir: config, prefix: 'config') {
+					ant.exclude(name: '**/module.properties')
+					ant.exclude(name: '**/file-mapping.properties')
+				}
+			}
+			
+			if (web != null) {			
+				ant.zipfileset(file: web, prefix: 'web')
+			}
+		}	
+	}
+}
+
 subprojects {
 
 	apply plugin: 'java'	
@@ -48,43 +84,18 @@ subprojects {
 		}
 	}	
 	
-	task amp << {}
+	task amp(type: AMPTask)
+	
+	amp.doFirst {	
+		// ensure the dist directory exists
+		def distDir = file(dist)
+		if (distDir.exists() == false) {
+			distDir.mkdir()
+		}
+	}
 
 	assemble.doLast {
 		tasks.amp.execute()
-	}	
-}
-
-
-void assembleAmp(amp, module, jar, config, web){	
-	
-	ant.zip(destfile: amp, update: 'true') {			
-	    
-		def moduleProperties = module + '/module.properties'
-		def fileMapping = module + '/file-mapping.properties'
-		
-		if (file(moduleProperties).exists() == true) {
-			ant.zipfileset(file: moduleProperties)
-		}
-		
-		if (file(fileMapping).exists() == true) {
-			ant.zipfileset(file: fileMapping)
-		}
-		
-		if (jar != null) {
-			ant.zipfileset(file: jar, prefix: 'lib')
-		}
-		
-		if (config != null) {
-			ant.zipfileset(dir: config, prefix: 'config') {
-				ant.exclude(name: '**/module.properties')
-				ant.exclude(name: '**/file-mapping.properties')
-			}
-		}
-		
-		if (web != null) {			
-			ant.zipfileset(file: web, prefix: 'web')
-		}
 	}
+	
 }
-

@@ -45,7 +45,8 @@ public abstract class AbstractCapability extends RMSecurityCommon
                                          implements Capability, RecordsManagementModel, RMPermissionModel
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(AbstractCapability.class);
+    @SuppressWarnings("unused")
+	private static Log logger = LogFactory.getLog(AbstractCapability.class);
 
     /** RM entry voter */
     protected RMEntryVoter voter;

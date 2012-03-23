@@ -4,8 +4,16 @@ repositories {
 }
 
 dependencies {
-	compile fileTree(dir: 'libs/test', include: '*.jar')
-	compile group: 'javax.servlet', name: 'servlet-api', version: '2.5'		
+	compile fileTree(dir: 'libs', include: '*.jar')
+	compile 'javax.servlet:servlet-api:2.5'		
 	compile 'org.springframework:spring-test:2.5'            
 }
+
+amp {
+	amp 'rm-server.amp'
+	module 'config/alfresco/module/org_alfresco_module_rm'
+	jar 'build/libs/rm-server.jar'
+}
+	
+
 	

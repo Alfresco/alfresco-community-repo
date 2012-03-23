@@ -350,7 +350,8 @@ public class RMEntryVoter extends RMSecurityCommon
 
     }
 
-    private int checkCapability(MethodInvocation invocation, Class[] params, ConfigAttributeDefintion cad)
+    @SuppressWarnings("unchecked")
+	private int checkCapability(MethodInvocation invocation, Class[] params, ConfigAttributeDefintion cad)
     {
         NodeRef testNodeRef = getTestNode(getNodeService(), getRecordsManagementService(), invocation, params, cad.parameters.get(0), cad.parent);
         if (testNodeRef == null)
@@ -421,7 +422,8 @@ public class RMEntryVoter extends RMSecurityCommon
         throw new ACLEntryVoterException("Unknown type");
     }
 
-    private static Map<QName, Serializable> getProperties(MethodInvocation invocation, Class[] params, int position)
+    @SuppressWarnings("unchecked")
+	private static Map<QName, Serializable> getProperties(MethodInvocation invocation, Class[] params, int position)
     {
         if (invocation.getArguments()[position] == null)
         {
@@ -438,7 +440,8 @@ public class RMEntryVoter extends RMSecurityCommon
         throw new ACLEntryVoterException("Unknown type");
     }
 
-    private static NodeRef getTestNode(NodeService nodeService, RecordsManagementService rmService, MethodInvocation invocation, Class[] params, int position, boolean parent)
+    @SuppressWarnings("unchecked")
+	private static NodeRef getTestNode(NodeService nodeService, RecordsManagementService rmService, MethodInvocation invocation, Class[] params, int position, boolean parent)
     {
         NodeRef testNodeRef = null;
         if (position < 0)
@@ -558,7 +561,8 @@ public class RMEntryVoter extends RMSecurityCommon
         return testNodeRef;
     }
 
-    private int checkPolicy(MethodInvocation invocation, Class[] params, ConfigAttributeDefintion cad)
+    @SuppressWarnings("unchecked")
+	private int checkPolicy(MethodInvocation invocation, Class[] params, ConfigAttributeDefintion cad)
     {
         Policy policy = policies.get(cad.policyName);
         if (policy == null)
@@ -577,7 +581,8 @@ public class RMEntryVoter extends RMSecurityCommon
 
     }
 
-    private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
+    @SuppressWarnings("unchecked")
+	private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
     {
         List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>(2);
         Iterator iter = config.getConfigAttributes();
@@ -792,7 +797,8 @@ public class RMEntryVoter extends RMSecurityCommon
          * @param cad
          * @return
          */
-        int evaluate(
+        @SuppressWarnings("unchecked")
+		int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilitiesService, 
@@ -804,7 +810,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class ReadPolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  
@@ -821,7 +828,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class CreatePolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService, 
@@ -848,7 +856,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class MovePolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  
@@ -884,7 +893,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class UpdatePolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  
@@ -919,7 +929,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class DeletePolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  
@@ -948,7 +959,8 @@ public class RMEntryVoter extends RMSecurityCommon
 
     private static class UpdatePropertiesPolicy implements Policy
     {
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  
@@ -986,7 +998,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class AssocPolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  
@@ -1010,7 +1023,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class WriteContentPolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  
@@ -1027,7 +1041,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class CapabilityPolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  
@@ -1044,7 +1059,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class DeclarePolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  
@@ -1061,7 +1077,8 @@ public class RMEntryVoter extends RMSecurityCommon
     private static class ReadPropertyPolicy implements Policy
     {
 
-        public int evaluate(
+        @SuppressWarnings("unchecked")
+		public int evaluate(
                 NodeService nodeService,               
                 RecordsManagementService rmService, 
                 CapabilityService capabilityService,  

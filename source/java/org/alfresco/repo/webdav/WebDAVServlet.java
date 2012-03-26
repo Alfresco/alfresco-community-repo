@@ -34,11 +34,13 @@ import javax.transaction.UserTransaction;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.FileFilterMode;
@@ -83,6 +85,8 @@ public class WebDAVServlet extends HttpServlet
     
     // WebDAV helper class
     private WebDAVHelper m_davHelper;
+    private ActivityPoster activityPoster;
+    private TenantService tenantService;
 
     /**
      * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
@@ -212,15 +216,21 @@ public class WebDAVServlet extends HttpServlet
         Class<? extends WebDAVMethod> methodClass = m_davMethods.get(strHttpMethod);
         WebDAVMethod method = null;
 
-        if ( methodClass != null)
+        if (methodClass != null)
         {
             try
             {
-                // Create the handler method
-                
+                // Create the handler method    
                 method = methodClass.newInstance();
                 NodeRef rootNodeRef = m_rootNodes.getNodeForCurrentTenant();
                 method.setDetails(request, response, m_davHelper, rootNodeRef);
+                
+                // A very few WebDAV methods produce activity posts.
+                if (method instanceof ActivityPostProducer)
+                {
+                    ActivityPostProducer activityPostProducer = (ActivityPostProducer) method;
+                    activityPostProducer.setActivityPoster(activityPoster);
+                }
             }
             catch (Exception ex)
             {
@@ -275,16 +285,21 @@ public class WebDAVServlet extends HttpServlet
         m_serviceRegistry = (ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY);
         
         m_transactionService = m_serviceRegistry.getTransactionService();
-        TenantService tenantService = (TenantService) context.getBean("tenantService");
+        tenantService = (TenantService) context.getBean("tenantService");
         AuthenticationService authService = (AuthenticationService) context.getBean("authenticationService");
         NodeService nodeService = (NodeService) context.getBean("NodeService");
         SearchService searchService = (SearchService) context.getBean("SearchService");
         NamespaceService namespaceService = (NamespaceService) context.getBean("NamespaceService");
         LockStoreFactory lockStoreFactory = (LockStoreFactory) context.getBean("webdavLockStoreFactory");
         LockStore lockStore = lockStoreFactory.getLockStore();
+        ActivityService activityService = (ActivityService) context.getBean("activityService");
+        PersonService personService = m_serviceRegistry.getPersonService();
+        
+        // Collaborator used by WebDAV methods to create activity posts.
+        activityPoster = new ActivityPosterImpl(activityService, nodeService, personService);
         
         // Create the WebDAV helper
-        m_davHelper = new WebDAVHelper(m_serviceRegistry, lockStore, authService);
+        m_davHelper = new WebDAVHelper(m_serviceRegistry, lockStore, authService, tenantService);
         
         // Initialize the root node
 

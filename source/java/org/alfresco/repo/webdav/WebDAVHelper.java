@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -81,6 +82,7 @@ public class WebDAVHelper
     private ActionService m_actionService;
     private AuthenticationService m_authService;
     private PermissionService m_permissionService;
+    private TenantService m_tenantService;
     
     //  Empty XML attribute list
     
@@ -89,7 +91,7 @@ public class WebDAVHelper
     /**
      * Class constructor
      */
-    protected WebDAVHelper(ServiceRegistry serviceRegistry, LockStore lockStore, AuthenticationService authService)
+    protected WebDAVHelper(ServiceRegistry serviceRegistry, LockStore lockStore, AuthenticationService authService, TenantService tenantService)
     {
         m_serviceRegistry = serviceRegistry;
         
@@ -102,7 +104,7 @@ public class WebDAVHelper
         m_lockService       = m_serviceRegistry.getLockService();
         m_actionService     = m_serviceRegistry.getActionService();
         m_permissionService = m_serviceRegistry.getPermissionService();
-        
+        m_tenantService     = tenantService;
         m_authService       = authService;
         
         m_lockStore         = lockStore;
@@ -200,6 +202,16 @@ public class WebDAVHelper
     public final PermissionService getPermissionService()
     {
         return m_permissionService;
+    }
+    
+    /**
+     * Retrieve the {@link TenantService} held by the helper.
+     * 
+     * @return TenantService
+     */
+    public TenantService getTenantService()
+    {
+        return m_tenantService;
     }
     
     /**

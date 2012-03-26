@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.webdav.WebDavService;
 import org.springframework.dao.ConcurrencyFailureException;
 
 /**
@@ -40,7 +41,7 @@ import org.springframework.dao.ConcurrencyFailureException;
  * 
  * @author Gavin Cornwell
  */
-public class PutMethod extends WebDAVMethod
+public class PutMethod extends WebDAVMethod implements ActivityPostProducer
 {
     // Request parameters
     private String m_strContentType = null;
@@ -49,6 +50,7 @@ public class PutMethod extends WebDAVMethod
     // Try to delete the node if the PUT fails
     private boolean noContent = false;
     private boolean created = false;
+    private ActivityPoster activityPoster;
     
     /**
      * Default constructor
@@ -264,6 +266,8 @@ public class PutMethod extends WebDAVMethod
             }
             throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
         }
+        
+        postActivity();
     }
     
     /**
@@ -273,8 +277,62 @@ public class PutMethod extends WebDAVMethod
      * 
      * @return true if the content was newly created, false if existing.
      */
-    public boolean isCreated()
+    protected boolean isCreated()
     {
         return created;
+    }
+    
+    /**
+     * Create an activity post.
+     * 
+     * @throws WebDAVServerException 
+     */
+    private void postActivity() throws WebDAVServerException
+    {
+        WebDavService davService = getDAVHelper().getServiceRegistry().getWebDavService();
+        if (!davService.activitiesEnabled())
+        {
+            // Don't post activities if this behaviour is disabled.
+            return;
+        }
+        
+        String path = getPath();
+        String siteId = getSiteId();
+        String tenantDomain = getTenantDomain();
+        
+        if (siteId.equals(DEFAULT_SITE_ID))
+        {
+            // There is not enough information to publish site activity.
+            return;
+        }
+        
+        FileInfo contentNodeInfo = null;
+        try
+        {
+            contentNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), path, getServletPath());
+            NodeRef nodeRef = contentNodeInfo.getNodeRef();
+            // Don't post activity data for hidden files, resource forks etc.
+            if (!getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+            {
+                if (isCreated())
+                {                    
+                    activityPoster.postFileAdded(siteId, tenantDomain, contentNodeInfo);
+                }
+                else
+                {                    
+                    activityPoster.postFileUpdated(siteId, tenantDomain, contentNodeInfo);
+                }
+            }
+        }
+        catch (FileNotFoundException error)
+        {
+            throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }        
+    }
+
+    @Override
+    public void setActivityPoster(ActivityPoster activityPoster)
+    {
+        this.activityPoster = activityPoster;
     }
 }

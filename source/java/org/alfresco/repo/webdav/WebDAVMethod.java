@@ -47,6 +47,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -61,6 +62,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
@@ -83,6 +86,8 @@ import org.xml.sax.SAXException;
  */
 public abstract class WebDAVMethod
 {
+    protected static final String DEFAULT_SITE_ID = "";
+    
     // Log output
 
     protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
@@ -140,6 +145,10 @@ public abstract class WebDAVMethod
     // request scope
     protected Map<NodeRef, NodeRef> m_childToParent = new HashMap<NodeRef, NodeRef>();
     protected Map<NodeRef, LockInfo> m_parentLockInfo = new HashMap<NodeRef, LockInfo>();
+
+    private String siteId;
+
+    private String tenantDomain;
     
     /**
      * Default constructor
@@ -1498,5 +1507,67 @@ public abstract class WebDAVMethod
        }
        
        return sb.toString();
+    }    
+    
+
+    /**
+     * Get the site ID (short-name) that the current request relates to. The site ID
+     * will be {@link DEFAULT_SITE_ID} if not specifically set. 
+     * 
+     * @return The site ID
+     */
+    protected String getSiteId()
+    {
+        if (siteId == null)
+        {
+            siteId = determineSiteId();
+        }
+        return siteId;
+    }
+
+    protected String determineSiteId()
+    {
+        SiteService siteService = m_davHelper.getServiceRegistry().getSiteService();
+        String siteId;
+        try
+        {
+            FileInfo fileInfo = m_davHelper.getNodeForPath(
+                        getRootNodeRef(),
+                        getPath(),
+                        m_request.getServletPath());
+            SiteInfo siteInfo = siteService.getSite(fileInfo.getNodeRef());
+            siteId = siteInfo.getShortName();
+        }
+        catch (FileNotFoundException error)
+        {
+            siteId = DEFAULT_SITE_ID;
+        }
+        return siteId;
+    }
+
+    /**
+     * Get the tenant domain for the current user and request. The tenant domain
+     * will be {@link TenantService#DEFAULT_DOMAIN} if not specifically set.
+     * 
+     * @return The tenant domain.
+     */
+    protected String getTenantDomain()
+    {
+        if (tenantDomain == null)
+        {
+            tenantDomain = determineTenantDomain();
+        }
+        return tenantDomain;
+    }
+
+    protected String determineTenantDomain()
+    {
+        TenantService tenantService = m_davHelper.getTenantService();
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        if (tenantDomain == null)
+        {
+            return TenantService.DEFAULT_DOMAIN;
+        }
+        return tenantDomain;
     }
 }

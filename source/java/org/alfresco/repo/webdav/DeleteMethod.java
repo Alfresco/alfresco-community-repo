@@ -27,14 +27,18 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.webdav.WebDavService;
 
 /**
  * Implements the WebDAV DELETE method
  * 
  * @author gavinc
  */
-public class DeleteMethod extends WebDAVMethod
+public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
 {
+    private ActivityPoster activityPoster;
+    
     /**
      * Default constructor
      */
@@ -100,8 +104,65 @@ public class DeleteMethod extends WebDAVMethod
         // ALF-7079 fix, working copies are not deleted at all
         if (!getNodeService().hasAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY))
         {
-            // delete it
-            fileFolderService.delete(fileInfo.getNodeRef());
+            // As this content will be deleted, we need to extract some info before it's no longer available.
+            String siteId = getSiteId();
+            NodeRef deletedNodeRef = fileInfo.getNodeRef();
+            FileInfo parentFile = getDAVHelper().getParentNodeForPath(getRootNodeRef(), getPath(), getServletPath());
+            boolean hidden = getNodeService().hasAspect(deletedNodeRef, ContentModel.ASPECT_HIDDEN);
+            // Delete it
+            fileFolderService.delete(deletedNodeRef);
+            // Don't post activity data for hidden files, resource forks etc.
+            if (!hidden)
+            {
+                 postActivity(parentFile, fileInfo, siteId);
+            }   
         }
+    }
+
+    
+    /**
+     * Create a deletion activity post.
+     * 
+     * @param parent The FileInfo for the deleted file's parent.
+     * @param deletedFile The FileInfo for the deleted file.
+     * @throws WebDAVServerException 
+     */
+    private void postActivity(FileInfo parent, FileInfo deletedFile, String siteId) throws WebDAVServerException
+    {
+        WebDavService davService = getDAVHelper().getServiceRegistry().getWebDavService();
+        if (!davService.activitiesEnabled())
+        {
+            // Don't post activities if this behaviour is disabled.
+            return;
+        }
+        
+        String tenantDomain = getTenantDomain();
+        
+        // Check there is enough information to publish site activity.
+        if (!siteId.equals(DEFAULT_SITE_ID))
+        {
+            SiteService siteService = getServiceRegistry().getSiteService();
+            NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
+            String parentPath = "/";
+            try
+            {
+                parentPath = getDAVHelper().getPathFromNode(documentLibrary, parent.getNodeRef());        
+            }
+            catch (FileNotFoundException error)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("No " + SiteService.DOCUMENT_LIBRARY + " container found.");
+                }
+            }
+            
+            activityPoster.postFileDeleted(siteId, tenantDomain, parentPath, deletedFile);
+        }  
+    }
+    
+    @Override
+    public void setActivityPoster(ActivityPoster activityPoster)
+    {
+        this.activityPoster = activityPoster;
     }
 }

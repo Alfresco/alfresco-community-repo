@@ -1520,27 +1520,7 @@ public abstract class WebDAVMethod
     {
         if (siteId == null)
         {
-            siteId = determineSiteId();
-        }
-        return siteId;
-    }
-
-    protected String determineSiteId()
-    {
-        SiteService siteService = m_davHelper.getServiceRegistry().getSiteService();
-        String siteId;
-        try
-        {
-            FileInfo fileInfo = m_davHelper.getNodeForPath(
-                        getRootNodeRef(),
-                        getPath(),
-                        m_request.getServletPath());
-            SiteInfo siteInfo = siteService.getSite(fileInfo.getNodeRef());
-            siteId = siteInfo.getShortName();
-        }
-        catch (FileNotFoundException error)
-        {
-            siteId = DEFAULT_SITE_ID;
+            siteId = getDAVHelper().determineSiteId(this);
         }
         return siteId;
     }
@@ -1555,18 +1535,7 @@ public abstract class WebDAVMethod
     {
         if (tenantDomain == null)
         {
-            tenantDomain = determineTenantDomain();
-        }
-        return tenantDomain;
-    }
-
-    protected String determineTenantDomain()
-    {
-        TenantService tenantService = m_davHelper.getTenantService();
-        String tenantDomain = tenantService.getCurrentUserDomain();
-        if (tenantDomain == null)
-        {
-            return TenantService.DEFAULT_DOMAIN;
+            tenantDomain = getDAVHelper().determineTenantDomain(this);
         }
         return tenantDomain;
     }

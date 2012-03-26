@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
@@ -41,6 +43,8 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
@@ -63,6 +67,7 @@ public class WebDAVHelper
     // Path seperator
     public static final String PathSeperator   = "/";
     public static final char PathSeperatorChar = '/';
+    private static final String DEFAULT_SITE_ID = null;
     
     // Logging
     private static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
@@ -644,5 +649,33 @@ public class WebDAVHelper
         {
             return sb.toString();
         }
+    }
+    
+    public String determineSiteId(WebDAVMethod method)
+    {
+        SiteService siteService = getServiceRegistry().getSiteService();
+        String siteId;
+        try
+        {
+            FileInfo fileInfo = getNodeForPath(method.getRootNodeRef(), method.getPath(), method.getServletPath());
+            SiteInfo siteInfo = siteService.getSite(fileInfo.getNodeRef());
+            siteId = siteInfo.getShortName();
+        }
+        catch (FileNotFoundException error)
+        {
+            siteId = DEFAULT_SITE_ID;
+        }
+        return siteId;
+    }
+    
+    public String determineTenantDomain(WebDAVMethod method)
+    {
+        TenantService tenantService = getTenantService();
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        if (tenantDomain == null)
+        {
+            return TenantService.DEFAULT_DOMAIN;
+        }
+        return tenantDomain;
     }
 }

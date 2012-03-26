@@ -46,18 +46,16 @@ import org.springframework.extensions.surf.util.URLEncoder;
  */
 public class WebDavServiceImpl implements WebDavService
 {
-    public static final String WEBDAV_PREFIX = "webdav"; 
-    
+    public static final String WEBDAV_PREFIX = "webdav";    
     private static Log logger = LogFactory.getLog(WebDavServiceImpl.class);
-    
     private boolean enabled = false;
-    
     private NodeService nodeService;
     private DictionaryService dictionaryService;
-    private FileFolderService fileFolderService;
-  
+    private FileFolderService fileFolderService;  
     // Root nodes
     private MTNodesCache2 rootNode;
+    private boolean activitiesEnabled;
+
     
     
     /**
@@ -185,5 +183,16 @@ public class WebDavServiceImpl implements WebDavService
     public MTNodesCache2 getRootNode()
     {
         return rootNode;
-    }  
+    }
+
+    @Override
+    public boolean activitiesEnabled()
+    {
+        return activitiesEnabled;
+    }
+    
+    public void setActivitiesEnabled(boolean enabled)
+    {
+        activitiesEnabled = enabled;
+    }
 }

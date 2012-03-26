@@ -28,5 +28,13 @@ public interface WebDavService
      * @return the URL of the node in webdav or "" if a URL cannot be built.
      */
     public String getWebdavUrl(NodeRef nodeRef);
-
+    
+    /**
+     * Determines whether activity post generation is enabled for WebDAV. When enabled,
+     * file creation, modification and deletion will create activities that can be viewed
+     * in the Share web client.
+     * 
+     * @return true if activity generation is enabled.
+     */
+    public boolean activitiesEnabled();
 }

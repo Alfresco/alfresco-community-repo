@@ -26,11 +26,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -123,6 +126,23 @@ public class TemporaryNodes extends ExternalResource
      */
     public NodeRef createNode(final NodeRef parentNode, final String nodeCmName, final QName nodeType, final String nodeCreator)
     {
+        return this.createNodeWithTextContent(parentNode, nodeCmName, nodeType, nodeCreator, null);
+    }
+    
+    /**
+     * This method creates a NodeRef with some text/plain, UTF-8 content and adds it to the internal list of NodeRefs to be tidied up by the rule.
+     * This method will be run in its own transaction and will be run with the specified user as the fully authenticated user,
+     * thus ensuring the named user is the cm:creator of the new node.
+     * 
+     * @param parentNode the parent node
+     * @param nodeCmName the cm:name of the new node
+     * @param nodeType   the type of the new node
+     * @param nodeCreator the username of the person who will create the node
+     * @param textContent the text/plain, UTF-8 content that will be stored in the node's content. <code>null</code> content will not be written.
+     * @return the newly created NodeRef.
+     */
+    public NodeRef createNodeWithTextContent(final NodeRef parentNode, final String nodeCmName, final QName nodeType, final String nodeCreator, final String textContent)
+    {
         final RetryingTransactionHelper transactionHelper = (RetryingTransactionHelper) appContextRule.getApplicationContext().getBean("retryingTransactionHelper");
         
         AuthenticationUtil.pushAuthentication();
@@ -142,6 +162,16 @@ public class TemporaryNodes extends ExternalResource
                             childName,
                             nodeType,
                             props);
+                
+                // If there is any content, add it.
+                if (textContent != null)
+                {
+                    ContentService contentService = appContextRule.getApplicationContext().getBean("contentService", ContentService.class);
+                    ContentWriter writer = contentService.getWriter(childAssoc.getChildRef(), ContentModel.PROP_CONTENT, true);
+                    writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                    writer.setEncoding("UTF-8");
+                    writer.putContent(textContent);
+                }
                 return childAssoc.getChildRef();
             }
         });

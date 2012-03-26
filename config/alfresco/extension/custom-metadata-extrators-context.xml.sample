@@ -24,6 +24,7 @@
 
     <!-- While this one adds it for the Tika Auto-Detect extractor -->
    <bean id="extracter.TikaAuto" class="org.alfresco.repo.content.metadata.TikaAutoMetadataExtracter" parent="baseMetadataExtracter">
+        <constructor-arg><ref bean="tikaConfig"/></constructor-arg>
         <property name="inheritDefaultMapping">
             <value>true</value>
         </property>

@@ -735,7 +735,7 @@ public abstract class WebDAVMethod
      * 
      * @return String
      */
-    protected String getPath()
+    public String getPath()
     {
         return m_strPath;
     }

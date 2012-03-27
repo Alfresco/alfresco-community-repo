@@ -51,6 +51,8 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
     private boolean noContent = false;
     private boolean created = false;
     private ActivityPoster activityPoster;
+    private FileInfo contentNodeInfo;
+    private long fileSize;
     
     /**
      * Default constructor
@@ -151,7 +153,6 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         FileFolderService fileFolderService = getFileFolderService();
 
         // Get the status for the request path
-        FileInfo contentNodeInfo = null;
         try
         {
             contentNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
@@ -250,6 +251,9 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                 }
             }
 
+            // Record the uploaded file's size
+            fileSize = writer.getSize();
+            
             // Set the response status, depending if the node existed or not
             m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);
         }
@@ -302,7 +306,27 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
      */
     public String getContentType()
     {
-        return this.m_strContentType;
+        return m_strContentType;
+    }
+
+    /**
+     * The FileInfo for the uploaded file, or null if not yet uploaded.
+     * 
+     * @return FileInfo
+     */
+    public FileInfo getContentNodeInfo()
+    {
+        return contentNodeInfo;
+    }
+
+    /**
+     * Returns the size of the uploaded file, zero if not yet uploaded.
+     * 
+     * @return the fileSize
+     */
+    public long getFileSize()
+    {
+        return fileSize;
     }
 
     /**

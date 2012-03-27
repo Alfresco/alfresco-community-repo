@@ -19,6 +19,7 @@
  */
 package org.alfresco.util.test.junitrules;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -77,6 +78,34 @@ public class ApplicationContextInit extends ExternalResource
     public ApplicationContextInit(String... configLocations)
     {
         this.configLocations = configLocations;
+    }
+    
+    /**
+     * This factory method constructs a JUnit rule which will bring up an ApplicationContext consisting
+     * of the default Alfresco context with any additionConfigLocations appended. It is a convenient way to specify
+     * override contexts in test code.
+     * 
+     * @param additionalConfigLocations addition config locations containing additional or overriding beans.
+     */
+    public static ApplicationContextInit createStandardContextWithOverrides(String... additionalConfigLocations)
+    {
+        List<String> contexts = new ArrayList<String>();
+        
+        // The defaults (currently only one)
+        for (String defaultConfigLocation: ApplicationContextHelper.CONFIG_LOCATIONS)
+        {
+            contexts.add(defaultConfigLocation);
+        }
+        
+        // any user supplied extras
+        for (String additionalContext : additionalConfigLocations)
+        {
+            contexts.add(additionalContext);
+        }
+        
+        String[] contextsAsArray = contexts.toArray(new String[0]);
+        
+        return new ApplicationContextInit(contextsAsArray);
     }
     
     @Override protected void before() throws Throwable

@@ -237,7 +237,18 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                getActionService().executeAction(extract, contentNodeInfo.getNodeRef());
             }
 
-    
+            // If the mime-type determined by the repository is different
+            // from the original specified in the request, update it.
+            if (!m_strContentType.equals(writer.getMimetype()))
+            {
+                String oldMimeType = m_strContentType;
+                m_strContentType = writer.getMimetype();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Mimetype originally specified as " + oldMimeType +
+                                ", now guessed to be " + m_strContentType);
+                }
+            }
 
             // Set the response status, depending if the node existed or not
             m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);
@@ -282,6 +293,18 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         return created;
     }
     
+    /**
+     * Retrieve the mimetype of the content sent for the PUT request. The initial
+     * value specified in the request may be updated after the file contents have
+     * been uploaded if the repository has determined a different mimetype for the content.
+     * 
+     * @return content-type
+     */
+    public String getContentType()
+    {
+        return this.m_strContentType;
+    }
+
     /**
      * Create an activity post.
      * 

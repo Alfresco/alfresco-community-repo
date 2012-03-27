@@ -22,9 +22,9 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
 
 /**
  * Property map helper class.  
@@ -100,5 +100,113 @@ public class PropertyMap extends HashMap<QName, Serializable>
         
         // Done
         return new Pair<Map<QName, Serializable>, Map<QName, Serializable>>(beforeDelta, afterDelta);
+    }
+    
+    /**
+     * Utility method to get properties which were added as part of a change.
+     * 
+     * @param before the properties before (may be <code>null</code>).
+     * @param after  the properties after (may be <code>null</code>).
+     * @return       a map of values that were added along with their new values.
+     * 
+     * @since Odin
+     */
+    public static Map<QName, Serializable> getAddedProperties(Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        Map<QName, Serializable> result = new HashMap<QName, Serializable>();
+        
+        if (before != null && after != null)
+        {
+            result.putAll(after);
+            result.keySet().removeAll(before.keySet());
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Utility method to get properties which were removed as part of a change.
+     * 
+     * @param before the properties before (may be <code>null</code>).
+     * @param after  the properties after (may be <code>null</code>).
+     * @return       a map of values that were removed along with their old values.
+     * 
+     * @since Odin
+     */
+    public static Map<QName, Serializable> getRemovedProperties(Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        Map<QName, Serializable> result = new HashMap<QName, Serializable>();
+        
+        if (before != null && after != null)
+        {
+            result.putAll(before);
+            result.keySet().removeAll(after.keySet());
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Utility method to get properties which were changed (but not added or removed) as part of a change.
+     * 
+     * @param before the properties before (may be <code>null</code>).
+     * @param after  the properties after (may be <code>null</code>).
+     * @return       a map of values that were changed along with their new values.
+     * 
+     * @since Odin
+     */
+    public static Map<QName, Serializable> getChangedProperties(Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        Map<QName, Serializable> result = new HashMap<QName, Serializable>();
+        
+        if (before != null && after != null)
+        {
+            Map<QName, Serializable> intersection = new HashMap<QName, Serializable>();
+            
+            intersection.putAll(after);
+            intersection.keySet().retainAll(before.keySet());
+            
+            for (Entry<QName, Serializable> entry : intersection.entrySet())
+            {
+                if ( ! EqualsHelper.nullSafeEquals(before.get(entry.getKey()), after.get(entry.getKey())))
+                {
+                    result.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Utility method to get properties which were unchanged as part of a change.
+     * 
+     * @param before the properties before (may be <code>null</code>).
+     * @param after  the properties after (may be <code>null</code>).
+     * @return       a map of values that were unchanged along with their values.
+     * 
+     * @since Odin
+     */
+    public static Map<QName, Serializable> getUnchangedProperties(Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        Map<QName, Serializable> result = new HashMap<QName, Serializable>();
+        
+        if (before != null && after != null)
+        {
+            Map<QName, Serializable> intersection = new HashMap<QName, Serializable>();
+            
+            intersection.putAll(before);
+            intersection.keySet().retainAll(after.keySet());
+            
+            for (Entry<QName, Serializable> entry : intersection.entrySet())
+            {
+                if ( EqualsHelper.nullSafeEquals(before.get(entry.getKey()), after.get(entry.getKey())))
+                {
+                    result.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        
+        return result;
     }
 }

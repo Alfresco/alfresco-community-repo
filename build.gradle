@@ -1,101 +1,211 @@
-class AMPTask extends DefaultTask {
+buildscript {
 
-    def String dist = 'build/dist'
-	def String amp = null
-	def String module = null
-	def String jar = null
-	def String config = 'config'
-	def String web = 'source/web'
-	
-	@TaskAction
-	def assembleAMP() {
-	
-		// assemble the AMP file
-		ant.zip(destfile: dist + '/' + amp, update: 'true') {			
-		
-			ant.zipfileset(file: module + '/module.properties')
-			ant.zipfileset(file: module + '/file-mapping.properties')
-			
-			if (jar != null) {
-				ant.zipfileset(file: jar, prefix: 'lib')
-			}
-			
-			if (config != null) {
-				ant.zipfileset(dir: config, prefix: 'config') {
-					ant.exclude(name: '**/module.properties')
-					ant.exclude(name: '**/file-mapping.properties')
-				}
-			}
-			
-			if (web != null) {			
-				ant.zipfileset(file: web, prefix: 'web')
-			}
+	repositories {
+		add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+			name = 'GitHub'
+			addArtifactPattern 'http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]'
+		}	
+		flatDir {
+			dirs 'mmt'
 		}	
 	}
+
+	dependencies {
+		classpath 'bmuschko:gradle-tomcat-plugin:0.9.1'
+		classpath fileTree(dir: 'mmt', include: '*.jar')  
+	}
 }
+
+/** Wrapper task */
+task wrapper(type: Wrapper) {
+	gradleVersion = '0.9'
+}
+
+/** Subproject configuration */
 
 subprojects {
 
 	apply plugin: 'java'	
 	apply plugin: 'eclipse'
+	apply plugin: 'tomcat'
 	
+	sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+	
+	task dependantWar		
+	explodedDepsDir = 'explodedDeps'	
+	dependantWar.explodedDir = file(explodedDepsDir)
+	dependantWar.explodedLibDir = file("${explodedDepsDir}/lib")
+	dependantWar.explodedConfigDir = file("${explodedDepsDir}/config")
+		
 	sourceSets {
 		main {
 			java {
-				srcDir sourceJavaDir
+				srcDir 'source/java'
 			}
 		}
 	}
 
 	repositories { 
 		flatDir {
-			dirs libsDir
+			dirs dependantWar.explodedLibDir
 		}
+		mavenCentral()
 	}
-
+	
 	dependencies {		     		
-		compile fileTree(dir: 'war/WEB-INF/lib', include: '*.jar')     	
-	}
-	
-	compileJava.doFirst {
-		if (file('war/WEB-INF').exists() == false) {
-			tasks.expandWar.execute()
-		}
-	}
-	
-	task cleanWar << {
-		ant.delete {
-			ant.fileset(dir: 'war', excludes: '*.war')
-		}
-	}
-	
-	task refreshWar (dependsOn: ['cleanWar', 'expandWar'])
-	
-	task expandWar << {	
 		
-		if (file(warFile).exists()) {
-		
-			println 'Expanding ' + warFileName + ' WAR'
-			ant.unzip(src: warFile, dest: 'war') 
-		} 
-		else {
-		
-			println 'The ' + warFile + ' was not found.'
-		}
+		providedCompile fileTree(dir: dependantWar.explodedLibDir, include: '*.jar')     	
+	
+		def tomcatVersion = '6.0.29'
+		tomcat "org.apache.tomcat:catalina:${tomcatVersion}",
+    	       "org.apache.tomcat:coyote:${tomcatVersion}",
+               "org.apache.tomcat:jasper:${tomcatVersion}",
+			   'postgresql:postgresql:9.0-801.jdbc4'  	
 	}	
 	
-	task amp(type: AMPTask)
+	/* --- Compile tasks */
 	
-	amp.doFirst {	
-		// ensure the dist directory exists
-		def distDir = file(dist)
-		if (distDir.exists() == false) {
-			distDir.mkdir()
+	compileJava.doFirst {
+		explodeDeps.execute()
+	}
+	
+	/* --- Dependancy tasks --- */
+	
+	task explodeDeps << {
+	
+		if (dependantWar.warFile.exists() == true) {
+			
+			println "${dependantWar.warName} was found.  Checking dependancies ..."
+			
+			if (dependantWar.explodedDir.exists() == false) {
+				println(" ... creating destination dir ${dependantWar.explodedDir}")
+				dependantWar.explodedDir.mkdir()
+			}
+			
+			if (isUnpacked(dependantWar.explodedLibDir) == false) {
+			
+				println(" ... unpacking libs into ${dependantWar.explodedLibDir}")
+				
+				ant.unzip(src: dependantWar.warFile, dest: dependantWar.explodedLibDir) {
+					ant.patternset {
+						ant.include(name: 'WEB-INF/lib/*.jar')
+					}
+					ant.mapper(type: 'flatten')
+				}
+			}
+			
+			if (isUnpacked(dependantWar.explodedConfigDir) == false) {
+			
+				println(" ... unpacking config into ${dependantWar.explodedConfigDir}")
+				
+				ant.unzip(src: dependantWar.warFile, dest: dependantWar.explodedDir) {
+					ant.patternset {
+						ant.include(name: 'WEB-INF/classes/**/*')
+					}
+				}
+				
+				copy {
+					from "${dependantWar.explodedDir}/WEB-INF/classes"
+					into dependantWar.explodedConfigDir
+				}
+				
+				// TODO understand why this doesn't delete the folder as expected
+				ant.delete(includeEmptyDirs: 'true') {
+					ant.fileset(dir: "${dependantWar.explodedDir}/WEB-INF", includes: '**/*')			
+				}
+			}
+		}
+		else {			
+			println "Dependant WAR file ${dependantWar.warName} can not be found.  Please place it in ${dependantWar.warFile.getPath()} to continue."
+		}		
+	}
+	
+	task cleanDeps << {
+		ant.delete(includeEmptyDirs: 'true') {
+			ant.fileset(dir: dependantWar.explodedDir, includes: '**/*')
+		}
+	}		
+	
+	/** --- AMP tasks --- */
+	
+	task copyWar(type: Copy)
+	
+	task amp(dependsOn: 'jar') << {
+	
+		// TODO set the inputs and outputs
+	
+		// assemble the AMP file
+		ant.zip(destfile: dist + '/' + amp, update: 'true') {			
+		
+			ant.zipfileset(file: module + '/' + moduleProperties)
+			ant.zipfileset(file: module + '/' + fileMapping)
+			
+			if (jar != null) {
+				ant.zipfileset(file: jar, prefix: jarDest)
+			}
+			
+			if (config != null) {
+				ant.zipfileset(dir: config, prefix: configDest) {
+					ant.exclude(name: '**/' + moduleProperties)
+					ant.exclude(name: '**/' + fileMapping)
+				}
+			}
+			
+			if (web != null) {			
+				ant.zipfileset(dir: web, prefix: webDest)
+			}
+		}	
+	}
+	
+	amp.dist = 'build/dist'
+	amp.config = 'config'
+	amp.moduleProperties = 'module.properties'
+	amp.fileMapping = 'file-mapping.properties'
+	amp.jarDest = 'lib'
+	amp.configDest = 'config'
+	amp.webDest = 'web'
+	amp.web = null
+	
+	task installAmp(dependsOn: ['amp', 'copyWar']) << {
+		mmt = new org.alfresco.repo.module.tool.ModuleManagementTool()
+		mmt.setVerbose(true)		
+		mmt.installModule(ampFileLocation.getPath(), warFileLocation.getPath(), false, true, false)
+	}
+	
+	/** --- WAR/Tomcat configuration --- */
+	
+	war.doFirst {
+		throw new StopExecutionException();
+	}
+	
+	war.destinationDir = file('build/tomcat')
+	
+	task prepTomcat << {
+		
+		copy {
+			from zipTree("build/dist/${warName}")
+			into 'build/tomcat'
+		}
+		if (warName.equals('alfresco.war') == true) {
+			copy {
+				from 'data/dev-context.xml'
+				into 'build/tomcat/WEB-INF/classes/alfresco/extension'
+			}
 		}
 	}
-
-	assemble.doLast {
-		tasks.amp.execute()
-	}
 	
+	tomcatRun.dependsOn prepTomcat	
+	tomcatRun.webAppSourceDirectory = file('build/tomcat')
+	tomcatRun.uriroot = 'build/tomcat'
+}
+
+/** Utility function - indicates wether the provided dir is unpacked (ie exists and has some contents) */
+Boolean isUnpacked(dir) {
+	if (dir.exists() == true && dir.list().length > 0) {
+		return true
+	}
+	else {
+		return false
+	}
 }

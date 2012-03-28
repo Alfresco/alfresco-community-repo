@@ -1,19 +1,30 @@
-
-repositories { 
-	mavenCentral()  
-}
-
 dependencies {
-	compile fileTree(dir: 'libs', include: '*.jar')
-	compile 'javax.servlet:servlet-api:2.5'		
-	compile 'org.springframework:spring-test:2.5'            
+
+	providedCompile fileTree(dir: 'libs', include: '*.jar')
+	providedCompile 'javax.servlet:servlet-api:2.5'		
+	providedCompile 'org.springframework:spring-test:2.5'  		
 }
 
-amp {
-	amp 'rm-server.amp'
-	module 'config/alfresco/module/org_alfresco_module_rm'
-	jar 'build/libs/rm-server.jar'
+tomcatRun.httpPort = 8080
+tomcatRun.stopPort = 8085
+prepTomcat.warName = 'alfresco.war'
+war.baseName = 'alfresco'
+
+jar.baseName = JAR_NAME
+
+dependantWar.warName = 'alfresco.war'
+dependantWar.warFile = file('alfresco.war')
+
+amp.amp = AMP_NAME
+amp.module = 'config/alfresco/module/org_alfresco_module_rm'
+amp.jar = "build/libs/${JAR_NAME}.jar"
+
+installAmp.ampFileLocation = file('build/dist/' + AMP_NAME)
+installAmp.warFileLocation = file('build/dist/alfresco.war')
+
+copyWar {
+	from 'alfresco.war'
+	into 'build/dist'
 }
-	
 
 	

@@ -86,8 +86,6 @@ import org.xml.sax.SAXException;
  */
 public abstract class WebDAVMethod
 {
-    protected static final String DEFAULT_SITE_ID = "";
-    
     // Log output
 
     protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");

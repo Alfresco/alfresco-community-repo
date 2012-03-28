@@ -139,7 +139,7 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
         String tenantDomain = getTenantDomain();
         
         // Check there is enough information to publish site activity.
-        if (!siteId.equals(DEFAULT_SITE_ID))
+        if (!siteId.equals(WebDAVHelper.EMPTY_SITE_ID))
         {
             SiteService siteService = getServiceRegistry().getSiteService();
             NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);

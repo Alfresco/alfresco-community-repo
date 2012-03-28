@@ -240,7 +240,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
 
             // If the mime-type determined by the repository is different
             // from the original specified in the request, update it.
-            if (!m_strContentType.equals(writer.getMimetype()))
+            if (m_strContentType == null || !m_strContentType.equals(writer.getMimetype()))
             {
                 String oldMimeType = m_strContentType;
                 m_strContentType = writer.getMimetype();
@@ -347,7 +347,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         String siteId = getSiteId();
         String tenantDomain = getTenantDomain();
         
-        if (siteId.equals(DEFAULT_SITE_ID))
+        if (siteId.equals(WebDAVHelper.EMPTY_SITE_ID))
         {
             // There is not enough information to publish site activity.
             return;

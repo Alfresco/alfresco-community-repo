@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
@@ -67,7 +65,7 @@ public class WebDAVHelper
     // Path seperator
     public static final String PathSeperator   = "/";
     public static final char PathSeperatorChar = '/';
-    private static final String DEFAULT_SITE_ID = null;
+    public static final String EMPTY_SITE_ID = "";
     
     // Logging
     private static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
@@ -659,11 +657,18 @@ public class WebDAVHelper
         {
             FileInfo fileInfo = getNodeForPath(method.getRootNodeRef(), method.getPath(), method.getServletPath());
             SiteInfo siteInfo = siteService.getSite(fileInfo.getNodeRef());
-            siteId = siteInfo.getShortName();
+            if (siteInfo != null)
+            {
+                siteId = siteInfo.getShortName();
+            }
+            else
+            {
+                throw new RuntimeException("Node is not contained by a site: " + method.getPath());                
+            }
         }
-        catch (FileNotFoundException error)
+        catch (Exception error)
         {
-            siteId = DEFAULT_SITE_ID;
+            siteId = EMPTY_SITE_ID;
         }
         return siteId;
     }

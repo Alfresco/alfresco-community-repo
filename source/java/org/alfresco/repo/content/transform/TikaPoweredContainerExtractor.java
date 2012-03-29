@@ -45,7 +45,7 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.config.TikaConfig;
-import org.apache.tika.detect.ContainerAwareDetector;
+import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedResourceHandler;
@@ -113,9 +113,7 @@ public class TikaPoweredContainerExtractor
         this.config = tikaConfig;
         
         // Setup the detector and parser
-        detector = new ContainerAwareDetector(
-                config.getMimeRepository()
-        );
+        detector = new DefaultDetector(config.getMimeRepository());
         parser = new AutoDetectParser(detector);
     }
 

@@ -115,7 +115,7 @@ subprojects {
 			}
 		}
 		else {			
-			println "Dependant WAR file ${warName} can not be found.  Please place it in ${warFile.getPath()} to continue."
+			println "Dependant WAR file ${warFile} can not be found.  Please place it in ${warFileObj.getPath()} to continue."
 		}		
 	}
 		

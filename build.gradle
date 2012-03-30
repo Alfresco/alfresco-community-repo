@@ -32,6 +32,7 @@ subprojects {
 	baseName = "${groupid}-${appName}-${version}"
 	jarFile = "${baseName}.jar"
 	ampFile = "${baseName}.amp"
+	tomcatRoot = System.getenv(tomcatEnv)
 		
 	sourceSets {
 		main {
@@ -187,7 +188,6 @@ subprojects {
 	
 	task deployAmp(dependsOn: ['cleanDeploy', 'installAmp']) << {
 	
-		println tomcatRoot
 		tomcatRootDir = new File(tomcatRoot)
 		if (tomcatRootDir.exists() == true) {
 			

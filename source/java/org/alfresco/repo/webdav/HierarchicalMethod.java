@@ -75,62 +75,22 @@ public abstract class HierarchicalMethod extends WebDAVMethod
     {
         // Get the destination path for the copy
 
-        String strDestination = m_request.getHeader(WebDAV.HEADER_DESTINATION);
+        String destURL = m_request.getHeader(WebDAV.HEADER_DESTINATION);
 
         if (logger.isDebugEnabled())
-            logger.debug("Parsing Destination header: " + strDestination);
+            logger.debug("Parsing Destination header: " + destURL);
 
-        if (strDestination != null && strDestination.length() > 0)
-        {
-            int offset = -1;
-
-            if (strDestination.startsWith("http://"))
-            {
-                // Check that the URL is on this server and refers to the WebDAV
-                // path, if not then return an error
-
-                checkDestinationPath(strDestination);
-
-                // Set the offset to the start of the
-
-                offset = 7;
-            }
-            else if (strDestination.startsWith("https://"))
-            {
-                // Check that the URL is on this server and refers to the WebDAV
-                // path, if not then return an error
-
-                checkDestinationPath(strDestination);
-
-                // Set the offset to the start of the
-
-                offset = 8;
-            }
-
-            // Strip the start of the path if not a relative path
-
-            if (offset != -1)
-            {
-                offset = strDestination.indexOf(WebDAV.PathSeperator, offset);
-                if (offset != -1)
-                {
-                    String strPath = strDestination.substring(offset);
-                    String servletPath = m_request.getServletPath();
-
-                    offset = strPath.indexOf(servletPath);
-                    if (offset != -1)
-                        strPath = strPath.substring(offset + servletPath.length());
-
-                    m_strDestinationPath = WebDAV.decodeURL(strPath);
-                }
-            }
-        }
-
+        // Check that the URL is on this server and refers to the WebDAV
+        // path, if not then return an error
+        getDAVHelper().checkDestinationURL(m_request, destURL);
+        
+        m_strDestinationPath = getDAVHelper().getDestinationPath(getServletPath(), destURL);
+        
         // Failed to fix the destination path, return an error
 
         if (m_strDestinationPath == null)
         {
-            logger.warn("Failed to parse the Destination header: " + strDestination);
+            logger.warn("Failed to parse the Destination header: " + destURL);
             throw new WebDAVServerException(HttpServletResponse.SC_BAD_REQUEST);
         }
 
@@ -154,113 +114,5 @@ public abstract class HierarchicalMethod extends WebDAVMethod
         // happen
         // to the properties when they are moved or copied, however, this
         // feature is not implemented by many servers, including ours!!
-    }
-
-    /**
-     * Check that the destination path is on this server and is a valid WebDAV
-     * path for this server
-     * 
-     * @param path String
-     * @exception WebDAVServerException
-     */
-    protected final void checkDestinationPath(String path) throws WebDAVServerException
-    {
-        try
-        {
-            // Parse the URL
-
-            URL url = new URL(path);
-
-            // Check if the path is on this WebDAV server
-
-            boolean localPath = true;
-
-            if (url.getPort() != -1 && url.getPort() != m_request.getServerPort())
-            {
-                // Debug
-
-                if (logger.isDebugEnabled())
-                    logger.debug("Destination path, different server port");
-
-                localPath = false;
-            }
-            else if (url.getHost().equalsIgnoreCase( m_request.getServerName()) == false
-                    && url.getHost().equals(m_request.getLocalAddr()) == false)
-            {
-            	// The target host may contain a domain or be specified as a numeric IP address
-            	
-            	String targetHost = url.getHost();
-            	
-            	if ( IPAddress.isNumericAddress( targetHost) == false)
-            	{
-	            	String localHost  = m_request.getServerName();
-	            	
-	            	int pos = targetHost.indexOf( ".");
-	            	if ( pos != -1)
-	            		targetHost = targetHost.substring( 0, pos);
-	            	
-	            	pos = localHost.indexOf( ".");
-	            	if ( pos != -1)
-	            		localHost = localHost.substring( 0, pos);
-	            	
-	            	// compare the host names
-	            	
-	            	if ( targetHost.equalsIgnoreCase( localHost) == false)
-	            		localPath = false;
-            	}
-            	else
-            	{
-            		try
-            		{
-	            		// Check if the target IP address is a local address
-	            		
-            			InetAddress targetAddr = InetAddress.getByName( targetHost);
-            			if ( NetworkInterface.getByInetAddress( targetAddr) == null)
-            				localPath = false;
-            		}
-            		catch (Exception ex)
-            		{
-            			// DEBUG
-            			
-            			if ( logger.isDebugEnabled())
-            				logger.debug("Failed to check target IP address, " + targetHost);
-            			
-            			localPath = false;
-            		}
-            	}
-            	
-                // Debug
-
-                if (localPath == false && logger.isDebugEnabled())
-                {
-                    logger.debug("Destination path, different server name/address");
-                    logger.debug("  URL host=" + url.getHost() + ", ServerName=" + m_request.getServerName() + ", localAddr=" + m_request.getLocalAddr());
-                }
-            }
-            else if (url.getPath().indexOf(m_request.getServletPath()) == -1)
-            {
-                // Debug
-
-                if (logger.isDebugEnabled())
-                    logger.debug("Destination path, different serlet path");
-
-                localPath = false;
-            }
-
-            // If the URL does not refer to this WebDAV server throw an
-            // exception
-
-            if (localPath != true)
-                throw new WebDAVServerException(HttpServletResponse.SC_BAD_GATEWAY);
-        }
-        catch (MalformedURLException ex)
-        {
-            // Debug
-
-            if (logger.isDebugEnabled())
-                logger.debug("Bad destination path, " + path);
-
-            throw new WebDAVServerException(HttpServletResponse.SC_BAD_GATEWAY);
-        }
     }
 }

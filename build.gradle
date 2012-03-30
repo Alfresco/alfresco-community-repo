@@ -115,7 +115,8 @@ subprojects {
 			}
 		}
 		else {			
-			println "Dependant WAR file ${warFile} can not be found.  Please place it in ${warFileObj.getPath()} to continue."
+			logger.error "Dependant WAR file ${warFile} can not be found.  Please place it in ${warFileObj.getPath()} to continue."
+			throw new TaskInstantiationException("Dependant WAR file ${warFile} can not be found.  Please place it in ${warFileObj.getPath()} to continue.")
 		}		
 	}
 		

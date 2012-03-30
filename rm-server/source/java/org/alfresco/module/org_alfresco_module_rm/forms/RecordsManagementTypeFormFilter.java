@@ -125,16 +125,19 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
         ParameterCheck.mandatory("form", form);
                 
         Map<QName, PropertyDefinition> customProps = rmAdminService.getCustomPropertyDefinitions(customisableType);
-
-        if (logger.isDebugEnabled() == true)
+        
+        if (customProps != null)
         {
-            logger.debug("Found " + customProps.size() + " custom properties for customisable type " + customisableType);
+	        if (logger.isDebugEnabled() == true)
+	        {
+	            logger.debug("Found " + customProps.size() + " custom properties for customisable type " + customisableType);
+	        }
+	
+	        // setup field definition for each custom property
+	        Collection<PropertyDefinition> properties = customProps.values();
+	        List<Field> fields = FieldUtils.makePropertyFields(properties, CUSTOM_RM_FIELD_GROUP, namespaceService);
+	        form.addFields(fields);
         }
-
-        // setup field definition for each custom property
-        Collection<PropertyDefinition> properties = customProps.values();
-        List<Field> fields = FieldUtils.makePropertyFields(properties, CUSTOM_RM_FIELD_GROUP, namespaceService);
-        form.addFields(fields);
     }
 
     /*

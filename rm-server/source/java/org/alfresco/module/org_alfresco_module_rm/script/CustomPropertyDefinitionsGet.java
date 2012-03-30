@@ -96,9 +96,12 @@ public class CustomPropertyDefinitionsGet extends BaseCustomPropertyWebScript
         {
         	QName customisableType = mapToTypeQName(elementName);
             Map<QName, PropertyDefinition> currentCustomProps = rmAdminService.getCustomPropertyDefinitions(customisableType);
-            for (Entry<QName, PropertyDefinition> entry : currentCustomProps.entrySet())
+            if (currentCustomProps != null)
             {
-                propData.add(entry.getValue());
+	            for (Entry<QName, PropertyDefinition> entry : currentCustomProps.entrySet())
+	            {
+	                propData.add(entry.getValue());
+	            }
             }
         }
         else

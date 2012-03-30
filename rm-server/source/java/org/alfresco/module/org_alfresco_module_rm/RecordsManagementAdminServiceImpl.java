@@ -630,7 +630,11 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     	Map<QName, PropertyDefinition> result = new HashMap<QName, PropertyDefinition>();
     	for (QName customisableType : getCustomisable()) 
     	{
-    		result.putAll(getCustomPropertyDefinitions(customisableType));
+    		Map<QName, PropertyDefinition> props = getCustomPropertyDefinitions(customisableType);
+    		if (props != null)
+    		{
+    			result.putAll(props);
+    		}
 		}
         return result;
     }
@@ -640,9 +644,13 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
      */
     public Map<QName, PropertyDefinition> getCustomPropertyDefinitions(QName customisableType)
     {
+    	Map<QName, PropertyDefinition> propDefns = null;
 		QName relevantAspectQName = getCustomAspect(customisableType);
         AspectDefinition aspectDefn = dictionaryService.getAspect(relevantAspectQName);
-        Map<QName, PropertyDefinition> propDefns = aspectDefn.getProperties();
+        if (aspectDefn != null)
+        {
+        	propDefns = aspectDefn.getProperties();
+        }
 
         return propDefns;
     }

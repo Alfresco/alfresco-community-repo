@@ -20,6 +20,7 @@ Initial Setup
 Using Eclipse
 
   - Start Eclipse in the usual way.
+    Note: make sure the WAR dependancies have been exploded before opening Eclispe.
   - Import projects found in rm-server and rm-share directories.
   
 Deploying the RM AMPs

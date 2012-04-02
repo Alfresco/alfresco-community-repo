@@ -122,8 +122,15 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                 if (logger.isDebugEnabled())
                     logger.debug("Authenticating as Guest");
     
-                authenticationService.authenticateAsGuest();
-                authorized = true;
+                try 
+                {
+                    authenticationService.authenticateAsGuest();
+                    authorized = true;
+                }
+                catch (AuthenticationException ex)
+                {
+                    // failed authentication
+                }
             }
             
             // authenticate as specified by explicit ticket on url

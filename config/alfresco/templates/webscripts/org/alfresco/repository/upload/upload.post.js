@@ -332,21 +332,8 @@ function main()
          newFile.properties.content.write(content, false, true);
          newFile.save();
 
-         // Create thumbnail?
-         if (thumbnailNames != null)
-         {
-            var thumbnails = thumbnailNames.split(","),
-               thumbnailName = "";
-
-            for (i = 0; i < thumbnails.length; i++)
-            {
-               thumbnailName = thumbnails[i];
-               if (thumbnailName != "" && thumbnailService.isThumbnailNameRegistered(thumbnailName))
-               {
-                  newFile.createThumbnail(thumbnailName, true);
-               }
-            }
-         }
+         // NOTE: Removal of first request for thumbnails to improve upload performance
+         //       Thumbnails are still requested by Share on first render of the doclist image.
 
          // Additional aspects?
          if (aspects.length > 0)

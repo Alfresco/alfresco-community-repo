@@ -234,7 +234,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             Action extract = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
             if(extract != null)
             {
-               extract.setExecuteAsynchronously(true);
+               extract.setExecuteAsynchronously(false);
                getActionService().executeAction(extract, contentNodeInfo.getNodeRef());
             }
 

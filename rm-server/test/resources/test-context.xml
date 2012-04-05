@@ -7,7 +7,7 @@
 	<bean id="org_alfresco_module_dod5015_rmTestdictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
         <property name="models">
             <list>
-                <value>org/alfresco/module/org_alfresco_module_rm/test/util/test-model.xml</value>
+                <value>test-model.xml</value>
             </list>
         </property>
     </bean>

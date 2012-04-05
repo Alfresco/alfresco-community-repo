@@ -1,5 +1,26 @@
 dependencies {
+	
 	compile fileTree(dir: 'libs', include: '*.jar')
 	compile 'javax.servlet:servlet-api:2.5'		
-	compile 'org.springframework:spring-test:2.5'  		
+	
+	testCompile 'org.springframework:spring-test:2.5'  	
+	
+	testRuntime files(explodedConfigDir)
+	testRuntime files(configDir)
+}
+
+test {
+  //makes the standard streams (err and out) visible at console when running tests
+  testLogging.showStandardStreams = true
+
+  //tweaking memory settings for the forked vm that runs tests
+  jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'
+  
+  //listening to test execution events
+  beforeTest { descriptor ->
+     logger.lifecycle("Running test: " + descriptor)
+  }
+  onOutput { descriptor, event ->
+     logger.lifecycle(event.message)
+  }
 }

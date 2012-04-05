@@ -102,7 +102,7 @@ public class TestUtilities implements RecordsManagementModel
         // Do the data load into the the provided filePlan node reference
         // TODO ...
         InputStream is = TestUtilities.class.getClassLoader().getResourceAsStream(
-                "alfresco/module/org_alfresco_module_rm/bootstrap/DODExampleFilePlan.xml");
+                "alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml");
         //"alfresco/module/org_alfresco_module_rm/bootstrap/temp.xml");
         Assert.assertNotNull("The DODExampleFilePlan.xml import file could not be found", is);
         Reader viewReader = new InputStreamReader(is);

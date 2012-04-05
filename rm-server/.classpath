@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="source/java"/>
+	<classpathentry kind="src" path="test/java"/>
+	<classpathentry kind="src" path="test/resources"/>
 	<classpathentry kind="src" path="explodedDeps/config"/>
 	<classpathentry kind="src" path="config"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
@@ -277,5 +279,6 @@
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/xpp3-1.1.3_8.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/xstream-1.2.2.jar"/>
 	<classpathentry kind="lib" path="libs/spring-webscripts-1.0.0-tests.jar"/>
+	<classpathentry kind="lib" path="libs/postgresql-9.0-801.jdbc4.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

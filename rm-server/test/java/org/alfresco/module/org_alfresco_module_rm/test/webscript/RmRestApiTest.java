@@ -117,7 +117,7 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
     @Override
     protected void setUp() throws Exception
     {
-        setCustomContext("classpath:org/alfresco/module/org_alfresco_module_rm/test/util/test-context.xml");
+        setCustomContext("classpath:test-context.xml");
         
         super.setUp();
         this.namespaceService = (NamespaceService) getServer().getApplicationContext().getBean("NamespaceService");

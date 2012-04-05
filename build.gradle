@@ -15,6 +15,16 @@ task wrapper(type: Wrapper) {
     gradleVersion = '1.0-milestone-8'
 }
 
+task downloadAlfresco << {
+
+	def address = "https://bamboo.alfresco.com/bamboo/artifact/ALF-ENTERPRISEV40/JOB1/build-891/ALL/alfresco-enterprise-4.0.1.zip?os_authType=basic&os_username=rwetherall&os_password=31vegaleg"
+
+	def file = new FileOutputStream(file('alfresco.zip'))
+    def out = new BufferedOutputStream(file)
+    out << new URL(address).openStream()
+    out.close()
+}
+
 /** Subproject configuration */
 subprojects {
 
@@ -25,10 +35,13 @@ subprojects {
 	
 	explodedDepsDir = 'explodedDeps'	
 	explodedLibsDir = "${explodedDepsDir}/lib"
+	explodedConfigDir = "${explodedDepsDir}/config"
 	buildDistDir = 'build/dist'
 	buildLibDir = 'build/libs'
 	sourceJavaDir = 'source/java'
 	sourceWebDir = 'source/web'
+	testJavaDir = 'test/java'
+	testResourceDir = 'test/resource'
 	configDir = 'config'
 	configModuleDir = "config/alfresco/module/${moduleid}"
 	moduleProperties = 'module.properties'
@@ -42,6 +55,14 @@ subprojects {
 		main {
 			java {
 				srcDir sourceJavaDir
+			}			
+		}
+		test {
+			java {
+				srcDir testJavaDir
+			}	
+			resources {
+				srcDir testResourceDir
 			}
 		}
 	}

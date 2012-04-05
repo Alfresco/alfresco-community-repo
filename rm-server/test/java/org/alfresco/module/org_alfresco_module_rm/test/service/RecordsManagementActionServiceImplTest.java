@@ -63,7 +63,7 @@ public class RecordsManagementActionServiceImplTest extends TestCase
 {
     private static final String[] CONFIG_LOCATIONS = new String[] {
         "classpath:alfresco/application-context.xml",
-        "classpath:org/alfresco/module/org_alfresco_module_rm/test/util/test-context.xml"};
+        "classpath:test-context.xml"};
     
     private ApplicationContext ctx;
     

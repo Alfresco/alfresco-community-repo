@@ -49,7 +49,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
         super.setupTestDataImpl();
         
         // Create records
-        record = createRecord(rmFolder, "testRecord.txt");
+        record = utils.createRecord(rmFolder, "testRecord.txt");
     }
     
     public void testJSON() throws Exception

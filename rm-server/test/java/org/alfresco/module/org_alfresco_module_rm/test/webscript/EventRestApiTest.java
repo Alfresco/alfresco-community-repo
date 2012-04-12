@@ -18,54 +18,34 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.util.GUID;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.json.JSONObject;
 
 /**
  * RM event REST API test
  * 
  * @author Roy Wetherall
  */
-public class EventRestApiTest extends BaseWebScriptTest implements RecordsManagementModel
+public class EventRestApiTest extends BaseRMWebScriptTestCase implements RecordsManagementModel
 {
-    protected static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final String GET_EVENTS_URL = "/api/rma/admin/rmevents";
     protected static final String GET_EVENTTYPES_URL = "/api/rma/admin/rmeventtypes";
     protected static final String SERVICE_URL_PREFIX = "/alfresco/service";
     protected static final String APPLICATION_JSON = "application/json";
+   
     protected static final String DISPLAY_LABEL = "display label";
     protected static final String EVENT_TYPE = "rmEventType.simple";
     protected static final String KEY_EVENT_NAME = "eventName";
     protected static final String KEY_EVENT_TYPE = "eventType";
     protected static final String KEY_EVENT_DISPLAY_LABEL = "eventDisplayLabel";
-    
-    protected NodeService nodeService;
-    protected RecordsManagementService rmService;
-    protected RecordsManagementEventService rmEventService;
-    
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
-        this.rmService = (RecordsManagementService)getServer().getApplicationContext().getBean("RecordsManagementService");
-        this.rmEventService = (RecordsManagementEventService)getServer().getApplicationContext().getBean("RecordsManagementEventService");
-        
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());        
-    }    
-
+       
     public void testGetEventTypes() throws Exception
     {
         Response rsp = sendRequest(new GetRequest(GET_EVENTTYPES_URL),200);
@@ -89,8 +69,8 @@ public class EventRestApiTest extends BaseWebScriptTest implements RecordsManage
         String event2 = GUID.generate();
         
         // Create a couple or events by hand
-        rmEventService.addEvent(EVENT_TYPE, event1, DISPLAY_LABEL);
-        rmEventService.addEvent(EVENT_TYPE, event2, DISPLAY_LABEL);
+        eventService.addEvent(EVENT_TYPE, event1, DISPLAY_LABEL);
+        eventService.addEvent(EVENT_TYPE, event2, DISPLAY_LABEL);
         
         try
         {
@@ -117,8 +97,8 @@ public class EventRestApiTest extends BaseWebScriptTest implements RecordsManage
         finally
         {
             // Clean up 
-            rmEventService.removeEvent(event1);
-            rmEventService.removeEvent(event2);
+            eventService.removeEvent(event1);
+            eventService.removeEvent(event2);
         }
         
     }
@@ -148,7 +128,7 @@ public class EventRestApiTest extends BaseWebScriptTest implements RecordsManage
         }
         finally
         {
-            rmEventService.removeEvent(eventName);
+            eventService.removeEvent(eventName);
         }  
         
         // Test with no event name set
@@ -172,14 +152,14 @@ public class EventRestApiTest extends BaseWebScriptTest implements RecordsManage
         }
         finally
         {
-            rmEventService.removeEvent(eventName);
+            eventService.removeEvent(eventName);
         }
     }
     
     public void testPutRole() throws Exception
     {
         String eventName = GUID.generate();        
-        rmEventService.addEvent(EVENT_TYPE, eventName, DISPLAY_LABEL);
+        eventService.addEvent(EVENT_TYPE, eventName, DISPLAY_LABEL);
         
         try
         {
@@ -206,7 +186,7 @@ public class EventRestApiTest extends BaseWebScriptTest implements RecordsManage
         finally
         {
             // Clean up 
-            rmEventService.removeEvent(eventName);
+            eventService.removeEvent(eventName);
         }
         
     }
@@ -214,7 +194,7 @@ public class EventRestApiTest extends BaseWebScriptTest implements RecordsManage
     public void testGetRole() throws Exception
     {
         String eventName = GUID.generate();        
-        rmEventService.addEvent(EVENT_TYPE, eventName, DISPLAY_LABEL);
+        eventService.addEvent(EVENT_TYPE, eventName, DISPLAY_LABEL);
         
         try
         {
@@ -236,7 +216,7 @@ public class EventRestApiTest extends BaseWebScriptTest implements RecordsManage
         finally
         {
             // Clean up 
-            rmEventService.removeEvent(eventName);
+            eventService.removeEvent(eventName);
         }
         
     }
@@ -244,11 +224,11 @@ public class EventRestApiTest extends BaseWebScriptTest implements RecordsManage
     public void testDeleteRole() throws Exception
     {
         String eventName = GUID.generate();
-        assertFalse(rmEventService.existsEvent(eventName));        
-        rmEventService.addEvent(EVENT_TYPE, eventName, DISPLAY_LABEL);       
-        assertTrue(rmEventService.existsEvent(eventName));           
+        assertFalse(eventService.existsEvent(eventName));        
+        eventService.addEvent(EVENT_TYPE, eventName, DISPLAY_LABEL);       
+        assertTrue(eventService.existsEvent(eventName));           
         sendRequest(new DeleteRequest(GET_EVENTS_URL + "/" + eventName),200);        
-        assertFalse(rmEventService.existsEvent(eventName));    
+        assertFalse(eventService.existsEvent(eventName));    
         
         // Bad request
         sendRequest(new DeleteRequest(GET_EVENTS_URL + "/cheese"), 404);  

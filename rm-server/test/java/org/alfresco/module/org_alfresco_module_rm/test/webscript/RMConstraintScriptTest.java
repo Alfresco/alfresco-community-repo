@@ -23,12 +23,11 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
@@ -39,7 +38,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  *
  * @author Mark Rogers
  */
-public class RMConstraintScriptTest extends BaseWebScriptTest
+public class RMConstraintScriptTest extends BaseRMWebScriptTestCase
 {
     private MutableAuthenticationService authenticationService;
     private RMCaveatConfigService caveatConfigService;
@@ -51,18 +50,13 @@ public class RMConstraintScriptTest extends BaseWebScriptTest
     private static final String URL_RM_CONSTRAINTS = "/api/rma/rmconstraints";
   
     @Override
-    protected void setUp() throws Exception
+    protected void initServices() 
     {
+    	super.initServices();
+    	
         this.caveatConfigService = (RMCaveatConfigService)getServer().getApplicationContext().getBean("CaveatConfigService");
         this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
-        super.setUp();
-    }
-        
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
     }
     
     /**
@@ -108,32 +102,11 @@ public class RMConstraintScriptTest extends BaseWebScriptTest
             JSONObject data = top.getJSONObject("data");
             System.out.println(response.getContentAsString());
             
-            JSONArray allowedValues = data.getJSONArray("allowedValuesForCurrentUser");
-            
-//            assertTrue("values not correct", compare(array, allowedValues));
-            
-//            JSONArray constraintDetails = data.getJSONArray("constraintDetails");
-//           
-//            assertTrue("details array does not contain 3 elements", constraintDetails.length() == 3);
-//            for(int i =0; i < constraintDetails.length(); i++)
-//            {
-//                JSONObject detail = constraintDetails.getJSONObject(i);
-//            }
+            data.getJSONArray("allowedValuesForCurrentUser");
+
         }
         
-        /**
-         * 
-         * @throws Exception
-         */
-         
-//        /**
-//         * Negative test - Attempt to get a constraint that does exist
-//         */
-//        {
-//            String url = URL_RM_CONSTRAINTS + "/" + "rmc_wibble";
-//            sendRequest(new GetRequest(url), Status.STATUS_NOT_FOUND); 
-//        }
-//      
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         personService.deletePerson("fbloggs");
         personService.deletePerson("jrogers");

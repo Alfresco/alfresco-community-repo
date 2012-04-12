@@ -111,9 +111,9 @@ public class NotificationServiceHelperSystemTest extends BaseRMTestCase
         super.setupTestDataImpl();
        
         // Create a few test records
-        record = createRecord(rmFolder, "recordOne");
-        NodeRef record2 = createRecord(rmFolder, "recordTwo");
-        NodeRef record3 = createRecord(rmFolder, "recordThree");
+        record = utils.createRecord(rmFolder, "recordOne");
+        NodeRef record2 = utils.createRecord(rmFolder, "recordTwo");
+        NodeRef record3 = utils.createRecord(rmFolder, "recordThree");
         
         records = new ArrayList<NodeRef>(3);
         records.add(record);

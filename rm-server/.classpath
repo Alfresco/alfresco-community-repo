@@ -9,7 +9,6 @@
 	<classpathentry exported="true" kind="lib" path="C:/Users/royw/.gradle/caches/artifacts-8/filestore/javax.servlet/servlet-api/2.5/jar/5959582d97d8b61f4d154ca9e495aafd16726e34/servlet-api-2.5.jar" sourcepath="C:/Users/royw/.gradle/caches/artifacts-8/filestore/javax.servlet/servlet-api/2.5/source/21599814ad9a605b86f3e6381571beccd861a32/servlet-api-2.5-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/Users/royw/.gradle/caches/artifacts-8/filestore/org.springframework/spring-test/2.5/jar/af084e37cf532fbdd15da44e400930d0f8fbf52f/spring-test-2.5.jar" sourcepath="C:/Users/royw/.gradle/caches/artifacts-8/filestore/org.springframework/spring-test/2.5/source/a2bbfbf1ac87047202c49c8da06bdb48eaf6ffe0/spring-test-2.5-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/Users/royw/.gradle/caches/artifacts-8/filestore/commons-logging/commons-logging/1.1/jar/ba24d5de831911b684c92cd289ed5ff826271824/commons-logging-1.1.jar" sourcepath="C:/Users/royw/.gradle/caches/artifacts-8/filestore/commons-logging/commons-logging/1.1/source/5c2bd34c9a05067c72dcf08cd248630561a9c852/commons-logging-1.1-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/Users/royw/.gradle/caches/artifacts-8/filestore/junit/junit/3.8.1/jar/99129f16442844f6a4a11ae22fbbee40b14d774f/junit-3.8.1.jar" sourcepath="C:/Users/royw/.gradle/caches/artifacts-8/filestore/junit/junit/3.8.1/source/525753763e53f6f76da052b316d0f2e3bfa4d73/junit-3.8.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/abdera-client-0.4.0-incubating.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/abdera-core-0.4.0-incubating.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/abdera-extensions-json-0.4.0-incubating.jar"/>
@@ -26,8 +25,8 @@
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-jlan-embed-4.0.d.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-mbeans-4.0.d.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-opencmis-extension-0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-remote-api-4.0.d.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-repository-4.0.d.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-remote-api-4.0.d.jar" sourcepath="C:/mywork/projects/v4/code/root/projects/remote-api/source/java"/>
+	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-repository-4.0.d.jar" sourcepath="C:/mywork/projects/v4/code/root/projects/repository/source/java"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-wdr-deployment.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-web-client-4.0.d.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-web-framework-commons-4.0.d.jar"/>

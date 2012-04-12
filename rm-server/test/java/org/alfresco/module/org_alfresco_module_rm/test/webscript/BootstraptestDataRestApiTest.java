@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestUtilities;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -33,7 +34,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
  * 
  * @author Roy Wetherall
  */
-public class BootstraptestDataRestApiTest extends BaseWebScriptTest implements RecordsManagementModel
+public class BootstraptestDataRestApiTest extends BaseRMWebScriptTestCase implements RecordsManagementModel
 {
     protected static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final String URL = "/api/rma/bootstraptestdata";

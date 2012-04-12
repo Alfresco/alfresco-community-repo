@@ -19,19 +19,11 @@
 package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.util.GUID;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,41 +38,11 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * 
  * @author Roy Wetherall
  */
-public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagementModel
+public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsManagementModel
 {
-    protected static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final String GET_ROLES_URL = "/api/rma/admin/rmroles";
     protected static final String SERVICE_URL_PREFIX = "/alfresco/service";
-    protected static final String APPLICATION_JSON = "application/json";
-    
-    protected NodeService nodeService;
-    protected RecordsManagementService rmService;
-    protected RecordsManagementSecurityService rmSecurityService;
-    
-    private NodeRef rmRootNode;
-    
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
-        this.rmService = (RecordsManagementService)getServer().getApplicationContext().getBean("RecordsManagementService");
-        this.rmSecurityService = (RecordsManagementSecurityService)getServer().getApplicationContext().getBean("RecordsManagementSecurityService");
-        
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-    
-        List<NodeRef> roots = rmService.getFilePlans();
-        if (roots.size() != 0)
-        {
-            rmRootNode = roots.get(0);
-        }
-        else
-        {
-            NodeRef root = this.nodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"));
-            rmRootNode = this.nodeService.createNode(root, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, TYPE_FILE_PLAN).getChildRef();
-        }
-        
-    }    
+    protected static final String APPLICATION_JSON = "application/json";    
 
     public void testGetRoles() throws Exception
     {
@@ -88,11 +50,11 @@ public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagem
         String role2 = GUID.generate();
         
         // Create a couple or roles by hand
-        rmSecurityService.createRole(rmRootNode, role1, "My Test Role", getListOfCapabilities(5));
-        rmSecurityService.createRole(rmRootNode, role2, "My Test Role Too", getListOfCapabilities(5));
+        securityService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
+        securityService.createRole(filePlan, role2, "My Test Role Too", getListOfCapabilities(5));
         
         // Add the admin user to one of the roles
-        rmSecurityService.assignRoleToAuthority(rmRootNode, role1, "admin");
+        securityService.assignRoleToAuthority(filePlan, role1, "admin");
         
         try
         {
@@ -141,8 +103,8 @@ public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagem
         finally
         {
             // Clean up 
-            rmSecurityService.deleteRole(rmRootNode, role1);
-            rmSecurityService.deleteRole(rmRootNode, role2);
+            securityService.deleteRole(filePlan, role1);
+            securityService.deleteRole(filePlan, role2);
         }
         
     }
@@ -181,7 +143,7 @@ public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagem
         }
         finally
         {
-            rmSecurityService.deleteRole(rmRootNode, roleName);
+            securityService.deleteRole(filePlan, roleName);
         }
         
     }
@@ -189,7 +151,7 @@ public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagem
     public void testPutRole() throws Exception
     {
         String role1 = GUID.generate();        
-        rmSecurityService.createRole(rmRootNode, role1, "My Test Role", getListOfCapabilities(5));
+        securityService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
         
         try
         {
@@ -227,7 +189,7 @@ public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagem
         finally
         {
             // Clean up 
-            rmSecurityService.deleteRole(rmRootNode, role1);
+            securityService.deleteRole(filePlan, role1);
         }
         
     }
@@ -235,7 +197,7 @@ public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagem
     public void testGetRole() throws Exception
     {
         String role1 = GUID.generate();        
-        rmSecurityService.createRole(rmRootNode, role1, "My Test Role", getListOfCapabilities(5));
+        securityService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
         
         try
         {
@@ -260,7 +222,7 @@ public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagem
         finally
         {
             // Clean up 
-            rmSecurityService.deleteRole(rmRootNode, role1);
+            securityService.deleteRole(filePlan, role1);
         }
         
     }
@@ -268,11 +230,11 @@ public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagem
     public void testDeleteRole() throws Exception
     {
         String role1 = GUID.generate();
-        assertFalse(rmSecurityService.existsRole(rmRootNode, role1));        
-        rmSecurityService.createRole(rmRootNode, role1, "My Test Role", getListOfCapabilities(5));        
-        assertTrue(rmSecurityService.existsRole(rmRootNode, role1));        
+        assertFalse(securityService.existsRole(filePlan, role1));        
+        securityService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));        
+        assertTrue(securityService.existsRole(filePlan, role1));        
         sendRequest(new DeleteRequest(GET_ROLES_URL + "/" + role1),200);        
-        assertFalse(rmSecurityService.existsRole(rmRootNode, role1));     
+        assertFalse(securityService.existsRole(filePlan, role1));     
         
         // Bad request
         sendRequest(new DeleteRequest(GET_ROLES_URL + "/cheese"), 404);  
@@ -286,7 +248,7 @@ public class RoleRestApiTest extends BaseWebScriptTest implements RecordsManagem
     private Set<Capability> getListOfCapabilities(int size, int offset)
     {
         Set<Capability> result = new HashSet<Capability>(size);
-        Set<Capability> caps = rmSecurityService.getCapabilities();
+        Set<Capability> caps = securityService.getCapabilities();
         int count = 0;
         for (Capability cap : caps)
         {

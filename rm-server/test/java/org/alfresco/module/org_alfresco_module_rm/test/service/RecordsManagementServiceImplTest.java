@@ -69,7 +69,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
             @Override
             public NodeRef run() throws Exception
             {
-                return createRecord(rmFolder, "testRecord.txt");
+                return utils.createRecord(rmFolder, "testRecord.txt");
             }
             
             @Override

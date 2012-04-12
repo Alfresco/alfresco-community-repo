@@ -49,7 +49,8 @@ public class FileableCapabilityCondition extends AbstractCapabilityCondition
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
-        QName type = nodeService.getType(nodeRef);
+        QName type = nodeService.getType(nodeRef);        
+        // TODO and not already a record?
         return (dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) ||
                 dictionaryService.isSubClass(type, TYPE_NON_ELECTRONIC_DOCUMENT));
     }

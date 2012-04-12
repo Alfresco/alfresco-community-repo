@@ -37,6 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutor;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorRegistry;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -148,7 +149,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             {
                 DispositionSchedule ds = dispositionService.getDispositionSchedule(container);
                 assertNotNull(ds);
-                checkDispositionSchedule(ds, dispositionInstructions, DEFAULT_DISPOSITION_AUTHORITY, isRecordLevel); 
+                checkDispositionSchedule(ds, dispositionInstructions, CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, isRecordLevel); 
             }
             
             private void doCheckFolder(NodeRef container, String dispositionInstructions, boolean isRecordLevel)
@@ -193,7 +194,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
      */
     private void checkDispositionSchedule(DispositionSchedule ds, boolean isRecordLevel)
     {
-        checkDispositionSchedule(ds, DEFAULT_DISPOSITION_INSTRUCTIONS, DEFAULT_DISPOSITION_AUTHORITY, isRecordLevel);
+        checkDispositionSchedule(ds, CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS, CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, isRecordLevel);
     }
     
     /**
@@ -266,7 +267,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             {
                 DispositionSchedule ds = dispositionService.getAssociatedDispositionSchedule(container);
                 assertNotNull(ds);
-                checkDispositionSchedule(ds, dispositionInstructions, DEFAULT_DISPOSITION_AUTHORITY, isRecordLevel); 
+                checkDispositionSchedule(ds, dispositionInstructions, CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, isRecordLevel); 
             }
         });       
     }
@@ -283,7 +284,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             {
             	// Add a new disposition schedule
             	NodeRef container = rmService.createRecordCategory(rmContainer, "hasDisposableTest");
-            	DispositionSchedule ds = createBasicDispositionSchedule(container);
+            	DispositionSchedule ds = utils.createBasicDispositionSchedule(container);
             	
                 assertTrue(dispositionService.hasDisposableItems(dispositionSchedule));
                 assertFalse(dispositionService.hasDisposableItems(ds));
@@ -387,7 +388,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             	NodeRef container = rmService.createRecordCategory(filePlan, "testCreateDispositionSchedule");
             	
             	// Create a new disposition schedule
-            	createBasicDispositionSchedule(container, "testCreateDispositionSchedule", "testCreateDispositionSchedule", false, true);
+            	utils.createBasicDispositionSchedule(container, "testCreateDispositionSchedule", "testCreateDispositionSchedule", false, true);
             	
             	return container;
             }                   
@@ -413,7 +414,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public void run()
             {
-            	createBasicDispositionSchedule(rmContainer);                        
+            	utils.createBasicDispositionSchedule(rmContainer);                        
             }
         }); 
     }
@@ -434,8 +435,8 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             	NodeRef testB = rmService.createRecordCategory(testA, "testB");
             	
             	// Create new disposition schedules
-            	createBasicDispositionSchedule(testA, "testA", "testA", false, true);
-            	createBasicDispositionSchedule(testB, "testB", "testB", false, true);
+            	utils.createBasicDispositionSchedule(testA, "testA", "testA", false, true);
+            	utils.createBasicDispositionSchedule(testB, "testB", "testB", false, true);
             	
             	// Add created containers to model
             	setNodeRef("testA", testA);
@@ -468,7 +469,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public void run()
             {
-            	createBasicDispositionSchedule(mhContainer11);                        
+            	utils.createBasicDispositionSchedule(mhContainer11);                        
             }
         }); 
         
@@ -481,7 +482,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public void run()
             {
-            	createBasicDispositionSchedule(mhContainer21);  
+            	utils.createBasicDispositionSchedule(mhContainer21);  
             }
         }); 
     }
@@ -554,8 +555,8 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public Void run() throws Exception
             {
-                record43 = createRecord(mhRecordFolder43, "record1.txt");
-                record45 = createRecord(mhRecordFolder45, "record2.txt");
+                record43 = utils.createRecord(mhRecordFolder43, "record1.txt");
+                record45 = utils.createRecord(mhRecordFolder45, "record2.txt");
                 
                 return null;
             }   
@@ -692,8 +693,8 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         checkDispositionAction(
                 dispositionService.getNextDispositionAction(recordFolder), 
                 "cutoff", 
-                new String[]{DEFAULT_EVENT_NAME}, 
-                PERIOD_NONE);                
+                new String[]{CommonRMTestUtils.DEFAULT_EVENT_NAME}, 
+                			 CommonRMTestUtils.PERIOD_NONE);                
     }
     
     private void checkDisposableItemChanged(NodeRef recordFolder) throws Exception
@@ -701,7 +702,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         checkDispositionAction(
                 dispositionService.getNextDispositionAction(recordFolder), 
                 "cutoff", 
-                new String[]{DEFAULT_EVENT_NAME, "abolished"}, 
+                new String[]{CommonRMTestUtils.DEFAULT_EVENT_NAME, "abolished"}, 
                 "week|1");                
     }
     
@@ -709,7 +710,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
     {
         Map<QName, Serializable> updateProps = new HashMap<QName, Serializable>(3);
         updateProps.put(PROP_DISPOSITION_PERIOD, "week|1"); 
-        updateProps.put(PROP_DISPOSITION_EVENT, (Serializable)Arrays.asList(DEFAULT_EVENT_NAME, "abolished"));
+        updateProps.put(PROP_DISPOSITION_EVENT, (Serializable)Arrays.asList(CommonRMTestUtils.DEFAULT_EVENT_NAME, "abolished"));
         
         DispositionSchedule ds = dispositionService.getDispositionSchedule(nodeRef);
         DispositionActionDefinition dad = ds.getDispositionActionDefinitionByName("cutoff");
@@ -777,7 +778,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             fail(buff.toString());                    
         }
         
-        if (PERIOD_NONE.equals(strPeriod) == true)
+        if (CommonRMTestUtils.PERIOD_NONE.equals(strPeriod) == true)
         {
             assertNull(da.getAsOfDate());
         }

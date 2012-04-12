@@ -107,12 +107,12 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 folderLevelRecordFolder = mhRecordFolder42;
                 recordLevelRecordFolder = mhRecordFolder43;                
                 
-                recordOne = createRecord(folderLevelRecordFolder, "recordOne.txt", null, "record one - folder level - elephant");
-                recordTwo = createRecord(folderLevelRecordFolder, "recordTwo.txt", null, "record two - folder level - snake");
-                recordThree = createRecord(folderLevelRecordFolder, "recordThree.txt", null, "record three - folder level - monkey");
-                recordFour = createRecord(recordLevelRecordFolder, "recordFour.txt", null, "record four - record level - elephant");
-                recordFive = createRecord(recordLevelRecordFolder, "recordFive.txt", null, "record five - record level - snake");
-                recordSix = createRecord(recordLevelRecordFolder, "recordSix.txt", null, "record six - record level - monkey");
+                recordOne = utils.createRecord(folderLevelRecordFolder, "recordOne.txt", null, "record one - folder level - elephant");
+                recordTwo = utils.createRecord(folderLevelRecordFolder, "recordTwo.txt", null, "record two - folder level - snake");
+                recordThree = utils.createRecord(folderLevelRecordFolder, "recordThree.txt", null, "record three - folder level - monkey");
+                recordFour = utils.createRecord(recordLevelRecordFolder, "recordFour.txt", null, "record four - record level - elephant");
+                recordFive = utils.createRecord(recordLevelRecordFolder, "recordFive.txt", null, "record five - record level - snake");
+                recordSix = utils.createRecord(recordLevelRecordFolder, "recordSix.txt", null, "record six - record level - monkey");
                 
                 return null;
             }

@@ -175,7 +175,7 @@ public class RecordsManagementServiceImplSystemTest extends BaseSpringTest imple
      */
     public void testRescheduleRecord_IsNotCutOff() throws Exception
     {
-         final NodeRef recCat = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records");
+         final NodeRef recCat = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");
         // This RC has disposition instructions "Cut off monthly, hold 1 month, then destroy."
         
         setComplete();
@@ -379,7 +379,7 @@ public class RecordsManagementServiceImplSystemTest extends BaseSpringTest imple
                 {
                     public Void execute() throws Throwable
                     {
-                        NodeRef folderRecord = TestUtilities.getRecordFolder(searchService, "Reports", "AIS Audit Records", "January AIS Audit Records");
+                        NodeRef folderRecord = TestUtilities.getRecordFolder(rmService, nodeService, "Reports", "AIS Audit Records", "January AIS Audit Records");
                         assertNotNull(folderRecord);
                         assertEquals("January AIS Audit Records", nodeService.getProperty(folderRecord, ContentModel.PROP_NAME));
                         
@@ -394,7 +394,7 @@ public class RecordsManagementServiceImplSystemTest extends BaseSpringTest imple
                         assertFalse(di.isRecordLevelDisposition());
                         
                         // Get a record category
-                        NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records");    
+                        NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");    
                         assertNotNull(recordCategory);
                         assertEquals("AIS Audit Records", nodeService.getProperty(recordCategory, ContentModel.PROP_NAME));
                                 
@@ -434,7 +434,7 @@ public class RecordsManagementServiceImplSystemTest extends BaseSpringTest imple
                 {
                     public NodeRef execute() throws Throwable
                     {
-                        NodeRef result = TestUtilities.getRecordFolder(searchService, "Civilian Files", "Case Files and Papers", "Gilbert Competency Hearing");
+                        NodeRef result = TestUtilities.getRecordFolder(rmService, nodeService, "Civilian Files", "Case Files and Papers", "Gilbert Competency Hearing");
                         assertNotNull("cleanRecordFolder was null", result);
                         
                         final DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(result);
@@ -451,7 +451,7 @@ public class RecordsManagementServiceImplSystemTest extends BaseSpringTest imple
                 {
                     public NodeRef execute() throws Throwable
                     {
-                        NodeRef result = TestUtilities.getRecordFolder(searchService, "Reports", "AIS Audit Records", "January AIS Audit Records");
+                        NodeRef result = TestUtilities.getRecordFolder(rmService, nodeService, "Reports", "AIS Audit Records", "January AIS Audit Records");
                         assertNotNull("dispositionAndVitalRecordFolder was null", result);
                         
                         final DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(result);
@@ -579,7 +579,7 @@ public class RecordsManagementServiceImplSystemTest extends BaseSpringTest imple
                 {
                     public NodeRef execute() throws Throwable
                     {
-                        NodeRef result = TestUtilities.getRecordFolder(searchService, "Civilian Files", "Case Files and Papers", "Gilbert Competency Hearing");
+                        NodeRef result = TestUtilities.getRecordFolder(rmService, nodeService, "Civilian Files", "Case Files and Papers", "Gilbert Competency Hearing");
                         assertNotNull("cleanRecordFolder was null", result);
                         
                         final DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(result);
@@ -596,7 +596,7 @@ public class RecordsManagementServiceImplSystemTest extends BaseSpringTest imple
                 {
                     public NodeRef execute() throws Throwable
                     {
-                        NodeRef result = TestUtilities.getRecordFolder(searchService, "Reports", "AIS Audit Records", "January AIS Audit Records");
+                        NodeRef result = TestUtilities.getRecordFolder(rmService, nodeService, "Reports", "AIS Audit Records", "January AIS Audit Records");
                         assertNotNull("dispositionAndVitalRecordFolder was null", result);
                         
                         final DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(result);
@@ -757,7 +757,7 @@ public class RecordsManagementServiceImplSystemTest extends BaseSpringTest imple
                     public Void execute() throws Throwable
                     {
                         // Get a record folder
-                        NodeRef folderRecord = TestUtilities.getRecordFolder(searchService, "Reports", "AIS Audit Records", "January AIS Audit Records");
+                        NodeRef folderRecord = TestUtilities.getRecordFolder(rmService, nodeService, "Reports", "AIS Audit Records", "January AIS Audit Records");
                         assertNotNull(folderRecord);
                         assertEquals("January AIS Audit Records", nodeService.getProperty(folderRecord, ContentModel.PROP_NAME));
                         

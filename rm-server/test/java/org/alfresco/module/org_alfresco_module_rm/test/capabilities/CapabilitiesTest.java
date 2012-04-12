@@ -71,7 +71,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
     {
         super.setupTestDataImpl();
         
-        record = createRecord(rmFolder, "CapabilitiesTest.txt");
+        record = utils.createRecord(rmFolder, "CapabilitiesTest.txt");
     }
     
     @Override
@@ -1303,7 +1303,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_RECORD_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_REFERENCE_TYPES,
@@ -1426,7 +1426,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_RECORD_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_REFERENCE_TYPES,
@@ -1548,7 +1548,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_RECORD_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_REFERENCE_TYPES,
@@ -1672,7 +1672,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_RECORD_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_REFERENCE_TYPES,
@@ -1796,7 +1796,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.DENIED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_RECORD_TYPES,
                                 AccessStatus.DENIED);
                         check(access, CREATE_MODIFY_DESTROY_REFERENCE_TYPES,
@@ -1917,7 +1917,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.DENIED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_RECORD_TYPES,
                                 AccessStatus.DENIED);
                         check(access, CREATE_MODIFY_DESTROY_REFERENCE_TYPES,
@@ -2194,7 +2194,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, EDIT_RECORD_METADATA, AccessStatus.DENIED);
                         check(access, EDIT_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -2318,7 +2318,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, EDIT_RECORD_METADATA, AccessStatus.DENIED);
                         check(access, EDIT_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -2441,7 +2441,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, EDIT_RECORD_METADATA, AccessStatus.DENIED);
                         check(access, EDIT_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -2562,7 +2562,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, EDIT_RECORD_METADATA, AccessStatus.DENIED);
                         check(access, EDIT_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -2683,7 +2683,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, EDIT_RECORD_METADATA, AccessStatus.DENIED);
                         check(access, EDIT_SELECTION_LISTS, AccessStatus.DENIED);
                         check(access, ENABLE_DISABLE_AUDIT_BY_TYPES,
@@ -2801,7 +2801,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, EDIT_RECORD_METADATA, AccessStatus.DENIED);
                         check(access, EDIT_SELECTION_LISTS, AccessStatus.DENIED);
                         check(access, ENABLE_DISABLE_AUDIT_BY_TYPES,
@@ -3038,7 +3038,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, EDIT_RECORD_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, EDIT_SELECTION_LISTS,
@@ -3162,7 +3162,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, EDIT_RECORD_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, EDIT_SELECTION_LISTS,
@@ -3285,7 +3285,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, EDIT_RECORD_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, EDIT_SELECTION_LISTS,
@@ -3409,7 +3409,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, EDIT_RECORD_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, EDIT_SELECTION_LISTS,
@@ -3533,7 +3533,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, EDIT_RECORD_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, EDIT_SELECTION_LISTS, AccessStatus.DENIED);
@@ -3655,7 +3655,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, EDIT_DECLARED_RECORD_METADATA,
                                 AccessStatus.DENIED);
                         check(access, EDIT_NON_RECORD_METADATA,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, EDIT_RECORD_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, EDIT_SELECTION_LISTS, AccessStatus.DENIED);

@@ -63,16 +63,16 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         super.setupTestDataImpl();
         
         // Pre-filed content
-        record = createRecord(rmFolder, "record.txt");
-        declaredRecord = createRecord(rmFolder, "declaredRecord.txt");
+        record = utils.createRecord(rmFolder, "record.txt");
+        declaredRecord = utils.createRecord(rmFolder, "declaredRecord.txt");
         
      
         // Open folder
         // Closed folder
 
         recordFolderContainsFrozen = rmService.createRecordFolder(rmContainer, "containsFrozen");
-        frozenRecord = createRecord(rmFolder, "frozenRecord.txt");
-        frozenRecord2 = createRecord(recordFolderContainsFrozen, "frozen2.txt");
+        frozenRecord = utils.createRecord(rmFolder, "frozenRecord.txt");
+        frozenRecord2 = utils.createRecord(recordFolderContainsFrozen, "frozen2.txt");
         frozenRecordFolder = rmService.createRecordFolder(rmContainer, "frozenRecordFolder");
                
     }
@@ -89,12 +89,12 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             {
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                 
-                declareRecord(declaredRecord);
-                declareRecord(frozenRecord);
-                declareRecord(frozenRecord2);
-                freeze(frozenRecord);
-                freeze(frozenRecordFolder); 
-                freeze(frozenRecord2);
+                utils.declareRecord(declaredRecord);
+                utils.declareRecord(frozenRecord);
+                utils.declareRecord(frozenRecord2);
+                utils.freeze(frozenRecord);
+                utils.freeze(frozenRecordFolder); 
+                utils.freeze(frozenRecord2);
                 
                 return null;
             }
@@ -105,9 +105,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
     protected void tearDownImpl()
     {
         // Unfreeze stuff so it can be deleted
-        unfreeze(frozenRecord);
-        unfreeze(frozenRecordFolder);
-        unfreeze(frozenRecord2);
+    	utils.unfreeze(frozenRecord);
+    	utils.unfreeze(frozenRecordFolder);
+    	utils.unfreeze(frozenRecord2);
         
         super.tearDownImpl();
     }

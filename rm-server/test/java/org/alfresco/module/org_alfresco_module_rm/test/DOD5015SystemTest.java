@@ -100,7 +100,7 @@ import org.alfresco.util.PropertyMap;
  * 
  * @author Roy Wetherall, Neil McErlean
  */
-public class DOD5015Test extends BaseSpringTest implements RecordsManagementModel, DOD5015Model
+public class DOD5015SystemTest extends BaseSpringTest implements RecordsManagementModel, DOD5015Model
 {    
 	private static final Period weeklyReview = new Period("week|1");
     private static final Period dailyReview = new Period("day|1");
@@ -222,7 +222,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
 	public void xtestTestData() throws Exception
 	{
 	    // make sure the folders that should have disposition schedules do so
-	    NodeRef janAuditRecordsFolder = TestUtilities.getRecordFolder(searchService, "Reports", "AIS Audit Records", "January AIS Audit Records");
+	    NodeRef janAuditRecordsFolder = TestUtilities.getRecordFolder(rmService, nodeService, "Reports", "AIS Audit Records", "January AIS Audit Records");
 	    assertNotNull(janAuditRecordsFolder);
 	    
 	    // ensure the folder has the disposition lifecycle aspect
@@ -233,7 +233,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
 	    checkSearchAspect(janAuditRecordsFolder);
 	    
 	    // check another folder that has events as part of the disposition schedule
-	    NodeRef equalOppCoordFolder = TestUtilities.getRecordFolder(searchService, "Military Files", "Personnel Security Program Records", "Equal Opportunity Coordinator");
+	    NodeRef equalOppCoordFolder = TestUtilities.getRecordFolder(rmService, nodeService, "Military Files", "Personnel Security Program Records", "Equal Opportunity Coordinator");
 	    assertNotNull(equalOppCoordFolder);
 	    assertTrue("Expected 'Equal Opportunity Coordinator' folder to have disposition lifecycle aspect applied", 
                     nodeService.hasAspect(equalOppCoordFolder, ASPECT_DISPOSITION_LIFECYCLE));
@@ -260,7 +260,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
             public NodeRef execute() throws Throwable
             {
                 // Create a record folder under a "non-vital" category
-                NodeRef nonVitalRecordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "Unit Manning Documents");    
+                NodeRef nonVitalRecordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "Unit Manning Documents");    
                 assertNotNull(nonVitalRecordCategory);
 
                 return createRecFolderNode(nonVitalRecordCategory);
@@ -314,7 +314,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
                 
                 // Create another folder with different vital/disposition instructions
                 //TODO Change disposition instructions
-                NodeRef vitalRecordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records");    
+                NodeRef vitalRecordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");    
                 assertNotNull(vitalRecordCategory);
                 return createRecFolderNode(vitalRecordCategory);
             }          
@@ -494,7 +494,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
 
     public void testDispositionLifecycle_0318_01_basictest() throws Exception
 	{	   
-        final NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records"); 
+        final NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records"); 
         setComplete();
         endTransaction();
         	    
@@ -765,7 +765,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
      */
     public void testDispositionLifecycle_0318_reschedule_folderlevel() throws Exception
     {
-        final NodeRef recordSeries = TestUtilities.getRecordSeries(searchService, "Reports"); 
+        final NodeRef recordSeries = TestUtilities.getRecordSeries(rmService, nodeService, "Reports"); 
         setComplete();
         endTransaction();
         
@@ -1076,7 +1076,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
      */
     public void testDispositionLifecycle_0318_reschedule_recordlevel() throws Exception
     {
-        final NodeRef recordSeries = TestUtilities.getRecordSeries(searchService, "Reports"); 
+        final NodeRef recordSeries = TestUtilities.getRecordSeries(rmService, nodeService, "Reports"); 
         setComplete();
         endTransaction();
         
@@ -1512,7 +1512,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
      */
     public void testDispositionLifecycle_0318_reschedule_deletion_folderlevel() throws Exception
     {
-        final NodeRef recordSeries = TestUtilities.getRecordSeries(searchService, "Reports"); 
+        final NodeRef recordSeries = TestUtilities.getRecordSeries(rmService, nodeService, "Reports"); 
         setComplete();
         endTransaction();
         
@@ -1836,7 +1836,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
      */
     public void testDispositionLifecycle_0318_reschedule_deletion_recordlevel() throws Exception
     {
-        final NodeRef recordSeries = TestUtilities.getRecordSeries(searchService, "Reports"); 
+        final NodeRef recordSeries = TestUtilities.getRecordSeries(rmService, nodeService, "Reports"); 
         setComplete();
         endTransaction();
         
@@ -2014,7 +2014,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
      */
     public void testDispositionLifecycle_0318_existingfolders() throws Exception
     {
-        final NodeRef recordSeries = TestUtilities.getRecordSeries(searchService, "Reports"); 
+        final NodeRef recordSeries = TestUtilities.getRecordSeries(rmService, nodeService, "Reports"); 
         setComplete();
         endTransaction();
         
@@ -2114,7 +2114,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
      */
     public void testFolderLevelDispositionScheduleUpdate() throws Exception
     {
-        final NodeRef recordSeries = TestUtilities.getRecordSeries(searchService, "Reports"); 
+        final NodeRef recordSeries = TestUtilities.getRecordSeries(rmService, nodeService, "Reports"); 
         setComplete();
         endTransaction();
         
@@ -2193,7 +2193,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
      */
     public void testRecordLevelDispositionScheduleUpdate() throws Exception
     {
-        final NodeRef recordSeries = TestUtilities.getRecordSeries(searchService, "Reports"); 
+        final NodeRef recordSeries = TestUtilities.getRecordSeries(rmService, nodeService, "Reports"); 
         setComplete();
         endTransaction();
         
@@ -2295,7 +2295,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
     
     public void testUnCutoff()
     {      
-        final NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records"); 
+        final NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records"); 
         setComplete();
         endTransaction();
                 
@@ -2400,7 +2400,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
     
     public void testFreeze() throws Exception
     {      
-        final NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Reports", "AIS Audit Records");    
+        final NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");    
         assertNotNull(recordCategory);
         assertEquals("AIS Audit Records", this.nodeService.getProperty(recordCategory, ContentModel.PROP_NAME));
         
@@ -2711,7 +2711,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
     
     public void testAutoSuperseded()
     {
-        final NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Civilian Files", "Employee Performance File System Records");    
+        final NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Civilian Files", "Employee Performance File System Records");    
         assertNotNull(recordCategory);
         assertEquals("Employee Performance File System Records", this.nodeService.getProperty(recordCategory, ContentModel.PROP_NAME));
         
@@ -2804,7 +2804,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
     
     public void testVersioned()
     {
-        final NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Civilian Files", "Employee Performance File System Records");    
+        final NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Civilian Files", "Employee Performance File System Records");    
         assertNotNull(recordCategory);
         assertEquals("Employee Performance File System Records", this.nodeService.getProperty(recordCategory, ContentModel.PROP_NAME));
         
@@ -2878,7 +2878,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
     
     public void testDispositionLifecycle_0430_02_transfer() throws Exception
     {
-        final NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Civilian Files", "Foreign Employee Award Files");    
+        final NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Civilian Files", "Foreign Employee Award Files");    
         assertNotNull(recordCategory);
         assertEquals("Foreign Employee Award Files", this.nodeService.getProperty(recordCategory, ContentModel.PROP_NAME));
         
@@ -3129,7 +3129,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
 	
 	public void testDispositionLifecycle_0430_01_recordleveldisposition() throws Exception
     {
-	    NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Civilian Files", "Employee Performance File System Records");    
+	    NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Civilian Files", "Employee Performance File System Records");    
         assertNotNull(recordCategory);
         assertEquals("Employee Performance File System Records", this.nodeService.getProperty(recordCategory, ContentModel.PROP_NAME));
         
@@ -3225,7 +3225,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
 	
 	public void testDispositionLifecycle_0412_03_eventtest() throws Exception
     {
-	    NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Military Files", "Personnel Security Program Records");    
+	    NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Military Files", "Personnel Security Program Records");    
         assertNotNull(recordCategory);
         assertEquals("Personnel Security Program Records", this.nodeService.getProperty(recordCategory, ContentModel.PROP_NAME));
                 
@@ -3421,7 +3421,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
      */
     public void testFileDOD5015CustomTypes() throws Exception
     {
-        NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Reports", "AIS Audit Records");    
+        NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");    
                 
         NodeRef recordFolder = createRecordFolder(recordCategory, "March AIS Audit Records");
         setComplete();
@@ -3458,7 +3458,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
     
     public void testFileDOD5015CustomTypes2() throws Exception
     {
-        NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Reports", "AIS Audit Records");    
+        NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");    
                 
         NodeRef recordFolder = createRecordFolder(recordCategory, "March AIS Audit Records");
         setComplete();
@@ -3494,7 +3494,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
     public void testFileFromDoclib() throws Exception
     {
         // Get the relevant RecordCategory and create a RecordFolder underneath it.
-        NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Reports", "AIS Audit Records");    
+        NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");    
                 
         NodeRef recordFolder = createRecordFolder(recordCategory, "March AIS Audit Records");
         setComplete();
@@ -3565,7 +3565,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
             public NodeRef execute() throws Throwable
             {
                 // Get the relevant RecordCategory and create a RecordFolder underneath it.
-                NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records");
+                NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");
                 NodeRef result = createRecordFolder(recordCategory, "March AIS Audit Records" + System.currentTimeMillis());
                 
                 return result;
@@ -3717,7 +3717,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
                 
                 // Create record category / record folder
                 
-                final NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records");
+                final NodeRef recordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");
                 assertNotNull(recordCategory);
                 assertEquals("AIS Audit Records", nodeService.getProperty(recordCategory, ContentModel.PROP_NAME));
                 
@@ -4272,7 +4272,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
      */
     public void testETHREEOH3587()
     {
-        NodeRef recordFolder = TestUtilities.getRecordFolder(searchService, "Reports", "AIS Audit Records", "January AIS Audit Records");
+        NodeRef recordFolder = TestUtilities.getRecordFolder(rmService, nodeService, "Reports", "AIS Audit Records", "January AIS Audit Records");
         assertNotNull(recordFolder);
         
         // Create a record
@@ -4323,7 +4323,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
         // TODO Don't think I need to do this. Can I reuse the existing January one?
         
         NodeRef vitalRecCategory =
-            TestUtilities.getRecordCategory(this.searchService, "Reports", "AIS Audit Records");    
+            TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "AIS Audit Records");    
         
         assertNotNull(vitalRecCategory);
         assertEquals("AIS Audit Records",
@@ -4389,7 +4389,7 @@ public class DOD5015Test extends BaseSpringTest implements RecordsManagementMode
         //
         // Create a record folder under a "non-vital" category
         //
-        NodeRef nonVitalRecordCategory = TestUtilities.getRecordCategory(this.searchService, "Reports", "Unit Manning Documents");    
+        NodeRef nonVitalRecordCategory = TestUtilities.getRecordCategory(rmService, nodeService, "Reports", "Unit Manning Documents");    
         assertNotNull(nonVitalRecordCategory);
         assertEquals("Unit Manning Documents", this.nodeService.getProperty(nonVitalRecordCategory, ContentModel.PROP_NAME));
 

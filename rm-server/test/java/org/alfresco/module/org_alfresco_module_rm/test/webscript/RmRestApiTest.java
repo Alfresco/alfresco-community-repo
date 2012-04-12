@@ -22,49 +22,19 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.transaction.UserTransaction;
-
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminServiceImpl;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
-import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
-import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceType;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams;
-import org.alfresco.module.org_alfresco_module_rm.test.util.TestUtilities;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.view.ImporterService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.service.transaction.TransactionService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -82,7 +52,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * 
  * @author Neil McErlean
  */
-public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagementModel
+public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsManagementModel
 {
     protected static final String GET_NODE_AUDITLOG_URL_FORMAT = "/api/node/{0}/rmauditlog";
     protected static final String GET_TRANSFER_URL_FORMAT = "/api/node/{0}/transfers/{1}";
@@ -95,60 +65,60 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
     protected static final String APPLICATION_JSON = "application/json";
     protected static final String RMA_CUSTOM_PROPS_DEFINITIONS_URL = "/api/rma/admin/custompropertydefinitions";
     protected static final String RMA_CUSTOM_REFS_DEFINITIONS_URL = "/api/rma/admin/customreferencedefinitions";
-    protected NamespaceService namespaceService;
-    protected NodeService nodeService;
-    protected ContentService contentService;
-    protected DictionaryService dictionaryService;
-    protected SearchService searchService;
-    protected ImporterService importService;
-    protected TransactionService transactionService;
-    protected ServiceRegistry services;
-    protected RecordsManagementService rmService;
-    protected RecordsManagementActionService rmActionService;
-    protected RecordsManagementAuditService rmAuditService;
-    protected RecordsManagementAdminService rmAdminService;
-    protected RetryingTransactionHelper transactionHelper;
-    protected DispositionService dispositionService;
+//    protected NamespaceService namespaceService;
+//    protected NodeService nodeService;
+//    protected ContentService contentService;
+//    protected DictionaryService dictionaryService;
+//    protected SearchService searchService;
+//    protected ImporterService importService;
+//    protected TransactionService transactionService;
+//    protected ServiceRegistry services;
+//    protected RecordsManagementService rmService;
+//    protected RecordsManagementActionService rmActionService;
+//    protected RecordsManagementAuditService rmAuditService;
+//    protected RecordsManagementAdminService rmAdminService;
+//    protected RetryingTransactionHelper transactionHelper;
+//    protected DispositionService dispositionService;
 
     private static final String BI_DI = "BiDi";
     private static final String CHILD_SRC = "childSrc";
     private static final String CHILD_TGT = "childTgt";
     
-    @Override
-    protected void setUp() throws Exception
-    {
-        setCustomContext("classpath:test-context.xml");
-        
-        super.setUp();
-        this.namespaceService = (NamespaceService) getServer().getApplicationContext().getBean("NamespaceService");
-        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
-        this.contentService = (ContentService)getServer().getApplicationContext().getBean("ContentService");
-        this.dictionaryService = (DictionaryService)getServer().getApplicationContext().getBean("DictionaryService");
-        this.searchService = (SearchService)getServer().getApplicationContext().getBean("SearchService");
-        this.importService = (ImporterService)getServer().getApplicationContext().getBean("ImporterService");
-        this.transactionService = (TransactionService)getServer().getApplicationContext().getBean("TransactionService");
-        this.services = (ServiceRegistry)getServer().getApplicationContext().getBean("ServiceRegistry");
-        this.rmService = (RecordsManagementService)getServer().getApplicationContext().getBean("RecordsManagementService");
-        this.rmActionService = (RecordsManagementActionService)getServer().getApplicationContext().getBean("RecordsManagementActionService");
-        this.rmAuditService = (RecordsManagementAuditService)getServer().getApplicationContext().getBean("RecordsManagementAuditService");
-        this.rmAdminService = (RecordsManagementAdminService)getServer().getApplicationContext().getBean("RecordsManagementAdminService");
-        transactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");  
-        dispositionService = (DispositionService)getServer().getApplicationContext().getBean("DispositionService");
-        
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-
-        // Bring the filePlan into the test database.
-        //
-        // This is quite a slow call, so if this class grew to have many test methods,
-        // there would be a real benefit in using something like @BeforeClass for the line below.
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-        {
-            public NodeRef execute() throws Throwable
-            {         
-                return TestUtilities.loadFilePlanData(getServer().getApplicationContext());
-            }           
-        }); 
-    }
+//    @Override
+//    protected void setUp() throws Exception
+//    {
+//        setCustomContext("classpath:test-context.xml");
+//        
+//        super.setUp();
+//        this.namespaceService = (NamespaceService) getServer().getApplicationContext().getBean("NamespaceService");
+//        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
+//        this.contentService = (ContentService)getServer().getApplicationContext().getBean("ContentService");
+//        this.dictionaryService = (DictionaryService)getServer().getApplicationContext().getBean("DictionaryService");
+//        this.searchService = (SearchService)getServer().getApplicationContext().getBean("SearchService");
+//        this.importService = (ImporterService)getServer().getApplicationContext().getBean("ImporterService");
+//        this.transactionService = (TransactionService)getServer().getApplicationContext().getBean("TransactionService");
+//        this.services = (ServiceRegistry)getServer().getApplicationContext().getBean("ServiceRegistry");
+//        this.rmService = (RecordsManagementService)getServer().getApplicationContext().getBean("RecordsManagementService");
+//        this.rmActionService = (RecordsManagementActionService)getServer().getApplicationContext().getBean("RecordsManagementActionService");
+//        this.rmAuditService = (RecordsManagementAuditService)getServer().getApplicationContext().getBean("RecordsManagementAuditService");
+//        this.rmAdminService = (RecordsManagementAdminService)getServer().getApplicationContext().getBean("RecordsManagementAdminService");
+//        transactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");  
+//        dispositionService = (DispositionService)getServer().getApplicationContext().getBean("DispositionService");
+//        
+//        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+//
+//        // Bring the filePlan into the test database.
+//        //
+//        // This is quite a slow call, so if this class grew to have many test methods,
+//        // there would be a real benefit in using something like @BeforeClass for the line below.
+//        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+//        {
+//            public NodeRef execute() throws Throwable
+//            {         
+//                return TestUtilities.loadFilePlanData(getServer().getApplicationContext());
+//            }           
+//        }); 
+//    }
 
     /**
      * This test method ensures that a POST of an RM action to a non-existent node
@@ -156,12 +126,8 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
      * 
      * @throws Exception
      */
-    // TODO taken out for now
-    public void xtestPostActionToNonExistentNode() throws Exception
+    public void testPostActionToNonExistentNode() throws Exception
     {
-        NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records");     
-        assertNotNull(recordCategory);
-
         NodeRef nonExistentNode = new NodeRef("workspace://SpacesStore/09ca1e02-1c87-4a53-97e7-xxxxxxxxxxxx");
         
         // Construct the JSON request.
@@ -181,24 +147,7 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
 
     public void testPostReviewedAction() throws IOException, JSONException
     {
-        // Get the recordCategory under which we will create the testNode.
-        NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records");     
-        assertNotNull(recordCategory);
-
-        NodeRef recordFolder = TestUtilities.getRecordFolder(searchService, "Reports", "AIS Audit Records", "January AIS Audit Records");
-        assertNotNull(recordFolder);
-
-        // Create a testNode/file which is to be declared as a record.
-        NodeRef testRecord = this.nodeService.createNode(recordFolder, 
-                ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "MyRecord.txt"),
-                ContentModel.TYPE_CONTENT).getChildRef();
-
-        // Set some dummy content.
-        ContentWriter writer = this.contentService.getWriter(testRecord, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");
-        writer.putContent("There is some content in this record");
+        NodeRef testRecord = utils.createRecord(recordFolder, "test.txt");
         
         // In this test, this property has a date-value equal to the model import time.
         Serializable pristineReviewAsOf = this.nodeService.getProperty(testRecord, PROP_REVIEW_AS_OF);
@@ -230,46 +179,9 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
 
     public void testPostMultiReviewedAction() throws IOException, JSONException
     {
-        // Get the recordCategory under which we will create the testNode.
-        NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Reports", "AIS Audit Records");     
-        assertNotNull(recordCategory);
-
-        NodeRef recordFolder = TestUtilities.getRecordFolder(searchService, "Reports", "AIS Audit Records", "January AIS Audit Records");
-        assertNotNull(recordFolder);
-
-        // Create a testNode/file which is to be declared as a record.
-        NodeRef testRecord = this.nodeService.createNode(recordFolder, 
-                ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "MyRecord.txt"),
-                ContentModel.TYPE_CONTENT).getChildRef();
-
-        // Set some dummy content.
-        ContentWriter writer = this.contentService.getWriter(testRecord, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");
-        writer.putContent("There is some content in this record");
-        
-        NodeRef testRecord2 = this.nodeService.createNode(recordFolder, 
-                ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "MyRecord2.txt"),
-                ContentModel.TYPE_CONTENT).getChildRef();
-
-        // Set some dummy content.
-        writer = this.contentService.getWriter(testRecord2, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");
-        writer.putContent("There is some content in this record");
-        
-        NodeRef testRecord3 = this.nodeService.createNode(recordFolder, 
-                ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "MyRecord3.txt"),
-                ContentModel.TYPE_CONTENT).getChildRef();
-
-        // Set some dummy content.
-        writer = this.contentService.getWriter(testRecord3, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");
-        writer.putContent("There is some content in this record");
+        NodeRef testRecord = utils.createRecord(recordFolder, "test1.txt");
+        NodeRef testRecord2 = utils.createRecord(recordFolder, "test2.txt");
+        NodeRef testRecord3 = utils.createRecord(recordFolder, "test3.txt");
         
         // In this test, this property has a date-value equal to the model import time.
         Serializable pristineReviewAsOf = this.nodeService.getProperty(testRecord, PROP_REVIEW_AS_OF);
@@ -332,8 +244,8 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
         // Submit the JSON request.
         final int expectedStatus = 200;
         //TODO Currently failing unit test.
-//        Response rsp = sendRequest(new PostRequest(RMA_ACTIONS_URL,
-//                                 jsonString, APPLICATION_JSON), expectedStatus);
+        sendRequest(new PostRequest(RMA_ACTIONS_URL,
+                                 jsonString, APPLICATION_JSON), expectedStatus);
     }
     
     public void testPostCustomReferenceDefinitions() throws IOException, JSONException
@@ -402,11 +314,11 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
             dictionaryService.getAspect(QName.createQName(RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS, namespaceService));
         assertNotNull("Missing customAssocs aspect", customAssocsAspect);
         
-        QName newRefQname = rmAdminService.getQNameForClientId(generatedChildRefId);
+        QName newRefQname = adminService.getQNameForClientId(generatedChildRefId);
         Map<QName, AssociationDefinition> associations = customAssocsAspect.getAssociations();
 		assertTrue("Custom child assoc not returned by dataDictionary.", associations.containsKey(newRefQname));
 
-        newRefQname = rmAdminService.getQNameForClientId(generatedBidiRefId);
+        newRefQname = adminService.getQNameForClientId(generatedBidiRefId);
         assertTrue("Custom std assoc not returned by dataDictionary.", customAssocsAspect.getAssociations().containsKey(newRefQname));
         
         return result;
@@ -609,10 +521,8 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
 
     public void testGetPostAndRemoveCustomReferenceInstances() throws Exception
     {
-    	// Create test records.
-        NodeRef recordFolder = retrievePreexistingRecordFolder();
-        NodeRef testRecord1 = createRecord(recordFolder, "testRecord1" + System.currentTimeMillis(), "The from recørd");
-        NodeRef testRecord2 = createRecord(recordFolder, "testRecord2" + System.currentTimeMillis(), "The to récord");
+    	NodeRef testRecord1 = utils.createRecord(recordFolder, "testRecord1" + System.currentTimeMillis(), "The from recørd");
+        NodeRef testRecord2 = utils.createRecord(recordFolder, "testRecord2" + System.currentTimeMillis(), "The to récord");
 
         String node1Url = testRecord1.toString().replace("://", "/");
         String refInstancesRecord1Url = MessageFormat.format(REF_INSTANCES_URL_FORMAT, node1Url);
@@ -722,9 +632,8 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
     public void testMob1630ShouldNotBeAbleToCreateTwoSupersedesReferencesOnOneRecordPair() throws Exception
     {
         // Create 2 test records.
-        NodeRef recordFolder = retrievePreexistingRecordFolder();
-        NodeRef testRecord1 = createRecord(recordFolder, "testRecord1" + System.currentTimeMillis(), "The from recørd");
-        NodeRef testRecord2 = createRecord(recordFolder, "testRecord2" + System.currentTimeMillis(), "The to récord");
+        NodeRef testRecord1 = utils.createRecord(recordFolder, "testRecord1" + System.currentTimeMillis(), "The from recørd");
+        NodeRef testRecord2 = utils.createRecord(recordFolder, "testRecord2" + System.currentTimeMillis(), "The to récord");
 
         String node1Url = testRecord1.toString().replace("://", "/");
         String node2Url = testRecord2.toString().replace("://", "/");
@@ -1042,27 +951,19 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
         
         JSONArray aspects = dataObj.getJSONArray("recordMetaDataAspects");
         assertNotNull(aspects);
-        assertEquals(5, aspects.length());
+        assertEquals(4, aspects.length());
         
         // TODO test the items themselves
     }
     
     public void testExport() throws Exception
     {
-        NodeRef recordFolder1 = TestUtilities.getRecordFolder(searchService, "Reports", 
-                    "AIS Audit Records", "January AIS Audit Records");
-        assertNotNull(recordFolder1);
-        
-        NodeRef recordFolder2 = TestUtilities.getRecordFolder(searchService, "Reports", 
-                    "Unit Manning Documents", "1st Quarter Unit Manning Documents");
-        assertNotNull(recordFolder2);
-        
         String exportUrl = "/api/rma/admin/export";
         
         // define JSON POST body
         JSONObject jsonPostData = new JSONObject();
         JSONArray nodeRefs = new JSONArray();
-        nodeRefs.put(recordFolder1.toString());
+        nodeRefs.put(recordFolder.toString());
         nodeRefs.put(recordFolder2.toString());
         jsonPostData.put("nodeRefs", nodeRefs);
         String jsonPostString = jsonPostData.toString();
@@ -1074,20 +975,12 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
     
     public void testExportInTransferFormat() throws Exception
     {
-        NodeRef recordFolder1 = TestUtilities.getRecordFolder(searchService, "Reports", 
-                    "AIS Audit Records", "January AIS Audit Records");
-        assertNotNull(recordFolder1);
-        
-        NodeRef recordFolder2 = TestUtilities.getRecordFolder(searchService, "Reports", 
-                    "Unit Manning Documents", "1st Quarter Unit Manning Documents");
-        assertNotNull(recordFolder2);
-        
         String exportUrl = "/api/rma/admin/export";
         
         // define JSON POST body
         JSONObject jsonPostData = new JSONObject();
         JSONArray nodeRefs = new JSONArray();
-        nodeRefs.put(recordFolder1.toString());
+        nodeRefs.put(recordFolder.toString());
         nodeRefs.put(recordFolder2.toString());
         jsonPostData.put("nodeRefs", nodeRefs);
         jsonPostData.put("transferFormat", true);
@@ -1096,216 +989,6 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
         // make the export request
         Response rsp = sendRequest(new PostRequest(exportUrl, jsonPostString, APPLICATION_JSON), 200);
         assertEquals("application/zip", rsp.getContentType());
-    }
-    
-    public void testTransfer() throws Exception
-    {
-        // Test 404 status for non existent node
-        String transferId = "yyy";
-        String nonExistentNode = "workspace/SpacesStore/09ca1e02-1c87-4a53-97e7-xxxxxxxxxxxx";
-        String nonExistentUrl = MessageFormat.format(GET_TRANSFER_URL_FORMAT, nonExistentNode, transferId);
-        Response rsp = sendRequest(new GetRequest(nonExistentUrl), 404);
-        
-        // Test 400 status for node that isn't a file plan
-        NodeRef series = TestUtilities.getRecordSeries(searchService, "Reports");
-        assertNotNull(series);
-        String seriesNodeUrl = series.toString().replace("://", "/");
-        String wrongNodeUrl = MessageFormat.format(GET_TRANSFER_URL_FORMAT, seriesNodeUrl, transferId);
-        rsp = sendRequest(new GetRequest(wrongNodeUrl), 400);
-        
-        // Test 404 status for file plan with no transfers
-        NodeRef rootNode = this.rmService.getFilePlan(series);
-        String rootNodeUrl = rootNode.toString().replace("://", "/");
-        String transferUrl = MessageFormat.format(GET_TRANSFER_URL_FORMAT, rootNodeUrl, transferId);
-        rsp = sendRequest(new GetRequest(transferUrl), 404);
-        
-        // Get test in state where a transfer will be present
-        NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Civilian Files", "Foreign Employee Award Files");    
-        assertNotNull(recordCategory);
-        
-        UserTransaction txn = transactionService.getUserTransaction(false);
-        txn.begin();
-        
-        NodeRef newRecordFolder = this.nodeService.createNode(recordCategory, ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("recordFolder")), 
-                    TYPE_RECORD_FOLDER).getChildRef();
-        Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
-        folderProps.put(PROP_IDENTIFIER, "2009-000000" + nodeService.getProperty(newRecordFolder, ContentModel.PROP_NODE_DBID));
-        nodeService.addProperties(newRecordFolder, folderProps);
-        
-        txn.commit();
-        txn = transactionService.getUserTransaction(false);
-        txn.begin();
-        
-        // Create 2 documents
-        Map<QName, Serializable> props1 = new HashMap<QName, Serializable>(1);
-        props1.put(ContentModel.PROP_NAME, "record1");
-        NodeRef recordOne = this.nodeService.createNode(newRecordFolder, 
-                                                        ContentModel.ASSOC_CONTAINS, 
-                                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "record1"), 
-                                                        ContentModel.TYPE_CONTENT, props1).getChildRef();
-        
-        // Set the content
-        ContentWriter writer1 = this.contentService.getWriter(recordOne, ContentModel.PROP_CONTENT, true);
-        writer1.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer1.setEncoding("UTF-8");
-        writer1.putContent("There is some content for record 1");
-        
-        Map<QName, Serializable> props2 = new HashMap<QName, Serializable>(1);
-        props2.put(ContentModel.PROP_NAME, "record2");
-        NodeRef recordTwo = this.nodeService.createNode(newRecordFolder, 
-                                                        ContentModel.ASSOC_CONTAINS, 
-                                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "record2"), 
-                                                        ContentModel.TYPE_CONTENT, props2).getChildRef();
-        
-        // Set the content
-        ContentWriter writer2 = this.contentService.getWriter(recordTwo, ContentModel.PROP_CONTENT, true);
-        writer2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer2.setEncoding("UTF-8");
-        writer2.putContent("There is some content for record 2");
-        txn.commit();
-        
-        // declare the new record
-        txn = transactionService.getUserTransaction(false);
-        txn.begin();
-        declareRecord(recordOne);
-        declareRecord(recordTwo);
-        
-        // prepare for the transfer
-        Map<String, Serializable> params = new HashMap<String, Serializable>(3);
-        params.put(CompleteEventAction.PARAM_EVENT_NAME, "case_complete");
-        params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_AT, new Date());
-        params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_BY, "gavinc");
-        this.rmActionService.executeRecordsManagementAction(newRecordFolder, "completeEvent", params);
-        this.rmActionService.executeRecordsManagementAction(newRecordFolder, "cutoff");
-        
-        DispositionAction da = dispositionService.getNextDispositionAction(newRecordFolder);
-        assertNotNull(da);
-        assertEquals("transfer", da.getName());
-        txn.commit();
-        
-        // Clock the asOf date back to ensure eligibility
-        txn = transactionService.getUserTransaction(false);
-        txn.begin();
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        this.nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_AS_OF, calendar.getTime());
-        
-        // Do the transfer
-        this.rmActionService.executeRecordsManagementAction(newRecordFolder, "transfer", null);
-        txn.commit();
-        
-        // check that there is a transfer object present
-        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(rootNode, ASSOC_TRANSFERS, RegexQNamePattern.MATCH_ALL);
-        assertNotNull(assocs);
-        assertTrue(assocs.size() > 0);
-        
-        // Test 404 status for file plan with transfers but not the requested one
-        rootNode = this.rmService.getFilePlan(newRecordFolder);
-        rootNodeUrl = rootNode.toString().replace("://", "/");
-        transferUrl = MessageFormat.format(GET_TRANSFER_URL_FORMAT, rootNodeUrl, transferId);
-        rsp = sendRequest(new GetRequest(transferUrl), 404);
-        
-        // retrieve the id of the last transfer
-        NodeRef transferNodeRef = assocs.get(assocs.size()-1).getChildRef();
-        Date transferDate = (Date)nodeService.getProperty(transferNodeRef, ContentModel.PROP_CREATED);
-        
-        // Test successful retrieval of transfer archive
-        transferId = transferNodeRef.getId();
-        transferUrl = MessageFormat.format(GET_TRANSFER_URL_FORMAT, rootNodeUrl, transferId);
-        rsp = sendRequest(new GetRequest(transferUrl), 200);
-        assertEquals("application/zip", rsp.getContentType());
-        
-        // Test retrieval of transfer report, will be in JSON format
-        String transferReportUrl = MessageFormat.format(TRANSFER_REPORT_URL_FORMAT, rootNodeUrl, transferId);
-        rsp = sendRequest(new GetRequest(transferReportUrl), 200);
-        //System.out.println(rsp.getContentAsString());
-        assertEquals("application/json", rsp.getContentType());
-        JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-        assertTrue(jsonRsp.has("data"));
-        JSONObject data = jsonRsp.getJSONObject("data");
-        assertTrue(data.has("transferDate"));
-        Date transferDateRsp = ISO8601DateFormat.parse(data.getString("transferDate"));
-        assertEquals(transferDate, transferDateRsp);
-        assertTrue(data.has("transferPerformedBy"));
-        assertEquals("System", data.getString("transferPerformedBy"));
-        assertTrue(data.has("dispositionAuthority"));
-        assertEquals("N1-218-00-3 item 18", data.getString("dispositionAuthority"));
-        assertTrue(data.has("items"));
-        JSONArray items = data.getJSONArray("items");
-        assertEquals("Expecting 1 transferred folder", 1, items.length());
-        JSONObject folder = items.getJSONObject(0);
-        assertTrue(folder.has("type"));
-        assertEquals("folder", folder.getString("type"));
-        assertTrue(folder.has("name"));
-        assertTrue(folder.getString("name").length() > 0);
-        assertTrue(folder.has("nodeRef"));
-        assertTrue(folder.getString("nodeRef").startsWith("workspace://SpacesStore/"));
-        assertTrue(folder.has("id"));
-        
-        // "id" should start with year-number pattern e.g. 2009-0000
-        // This regular expression represents a string that starts with 4 digits followed by a hyphen,
-        // then 4 more digits and then any other characters
-        final String idRegExp = "^\\d{4}-\\d{4}.*";
-        assertTrue(folder.getString("id").matches(idRegExp));
-        
-        assertTrue(folder.has("children"));
-        JSONArray records = folder.getJSONArray("children");
-        assertEquals("Expecting 2 transferred records", 2, records.length());
-        JSONObject record1 = records.getJSONObject(0);
-        assertTrue(record1.has("type"));
-        assertEquals("record", record1.getString("type"));
-        assertTrue(record1.has("name"));
-        assertEquals("record1", record1.getString("name"));
-        assertTrue(record1.has("nodeRef"));
-        assertTrue(record1.getString("nodeRef").startsWith("workspace://SpacesStore/"));
-        assertTrue(record1.has("id"));
-        assertTrue(record1.getString("id").matches(idRegExp));
-        assertTrue(record1.has("declaredBy"));
-        assertEquals("System", record1.getString("declaredBy"));
-        assertTrue(record1.has("declaredAt"));
-        
-        // Test filing a transfer report as a record
-     
-        // Attempt to store transfer report at non existent destination, make sure we get 404
-        JSONObject jsonPostData = new JSONObject();
-        jsonPostData.put("destination", "workspace://SpacesStore/09ca1e02-1c87-4a53-97e7-xxxxxxxxxxxx");
-        String jsonPostString = jsonPostData.toString();
-        rsp = sendRequest(new PostRequest(transferReportUrl, jsonPostString, APPLICATION_JSON), 404);
-        
-        // Attempt to store audit log at wrong type of destination, make sure we get 400
-        NodeRef wrongCategory = TestUtilities.getRecordCategory(searchService, "Civilian Files", 
-                    "Foreign Employee Award Files");
-        assertNotNull(wrongCategory);
-        jsonPostData = new JSONObject();
-        jsonPostData.put("destination", wrongCategory.toString());
-        jsonPostString = jsonPostData.toString();
-        rsp = sendRequest(new PostRequest(transferReportUrl, jsonPostString, APPLICATION_JSON), 400);
-        
-        // get record folder to file into
-        NodeRef destination = TestUtilities.getRecordFolder(searchService, "Civilian Files", 
-                    "Foreign Employee Award Files", "Christian Bohr");
-        assertNotNull(destination);
-        
-        // Store the full audit log as a record
-        jsonPostData = new JSONObject();
-        jsonPostData.put("destination", destination);
-        jsonPostString = jsonPostData.toString();
-        rsp = sendRequest(new PostRequest(transferReportUrl, jsonPostString, APPLICATION_JSON), 200);
-        
-        // check the response
-        System.out.println(rsp.getContentAsString());
-        jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-        assertTrue(jsonRsp.has("success"));
-        assertTrue(jsonRsp.getBoolean("success"));
-        assertTrue(jsonRsp.has("record"));
-        assertNotNull(jsonRsp.get("record"));
-        assertTrue(nodeService.exists(new NodeRef(jsonRsp.getString("record"))));
-        assertTrue(jsonRsp.has("recordName"));
-        assertNotNull(jsonRsp.get("recordName"));
-        assertTrue(jsonRsp.getString("recordName").startsWith("report_"));
     }
     
     public void testAudit() throws Exception
@@ -1321,7 +1004,7 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
         JSONObject data = jsonParsedObject.getJSONObject("data");
         JSONObject events = data.getJSONObject("auditEvents");
         JSONArray items = events.getJSONArray("items");
-        assertEquals(this.rmAuditService.getAuditEvents().size(), items.length());
+        assertEquals(auditService.getAuditEvents().size(), items.length());
         assertTrue(items.length() > 0);
         JSONObject item = items.getJSONObject(0);
         assertTrue(item.length() == 2);
@@ -1341,10 +1024,6 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
         rsp = sendRequest(new GetRequest(RMA_AUDITLOG_URL + "?export=true"), 200);
         assertEquals("application/json", rsp.getContentType());
         jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-        
-        // get category
-        NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Civilian Files", "Foreign Employee Award Files");
-        assertNotNull(recordCategory);
         
         // construct the URL
         String nodeUrl = recordCategory.toString().replace("://", "/");
@@ -1369,7 +1048,7 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
         assertEquals("application/json", rsp.getContentType());
         jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
         
-        checkAuditStatus(true);
+        checkAuditStatus(false);
         
         // start the RM audit log
         JSONObject jsonPostData = new JSONObject();
@@ -1431,22 +1110,15 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
         Response rsp = sendRequest(new PostRequest(RMA_AUDITLOG_URL, jsonPostString, APPLICATION_JSON), 404);
         
         // Attempt to store audit log at wrong type of destination, make sure we get 400
-        NodeRef recordCategory = TestUtilities.getRecordCategory(searchService, "Civilian Files", 
-                    "Foreign Employee Award Files");
-        assertNotNull(recordCategory);
         jsonPostData = new JSONObject();
         jsonPostData.put("destination", recordCategory.toString());
         jsonPostString = jsonPostData.toString();
         rsp = sendRequest(new PostRequest(RMA_AUDITLOG_URL, jsonPostString, APPLICATION_JSON), 400);
         
-        // get record folder to file into
-        NodeRef destination = TestUtilities.getRecordFolder(searchService, "Civilian Files", 
-                    "Foreign Employee Award Files", "Christian Bohr");
-        assertNotNull(destination);
         
         // Store the full audit log as a record
         jsonPostData = new JSONObject();
-        jsonPostData.put("destination", destination);
+        jsonPostData.put("destination", recordFolder2);
         jsonPostString = jsonPostData.toString();
         rsp = sendRequest(new PostRequest(RMA_AUDITLOG_URL, jsonPostString, APPLICATION_JSON), 200);
         
@@ -1464,7 +1136,7 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
         
         // Store a filtered audit log as a record
         jsonPostData = new JSONObject();
-        jsonPostData.put("destination", destination);
+        jsonPostData.put("destination", recordFolder2);
         jsonPostData.put("size", "50");
         jsonPostData.put("user", "gavinc");
         jsonPostData.put("event", "Update Metadata");
@@ -1484,63 +1156,6 @@ public class RmRestApiTest extends BaseWebScriptTest implements RecordsManagemen
         assertNotNull(jsonRsp.get("recordName"));
         assertTrue(jsonRsp.getString("recordName").startsWith("audit_"));
     }
-    
-    private void declareRecord(NodeRef recordOne)
-    {
-        // Declare record
-        Map<QName, Serializable> propValues = this.nodeService.getProperties(recordOne);        
-        propValues.put(RecordsManagementModel.PROP_PUBLICATION_DATE, new Date());       
-        /*List<String> smList = new ArrayList<String>(2);
-        smList.add("FOUO");
-        smList.add("NOFORN");
-        propValues.put(RecordsManagementModel.PROP_SUPPLEMENTAL_MARKING_LIST, (Serializable)smList);*/        
-        propValues.put(RecordsManagementModel.PROP_MEDIA_TYPE, "mediaTypeValue"); 
-        propValues.put(RecordsManagementModel.PROP_FORMAT, "formatValue"); 
-        propValues.put(RecordsManagementModel.PROP_DATE_RECEIVED, new Date());       
-        propValues.put(RecordsManagementModel.PROP_ORIGINATOR, "origValue");
-        propValues.put(RecordsManagementModel.PROP_ORIGINATING_ORGANIZATION, "origOrgValue");
-        propValues.put(ContentModel.PROP_TITLE, "titleValue");
-        this.nodeService.setProperties(recordOne, propValues);
-        this.rmActionService.executeRecordsManagementAction(recordOne, "declareRecord");        
-    }
-
-    private NodeRef retrievePreexistingRecordFolder()
-    {
-        final List<NodeRef> resultNodeRefs = retrieveJanuaryAISVitalFolders();
-        
-        return resultNodeRefs.get(0);
-    }
-
-    private List<NodeRef> retrieveJanuaryAISVitalFolders()
-    {
-        String typeQuery = "TYPE:\"" + TYPE_RECORD_FOLDER + "\" AND @cm\\:name:\"January AIS Audit Records\"";
-        ResultSet types = this.searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, typeQuery);
-        
-        final List<NodeRef> resultNodeRefs = types.getNodeRefs();
-        types.close();
-        return resultNodeRefs;
-    }
-
-	private NodeRef createRecord(NodeRef recordFolder, String name, String title)
-	{
-    	// Create the document
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-        props.put(ContentModel.PROP_NAME, name);
-        props.put(ContentModel.PROP_TITLE, title);
-        NodeRef recordOne = this.nodeService.createNode(recordFolder, 
-                                                        ContentModel.ASSOC_CONTAINS, 
-                                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
-                                                        ContentModel.TYPE_CONTENT,
-                                                        props).getChildRef();
-        
-        // Set the content
-        ContentWriter writer = this.contentService.getWriter(recordOne, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");
-        writer.putContent("There is some content in this record");
-        
-        return recordOne;
-	}   
 
     public void testPropertyLabelWithAccentedChars() throws Exception
     {

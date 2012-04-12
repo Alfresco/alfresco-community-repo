@@ -562,7 +562,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
         {
             public NodeRef execute() throws Throwable
             {
-                NodeRef result = createRecord(rmFolder, "testRecordA" + System.currentTimeMillis());
+                NodeRef result = utils.createRecord(rmFolder, "testRecordA" + System.currentTimeMillis());
                 return result;
             }          
         });        
@@ -570,7 +570,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
         {
             public NodeRef execute() throws Throwable
             {
-                NodeRef result = createRecord(rmFolder, "testRecordB" + System.currentTimeMillis());
+                NodeRef result = utils.createRecord(rmFolder, "testRecordB" + System.currentTimeMillis());
                 return result;
             }          
         });        
@@ -579,8 +579,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                 {
                     public QName execute() throws Throwable
                     {
-                        declareRecord(testRecord1);
-                        declareRecord(testRecord2);
+                        utils.declareRecord(testRecord1);
+                        utils.declareRecord(testRecord2);
 
                         Map <String, Serializable> params = new HashMap<String, Serializable>();
                         params.put("referenceType", refType.toString());
@@ -758,8 +758,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                     {
                         public Pair<NodeRef, NodeRef> execute() throws Throwable
                         {
-                            NodeRef rec1 = createRecord(rmFolder, "testRecordA" + System.currentTimeMillis());
-                            NodeRef rec2 = createRecord(rmFolder, "testRecordB" + System.currentTimeMillis());
+                            NodeRef rec1 = utils.createRecord(rmFolder, "testRecordA" + System.currentTimeMillis());
+                            NodeRef rec2 = utils.createRecord(rmFolder, "testRecordB" + System.currentTimeMillis());
                             Pair<NodeRef, NodeRef> result = new Pair<NodeRef, NodeRef>(rec1, rec2);
                             return result;
                         }          
@@ -771,8 +771,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                     {
                         public Void execute() throws Throwable
                         {
-                            declareRecord(testRecord1);
-                            declareRecord(testRecord2);
+                        	utils.declareRecord(testRecord1);
+                        	utils.declareRecord(testRecord2);
                             
                             policyComponent.bindClassBehaviour(
                                     RecordsManagementPolicies.BEFORE_CREATE_REFERENCE, 

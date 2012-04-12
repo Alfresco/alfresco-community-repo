@@ -23,8 +23,8 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
@@ -42,14 +42,12 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  *
  * @author Mark Rogers
  */
-public class RMCaveatConfigScriptTest extends BaseWebScriptTest
+public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 {
     private MutableAuthenticationService authenticationService;
     private RMCaveatConfigService caveatConfigService;
     private PersonService personService;
     
-    private static final String USER_ONE = "RMCaveatConfigTestOne";
-    private static final String USER_TWO = "RMCaveatConfigTestTwo";
     
     protected final static String RM_LIST          = "rmc:smListTest";
     protected final static String RM_LIST_URI_ELEM = "rmc_smListTest";
@@ -57,16 +55,13 @@ public class RMCaveatConfigScriptTest extends BaseWebScriptTest
     private static final String URL_RM_CONSTRAINTS = "/api/rma/admin/rmconstraints";
   
     @Override
-    protected void setUp() throws Exception
+    protected void initServices() 
     {
-        super.setUp();
-        
-        this.caveatConfigService = (RMCaveatConfigService)getServer().getApplicationContext().getBean("CaveatConfigService");
+    	super.initServices();
+    	
+    	this.caveatConfigService = (RMCaveatConfigService)getServer().getApplicationContext().getBean("CaveatConfigService");
         this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
-        
-        // Set the current security context as admin
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     }
     
     private void createUser(String userName)
@@ -85,14 +80,6 @@ public class RMCaveatConfigScriptTest extends BaseWebScriptTest
             
             this.personService.createPerson(ppOne);
         }        
-    }
-    
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-        //this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-        
     }
     
      

@@ -40,18 +40,29 @@ public class RMJScriptTest extends BaseRMTestCase
     @Override
     protected void initServices()
     {
+        super.initServices();
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
     }
     
+    private NodeRef record;
     public void testCapabilities() throws Exception
     {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {        
+                record = utils.createRecord(rmFolder, "testRecord.txt");
+                return null;
+            }           
+        }); 
+        
         doTestInTransaction(new Test<NodeRef>()
         {
             @Override
             public NodeRef run()
             {        
-                NodeRef record = createRecord(rmFolder, "testRecord.txt");
-                declareRecord(record);
+                utils.declareRecord(record);
                 return record;
             }
             

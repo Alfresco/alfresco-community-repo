@@ -100,11 +100,11 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
             @Override
             public Object execute() throws Throwable
             {
-                mhRecord51 = createRecord(mhRecordFolder41, "record51.txt");
-                mhRecord52 = createRecord(mhRecordFolder42, "record52.txt");
-                mhRecord53 = createRecord(mhRecordFolder43, "record53.txt");
-                mhRecord54 = createRecord(mhRecordFolder44, "record54.txt");
-                mhRecord55 = createRecord(mhRecordFolder45, "record55.txt");
+                mhRecord51 = utils.createRecord(mhRecordFolder41, "record51.txt");
+                mhRecord52 = utils.createRecord(mhRecordFolder42, "record52.txt");
+                mhRecord53 = utils.createRecord(mhRecordFolder43, "record53.txt");
+                mhRecord54 = utils.createRecord(mhRecordFolder44, "record54.txt");
+                mhRecord55 = utils.createRecord(mhRecordFolder45, "record55.txt");
                 
                 return null;
             }

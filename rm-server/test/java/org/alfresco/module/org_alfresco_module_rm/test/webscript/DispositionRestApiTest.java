@@ -18,36 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 
-import java.io.Serializable;
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.Map;
 
-import javax.transaction.UserTransaction;
-
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.test.util.TestUtilities;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
+import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.view.ImporterService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -62,7 +41,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * 
  * @author Gavin Cornwell
  */
-public class DispositionRestApiTest extends BaseWebScriptTest implements RecordsManagementModel
+public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements RecordsManagementModel
 {
     protected static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final String GET_SCHEDULE_URL_FORMAT = "/api/node/{0}/dispositionschedule";
@@ -74,50 +53,6 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
     protected static final String SERVICE_URL_PREFIX = "/alfresco/service";
     protected static final String APPLICATION_JSON = "application/json";
     
-    protected NodeService nodeService;
-    protected ContentService contentService;
-    protected SearchService searchService;
-    protected ImporterService importService;
-    protected PermissionService permissionService;
-    protected TransactionService transactionService;
-    protected RecordsManagementService rmService;
-    protected RecordsManagementActionService rmActionService;
-    protected RecordsManagementEventService rmEventService;
-    protected RetryingTransactionHelper retryingTransactionHelper;
-    
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
-        this.contentService = (ContentService)getServer().getApplicationContext().getBean("ContentService");
-        this.searchService = (SearchService)getServer().getApplicationContext().getBean("SearchService");
-        this.importService = (ImporterService)getServer().getApplicationContext().getBean("ImporterService");
-        this.permissionService = (PermissionService)getServer().getApplicationContext().getBean("PermissionService");
-        this.transactionService = (TransactionService)getServer().getApplicationContext().getBean("TransactionService");
-        this.rmService = (RecordsManagementService)getServer().getApplicationContext().getBean("RecordsManagementService");
-        this.rmActionService = (RecordsManagementActionService)getServer().getApplicationContext().getBean("RecordsManagementActionService");
-        this.rmEventService = (RecordsManagementEventService)getServer().getApplicationContext().getBean("RecordsManagementEventService");
-        this.retryingTransactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");
-
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()     
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                TestUtilities.loadFilePlanData(getServer().getApplicationContext());
-                return null;
-            }
-        });
-        
-        // Bring the filePlan into the test database.
-        //
-        // This is quite a slow call, so if this class grew to have many test methods,
-        // there would be a real benefit in using something like @BeforeClass for the line below.
-        //TestUtilities.loadFilePlanData(getServer().getApplicationContext());
-    }
 
     public void testGetDispositionSchedule() throws Exception
     {
@@ -128,20 +63,16 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
         Response rsp = sendRequest(new GetRequest(nonExistentUrl), expectedStatus);
         
         // Test 404 status for node that doesn't have dispostion schedule i.e. a record series
-        NodeRef series = TestUtilities.getRecordSeries(searchService, "Reports");
-        assertNotNull(series);
-        String seriesNodeUrl = series.toString().replace("://", "/");
+        String seriesNodeUrl = recordSeries.toString().replace("://", "/");
         String wrongNodeUrl = MessageFormat.format(GET_SCHEDULE_URL_FORMAT, seriesNodeUrl);
         rsp = sendRequest(new GetRequest(wrongNodeUrl), expectedStatus);
         
         // Test data structure returned from "AIS Audit Records"
         expectedStatus = 200;
-        NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Reports", "AIS Audit Records");
-        assertNotNull(recordCategory);
+        
         String categoryNodeUrl = recordCategory.toString().replace("://", "/");
         String requestUrl = MessageFormat.format(GET_SCHEDULE_URL_FORMAT, categoryNodeUrl);
         rsp = sendRequest(new GetRequest(requestUrl), expectedStatus);
-        System.out.println(" 888 GET response: " + rsp.getContentAsString());
         assertEquals("application/json;charset=UTF-8", rsp.getContentType());
         
         // get response as JSON
@@ -160,10 +91,11 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
         assertEquals(serviceUrl, url);
         
         String authority = rootDataObject.getString("authority");
-        assertEquals("N1-218-00-4 item 023", authority);
+      
+        assertEquals(CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, authority);
         
         String instructions = rootDataObject.getString("instructions");
-        assertEquals("Cut off monthly, hold 1 month, then destroy.", instructions);
+        assertEquals(CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS, instructions);
         
         String actionsUrl = rootDataObject.getString("actionsUrl");
         assertEquals(serviceUrl + "/dispositionactiondefinitions", actionsUrl);
@@ -177,84 +109,26 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
         assertNotNull(actions);
         assertEquals(2, actions.length());
         JSONObject action1 = (JSONObject)actions.get(0);
-        assertEquals(7, action1.length());
+        assertEquals(9, action1.length());
         assertNotNull(action1.get("id"));
         assertNotNull(action1.get("url"));
         assertEquals(0, action1.getInt("index"));
         assertEquals("cutoff", action1.getString("name"));
         assertEquals("Cutoff", action1.getString("label"));
-        assertEquals("monthend|1", action1.getString("period"));
         assertTrue(action1.getBoolean("eligibleOnFirstCompleteEvent"));
         
         JSONObject action2 = (JSONObject)actions.get(1);
         assertEquals(8, action2.length());
-        assertEquals("rma:cutOffDate", action2.get("periodProperty"));
         
         // make sure the disposition schedule node ref is present and valid
         String scheduleNodeRefJSON = rootDataObject.getString("nodeRef");
         NodeRef scheduleNodeRef = new NodeRef(scheduleNodeRefJSON);
         assertTrue(this.nodeService.exists(scheduleNodeRef));
         
-        // Test data structure returned from "Personnel Security Program Records"
-        recordCategory = TestUtilities.getRecordCategory(this.searchService, "Civilian Files", "Employee Performance File System Records");
-        assertNotNull(recordCategory);
-        categoryNodeUrl = recordCategory.toString().replace("://", "/");
-        requestUrl = MessageFormat.format(GET_SCHEDULE_URL_FORMAT, categoryNodeUrl);
-        rsp = sendRequest(new GetRequest(requestUrl), expectedStatus);
-        //System.out.println("GET response: " + rsp.getContentAsString());
-        assertEquals("application/json;charset=UTF-8", rsp.getContentType());
-        
-        // get response as JSON
-        jsonParsedObject = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-        assertNotNull(jsonParsedObject);
-
-        // check JSON data
-        dataObj = jsonParsedObject.getJSONObject("data");
-        assertNotNull(dataObj);
-        rootDataObject = (JSONObject)dataObj;
-        assertEquals(10, rootDataObject.length());
-        
-        // check individual data items
-        serviceUrl = SERVICE_URL_PREFIX + requestUrl;
-        url = rootDataObject.getString("url");
-        assertEquals(serviceUrl, url);
-        
-        authority = rootDataObject.getString("authority");
-        assertEquals("GRS 1 item 23b(1)", authority);
-        
-        instructions = rootDataObject.getString("instructions");
-        assertEquals("Cutoff when superseded.  Destroy immediately after cutoff", instructions);
-        
-        recordLevel = rootDataObject.getBoolean("recordLevelDisposition");
-        assertTrue(recordLevel);
-        
-        assertTrue(rootDataObject.getBoolean("canStepsBeRemoved"));
-        
-        actions = rootDataObject.getJSONArray("actions");
-        assertNotNull(actions);
-        assertEquals(2, actions.length());
-        action1 = (JSONObject)actions.get(0);
-        assertEquals(8, action1.length());
-        assertNotNull(action1.get("id"));
-        assertNotNull(action1.get("url"));
-        assertEquals(0, action1.getInt("index"));
-        assertEquals("cutoff", action1.getString("name"));
-        assertEquals("Cutoff", action1.getString("label"));
-        assertTrue(action1.getBoolean("eligibleOnFirstCompleteEvent"));
-        JSONArray events = action1.getJSONArray("events");
-        assertNotNull(events);
-        assertEquals(1, events.length());
-        assertEquals("superseded", events.get(0));
-        
-        // Test the retrieval of an empty disposition schedule
-        NodeRef recordSeries = TestUtilities.getRecordSeries(this.searchService, "Civilian Files");
-        assertNotNull(recordSeries);
-        
         // create a new recordCategory node in the recordSeries and then get
         // the disposition schedule
-        NodeRef newRecordCategory = this.nodeService.createNode(recordSeries, ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("recordCategory")), 
-                    TYPE_RECORD_CATEGORY).getChildRef();
+        NodeRef newRecordCategory = rmService.createRecordCategory(recordSeries, GUID.generate());
+        dispositionService.createDispositionSchedule(newRecordCategory, null);
         
         categoryNodeUrl = newRecordCategory.toString().replace("://", "/");
         requestUrl = MessageFormat.format(GET_SCHEDULE_URL_FORMAT, categoryNodeUrl);
@@ -278,15 +152,10 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
     
     public void testPostDispositionAction() throws Exception
     {
-        // create a recordCategory to get a disposition schedule
-        NodeRef recordSeries = TestUtilities.getRecordSeries(this.searchService, "Civilian Files");
-        assertNotNull(recordSeries);
-        
         // create a new recordCategory node in the recordSeries and then get
         // the disposition schedule
-        NodeRef newRecordCategory = this.nodeService.createNode(recordSeries, ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("recordCategory")), 
-                    TYPE_RECORD_CATEGORY).getChildRef();
+        NodeRef newRecordCategory = rmService.createRecordCategory(recordSeries, GUID.generate());
+        dispositionService.createDispositionSchedule(newRecordCategory, null);
         
         String categoryNodeUrl = newRecordCategory.toString().replace("://", "/");
         String requestUrl = MessageFormat.format(POST_ACTIONDEF_URL_FORMAT, categoryNodeUrl);
@@ -363,13 +232,8 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
     
     public void testPutDispositionAction() throws Exception
     {
-        // create a new recordCategory node in the recordSeries and then get
-        // the disposition schedule
-        NodeRef recordSeries = TestUtilities.getRecordSeries(this.searchService, "Civilian Files");
-        assertNotNull(recordSeries);
-        NodeRef newRecordCategory = this.nodeService.createNode(recordSeries, ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("recordCategory")), 
-                    TYPE_RECORD_CATEGORY).getChildRef();
+        NodeRef newRecordCategory = rmService.createRecordCategory(recordSeries, GUID.generate());
+        dispositionService.createDispositionSchedule(newRecordCategory, null);
         
         // create an action definition to then update
         String categoryNodeUrl = newRecordCategory.toString().replace("://", "/");
@@ -437,13 +301,8 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
     
     public void testDeleteDispositionAction() throws Exception
     {
-        // create a new recordCategory node in the recordSeries and then get
-        // the disposition schedule
-        NodeRef recordSeries = TestUtilities.getRecordSeries(this.searchService, "Civilian Files");
-        assertNotNull(recordSeries);
-        NodeRef newRecordCategory = this.nodeService.createNode(recordSeries, ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("recordCategory")), 
-                    TYPE_RECORD_CATEGORY).getChildRef();
+        NodeRef newRecordCategory = rmService.createRecordCategory(recordSeries, GUID.generate());
+        dispositionService.createDispositionSchedule(newRecordCategory, null);
         
         // create an action definition to then delete
         String categoryNodeUrl = newRecordCategory.toString().replace("://", "/");
@@ -477,51 +336,18 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
     
     public void testGetDispositionLifecycle() throws Exception
     {
-        // create a new recordFolder in a recordCategory
-        NodeRef recordCategory = TestUtilities.getRecordCategory(this.searchService, "Military Files", 
-                    "Military Assignment Documents");
-        assertNotNull(recordCategory);
-        
         // Test 404 for disposition lifecycle request on incorrect node
         String categoryUrl = recordCategory.toString().replace("://", "/");
         String requestUrl = MessageFormat.format(GET_LIFECYCLE_URL_FORMAT, categoryUrl);
         Response rsp = sendRequest(new GetRequest(requestUrl), 404);
         
-        UserTransaction txn = transactionService.getUserTransaction(false);
-        txn.begin();
-        
-        NodeRef newRecordFolder = this.nodeService.createNode(recordCategory, ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("recordFolder")), 
-                    TYPE_RECORD_FOLDER).getChildRef();
-        
-        txn.commit();
-        txn = transactionService.getUserTransaction(false);
-        txn.begin();
-        
-        // Create the document
-        NodeRef recordOne = this.nodeService.createNode(newRecordFolder, 
-                                                        ContentModel.ASSOC_CONTAINS, 
-                                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "record"), 
-                                                        ContentModel.TYPE_CONTENT).getChildRef();
-        
-        // Set the content
-        ContentWriter writer = this.contentService.getWriter(recordOne, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");
-        writer.putContent("There is some content in this record");
-        
-        txn.commit(); // - triggers FileAction
-        
-        txn = transactionService.getUserTransaction(false);
-        txn.begin();
-        declareRecord(recordOne);
-        txn.commit();
+        NodeRef newRecordFolder = rmService.createRecordFolder(recordCategory, "recordFolder");
+     
         
         // there should now be a disposition lifecycle for the record
-        String recordUrl = recordOne.toString().replace("://", "/");
-        requestUrl = MessageFormat.format(GET_LIFECYCLE_URL_FORMAT, recordUrl);
+        requestUrl = MessageFormat.format(GET_LIFECYCLE_URL_FORMAT, newRecordFolder.toString().replace("://", "/"));
         rsp = sendRequest(new GetRequest(requestUrl), 200);
-        //System.out.println("GET : " + rsp.getContentAsString());
+        System.out.println("GET : " + rsp.getContentAsString());
         assertEquals("application/json;charset=UTF-8", rsp.getContentType());
         
         // get response as JSON
@@ -538,10 +364,10 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
         JSONArray events = dataObj.getJSONArray("events");
         assertEquals(1, events.length());
         JSONObject event1 = events.getJSONObject(0);
-        assertEquals("superseded", event1.get("name"));
-        assertEquals("Superseded", event1.get("label"));
+        assertEquals("case_closed", event1.get("name"));
+        assertEquals("Case Closed", event1.get("label"));
         assertFalse(event1.getBoolean("complete"));
-        assertTrue(event1.getBoolean("automatic"));
+        assertFalse(event1.getBoolean("automatic"));
         
         // check stuff expected to be missing is missing
         assertFalse(dataObj.has("asOf"));
@@ -556,10 +382,8 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
     public void testGetListOfValues() throws Exception
     {
         // call the list service
-        Response rsp = sendRequest(new GetRequest(GET_LIST_URL), 200);
-        //System.out.println("GET : " + rsp.getContentAsString());
+        Response rsp = sendRequest(new GetRequest(GET_LIST_URL), 200);      
         assertEquals("application/json;charset=UTF-8", rsp.getContentType());
-        //System.out.println(rsp.getContentAsString());
         
         // get response as JSON
         JSONObject jsonParsedObject = new JSONObject(new JSONTokener(rsp.getContentAsString()));
@@ -570,7 +394,7 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
         JSONObject actions = data.getJSONObject("dispositionActions");
         assertEquals(SERVICE_URL_PREFIX + GET_LIST_URL + "/dispositionactions", actions.getString("url"));
         JSONArray items = actions.getJSONArray("items");
-        assertEquals(this.rmActionService.getDispositionActions().size(), items.length());
+        assertEquals(actionService.getDispositionActions().size(), items.length());
         assertTrue(items.length() > 0);
         JSONObject item = items.getJSONObject(0);
         assertTrue(item.length() == 2);
@@ -581,7 +405,7 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
         JSONObject events = data.getJSONObject("events");
         assertEquals(SERVICE_URL_PREFIX + GET_LIST_URL + "/events", events.getString("url"));
         items = events.getJSONArray("items");
-        assertEquals(this.rmEventService.getEvents().size(), items.length());
+        assertEquals(eventService.getEvents().size(), items.length());
         assertTrue(items.length() > 0);
         item = items.getJSONObject(0);
         assertTrue(item.length() == 3);
@@ -610,24 +434,5 @@ public class DispositionRestApiTest extends BaseWebScriptTest implements Records
         assertTrue(item.length() == 2);
         assertTrue(item.has("label"));
         assertTrue(item.has("value"));
-    }
-    
-    private void declareRecord(NodeRef recordOne)
-    {
-        // Declare record
-        Map<QName, Serializable> propValues = this.nodeService.getProperties(recordOne);        
-        propValues.put(RecordsManagementModel.PROP_PUBLICATION_DATE, new Date());       
-       // List<String> smList = new ArrayList<String>(2);
-       // smList.add("FOUO");
-       // smList.add("NOFORN");
-       // propValues.put(RecordsManagementModel.PROP_SUPPLEMENTAL_MARKING_LIST, (Serializable)smList);        
-        propValues.put(RecordsManagementModel.PROP_MEDIA_TYPE, "mediaTypeValue"); 
-        propValues.put(RecordsManagementModel.PROP_FORMAT, "formatValue"); 
-        propValues.put(RecordsManagementModel.PROP_DATE_RECEIVED, new Date());       
-        propValues.put(RecordsManagementModel.PROP_ORIGINATOR, "origValue");
-        propValues.put(RecordsManagementModel.PROP_ORIGINATING_ORGANIZATION, "origOrgValue");
-        propValues.put(ContentModel.PROP_TITLE, "titleValue");
-        this.nodeService.setProperties(recordOne, propValues);
-        this.rmActionService.executeRecordsManagementAction(recordOne, "declareRecord");        
     }
 }

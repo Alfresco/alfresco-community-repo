@@ -91,6 +91,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     /** Site id */
     protected static final String SITE_ID = "mySite";
     
+    /** Common test utils */
+    protected CommonRMTestUtils utils;
+    
     /** Services */
     protected NodeService nodeService;
     protected ContentService contentService;
@@ -195,13 +198,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef recordsManagerPerson;
     protected NodeRef rmAdminPerson;
     
-    /** test values */
-    protected static final String DEFAULT_DISPOSITION_AUTHORITY = "disposition authority";
-    protected static final String DEFAULT_DISPOSITION_INSTRUCTIONS = "disposition instructions";
-    protected static final String DEFAULT_DISPOSITION_DESCRIPTION = "disposition action description";
-    protected static final String DEFAULT_EVENT_NAME = "case_closed";
-    protected static final String PERIOD_NONE = "none|0";
-    
     /**
      * Indicates whether this is a multi-hierarchy test or not.  If it is then the multi-hierarchy record
      * taxonomy test data is loaded.
@@ -228,6 +224,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         // Get the application context
         applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
+        utils = new CommonRMTestUtils(applicationContext);
         
         // Initialise the service beans
         initServices();
@@ -365,7 +362,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         assertNotNull("Could not create rm container", rmContainer);
         
         // Create disposition schedule
-        dispositionSchedule = createBasicDispositionSchedule(rmContainer);
+        dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
         
         // Create RM folder
         rmFolder = rmService.createRecordFolder(rmContainer, "rmFolder");
@@ -465,24 +462,24 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         
         // Level 1
         mhContainer11 = rmService.createRecordCategory(mhContainer, "mhContainer11");
-        mhDispositionSchedule11 = createBasicDispositionSchedule(mhContainer11, "ds11", DEFAULT_DISPOSITION_AUTHORITY, false, true);
+        mhDispositionSchedule11 = utils.createBasicDispositionSchedule(mhContainer11, "ds11", utils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
         mhContainer12 = rmService.createRecordCategory(mhContainer, "mhContainer12");
-        mhDispositionSchedule12 = createBasicDispositionSchedule(mhContainer12, "ds12", DEFAULT_DISPOSITION_AUTHORITY, false, true);
+        mhDispositionSchedule12 = utils.createBasicDispositionSchedule(mhContainer12, "ds12", utils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
         
         // Level 2
         mhContainer21 = rmService.createRecordCategory(mhContainer11, "mhContainer21");
         mhContainer22 = rmService.createRecordCategory(mhContainer12, "mhContainer22");
         mhContainer23 = rmService.createRecordCategory(mhContainer12, "mhContainer23");
-        mhDispositionSchedule23 = createBasicDispositionSchedule(mhContainer23, "ds23", DEFAULT_DISPOSITION_AUTHORITY, false, true);
+        mhDispositionSchedule23 = utils.createBasicDispositionSchedule(mhContainer23, "ds23", utils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
 
         // Level 3
         mhContainer31 = rmService.createRecordCategory(mhContainer21, "mhContainer31");
         mhContainer32 = rmService.createRecordCategory(mhContainer22, "mhContainer32");
         mhContainer33 = rmService.createRecordCategory(mhContainer22, "mhContainer33");
-        mhDispositionSchedule33 = createBasicDispositionSchedule(mhContainer33, "ds33", DEFAULT_DISPOSITION_AUTHORITY, true, true);
+        mhDispositionSchedule33 = utils.createBasicDispositionSchedule(mhContainer33, "ds33", utils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
         mhContainer34 = rmService.createRecordCategory(mhContainer23, "mhContainer34");
         mhContainer35 = rmService.createRecordCategory(mhContainer23, "mhContainer35");
-        mhDispositionSchedule35 = createBasicDispositionSchedule(mhContainer35, "ds35", DEFAULT_DISPOSITION_AUTHORITY, true, true);
+        mhDispositionSchedule35 = utils.createBasicDispositionSchedule(mhContainer35, "ds35", utils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
         
         // Record folders
         mhRecordFolder41 = rmService.createRecordFolder(mhContainer31, "mhFolder41");
@@ -490,146 +487,5 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         mhRecordFolder43 = rmService.createRecordFolder(mhContainer33, "mhFolder43");
         mhRecordFolder44 = rmService.createRecordFolder(mhContainer34, "mhFolder44");
         mhRecordFolder45 = rmService.createRecordFolder(mhContainer35, "mhFolder45");        
-    }
-    
-    /**
-     * 
-     * @param container
-     * @return
-     */
-    protected DispositionSchedule createBasicDispositionSchedule(NodeRef container)
-    {
-        return createBasicDispositionSchedule(container, DEFAULT_DISPOSITION_INSTRUCTIONS, DEFAULT_DISPOSITION_AUTHORITY, false, true);
-    }
-    
-    /**
-     * 
-     * @param container
-     * @param isRecordLevel
-     * @param defaultDispositionActions
-     * @return
-     */
-    protected DispositionSchedule createBasicDispositionSchedule(
-                                    NodeRef container, 
-                                    String dispositionInstructions,
-                                    String dispositionAuthority,
-                                    boolean isRecordLevel, 
-                                    boolean defaultDispositionActions)
-    {
-        Map<QName, Serializable> dsProps = new HashMap<QName, Serializable>(3);
-        dsProps.put(PROP_DISPOSITION_AUTHORITY, dispositionAuthority);
-        dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, dispositionInstructions);
-        dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, isRecordLevel);
-        DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(container, dsProps);                
-        assertNotNull(dispositionSchedule);   
-        
-        if (defaultDispositionActions == true)
-        {
-            Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
-            adParams.put(PROP_DISPOSITION_ACTION_NAME, "cutoff");
-            adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
-            
-            List<String> events = new ArrayList<String>(1);
-            events.add(DEFAULT_EVENT_NAME);
-            adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
-            
-            dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
-            
-            adParams = new HashMap<QName, Serializable>(3);
-            adParams.put(PROP_DISPOSITION_ACTION_NAME, "destroy");
-            adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
-            adParams.put(PROP_DISPOSITION_PERIOD, "immediately|0");            
-            
-            dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
-        }
-        
-        return dispositionSchedule;
-    }
-    
-    protected NodeRef createRecord(NodeRef recordFolder, String name)
-    {
-        return createRecord(recordFolder, name, null, "Some test content");
-    }
-    
-	protected NodeRef createRecord(NodeRef recordFolder, String name, Map<QName, Serializable> properties, String content)
-	{
-    	// Create the document
-	    if (properties == null)
-	    {
-	        properties = new HashMap<QName, Serializable>(1);
-	    }
-        if (properties.containsKey(ContentModel.PROP_NAME) == false)
-        {
-            properties.put(ContentModel.PROP_NAME, name);
-        }
-        NodeRef recordOne = this.nodeService.createNode(recordFolder, 
-                                                        ContentModel.ASSOC_CONTAINS, 
-                                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
-                                                        ContentModel.TYPE_CONTENT,
-                                                        properties).getChildRef();
-        
-        // Set the content
-        ContentWriter writer = contentService.getWriter(recordOne, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");
-        writer.putContent(content);
-        
-        return recordOne;
-	}   
-      
-    protected void declareRecord(final NodeRef record)
-    {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                // Declare record
-                nodeService.setProperty(record, RecordsManagementModel.PROP_PUBLICATION_DATE, new Date());
-                nodeService.setProperty(record, RecordsManagementModel.PROP_MEDIA_TYPE, "mediaTypeValue"); 
-                nodeService.setProperty(record, RecordsManagementModel.PROP_FORMAT, "formatValue"); 
-                nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_RECEIVED, new Date());
-                nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());
-                nodeService.setProperty(record, RecordsManagementModel.PROP_ORIGINATOR, "origValue");
-                nodeService.setProperty(record, RecordsManagementModel.PROP_ORIGINATING_ORGANIZATION, "origOrgValue");
-                nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");
-                actionService.executeRecordsManagementAction(record, "declareRecord");
-                
-                return null;
-            }
-            
-        }, AuthenticationUtil.getAdminUserName());
-        
-	}
-    
-    protected void freeze(final NodeRef nodeRef)
-    {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-                params.put(FreezeAction.PARAM_REASON, "Freeze reason.");
-                actionService.executeRecordsManagementAction(nodeRef, "freeze", params);
-                
-                return null;
-            }
-            
-        }, AuthenticationUtil.getSystemUserName());
-    }
-    
-    protected void unfreeze(final NodeRef nodeRef)
-    {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                actionService.executeRecordsManagementAction(nodeRef, "unfreeze");                
-                return null;
-            }
-            
-        }, AuthenticationUtil.getSystemUserName());
     }
 }

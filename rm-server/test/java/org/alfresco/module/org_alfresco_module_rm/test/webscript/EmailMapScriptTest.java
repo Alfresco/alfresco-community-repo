@@ -18,8 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,7 +28,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
-public class EmailMapScriptTest extends BaseWebScriptTest
+public class EmailMapScriptTest extends BaseRMWebScriptTestCase
 {
 
     public final static String URL_RM_EMAILMAP = "/api/rma/admin/emailmap";

@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementSearchBehaviour;
 import org.alfresco.module.org_alfresco_module_rm.script.BootstrapTestDataGet;
@@ -42,8 +42,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -51,7 +49,6 @@ import org.alfresco.service.cmr.view.ImporterBinding;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO9075;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -65,6 +62,22 @@ public class TestUtilities implements RecordsManagementModel
     public static NodeRef loadFilePlanData(ApplicationContext applicationContext)
     {
         return TestUtilities.loadFilePlanData(applicationContext, true, false);
+    }
+    
+    public static final String TEST_FILE_PLAN_NAME = "testUtilities.filePlan";
+    
+    private static NodeRef getFilePlan(NodeService nodeService, NodeRef rootNode)
+    {
+    	NodeRef filePlan = null;
+    	
+        // Try and find a file plan hanging from the root node
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(rootNode, ContentModel.ASSOC_CHILDREN, TYPE_FILE_PLAN);
+        if (assocs.size() != 0)
+        {
+            filePlan = assocs.get(0).getChildRef();            
+        }     	
+        
+        return filePlan;
     }
     
     public static NodeRef loadFilePlanData(ApplicationContext applicationContext, boolean patchData, boolean alwaysLoad)
@@ -83,21 +96,18 @@ public class TestUtilities implements RecordsManagementModel
         NodeRef filePlan = null;
         NodeRef rootNode = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         
-        if (alwaysLoad == false)
+        if (alwaysLoad == false && getFilePlan(nodeService, rootNode) != null)
         {
-            // Try and find a file plan hanging from the root node
-            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(rootNode, ContentModel.ASSOC_CHILDREN, TYPE_FILE_PLAN);
-            if (assocs.size() != 0)
-            {
-                filePlan = assocs.get(0).getChildRef();
-                return filePlan;
-            }                 
+            return filePlan;                           
         }
         
         // For now creating the filePlan beneath the
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        props.put(ContentModel.PROP_NAME, TEST_FILE_PLAN_NAME);
         filePlan = nodeService.createNode(rootNode, ContentModel.ASSOC_CHILDREN,
                 TYPE_FILE_PLAN,
-                TYPE_FILE_PLAN).getChildRef();        
+                TYPE_FILE_PLAN,
+                props).getChildRef();        
 
         // Do the data load into the the provided filePlan node reference
         // TODO ...
@@ -122,71 +132,42 @@ public class TestUtilities implements RecordsManagementModel
         return filePlan;
     }
     
-    public static NodeRef getRecordSeries(SearchService searchService, String seriesName)
+    public static NodeRef getRecordSeries(RecordsManagementService rmService, NodeService nodeService, String seriesName)
     {
-        SearchParameters searchParameters = new SearchParameters();
-        searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        
-        String query = "PATH:\"dod:filePlan/cm:" + ISO9075.encode(seriesName) + "\"";
-
-        searchParameters.setQuery(query);
-        searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
-        ResultSet rs = searchService.query(searchParameters);
-        try
-        {        
-            //setComplete();
-            //endTransaction();
-            return rs.getNodeRefs().isEmpty() ? null : rs.getNodeRef(0);
-        }
-        finally
-        {
-            rs.close();
-        }
+    	NodeRef result = null;
+        NodeRef rootNode = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+    	NodeRef filePlan = getFilePlan(nodeService, rootNode);
+    	
+    	if (filePlan != null) 
+    	{
+    		result = nodeService.getChildByName(filePlan, ContentModel.ASSOC_CONTAINS, seriesName);
+    	}
+    	return result;
     }
     
-    public static NodeRef getRecordCategory(SearchService searchService, String seriesName, String categoryName)
+    public static NodeRef getRecordCategory(RecordsManagementService rmService, NodeService nodeService, String seriesName, String categoryName)
     {
-        SearchParameters searchParameters = new SearchParameters();
-        searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        
-        String query = "PATH:\"dod:filePlan/cm:" + ISO9075.encode(seriesName) + "/cm:" + ISO9075.encode(categoryName) + "\"";
-
-        searchParameters.setQuery(query);
-        searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
-        ResultSet rs = searchService.query(searchParameters);
-        try
-        {            
-            //setComplete();
-            //endTransaction();
-            return rs.getNodeRefs().isEmpty() ? null : rs.getNodeRef(0);
-        }
-        finally
-        {
-            rs.close();
-        }
+    	NodeRef seriesNodeRef = getRecordSeries(rmService, nodeService, seriesName);
+    	
+    	NodeRef result = null;
+    	if (seriesNodeRef != null)
+    	{
+    		result = nodeService.getChildByName(seriesNodeRef, ContentModel.ASSOC_CONTAINS, categoryName);
+    	}
+    	return result;
     }
     
-    public static NodeRef getRecordFolder(SearchService searchService, String seriesName, String categoryName, String folderName)
+    public static NodeRef getRecordFolder(RecordsManagementService rmService, NodeService nodeService, String seriesName, String categoryName, String folderName)
     {
-        SearchParameters searchParameters = new SearchParameters();
-        searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        String query = "PATH:\"dod:filePlan/cm:" + ISO9075.encode(seriesName)
-            + "/cm:" + ISO9075.encode(categoryName)
-            + "/cm:" + ISO9075.encode(folderName) + "\"";
-        System.out.println("Query: " + query);
-        searchParameters.setQuery(query);
-        searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
-        ResultSet rs = searchService.query(searchParameters);
-        try
-        {
-            // setComplete();
-            // endTransaction();
-            return rs.getNodeRefs().isEmpty() ? null : rs.getNodeRef(0);
-        }
-        finally
-        {
-            rs.close();
-        }
+    	NodeRef categoryNodeRef = getRecordCategory(rmService, nodeService, seriesName, categoryName);
+    	
+    	NodeRef result = null;
+    	if (categoryNodeRef != null)
+    	{
+    		result = nodeService.getChildByName(categoryNodeRef, ContentModel.ASSOC_CONTAINS, folderName);
+    	}
+    	return result;
+
     }
 
     

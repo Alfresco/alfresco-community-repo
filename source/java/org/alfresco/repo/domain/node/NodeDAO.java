@@ -710,6 +710,16 @@ public interface NodeDAO extends NodeBulkLoader
     
     public List<Long> getTxnsUnused(Long minTxnId, long maxCommitTime, int count);
     
+    /**
+     * Remove unused transactions from commit time 'fromCommitTime' to commit time 'toCommitTime'
+     * 
+     * @param fromCommitTime	delete unused transactions from commit time
+     * @param toCommitTime		delete unused transactions to commit time
+     * 
+     * @return
+     */
+    public int deleteTxnsUnused(long fromCommitTime, long toCommitTime);
+    
     public void purgeTxn(Long txnId);
     
     /**
@@ -721,6 +731,22 @@ public interface NodeDAO extends NodeBulkLoader
      * @return              Returns the maximum commit time or <tt>null</tt> if there are no transactions
      */
     public Long getMaxTxnCommitTime();
+    
+    /**
+     * @return              Returns the minimum id or <tt>0</tt> if there are no transactions
+     */
+    public Long getMinTxnId();
+    
+    /**
+     * 
+     * @return the commit time of the oldest unused transaction
+     */
+    public Long getMinUnusedTxnCommitTime();
+    
+    /**
+     * @return              Returns the maximum id or <tt>0</tt> if there are no transactions
+     */
+    public Long getMaxTxnId();
     
     /**
      * Select children by property values

@@ -94,15 +94,15 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
+import org.jaxen.saxpath.SAXPathException;
+import org.jaxen.saxpath.base.XPathReader;
 import org.safehaus.uuid.UUID;
-import org.saxpath.SAXPathException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import com.werken.saxpath.XPathReader;
 
 /**
  * The information that makes up an index. IndexInfoVersion Repeated information of the form

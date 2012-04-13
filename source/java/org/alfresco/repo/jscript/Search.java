@@ -46,11 +46,10 @@ import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.jaxen.saxpath.base.XPathReader;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.springframework.extensions.surf.util.ParameterCheck;
-
-import com.werken.saxpath.XPathReader;
 
 /**
  * Search component for use by the ScriptService.

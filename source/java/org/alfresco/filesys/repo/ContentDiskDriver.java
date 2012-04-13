@@ -1027,8 +1027,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     
                     // Copy cached timestamps
                     
-                	if ( fstate.hasAccessDateTime())
-                		finfo.setAccessDateTime(fstate.getAccessDateTime());
+//                	if ( fstate.hasAccessDateTime())
+//                		finfo.setAccessDateTime(fstate.getAccessDateTime());
                 	if ( fstate.hasChangeDateTime())
                 		finfo.setChangeDateTime(fstate.getChangeDateTime());
                 	if ( fstate.hasModifyDateTime())
@@ -1731,7 +1731,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     throw new AccessDeniedException("Invalid access mode");
                 }
                 
-                if ( fstate.getOpenCount() > 0) {
+                if ( fstate.getOpenCount() > 0 && params.isAttributesOnlyAccess() == false) {
                     
     				// Check for impersonation security level from the original process that opened the file
     				
@@ -1819,7 +1819,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             {
                 // Check if the file is already opened by this client/process
                 
-                if ( tree.openFileCount() > 0) {
+                if ( tree.openFileCount() > 0 && params.isAttributesOnlyAccess() == false) {
                 
                     // Search the open file table for this session/virtual circuit
                     
@@ -1856,7 +1856,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                                     if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                         logger.debug("Re-use existing file open Path " + params.getPath() + ", PID=" + params.getProcessId() + ", params=" +
                                                 ( params.isReadOnlyAccess() ? "ReadOnly" : "Write") + ", file=" + 
-                                                ( contentFile.getGrantedAccess() == NetworkFile.READONLY ? "ReadOnly" : "Write"));
+                                                ( contentFile.getGrantedAccess() <= NetworkFile.READONLY ? "ReadOnly" : "Write"));
                                 }
                                 else if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                     logger.debug("Not re-using file path=" + params.getPath() + ", readWrite=" + (params.isReadWriteAccess() ? "true" : "false") +
@@ -1877,7 +1877,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     
                     // Create a new network file for the open request
                 
-                    netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params.getPath(), params.isReadOnlyAccess(), sess);
+                    netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params.getPath(), params.isReadOnlyAccess(), params.isAttributesOnlyAccess(), sess);
                 }
             }
             else
@@ -1961,7 +1961,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
                 // Update the file state, cache the node
                 
-                fstate.incrementOpenCount();
+                if ( netFile.getGrantedAccess() > NetworkFile.ATTRIBUTESONLY)
+                	fstate.incrementOpenCount();
                 fstate.setFilesystemObject(nodeRef);
                 
                 // Store the state with the file
@@ -1970,8 +1971,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 
                 // Set the file access date/time, if available
                 
-                if ( fstate.hasAccessDateTime())
-                    netFile.setAccessDate( fstate.getAccessDateTime());
+//                if ( fstate.hasAccessDateTime())
+//                    netFile.setAccessDate( fstate.getAccessDateTime());
             }
             
             // Debug
@@ -2090,7 +2091,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             // Create the network file
             
-            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, result.getSecond(), params.getPath(), params.isReadOnlyAccess(), sess);
+            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, result.getSecond(), params.getPath(), params.isReadOnlyAccess(), params.isAttributesOnlyAccess(), sess);
             
             // Always allow write access to a newly created file
             
@@ -2480,7 +2481,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     
                     // If the file open count is now zero then reset the stored sharing mode
                     
-                    if ( fstate.decrementOpenCount() == 0)
+                    if ( file.getGrantedAccess() > NetworkFile.ATTRIBUTESONLY && fstate.decrementOpenCount() == 0)
                         fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
                     
                     // Check if there is a cached modification timestamp to be written out
@@ -3433,11 +3434,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         }
         catch (AlfrescoRuntimeException ex)
         {
-            // Debug
-
-            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                logger.debug("Rename file", ex);
-
+            // Unexpected Exception being consumed here - hence the error logging.
+            logger.error("Unable to rename file" + oldName, ex);
+            
             // Convert to a general I/O exception
 
             throw new AccessDeniedException("Rename file " + oldName);

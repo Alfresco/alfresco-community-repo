@@ -63,6 +63,12 @@
 #db.url=jdbc:postgresql://localhost:5432/alfresco
 
 #
+# DB2 connection
+#
+#db.driver=com.ibm.db2.jcc.DB2Driver 
+#db.url=jdbc:db2://host:50000/ALFRESCO 
+
+#
 # Index Recovery Mode
 #-------------
 #index.recovery.mode=AUTO

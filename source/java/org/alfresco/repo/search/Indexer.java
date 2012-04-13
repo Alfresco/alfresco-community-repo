@@ -18,9 +18,13 @@
  */
 package org.alfresco.repo.search;
 
+import java.util.Collection;
+
+import org.alfresco.repo.search.impl.lucene.LuceneIndexException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 
 /**
  * This interface abstracts how indexing is used from within the node service
@@ -102,6 +106,27 @@ public interface Indexer
      * @param relationshipRef
      */
     public void deleteChildRelationship(ChildAssociationRef relationshipRef);
+
+    /**
+     * Does a database vs index comparison for the given created/updated/renamed/referenced nodeRef in order to
+     * determine the set of indexing operations required
+     * 
+     * @param nodeRef
+     *            the nodeRef to process
+     * @param searcher
+     *            searcher to query the indexes
+     * @param addedParents
+     *            set to add new secondary parent associations to
+     * @param deletedParents
+     *            set to add removed secondary parent associations to
+     * @param createdNodes
+     *            set to add created nodes to
+     * @param updatedNodes
+     *            set to add updated nodes to
+     */
+    public void detectNodeChanges(NodeRef nodeRef, SearchService searcher,
+            Collection<ChildAssociationRef> addedParents, Collection<ChildAssociationRef> deletedParents,
+            Collection<ChildAssociationRef> createdNodes, Collection<NodeRef> updatedNodes);
 
     /**
      * Delete the index for a store

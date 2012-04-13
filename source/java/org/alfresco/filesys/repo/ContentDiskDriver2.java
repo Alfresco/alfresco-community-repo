@@ -2100,6 +2100,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     	
     	diskDev.setTotalUnits( totalSpace / DiskSizeInterfaceConsts.DiskAllocationUnit);
     	diskDev.setFreeUnits( freeSpace / DiskSizeInterfaceConsts.DiskAllocationUnit);
+    	
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("getDiskInformation returning diskDev:" + diskDev);
+        }
     }
 
     public void setCifsHelper(CifsHelper cifsHelper)
@@ -2145,16 +2150,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             logger.debug("processIOControl ctrlCode: 0x" + Integer.toHexString(ctrlCode) + ", fid:" + fid);
         }
         
-        NetworkFile netFile = tree.findFile(fid);
-        if ( netFile == null || netFile.isDirectory() == false)
-        {
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("net file is null or not a directory");
-            }
-            throw new SMBException(SMBStatus.NTErr, SMBStatus.NTInvalidParameter);
-        }
-        
         final ContentContext ctx = (ContentContext) tree.getContext();
         try
         {
@@ -2170,7 +2165,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             }
             throw smbException;
         }
-    
+        catch(IOControlNotImplementedException ioException)
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("IO Control Not Implemented Exception fid:" + fid, ioException);
+            }
+            throw ioException;
+        }
     }
         
           
@@ -2446,7 +2448,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                         case READ_ONLY:
                                                
                             logger.debug("open file for read only");
-                            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, path, true, session);
+                            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, path, true, false, session);
                             netFile.setGrantedAccess( NetworkFile.READONLY);
                             break;
                     
@@ -2484,14 +2486,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                         
                         case ATTRIBUTES_ONLY:
                             logger.debug("open file for attributes only");
-                            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, path, true, session);
+                            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, path, true, true, session);
                             netFile.setGrantedAccess( NetworkFile.READONLY);
                             break;
                         
                         case DELETE:
                             //TODO Not sure about this one.
                             logger.debug("open file for delete");
-                            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, path,true , session);
+                            netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, getCifsHelper(), nodeRef, path, true, false, session);
                             netFile.setGrantedAccess( NetworkFile.READONLY);
                             break;
                             
@@ -2551,7 +2553,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 urlStr.append( srvName);
                 urlStr.append("/");
                 urlStr.append( tree.getSharedDevice().getName());
-                urlStr.append( pathl);
+                urlStr.append( path);
                 urlStr.append("\r\n");
 
                 // Create the in memory pseudo file for the URL link

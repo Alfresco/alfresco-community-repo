@@ -207,6 +207,9 @@
       <property name="minPurgeAgeDays">
          <value>${index.tracking.minRecordPurgeAgeDays}</value>
       </property>
+      <property name="purgeSize">
+         <value>${index.tracking.purgeSize}</value>
+      </property>
    </bean>
 
    <bean id="storesToIgnorePolicies" class="org.springframework.beans.factory.config.SetFactoryBean">

@@ -26,7 +26,7 @@
             <property name="commandMap">
                <map>
                   <entry key=".*">
-                     <value>${swf.exe} -T ${flashVersion} ${swf.encoder.params} ${source} -o ${target}</value>
+                     <value>${swf.exe} -T ${flashVersion} ${swf.encoder.params} ${source} -o ${target} -s languagedir=${swf.languagedir}</value>
                   </entry>
                </map>
             </property>

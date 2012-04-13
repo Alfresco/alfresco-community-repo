@@ -19,6 +19,7 @@ package org.alfresco.repo.model.filefolder;
 
 import java.util.Iterator;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -110,10 +111,13 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 		this.permissionService = permissionService;
 	}
 
-    private void checkTemporaryAspect(boolean isTemporary, FileInfo fileInfo)
+    private void checkTemporaryAspect(boolean isTemporary,  FileInfo fileInfo)
     {
-        NodeRef nodeRef = fileInfo.getNodeRef();
-
+        checkTemporaryAspect(isTemporary, fileInfo.getNodeRef());
+    }
+	
+    private void checkTemporaryAspect(boolean isTemporary,  NodeRef nodeRef)
+    {
         if(isTemporary)
         {
             // it matched, so apply the temporary and hidden aspects
@@ -121,7 +125,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
             if (logger.isDebugEnabled())
             {
-                logger.debug("Applied temporary marker: " + fileInfo);
+                logger.debug("Applied temporary marker: " + nodeRef);
             }
         }
         else
@@ -135,7 +139,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Removed temporary marker: " + fileInfo);
+                    logger.debug("Removed temporary marker: " + nodeRef);
                 }
             }
         }
@@ -243,17 +247,37 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 else
                 {
                     ret = invocation.proceed();
+                
     
                     FileInfoImpl fileInfo = (FileInfoImpl)ret;
     
     	            checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
                 }
             }
-            else if (methodName.startsWith("rename") ||
-            		methodName.startsWith("move") ||
-            		methodName.startsWith("copy"))
+            else if (methodName.startsWith("move"))
+            {
+                Object[] args = invocation.getArguments();
+                NodeRef sourceNodeRef = (NodeRef)args[0];
+                String newName = (String)args[args.length -1];
+               
+                if(newName != null)
+                {
+                    // Name is changing
+                    // check against all the regular expressions
+                    checkTemporaryAspect(temporaryFiles.isFiltered(newName), sourceNodeRef);
+                    if(getMode() == Mode.ENHANCED)
+                    {
+                        hiddenAspect.checkHidden(sourceNodeRef, true);
+                    }
+                }
+              
+                // now do the move
+                ret = invocation.proceed();
+            }
+            else if (methodName.startsWith("copy"))
             {
                 ret = invocation.proceed();
+            
     
                 FileInfoImpl fileInfo = (FileInfoImpl) ret;
                 String filename = fileInfo.getName();
@@ -268,6 +292,46 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 if(getMode() == Mode.ENHANCED)
                 {
                     hiddenAspect.checkHidden(fileInfo, true);
+                }
+                /*
+                 * TODO should these two calls be before the proceed?   However its the same problem as create
+                 * The node needs to be created before we can add aspects.
+                 */
+            }
+            else if (methodName.startsWith("rename")) 
+            {
+                Object[] args = invocation.getArguments();
+                
+                if(args != null && args.length == 2)
+                {
+                    /**
+                     * Expecting rename(NodeRef, newName)
+                     */
+                    String newName = (String)args[1];
+                    NodeRef sourceNodeRef = (NodeRef)args[0];
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Checking filename returned by " + methodName + ": " + newName);
+                    }
+                  
+                    // check against all the regular expressions
+                    checkTemporaryAspect(temporaryFiles.isFiltered(newName), sourceNodeRef);
+                    if(getMode() == Mode.ENHANCED)
+                    {
+                        hiddenAspect.checkHidden(sourceNodeRef, true);
+                    }
+                    
+                    ret = invocation.proceed();
+                    
+                    return ret;
+                }
+                else
+                {
+                    /**
+                     * expected rename(NodeRef, String) - got something else...
+                     */
+                    throw new AlfrescoRuntimeException("FilenameFilteringInterceptor: unknown rename method");
                 }
             }
             else

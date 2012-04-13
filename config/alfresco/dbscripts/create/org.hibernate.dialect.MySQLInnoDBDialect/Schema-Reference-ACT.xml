@@ -1034,6 +1034,11 @@
             <columnname>BYTEARRAY_ID_</columnname>
           </columnnames>
         </index>
+        <index name="ACT_IDX_VARIABLE_TASK_ID" unique="false">
+          <columnnames>
+            <columnname>TASK_ID_</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
     <table name="act_hi_actinst">
@@ -1216,6 +1221,11 @@
         <index name="ACT_IDX_HI_DETAIL_NAME" unique="false">
           <columnnames>
             <columnname>NAME_</columnname>
+          </columnnames>
+        </index>
+         <index name="ACT_IDX_HI_DETAIL_TASK_ID" unique="false">
+          <columnnames>
+            <columnname>TASK_ID_</columnname>
           </columnnames>
         </index>
       </indexes>

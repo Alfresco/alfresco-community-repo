@@ -185,7 +185,7 @@ public class SolrQueryHTTPClient
 
             url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
             url.append("&wt=").append(encoder.encode("json", "UTF-8"));
-            url.append("&fl=").append(encoder.encode("*,score", "UTF-8"));
+            url.append("&fl=").append(encoder.encode("DBID,score", "UTF-8"));
             
             if (searchParameters.getMaxItems() >= 0)
             {

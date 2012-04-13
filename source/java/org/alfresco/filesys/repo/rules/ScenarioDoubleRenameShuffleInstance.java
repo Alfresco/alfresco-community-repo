@@ -95,6 +95,7 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
             if(logger.isDebugEnabled())
             {
                 logger.debug("Instance timed out");
+                
             }
         }
         

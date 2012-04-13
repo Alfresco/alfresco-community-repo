@@ -1701,4 +1701,22 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         return username;
     }
+
+    @Override
+    public boolean isEnabled(String userName)
+    {
+        NodeRef noderef = getPerson(userName, false);
+        
+        Serializable ser = nodeService.getProperty(noderef, ContentModel.PROP_ENABLED);
+        
+        if (ser == null)
+        {
+            return true;
+        }
+        else
+        {
+            return DefaultTypeConverter.INSTANCE.booleanValue(ser);
+        }
+
+    }
 }

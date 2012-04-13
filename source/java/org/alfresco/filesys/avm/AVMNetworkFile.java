@@ -462,7 +462,7 @@ public class AVMNetworkFile extends AlfrescoNetworkFile {
         
         // We need to create the channel
         
-        if (write && getGrantedAccess() == NetworkFile.READONLY)
+        if (write && getGrantedAccess() <= NetworkFile.READONLY)
             throw new AccessDeniedException("The network file was created for read-only: " + this);
 
         // Access the content data and get a file channel to the data

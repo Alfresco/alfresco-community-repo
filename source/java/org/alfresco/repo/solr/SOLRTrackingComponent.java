@@ -157,4 +157,14 @@ public interface SOLRTrackingComponent
      * @return
      */
     public Long getMaxTxnId();
+
+    /**
+     * @return
+     */
+    public Long getMaxChangeSetCommitTime();
+
+    /**
+     * @return
+     */
+    public Long getMaxChangeSetId();
 }

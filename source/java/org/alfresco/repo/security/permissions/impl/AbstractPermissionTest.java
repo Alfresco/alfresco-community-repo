@@ -101,6 +101,8 @@ public class AbstractPermissionTest extends TestCase
 
     private UserTransaction testTX;
 
+    protected PermissionServiceImpl permissionServiceImpl;
+
     public AbstractPermissionTest()
     {
         super();
@@ -120,6 +122,7 @@ public class AbstractPermissionTest extends TestCase
         dictionaryService = (DictionaryService) applicationContext.getBean(ServiceRegistry.DICTIONARY_SERVICE
                 .getLocalName());
         permissionService = (PermissionServiceSPI) applicationContext.getBean("permissionService");
+        permissionServiceImpl = (PermissionServiceImpl) applicationContext.getBean("permissionServiceImpl");
         namespacePrefixResolver = (NamespacePrefixResolver) applicationContext
                 .getBean(ServiceRegistry.NAMESPACE_SERVICE.getLocalName());
         authenticationService = (MutableAuthenticationService) applicationContext.getBean("authenticationService");
@@ -178,6 +181,8 @@ public class AbstractPermissionTest extends TestCase
         authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
         
         authenticationComponent.clearCurrentSecurityContext();
+        
+        assertTrue(permissionServiceImpl.getAnyDenyDenies());
     }
 
     @Override

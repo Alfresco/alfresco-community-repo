@@ -153,6 +153,7 @@
                     <list>
                         <value>classpath:alfresco/mimetype/mimetype-map.xml</value>
                         <value>classpath:alfresco/mimetype/mimetype-map-openoffice.xml</value>
+                        <value>classpath*:alfresco/module/*/mimetype-map*.xml</value>
                         <value>classpath*:alfresco/extension/mimetype/*-map.xml</value>
                     </list>
                 </property>

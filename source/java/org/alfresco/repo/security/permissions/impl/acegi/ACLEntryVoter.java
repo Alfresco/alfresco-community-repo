@@ -57,6 +57,8 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private static Log log = LogFactory.getLog(ACLEntryVoter.class);
 
     private static final String ACL_NODE = "ACL_NODE";
+    
+    private static final String ACL_PRI_CHILD_ASSOC_ON_CHILD = "ACL_PRI_CHILD_ASSOC_ON_CHILD";
 
     private static final String ACL_PARENT = "ACL_PARENT";
 
@@ -205,6 +207,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     {
         if ((attribute.getAttribute() != null)
                 && (attribute.getAttribute().startsWith(ACL_NODE)
+                        || attribute.getAttribute().startsWith(ACL_PRI_CHILD_ASSOC_ON_CHILD)
                         || attribute.getAttribute().startsWith(ACL_PARENT)
                         || attribute.getAttribute().equals(ACL_ALLOW)
                         || attribute.getAttribute().startsWith(ACL_METHOD)
@@ -256,7 +259,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         MethodInvocation invocation = (MethodInvocation) object;
 
         Method method = invocation.getMethod();
-        Class[] params = method.getParameterTypes();
+        Class<?>[] params = method.getParameterTypes();
 
         Boolean hasMethodEntry = null;
         
@@ -288,30 +291,95 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                     hasMethodEntry = Boolean.TRUE;
                 }
             }
-            else if (cad.parameter >= invocation.getArguments().length)
+            else if (cad.typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD))
             {
-                continue;
+                if (cad.parameter.length == 2 && NodeRef.class.isAssignableFrom(params[cad.parameter[0]])
+                        && NodeRef.class.isAssignableFrom(params[cad.parameter[1]]))
+                {
+                    testNodeRef = getArgument(invocation, cad.parameter[1]);
+                    if (testNodeRef != null)
+                    {
+                        if (nodeService.exists(testNodeRef))
+                        {
+                            if (log.isDebugEnabled())
+                            {
+                                log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                            }
+                            ChildAssociationRef primaryParent = nodeService.getPrimaryParent(testNodeRef);
+                            NodeRef testParentNodeRef = getArgument(invocation, cad.parameter[0]); 
+                            if (primaryParent == null || testParentNodeRef == null
+                                    || !testParentNodeRef.equals(primaryParent.getParentRef()))
+                            {
+                                if (log.isDebugEnabled())
+                                {
+                                    log.debug("\tPermission test ignoring secondary parent association to "
+                                            + testParentNodeRef);
+                                }
+                                testNodeRef = null;
+                            }
+                        }
+                        else if (log.isDebugEnabled())
+                        {
+                            log.debug("\tPermission test on non-existing node " + testNodeRef);
+                        }
+                    }
+                }
+                else if (cad.parameter.length == 1 && ChildAssociationRef.class.isAssignableFrom(params[cad.parameter[0]]))
+                {
+                    ChildAssociationRef testParentRef = getArgument(invocation, cad.parameter[0]);
+                    if (testParentRef != null)
+                    {
+                        if (testParentRef.isPrimary())
+                        {
+                            testNodeRef = testParentRef.getChildRef();
+                            if (log.isDebugEnabled())
+                            {
+                                if (nodeService.exists(testNodeRef))
+                                {
+                                    log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                                }
+                                else
+                                {
+                                    log.debug("\tPermission test on non-existing node " + testNodeRef);
+                                }
+                            }
+                        }
+                        else if (log.isDebugEnabled())
+                        {
+                            log.debug("\tPermission test ignoring secondary parent association to "
+                                    + testParentRef.getParentRef());
+                        }
+                    }
+                }
+                else
+                {
+                    throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
+                }
             }
             else if (cad.typeString.equals(ACL_NODE))
             {
-                if (StoreRef.class.isAssignableFrom(params[cad.parameter]))
+                if (cad.parameter.length != 1)
                 {
-                    if (invocation.getArguments()[cad.parameter] != null)
+                    throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
+                }
+                else if (StoreRef.class.isAssignableFrom(params[cad.parameter[0]]))
+                {
+                    StoreRef storeRef = getArgument(invocation, cad.parameter[0]);
+                    if (storeRef != null)
                     {
                         if (log.isDebugEnabled())
                         {
                             log.debug("\tPermission test against the store - using permissions on the root node");
                         }
-                        StoreRef storeRef = (StoreRef) invocation.getArguments()[cad.parameter];
                         if (nodeService.exists(storeRef))
                         {
                             testNodeRef = nodeService.getRootNode(storeRef);
                         }
                     }
                 }
-                else if (NodeRef.class.isAssignableFrom(params[cad.parameter]))
+                else if (NodeRef.class.isAssignableFrom(params[cad.parameter[0]]))
                 {
-                    testNodeRef = (NodeRef) invocation.getArguments()[cad.parameter];
+                    testNodeRef = getArgument(invocation, cad.parameter[0]);
                     if (log.isDebugEnabled())
                     {
                         if (nodeService.exists(testNodeRef))
@@ -322,14 +390,14 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                         {
                             log.debug("\tPermission test on non-existing node " +testNodeRef);
                         }
-
                     }
                 }
-                else if (ChildAssociationRef.class.isAssignableFrom(params[cad.parameter]))
+                else if (ChildAssociationRef.class.isAssignableFrom(params[cad.parameter[0]]))
                 {
-                    if (invocation.getArguments()[cad.parameter] != null)
+                    ChildAssociationRef testChildRef = getArgument(invocation, cad.parameter[0]);
+                    if (testChildRef != null)
                     {
-                        testNodeRef = ((ChildAssociationRef) invocation.getArguments()[cad.parameter]).getChildRef();
+                        testNodeRef = testChildRef.getChildRef();
                         if (log.isDebugEnabled())
                         {
                             if (nodeService.exists(testNodeRef))
@@ -352,9 +420,13 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             {
                 // There is no point having parent permissions for store
                 // refs
-                if (NodeRef.class.isAssignableFrom(params[cad.parameter]))
+                if (cad.parameter.length != 1)
                 {
-                    NodeRef child = (NodeRef) invocation.getArguments()[cad.parameter];
+                    throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
+                }
+                else if (NodeRef.class.isAssignableFrom(params[cad.parameter[0]]))
+                {
+                    NodeRef child = getArgument(invocation, cad.parameter[0]);
                     if (child != null)
                     {
                         testNodeRef = nodeService.getPrimaryParent(child).getParentRef();
@@ -372,11 +444,12 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                         }
                     }
                 }
-                else if (ChildAssociationRef.class.isAssignableFrom(params[cad.parameter]))
+                else if (ChildAssociationRef.class.isAssignableFrom(params[cad.parameter[0]]))
                 {
-                    if (invocation.getArguments()[cad.parameter] != null)
+                    ChildAssociationRef testParentRef = getArgument(invocation, cad.parameter[0]);
+                    if (testParentRef != null)
                     {
-                        testNodeRef = ((ChildAssociationRef) invocation.getArguments()[cad.parameter]).getParentRef();
+                        testNodeRef = testParentRef.getParentRef();
                         if (log.isDebugEnabled())
                         {
                             if (nodeService.exists(testNodeRef))
@@ -456,6 +529,13 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private <T> T getArgument(MethodInvocation invocation, int index)
+    {
+        Object[] args = invocation.getArguments();
+        return index > args.length ? null : (T)args[index];        
+    }
+
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
     {
         List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>(2);
@@ -480,7 +560,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
         SimplePermissionReference required;
 
-        int parameter;
+        int[] parameter;
 
         String authority;
 
@@ -493,24 +573,36 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             }
             typeString = st.nextToken();
 
-            if (!(typeString.equals(ACL_NODE) || typeString.equals(ACL_PARENT) || typeString.equals(ACL_ALLOW) || typeString
-                    .equals(ACL_METHOD) || typeString.equals(ACL_DENY)))
+            if (!(typeString.equals(ACL_NODE) || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
+                    || typeString.equals(ACL_PARENT) || typeString.equals(ACL_ALLOW) || typeString.equals(ACL_METHOD) || typeString
+                    .equals(ACL_DENY)))
             {
                 throw new ACLEntryVoterException("Invalid type: must be ACL_NODE, ACL_PARENT or ACL_ALLOW");
             }
 
-            if (typeString.equals(ACL_NODE) || typeString.equals(ACL_PARENT))
+            if (typeString.equals(ACL_NODE) || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
+                    || typeString.equals(ACL_PARENT))
             {
-                if (st.countTokens() != 3)
+                int count = st.countTokens();
+                if (typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD))
                 {
-                    throw new ACLEntryVoterException("There must be four . separated tokens in each config attribute");
+                    if (count != 3 && count != 4)
+                    {
+                        throw new ACLEntryVoterException("There must be three or four . separated tokens in each config attribute");                        
+                    }
                 }
-                String numberString = st.nextToken();
+                else if (count != 3)
+                {
+                    throw new ACLEntryVoterException("There must be three . separated tokens in each config attribute");
+                }
+                // Handle a variable number of parameters
+                parameter = new int[count - 2];
+                for (int i=0; i<parameter.length; i++)
+                {
+                    parameter[i] = Integer.parseInt(st.nextToken());                    
+                }
                 String qNameString = st.nextToken();
                 String permissionString = st.nextToken();
-
-                parameter = Integer.parseInt(numberString);
-
                 QName qName = QName.createQName(qNameString, nspr);
 
                 required = SimplePermissionReference.getPermissionReference(qName, permissionString);

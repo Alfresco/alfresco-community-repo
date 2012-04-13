@@ -19,6 +19,7 @@
 package org.alfresco.repo.node.index;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -185,17 +186,12 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 transactionService.setAllowWrite(false, vetoName);
             }
             
-            
-            List<Transaction> startTxns = nodeDAO.getTxnsByCommitTimeAscending(
-                    Long.MIN_VALUE, Long.MAX_VALUE, 1000, null, false);
+            List<Transaction> startTxns = getTxnsByCommitTimeWindowAscending(MIN_SAMPLE_TIME, 1000);
             InIndex startAllPresent = areTxnsInStartSample(startTxns);
             
-            
-            List<Transaction> endTxns = nodeDAO.getTxnsByCommitTimeDescending(
-                    Long.MIN_VALUE, Long.MAX_VALUE, 1000, null, false);
+            List<Transaction> endTxns = getTxnsByCommitTimeWindowDescending(MIN_SAMPLE_TIME, 1000);
             InIndex endAllPresent = areAllTxnsInEndSample(endTxns);
-                
-            
+                        
             // check the level of cover required
             switch (recoveryMode)
             {
@@ -230,6 +226,135 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         }
         
     }
+    
+    /**
+     * List transactions up to the specified amount using a sliding time based window.
+     * This will create smaller result sets which circumvents performance problems using
+     * sql LIMIT on some jdbc drivers and databases.
+     * 
+     * @param windowSize	the size of collection window in milliseconds. 
+     * @param count			the number of transctions to attempt to collect 
+     * @return				returns a list of transactions
+     */
+    private List<Transaction> getTxnsByCommitTimeWindowDescending(final long minWindowSize, final int count) {
+    	if (minWindowSize == 0 || count == 0)
+    	{
+    		return Collections.emptyList();
+    	}
+        final long startTxns = nodeDAO.getMinTxnCommitTime();
+        final long endTxns = nodeDAO.getMaxTxnCommitTime() + 1;
+        
+        List<Transaction> list = new ArrayList<Transaction>(count);
+        long toTimeExclusive = endTxns;
+        long window = minWindowSize;
+        //start at the end move backward by sample increment 
+		while (true) 
+		{	        
+			//slide window start backward by sample increment (windowsSize is a negative number)
+			long fromTimeInclusive = toTimeExclusive - window;
+			if (fromTimeInclusive <= startTxns) 
+			{
+				//if we have moved back past the first transaction set to zero
+				fromTimeInclusive = startTxns;
+			}
+			List<Transaction> txns = nodeDAO.getTxnsByCommitTimeDescending(
+    				fromTimeInclusive, toTimeExclusive, count, null, false);
+    		
+			for (Transaction txn : txns) 
+			{
+				list.add(txn);
+				//bail out if we have enough
+        		if (list.size() >= count) break;
+			}
+			//bail out of main loop  if we have enough or there are no more transactions
+			if (list.size() >= count || fromTimeInclusive == startTxns) 
+			{
+				break;
+			}
+			//calculate new window size
+			if (list.size() == 0)
+            {
+                window = minWindowSize;
+            }
+            else
+            {
+            	//calculate rate of transactions found (start to end of current window)
+                window = Math.max(minWindowSize, count
+                        * (endTxns - fromTimeInclusive) / list.size());
+            }
+			
+			//slide window end back to last inclusive time window
+			toTimeExclusive = fromTimeInclusive;
+		}
+		return list;        
+    }
+    
+    /**
+     * List transactions up to the specified amount using a sliding time based window.
+     * This will create smaller result sets which circumvents performance problems using
+     * sql LIMIT on some jdbc drivers and databases.
+     * 
+     * @param windowSize	the size of collection window in milliseconds. 
+     * @param count			the number of transctions to attempt to collect 
+     * @return				returns a list of transactions
+     */
+    private List<Transaction> getTxnsByCommitTimeWindowAscending(final long minWindowSize, final int count) {
+    	if (minWindowSize == 0 || count == 0)
+    	{
+    		return Collections.emptyList();
+    	}
+       
+    	//TODO: these return null for no transactions
+        final long startTxns = nodeDAO.getMinTxnCommitTime();
+        final long endTxns = nodeDAO.getMaxTxnCommitTime() + 1;
+        
+        long window = minWindowSize;
+        List<Transaction> list = new ArrayList<Transaction>(count);
+    	if ( window > 0)
+    	{
+    		long fromTimeInclusive = startTxns;
+    		//start at the beginning move forward by sample increment
+            while (true) 
+            {
+            	//slide window end out from window start to window start + increment
+            	long toTimeExclusive = fromTimeInclusive + window;
+            	//if window size pushes window beyond end transaction then clip it to end
+            	if (toTimeExclusive >= endTxns) {
+            		toTimeExclusive = endTxns;
+            	}
+            	List<Transaction> txns = nodeDAO.getTxnsByCommitTimeAscending(
+            			fromTimeInclusive, toTimeExclusive, count, null, false);
+            	
+            	for (Transaction txn : txns) 
+            	{
+            		list.add(txn);
+            		//bail out if we have enough
+            		if (list.size() >= count) break;
+            	}
+            	//bail out of main loop  if we have enough or there are no more transactions
+            	if (list.size() >= count || toTimeExclusive >= endTxns) 
+            	{
+            		break;
+            	}
+            	//calculate new window size
+    			if (list.size() == 0)
+                {
+                    window = minWindowSize;
+                }
+                else
+                {
+                	//calculate rate of transactions found (start to end of current window)
+                    window = Math.max(minWindowSize, count
+                            * (toTimeExclusive - startTxns) / list.size());
+                }
+
+            	//slide window start forward to last exclusive time window
+            	fromTimeInclusive = toTimeExclusive;
+            }
+    	}    	
+    	return list;
+    }
+    
     
     /**
      * @return          Returns <tt>false</tt> if any one of the transactions aren't in the index.

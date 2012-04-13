@@ -31,6 +31,7 @@ import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
+import org.alfresco.jlan.smb.server.SMBSrvException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -64,8 +65,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
 {
     // Logging
     
-    /** The Constant logger. */
-    protected static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol.auth");
+    protected static final Log logger = LogFactory.getLog(CifsAuthenticatorBase.class);
 
     // MD4 hash decoder
     
@@ -342,7 +342,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
      * @param client
      *            ClientInfo
      */
-    protected final void getHomeFolderForUser(final ClientInfo client)
+    protected final void getHomeFolderForUser(final ClientInfo client) 
     {
         // Check if the client is an Alfresco client, and not a null logon
 
@@ -356,7 +356,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
         doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
         {
 
-            public Object execute() throws Throwable
+            public Object execute() throws SMBSrvException
             {
                 NodeRef homeSpaceRef = (NodeRef) getNodeService().getProperty(
                         getPersonService().getPerson(client.getUserName()), ContentModel.PROP_HOMEFOLDER);
@@ -364,17 +364,25 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
                 return null;
             }
         });
-    }
+    }    
     
     /**
      * Map the case insensitive logon name to the internal person object user name.
+     * And optionally check whether the user is enabled.
+     * 
      * 
      * @param userName
      *            String
-     * @return String
+     * @param checkEnabled           
+     * @return the user name
      */
-    protected final String mapUserNameToPerson(final String userName)
+    public final String mapUserNameToPerson(final String userName, final boolean checkEnabled)
     {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("mapUserNameToPerson userName:" + userName + ", checkEnabled:" + checkEnabled);
+        }
+        
         // Do the lookup as the system user
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
         {
@@ -385,8 +393,6 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
 
                     public String execute() throws Throwable
                     {
-                        // Get the home folder for the user
-
                         String personName = getPersonService().getUserIdentifier(userName);
 
                         // Check if the person exists
@@ -396,9 +402,32 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
                             // Force creation of a person if possible
                             getPersonService().getPerson(userName);
                             personName = getPersonService().getUserIdentifier(userName);
-                            return personName == null ? userName : personName;
                         }
-                        return personName;
+                        
+                        if(checkEnabled && personName != null)
+                        {
+                            /**
+                             * Check the authenticator is enabled
+                             */
+                            boolean isAuthenticationEnabled = getAuthenticationService().getAuthenticationEnabled(personName);
+                            if(!isAuthenticationEnabled)
+                            {
+                                logger.debug("autentication service says user is not enabled");
+                                throw new AuthenticationException("Authentication not enabled for:" + userName);
+                            }
+                        
+                            /**
+                             * Check the person is enabled
+                             */
+                            boolean isEnabled = personService.isEnabled(personName);
+                            if(!isEnabled)
+                            {
+                                logger.debug("person service says user is not enabled");
+                                throw new AuthenticationException("Authentication not enabled for person:" + userName);
+                            }
+                        }
+                        
+                        return personName == null ? userName : personName;
                     }
                 });
             }
@@ -410,8 +439,8 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
      * 
      * @param client ClientInfo or null to clear the context
      */
-    public void setCurrentUser(final ClientInfo client) {
-
+    public void setCurrentUser(final ClientInfo client) 
+    {
         // Check the account type and setup the authentication context
         
         // No need for a transaction to clear the context
@@ -541,7 +570,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
      * @param cInfo
      *            ClientInfo
      */
-    protected final void checkForAdminUserName(final ClientInfo cInfo)
+    protected final void checkForAdminUserName(final ClientInfo cInfo) 
     {
 
         // Check if the user name is an administrator
@@ -549,7 +578,7 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
         doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
         {
 
-            public Object execute() throws Throwable
+            public Object execute()
             {
                 if (cInfo.getLogonType() == ClientInfo.LogonNormal
                         && getAuthorityService().isAdminAuthority(cInfo.getUserName()))

@@ -333,4 +333,13 @@ public interface PersonService
      */
     @NotAuditable
     public int countPeople();
+    
+    /**
+     * Is the specified user, enabled
+     * @throws NoSuchPersonException
+     *             if the user doesn't exist 
+     * @return true = enabled.
+     */
+    @NotAuditable
+    public boolean isEnabled(final String userName);
 }

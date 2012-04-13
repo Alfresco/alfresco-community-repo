@@ -209,6 +209,13 @@
         eternal="true"
         overflowToDisk="false"
         />
+        
+    <cache 
+        name="org.alfresco.cache.readersDeniedCache" 
+        maxElementsInMemory="10000"
+        eternal="true"
+        overflowToDisk="false"
+        />
 
     <cache 
         name="org.alfresco.cache.nodeOwnerCache" 

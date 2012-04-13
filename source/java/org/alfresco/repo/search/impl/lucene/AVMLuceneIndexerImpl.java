@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,6 +83,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
@@ -1590,6 +1592,14 @@ public class AVMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<String> impl
             setRollbackOnly();
             throw new LuceneIndexException("Create node failed", e);
         }
+    }
+    
+    @Override
+    public void detectNodeChanges(NodeRef nodeRef, SearchService searcher,
+            Collection<ChildAssociationRef> addedParents, Collection<ChildAssociationRef> deletedParents,
+            Collection<ChildAssociationRef> createdNodes, Collection<NodeRef> updatedNodes)
+    {
+        updatedNodes.add(nodeRef);
     }
 
     public void updateNode(NodeRef nodeRef)

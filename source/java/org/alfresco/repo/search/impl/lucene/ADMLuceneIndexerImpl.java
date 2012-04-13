@@ -79,6 +79,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
@@ -345,10 +349,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 throw new LuceneIndexException(event + " failed - node is not in the required store");
             }
             final NodeRef parentRef = relationshipRef.getParentRef();
-            final NodeRef childRef = relationshipRef.getChildRef(); 
-            if (parentRef != null)
+            final NodeRef childRef = relationshipRef.getChildRef();
+            if (parentRef != null && !relationshipRef.isPrimary())
             {
-                // If the child has a lot of secondary parents, its cheaper to cascade reindex its parent
+                // If a SECONDARY child has a lot of secondary parents, its cheaper to cascade reindex the secondary parent
                 // rather than itself
                 if (doInReadthroughTransaction(new RetryingTransactionCallback<Boolean>()
                 {
@@ -648,6 +652,80 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
     }
 
+    public void detectNodeChanges(NodeRef nodeRef, SearchService searcher,
+            Collection<ChildAssociationRef> addedParents, Collection<ChildAssociationRef> deletedParents,
+            Collection<ChildAssociationRef> createdNodes, Collection<NodeRef> updatedNodes) throws LuceneIndexException
+    {
+        boolean nodeExisted = false;
+        boolean relationshipsChanged = false;
+        
+        ResultSet results = null;
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.addStore(nodeRef.getStoreRef());
+        try
+        {
+            sp.setQuery("ID:" + LuceneQueryParser.escape(nodeRef.toString()));
+            results = searcher.query(sp);
+            for (ResultSetRow row : results)
+            {
+                nodeExisted = true;
+                Document document = ((LuceneResultSetRow) row).getDocument();
+                Field qname = document.getField("QNAME");
+                if (qname == null)
+                {
+                    continue;
+                }
+                Collection<Pair<ChildAssociationRef, QName>> allParents = getAllParents(nodeRef, nodeService.getProperties(nodeRef));
+                Set<ChildAssociationRef> dbParents = new HashSet<ChildAssociationRef>(allParents.size() * 2);
+                for (Pair<ChildAssociationRef, QName> pair : allParents)
+                {
+                    ChildAssociationRef qNameRef = tenantService.getName(pair.getFirst());
+                    if ((qNameRef != null) && (qNameRef.getParentRef() != null) && (qNameRef.getQName() != null))
+                    {
+                        dbParents.add(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, qNameRef.getParentRef(), qNameRef.getQName(), qNameRef.getChildRef()));
+                    }
+                }
+                               
+                Field[] parents = document.getFields("PARENT");
+                String[] qnames = qname.stringValue().split(";/");
+                Set<ChildAssociationRef> addedParentsSet = new HashSet<ChildAssociationRef>(dbParents);
+                for (int i=0; i<Math.min(parents.length, qnames.length); i++)
+                {
+                    QName parentQname = QName.createQName(qnames[i]);
+                    parentQname = QName.createQName(parentQname.getNamespaceURI(), ISO9075.decode(parentQname.getLocalName()));
+                    NodeRef parentRef = new NodeRef(parents[i].stringValue());
+                    ChildAssociationRef indexedParent = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, parentRef, parentQname, nodeRef);
+                    if (!addedParentsSet.remove(indexedParent))
+                    {
+                        deletedParents.add(indexedParent);                        
+                        relationshipsChanged = true;
+                    }
+                }
+                if (addedParents.addAll(addedParentsSet))
+                {
+                    relationshipsChanged = true;
+                }
+
+                break;
+            }
+
+            if (!nodeExisted)
+            {
+                createdNodes.add(nodeService.getPrimaryParent(nodeRef));
+            }
+            else if (!relationshipsChanged)
+            {
+                updatedNodes.add(nodeRef);
+            }
+        }
+        finally
+        {
+            if (results != null) { results.close(); }
+        }
+        
+    }
+    
     private List<Document> createDocumentsImpl(final String stringNodeRef, FTSStatus ftsStatus,
             boolean indexAllProperties, boolean includeDirectoryDocuments, final boolean cascade,
             final Set<Path> pathsProcessedSinceFlush,

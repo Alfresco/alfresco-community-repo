@@ -93,6 +93,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     private SimpleCache<Serializable, AccessStatus> accessCache;
     
     private SimpleCache<Serializable, Set<String>> readersCache;
+    
+    private SimpleCache<Serializable, Set<String>> readersDeniedCache;
 
     /*
      * Access to the model
@@ -140,6 +142,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     
     private PermissionReference allPermissionReference;
 
+    private boolean anyDenyDenies = false;
+    
     /**
      * Standard spring construction.
      */
@@ -152,6 +156,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     // Inversion of control
     //
 
+    
+    
     /**
      * Set the dictionary service
      * @param dictionaryService 
@@ -161,6 +167,22 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         this.dictionaryService = dictionaryService;
     }
 
+    /**
+     * @param anyDenyDenies the anyDenyDenies to set
+     */
+    public void setAnyDenyDenies(boolean anyDenyDenies)
+    {
+        this.anyDenyDenies = anyDenyDenies;
+        accessCache.clear();
+        readersCache.clear();
+        readersDeniedCache.clear();
+    }
+
+    public boolean getAnyDenyDenies()
+    {
+        return anyDenyDenies;
+    }
+    
     /**
      * Set the permissions model dao
      * 
@@ -257,6 +279,15 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     public void setReadersCache(SimpleCache<Serializable, Set<String>> readersCache)
     {
         this.readersCache = readersCache;
+    }
+    
+
+    /**
+     * @param readersDeniedCache the readersDeniedCache to set
+     */
+    public void setReadersDeniedCache(SimpleCache<Serializable, Set<String>> readersDeniedCache)
+    {
+        this.readersDeniedCache = readersDeniedCache;
     }
     
     /**
@@ -1117,6 +1148,10 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
     private AccessStatus ownerRead(String username, NodeRef nodeRef)
     {
+        // Reviewed the behaviour of deny and ownership with Mike F
+        // ATM ownership takes precendence over READ deny
+        // TODO: check that global owner rights are set
+        
         AccessStatus result = AccessStatus.DENIED;
 
         String owner = ownableService.getOwner(nodeRef);
@@ -1184,14 +1219,70 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
         return Collections.unmodifiableSet(readers);
     }
+    
+    /**
+     * @param aclId
+     * @return set of authorities with read permission on the ACL
+     */
+    private Set<String> buildReadersDenied(Long aclId)
+    {
+        HashSet<String> assigned = new HashSet<String>();
+        HashSet<String> denied = new HashSet<String>();
+        AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
+
+        if (acl == null)
+        {
+            return denied;
+        }
+
+        for (AccessControlEntry ace : acl.getEntries())
+        {
+            assigned.add(ace.getAuthority());
+        }
+
+        for(String authority : assigned)
+        {
+            UnconditionalDeniedAclTest test = new UnconditionalDeniedAclTest(getPermissionReference(PermissionService.READ));
+            if(test.evaluate(authority, aclId))
+            {
+                denied.add(authority);
+            }
+        }
+
+        return denied;
+    }
 
     private AccessStatus canRead(Long aclId)
     {
         Set<String> authorities = getAuthorisations();
 
+        // test denied 
+        
+        if(anyDenyDenies)
+        {
+
+            Set<String> aclReadersDenied = readersDeniedCache.get(aclId);
+            if(aclReadersDenied == null)
+            {
+                aclReadersDenied = buildReadersDenied(aclId);
+                readersDeniedCache.put(aclId, aclReadersDenied);
+            }
+
+            for(String auth : aclReadersDenied)
+            {
+                if(authorities.contains(auth))
+                {
+                    return AccessStatus.DENIED;
+                }
+            }
+            
+        }
+        
+
+
         // test acl readers
         Set<String> aclReaders = getReaders(aclId);
-
+        
         for(String auth : aclReaders)
         {
             if(authorities.contains(auth))
@@ -1209,6 +1300,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
     /**
      * Support class to test the permission on a node.
+     * 
+     * Not fixed up for deny as should not be used
      * 
      * @author Andy Hind
      */
@@ -1658,6 +1751,29 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
             // any deny denies
 
+            if (anyDenyDenies)
+            {
+                if (denied != null)
+                {
+                    for (String auth : authorisations)
+                    {
+                        Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(auth, required);
+                        if (denied.contains(specific))
+                        {
+                            return false;
+                        }
+                        for (PermissionReference perm : granters)
+                        {
+                            specific = new Pair<String, PermissionReference>(auth, perm);
+                            if (denied.contains(specific))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
             // If the permission has a match in both the authorities and
             // granters list it is allowed
             // It applies to the current user and it is granted
@@ -1837,6 +1953,21 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
                 return false;
             }
 
+            if(anyDenyDenies)
+            {
+                Set<Pair<String, PermissionReference>> allowed = new HashSet<Pair<String, PermissionReference>>();
+
+                // Check if each permission allows - the first wins.
+                // We could have other voting style mechanisms here
+                for (AccessControlEntry ace : acl.getEntries())
+                {
+                    if (isDenied(ace, authorisations, allowed, context))
+                    {
+                        return false;
+                    }
+                }
+            }
+            
             Set<Pair<String, PermissionReference>> denied = new HashSet<Pair<String, PermissionReference>>();
 
             // Check if each permission allows - the first wins.
@@ -1910,8 +2041,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
                 }
             }
 
-            // any deny denies
-
             // If the permission has a match in both the authorities and
             // granters list it is allowed
             // It applies to the current user and it is granted
@@ -1926,6 +2055,81 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             return false;
         }
 
+        /**
+         * Is a permission granted
+         * 
+         * @param pe -
+         *            the permissions entry to consider
+         * @param granters -
+         *            the set of granters
+         * @param authorisations -
+         *            the set of authorities
+         * @param denied -
+         *            the set of denied permissions/authority pais
+         * @return true if granted
+         */
+        private boolean isDenied(AccessControlEntry ace, Set<String> authorisations, Set<Pair<String, PermissionReference>> allowed, PermissionContext context)
+        {
+            // If the permission entry denies then we just deny
+            if (ace.getAccessStatus() == AccessStatus.ALLOWED)
+            {
+                allowed.add(new Pair<String, PermissionReference>(ace.getAuthority(), ace.getPermission()));
+
+                Set<PermissionReference> granters = modelDAO.getGrantingPermissions(ace.getPermission());
+                for (PermissionReference granter : granters)
+                {
+                    allowed.add(new Pair<String, PermissionReference>(ace.getAuthority(), granter));
+                }
+
+                // All the things granted by this permission must be
+                // denied
+                Set<PermissionReference> grantees = modelDAO.getGranteePermissions(ace.getPermission());
+                for (PermissionReference grantee : grantees)
+                {
+                    allowed.add(new Pair<String, PermissionReference>(ace.getAuthority(), grantee));
+                }
+
+                // All permission excludes all permissions available for
+                // the node.
+                if (ace.getPermission().equals(getAllPermissionReference()) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
+                {
+                    for (PermissionReference deny : modelDAO.getAllPermissions(context.getType(), context.getAspects()))
+                    {
+                        allowed.add(new Pair<String, PermissionReference>(ace.getAuthority(), deny));
+                    }
+                }
+
+                return false;
+            }
+
+            // The permission is denied but we allow it as it is in the allowed
+            // set
+
+            if (allowed != null)
+            {
+                Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(ace.getAuthority(), required);
+                if (allowed.contains(specific))
+                {
+                    return false;
+                }
+            }
+
+
+            // If the permission has a match in both the authorities and
+            // granters list it is allowed
+            // It applies to the current user and it is granted
+            if (authorisations.contains(ace.getAuthority()) && granters.contains(ace.getPermission()))
+            {
+                {
+                    return true;
+                }
+            }
+
+            // Default allow
+            return false;
+        }
+
+        
         private boolean isGranted(PermissionEntry pe, Set<String> authorisations)
         {
             // If the permission entry denies then we just deny
@@ -2177,31 +2381,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
                 }
             }
 
-            // any deny denies
-
-//            if (false)
-//            {
-//                if (denied != null)
-//                {
-//                    for (String auth : authorisations)
-//                    {
-//                        Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(auth, required);
-//                        if (denied.contains(specific))
-//                        {
-//                            return false;
-//                        }
-//                        for (PermissionReference perm : granters)
-//                        {
-//                            specific = new Pair<String, PermissionReference>(auth, perm);
-//                            if (denied.contains(specific))
-//                            {
-//                                return false;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-
             // If the permission has a match in both the authorities and
             // granters list it is allowed
             // It applies to the current user and it is granted
@@ -2238,6 +2417,271 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             return false;
         }
     }
+    
+    /**
+     * Ignores type and aspect requirements on the node
+     *
+     */
+    private class UnconditionalDeniedAclTest
+    {
+        /*
+         * The required permission.
+         */
+        PermissionReference required;
+
+        /*
+         * Granters of the permission
+         */
+        Set<PermissionReference> granters;
+
+        /*
+         * The additional permissions required at the node level.
+         */
+        Set<PermissionReference> nodeRequirements = new HashSet<PermissionReference>();
+
+        /*
+         * Constructor just gets the additional requirements
+         */
+        UnconditionalDeniedAclTest(PermissionReference required)
+        {
+            this.required = required;
+
+            // Set the required node permissions
+            if (required.equals(getPermissionReference(ALL_PERMISSIONS)))
+            {
+                nodeRequirements = modelDAO.getUnconditionalRequiredPermissions(getPermissionReference(PermissionService.FULL_CONTROL), RequiredPermission.On.NODE);
+            }
+            else
+            {
+                nodeRequirements = modelDAO.getUnconditionalRequiredPermissions(required, RequiredPermission.On.NODE);
+            }
+
+            if (modelDAO.getUnconditionalRequiredPermissions(required, RequiredPermission.On.PARENT).size() > 0)
+            {
+                throw new IllegalStateException("Parent permissions can not be checked for an acl");
+            }
+
+            if (modelDAO.getUnconditionalRequiredPermissions(required,  RequiredPermission.On.CHILDREN).size() > 0)
+            {
+                throw new IllegalStateException("Child permissions can not be checked for an acl");
+            }
+
+            // Find all the permissions that grant the allowed permission
+            // All permissions are treated specially.
+            granters = new LinkedHashSet<PermissionReference>(128, 1.0f);
+            granters.addAll(modelDAO.getGrantingPermissions(required));
+            granters.add(getAllPermissionReference());
+            granters.add(OLD_ALL_PERMISSIONS_REFERENCE);
+        }
+
+        /**
+         * Internal hook point for recursion
+         * 
+         * @param authorisations
+         * @param nodeRef
+         * @param denied
+         * @param recursiveIn
+         * @return true if granted
+         */
+        boolean evaluate(String authority, Long aclId)
+        {
+            // Start out true and "and" all other results
+            boolean success = true;
+
+            // Check the required permissions but not for sets they rely on
+            // their underlying permissions
+            //if (modelDAO.checkPermission(required))
+            //{
+
+                // We have to do the test as no parent will help us out
+                success &= hasSinglePermission(authority, aclId);
+
+                if (!success)
+                {
+                    return false;
+                }
+            //}
+
+            // Check the other permissions required on the node
+            for (PermissionReference pr : nodeRequirements)
+            {
+                // Build a new test
+                UnconditionalDeniedAclTest nt = new UnconditionalDeniedAclTest(pr);
+                success &= nt.evaluate(authority, aclId);
+                if (!success)
+                {
+                    return false;
+                }
+            }
+
+            return success;
+        }
+
+        boolean hasSinglePermission(String authority, Long aclId)
+        {
+            // Check global permission
+
+            if (checkGlobalPermissions(authority))
+            {
+                return true;
+            }
+
+            if(aclId == null)
+            {
+                return false;
+            }
+            else
+            {
+                return checkRequired(authority, aclId);
+            }
+
+        }
+
+        /**
+         * Check if we have a global permission
+         * 
+         * @param authorisations
+         * @return true if granted
+         */
+        private boolean checkGlobalPermissions(String authority)
+        {
+            for (PermissionEntry pe : modelDAO.getGlobalPermissionEntries())
+            {
+                if (isDenied(pe, authority))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Check that a given authentication is available on a node
+         * 
+         * @param authorisations
+         * @param nodeRef
+         * @param denied
+         * @return true if a check is required
+         */
+        boolean checkRequired(String authority, Long aclId)
+        {
+            AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
+
+            if (acl == null)
+            {
+                return false;
+            }
+
+            Set<Pair<String, PermissionReference>> allowed = new HashSet<Pair<String, PermissionReference>>();
+
+            // Check if each permission allows - the first wins.
+            // We could have other voting style mechanisms here
+            for (AccessControlEntry ace : acl.getEntries())
+            {
+                if (isDenied(ace, authority, allowed))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Is a permission granted
+         * 
+         * @param pe -
+         *            the permissions entry to consider
+         * @param granters -
+         *            the set of granters
+         * @param authorisations -
+         *            the set of authorities
+         * @param denied -
+         *            the set of denied permissions/authority pais
+         * @return true if granted
+         */
+        private boolean isDenied(AccessControlEntry ace, String authority, Set<Pair<String, PermissionReference>> allowed)
+        {
+            // If the permission entry denies then we just deny
+            if (ace.getAccessStatus() == AccessStatus.ALLOWED)
+            {
+                allowed.add(new Pair<String, PermissionReference>(ace.getAuthority(), ace.getPermission()));
+
+                Set<PermissionReference> granters = modelDAO.getGrantingPermissions(ace.getPermission());
+                for (PermissionReference granter : granters)
+                {
+                    allowed.add(new Pair<String, PermissionReference>(ace.getAuthority(), granter));
+                }
+
+                // All the things granted by this permission must be
+                // denied
+                Set<PermissionReference> grantees = modelDAO.getGranteePermissions(ace.getPermission());
+                for (PermissionReference grantee : grantees)
+                {
+                    allowed.add(new Pair<String, PermissionReference>(ace.getAuthority(), grantee));
+                }
+
+                // All permission excludes all permissions available for
+                // the node.
+                if (ace.getPermission().equals(getAllPermissionReference()) || ace.getPermission().equals(OLD_ALL_PERMISSIONS_REFERENCE))
+                {
+                    for (PermissionReference deny : modelDAO.getAllPermissions())
+                    {
+                        allowed.add(new Pair<String, PermissionReference>(ace.getAuthority(), deny));
+                    }
+                }
+
+                return false;
+            }
+
+            // The permission is allowed but we deny it as it is in the denied
+            // set
+
+            if (allowed != null)
+            {
+                Pair<String, PermissionReference> specific = new Pair<String, PermissionReference>(ace.getAuthority(), required);
+                if (allowed.contains(specific))
+                {
+                    return false;
+                }
+            }
+
+            // If the permission has a match in both the authorities and
+            // granters list it is allowed
+            // It applies to the current user and it is granted
+            if (authority.equals(ace.getAuthority()) && granters.contains(ace.getPermission()))
+            {
+                {
+                    return true;
+                }
+            }
+
+            // Default deny
+            return false;
+        }
+
+        private boolean isDenied(PermissionEntry pe, String authority)
+        {
+            // If the permission entry denies then we just deny
+            if (pe.isAllowed())
+            {
+                return false;
+            }
+
+            // If the permission has a match in both the authorities and
+            // granters list it is allowed
+            // It applies to the current user and it is granted
+            if (granters.contains(pe.getPermissionReference()) && authority.equals(pe.getAuthority()))
+            {
+                {
+                    return true;
+                }
+            }
+
+            // Default deny
+            return false;
+        }
+    }
+    
     
     private static class MutableBoolean
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -185,9 +185,19 @@ public class JscriptWorkflowInstance implements Serializable
 	
 	/**
 	 * Delete workflow instance
+	 * @deprecated as 'delete' is a JavaScript reserved word and so is unusable. Use {@link #remove()} instead.
 	 */
-	public void delete()
-	{
-		serviceRegistry.getWorkflowService().deleteWorkflow(this.id);
-	}
+    public void delete()
+    {
+        this.remove();
+    }
+    
+    /**
+     * Deletes workflow instance.
+     * @since 3.4.9
+     */
+    public void remove()
+    {
+        serviceRegistry.getWorkflowService().deleteWorkflow(this.id);
+    }
 }

@@ -30,6 +30,8 @@ import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -136,12 +138,20 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
     }
     
     @Override
-    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
+    public void onContentUpdate(final NodeRef nodeRef, boolean newContent)
     {
-        if (nodeService.exists(nodeRef) && lockService.getLockStatus(nodeRef) != LockStatus.LOCKED)
+        AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
         {
-            deleteFailedThumbnailChildren(nodeRef);
-        }
+            @Override
+            public Object doWork()
+            {
+                if (nodeService.exists(nodeRef) && lockService.getLockStatus(nodeRef) != LockStatus.LOCKED)
+                {
+                    deleteFailedThumbnailChildren(nodeRef);
+                }
+                return null;
+            }
+        });
     }
 
     /**

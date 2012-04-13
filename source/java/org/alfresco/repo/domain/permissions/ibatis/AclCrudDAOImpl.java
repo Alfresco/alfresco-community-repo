@@ -35,6 +35,7 @@ import org.alfresco.repo.domain.permissions.PermissionEntity;
 import org.alfresco.repo.security.permissions.ACEType;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.util.Assert;
 
 /**
  * iBatis-specific implementation of the ACL Crud DAO.
@@ -90,6 +91,9 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     
     private static final String INSERT_AUTHORITY_ALIAS = "alfresco.permissions.insert.insert_AuthorityAlias";
     private static final String DELETE_AUTHORITY_ALIAS = "alfresco.permissions.delete_AuthorityAlias";
+    
+    private static final String SELECT_CHANGE_SET_LAST = "alfresco.permissions.select_ChangeSetLast";
+    private static final String SELECT_CHANGE_SET_MAX_COMMIT_TIME = "alfresco.permissions.select_ChangeSetMaxCommitTime";;
     
     
     private SqlSessionTemplate template;
@@ -472,4 +476,40 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         
         return template.delete(DELETE_AUTHORITY_ALIAS, params);
     }
+
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.domain.permissions.AbstractAclCrudDAOImpl#selectMaxChangeSetCommitTime()
+     */
+    @Override
+    protected Long selectMaxChangeSetCommitTime()
+    {
+        return (Long) template.selectOne(SELECT_CHANGE_SET_MAX_COMMIT_TIME);
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.domain.permissions.AbstractAclCrudDAOImpl#selectMaxChangeSetIdBeforeCommitTime(long)
+     */
+    @Override
+    protected Long selectMaxChangeSetIdBeforeCommitTime(long maxCommitTime)
+    {
+        Assert.notNull(maxCommitTime, "maxCommitTime");
+        
+        Map<String, Object> params = new HashMap<String, Object>(1);
+        params.put("commit_time_ms", maxCommitTime);
+        
+        List<Long> sets = (List<Long>) template.selectList(SELECT_CHANGE_SET_LAST, params, new RowBounds(0, 1));
+        if (sets.size() > 0)
+        {
+            return sets.get(0);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+
+  
 }

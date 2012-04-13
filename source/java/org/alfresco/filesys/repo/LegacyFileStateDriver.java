@@ -301,27 +301,24 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
             {
                 FileStateCache cache = tctx.getStateCache();
                 FileState fstate = cache.findFileState( param.getFullName(), true);
-                
-                if(fstate.getOpenCount() ==0 )
+                             
+                if(fstate != null && param.getAccessToken() != null)
                 {
-                    logger.debug("OpenCount = 0, reset shared access to READ WRITE DELETE");
-                    fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
-                    
+                    FileAccessToken token = param.getAccessToken();
+                    if(logger.isDebugEnabled() && token != null)
+                    {
+                        logger.debug("close file, release access token:" + token);
+                    }
+                    cache.releaseFileAccess(fstate, token);
+                }
+                
+                if(fstate.getOpenCount() == 0 )
+                {
+                    logger.debug("fstate OpenCount == 0, reset in-flight state");
                     fstate.setAllocationSize(-1);
                     fstate.setFileSize(-1);
                     fstate.updateChangeDateTime(0);
                     fstate.updateModifyDateTime(0);    
-                }
-                
-                if(fstate != null && param.getAccessToken() != null)
-                {
-
-                    FileAccessToken token = param.getAccessToken();
-                    if(logger.isDebugEnabled() && token != null)
-                    {
-                        logger.debug("close file release access token:" + token);
-                    }
-                    cache.releaseFileAccess(fstate, token);
                 }
             }
         }
@@ -459,7 +456,17 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
     public SearchContext startSearch(SrvSession sess, TreeConnection tree,
             String searchPath, int attrib) throws FileNotFoundException
     {
-        return diskInterface.startSearch(sess, tree, searchPath, attrib);
+        InFlightCorrector t = new InFlightCorrectorImpl(tree);  
+        
+        SearchContext ctx = diskInterface.startSearch(sess, tree, searchPath, attrib);
+        
+        if(ctx instanceof InFlightCorrectable)
+        {
+            InFlightCorrectable thingable = (InFlightCorrectable)ctx;
+            thingable.setInFlightCorrector(t);
+        }
+             
+        return ctx;
 
     }
 

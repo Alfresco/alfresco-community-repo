@@ -154,6 +154,10 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
             ImageCropOptions cropOptions = imageOptions.getCropOptions();
             ImageResizeOptions resizeOptions = imageOptions.getResizeOptions();
             String commandOptions = imageOptions.getCommandOptions();
+            if (commandOptions == null)
+            {
+                commandOptions = "";
+            }
             if (imageOptions.isAutoOrient())
             {
                 commandOptions = commandOptions + " -auto-orient"; 

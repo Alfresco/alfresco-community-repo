@@ -72,7 +72,7 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
     /**
      * Timeout in ms.  Default 30 seconds.
      */
-    private long timeout = 30000;
+    private long timeout = 60000;
     
     private boolean isComplete;
     
@@ -88,24 +88,6 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
     public Command evaluate(Operation operation)
     {
         
-//        /**
-//         * Anti-pattern for all states - delete the file we are 
-//         * shuffling
-//         */
-//        if(createName != null)
-//        {
-//            if(operation instanceof DeleteFileOperation)
-//            {
-//                DeleteFileOperation d = (DeleteFileOperation)operation;
-//                if(d.getName().equals(createName))
-//                {
-//                    logger.debug("Anti-pattern : Shuffle file deleted");
-//                    isComplete = true;
-//                    return null;
-//                }
-//            }
-//        }
-        
         /**
          * Anti-pattern : timeout
          */
@@ -114,7 +96,30 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
         {
             if(logger.isDebugEnabled())
             {
-                logger.debug("Instance timed out");
+                logger.debug("Instance timed out createName:" + createName);
+                isComplete = true;
+                return null;
+            }
+        }
+        
+        /**
+         * Anti-pattern for all states - delete the file we are 
+         * shuffling
+         */
+        if(createName != null)
+        {
+            if(operation instanceof DeleteFileOperation)
+            {
+                DeleteFileOperation d = (DeleteFileOperation)operation;
+                if(d.getName().equals(createName))
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("Anti-pattern : Shuffle file deleted createName:" + createName);
+                    }
+                    isComplete = true;
+                    return null;
+                }
             }
         }
         
@@ -229,11 +234,11 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
                 DeleteFileOperation d = (DeleteFileOperation)operation;
                 if(d.getName().equals(move2))
                 {
-                    logger.debug("Scenario complete");
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("Scenario complete createName:" + createName);
+                    }
                     isComplete = true;
-//                    ArrayList<Command> commands = new ArrayList<Command>();
-//                    // missing stuff here
-//                    return new CompoundCommand(commands);
                 }
             }
             
@@ -262,7 +267,7 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
     
     public String toString()
     {
-        return "ScenarioShuffleInstance:" + createName;
+        return "ScenarioShuffleInstance: createName:" + createName;
     }
 
     public void setTimeout(long timeout)

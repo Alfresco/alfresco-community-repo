@@ -60,12 +60,17 @@
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="name" order="2">
+        <column name="lc_name" order="2">
           <type>varchar(160)</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="child_id" order="3">
+        <column name="name" order="3">
+          <type>varchar(160)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="child_id" order="4">
           <type>bigint</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
@@ -73,7 +78,7 @@
       </columns>
       <primarykey name="PRIMARY">
         <columnnames>
-          <columnname order="2">name</columnname>
+          <columnname order="2">lc_name</columnname>
           <columnname order="1">parent_id</columnname>
         </columnnames>
       </primarykey>
@@ -97,6 +102,12 @@
         </index>
         <index name="fk_avm_ce_parent" unique="false">
           <columnnames>
+            <columnname>parent_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_avm_ce_lc_name" unique="false">
+          <columnnames>
+            <columnname>lc_name</columnname>
             <columnname>parent_id</columnname>
           </columnnames>
         </index>

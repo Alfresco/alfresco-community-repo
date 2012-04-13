@@ -112,6 +112,15 @@ public interface AclCrudDAO
     public Authority getOrCreateAuthority(String authorityName);
     public void renameAuthority(String authorityNameBefore, String authorityAfter);
     public void deleteAuthority(long authorityEntityId);
+    /**
+     * @return
+     */
+    public Long getMaxChangeSetCommitTime();
+    /**
+     * @param maxCommitTime
+     * @return
+     */
+    public Long getMaxChangeSetIdByCommitTime(long maxCommitTime);
     
     // AceContext     (NOTE: currently unused - intended for possible future enhancement)
     // AuthorityAlias (NOTE: currently unused - intended for possible future enhancement)

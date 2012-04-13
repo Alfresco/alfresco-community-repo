@@ -116,7 +116,8 @@ public class ContentIOControlHandler implements IOControlHandler
      * @param dataBuf I/O control specific input data
      * @param isFSCtrl true if this is a filesystem control, or false for a device control
      * @param filter if bit0 is set indicates that the control applies to the share root handle
-     * @return DataBuffer
+     * @return DataBuffer or null if there is no response buffer.
+     * 
      * @exception IOControlNotImplementedException
      * @exception SMBException
      */
@@ -125,10 +126,12 @@ public class ContentIOControlHandler implements IOControlHandler
         throws IOControlNotImplementedException, SMBException
     {
         // Validate the file id
-        
         NetworkFile netFile = tree.findFile(fid);
-        if ( netFile == null || netFile.isDirectory() == false)
+        if ( netFile == null )
+        {
+            logger.debug("IO Control Handler called with missing file");
             throw new SMBException(SMBStatus.NTErr, SMBStatus.NTInvalidParameter);
+        }
         
         // Split the control code
         
@@ -144,23 +147,36 @@ public class ContentIOControlHandler implements IOControlHandler
 	        // Create or get object id
 	        	
 	        if ( ioFunc == NTIOCtl.FsCtlCreateOrGetObjectId)
-	        	return null;
+	        {
+	            logger.debug("Create or Get Object Id - return null");
+	            return null;
+//	            
+//	            logger.debug("Create or Get Object Id - throw not implemented exception");
+//	            throw new IOControlNotImplementedException("Create or Get Object Id not implemented");
+//	        	//return null;
+	        }
         }
         
         // Check if the I/O control looks like a custom I/O control request
         
         if ( devType != NTIOCtl.DeviceFileSystem || dataBuf == null)
-            throw new IOControlNotImplementedException();
+        {
+            throw new IOControlNotImplementedException("Custom IO control request not implemented");
+        }
         
         // Check if the request has a valid signature for an Alfresco CIFS server I/O control
         
         if ( dataBuf.getLength() < IOControl.Signature.length())
+        {
             throw new IOControlNotImplementedException("Bad request length");
+        }
         
         String sig = dataBuf.getFixedString(IOControl.Signature.length(), false);
         
         if ( sig == null || sig.compareTo(IOControl.Signature) != 0)
+        {
             throw new IOControlNotImplementedException("Bad request signature");
+        }
         
         // Get the node for the parent folder, make sure it is a folder
         
@@ -171,7 +187,9 @@ public class ContentIOControlHandler implements IOControlHandler
             folderNode = getNodeForPath(tree, netFile.getFullName());
             
             if ( getCifsHelper().isDirectory( folderNode) == false)
+            {
                 folderNode = null;
+            }
         }
         catch ( FileNotFoundException ex)
         {
@@ -181,14 +199,17 @@ public class ContentIOControlHandler implements IOControlHandler
         // If the folder node is not valid return an error
         
         if ( folderNode == null)
+        {
+            logger.debug("unable to get parent folder - return access denied");
             throw new SMBException(SMBStatus.NTErr, SMBStatus.NTAccessDenied);
+        }
         
         // Debug
         
         if ( logger.isDebugEnabled()) 
         {
-            logger.debug("IO control func=0x" + Integer.toHexString(ioFunc) + ", fid=" + fid + ", buffer=" + dataBuf);
-            logger.debug("  Folder nodeRef=" + folderNode);
+            logger.debug("IO control func=0x" + Integer.toHexString(ioFunc) + ", fid=" + fid + ", buffer=" + dataBuf + 
+               "  Folder nodeRef=" + folderNode);
         }
 
         // Check if the I/O control code is one of our custom codes
@@ -217,8 +238,11 @@ public class ContentIOControlHandler implements IOControlHandler
 	        // Get file information for a file within the current folder
 	            
 	        case IOControl.CmdFileStatus:
-
-	
+	            
+	            if(logger.isDebugEnabled())
+	            {
+	               logger.debug("CmdFileStatus");
+	            }
 	            // Process the file status request
 	            
 	            retBuffer = procIOFileStatus( sess, tree, dataBuf, folderNode, contentDriver, contentContext);
@@ -229,6 +253,10 @@ public class ContentIOControlHandler implements IOControlHandler
 	        case IOControl.CmdGetActionInfo:
 	        	
 	        	// Process the get action information request
+	            if(logger.isDebugEnabled())
+	            {
+	                logger.debug("GetActionInfo");
+	            }
 	        	
 	        	retBuffer = procGetActionInfo(sess, tree, dataBuf, folderNode, netFile, contentDriver, contentContext);
 	        	break;
@@ -238,6 +266,10 @@ public class ContentIOControlHandler implements IOControlHandler
 	        case IOControl.CmdRunAction:
 	
 	        	// Process the run action request
+	            if(logger.isDebugEnabled())
+	            {
+	                logger.debug("RunAction");
+	            }
 	        	
 	        	retBuffer = procRunAction(sess, tree, dataBuf, folderNode, netFile, contentDriver, contentContext);
 	        	break;
@@ -247,6 +279,10 @@ public class ContentIOControlHandler implements IOControlHandler
 	        case IOControl.CmdGetAuthTicket:
 	        	
 	        	// Process the get auth ticket request
+	            if(logger.isDebugEnabled())
+	            {
+	                logger.debug("GetAuthTicket");
+	            }
 	        	
 	        	retBuffer = procGetAuthTicket(sess, tree, dataBuf, folderNode, netFile, contentDriver, contentContext);
 	        	break;

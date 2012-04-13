@@ -594,6 +594,40 @@
       <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
+   
+   <!-- ===================================== -->
+   <!-- ACL Readers Denied cache                     -->
+   <!-- ===================================== -->
+
+    <!-- The cross-transaction shared cache for ACL denied readers -->
+   
+   <bean name="readersDeniedSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.readersDeniedCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for ACL denied readers -->
+   
+   <bean name="readersDeniedCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="readersDeniedSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.readersDeniedTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="10000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+   </bean>
+   
       
    <!-- ===================================== -->
    <!-- Node owner cache                      -->

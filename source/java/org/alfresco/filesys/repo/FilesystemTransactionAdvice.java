@@ -45,8 +45,6 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
 {
     private boolean readOnly;
     
-//    private AlfrescoDiskDriver driver;
-    
     private TransactionService transactionService;
 
     public FilesystemTransactionAdvice()
@@ -92,64 +90,34 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
             }
         };
 
-        if(readOnly)
+        try
         {
-            // read only transaction
-            try
-            {
-                return tran.doInTransaction(callback, true);
-            }
-            catch(PropagatingException pe)
-            {
-                Throwable t = pe.getCause();
-                if(t != null)
-                {
-                    if(t instanceof IOException)
-                    {
-                        throw (IOException) pe.getCause();
-                    }
-                    if(t instanceof SMBException)
-                    {
-                        throw pe.getCause();
-                    }
-                    if(t instanceof DeviceContextException)
-                    {
-                        throw pe.getCause();
-                    }
-                    throw t;
-                }
-                throw pe;
-            }
+            return tran.doInTransaction(callback, readOnly);
         }
-        else
+        catch(PropagatingException pe)
         {
-            // read/write only transaction
-            try
+            Throwable t = pe.getCause();
+            if(t != null)
             {
-               return tran.doInTransaction(callback);  
-            }
-            catch(PropagatingException pe)
-            {  
-                Throwable t = pe.getCause();
-                if(t != null)
+                if(t instanceof IOException)
                 {
-                    if(t instanceof IOException)
-                    {
-                        // Unwrap checked exceptions
-                        throw pe.getCause();
-                    }
-                    if(t instanceof SMBException)
-                    {
-                        throw pe.getCause();
-                    }
-                    if(t instanceof DeviceContextException)
-                    {
-                        throw pe.getCause();
-                    }
+                    throw (IOException) t;
+                }
+                if(t instanceof IOControlNotImplementedException)
+                {
+                    throw (IOControlNotImplementedException) t;
+                }
+                if(t instanceof SMBException)
+                {
+                    throw (SMBException)t;
+                }
+                if(t instanceof DeviceContextException)
+                {
                     throw t;
                 }
-                throw pe;
-            }            
+                throw t;
+            }
+            throw pe;
         }
     }
 

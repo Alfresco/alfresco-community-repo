@@ -2467,6 +2467,252 @@ public class ContentDiskDriverTest extends TestCase
         
     } // testScenarioShuffleMetadataExtraction
     
+    
+    /**
+     * ALF-12812
+     * 
+     * This test tries to simulate the shuffling that is done by MS Word 2011 for Mac 
+     * with regard to metadata extraction.  In particular the temporary file names are
+     * different.
+     * <p>
+     * 1: Setup an update rule for ContentMetadataExtractor.
+     * Simulate a WORD 2011 for Mac Create
+     * 2: Write "Word Work File D_1725484373.tmp"
+     * 3: Close file
+     * 4: Rename "Word Work File D_1725484373.tmp" to ContentDiskDriver.docx
+     * 5: Check metadata extraction
+     */
+    public void testMetadataExtractionForMac() throws Exception
+    {
+        logger.debug("testMetadataExtractionForMac");
+        final String FILE_NAME = "ContentDiskDriver.docx";
+        //final String FILE_OLD_TEMP = "._Word Work File D_1725484373.tmp";
+        final String FILE_NEW_TEMP = "Word Work File D_1725484373.tmp";
+         
+        class TestContext
+        {
+            NodeRef testDirNodeRef;
+            NodeRef testNodeRef;
+            NetworkFile firstFileHandle;
+//            NetworkFile secondFileHandle;
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testMetadataExtractionForMac";
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageDirCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteDirectory(testSession, testConnection, TEST_DIR);
+                return null;
+            }
+        };
+        
+        try
+        {
+            tran.doInTransaction(deleteGarbageDirCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+        
+        logger.debug("create Test directory" + TEST_DIR);
+        RetryingTransactionCallback<Void> createTestDirCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                
+                testContext.testDirNodeRef = getNodeForPath(testConnection, TEST_DIR);
+                assertNotNull("testDirNodeRef is null", testContext.testDirNodeRef);   
+                
+                UserTransaction txn = transactionService.getUserTransaction();
+              
+                return null;
+                
+                
+            }
+        };                
+        tran.doInTransaction(createTestDirCB);
+        logger.debug("Create rule on test dir");
+        
+        RetryingTransactionCallback<Void> createRuleCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {                 
+                Rule rule = new Rule();
+                rule.setRuleType(RuleType.UPDATE);
+                rule.applyToChildren(true);
+                rule.setRuleDisabled(false);
+                rule.setTitle("Extract Metadata from update content");
+                rule.setDescription("ContentDiskDriverTest");
+                
+                Map<String, Serializable> props = new HashMap<String, Serializable>(1);
+                Action extractAction = actionService.createAction("extract-metadata", props);
+                
+                ActionCondition noCondition1 = actionService.createActionCondition(NoConditionEvaluator.NAME);
+                extractAction.addActionCondition(noCondition1);
+                
+                ActionCondition noCondition2 = actionService.createActionCondition(NoConditionEvaluator.NAME);
+                CompositeAction compAction = actionService.createCompositeAction();
+                compAction.setTitle("Extract Metadata");
+                compAction.setDescription("Content Disk Driver Test - Extract Metadata");
+                compAction.addAction(extractAction);
+                compAction.addActionCondition(noCondition2);
+
+                rule.setAction(compAction);           
+                         
+                ruleService.saveRule(testContext.testDirNodeRef, rule);
+                
+                logger.debug("rule created");
+                     
+                return null;
+            }
+        };
+        tran.doInTransaction(createRuleCB, false, true);
+
+        /**
+         * Create a file in the test directory
+         */  
+        logger.debug("create test file in test directory");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {               
+                /**
+                 * Create the file we are going to use to test
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull("first file Handle is null", testContext.firstFileHandle);
+                
+                // now load up the node with lots of other stuff that we will test to see if it gets preserved during the
+                // shuffle.
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP);
+                assertNotNull("testContext.testNodeRef is null", testContext.testNodeRef);
+                
+                // test non CM namespace property
+                nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
+        
+                // Check that the temporary aspect has been applied.
+                assertTrue("temporary aspect not applied", nodeService.hasAspect(testContext.testNodeRef, ContentModel.ASPECT_TEMPORARY));
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+        
+        logger.debug("step b: write content to test file");
+        
+        /**
+         * Write ContentDiskDriverTest1.docx to the test file,
+         */
+        RetryingTransactionCallback<Void> writeFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest1.docx");
+                assertNotNull("unable to find test resource filesys/ContentDiskDriverTest1.docx", fileResource);
+
+                byte[] buffer= new byte[1000];
+                InputStream is = fileResource.getInputStream();
+                try
+                {
+                    long offset = 0;
+                    int i = is.read(buffer, 0, buffer.length);
+                    while(i > 0)
+                    {
+                        testContext.firstFileHandle.writeFile(buffer, i, 0, offset);
+                        offset += i;
+                        i = is.read(buffer, 0, buffer.length);
+                    }                 
+                }
+                finally
+                {
+                    is.close();
+                }
+                
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);
+                    
+                return null;
+            }
+        };
+        tran.doInTransaction(writeFileCB, false, true);
+        
+        logger.debug("Step b: rename the test file.");
+                
+        /**
+         * Move the new file into place, stuff should get shuffled
+         */
+        RetryingTransactionCallback<Void> moveNewFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NAME); 
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(moveNewFileCB, false, true);
+        
+      logger.debug("Step c: validate metadata has been extracted.");  
+      /**
+      * c: check simple case of meta-data extraction has worked.
+      */
+     RetryingTransactionCallback<Void> validateFirstExtractionCB = new RetryingTransactionCallback<Void>() {
+
+         @Override
+         public Void execute() throws Throwable
+         {
+             Map<QName, Serializable> props = nodeService.getProperties(testContext.testNodeRef);
+             
+             assertTrue("Enabled property has been lost", props.containsKey(TransferModel.PROP_ENABLED));
+             
+             // Check that the temporary aspect has been applied.
+             assertTrue("temporary aspect has not been removed", !nodeService.hasAspect(testContext.testNodeRef, ContentModel.ASPECT_TEMPORARY));
+        
+          
+             // These metadata values should be extracted.
+             assertEquals("description is not correct", "This is a test file", nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_DESCRIPTION));
+             assertEquals("title is not correct", "ContentDiskDriverTest", nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_TITLE));
+             assertEquals("author is not correct", "mrogers", nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_AUTHOR));
+             
+             ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+             assertEquals("mimeType is wrong", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data.getMimetype());
+             assertEquals("size is wrong", 11302, data.getSize());
+                     
+             return null;
+         }
+     };
+     tran.doInTransaction(validateFirstExtractionCB, false, true);
+
+        
+    } // testScenarioMetadataExtractionForMac
+    
     public void testDirListing()throws Exception
     {
         logger.debug("testDirListing");
@@ -4352,7 +4598,7 @@ public class ContentDiskDriverTest extends TestCase
      * e) Lock file deleted
      *  
      */
-    public void testScenarioMacLionTextEdit() throws Exception
+    public void DISABLED_TestScenarioMacLionTextEdit() throws Exception
     {
         logger.debug("testScenarioLionTextEdit");
         final String FILE_NAME = "test.txt";

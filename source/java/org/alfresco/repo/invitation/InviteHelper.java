@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.invitation.site.InviteInfo;
@@ -57,6 +58,7 @@ import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -112,6 +114,7 @@ public class InviteHelper implements InitializingBean
     private SiteService siteService;
     private TemplateService templateService;
     private WorkflowService workflowService;
+    private NodeService nodeService;
 
     private InviteSender inviteSender;
 
@@ -125,6 +128,7 @@ public class InviteHelper implements InitializingBean
         this.siteService = serviceRegistry.getSiteService();
         this.templateService = serviceRegistry.getTemplateService();
         this.workflowService = serviceRegistry.getWorkflowService();
+        this.nodeService = serviceRegistry.getNodeService();
         this.inviteSender = new InviteSender(serviceRegistry, repositoryHelper, messageService);
     }
 
@@ -139,7 +143,7 @@ public class InviteHelper implements InitializingBean
         {
             public Void doWork() throws Exception
             {
-                if (false==authenticationService.getAuthenticationEnabled(invitee))
+                if (authenticationService.isAuthenticationMutable(invitee))
                 {
                     authenticationService.setAuthenticationEnabled(invitee, true);
                 }
@@ -282,7 +286,7 @@ public class InviteHelper implements InitializingBean
                 
                 // if invitee's user account is still disabled and there are no pending invites outstanding
                 // for the invitee, then remove the account and delete the invitee's person node
-                if ((authenticationService.authenticationExists(inviteeUserName))
+                if ((authenticationService.isAuthenticationMutable(inviteeUserName))
                         && (authenticationService.getAuthenticationEnabled(inviteeUserName) == false)
                         && (invitesPending == false))
                 {
@@ -309,14 +313,17 @@ public class InviteHelper implements InitializingBean
         String inviteeUserName = (String) executionVariables.get(wfVarInviteeUserName);
         String siteShortName = (String) executionVariables.get(wfVarResourceName);
         
-        String currentUserName = authenticationService.getCurrentUserName();
-        String currentUserSiteRole = siteService.getMembersRole(siteShortName, currentUserName);
-        if (SiteModel.SITE_MANAGER.equals(currentUserSiteRole)== false)
+        if (!AuthenticationUtil.isRunAsUserTheSystemUser())
         {
-            // The current user is not the site manager
-            String inviteId = (String) executionVariables.get(wfVarWorkflowInstanceId);
-            Object[] args = {currentUserName, inviteId, siteShortName};
-            throw new InvitationExceptionForbidden(MSG_NOT_SITE_MANAGER, args);
+            String currentUserName = authenticationService.getCurrentUserName();
+            String currentUserSiteRole = siteService.getMembersRole(siteShortName, currentUserName);
+            if (SiteModel.SITE_MANAGER.equals(currentUserSiteRole)== false)
+            {
+                // The current user is not the site manager
+                String inviteId = (String) executionVariables.get(wfVarWorkflowInstanceId);
+                Object[] args = {currentUserName, inviteId, siteShortName};
+                throw new InvitationExceptionForbidden(MSG_NOT_SITE_MANAGER, args);
+            }
         }
         
         // Clean up invitee's user account and person node if they are not in use i.e.
@@ -395,7 +402,7 @@ public class InviteHelper implements InitializingBean
                     
             // Send
             Action emailAction = actionService.createAction("mail");
-            emailAction.setParameterValue(MailActionExecuter.PARAM_TO, inviteeUserName);
+            emailAction.setParameterValue(MailActionExecuter.PARAM_TO, nodeService.getProperty(personService.getPerson(inviteeUserName), ContentModel.PROP_EMAIL));
             emailAction.setParameterValue(MailActionExecuter.PARAM_FROM, reviewer);
             //TODO Localize this.
             emailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Rejected invitation to web site:" + resourceName);

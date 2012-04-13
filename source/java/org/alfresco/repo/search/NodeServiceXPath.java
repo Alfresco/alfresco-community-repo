@@ -75,7 +75,6 @@ import org.jaxen.function.TrueFunction;
 import org.jaxen.function.ext.EndsWithFunction;
 import org.jaxen.function.ext.EvaluateFunction;
 import org.jaxen.function.ext.LowerFunction;
-import org.jaxen.function.ext.MatrixConcatFunction;
 import org.jaxen.function.ext.UpperFunction;
 import org.jaxen.function.xslt.DocumentFunction;
 
@@ -602,6 +601,9 @@ public class NodeServiceXPath extends BaseXPath
 
             registerFunction("", // namespace URI
                     "document", new DocumentFunction());
+            
+            registerFunction("", // namespace URI
+                    "ends-with", new EndsWithFunction());
 
             registerFunction("", // namespace URI
                     "false", new FalseFunction());
@@ -672,9 +674,6 @@ public class NodeServiceXPath extends BaseXPath
             // register extension functions
             // extension functions should go into a namespace, but which one?
             // for now, keep them in default namespace to not break any code
-
-            registerFunction("", // namespace URI
-                    "matrix-concat", new MatrixConcatFunction());
 
             registerFunction("", // namespace URI
                     "evaluate", new EvaluateFunction());

@@ -93,6 +93,11 @@ public class PdfToImageContentTransformer extends AbstractContentTransformer2
            }
            
            PDFPage page = pdffile.getPage(0, true);
+           if (page == null)
+           {
+               throw new AlfrescoRuntimeException("Unable to create image from pdf file."+
+                       "A PDFRender error took place which should have been sent to stdout.");
+           }
               
            //get the width and height for the doc at the default zoom              
            int width=(int)page.getBBox().getWidth();

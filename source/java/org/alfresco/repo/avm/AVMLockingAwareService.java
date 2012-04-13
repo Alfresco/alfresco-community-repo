@@ -31,6 +31,7 @@ import org.alfresco.repo.avm.util.AVMUtil;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.avm.AVMExistsException;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
@@ -63,6 +64,8 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
     public static final String STORE_SEPARATOR = "--";
     
     public static final String STORE_WORKFLOW = "workflow";
+    
+    public static final String STORE_PREVIEW = "preview";
     
     private AVMService fService;
 
@@ -668,14 +671,27 @@ public class AVMLockingAwareService implements AVMService, ApplicationContextAwa
         {
             String userName = AuthenticationUtil.getFullyAuthenticatedUser();
             LockState lockState = fLockingService.getLockState(webProject, storePath[1], userName);
-            // Managers can edit any file in any sandbox, look into ALF-11440
             String wpStoreId = WCMUtil.getWebProjectStoreId(webProject);
-            if (lockState == AVMLockingService.LockState.LOCK_NOT_OWNER && wpService.isContentManager(wpStoreId, userName))
-                lockState = AVMLockingService.LockState.LOCK_OWNER;
+            
+            // ALF-11440 PM 18-Dec-2011:
+            // 1. Managers may edit any unlocked file - it becomes locked.
+            // 2. Managers may edit any locked file in any sandbox in which it is locked
+            //    but not in sandboxes where it is unlocked.
+            // ALF-8787 and ALF-12766 are consistent with 2.
+            //    A Manager should only be able to create a file in a sandbox
+            //    if it is NOT locked somewhere else.
             switch (lockState)
             {
             case LOCK_NOT_OWNER:
                 String lockOwner = fLockingService.getLockOwner(webProject, storePath[1]);
+                if ((wpService.isContentManager(wpStoreId, userName)) &&
+                    (avmStore.equals(wpStoreId + STORE_SEPARATOR + lockOwner) ||
+                     avmStore.equals(wpStoreId + STORE_SEPARATOR + lockOwner
+                            + STORE_SEPARATOR + STORE_PREVIEW)))
+                {
+                    // Handle as if LOCK_OWNER
+                    break;
+                }
                 throw new AVMLockingException("avmlockservice.locked", path, lockOwner);
             case NO_LOCK:
                 Map<String, String> lockAttributes = Collections.singletonMap(WCMUtil.LOCK_KEY_STORE_NAME, avmStore);

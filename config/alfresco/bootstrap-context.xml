@@ -134,6 +134,7 @@
              <ref bean="patch.db-V3.2-AddFKIndexes" />
              <ref bean="patch.db-V3.2-AddFKIndexes-2" />
              <ref bean="patch.db-V3.0-ActivityTables" />
+             <ref bean="patch.db-V4.0-Activiti-task-id-indexes" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">

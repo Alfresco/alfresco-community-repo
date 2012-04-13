@@ -21,7 +21,7 @@ package org.alfresco.repo.node.index;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,6 +53,7 @@ import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -62,7 +63,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
@@ -70,6 +70,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Abstract helper for reindexing.
@@ -278,6 +279,31 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      *
      */
     protected abstract void reindexImpl();
+
+    /**
+     * To allow for possible 'read committed' behaviour in some databases, where a node that previously existed during a
+     * transaction can disappear from existence, we treat InvalidNodeRefExceptions as concurrency conditions.
+     */
+    protected <T2> T2 doInRetryingTransaction(final RetryingTransactionCallback<T2> callback, boolean isReadThrough)
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<T2>()
+        {
+            @Override
+            public T2 execute() throws Throwable
+            {
+                try
+                {
+                    return callback.execute();
+                }
+                catch (InvalidNodeRefException e)
+                {
+                    // Turn InvalidNodeRefExceptions into retryable exceptions.
+                    throw new ConcurrencyFailureException("Possible cache integrity issue during reindexing", e);
+                }
+
+            }
+        }, true, isReadThrough);
+    }
     
     /**
      * If this object is currently busy, then it just nothing
@@ -316,7 +342,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                 };
                 if (requireTransaction())
                 {
-                    transactionService.getRetryingTransactionHelper().doInTransaction(reindexWork, true);
+                    doInRetryingTransaction(reindexWork, false);
                 }
                 else
                 {
@@ -611,14 +637,14 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     
     public InIndex isTxnPresentInIndex(final Transaction txn, final boolean readThrough)
     {
-        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<InIndex>()
+        return doInRetryingTransaction(new RetryingTransactionCallback<InIndex>()
         {
             @Override
             public InIndex execute() throws Throwable
             {
                 return isTxnPresentInIndex(txn);
             }
-        }, true, readThrough);
+        }, readThrough);
     }
 
     /**
@@ -758,7 +784,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
      * 
      * @throws ReindexTerminatedException if the VM is shutdown during the reindex
      */
-    protected void reindexTransaction(final long txnId, ReindexNodeCallback callback, boolean isFull)
+    protected void reindexTransaction(final long txnId, final ReindexNodeCallback callback, final boolean isFull)
     {
         ParameterCheck.mandatory("txnId", txnId);
         if (logger.isDebugEnabled())
@@ -772,91 +798,153 @@ public abstract class AbstractReindexComponent implements IndexRecovery
         
         // The indexer will 'read through' to the latest database changes for the rest of this transaction
         indexer.setReadThrough(true);
+        
+        // Compile the complete set of transaction changes - we need to 'read through' here too
+        final Collection<ChildAssociationRef> deletedNodes = new LinkedList<ChildAssociationRef>();
+        final Collection<NodeRef> updatedNodes = new LinkedList<NodeRef>();
+        final Collection<ChildAssociationRef> createdNodes = new LinkedList<ChildAssociationRef>();
+        final Collection<ChildAssociationRef> deletedParents = new LinkedList<ChildAssociationRef>();
+        final Collection<ChildAssociationRef> addedParents = new LinkedList<ChildAssociationRef>();
 
-        // get the node references pertinent to the transaction - We need to 'read through' here too
-        List<Pair<NodeRef.Status, ChildAssociationRef>> nodePairs = transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<List<Pair<NodeRef.Status, ChildAssociationRef>>>()
-                {
-
-                    @Override
-                    public List<Pair<NodeRef.Status, ChildAssociationRef>> execute() throws Throwable
-                    {
-                        List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChanges(txnId);
-                        List<Pair<NodeRef.Status, ChildAssociationRef>> nodePairs = new ArrayList<Pair<Status,ChildAssociationRef>>(nodeStatuses.size());
-                        for (NodeRef.Status nodeStatus : nodeStatuses)
-                        {
-                            ChildAssociationRef parent = nodeStatus.isDeleted() ? null : nodeService.getPrimaryParent(nodeStatus.getNodeRef());
-                            nodePairs.add(new Pair<NodeRef.Status, ChildAssociationRef>(nodeStatus, parent));
-                        }
-                        return nodePairs;
-                    }
-                }, true, true);
-
-        // reindex each node
-        int nodeCount = 0;
-        for (Pair<NodeRef.Status, ChildAssociationRef> nodePair: nodePairs)
+        doInRetryingTransaction(new RetryingTransactionCallback<Void>()
         {
-            NodeRef.Status nodeStatus = nodePair.getFirst();
-            NodeRef nodeRef = nodeStatus.getNodeRef();
-
-            if (nodeStatus.isDeleted())                                 // node deleted
+            @Override
+            public Void execute() throws Throwable
             {
-                if(isFull == false)
+                // process the node references pertinent to the transaction
+                List<NodeRef.Status> nodeStatuses = nodeDAO.getTxnChanges(txnId);
+                int nodeCount = 0;
+                for (NodeRef.Status nodeStatus : nodeStatuses)
                 {
-                    // only the child node ref is relevant
-                    ChildAssociationRef assocRef = new ChildAssociationRef(
-                            ContentModel.ASSOC_CHILDREN,
-                            null,
-                            null,
-                            nodeRef);
-                    indexer.deleteNode(assocRef);
-                    if (logger.isDebugEnabled())
+                    NodeRef nodeRef = nodeStatus.getNodeRef();
+                    if (isFull)
                     {
-                        logger.debug("DELETE: " + nodeRef);
-                    }
-                }
-            }
-            else                                                        // node created
-            {
-                if(isFull)
-                {
-                    ChildAssociationRef assocRef = new ChildAssociationRef(
-                            ContentModel.ASSOC_CHILDREN,
-                            null,
-                            null,
-                            nodeRef);
-                    indexer.createNode(assocRef);
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("CREATE: " + nodeRef);
-                    }
-                }
-                else
-                {
-                    // reindex - force a cascade reindex if possible (to account for a possible move)
-                    ChildAssociationRef parent = nodePair.getSecond();
-                    if (parent == null)
-                    {
-                        indexer.updateNode(nodeRef);
-                        if (logger.isDebugEnabled())
+                        if (!nodeStatus.isDeleted())
                         {
-                            logger.debug("UPDATE: " + nodeRef);
+                            createdNodes.add(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, null, null, nodeRef));
                         }
+                    }
+                    else if (nodeStatus.isDeleted()) // node deleted
+                    {
+                        // only the child node ref is relevant
+                        deletedNodes.add(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, null, null, nodeRef));
                     }
                     else
                     {
-                        indexer.createChildRelationship(parent);
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("MOVE: " + nodeRef + ", " + parent);
-                        }
+                        // Do a DB / index comparision to determine indexing operations required
+                        indexer.detectNodeChanges(nodeRef, searcher, addedParents, deletedParents, createdNodes,
+                                updatedNodes);
+                    }
+
+                    // Check for VM shutdown every 100 nodes
+                    if (++nodeCount % 100 == 0 && isShuttingDown())
+                    {
+                        // We can't fail gracefully and run the risk of committing a half-baked transaction
+                        logger.info("Reindexing of transaction " + txnId + " terminated by VM shutdown.");
+                        throw new ReindexTerminatedException();
                     }
                 }
+                return null;
             }
+        }, true);
+
+        int nodeCount = 0;
+        for (ChildAssociationRef deletedNode: deletedNodes)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("DELETE: " + deletedNode.getChildRef());
+            }
+            indexer.deleteNode(deletedNode);
+
             // Make the callback
             if (callback != null)
             {
-                callback.reindexedNode(nodeRef);
+                callback.reindexedNode(deletedNode.getChildRef());
+            }
+            // Check for VM shutdown every 100 nodes
+            if (++nodeCount % 100 == 0 && isShuttingDown())
+            {
+                // We can't fail gracefully and run the risk of committing a half-baked transaction
+                logger.info("Reindexing of transaction " + txnId + " terminated by VM shutdown.");
+                throw new ReindexTerminatedException();
+            }
+        }
+        for (NodeRef updatedNode: updatedNodes)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("UPDATE: " + updatedNode);
+            }
+            indexer.updateNode(updatedNode);
+
+            // Make the callback
+            if (callback != null)
+            {
+                callback.reindexedNode(updatedNode);
+            }
+            // Check for VM shutdown every 100 nodes
+            if (++nodeCount % 100 == 0 && isShuttingDown())
+            {
+                // We can't fail gracefully and run the risk of committing a half-baked transaction
+                logger.info("Reindexing of transaction " + txnId + " terminated by VM shutdown.");
+                throw new ReindexTerminatedException();
+            }
+        }
+        for (ChildAssociationRef createdNode: createdNodes)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("CREATE: " + createdNode.getChildRef());
+            }
+            indexer.createNode(createdNode);
+
+            // Make the callback
+            if (callback != null)
+            {
+                callback.reindexedNode(createdNode.getChildRef());
+            }
+            // Check for VM shutdown every 100 nodes
+            if (++nodeCount % 100 == 0 && isShuttingDown())
+            {
+                // We can't fail gracefully and run the risk of committing a half-baked transaction
+                logger.info("Reindexing of transaction " + txnId + " terminated by VM shutdown.");
+                throw new ReindexTerminatedException();
+            }
+        }
+        for (ChildAssociationRef deletedParent: deletedParents)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("UNLINK: " + deletedParent);
+            }
+            indexer.deleteChildRelationship(deletedParent);
+
+            // Make the callback
+            if (callback != null)
+            {
+                callback.reindexedNode(deletedParent.getChildRef());
+            }
+            // Check for VM shutdown every 100 nodes
+            if (++nodeCount % 100 == 0 && isShuttingDown())
+            {
+                // We can't fail gracefully and run the risk of committing a half-baked transaction
+                logger.info("Reindexing of transaction " + txnId + " terminated by VM shutdown.");
+                throw new ReindexTerminatedException();
+            }
+        }
+        for (ChildAssociationRef addedParent: addedParents)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("LINK: " + addedParents);
+            }
+            indexer.createChildRelationship(addedParent);
+
+            // Make the callback
+            if (callback != null)
+            {
+                callback.reindexedNode(addedParent.getChildRef());
             }
             // Check for VM shutdown every 100 nodes
             if (++nodeCount % 100 == 0 && isShuttingDown())
@@ -999,7 +1087,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                     loggerOnThread.debug(msg);
                 }
                 // Do the work
-                transactionService.getRetryingTransactionHelper().doInTransaction(reindexCallback, true, true);
+                doInRetryingTransaction(reindexCallback, true);
             }
             catch (ReindexTerminatedException e)
             {
@@ -1200,7 +1288,7 @@ public abstract class AbstractReindexComponent implements IndexRecovery
                     return null;
                 }
             };
-            transactionService.getRetryingTransactionHelper().doInTransaction(reindexCallback, true, true);
+            doInRetryingTransaction(reindexCallback, true);
             return;
         }
         

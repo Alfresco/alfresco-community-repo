@@ -3080,5 +3080,16 @@
             <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/AVM-index-child-entries-lower.sql</value>
         </property>
     </bean>
+    
+    <bean id="patch.db-V4.0-Activiti-task-id-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.0-Activiti-task-id-indexes" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="6003" />
+        <property name="targetSchema" value="6004" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.0/${db.script.dialect}/ActivitiTaskIdIndexes.sql</value>
+        </property>
+    </bean>
 
 </beans>

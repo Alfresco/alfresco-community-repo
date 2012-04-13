@@ -83,6 +83,9 @@
         <property name="readersCache">
             <ref bean="readersCache" />
         </property>
+        <property name="readersDeniedCache">
+            <ref bean="readersDeniedCache" />
+        </property>
         <property name="policyComponent">
             <ref bean="policyComponent" />
         </property>
@@ -91,6 +94,9 @@
         </property>
         <property name="ownableService">
             <ref bean="ownableService" />
+        </property>
+        <property name="anyDenyDenies">
+            <value>${security.anyDenyDenies}</value>
         </property>
         <property name="dynamicAuthorities">
             <list>
@@ -314,9 +320,9 @@
     <!-- addChild                                                                        -->
     <!--      requires create children on the parent                                     -->
     <!-- removeChild                                                                     -->
-    <!--      Requires delete children from the parent and delete for the child          -->
+    <!--      Requires delete children from the parent & delete for the child IF PRIMARY -->
     <!-- removeChildAssociation                                                          -->
-    <!--      Requires delete children from the parent and delete for the child          -->
+    <!--      Requires delete children from the parent & delete for the child IF PRIMARY -->
     <!-- getProperties                                                                   -->
     <!--      Requires read properties for the node                                      -->
     <!-- getProperty                                                                     -->
@@ -372,8 +378,8 @@
                org.alfresco.service.cmr.repository.NodeService.getAspects=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.deleteNode=ACL_NODE.0.sys:base.DeleteNode
                org.alfresco.service.cmr.repository.NodeService.addChild=ACL_NODE.0.sys:base.CreateChildren,ACL_NODE.1.sys:base.ReadProperties
-               org.alfresco.service.cmr.repository.NodeService.removeChild=ACL_NODE.0.sys:base.DeleteChildren,ACL_NODE.1.sys:base.DeleteNode
-               org.alfresco.service.cmr.repository.NodeService.removeChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren,ACL_NODE.0.sys:base.DeleteNode
+               org.alfresco.service.cmr.repository.NodeService.removeChild=ACL_NODE.0.sys:base.DeleteChildren,ACL_PRI_CHILD_ASSOC_ON_CHILD.0.1.sys:base.DeleteNode
+               org.alfresco.service.cmr.repository.NodeService.removeChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren,ACL_PRI_CHILD_ASSOC_ON_CHILD.0.sys:base.DeleteNode
                org.alfresco.service.cmr.repository.NodeService.getProperties=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getProperty=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.setProperties=ACL_NODE.0.sys:base.WriteProperties

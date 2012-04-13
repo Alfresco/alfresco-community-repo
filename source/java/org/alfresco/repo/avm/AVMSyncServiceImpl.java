@@ -232,7 +232,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                                                              dirDiffCode));
 
                                 // Also add all child items if necessary and any exists
-                                if (expandDirs)
+                                if (expandDirs && srcDesc.isDirectory())
                                 {
                                     addNewChildrenIfAny(srcVersion, srcDesc, dstVersion, AVMNodeConverter.ExtendAVMPath(dstPath, dstDesc.getName()), result);
                                 }
@@ -283,7 +283,7 @@ public class AVMSyncServiceImpl implements AVMSyncService
                                                          AVMDifference.NEWER));
 
                             // Also add all child items if necessary and any exists
-                            if (expandDirs)
+                            if (expandDirs && srcChild.isDirectory())
                             {
                                 addNewChildrenIfAny(srcVersion, srcChild, dstVersion, dstChildPath, result);
                             }

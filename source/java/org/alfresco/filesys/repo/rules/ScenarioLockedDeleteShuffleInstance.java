@@ -79,11 +79,10 @@ public class ScenarioLockedDeleteShuffleInstance implements ScenarioInstance
     
     private Ranking ranking;
     
-    
     /**
      * Timeout in ms.  Default 30 seconds.
      */
-    private long timeout = 30000;
+    private long timeout = 60000;
     
     private boolean isComplete;
     
@@ -127,7 +126,9 @@ public class ScenarioLockedDeleteShuffleInstance implements ScenarioInstance
         {
             if(logger.isDebugEnabled())
             {
-                logger.debug("Instance timed out");
+                logger.debug("Instance timed out lockName:" + lockName);
+                isComplete = true;
+                return null;
             }
         }
         
@@ -212,7 +213,8 @@ public class ScenarioLockedDeleteShuffleInstance implements ScenarioInstance
                      * a) Rename the temp file back to the targetFile
                      * b) Copy content from moved file
                      * c) Delete rather than move file 
-                     */                    
+                     */  
+                    logger.debug("scenario fires");
                     ArrayList<Command> commands = new ArrayList<Command>();
                     
                     RenameFileCommand r1 = new RenameFileCommand(tempName, targetFile, m.getRootNodeRef(), currentFolder + "\\" + tempName, m.getToPath());
@@ -228,17 +230,8 @@ public class ScenarioLockedDeleteShuffleInstance implements ScenarioInstance
                     logger.debug("Scenario complete");
                     isComplete = true;
                     
-                    return new CompoundCommand(commands);
-                    
+                    return new CompoundCommand(commands);                    
                 }
-                
-                //TODO - Need to consider error cases and "overlap"
-                
-//                if(logger.isDebugEnabled())
-//                {
-//                    logger.debug("entering MOVED state: " + lockName);
-//                }
-//                internalState = InternalState.MOVED;
             }
 
             

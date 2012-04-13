@@ -146,26 +146,38 @@
             <list>
                 <!-- TextEdit Mac Lion -->
                 <bean id="deleteShuffle" class="org.alfresco.filesys.repo.rules.ScenarioLockedDeleteShuffle">
-                    <property name="pattern"><value>^\._.*</value></property>
-                    <property name="timeout"><value>30000</value></property>
+                    <property name="pattern"><value>^\._.txt*</value></property>
+                    <property name="timeout"><value>60000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>
                 <!--  Excel 2003 -->
                 <bean id="createShuffleExcel2003" class="org.alfresco.filesys.repo.rules.ScenarioCreateShuffle">
                     <property name="pattern"><value>[0-9A-F]{8}+$</value></property>
-                    <property name="timeout"><value>30000</value></property>
+                    <property name="timeout"><value>60000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>
                 <!--  Word 2003 -->
                 <bean id="createShuffle2003" class="org.alfresco.filesys.repo.rules.ScenarioCreateShuffle">
                     <property name="pattern"><value>~WRD.*.TMP</value></property>
-                    <property name="timeout"><value>30000</value></property>
+                    <property name="timeout"><value>60000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>
                 <!--  Word 2007 -->
                 <bean id="createShuffle2007" class="org.alfresco.filesys.repo.rules.ScenarioCreateShuffle">
                     <property name="pattern"><value>[0-9A-F]*.TMP$</value></property>
-                    <property name="timeout"><value>30000</value></property>
+                    <property name="timeout"><value>60000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
+                <!--  Word Mac 2011 -->
+                <bean id="createShuffleMac2011" class="org.alfresco.filesys.repo.rules.ScenarioCreateShuffle">
+                    <property name="pattern"><value>.*D_[0-9]*.TMP$</value></property>
+                    <property name="timeout"><value>60000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
+                <!--  Powerpoint Mac 2011 -->
+                <bean id="createShufflePPT2011" class="org.alfresco.filesys.repo.rules.ScenarioCreateDeleteRenameShuffle">
+                    <property name="pattern"><value>^[^\._].*[0-9].pptx$</value></property>
+                    <property name="timeout"><value>60000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>
                 <!--  Vi -->

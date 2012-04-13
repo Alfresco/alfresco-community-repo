@@ -88,7 +88,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
      * Helper method to create a {@link NetworkFile network file} given a node reference.
      */
     public static ContentNetworkFile createFile( NodeService nodeService, ContentService contentService, MimetypeService mimetypeService,
-            CifsHelper cifsHelper, NodeRef nodeRef, String path, boolean readOnly, SrvSession sess)
+            CifsHelper cifsHelper, NodeRef nodeRef, String path, boolean readOnly, boolean attributesOnly, SrvSession sess)
     {
         
         // Create the file
@@ -116,12 +116,13 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         // Set relevant parameters
         
-        if (readOnly)
-        {
+        if (attributesOnly) {
+        	netFile.setGrantedAccess( NetworkFile.ATTRIBUTESONLY);
+        }
+        else if (readOnly) {
             netFile.setGrantedAccess(NetworkFile.READONLY);
         }
-        else
-        {
+        else {
             netFile.setGrantedAccess(NetworkFile.READWRITE);
         }
         
@@ -153,11 +154,15 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         if ( fileInfo.hasCreationDateTime())
             netFile.setCreationDate( fileInfo.getCreationDateTime());
         
-        if ( fileInfo.hasModifyDateTime())
+        if ( fileInfo.hasModifyDateTime() && fileInfo.getModifyDateTime() > 0L)
             netFile.setModifyDate(fileInfo.getModifyDateTime());
+        else
+        	netFile.setModifyDate(fileInfo.getCreationDateTime());
         
-        if ( fileInfo.hasAccessDateTime())
+        if ( fileInfo.hasAccessDateTime() && fileInfo.getAccessDateTime() > 0L)
             netFile.setAccessDate(fileInfo.getAccessDateTime());
+        else
+        	netFile.setAccessDate(fileInfo.getCreationDateTime());
         
         // Set the file attributes
         

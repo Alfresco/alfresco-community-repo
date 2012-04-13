@@ -95,6 +95,10 @@
         <parameter property="id" jdbcType="BIGINT" javaType="long"/>
     </parameterMap>
     
+    <parameterMap id="parameter_CommitTimeMap" type="map">
+        <parameter property="commit_time_ms" jdbcType="BIGINT" javaType="long"/>
+    </parameterMap>
+    
     <parameterMap id="parameter_NameMap" type="map">
         <parameter property="name" jdbcType="VARCHAR" javaType="string"/>
     </parameterMap>
@@ -491,6 +495,26 @@
             alf_authority
         where
             authority = ?
+    </select>
+    
+    <select id="select_ChangeSetLast" parameterMap="parameter_CommitTimeMap" resultType="long">
+        select
+            acs.id 
+        from
+            alf_acl_change_set acs
+        where
+            acs.commit_time_ms =
+            (
+                select max(commit_time_ms) from alf_acl_change_set
+                where commit_time_ms &lt;= ?
+            )
+    </select>
+    
+    <select id="select_ChangeSetMaxCommitTime" resultType="java.lang.Long">
+        select
+            max(commit_time_ms)
+        from
+            alf_acl_change_set
     </select>
     
     <!--                -->

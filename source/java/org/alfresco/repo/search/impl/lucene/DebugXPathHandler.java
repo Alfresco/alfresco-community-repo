@@ -18,11 +18,11 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
-import org.saxpath.Axis;
-import org.saxpath.SAXPathException;
-import org.saxpath.XPathHandler;
+import org.jaxen.saxpath.Axis;
+import org.jaxen.saxpath.SAXPathException;
+import org.jaxen.saxpath.XPathHandler;
+import org.jaxen.saxpath.base.XPathReader;
 
-import com.werken.saxpath.XPathReader;
 
 public class DebugXPathHandler implements XPathHandler
 {

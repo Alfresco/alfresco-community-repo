@@ -57,10 +57,10 @@ import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionAwareSingleton;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionAwareSingleton;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -74,20 +74,20 @@ import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ReadWriteLockExecuter;
 import org.alfresco.util.ValueProtectingMap;
-import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -957,12 +957,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long nodeId = dbNode.getId();
             if (dbNode.getDeleted())
             {
-                // The node is actually deleted as the cache said. Could still be a race condition, so let's allow the
-                // transaction to be retried by attaching a cause to our InvalidNodeRefException
-                InvalidNodeRefException e = new InvalidNodeRefException(nodeRef);
-                e.initCause(new ConcurrencyFailureException("Attempt to follow reference " + nodeRef
-                        + " to deleted node " + nodeId));
-                throw e;
+                // The node is actually deleted as the cache said. 
+                throw  new InvalidNodeRefException(nodeRef);
             }
             else
             {
@@ -4248,7 +4244,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     {
         return selectTxnsUnused(minTxnId, maxCommitTime, count);
     }
-
+    
     public void purgeTxn(Long txnId)
     {
         deleteTransaction(txnId);
@@ -4266,6 +4262,24 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     {
         Long time = selectMaxTxnCommitTime();
         return (time == null ? LONG_ZERO : time);
+    }
+    
+    public Long getMinTxnId()
+    {
+        Long id = selectMinTxnId();
+        return (id == null ? LONG_ZERO : id);
+    }
+    
+    public Long getMinUnusedTxnCommitTime()
+    {
+        Long id = selectMinUnusedTxnCommitTime();
+        return (id == null ? LONG_ZERO : id);
+    }
+
+    public Long getMaxTxnId()
+    {
+        Long id = selectMaxTxnId();
+        return (id == null ? LONG_ZERO : id);
     }
     
     /*
@@ -4438,4 +4452,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract List<Long> selectTxnsUnused(Long minTxnId, Long maxCommitTime, Integer count);
     protected abstract Long selectMinTxnCommitTime();
     protected abstract Long selectMaxTxnCommitTime();
+    protected abstract Long selectMinTxnId();
+    protected abstract Long selectMaxTxnId();
+    protected abstract Long selectMinUnusedTxnCommitTime();
 }

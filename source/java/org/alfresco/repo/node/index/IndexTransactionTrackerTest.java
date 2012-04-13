@@ -29,6 +29,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -90,6 +91,7 @@ public class IndexTransactionTrackerTest extends TestCase
         indexTracker.setThreadPoolExecutor(threadPoolExecutor);
         indexTracker.setSearcher(searchService);
         indexTracker.setTransactionService((TransactionServiceImpl)transactionService);
+        indexTracker.setTenantService((TenantService) ctx.getBean("tenantService"));
         
         // authenticate
         authenticationComponent.setSystemUserAsCurrentUser();

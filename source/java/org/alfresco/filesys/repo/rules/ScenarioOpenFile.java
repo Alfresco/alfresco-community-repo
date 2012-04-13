@@ -169,7 +169,7 @@ public class ScenarioOpenFile implements Scenario
                 ScenarioOpenFileInstance i = (ScenarioOpenFileInstance)instance;
                 if(i.getName() != null && name != null)
                 {
-                    if(i.getName().equalsIgnoreCase(name));
+                    if(i.getName().equalsIgnoreCase(name))
                     {
                         return true;
                     }

@@ -1273,6 +1273,21 @@
         <include refid="alfresco.node.select_Transaction_OrderByCommitTimeTxnId"/>
     </select>
 
+    <delete id="delete_Txns_Unused" parameterType="TransactionQuery">
+        delete from
+        alf_transaction txn
+        where not exists
+        (
+            select 1
+            from
+                alf_node node
+            where
+                node.transaction_id = txn.id
+        )
+        <![CDATA[and commit_time_ms >= #{minCommitTime}]]>
+        <![CDATA[and commit_time_ms <= #{maxCommitTime}]]>
+    </delete>
+
     <select id="select_TxnCount" resultType="java.lang.Integer">
         select
             count(txn.id)
@@ -1318,4 +1333,28 @@
             alf_transaction
     </select>
 
+    <select id="select_TxnMinId" resultType="java.lang.Long">
+        select
+            min(id)
+        from
+            alf_transaction
+    </select>
+
+    <select id="select_TxnMinUnusedCommitTime" resultType="java.lang.Long">
+        select
+            min(txn.commit_time_ms)
+        from
+            alf_transaction txn
+            left join alf_node node on (node.transaction_id = txn.id)
+        where
+            node.id is null
+    </select>
+
+    <select id="select_TxnMaxId" resultType="java.lang.Long">
+        select
+            max(id)
+        from
+            alf_transaction
+    </select>
+    
 </mapper>

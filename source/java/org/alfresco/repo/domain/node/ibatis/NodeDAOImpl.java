@@ -142,8 +142,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_TXN_COUNT = "alfresco.node.select_TxnCount";
     private static final String SELECT_TXN_NODE_COUNT = "alfresco.node.select_TxnNodeCount";
     private static final String SELECT_TXNS_UNUSED = "alfresco.node.select_TxnsUnused";
+    private static final String DELETE_TXNS_UNUSED = "alfresco.node.delete_Txns_Unused";
     private static final String SELECT_TXN_MIN_COMMIT_TIME = "alfresco.node.select_TxnMinCommitTime";
     private static final String SELECT_TXN_MAX_COMMIT_TIME = "alfresco.node.select_TxnMaxCommitTime";
+    private static final String SELECT_TXN_MIN_ID = "alfresco.node.select_TxnMinId";
+    private static final String SELECT_TXN_MAX_ID = "alfresco.node.select_TxnMaxId";
+    private static final String SELECT_TXN_UNUSED_MIN_COMMIT_TIME = "alfresco.node.select_TxnMinUnusedCommitTime";
     
     private QNameDAO qnameDAO;
     private DictionaryService dictionaryService;
@@ -1606,6 +1610,16 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    public int deleteTxnsUnused(long fromCommitTime, long toCommitTime)
+    {
+    	TransactionQueryEntity txnQuery = new TransactionQueryEntity();
+    	txnQuery.setMinCommitTime(fromCommitTime);
+    	txnQuery.setMaxCommitTime(toCommitTime);
+        int numDeleted = template.delete(DELETE_TXNS_UNUSED, txnQuery);
+        return numDeleted;
+    }
+    
+    @Override
     protected Long selectMinTxnCommitTime()
     {
         return (Long) template.selectOne(SELECT_TXN_MIN_COMMIT_TIME);
@@ -1615,6 +1629,24 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected Long selectMaxTxnCommitTime()
     {
         return (Long) template.selectOne(SELECT_TXN_MAX_COMMIT_TIME);
+    }
+    
+    @Override
+    protected Long selectMinTxnId()
+    {
+        return (Long) template.selectOne(SELECT_TXN_MIN_ID);
+    }
+
+    @Override
+    protected Long selectMinUnusedTxnCommitTime()
+    {
+        return (Long) template.selectOne(SELECT_TXN_UNUSED_MIN_COMMIT_TIME);
+    }
+    
+    @Override
+    protected Long selectMaxTxnId()
+    {
+        return (Long) template.selectOne(SELECT_TXN_MAX_ID);
     }
 
     @Override

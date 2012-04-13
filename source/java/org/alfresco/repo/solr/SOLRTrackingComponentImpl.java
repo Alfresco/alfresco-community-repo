@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.CRC32;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.domain.node.Node;
@@ -46,6 +48,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -556,7 +559,15 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             if(includeType)
             {
                 QName nodeType = nodeDAO.getNodeType(nodeId);
-                nodeMetaData.setNodeType(nodeType);
+                TypeDefinition type = dictionaryService.getType(nodeType);
+                if(type != null)
+                {
+                    nodeMetaData.setNodeType(nodeType);
+                }
+                else
+                {
+                   throw new AlfrescoRuntimeException("Nodes with no type are ignored by SOLR");
+                }
             }
 
             if(includeProperties)
@@ -571,7 +582,16 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
             if(includeAspects)
             {
-                aspects = nodeDAO.getNodeAspects(nodeId);
+                aspects = new HashSet<QName>();
+                Set<QName> sourceAspects = nodeDAO.getNodeAspects(nodeId);
+                for(QName aspectQName : sourceAspects)
+                {
+                    AspectDefinition aspect = dictionaryService.getAspect(aspectQName);
+                    if(aspect != null)
+                    {
+                        aspects.add(aspectQName);
+                    }
+                }
             }
             nodeMetaData.setAspects(aspects);
             
@@ -593,9 +613,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 {
                     paths.add(new Pair<Path, QName>(catPair.getFirst().getBaseNamePath(tenantService),  catPair.getSecond()));
                 }
-                
-                
-                
+                         
                 nodeMetaData.setPaths(paths);
             }
             
@@ -893,5 +911,24 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         long maxCommitTime = System.currentTimeMillis()+1L;
         nodeDAO.setCheckNodeConsistency();
         return nodeDAO.getMaxTxnIdByCommitTime(maxCommitTime);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getMaxChangeSetCommitTime()
+     */
+    @Override
+    public Long getMaxChangeSetCommitTime()
+    {
+        return aclDAO.getMaxChangeSetCommitTime();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getMaxChangeSetId()
+     */
+    @Override
+    public Long getMaxChangeSetId()
+    {
+        long maxCommitTime = System.currentTimeMillis()+1L;
+        return aclDAO.getMaxChangeSetIdByCommitTime(maxCommitTime);
     }
 }

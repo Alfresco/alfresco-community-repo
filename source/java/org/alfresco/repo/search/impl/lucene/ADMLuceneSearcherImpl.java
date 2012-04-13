@@ -90,9 +90,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.saxpath.SAXPathException;
-
-import com.werken.saxpath.XPathReader;
+import org.jaxen.saxpath.SAXPathException;
+import org.jaxen.saxpath.base.XPathReader;
 
 /**
  * The Lucene implementation of Searcher At the moment we support only lucene based queries. TODO: Support for other

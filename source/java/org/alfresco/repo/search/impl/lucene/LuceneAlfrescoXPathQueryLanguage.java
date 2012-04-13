@@ -19,42 +19,17 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.search.SearcherException;
-import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
-import org.alfresco.repo.search.impl.parsers.FTSParser;
-import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
-import org.alfresco.repo.search.impl.querymodel.Argument;
-import org.alfresco.repo.search.impl.querymodel.Column;
-import org.alfresco.repo.search.impl.querymodel.Constraint;
-import org.alfresco.repo.search.impl.querymodel.Function;
-import org.alfresco.repo.search.impl.querymodel.Order;
-import org.alfresco.repo.search.impl.querymodel.Ordering;
-import org.alfresco.repo.search.impl.querymodel.QueryEngine;
-import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
-import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
-import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
-import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneOrdering;
-import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
-import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
-import org.saxpath.SAXPathException;
-
-import com.werken.saxpath.XPathReader;
+import org.jaxen.saxpath.SAXPathException;
+import org.jaxen.saxpath.base.XPathReader;
 
 /**
  * Alfresco FTS Query language support

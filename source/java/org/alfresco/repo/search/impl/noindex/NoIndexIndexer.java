@@ -18,11 +18,14 @@
  */
 package org.alfresco.repo.search.impl.noindex;
 
+import java.util.Collection;
+
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -126,6 +129,21 @@ public class NoIndexIndexer implements Indexer
         }
         trace();
         return;
+    }
+        
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.Indexer#detectNodeChanges(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.search.SearchService, java.util.Collection, java.util.Collection, java.util.Collection, java.util.Collection)
+     */
+    @Override
+    public void detectNodeChanges(NodeRef nodeRef, SearchService searcher,
+            Collection<ChildAssociationRef> addedParents, Collection<ChildAssociationRef> deletedParents,
+            Collection<ChildAssociationRef> createdNodes, Collection<NodeRef> updatedNodes)
+    {
+        if(s_logger.isDebugEnabled())
+        {
+            s_logger.debug("detectNodeChanges = "+nodeRef);
+        }
+        trace();
     }
 
     /* (non-Javadoc)

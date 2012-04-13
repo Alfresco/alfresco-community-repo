@@ -26,10 +26,12 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -112,6 +114,7 @@ import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.UniqueTag;
 import org.mozilla.javascript.Wrapper;
 import org.springframework.extensions.surf.util.Content;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.extensions.surf.util.URLEncoder;
 
@@ -425,11 +428,30 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                 // create our Node representation from the NodeRef
                 children[i] = newInstance(childRefs.get(i).getChildRef(), this.services, this.scope);
             }
+
+            // Do a locale-sensitive sort by name
+            sort(children);
+
             this.children = Context.getCurrentContext().newArray(this.scope, children);
             this.hasChildren = (children.length != 0);
         }
         
         return this.children;
+    }
+    
+    /**
+     * Performs a locale-sensitive sort by name of a node array
+     * @param nodes the node array
+     */
+    private static void sort(Object[] nodes)
+    {
+        final Collator col = Collator.getInstance(I18NUtil.getLocale());
+        Arrays.sort(nodes, new Comparator<Object>(){
+            @Override
+            public int compare(Object o1, Object o2)
+            {
+                return col.compare(((ScriptNode)o1).getName(), ((ScriptNode)o2).getName());
+            }});        
     }
     
     /**

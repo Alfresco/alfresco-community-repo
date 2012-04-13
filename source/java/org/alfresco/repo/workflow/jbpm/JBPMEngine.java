@@ -73,6 +73,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
@@ -125,6 +127,8 @@ import org.springmodules.workflow.jbpm31.JbpmTemplate;
  */
 public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
 {
+    private static Log logger = LogFactory.getLog(JBPMEngine.class);
+
     // Implementation dependencies
     protected NodeService nodeService;
     protected ServiceRegistry serviceRegistry;
@@ -442,7 +446,15 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         {
             public WorkflowDefinition apply(ProcessDefinition value)
             {
-                return createWorkflowDefinition(value);
+                try
+                {
+                    return createWorkflowDefinition(value);
+                }
+                catch (Exception ex)
+                {
+                    logger.warn("Unable to load workflow definition: '" + value + "' due to exception.", ex);
+                    return null;
+                }
             }
         });
     }
@@ -453,7 +465,15 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         {
             public WorkflowInstance apply(ProcessInstance value)
             {
-                return createWorkflowInstance(value);
+                try
+                {
+                    return createWorkflowInstance(value);
+                }
+                catch (Exception ex)
+                {
+                    logger.warn("Unable to load workflow instance: '" + value + "' due to exception.", ex);
+                    return null;
+                }
             }
         });
     }
@@ -893,7 +913,15 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                     // retrieve workflow
                     GraphSession graphSession = context.getGraphSession();
                     ProcessInstance processInstance = getProcessInstanceIfExists(graphSession, workflowId);
-                    return createWorkflowInstance(processInstance);
+                    try
+                    {
+                        return createWorkflowInstance(processInstance);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.warn("Unable to load workflow instance: '" + processInstance + "' due to exception.", ex);
+                        return null;
+                    }
                 }
             });
         }
@@ -1104,7 +1132,14 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                             ProcessInstance processInstance = processInstances.get(workflowId);
                             // TODO: Determine if this is the most appropriate way to cancel workflow...
                             //       It might be useful to record point at which it was cancelled etc
-                            workflowInstances.add(createWorkflowInstance(processInstance));
+                            try
+                            {
+                                workflowInstances.add(createWorkflowInstance(processInstance));
+                            }
+                            catch(Exception ex)
+                            {
+                                logger.warn("Unable to load workflow instance: '" + processInstance + "' due to exception.", ex);
+                            }
                             
                             // delete the process instance
                             graphSession.deleteProcessInstance(processInstance, true, true);
@@ -1514,10 +1549,18 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         /// ------------------------
         for(Object[] row : rows)
         {
-            WorkflowTask workflowTask = makeWorkflowTask(row, taskInstanceCache, variablesCache);
-            if(workflowTask !=null )
+            try
             {
-                workflowTasks.add(workflowTask);
+                WorkflowTask workflowTask = makeWorkflowTask(row, taskInstanceCache, variablesCache);
+                if(workflowTask != null)
+                {
+                    workflowTasks.add(workflowTask);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.warn("Unable to load workflow instance: '" + row[0] + "' due to exception.", ex);
+                continue;
             }
         }
         return workflowTasks;
@@ -1774,8 +1817,16 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             workflowTasks = new ArrayList<WorkflowTask>(filteredTasks.size());
             for (TaskInstance task : filteredTasks)
             {
-                WorkflowTask workflowTask = createWorkflowTask(task);
-                workflowTasks.add(workflowTask);
+                try
+                {
+                    WorkflowTask workflowTask = createWorkflowTask(task);
+                    workflowTasks.add(workflowTask);
+                }
+                catch (Exception ex)
+                {
+                    logger.warn("Unable to load workflow task: '" + task + "' due to exception.", ex);
+                    continue;
+                }
             }
          }
         

@@ -38,7 +38,6 @@ import javax.security.sasl.RealmCallback;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
-import org.alfresco.jlan.debug.Debug;
 import org.alfresco.jlan.server.auth.AuthenticatorException;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.auth.NTLanManAuthContext;
@@ -73,6 +72,8 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.ietf.jgss.Oid;
 import org.springframework.extensions.config.ConfigElement;
 
@@ -88,6 +89,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     // Constants
     //
     // Default login configuration entry name
+    protected static final Log logger = LogFactory.getLog(EnterpriseCifsAuthenticator.class);
+   
+    // logger is defined in base class.
 
     private static final String LoginConfigEntry = "AlfrescoCIFS";
 
@@ -221,7 +225,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     	// Debug
     	
     	if ( logger.isInfoEnabled() && enaTktCracking)
+    	{
     		logger.info("CIFS Kerberos authentication, ticket cracking enabled (for mutual authentication)");
+    	}
     }
     
     /**
@@ -251,8 +257,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 setPassword(srvPassword.getValue());
             }
             else
+            {
                 throw new InvalidConfigurationException("CIFS service account password not specified");
-
+            }
+            
             // Get the login configuration entry name
 
             ConfigElement loginEntry = params.getChild("LoginEntry");
@@ -265,7 +273,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                     setJaasConfigEntryName(loginEntry.getValue());
                 }
                 else
+                {
                     throw new InvalidConfigurationException("Invalid login entry specified");
+                }
             }
 
             setDisableNTLM(params.getChild("disableNTLM") != null);
@@ -338,7 +348,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 // Debug
 
                 if (logger.isErrorEnabled())
+                {
                     logger.error("CIFS Kerberos authenticator error", ex);
+                }
 
                 throw new InvalidConfigurationException("Failed to login CIFS server service");
             }
@@ -350,10 +362,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
             m_accountName = princ.getName();
 
-            // DEBUG
-
             if (logger.isDebugEnabled())
+            {
                 logger.debug("Logged on using principal " + m_accountName);
+            }
 
             // Create the Oid list for the SPNEGO NegTokenInit, include NTLMSSP for fallback
 
@@ -363,9 +375,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
             if (logger.isDebugEnabled())
             {
-                logger.debug("Enabling mechTypes :-");
-                logger.debug("  Kerberos5");
-                logger.debug("  MS-Kerberos5");
+                logger.debug("Enabling mechTypes :-Kerberos5 MS-Kerberos5");
             }
 
             // Always enable Kerberos
@@ -380,7 +390,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 // DEBUG
 
                 if (logger.isDebugEnabled())
-                    logger.debug("  NTLMSSP");
+                {
+                    logger.debug(" Enabling NTLMSSP");
+                }
             }
 
             // Indicate that SPNEGO security blobs are being used
@@ -409,14 +421,13 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
         if (!isKerberosEnabled() && (!(getAuthenticationComponent() instanceof NLTMAuthenticator) || getNTLMAuthenticator().getNTLMMode() != NTLMMode.MD4_PROVIDER))
         {
-            // Log an error
-
-            logger.error("No valid CIFS authentication combination available");
-            logger.error("Either enable Kerberos support or use an SSO-enabled authentication component that supports MD4 hashed passwords");
-
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("No valid CIFS authentication combination available, Either enable Kerberos support or use an SSO-enabled authentication component that supports MD4 hashed passwords");
+            }
             // Throw an exception to stop the CIFS server startup
 
-            throw new AlfrescoRuntimeException("Invalid CIFS authenticator configuration");
+            throw new AlfrescoRuntimeException("No valid CIFS authentication combination available, Either enable Kerberos support or use an SSO-enabled authentication component that supports MD4 hashed passwords");
         }
     }
     
@@ -488,8 +499,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             // Debug
 
             if (logger.isErrorEnabled())
-                logger.error("Error creating SPNEGO NegTokenInit blob", ex);
-
+            {
+                logger.error("Unable to create SPNEGO NegTokenInit blob", ex);
+            }
             throw new AuthenticatorException("Failed to create SPNEGO NegTokenInit blob");
         }
         
@@ -644,49 +656,97 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     }
 
     /**
-     * Process the CIFS session setup request packet and build the session setup response
-     * 
+     * Process the CIFS session setup request packet and build the session setup response.
+     * <p>
+     * This is the boundary between alfresco and JLAN.  So is responsible for logging and 
+     * ensuring that the exceptions are correct for JLAN.
+     * <p>
      * @param sess SMBSrvSession
      * @param reqPkt SMBSrvPacket
      * @exception SMBSrvException
      */
     public void processSessionSetup(final SMBSrvSession sess, final SMBSrvPacket reqPkt)
+    throws SMBSrvException
+    {
+        try
+        {
+            processAlfrescoSessionSetup(sess, reqPkt);
+        }
+        catch (SMBSrvException e)
+        {
+            /*
+             * A JLAN SMBSrvException is not human readable so we need to log the 
+             * error before throwing, rather than logging the error here.
+             */ 
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("Returning SMBSrvException to JLAN", e);
+            }
+            throw e;
+        }
+        catch (AlfrescoRuntimeException a)
+        {
+            Throwable c = a.getCause();
+            
+            if(c != null)
+            {
+                if(a.getCause() instanceof SMBSrvException)
+                {
+                    logger.error(c.getMessage(), c);
+                    throw (SMBSrvException)c;
+                }
+            }
+            logger.error(a.getMessage(), a);
+            throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+
+        }
+        catch (Throwable t)
+        {
+            logger.error(t.getMessage(), t);
+            throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+        }
+    }
+    
+    /**
+     * Internal setup method for alfresco.    There's lots of CIFS specific stuff here that should 
+     * be in JLAN.
+     * 
+     * @param sess the JLAN session.
+     * @param reqPkt the CIFS request packet
+     * @throws SMBSrvException
+     */
+    private void processAlfrescoSessionSetup(final SMBSrvSession sess, final SMBSrvPacket reqPkt)
         throws SMBSrvException
     {
+        logger.debug("Start process Alfresco Session Setup");
+        
         //  Check that the received packet looks like a valid NT session setup andX request
-
         if (reqPkt.checkPacketIsValid(12, 0) == false)
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
-
+        {
+            if(logger.isErrorEnabled())
+            {
+                logger.error("Invalid packet received, return SMBStatus.NTInvalidParameter");
+            }
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
+        }
         //  Check if the request is using security blobs or the older hashed password format
         
         if ( reqPkt.getParameterCount() == 13)
         {
-            try
+            logger.debug("parameter count == 13, do Hashed Password Logon");
+
+            doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
             {
-                // Start a transaction
-
-                doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-                {
-
-                    public Object execute() throws Throwable
-                    {
-                        // Process the hashed password session setup
-
-                        doHashedPasswordLogon(sess, reqPkt);
-                        return null;
-                    }
-                });
-            }
-            catch ( Exception ex)
-            {
-                //  Convert to an access denied exception
-                
-                throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
-            }
+               public Object execute() throws SMBSrvException
+               {
+                   // Process the hashed password session setup
+                   logger.debug("about to call doHashedPasswordLogon");
+                   doHashedPasswordLogon(sess, reqPkt);
+                   return null;
+                }
+            });            
             
             // Hashed password processing complete
-            
             return;
         }
         
@@ -718,35 +778,40 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
         String domain = "";
 
-        if (reqPkt.hasMoreData()) {
-
+        if (reqPkt.hasMoreData()) 
+        {
             //    Extract the callers domain name
-
             domain = reqPkt.unpackString(isUni);
             
             if (domain == null)
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            {
+                logger.error("domain is null, return SMBStatus.NTInvalidParameter");
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
+            }
         }
 
         //  Extract the clients native operating system
 
         String clientOS = "";
 
-        if (reqPkt.hasMoreData()) {
+        if (reqPkt.hasMoreData()) 
+        {
 
           //    Extract the callers operating system name
 
             clientOS = reqPkt.unpackString(isUni);
             
           if (clientOS == null)
-              throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+          {
+              logger.error("clientOS is null, return SMBStatus.NTInvalidParameter");
+              throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
+          }
         }
 
-        //  DEBUG
-
         if (logger.isDebugEnabled())
-          logger.debug("NT Session setup " + (useRawNTLMSSP() ? "NTLMSSP" : "SPNEGO") + ", MID=" + reqPkt.getMultiplexId() + ", UID=" + reqPkt.getUserId() + ", PID=" + reqPkt.getProcessId());
-
+        {
+            logger.debug("NT Session setup " + (useRawNTLMSSP() ? "NTLMSSP" : "SPNEGO") + ", MID=" + reqPkt.getMultiplexId() + ", UID=" + reqPkt.getUserId() + ", PID=" + reqPkt.getProcessId());
+        }
         //  Store the client maximum buffer size, maximum multiplexed requests count and client capability flags
             
         sess.setClientMaximumBufferSize(maxBufSize != 0 ? maxBufSize : SMBSrvSession.DefaultBufferSize);
@@ -764,7 +829,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         // Set the remote address, if available
         
         if ( sess.hasRemoteAddress())
-          client.setClientAddress(sess.getRemoteAddress().getHostAddress());
+        {
+            client.setClientAddress(sess.getRemoteAddress().getHostAddress());
+        }
 
         //  Set the process id for this client, for multi-stage logons
         
@@ -780,27 +847,28 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         final boolean isNTLMSSP;
         
         try
-        {
-        	           
+        {           
             // Check if the blob has the NTLMSSP signature
-            
-            if ( secBlobLen >= NTLM.Signature.length) {
-              
+            if ( secBlobLen >= NTLM.Signature.length) 
+            {
               // Check for the NTLMSSP signature
-              
               int idx = 0;
               while ( idx < NTLM.Signature.length && buf[secBlobPos + idx] == NTLM.Signature[ idx])
+              {
                 idx++;
+              }
               
               isNTLMSSP = ( idx == NTLM.Signature.length);
             }
-            else {
+            else 
+            {
               isNTLMSSP = false;                
             }
-
-            // Start a transaction
             
-            respBlob = doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<byte[]>()
+            /**
+             * Extracted parameters from CIFS, Now try and do the logon 
+             */
+            respBlob = doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<byte[]>()            
             {
 
                 public byte[] execute() throws Throwable
@@ -820,15 +888,17 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                         return doSpnegoSessionSetup(sess, client, buf, secBlobPos, secBlobLen, isUni);
                     }
                 }
-            });
-            
+            });    
         }
         catch ( Exception ex)
         {
-            //  Cleanup any stored context
-            
             sess.removeSetupObject( client.getProcessId());
             
+            if( ex instanceof SMBSrvException)
+            {
+                throw (SMBSrvException)ex;
+            }
+                
             // Convert to an access denied exception if necessary
             
             if (ex instanceof AlfrescoRuntimeException && ex.getCause() instanceof SMBSrvException)
@@ -837,15 +907,20 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             }
             else
             {
+                logger.error("Access denied", ex);
                 throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
 
-        // Debug
+        /*
+         * We have logged on - so set up the response
+         */
         
-        if ( logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
+        if ( logger.isDebugEnabled())
+        {
             logger.debug("User " + client.getUserName() + " logged on " + (client != null ? " (type " + client.getLogonTypeString() + ")" : ""));
-
+        }
+        
         //  Update the client information if not already set
             
         if ( sess.getClientInformation() == null ||
@@ -893,23 +968,24 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
 			if ( reqLen > respPkt.getAvailableLength()) {
 
-				try {
+				try 
+				{
 
 					// Allocate a new buffer for the response
 
 					respPkt = sess.getPacketPool().allocatePacket(respPkt.getByteOffset() + reqLen, reqPkt);
 				}
-				catch (NoPooledMemoryException ex) {
-
-					// DEBUG
-
-					if ( Debug.EnableDbg && hasDebug())
-						Debug.println("Authenticator failed to allocate packet from pool, reqSiz="
-								+ (respPkt.getByteOffset() + respLen));
+				catch (NoPooledMemoryException ex) 
+				{
+				    if(logger.isErrorEnabled())
+				    {
+				        logger.error("Authenticator failed to allocate packet from pool, reqSiz="
+                            + (respPkt.getByteOffset() + respLen));
+				    }
 
 					// Return a server error to the client
 
-					throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNoBuffers, SMBStatus.ErrSrv);
+					throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrSrv, SMBStatus.SRVNoBuffers);
 				}
 			}
 
@@ -972,19 +1048,13 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
           
           if ( uid == VirtualCircuit.InvalidUID)
           {
-        	  // DEBUG
-            
-        	  if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
-        		  logger.debug("Failed to allocate UID for virtual circuit, " + vc);
-            
-        	  // Failed to allocate a UID
-            
-				throw new SMBSrvException(SMBStatus.NTTooManySessions, SMBStatus.SRVTooManyUIDs, SMBStatus.ErrSrv);
+              logger.error("Failed to allocate UID for virtual circuit, " + vc);
+        	  // Failed to allocate a UID           
+        	  throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrSrv, SMBStatus.SRVTooManyUIDs);
+
           }
-          else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE)) {
-            
-        	  // DEBUG
-            
+          else if ( logger.isDebugEnabled()) 
+          { 
         	  logger.debug("Allocated UID=" + uid + " for VC=" + vc);
           }
         }
@@ -1046,6 +1116,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             byte[] secbuf, int secpos, int seclen, boolean unicode) throws SMBSrvException
     {
         // Determine the NTLmSSP message type
+        logger.debug("Start doNTLmsspSessionSetup");
         
         int msgType = NTLMMessage.isNTLMType( secbuf, secpos);
         byte[] respBlob = null;
@@ -1054,21 +1125,25 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         {
             // DEBUG
             
-            if ( logger.isDebugEnabled())
+            if ( logger.isErrorEnabled())
             {
-                logger.debug("Invalid NTLMSSP token received");
-                logger.debug("  Token=" + HexDump.hexString( secbuf, secpos, seclen, " "));
+                logger.error("Invalid NTLMSSP token received, Token= " + HexDump.hexString( secbuf, secpos, seclen, " "));
             }
 
             // Return a logon failure status
             
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
         // Check for a type 1 NTLMSSP message
         
         else if ( msgType ==  NTLM.Type1)
         {
+            if ( logger.isDebugEnabled())
+            {
+                logger.debug("NTLMsspSessionSetup Type1");
+            }
+
             // Create the type 1 NTLM message from the token
             
             Type1NTLMMessage type1Msg = new Type1NTLMMessage( secbuf, secpos, seclen);
@@ -1117,6 +1192,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         }
         else if ( msgType == NTLM.Type3)
         {
+            if ( logger.isDebugEnabled())
+            {
+                logger.debug("NTLmsspSessionSetup Type3");
+            }
             //  Create the type 3 NTLM message from the token
             
             Type3NTLMMessage type3Msg = new Type3NTLMMessage( secbuf, secpos, seclen, unicode);
@@ -1130,8 +1209,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 sess.removeSetupObject( client.getProcessId());
                 
                 //  Return a logon failure
+                logger.error("NTLMSSP Logon failure - type 2 message not found");
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
 
             //  Determine if the client sent us NTLMv1 or NTLMv2
@@ -1149,7 +1229,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                     //  Debug
                     
                     if ( logger.isDebugEnabled())
+                    {
                         logger.debug("Logged on using NTLMSSP/NTLMv2");
+                    }
                 }
                 else
                 {
@@ -1160,7 +1242,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                     //  Debug
                     
                     if ( logger.isDebugEnabled())
+                    {
                         logger.debug("Logged on using NTLMSSP/NTLMv2SessKey");
+                    }
                 }
             }
             else
@@ -1172,7 +1256,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 //  Debug
                 
                 if ( logger.isDebugEnabled())
+                {
                     logger.debug("Logged on using NTLMSSP/NTLMv1");
+                }
             }
         }
         
@@ -1228,11 +1314,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             {
                 // Log the error
                 
-                logger.error(ex);
+                logger.error("I/O Error with SPNEGO authentication", ex);
                 
                 // Return a logon failure status
                 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
 
             //  Get the second stage NTLMSSP blob
@@ -1270,11 +1356,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             {
                 // Log the error
                 
-                logger.error(ex);
+                logger.error("Unable to decode the SPNEGO token", ex);
                 
                 // Return a logon failure status
                 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
     
             //  Determine the authentication mechanism the client is using and logon
@@ -1321,8 +1407,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 }
                     
                 //  No valid authentication mechanism
+                logger.error("No authentication mechanism for SPNEGO found");
                 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -1333,7 +1420,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             // Return a logon failure status
             
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
         // Generate the NegTokenTarg blob
@@ -1348,14 +1435,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         }
         catch ( IOException ex)
         {
-            //  Debug
+            logger.error("SPNEGO unable to encode NegTokenTarg", ex);
             
-            if ( logger.isDebugEnabled())
-                logger.debug("Failed to encode NegTokenTarg", ex);
-
-            //  Failed to build response blob
-            
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
         //  Return the SPNEGO response blob
@@ -1416,8 +1498,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         		{
         			// Failed to parse AP-REQ
         			
-        			if ( logger.isDebugEnabled())
-        				logger.debug("Failed to parse AP-REQ, " + ex.toString());
+        			
+        		    logger.error("Kerberos Failed to parse AP-REQ ", ex);
         			
                     // Return a logon failure status
                     
@@ -1527,15 +1609,15 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                         // Set the current user to be authenticated, save the authentication token
 
             		    try
-            		    {
+            		    {          		          
                             AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                            getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(krbDetails.getUserName()));
+                            getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(krbDetails.getUserName(), true));
                             alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket() );
                         }
                         catch (AuthenticationException e)
                         {
                             // Invalid user or max tickets exceeded. Return a logon failure status
-                            
+                            logger.error("invalid user or tickets exceeded");
                             throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
     
                         }
@@ -1570,26 +1652,22 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             }
             else
             {
-            	// Debug
+            	logger.error( "No SPNEGO response, Kerberos logon failed");
             	
-            	if ( logger.isDebugEnabled())
-            		logger.debug( "No SPNEGO response, Kerberos logon failed");
-            	
-                // Return a logon failure status
-                
+                // Return a logon failure status   
                 throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         catch (Exception ex)
         {
-            // Log the error
-            
-        	if ( logger.isErrorEnabled()) {
-        		logger.error("Kerberos logon error");
-        		logger.error(ex);
-        	}
+
+            if(ex instanceof SMBSrvException)
+            {
+                throw (SMBSrvException)ex;
+            }
     
             // Return a logon failure status
+        	logger.error("Error during kerberos authentication", ex);
             
             throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
@@ -1599,6 +1677,20 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         return negTokenTarg;
     }
     
+    private String normalizeUserId(String externalUserId) throws SMBSrvException
+    {
+        try
+        {
+            return mapUserNameToPerson(externalUserId, true);
+        }
+        catch (AuthenticationException e)
+        {
+            // Invalid user. Return a logon failure status
+            logger.debug("Authentication Exception", e);
+            throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+        }
+    }
+
     /**
      * Perform an NTLMv1 logon using the NTLMSSP type3 message
      * 
@@ -1616,11 +1708,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         {
             //  NTLMv1 password hashes not accepted
             
-            logger.warn("NTLMv1 not accepted, client " + sess.getRemoteName());
+            logger.error("NTLMv1 not accepted, client " + sess.getRemoteName());
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
         
         //  Get the type 2 message that contains the challenge sent to the client
@@ -1653,7 +1745,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
             
-            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(userName);
+            String normalized = normalizeUserId(userName);
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(normalized);
             
             if ( md4hash != null)
             {
@@ -1689,23 +1782,31 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                     if ( i != clientHash.length)
                     {
                         //  Return a logon failure
+                        
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("NTLMV1 - hash was not equal");
+                        }
 
-                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                     }
                 }
 
-                // Setup the Acegi authenticated user
-                
+                /*
+                 * Setup the Alfresco Security (Acegi) context
+                 */
                 try
                 {
-                    AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(userName));                
-                    alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
+                AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
+                    getAuthenticationComponent().setCurrentUser( normalized);                
+                alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket() );
+
+                    
                 }
                 catch (AuthenticationException e)
                 {
                     // Invalid user or max tickets exceeded. Return a logon failure status
-
+                    logger.debug("Authentication Exception", e);
                     throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                 }
                 
@@ -1720,13 +1821,14 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             }
             else
             {
-                //  Log a warning, user does not exist
-                
-                logger.warn("User does not exist, " + userName);
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("User does not exist, " + userName);
+                }
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -1737,7 +1839,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
 
@@ -1761,7 +1863,12 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+        }
+        
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("START doNTLMv1Logon:" + client);
         }
         
         // Check if we are using local MD4 password hashes or passthru authentication
@@ -1775,7 +1882,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 //  DEBUG
                 
                 if ( logger.isDebugEnabled())
+                {
                     logger.debug("Null logon");
+                }
                 
                 //  Indicate a null logon in the client information
                 
@@ -1785,7 +1894,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
             
-            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(client.getUserName());
+            String normalized = normalizeUserId(client.getUserName());
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(normalized);
             
             if ( md4hash != null)
             {
@@ -1816,6 +1926,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 }
                 catch (NoSuchAlgorithmException ex)
                 {
+                    logger.error("Unable to encrypt challenge", ex);
+                
+                    throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrSrv, SMBStatus.SRVInternalServerError);
                 }
                 
                 // Validate the password
@@ -1832,8 +1945,12 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                     if ( i != clientHash.length)
                     {
                         //  Return a logon failure
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("NTLMV1 access denied - wrong password");
+                        }
 
-                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrSrv, SMBStatus.SRVBadPassword);
                     }
                 }
 
@@ -1842,12 +1959,13 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 try
                 {
                     AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(client.getUserName()));                
+                    getAuthenticationComponent().setCurrentUser( normalized);                
                     alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                 }
                 catch (AuthenticationException e)
                 {
                     // Invalid user or max tickets exceeded. Return a logon failure status
+                    logger.debug("Authentication exception", e);
 
                     throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                 }
@@ -1867,18 +1985,18 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
         {
             //  Log a warning, authentication component does not support MD4 hashed passwords
             
-            logger.warn("Authentication component does not support MD4 password hashes");
+            logger.error("Authentication component does not support MD4 password hashes");
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
 
@@ -1900,6 +2018,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
     	  // Check if we are using local MD4 password hashes or passthru authentication
         
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("START doNTLMv2Logon:" + client);
+        }
+        
         if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
             // Get the NTLM logon details
@@ -1913,7 +2036,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 //  DEBUG
                 
                 if ( logger.isDebugEnabled())
+                {
                     logger.debug("Null logon");
+                }
                 
                 //  Indicate a null logon in the client information
                 
@@ -1923,7 +2048,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
             
-            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(userName);
+            String normalized = normalizeUserId(userName);
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(normalized);
             
             if ( md4hash != null)
             {
@@ -1953,19 +2079,24 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                         if ( i != clientHmac.length)
                         {
                             //  Return a logon failure
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.debug("wrong password");
+                            }
     
-                            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrSrv, SMBStatus.SRVBadPassword);
                         }
                     }
     
                     // Setup the Acegi authenticated user
                     
                     AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( userName));                
+                    getAuthenticationComponent().setCurrentUser( normalized);                
                     alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
+
                     
                     // Store the full user name in the client information, indicate that this is not a guest logon
-                    
+             
                     client.setUserName( userName.toLowerCase());
                     client.setGuest( false);
                     
@@ -1975,31 +2106,35 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 }
                 catch ( Exception ex)
                 {
+                    if(ex instanceof SMBSrvException)
+                    {
+                        throw (SMBSrvException)ex;
+                    }
+                    
                     // Log the error
                     
                     if (ex instanceof AuthenticationException)
                     {
-                        logger.debug(ex);
+                        logger.debug(ex.getMessage(), ex);
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                     }
                     else
                     {
-                        logger.error(ex);                        
+                        logger.error(ex.getMessage(), ex);    
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                     }
                     
-                    //  Return a logon failure
-
-                    throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
                 }
             }
             else
             {
                 //  Log a warning, user does not exist
                 
-                logger.warn("User does not exist, " + userName);
+                logger.warn("MD4Hash for User does not exist, " + userName);
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -2010,7 +2145,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
     
@@ -2026,6 +2161,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     {
         // Check if we are using local MD4 password hashes or passthru authentication
         
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("START doNTLMv2Logon:" + client);
+        }
+        
         if ( getNTLMAuthenticator().getNTLMMode() == NTLMMode.MD4_PROVIDER)
         {
             //  Check for a null logon
@@ -2035,7 +2175,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 //  DEBUG
                 
                 if ( logger.isDebugEnabled())
+                {
                     logger.debug("Null logon");
+                }
                 
                 //  Indicate a null logon in the client information
                 
@@ -2045,7 +2187,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
             
-            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(client.getUserName());
+            String normalized = normalizeUserId(client.getUserName());
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(normalized);
             
             if ( md4hash != null)
             {
@@ -2084,16 +2227,17 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                         
                         if ( i != clientHmac.length)
                         {
+                            logger.debug("bad client hmac");
+                            
                             //  Return a logon failure
-    
-                            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrSrv, SMBStatus.SRVBadPassword);
                         }
                     }
     
                     // Setup the Acegi authenticated user
                     
                     AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( client.getUserName()));                
+                    getAuthenticationComponent().setCurrentUser( normalized);                
                     alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                     
                     // Store the full user name in the client information, indicate that this is not a guest logon
@@ -2110,16 +2254,20 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                     
                     if (ex instanceof AuthenticationException)
                     {
-                        logger.debug(ex);
+                        //  Return a logon failure
+                        logger.debug(ex.getMessage(), ex);
+
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                     }
                     else
                     {
-                        logger.error(ex);                        
+                        logger.error(ex.getMessage(), ex); 
+                        
+                        //  Return a logon failure
+
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                     }
                     
-                    //  Return a logon failure
-
-                    throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
                 }
             }
             else
@@ -2130,7 +2278,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -2141,7 +2289,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
     
@@ -2186,7 +2334,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
            
             //  Get the stored MD4 hashed password for the user, or null if the user does not exist
            
-            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(userName);
+            String normalized = normalizeUserId(userName);
+            String md4hash = getNTLMAuthenticator().getMD4HashedPassword(normalized);
            
             if ( md4hash != null)
             {
@@ -2217,8 +2366,6 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 }
                 catch ( NoSuchAlgorithmException ex)
                 {
-                    // Log the error
-                    
                     logger.error( ex);
                 }
                 
@@ -2256,9 +2403,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                    
                     if ( i != clientHash.length)
                     {
-                        //  Return a logon failure
-
-                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                        logger.debug("bad client hash");
+                        throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrSrv, SMBStatus.SRVBadPassword);
                     }
                 }
 
@@ -2267,12 +2413,14 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 try
                 {
                     AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                    getAuthenticationComponent().setCurrentUser( mapUserNameToPerson( userName));                
+                    getAuthenticationComponent().setCurrentUser( normalized);                
                     alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
                 }
                 catch (AuthenticationException e)
                 {
                     // Invalid user or max tickets exceeded. Return a logon failure status
+                    
+                    logger.debug("Authentication exception", e);
 
                     throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
                 }
@@ -2294,7 +2442,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
         }
         else
@@ -2305,7 +2453,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
            
             //  Return a logon failure
 
-            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+            throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
     }
     
@@ -2323,7 +2471,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
         if (reqPkt.checkPacketIsValid(13, 0) == false)
         {
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         // Extract the session details
@@ -2354,7 +2502,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
         if (user == null)
         {
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            logger.error("User not specified");
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
         }
 
         // Extract the clients primary domain name string
@@ -2370,7 +2519,8 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
             if (domain == null)
             {
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                logger.error("Domain not specified");
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
             }
         }
 
@@ -2387,13 +2537,14 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
             if (clientOS == null)
             {
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                logger.error("client OS not specified");
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
             }
         }
 
         // DEBUG
 
-        if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
+        if (logger.isDebugEnabled())
         {
             logger.debug("NT Session setup from user=" + user + ", password="
                     + (uniPwd != null ? HexDump.hexString(uniPwd) : "none") + ", ANSIpwd="
@@ -2441,7 +2592,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 //  Debug
                 
                 if ( logger.isDebugEnabled())
+                {
                     logger.debug("Logged on using Hashed/NTLMv1");
+                }
             }
             else if ( uniPwd.length > 0)
             {
@@ -2452,7 +2605,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 //  Debug
                 
                 if ( logger.isDebugEnabled())
+                {
                     logger.debug("Logged on using Hashed/NTLMv2");
+                }
             }
         }
         
@@ -2467,7 +2622,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
             // DEBUG
 
-            if (logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
+            if (logger.isDebugEnabled())
                 logger.debug("User " + user + ", logged on as guest");
         }
 
@@ -2478,20 +2633,13 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
         if ( uid == VirtualCircuit.InvalidUID)
         {
-        
-        	// DEBUG
+        	logger.error("Failed to allocate UID for virtual circuit, " + vc);
           
-        	if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
-        		logger.debug("Failed to allocate UID for virtual circuit, " + vc);
-          
-        	// Failed to allocate a UID
-          
-        	throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+        	// Failed to allocate a UID 
+        	throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
         }
-        else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
-        {
-        	// DEBUG
-          
+        else if ( logger.isDebugEnabled())
+        { 
         	logger.debug("Allocated UID=" + uid + " for VC=" + vc);
         }
         

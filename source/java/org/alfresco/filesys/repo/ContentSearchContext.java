@@ -42,7 +42,8 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
-public class ContentSearchContext extends SearchContext
+public class ContentSearchContext extends SearchContext 
+    implements InFlightCorrectable
 {
 	// Debug logging
 	
@@ -53,6 +54,13 @@ public class ContentSearchContext extends SearchContext
     // Link file size, actual size will be set if/when the link is opened
     
     public final static int LinkFileSize	= 512;
+    
+    private InFlightCorrector corrector;
+    
+    public void setInFlightCorrector(InFlightCorrector corrector)
+    {
+        this.corrector = corrector;
+    }
     
     // List of nodes returned from the folder search
     
@@ -163,7 +171,9 @@ public class ContentSearchContext extends SearchContext
         // Check if there is anything else to return
         
         if (!hasMoreFiles())
+        {
             return false;
+        }
 
         // Increment the index and resume id
         
@@ -231,17 +241,28 @@ public class ContentSearchContext extends SearchContext
             
         		try {
 
-        			// Get the file information and copy across to the callers file info
+        			// Get the file information and copy across to the caller's file info
     	            
 		            nextInfo = cifsHelper.getFileInformation(nextNodeRef, "", false, false);
 		            info.copyFrom(nextInfo);
+
+		            /**
+		             * Apply in flight correction
+		             */
+		            if(corrector != null)
+		            {
+		                corrector.correct(info, m_relPath);
+		            }
+		            
 	        	}
 	        	catch ( InvalidNodeRefException ex) {
 
 	        		// Log a warning
 	        		
 	        		if ( logger.isWarnEnabled())
+	        		{
 	        			logger.warn("Noderef " + nextNodeRef + " no longer valid, ignoring");
+	        		}
 	        		
 	        		// Update the node index, node no longer exists, try the next node in the search
 	        		
@@ -253,7 +274,9 @@ public class ContentSearchContext extends SearchContext
         	// Check if we have finished returning file info
         	
         	if ( nextInfo == null)
+        	{
         		return false;
+        	}
         	
         	// Generate a file id for the current file
         	

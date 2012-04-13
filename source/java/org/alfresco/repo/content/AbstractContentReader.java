@@ -69,7 +69,7 @@ import sun.nio.ch.ChannelInputStream;
 public abstract class AbstractContentReader extends AbstractContentAccessor implements ContentReader
 {
     private static final Log logger = LogFactory.getLog(AbstractContentReader.class);
-    private static final Timer timer = new Timer(); 
+    private static final Timer timer = new Timer(true); 
     
     private List<ContentStreamListener> listeners;
     private ReadableByteChannel channel;

@@ -32,13 +32,16 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.workflow.CancelWorkflowActionExecuter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
@@ -151,6 +154,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         //
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                     SiteModel.TYPE_SITE, new JavaBehaviour(this, "beforeDeleteNode"));
+        this.policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME, ContentModel.TYPE_PERSON, new JavaBehaviour(this, "beforeDeleteNode"));
     }
 
     /**
@@ -362,23 +366,27 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     private void endInvitation(WorkflowTask startTask, String transition, Map<QName, Serializable> properties, QName... taskTypes )
     {
-        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(startTask.getPath().getId());
-        if(tasks.size()==1)
-        {
-            WorkflowTask task = tasks.get(0);
-            if(taskTypeMatches(task, taskTypes))
+        // Deleting a person can cancel their invitations. Cancelling invitations can delete inactive persons! So prevent infinite looping here
+        if (TransactionalResourceHelper.getSet(getClass().getName()).add(startTask.getPath().getInstance().getId()))
+        {        
+            List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(startTask.getPath().getId());
+            if(tasks.size()==1)
             {
-                if(properties != null)
+                WorkflowTask task = tasks.get(0);
+                if(taskTypeMatches(task, taskTypes))
                 {
-                    workflowService.updateTask(task.getId(), properties, null, null);
+                    if(properties != null)
+                    {
+                        workflowService.updateTask(task.getId(), properties, null, null);
+                    }
+                    workflowService.endTask(task.getId(), transition);
+                    return;
                 }
-                workflowService.endTask(task.getId(), transition);
-                return;
             }
+            // Throw exception if the task not found.
+            Object objs[] = { startTask.getPath().getInstance().getId() };
+            throw new InvitationExceptionUserError("invitation.invite.already_finished", objs);
         }
-        // Throw exception if the task not found.
-        Object objs[] = { startTask.getPath().getInstance().getId() };
-        throw new InvitationExceptionUserError("invitation.invite.already_finished", objs);
     }
     
     /**
@@ -476,11 +484,19 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     {
         ModeratedInvitation invitation = getModeratedInvitation(startTask);
         String currentUserName = this.authenticationService.getCurrentUserName();
-        if (false == currentUserName.equals(invitation.getInviteeUserName()))
+        if (!AuthenticationUtil.isRunAsUserTheSystemUser())
         {
-            checkManagerRole(currentUserName, invitation.getResourceType(), invitation.getResourceName());
+            if (false == currentUserName.equals(invitation.getInviteeUserName()))
+            {
+                checkManagerRole(currentUserName, invitation.getResourceType(), invitation.getResourceName());
+            }
         }
-        workflowService.cancelWorkflow(invitation.getInviteId());
+        // Only proceed with the cancel if the site still exists (the site may have been deleted and invitations may be
+        // getting cancelled in the background)
+        if (this.siteService.getSite(invitation.getResourceName()) != null)
+        {
+            workflowService.cancelWorkflow(invitation.getInviteId());
+        }
         return invitation;
     }
 
@@ -488,13 +504,21 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     {
         NominatedInvitation invitation = getNominatedInvitation(startTask);
         String currentUserName = this.authenticationService.getCurrentUserName();
-        if (false == currentUserName.equals(invitation.getInviterUserName()))
+        if (!AuthenticationUtil.isRunAsUserTheSystemUser())
         {
-            checkManagerRole(currentUserName, invitation.getResourceType(), invitation.getResourceName());
+            if (false == currentUserName.equals(invitation.getInviterUserName()))
+            {
+                checkManagerRole(currentUserName, invitation.getResourceType(), invitation.getResourceName());
+            }
         }
-        endInvitation(startTask, 
-                WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL, null,
-                WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING, WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
+        // Only proceed with the cancel if the site still exists (the site may have been deleted and invitations may be
+        // getting cancelled in the background)
+        if (this.siteService.getSite(invitation.getResourceName()) != null)
+        {
+            endInvitation(startTask, WorkflowModelNominatedInvitation.WF_TRANSITION_CANCEL, null,
+                    WorkflowModelNominatedInvitation.WF_TASK_INVITE_PENDING,
+                    WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
+        }
         return invitation;
     }
 
@@ -1468,9 +1492,24 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                         }
                     }
                 }
+                else if (dictionaryService.isSubClass(type, ContentModel.TYPE_PERSON))
+                {
+                 // this is a user being deleted.
+                    String userName = (String) nodeService.getProperty(siteRef, ContentModel.PROP_USERNAME);
+                    invalidateTasksByUser(userName);
+                }
                 return null;
             }
         }, AuthenticationUtil.SYSTEM_USER_NAME);
+    }
+    
+    private void invalidateTasksByUser(String userName) throws AuthenticationException
+    {
+        List<Invitation> listForInvitee = listPendingInvitationsForInvitee(userName);
+        for (Invitation inv : listForInvitee)
+        {
+            cancel(inv.getInviteId());
+        }
     }
     
     /**

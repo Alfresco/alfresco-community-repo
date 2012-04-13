@@ -18,10 +18,13 @@
  */
 package org.alfresco.repo.search.impl;
 
+import java.util.Collection;
+
 import org.alfresco.repo.search.Indexer;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 
 /**
  * A no action indexer - the indexing is done automatically along with
@@ -65,6 +68,13 @@ public class NoActionIndexer implements Indexer
     }
 
     public void deleteChildRelationship(ChildAssociationRef relationshipRef)
+    {
+        return;
+    }
+    
+    public void detectNodeChanges(NodeRef nodeRef, SearchService searcher,
+            Collection<ChildAssociationRef> addedParents, Collection<ChildAssociationRef> deletedParents,
+            Collection<ChildAssociationRef> createdNodes, Collection<NodeRef> updatedNodes)
     {
         return;
     }

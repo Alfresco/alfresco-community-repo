@@ -2027,7 +2027,7 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
     {
         // Check if the file is a directory, or only has read access
 
-        if (file.getGrantedAccess() == NetworkFile.READONLY)
+        if (file.getGrantedAccess() <= NetworkFile.READONLY)
             throw new AccessDeniedException();
 
         // If the content channel is not open for the file then start a transaction
@@ -2081,7 +2081,7 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
     {
         // Check if the file is a directory, or only has read access
 
-        if (file.isDirectory() || file.getGrantedAccess() == NetworkFile.READONLY)
+        if (file.isDirectory() || file.getGrantedAccess() <= NetworkFile.READONLY)
             throw new AccessDeniedException();
 
         // If the content channel is not open for the file, or the channel is not writable, then start a transaction

@@ -64,12 +64,17 @@
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="name" order="2">
+        <column name="lc_name" order="2">
           <type>varchar(160)</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="child_id" order="3">
+        <column name="name" order="3">
+          <type>varchar(160)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="child_id" order="4">
           <type>int8</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
@@ -78,7 +83,7 @@
       <primarykey name="avm_child_entries_pkey">
         <columnnames>
           <columnname order="1">parent_id</columnname>
-          <columnname order="2">name</columnname>
+          <columnname order="2">lc_name</columnname>
         </columnnames>
       </primarykey>
       <foreignkeys>
@@ -101,6 +106,12 @@
         </index>
         <index name="fk_avm_ce_parent" unique="false">
           <columnnames>
+            <columnname>parent_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_avm_ce_lc_name" unique="false">
+          <columnnames>
+            <columnname>lc_name</columnname>
             <columnname>parent_id</columnname>
           </columnnames>
         </index>
@@ -708,7 +719,7 @@
         </foreignkey>
       </foreignkeys>
       <indexes>
-        <index name="avm_version_roots_version_id_avm_store_id_key" unique="true">
+        <index name="avm_version_roots_version_id_key" unique="true">
           <columnnames>
             <columnname>version_id</columnname>
             <columnname>avm_store_id</columnname>

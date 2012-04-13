@@ -77,7 +77,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 {
     // Debug logging
 
-    private static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol.auth");
+    private static final Log logger = LogFactory.getLog(PassthruCifsAuthenticator.class);
 
     // Constants
 
@@ -466,20 +466,78 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
     }
     
     /**
+     * Process the CIFS session setup request packet and build the session setup response.
+     * <p>
+     * This is the boundary between alfresco and JLAN.  So is responsible for logging and 
+     * ensuring that the exceptions are correct for JLAN.
+     * <p>
+     * @param sess SMBSrvSession
+     * @param reqPkt SMBSrvPacket
+     * @exception SMBSrvException
+     */
+    public void processSessionSetup(final SMBSrvSession sess, final SMBSrvPacket reqPkt)
+    throws SMBSrvException
+    {
+        try
+        {
+            processAlfrescoSessionSetup(sess, reqPkt);
+        }
+        catch (SMBSrvException e)
+        {
+            /*
+             * A JLAN SMBSrvException is not human readable so we need to log the 
+             * error before throwing, rather than logging the error here.
+             */ 
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("Returning SMBSrvException to JLAN", e);
+            }
+            throw e;
+        }
+        catch (AlfrescoRuntimeException a)
+        {
+            Throwable c = a.getCause();
+            
+            if(c != null)
+            {
+                if(a.getCause() instanceof SMBSrvException)
+                {
+                    logger.error(c.getMessage(), c);
+                    throw (SMBSrvException)c;
+                }
+            }
+            logger.error(a.getMessage(), a);
+            throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+
+        }
+        catch (Throwable t)
+        {
+            logger.error(t.getMessage(), t);
+            throw new SMBSrvException( SMBStatus.NTAccessDenied, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
+        }
+    }
+    
+    /**
      * Process the CIFS session setup request packet and build the session setup response
      * 
      * @param sess SMBSrvSession
      * @param reqPkt SMBSrvPacket
      * @exception SMBSrvException
      */
-    public void processSessionSetup(SMBSrvSession sess, SMBSrvPacket reqPkt)
+    public void processAlfrescoSessionSetup(SMBSrvSession sess, SMBSrvPacket reqPkt)
         throws SMBSrvException
     {
         //  Check that the received packet looks like a valid NT session setup andX request
 
         if (reqPkt.checkPacketIsValid(12, 0) == false)
-            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
-
+        {
+            if(logger.isErrorEnabled())
+            {
+                logger.error("Invalid packet received, return SMBStatus.NTInvalidParameter");
+            }
+            throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
+        }
+        
         //  Check if the request is using security blobs or the older hashed password format
         
         if ( reqPkt.getParameterCount() == 13)
@@ -518,28 +576,42 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         
         String domain = "";
 
-        if (reqPkt.hasMoreData()) {
+        if (reqPkt.hasMoreData()) 
+        {
 
             //    Extract the callers domain name
 
             domain = reqPkt.unpackString(isUni);
             
             if (domain == null)
-                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+            {
+                if(logger.isErrorEnabled())
+                {
+                    logger.error("Invalid packet received, domain is null");
+                }
+                throw new SMBSrvException(SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
+            }
         }
 
         //  Extract the clients native operating system
 
         String clientOS = "";
 
-        if (reqPkt.hasMoreData()) {
+        if (reqPkt.hasMoreData()) 
+        {
 
           //    Extract the callers operating system name
 
             clientOS = reqPkt.unpackString(isUni);
             
           if (clientOS == null)
-              throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+          {
+              if(logger.isErrorEnabled())
+              {
+                  logger.error("Invalid packet received, client OS is null");
+              }
+              throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
+          }
         }
 
         //  Store the client maximum buffer size, maximum multiplexed requests count and client capability flags
@@ -559,8 +631,9 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         // Set the remote address, if available
         
         if ( sess.hasRemoteAddress())
-          client.setClientAddress(sess.getRemoteAddress().getHostAddress());
-
+        {
+            client.setClientAddress(sess.getRemoteAddress().getHostAddress());
+        }
         //  Set the process id for this client, for multi-stage logons
         
         client.setProcessId( reqPkt.getProcessId());
@@ -598,8 +671,9 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                 //  DEBUG
 
                 if (logger.isDebugEnabled())
-                  logger.debug("NT Session setup NTLMSSP, MID=" + reqPkt.getMultiplexId() + ", UID=" + reqPkt.getUserId() + ", PID=" + reqPkt.getProcessId());
-
+                {
+                    logger.debug("NT Session setup NTLMSSP, MID=" + reqPkt.getMultiplexId() + ", UID=" + reqPkt.getUserId() + ", PID=" + reqPkt.getProcessId());
+                }
                 //  Process an NTLMSSP security blob
     
                 respBlob = doNtlmsspSessionSetup( sess, client, buf, secBlobPos, secBlobLen, isUni);
@@ -608,7 +682,12 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
             {
                 // Invalid blob type
                 
-                throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.SRVNonSpecificError, SMBStatus.ErrSrv);
+                if(logger.isErrorEnabled())
+                {
+                    logger.error("Invalid packet received for Passthru Cifs Autenticator, not of type NTLMSSP");
+                }
+                
+                throw new SMBSrvException( SMBStatus.NTInvalidParameter, SMBStatus.ErrSrv, SMBStatus.SRVNonSpecificError);
             }
         }
         catch (SMBSrvException ex)
@@ -624,9 +703,11 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 
         // Debug
         
-        if ( logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
+        if ( logger.isDebugEnabled())
+        {
             logger.debug("User " + client.getUserName() + " logged on " + (client != null ? " (type " + client.getLogonTypeString() + ")" : ""));
-
+        }
+        
         //  Update the client information if not already set
             
         if ( sess.getClientInformation() == null ||
@@ -719,17 +800,14 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
           uid = sess.addVirtualCircuit( vc);
           
           if ( uid == VirtualCircuit.InvalidUID)
-          {
-              // DEBUG
-            
-              if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE))
-                  logger.debug("Failed to allocate UID for virtual circuit, " + vc);
+          {            
+              logger.error("Failed to allocate UID for virtual circuit, " + vc);
             
               // Failed to allocate a UID
-            
-              throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+              throw new SMBSrvException(SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
           }
-          else if ( logger.isDebugEnabled() && sess.hasDebug( SMBSrvSession.DBG_NEGOTIATE)) {
+          else if ( logger.isDebugEnabled()) 
+          {
             
               // DEBUG
             
@@ -800,12 +878,9 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         
         if ( msgType == -1)
         {
-            // DEBUG
-            
-            if ( logger.isDebugEnabled())
+            if ( logger.isErrorEnabled())
             {
-                logger.debug("Invalid NTLMSSP token received");
-                logger.debug("  Token=" + HexDump.hexString( secbuf, secpos, seclen, " "));
+                logger.error("Invalid NTLMSSP token received, Token=" + HexDump.hexString( secbuf, secpos, seclen, " ") );
             }
 
             // Return a logon failure status
@@ -875,22 +950,20 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                 sess.removeSetupObject( client.getProcessId());
                 
                 //  Return a logon failure
-
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                logger.error("NTLMSSP Logon failure - type 2 message not found");
+                
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
 
             //  Determine if the client sent us NTLMv1 or NTLMv2
             
             if ( type3Msg.hasFlag( NTLM.Flag128Bit) && type3Msg.hasFlag( NTLM.FlagNTLM2Key))
             {
-                //  Debug
-                
-                if ( logger.isDebugEnabled())
-                    logger.debug("Received NTLMSSP/NTLMv2, not supported");
+                    logger.error("Received NTLMSSP/NTLMv2, not supported");
                 
                 //  Return a logon failure
 
-                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.DOSAccessDenied, SMBStatus.ErrDos);
+                throw new SMBSrvException( SMBStatus.NTLogonFailure, SMBStatus.ErrDos, SMBStatus.DOSAccessDenied);
             }
             else
             {
@@ -1042,10 +1115,12 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
             }
             catch (Exception ex)
             {
+                if(ex instanceof SMBSrvException)
+                {
+                    throw (SMBSrvException)ex;
+                }
 
-                // Debug
-
-                logger.error(ex.getMessage());
+                logger.error("unable to log on "+  ex.getMessage(), ex);
                 
                 // Indicate logon failure
                 
@@ -1067,15 +1142,13 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
                     AuthenticateSession authSess = passDetails.getAuthenticateSession();
                     authSess.CloseSession();
 
-                    // DEBUG
-
                     if (logger.isDebugEnabled())
+                    {
                         logger.debug("Closed auth session, sessId=" + authSess.getSessionId());
+                    }
                 }
                 catch (Exception ex)
                 {
-
-                    // Debug
 
                     logger.error("Passthru error closing session (auth user)", ex);
                 }
@@ -1083,11 +1156,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         }
         else
         {
-
-            // DEBUG
-
-            if (logger.isDebugEnabled())
-                logger.debug("  No PassthruDetails for " + sess.getUniqueId() + ", check server list/domain mappings");
+            logger.error("  No PassthruDetails for " + sess.getUniqueId() + ", check server list/domain mappings");
             
             // Indicate logon failure
             

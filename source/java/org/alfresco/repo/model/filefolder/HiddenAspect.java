@@ -559,16 +559,6 @@ public class HiddenAspect
             return filter.pattern();
         }
 
-        public Set<Client> getVisibility()
-        {
-            return clientVisibility;
-        }
-
-        public Set<Client> getHiddenAttribute()
-        {
-            return hiddenAttribute;
-        }
-
         public int getVisibilityMask()
         {
             return visibilityMask;

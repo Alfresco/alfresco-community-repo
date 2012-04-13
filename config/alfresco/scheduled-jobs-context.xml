@@ -273,4 +273,31 @@
         </property>
     </bean>
     
+    <!-- Ticket cleanup -->
+    
+    <bean id="ticketCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.security.authentication.TicketCleanupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="abstractAuthenticationService">
+                    <ref bean="authenticationService" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="ticketCleanupTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="ticketCleanupJobDetail"/>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory"/>
+        </property>
+        <property name="cronExpression">
+            <value>${ticket.cleanup.cronExpression}</value>
+        </property>
+    </bean>
+    
 </beans>

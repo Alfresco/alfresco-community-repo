@@ -1021,4 +1021,38 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     
     protected abstract long createAuthorityAliasEntity(AuthorityAliasEntity entity);
     protected abstract int deleteAuthorityAliasEntity(long id);
+    
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.domain.permissions.AclCrudDAO#getMaxChangeSetCommitTime()
+     */
+    @Override
+    public Long getMaxChangeSetCommitTime()
+    {
+        Long time = selectMaxChangeSetCommitTime();
+        return (time == null ? 0L : time);
+    }
+
+
+    /**
+     * @return
+     */
+    protected abstract Long selectMaxChangeSetCommitTime();
+ 
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.domain.permissions.AclCrudDAO#getMaxChangeSetIdByCommitTime(long)
+     */
+    @Override
+    public Long getMaxChangeSetIdByCommitTime(long maxCommitTime)
+    {
+        Long id = selectMaxChangeSetIdBeforeCommitTime(maxCommitTime);
+        return (id == null ? 0L : id);
+    }
+
+    /**
+     * @param maxCommitTime
+     * @return
+     */
+    protected abstract Long selectMaxChangeSetIdBeforeCommitTime(long maxCommitTime);
 }

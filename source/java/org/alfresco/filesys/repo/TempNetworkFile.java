@@ -84,6 +84,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
             fileState.updateModifyDateTime();
             fileState.updateAccessDateTime();
             fileState.setFileSize(size);
+            fileState.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
         }
     }
     
@@ -102,6 +103,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
             fileState.updateModifyDateTime();
             fileState.updateAccessDateTime();
             fileState.setFileSize(size);
+            fileState.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
         }
     }
     
@@ -121,6 +123,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
             fileState.updateModifyDateTime();
             fileState.updateAccessDateTime();
             fileState.setFileSize(size);
+            fileState.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
         }
     }
     

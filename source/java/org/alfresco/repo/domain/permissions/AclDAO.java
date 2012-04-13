@@ -160,4 +160,15 @@ public interface AclDAO
      * @param aclId
      */
     public void fixSharedAcl(Long shared, Long defining);
+
+    /**
+     * @return
+     */
+    public Long getMaxChangeSetCommitTime();
+
+    /**
+     * @param maxCommitTime
+     * @return
+     */
+    public Long getMaxChangeSetIdByCommitTime(long maxCommitTime);
 }

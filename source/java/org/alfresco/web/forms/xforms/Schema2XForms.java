@@ -1872,7 +1872,10 @@ public class Schema2XForms implements Serializable
       Element bind = DOMUtil.getLastChildElement(modelSection);
       
       // ALF-9524 fix, previously we've added extra bind element, so last child is not correct for repeatable switch
-      if (controlType instanceof XSComplexTypeDefinition && ((XSComplexTypeDefinition)controlType).getDerivationMethod() == XSConstants.DERIVATION_EXTENSION)
+      String attribute = bind.getAttribute(NamespaceConstants.XFORMS_PREFIX + ":relevant");
+      if (controlType instanceof XSComplexTypeDefinition &&
+          ((XSComplexTypeDefinition)controlType).getDerivationMethod() == XSConstants.DERIVATION_EXTENSION &&
+          attribute != null && !attribute.isEmpty())
       {
           bind = modelSection;
       }

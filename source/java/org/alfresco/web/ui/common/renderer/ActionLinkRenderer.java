@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -138,7 +138,7 @@ public class ActionLinkRenderer extends BaseRenderer
          
          String verticalAlign = link.getVerticalAlign();
          out.write(Utils.buildImageTag(
-               context, image, (String)link.getValue(), verticalAlign == null ? "-4px" : verticalAlign));
+               context, image, ((null != link.getTooltip()) ? (link.getTooltip()):(String)link.getValue()), verticalAlign == null ? "-4px" : verticalAlign));
          
          if (link.getShowLink() == false)
          {

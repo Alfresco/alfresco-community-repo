@@ -15,28 +15,28 @@
 						<tbody dojoAttachPoint="hourContainerNode"  
 							dojoAttachEvent="onClick: onSetSelectedHour;">
 							<tr>
-								<td>12</td>
-								<td>6</td>
+								<td role="button" aria-label="12 (${this.calendar.field-hour})" tabIndex="0">12</td>
+								<td role="button" aria-label="6 (${this.calendar.field-hour})" tabIndex="0">6</td>
 							</tr>
 							<tr>
-								<td>1</td>
-								<td>7</td>
+								<td role="button" aria-label="1 (${this.calendar.field-hour})" tabIndex="0">1</td>
+								<td role="button" aria-label="7 (${this.calendar.field-hour})" tabIndex="0">7</td>
 							</tr>
 							<tr>
-								<td>2</td>
-								<td>8</td>
+								<td role="button" aria-label="2 (${this.calendar.field-hour})" tabIndex="0">2</td>
+								<td role="button" aria-label="8 (${this.calendar.field-hour})" tabIndex="0">8</td>
 							</tr>
 							<tr>
-								<td>3</td>
-								<td>9</td>
+								<td role="button" aria-label="3 (${this.calendar.field-hour})" tabIndex="0">3</td>
+								<td role="button" aria-label="9 (${this.calendar.field-hour})" tabIndex="0">9</td>
 							</tr>
 							<tr>
-								<td>4</td>
-								<td>10</td>
+								<td role="button" aria-label="4 (${this.calendar.field-hour})" tabIndex="0">4</td>
+								<td role="button" aria-label="10 (${this.calendar.field-hour})" tabIndex="0">10</td>
 							</tr>
 							<tr>
-								<td>5</td>
-								<td>11</td>
+								<td role="button" aria-label="15 (${this.calendar.field-hour})" tabIndex="0">5</td>
+								<td role="button" aria-label="11 (${this.calendar.field-hour})" tabIndex="0">11</td>
 							</tr>
 						</tbody>
 					</table>
@@ -46,28 +46,28 @@
 						<tbody dojoAttachPoint="minuteContainerNode" 
 							dojoAttachEvent="onClick: onSetSelectedMinute;">
 							<tr>
-								<td>00</td>
-								<td>30</td>
+								<td role="button" aria-label="00 (${this.calendar.field-minute})" tabIndex="0">00</td>
+								<td role="button" aria-label="30 (${this.calendar.field-minute})" tabIndex="0">30</td>
 							</tr>
 							<tr>
-								<td>05</td>
-								<td>35</td>
+								<td role="button" aria-label="05 (${this.calendar.field-minute})" tabIndex="0">05</td>
+								<td role="button" aria-label="35 (${this.calendar.field-minute})" tabIndex="0">35</td>
 							</tr>
 							<tr>
-								<td>10</td>
-								<td>40</td>
+								<td role="button" aria-label="10 (${this.calendar.field-minute})" tabIndex="0">10</td>
+								<td role="button" aria-label="40 (${this.calendar.field-minute})" tabIndex="0">40</td>
 							</tr>
 							<tr>
-								<td>15</td>
-								<td>45</td>
+								<td role="button" aria-label="15 (${this.calendar.field-minute})" tabIndex="0">15</td>
+								<td role="button" aria-label="45 (${this.calendar.field-minute})" tabIndex="0">45</td>
 							</tr>
 							<tr>
-								<td>20</td>
-								<td>50</td>
+								<td role="button" aria-label="20 (${this.calendar.field-minute})" tabIndex="0">20</td>
+								<td role="button" aria-label="50 (${this.calendar.field-minute})" tabIndex="0">50</td>
 							</tr>
 							<tr>
-								<td>25</td>
-								<td>55</td>
+								<td role="button" aria-label="25 (${this.calendar.field-minute})" tabIndex="0">25</td>
+								<td role="button" aria-label="55 (${this.calendar.field-minute})" tabIndex="0">55</td>
 							</tr>
 						</tbody>
 					</table>
@@ -78,10 +78,10 @@
 				<td valign="top" class="timeOptions">
 					<table class="amPmContainer">
 						<tbody dojoAttachPoint="amPmContainerNode" 
-							dojoAttachEvent="onClick: onSetSelectedAmPm;">
+							dojoAttachEvent="onClick: onSetSelectedAmPm; onKey: onSetSelectedAmPmPressed;">
 							<tr>
-								<td id="am">${this.calendar.am}</td>
-								<td id="pm">${this.calendar.pm}</td>
+								<td id="am" role="button" aria-label="${this.calendar.am}" tabIndex="0">${this.calendar.am}</td>
+								<td id="pm" role="button" aria-label="${this.calendar.pm}" tabIndex="0">${this.calendar.pm}</td>
 							</tr>
 						</tbody>
 					</table>

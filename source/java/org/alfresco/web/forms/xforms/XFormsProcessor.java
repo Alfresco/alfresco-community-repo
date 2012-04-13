@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -101,7 +101,29 @@ public class XFormsProcessor implements FormProcessor
       "path",
       "select",
       "upload",
-      "validation_provide_values_for_required_fields"
+      "validation_provide_values_for_required_fields",
+
+      "time_picker_title",
+      "time_picker_button_title",
+      "date_picker_title",
+      "date_picker_button_title",
+      "date_time_picker_title",
+      "date_time_picker_button_title",
+      "increase_week_label",
+      "decrease_week_label",
+      "increase_month_label",
+      "decrease_month_label",
+      "mandatory_parameter",
+      "state_expanded",
+      "state_not_expanded",
+      "select_path_menu",
+      "add_item_title",
+      "move_up_title",
+      "move_down_title",
+      "remove_item_title",
+      "item_title",
+      "accessibility_validation_message",
+      "accessibility_validation_message_with_error_count"
    };
 
    private static JSONObject widgetConfig = null;

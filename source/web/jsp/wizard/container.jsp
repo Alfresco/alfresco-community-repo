@@ -1,5 +1,5 @@
 <%--
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -76,15 +76,16 @@ if (Application.getWizardManager().getState() == null)
                   
                      <%-- Status and Actions inner contents table --%>
                      <%-- Generally this consists of an icon, textual summary and actions for the current object --%>
-                     <table cellspacing="4" cellpadding="0" style="width:100%;">
+                     <%-- Accessibility heading level 1 titles --%>
+                     <table cellspacing="4" cellpadding="0" style="width:100%;" role="heading" aria-level="1" aria-describedby="mainTitle mainSubText">
                         <tr>
                            <td style="width:32px;">
                               <h:graphicImage id="wizard-logo" url="#{WizardManager.icon}" alt=""/>
                            </td>
                            <td>
-                              <div class="mainTitle"><h:outputText value="#{WizardManager.title}" /></div>
+                              <div class="mainTitle"><label id="mainTitle"><h:outputText value="#{WizardManager.title}" /></label></div>
                               <div class="mainSubTitle"><h:outputText value="#{WizardManager.subTitle}" /></div>
-                              <div class="mainSubText"><h:outputText value="#{WizardManager.description}" /></div>
+                              <div class="mainSubText"><label id="mainSubText"><h:outputText value="#{WizardManager.description}" /></label></div>
                            </td>
                         </tr>
                      </table>
@@ -108,11 +109,13 @@ if (Application.getWizardManager().getState() == null)
                         <tr>
                            <td style="width:20%;" valign="top">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "greyround", "#F5F5F5"); %>
-                              <h:outputText styleClass="mainSubTitle" value="#{msg.steps}"/><br/>
-                              <a:modeList itemSpacing="3" iconColumnWidth="2" selectedStyleClass="statusListHighlight"
-                                          value="#{WizardManager.currentStepAsString}" disabled="true">
-                                <a:listItems value="#{WizardManager.stepItems}" />
-                              </a:modeList>
+                              <div id="stepsHeading" role="heading" aria-labelledby="stepsHeading" aria-level="2">
+                                 <h:outputText styleClass="mainSubTitle" value="#{msg.steps}"/><br/>
+                                 <a:modeList itemSpacing="3" iconColumnWidth="2" selectedStyleClass="statusListHighlight"
+                                             value="#{WizardManager.currentStepAsString}" disabled="true">
+                                   <a:listItems value="#{WizardManager.stepItems}" />
+                                 </a:modeList>
+                              </div>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "greyround"); %>
                            </td>
                            
@@ -121,6 +124,17 @@ if (Application.getWizardManager().getState() == null)
                               <a:errors message="#{WizardManager.errorMessage}" styleClass="errorMessage" />
                               
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "white", "white"); %>
+
+                              <%-- Accessibility heading level 2 titles. FireFox doesn't use labels from the table below --%>
+                              <div id="bodyHeading" role="heading" aria-level="2" style="width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden;">
+                                 <p>
+                                    <h:outputText value="#{WizardManager.stepTitle}" />
+                                 </p>
+                                 <p>
+                                    <h:outputText value="#{WizardManager.stepDescription}" />
+                                 </p>
+                              </div>
+
                               <table cellpadding="2" cellspacing="2" style="border-width: 0px; width: 100%;">
                                  <tr>
                                     <td class="mainSubTitle"><h:outputText value="#{WizardManager.stepTitle}" /></td>
@@ -139,7 +153,11 @@ if (Application.getWizardManager().getState() == null)
                                  </tr>
                                  <tr><td class="paddingRow"></td></tr>
                                  <tr>
-                                    <td><h:outputText value="#{WizardManager.stepInstructions}" /></td>
+                                    <td>
+                                       <div id="step-instructions" role="heading" aria-level="2" aria-labelledby="step-instructions">
+                                          <h:outputText value="#{WizardManager.stepInstructions}" />
+                                       </div>
+                                    </td>
                                  </tr>
                               </table>
                               <% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "white"); %>
@@ -147,6 +165,14 @@ if (Application.getWizardManager().getState() == null)
                            
                            <td valign="top">
                               <% PanelGenerator.generatePanelStart(out, request.getContextPath(), "greyround", "#F5F5F5"); %>
+
+                              <%-- Accessibility heading level 2 titles --%>
+                              <div id="buttonsTitle" role="heading" aria-level="2" style="width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden;">
+                                 <p>
+                                    <h:outputText value="#{msg.wizard_command_buttons_description}" />
+                                 </p>
+                              </div>
+
                               <table cellpadding="1" cellspacing="1" border="0">
                                  <tr>
                                     <td align="center">

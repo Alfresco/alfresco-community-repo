@@ -1,5 +1,5 @@
 /*
-  * Copyright (C) 2005-2010 Alfresco Software Limited.
+  * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -193,6 +193,7 @@ _showSelectedValue: function()
   this.resize_callback(this);
 
   this.selectedPathInput = d.createElement("input");
+  this.selectedPathInput.id = this.uploadId + "-selected-path";
   this.selectedPathInput.type = "text";
   this.selectedPathInput.value = this.value == null ? "" : this.value;
   this.node.appendChild(this.selectedPathInput);
@@ -206,6 +207,7 @@ _showSelectedValue: function()
   this._selectButton.value = (this.value == null 
                               ? alfresco.resources["select"] 
                               : alfresco.resources["change"]);
+  this._selectButton.title = (null == this.node.widget.labelNode) ? ("") : (this.node.widget.labelNode.getText() + " ") + this._selectButton.value + " " + alfresco.resources["path"];
   this._selectButton.disabled = this.readonly;
   this._selectButton.style.margin = "0px 10px";
   this.node.appendChild(this._selectButton);
@@ -332,6 +334,8 @@ _showPicker: function(data)
   this.headerMenuTriggerLink.appendChild(headerMenuTriggerImage);
   this.headerMenuTriggerLink.image = headerMenuTriggerImage;
   headerMenuTriggerImage.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + "/images/icons/menu.gif");
+  headerMenuTriggerImage.setAttribute("alt", alfresco.resources["select_path_menu"]);
+  headerMenuTriggerImage.setAttribute("title", alfresco.resources["select_path_menu"]);
   headerMenuTriggerImage.style.borderWidth = "0px";
   headerMenuTriggerImage.style.marginLeft = "4px";
   headerMenuTriggerImage.align = "absmiddle";
@@ -364,6 +368,8 @@ _showPicker: function(data)
   addContentImage.style.margin = "0px 2px 0px 2px";
   addContentImage.align = "absmiddle";
   addContentImage.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + "/images/icons/add.gif");
+  addContentImage.setAttribute("alt", "");
+  addContentImage.setAttribute("title", "");
   addContentLink.appendChild(addContentImage);
 
   addContentLink.appendChild(d.createTextNode(alfresco.resources["add_content"]));
@@ -395,6 +401,8 @@ _showPicker: function(data)
   navigateToParentNodeImage.style.margin = "0px 2px 0px 2px";
   navigateToParentNodeImage.align = "absmiddle";
   navigateToParentNodeImage.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + "/images/icons/up.gif");
+  navigateToParentNodeImage.setAttribute("alt", "");
+  navigateToParentNodeImage.setAttribute("title", "");
   navigateToParentLink.appendChild(navigateToParentNodeImage);
   navigateToParentLink.appendChild(d.createTextNode(alfresco.resources["go_up"]));
 
@@ -419,6 +427,7 @@ _showPicker: function(data)
   cancelButton.filePickerWidget = this;
 
   cancelButton.value = alfresco.resources["cancel"];
+  cancelButton.title = (null == this.node.widget.labelNode) ? ("") : (this.node.widget.labelNode.getText() + " ") + alfresco.resources["cancel"];
   footerDiv.appendChild(cancelButton);
 
   cancelButton.style.margin = ((.5 * footerDiv.offsetHeight) - 
@@ -506,6 +515,7 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, f
     e.type = "button";
     e.name = webappRelativePath;
     e.value = "Select";
+    e.title = ((null != this.node.widget.labelNode) ? (this.node.widget.labelNode.getText()) : ("")) + " " + e.value + " " + webappRelativePath;
     result.appendChild(e);
       
     e.style.position = "absolute";
@@ -797,6 +807,7 @@ _showSelectedValue: function()
   this.resize_callback(this);
   this.selectedPathInput = new Element("input",
 		  {
+                        "id": this.node.id + "-selected-path",
 	  		"type":"text",
 	  		"value": (this.value == null ? "" : this.value),
 	  		"styles": {"margin":"0"},
@@ -823,6 +834,7 @@ _showSelectedValue: function()
                 : alfresco.resources["change"]),
         "disabled":this.readonly,
         "styles":{"margin":"0 3px"},
+        "title": (node.widget.labelNode == null ? "" : node.widget.labelNode.getText()),
 		"events":
 		{
 			"click": function(event)
@@ -836,6 +848,7 @@ _showSelectedValue: function()
 		}
 	  });
   this._selectButton.filePickerWidget = this;
+  this._selectButton.title = (null == this.node.widget.labelNode) ? ("") : (this.node.widget.labelNode.getText() + " ") + this._selectButton.value + " " + alfresco.resources["path"],
   this._selectButton.inject(this.wrapper);
   var nodeSize = node.getSize();
   var selectButtonSize = this._selectButton.getSize();
@@ -944,7 +957,9 @@ _showPicker: function(data)
   var headerMenuTriggerImage = new Element("img",
 		  {
 	  		"src": alfresco.constants.WEBAPP_CONTEXT + "/images/icons/menu.gif",
-	  		"styles" : {"border":"0", "width:":"16px", "height":"16px", "margin":"0 0 0 4px", "z-index":"500", "vertical-align":"middle"}
+	  		"styles" : {"border":"0", "width:":"16px", "height":"16px", "margin":"0 0 0 4px", "z-index":"500", "vertical-align":"middle"},
+	  		"alt": alfresco.resources["select_path_menu"],
+	  		"title": alfresco.resources["select_path_menu"]
 	  	  });
   
   headerMenuTriggerImage.inject(this.headerMenuTriggerLink);
@@ -974,7 +989,9 @@ _showPicker: function(data)
   var addContentImage = new Element("img",
 		  {
 	  		"src":alfresco.constants.WEBAPP_CONTEXT + "/images/icons/add.gif",
-	  		"styles":{"border":"0", "width:":"16px", "height":"16px", "margin":"0 2px", "vertical-align":"middle"}
+	  		"styles":{"border":"0", "width:":"16px", "height":"16px", "margin":"0 2px", "vertical-align":"middle"},
+	  		"alt": "",
+	  		"title": ""
 	  	  });
   
   addContentImage.inject(addContentLink);
@@ -1004,7 +1021,9 @@ _showPicker: function(data)
   var navigateToParentNodeImage = new Element("img",
 		  {
 	  		"src":alfresco.constants.WEBAPP_CONTEXT + "/images/icons/up.gif",
-	  		"styles":{"border":"0", "width:":"16px", "height":"16px", "margin":"0 2px", "vertical-align":"middle"}
+	  		"styles":{"border":"0", "width:":"16px", "height":"16px", "margin":"0 2px", "vertical-align":"middle"},
+	  		"alt": "",
+	  		"title": ""
 	  	  });
   dojo.html.setOpacity(navigateToParentNodeImage, (currentPathName == "/" ? .3 : 1)); 
   navigateToParentNodeImage.inject(navigateToParentLink);
@@ -1016,6 +1035,7 @@ _showPicker: function(data)
 		  {
 	  		"type" : "button",
 	  		"value" : alfresco.resources["cancel"],
+	  		"title": ((null == this.node.widget.labelNode) ? ("") : (this.node.widget.labelNode.getText() + " ") + alfresco.resources["cancel"]),
 	  		"events" : {
 	  			"click" : function(event)
                 {
@@ -1148,6 +1168,7 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, f
 				}
 			}
 		);
+	e.title = ((null != this.node.widget.labelNode) ? (this.node.widget.labelNode.getText()) : ("")) + " " + e.value + " " + webappRelativePath;
     e.inject(result);
   }
   return result;

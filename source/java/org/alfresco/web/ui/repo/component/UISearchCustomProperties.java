@@ -308,7 +308,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
       }
       else if (typeName.equals(DataTypeDefinition.CATEGORY))
       {
-         control = (UICategorySelector)facesApp.createComponent(RepoConstants.ALFRESCO_FACES_CATEGORY_SELECTOR);
+         control = (UICategorySelector)facesApp.createComponent(RepoConstants.ALFRESCO_FACES_TAG_SELECTOR);
          control.setValueBinding(VALUE, vb);
       }
       else if (typeName.equals(DataTypeDefinition.DATETIME) || typeName.equals(DataTypeDefinition.DATE))

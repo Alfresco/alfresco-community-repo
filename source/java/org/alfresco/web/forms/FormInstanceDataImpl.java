@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.avm.locking.AVMLockingService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.Pair;
 import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -87,8 +88,15 @@ import org.xml.sax.SAXException;
          throw new NullPointerException();
       }
       final AVMService avmService = this.getServiceRegistry().getAVMService();
-      if (!avmService.hasAspect(AVMNodeConverter.ToAVMVersionPath(nodeRef).getFirst(), 
-                                AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(),
+      
+      Pair<Integer, String>  avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+      
+      if (avmService.lookup(avmVersionPath.getFirst(), avmVersionPath.getSecond()) == null)
+      {
+          throw new IllegalArgumentException("Not found: " + avmVersionPath.getSecond());
+      }
+      
+      if (!avmService.hasAspect(avmVersionPath.getFirst(), avmVersionPath.getSecond(),
                                 WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
       {
          throw new IllegalArgumentException("node " + nodeRef +

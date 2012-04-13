@@ -7,31 +7,31 @@
 						<tr>
 							<td class="monthCurve monthCurveTL" valign="top"></td>
 							<td class="monthLabelContainer" valign="top">
-								<span dojoAttachPoint="increaseWeekNode" 
-									dojoAttachEvent="onClick: onIncrementWeek;" 
+								<span role="button" tabIndex="0"  aria-labelledby="increase-week-label" dojoAttachPoint="increaseWeekNode" 
+									dojoAttachEvent="onClick: onIncrementWeek; onKey: onIncrementWeekPressed;" 
 									class="incrementControl increase">
 									<img src="${dojoRoot}src/widget/templates/images/incrementMonth.png" 
 									alt="&darr;" style="width:7px;height:5px;" />
 								</span>
-								<span 
+								<span role="button" tabIndex="0"  aria-labelledby="increase-month-label"
 									dojoAttachPoint="increaseMonthNode" 
-									dojoAttachEvent="onClick: onIncrementMonth;" class="incrementControl increase">
+									dojoAttachEvent="onClick: onIncrementMonth; onKey: onIncrementMonthPressed;" class="incrementControl increase">
 									<img src="${dojoRoot}src/widget/templates/images/incrementMonth.png" 
 										alt="&darr;"  dojoAttachPoint="incrementMonthImageNode">
 								</span>
-								<span 
+								<span role="button" tabIndex="0"  aria-labelledby="decrease-week-label"
 									dojoAttachPoint="decreaseWeekNode" 
-									dojoAttachEvent="onClick: onIncrementWeek;" 
+									dojoAttachEvent="onClick: onIncrementWeek; onKey: onIncrementWeekPressed;" 
 									class="incrementControl decrease">
 									<img src="${dojoRoot}src/widget/templates/images/decrementMonth.png" alt="&uarr;" style="width:7px;height:5px;" />
 								</span>
-								<span 
+								<span role="button" tabIndex="0" aria-labelledby="decrease-month-label"
 									dojoAttachPoint="decreaseMonthNode" 
-									dojoAttachEvent="onClick: onIncrementMonth;" class="incrementControl decrease">
+									dojoAttachEvent="onClick: onIncrementMonth; onKey: onIncrementMonthPressed;" class="incrementControl decrease">
 									<img src="${dojoRoot}src/widget/templates/images/decrementMonth.png" 
 										alt="&uarr;" dojoAttachPoint="decrementMonthImageNode">
 								</span>
-								<span dojoAttachPoint="monthLabelNode" class="month"></span>
+								<span aria-live="polite" dojoAttachPoint="monthLabelNode" class="month"></span>
 							</td>
 							<td class="monthCurve monthCurveTR" valign="top"></td>
 						</tr>
@@ -55,15 +55,15 @@
 							</tr>
 						</thead>
 						<tbody dojoAttachPoint="calendarDatesContainerNode" 
-							dojoAttachEvent="onClick: _handleUiClick;">
+							dojoAttachEvent="onClick: _handleUiClick; onKey: _handleUiPress;">
 							<tr dojoAttachPoint="calendarWeekTemplate">
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td></td>
+								<td role="button" tabIndex="0"></td>
+								<td role="button" tabIndex="0"></td>
+								<td role="button" tabIndex="0"></td>
+								<td role="button" tabIndex="0"></td>
+								<td role="button" tabIndex="0"></td>
+								<td role="button" tabIndex="0"></td>
+								<td role="button" tabIndex="0"></td>
 							</tr>
 						</tbody>
 					</table>
@@ -77,13 +77,13 @@
 						<tr>
 							<td class="curveBL" valign="top"></td>
 							<td valign="top">
-								<h3 class="yearLabel">
-									<span dojoAttachPoint="previousYearLabelNode"
-										dojoAttachEvent="onClick: onIncrementYear;" class="previousYear"></span>
-									<span class="selectedYear" dojoAttachPoint="currentYearLabelNode"></span>
-									<span dojoAttachPoint="nextYearLabelNode" 
-										dojoAttachEvent="onClick: onIncrementYear;" class="nextYear"></span>
-								</h3>
+								<div class="yearLabel">
+									<span role="button" tabIndex="0" dojoAttachPoint="previousYearLabelNode"
+										dojoAttachEvent="onClick: onIncrementYear; onKey: onIncrementYearPressed;" class="previousYear"></span>
+									<span aria-live="polite" class="selectedYear" dojoAttachPoint="currentYearLabelNode"></span>
+									<span role="button" tabIndex="0" dojoAttachPoint="nextYearLabelNode" 
+										dojoAttachEvent="onClick: onIncrementYear; onKey: onIncrementYearPressed;" class="nextYear"></span>
+								</div>
 							</td>
 							<td class="curveBR" valign="top"></td>
 						</tr>

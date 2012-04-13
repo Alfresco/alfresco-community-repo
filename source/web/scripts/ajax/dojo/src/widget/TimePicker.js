@@ -275,6 +275,17 @@ dojo.widget.defineWidget(
 		this.onSetTime();
 	},
 
+	onSetSelectedAmPmPressed: function(event) {
+		// DOJO accessibility for Alfresco WCM: ALF-11956
+		if(null != event){
+			event.stopPropagation();
+
+			if((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))){
+				this.onSetSelectedAmPm(event);
+			}
+		}
+	},
+
 	setSelectedAmPm: function(evt) {
 		var eventTarget = evt.target;
 		if(evt && eventTarget) {

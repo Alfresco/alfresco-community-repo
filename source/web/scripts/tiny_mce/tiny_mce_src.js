@@ -7507,7 +7507,7 @@ tinymce.create('tinymce.ui.Separator:tinymce.ui.Control', {
 			if (s.image)
 				h += '<img class="mceIcon" src="' + s.image + '" />' + l + '</a>';
 			else
-				h += '<span class="mceIcon ' + s['class'] + '"></span>' + (l ? '<span class="' + cp + 'Label">' + l + '</span>' : '') + '</a>';
+				h += '<span class="mceIcon ' + s['class'] + '"><div style="clear: none; width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden;">' + s.title + '</div></span>' + (l ? '<span class="' + cp + 'Label">' + l + '</span>' : '') + '</a>';
 
 			return h;
 		},
@@ -8012,13 +8012,22 @@ tinymce.create('tinymce.ui.Separator:tinymce.ui.Control', {
 
 			if (s.image)
 				h1 = DOM.createHTML('img ', {src : s.image, 'class' : 'mceAction ' + s['class']});
-			else
-				h1 = DOM.createHTML('span', {'class' : 'mceAction ' + s['class']}, '');
+			else {
+				var titleDiv = DOM.createHTML("div", {
+					"style": "clear: none; width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden;"
+				}, s.title);
+				h1 = DOM.createHTML('span', {'class' : 'mceAction ' + s['class']}, titleDiv);
+			}
 
 			h += '<td>' + DOM.createHTML('a', {id : t.id + '_action', href : 'javascript:;', 'class' : 'mceAction ' + s['class'], onclick : "return false;", onmousedown : 'return false;', title : s.title}, h1) + '</td>';
 	
 			h1 = DOM.createHTML('span', {'class' : 'mceOpen ' + s['class']});
-			h += '<td>' + DOM.createHTML('a', {id : t.id + '_open', href : 'javascript:;', 'class' : 'mceOpen ' + s['class'], onclick : "return false;", onmousedown : 'return false;', title : s.title}, h1) + '</td>';
+
+			var titleDiv = DOM.createHTML("div", {
+				"style": "clear: none; width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden;"
+			}, h1);
+
+			h += '<td>' + DOM.createHTML('a', {id : t.id + '_open', href : 'javascript:;', 'class' : 'mceOpen ' + s['class'], onclick : "return false;", onmousedown : 'return false;', title : s.title}, titleDiv) + '</td>';
 
 			h += '</tr></tbody>';
 

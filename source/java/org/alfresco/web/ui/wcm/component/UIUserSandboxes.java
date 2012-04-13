@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -423,6 +423,8 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   UIActionLink browseAction = aquireAction(
                         context, mainStore, username, ACT_SANDBOX_ICON, WebResources.IMAGE_USERSANDBOX_32,
                         "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox");
+                  browseAction.setTooltip(Application.getMessage(context, ACT_SANDBOX_BROWSE) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
+
                   browseAction.setShowLink(false);
                   Utils.encodeRecursive(context, browseAction);
                   out.write("</td><td width=100%>");
@@ -446,31 +448,36 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   // Direct actions for a sandbox...
                   
                   // Browse Sandbox
-                  Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_BROWSE, "/images/icons/space_small.gif",
-                        "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox"));
+                  UIActionLink action = aquireAction(context, mainStore, username, ACT_SANDBOX_BROWSE, "/images/icons/space_small.gif", "#{AVMBrowseBean.setupSandboxAction}", "browseSandbox");
+                  action.setTooltip(Application.getMessage(context, ACT_SANDBOX_BROWSE) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
+
+                  Utils.encodeRecursive(context, action);
                   out.write("</nobr></td><td><nobr>");
                   
                   // Preview Website
                   String websiteUrl = AVMUtil.getPreviewURI(mainStore, JNDIConstants.DIR_DEFAULT_WWW_APPBASE + '/' + getWebapp());
                   Map requestMap = context.getExternalContext().getRequestMap();
                   requestMap.put(REQUEST_PREVIEW_REF, websiteUrl);
-                  Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_PREVIEW, "/images/icons/preview_website.gif",
-                        null, null, "#{" + REQUEST_PREVIEW_REF + "}", null));
+
+                  action = aquireAction(context, mainStore, username, ACT_SANDBOX_PREVIEW, "/images/icons/preview_website.gif", null, null, "#{" + REQUEST_PREVIEW_REF + "}", null);
+                  action.setTooltip(Application.getMessage(context, ACT_SANDBOX_PREVIEW) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
+
+                  Utils.encodeRecursive(context, action);
                   requestMap.remove(REQUEST_PREVIEW_REF);
                   out.write("</nobr></td><td><nobr>");
                                     
                   // Submit All Items
-                  Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit_all.gif",
-                        "#{AVMBrowseBean.setupAllItemsAction}", "dialog:submitSandboxItems"));
+                  action = aquireAction(context, mainStore, username, ACT_SANDBOX_SUBMITALL, "/images/icons/submit_all.gif", "#{AVMBrowseBean.setupAllItemsAction}", "dialog:submitSandboxItems");
+                  action.setTooltip(Application.getMessage(context, ACT_SANDBOX_SUBMITALL) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
+
+                  Utils.encodeRecursive(context, action);
                   out.write("</nobr></td><td><nobr>");
                   
                   // Revert All Items
-                  Utils.encodeRecursive(context, aquireAction(
-                        context, mainStore, username, ACT_SANDBOX_REVERTALL, "/images/icons/revert_all.gif",
-                        "#{AVMBrowseBean.setupAllItemsAction}", "dialog:revertAllItems"));
+                  action = aquireAction(context, mainStore, username, ACT_SANDBOX_REVERTALL, "/images/icons/revert_all.gif", "#{AVMBrowseBean.setupAllItemsAction}", "dialog:revertAllItems");
+                  action.setTooltip(Application.getMessage(context, ACT_SANDBOX_REVERTALL) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
+
+                  Utils.encodeRecursive(context, action);
                   out.write("</nobr></td><td><nobr>");
                   
                   // More Actions menu
@@ -479,6 +486,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   {
                      // create the menu, then the actions
                      menu = createMenu(context, mainStore);
+                     menu.setTooltip(Application.getMessage(context, "more_actions") + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
                      
                      // add the menu to this component
                      this.getChildren().add(menu);
@@ -499,6 +507,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                               ACT_SANDBOX_DEPLOY, "/images/icons/deploy.gif",
                               "#{DialogManager.setupParameters}", "dialog:deployWebsite", 
                               null, dialogParams, false);
+                     deploy.setTooltip(Application.getMessage(context, ACT_SANDBOX_DEPLOY) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
                      menu.getChildren().add(deploy);
                   }
 
@@ -509,6 +518,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                               ACT_SANDBOX_DEPLOY_REPORT, "/images/icons/deployment_report.gif", 
                               "#{DialogManager.setupParameters}", "dialog:viewDeploymentReport",
                               null, null, false);
+                     reports.setTooltip(Application.getMessage(context, ACT_SANDBOX_DEPLOY_REPORT) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
                      menu.getChildren().add(reports);
                   }
                   
@@ -519,6 +529,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                               ACT_SANDBOX_RELEASE_SERVER, "/images/icons/release_server.gif", 
                               "#{DialogManager.setupParameters}", "dialog:releaseTestServer", 
                               null, null, false);
+                     releaseServer.setTooltip(Application.getMessage(context, ACT_SANDBOX_RELEASE_SERVER) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
                      menu.getChildren().add(releaseServer);
                   }
                   
@@ -526,6 +537,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   UIActionLink refresh = createAction(context, mainStore, username, 
                            ACT_SANDBOX_REFRESH, "/images/icons/reset.gif",
                            "#{AVMBrowseBean.refreshSandbox}", null, null, null, false);
+                  refresh.setTooltip(Application.getMessage(context, ACT_SANDBOX_REFRESH) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
                   menu.getChildren().add(refresh);
 
                   // Delete Sandbox action
@@ -535,6 +547,7 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                               ACT_REMOVE_SANDBOX, "/images/icons/delete_sandbox.gif",
                               "#{AVMBrowseBean.setupSandboxAction}", "dialog:deleteSandbox",
                               null, null, false);
+                     delete.setTooltip(Application.getMessage(context, ACT_REMOVE_SANDBOX) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")");
                      menu.getChildren().add(delete);
                   }
                   
@@ -550,9 +563,14 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                   {
                      panelImage = WebResources.IMAGE_EXPANDED;
                   }
-                  out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
-                        Utils.generateFormSubmit(context, this, getClientId(context) + PANEL_MODIFIED, username + PANEL_MODIFIED)));
-                  out.write("&nbsp;<b>");
+
+                  String title = Application.getMessage(context, MSG_MODIFIED_ITEMS) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")";
+                  String submitScript = Utils.generateFormSubmit(context, this, getClientId(context) + PANEL_MODIFIED, username + PANEL_MODIFIED);
+                  out.write("<a href=\"#\" tabIndex=\"0\" onclick=\"" + submitScript + "\">");
+                  out.write(Utils.buildImageTag(context, panelImage, 11, 11, title));
+                  out.write("</a>");
+
+                  out.write("&nbsp;<b title=\"" + title + "\">");
                   out.write(bundle.getString(MSG_MODIFIED_ITEMS));
                   out.write("</b>");
                   
@@ -576,9 +594,14 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
                       {
                          panelImage = WebResources.IMAGE_EXPANDED;
                       }
-                      out.write(Utils.buildImageTag(context, panelImage, 11, 11, "",
-                            Utils.generateFormSubmit(context, this, getClientId(context) + PANEL_FORMS, username + PANEL_FORMS)));
-                      out.write("&nbsp;<b>");
+
+                      title = Application.getMessage(context, MSG_CONTENT_FORMS) + " (" + username + " " + Application.getMessage(context, "sandbox_title_extension") + ")";
+                      submitScript = Utils.generateFormSubmit(context, this, getClientId(context) + PANEL_FORMS, username + PANEL_FORMS);
+                      out.write("<a href=\"#\" tabIndex=\"0\" onclick=\"" + submitScript + "\">");
+                      out.write(Utils.buildImageTag(context, panelImage, 11, 11, title));
+                      out.write("</a>");
+
+                      out.write("&nbsp;<b title=\"" + title + "\">");
                       out.write(bundle.getString(MSG_CONTENT_FORMS));
                       out.write("</b>");
                       if (this.expandedPanels.contains(username + PANEL_FORMS))

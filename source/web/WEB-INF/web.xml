@@ -328,12 +328,18 @@
       <listener-class>org.alfresco.web.app.ContextListener</listener-class>
    </listener>
 
+   <!-- WebDAV session listener - ensures that no locked resources is left after session expires -->
+   <listener>
+      <listener-class>org.alfresco.repo.webdav.WebDAVSessionListener</listener-class>
+   </listener>
+
    <!-- Web Services context listener for OpenCMIS -->
    <listener>
       <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
    </listener>
    
    <!-- Activiti listener placeholder -->
+
 
    <!-- Faces Servlet -->
    <servlet>

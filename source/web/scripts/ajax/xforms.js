@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -923,6 +923,25 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
       alfresco.xforms.RichTextEditor.clickMask.setText(alfresco.resources["click_to_edit"]);
       alfresco.xforms.RichTextEditor.clickMask.id = 'xformsRichTextEditorHoverLayer';
       alfresco.xforms.RichTextEditor.clickMask.style.display='none';
+
+      alfresco.xforms.RichTextEditor.maskFocusHandler = new Element("a");
+      alfresco.xforms.RichTextEditor.maskFocusHandler.src = "#";
+      alfresco.xforms.RichTextEditor.maskFocusHandler.accessKey = "e";
+      alfresco.xforms.RichTextEditor.maskFocusHandler.style.width = "1px";
+      alfresco.xforms.RichTextEditor.maskFocusHandler.style.height = "1px";
+      alfresco.xforms.RichTextEditor.maskFocusHandler.style.position = "absolute";
+      alfresco.xforms.RichTextEditor.maskFocusHandler.style.border.width = 0;
+      alfresco.xforms.RichTextEditor.maskFocusHandler.style.padding = 0;
+      alfresco.xforms.RichTextEditor.maskFocusHandler.style.margin = 0;
+      alfresco.xforms.RichTextEditor.maskFocusHandler.tabIndex = 0;
+      alfresco.xforms.RichTextEditor.maskFocusHandler.innerHTML = '<div style="height: 1px; width: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden;">' + this.getLabel() + '</div>';
+
+      alfresco.xforms.RichTextEditor.maskFocusHandler.onfocus = function()
+      {
+        alfresco.xforms.RichTextEditor.clickMask.onclick();
+        return;
+      };
+
       document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);
     }
   },
@@ -995,6 +1014,10 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
 
   render: function(attach_point)
   {
+    attach_point.appendChild(alfresco.xforms.RichTextEditor.maskFocusHandler);
+    alfresco.xforms.RichTextEditor.maskFocusHandler.style.top = this.domNode.style.top;
+    alfresco.xforms.RichTextEditor.maskFocusHandler.style.left = this.domNode.style.left;
+
     attach_point.appendChild(this.domNode);
     this.domNode.addClass("xformsTextArea");
     if (this._params.height)
@@ -1232,6 +1255,10 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
   _hoverLayer_clickHandler: function(event)
   {
     alfresco.xforms.RichTextEditor.clickMask.style.display='none'
+
+    alfresco.xforms.RichTextEditor.maskFocusHandler.tabIndex = -1;
+    alfresco.xforms.RichTextEditor.maskFocusHandler.style.display = "none";
+
     document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);
     if (alfresco.xforms.RichTextEditor.currentInstance && document.getElementById(alfresco.xforms.RichTextEditor.currentInstance.domNode.id)
         && alfresco.xforms.RichTextEditor.currentInstance != this)
@@ -1393,6 +1420,7 @@ alfresco.xforms.CheckboxSelect = alfresco.xforms.AbstractSelectWidget.extend({
       checkbox.setAttribute("id", this.id + "_" + i + "-widget");
       checkbox.setAttribute("name", this.id + "_" + i + "-widget");
       checkbox.setAttribute("type", "checkbox");
+      checkbox.setAttribute("title", values[i].label);
       checkbox.setAttribute("value", values[i].value);
       checkboxDiv.appendChild(checkbox);
       if (initial_value.indexOf(values[i].value) != -1)
@@ -1400,7 +1428,12 @@ alfresco.xforms.CheckboxSelect = alfresco.xforms.AbstractSelectWidget.extend({
         this._selectedValues.push(values[i].value);
         checkbox.checked = true;
       }
-      checkboxDiv.appendChild(document.createTextNode(values[i].label));
+
+      var label = new Element("label", {"for": checkbox.id});
+      label.title = values[i].label;
+      label.appendChild(document.createTextNode(values[i].label));
+
+      checkboxDiv.appendChild(label);
       checkbox.onclick = this._checkbox_clickHandler.bindAsEventListener(this);
     }
   },
@@ -1455,7 +1488,10 @@ alfresco.xforms.CheckboxSelect = alfresco.xforms.AbstractSelectWidget.extend({
 alfresco.xforms.ListSelect = alfresco.xforms.AbstractSelectWidget.extend({
   initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode, parentWidget, new Element("select"));
+    var select = new Element("select");
+    var idPrefix = (null != parentWidget) ? (parentWidget.id) : (xformsNode.id);
+    select.setAttribute("id", idPrefix + "-select");
+    this.parent(xform, xformsNode, parentWidget, select);
   },
 
   /////////////////////////////////////////////////////////////////
@@ -1572,11 +1608,17 @@ alfresco.xforms.RadioSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
       radio_div.style.lineHeight = "16px";
       this.widget.appendChild(radio_div);
       var radio = new Element("input");
-      radio.setAttribute("id", this.id + "-widget");
+      radio.setAttribute("id", this.id + "-" + i + "-widget");
       radio.setAttribute("name", this.id + "-widget");
       radio.setAttribute("type", "radio");
+      radio.setAttribute("title", values[i].label);
       radio_div.appendChild(radio);
-      radio_div.appendChild(document.createTextNode(values[i].label));
+
+      var label = new Element("label", {"for": radio.id});
+      label.title = values[i].label;
+      label.appendChild(document.createTextNode(values[i].label));
+
+      radio_div.appendChild(label);
 
       radio.setAttribute("value", values[i].value);
       if (values[i].value == initial_value)
@@ -1658,7 +1700,10 @@ alfresco.xforms.RadioSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
 alfresco.xforms.ComboboxSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
   initialize: function(xform, xformsNode, parentWidget) 
   {
-    this.parent(xform, xformsNode, parentWidget, new Element("select"));
+    var select = new Element("select");
+    var idPrefix = (null != parentWidget) ? (parentWidget.id) : (xformsNode.id);
+    select.setAttribute("id", idPrefix + "-select");
+    this.parent(xform, xformsNode, parentWidget, select);
   },
 
   /////////////////////////////////////////////////////////////////
@@ -1670,6 +1715,7 @@ alfresco.xforms.ComboboxSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
     var values = this._getItemValues();
     var initial_value = this.getInitialValue();
     this.domNode = new Element("select");
+    this.domNode.id = attach_point.id + "-select2";
     attach_point.appendChild(this.domNode);
     this.widget = this.domNode;
     for (var i = 0; i < values.length; i++)
@@ -1811,6 +1857,8 @@ alfresco.xforms.Checkbox = alfresco.xforms.Widget.extend({
 alfresco.xforms.DatePicker = alfresco.xforms.Widget.extend({
   initialize: function(xform, xformsNode, parentWidget) 
   {
+    _createExternalLabels(_getDateTimePickerLabels(parentWidget.domNode));
+
     this.parent(xform, xformsNode, parentWidget);
     this._minInclusive = (_hasAttribute(this.xformsNode, alfresco.xforms.constants.ALFRESCO_PREFIX + ":minInclusive")
                           ? this.xformsNode.getAttribute(alfresco.xforms.constants.ALFRESCO_PREFIX + ":minInclusive")
@@ -1858,12 +1906,24 @@ alfresco.xforms.DatePicker = alfresco.xforms.Widget.extend({
                        "onValueChanged", 
                        this,
                        this._datePicker_valueChangedHandler);
+
+    var expandoImage = document.getElementById(this.domNode.id + "-expanded-image");
+    if (null != expandoImage)
+    {
+      expandoImage.alt = this._buildExpandoImageTitle(true);
+    }
   },
 
   _destroyPicker: function()
   {
     if (this.widget.picker)
     {
+      var expandoImage = document.getElementById(this.domNode.id + "-expanded-image");
+      if (null != expandoImage)
+      {
+        expandoImage.alt = this._buildExpandoImageTitle(false);
+      }
+
       this.domNode.parentNode.removeChild(this.widget.picker.domNode);
       this.widget.picker = null;
       this.domContainer.style.height = 
@@ -1882,7 +1942,11 @@ alfresco.xforms.DatePicker = alfresco.xforms.Widget.extend({
   {
     var initial_value = this.getInitialValue();
     attach_point.appendChild(this.domNode);
-    this.widget = new Element("input", { "id": this.id + "-widget", "type": "text"});
+    this.widget = new Element("input", { "id": this.id + "-widget", "type": "text", "aria-live": "polite"});
+
+    this.widget.setAttribute("alt", alfresco.resources["date_picker_title"]);
+    this.widget.setAttribute("title", alfresco.resources["date_picker_title"]);
+
     if (initial_value)
     {
       var jsDate = dojo.date.fromRfc3339(initial_value);
@@ -1903,18 +1967,39 @@ alfresco.xforms.DatePicker = alfresco.xforms.Widget.extend({
     this.domNode.appendChild(this.widget);
 
     var expandoImage = new Element("img");
+    expandoImage.id = this.domNode.id + "-expanded-image";
     expandoImage.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + "/images/icons/action.gif");
     expandoImage.align = "absmiddle";
     expandoImage.style.margin = "0px 5px";
+    expandoImage.tabIndex = 0;
+
+    var imageTitle = this._buildExpandoImageTitle(false);
+
+    expandoImage.setAttribute("alt", imageTitle);
+    expandoImage.setAttribute("title", alfresco.resources["date_picker_title"]);
 
     this.domNode.appendChild(expandoImage);
 
     if (!this.isReadonly())
     {
       expandoImage.onclick = this._expando_clickHandler.bindAsEventListener(this);
+      expandoImage.onkeypress = this._expando_keypressHandler.bindAsEventListener(this);
+
       this.widget.onfocus = this._dateTextBox_focusHandler.bindAsEventListener(this);
       this.widget.onchange = this._dateTextBox_changeHandler.bindAsEventListener(this);
     }
+  },
+
+  _buildExpandoImageTitle: function(expanded)
+  {
+    var result = "";
+    if ((null != this.labelNode) && (null != this.labelNode.getText()) && (this.labelNode.getText().length > 0))
+    {
+      result = this.labelNode.getText() + " ";
+    }
+    result += alfresco.resources["date_picker_button_title"] + ". " + ((expanded) ? (alfresco.resources["state_expanded"]) : (alfresco.resources["state_not_expanded"])) + ".";
+
+    return result;
   },
 
   setValue: function(value, forceCommit)
@@ -1969,6 +2054,11 @@ alfresco.xforms.DatePicker = alfresco.xforms.Widget.extend({
   {
     var rfcDate = dojo.date.toRfc3339(date, "dateOnly");
     this._destroyPicker();
+
+    var imageTitle = this._buildExpandoImageTitle(false);
+    var expandoImage = document.getElementById(this.domNode.id + "-expanded-image");
+    expandoImage.alt = imageTitle;
+
     this.setValue(rfcDate);
     this._commitValueChange();
   },
@@ -1983,6 +2073,14 @@ alfresco.xforms.DatePicker = alfresco.xforms.Widget.extend({
     {
       this._createPicker();
     }
+  },
+
+  _expando_keypressHandler: function(event)
+  {
+    if ((null != event) && ((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))))
+    {
+      this._expando_clickHandler();
+    }
   }
 });
 
@@ -1990,6 +2088,8 @@ alfresco.xforms.DatePicker = alfresco.xforms.Widget.extend({
 alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
   initialize: function(xform, xformsNode, parentWidget) 
   {
+    _createExternalLabels(_getDateTimePickerLabels(parentWidget.domNode));
+
     this.parent(xform, xformsNode, parentWidget);
     dojo.require("dojo.date.format");
     this._noValueSet = (alfresco.resources["eg"] + " " + 
@@ -2042,12 +2142,24 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
                        "onValueChanged", 
                        this,
                        this._timePicker_valueChangedHandler);
+
+    var expandoImage = document.getElementById(this.domNode.id + "-expanded-image");
+    if (null != expandoImage)
+    {
+      expandoImage.alt = this._buildExpandoImageTitle(true);
+    }
   },
 
   _destroyPicker: function()
   {
     if (this.widget.picker)
     {
+      var expandoImage = document.getElementById(this.domNode.id + "-expanded-image");
+      if (null != expandoImage)
+      {
+        expandoImage.alt = this._buildExpandoImageTitle(false);
+      }
+
       this.domNode.removeChild(this.widget.picker.domNode);
       this.widget.picker = null;
       this.domContainer.style.height = 
@@ -2067,7 +2179,11 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
     var initial_value = this.getInitialValue();
   
     attach_point.appendChild(this.domNode);
-    this.widget = new Element("input", { "id": this.id + "-widget", "type": "text" });
+    this.widget = new Element("input", { "id": this.id + "-widget", "type": "text", "aria-live": "polite" });
+
+    this.widget.setAttribute("alt", alfresco.resources["time_picker_title"]);
+    this.widget.setAttribute("title", alfresco.resources["time_picker_title"]);
+
     if (initial_value)
     {
       var jsDate = this._parseTime(initial_value);
@@ -2088,18 +2204,39 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
     this.domNode.appendChild(this.widget);
 
     var expandoImage = new Element("img");
+    expandoImage.id = this.domNode.id + "-expanded-image";
     expandoImage.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + "/images/icons/action.gif");
     expandoImage.align = "absmiddle";
     expandoImage.style.margin = "0px 5px";
+    expandoImage.tabIndex = 0;
+
+    var imageTitle = this._buildExpandoImageTitle(false);
+
+    expandoImage.setAttribute("alt", imageTitle);
+    expandoImage.setAttribute("title", alfresco.resources["time_picker_title"]);
 
     this.domNode.appendChild(expandoImage);
 
     if (!this.isReadonly())
     {
       expandoImage.onclick = this._expando_clickHandler.bindAsEventListener(this);
+      expandoImage.onkeypress = this._expando_keypressHandler.bindAsEventListener(this);
+
       this.widget.onfocus = this._timeTextBox_focusHandler.bindAsEventListener(this);
       this.widget.onchange = this._timeTextBox_changeHandler.bindAsEventListener(this);
     }
+  },
+
+  _buildExpandoImageTitle: function(expanded)
+  {
+    var result = "";
+    if ((null != this.labelNode) && (null != this.labelNode.getText()) && (this.labelNode.getText().length > 0))
+    {
+      result = this.labelNode.getText() + " ";
+    }
+    result += alfresco.resources["time_picker_button_title"] + ". " + ((expanded) ? (alfresco.resources["state_expanded"]) : (alfresco.resources["state_not_expanded"])) + ".";
+
+    return result;
   },
 
   setValue: function(value, forceCommit)
@@ -2167,6 +2304,14 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
     {
       this._createPicker();
     }
+  },
+
+  _expando_keypressHandler: function(event)
+  {
+    if ((null != event) && ((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))))
+    {
+      this._expando_clickHandler();
+    }
   }
 });
 
@@ -2174,6 +2319,8 @@ alfresco.xforms.TimePicker = alfresco.xforms.Widget.extend({
 alfresco.xforms.DateTimePicker = alfresco.xforms.Widget.extend({
   initialize: function(xform, xformsNode, parentWidget) 
   { 
+    _createExternalLabels(_getDateTimePickerLabels(parentWidget.domNode));
+
     this.parent(xform, xformsNode, parentWidget);
     dojo.require("dojo.date.format");
     this._noValueSet = (alfresco.resources["eg"] + " " + 
@@ -2237,12 +2384,24 @@ alfresco.xforms.DateTimePicker = alfresco.xforms.Widget.extend({
                        "onValueChanged", 
                        this,
                        this._timePicker_valueChangedHandler);
+
+    var expandoImage = document.getElementById(this.domNode.id + "-expanded-image");
+    if (null != expandoImage)
+    {
+      expandoImage.alt = this._buildExpandoImageTitle(true);
+    }
   },
 
   _destroyPicker: function()
   {
     if (this._pickerDiv)
     {
+      var expandoImage = document.getElementById(this.domNode.id + "-expanded-image");
+      if (null != expandoImage)
+      {
+        expandoImage.alt = this._buildExpandoImageTitle(false);
+      }
+
       this.domNode.removeChild(this._pickerDiv);
       this.widget.datePicker = null;
       this.widget.timePicker = null;
@@ -2264,7 +2423,11 @@ alfresco.xforms.DateTimePicker = alfresco.xforms.Widget.extend({
     var initial_value = this.getInitialValue();
   
     attach_point.appendChild(this.domNode);
-    this.widget = new Element("input", { "id": this.id + "-widget", "type": "text" });
+    this.widget = new Element("input", { "id": this.id + "-widget", "type": "text", "aria-live": "polite" });
+
+    this.widget.setAttribute("alt", alfresco.resources["date_time_picker_title"]);
+    this.widget.setAttribute("title", alfresco.resources["date_time_picker_title"]);
+
     if (initial_value)
     {
       var jsDate = dojo.date.fromRfc3339(initial_value);
@@ -2282,15 +2445,36 @@ alfresco.xforms.DateTimePicker = alfresco.xforms.Widget.extend({
     this.widget.style.width = (3 * this.widget.offsetWidth) + "px";
 
     var expandoImage = new Element("img");
+    expandoImage.id = this.domNode.id + "-expanded-image";
     expandoImage.setAttribute("src", alfresco.constants.WEBAPP_CONTEXT + "/images/icons/action.gif");
     expandoImage.align = "absmiddle";
     expandoImage.style.margin = "0px 5px";
+    expandoImage.tabIndex = 0;
+
+    var imageTitle = this._buildExpandoImageTitle(false);
+
+    expandoImage.setAttribute("alt", imageTitle);
+    expandoImage.setAttribute("title", alfresco.resources["date_time_picker_title"]);
 
     this.domNode.appendChild(expandoImage);
 
     expandoImage.onclick = this._expando_clickHandler.bindAsEventListener(this);
+    expandoImage.onkeypress = this._expando_keypressHandler.bindAsEventListener(this);
+
     this.widget.onfocus = this._dateTimeTextBox_focusHandler.bindAsEventListener(this);
     this.widget.onchange = this._dateTimeTextBox_changeHandler.bindAsEventListener(this);
+  },
+
+  _buildExpandoImageTitle: function(expanded)
+  {
+    var result = "";
+    if ((null != this.labelNode) && (null != this.labelNode.getText()) && (this.labelNode.getText().length > 0))
+    {
+      result = this.labelNode.getText() + " ";
+    }
+    result += alfresco.resources["date_time_picker_button_title"] + ". " + ((expanded) ? (alfresco.resources["state_expanded"]) : (alfresco.resources["state_not_expanded"])) + ".";
+
+    return result;
   },
 
   setValue: function(value, forceCommit)
@@ -2371,6 +2555,14 @@ alfresco.xforms.DateTimePicker = alfresco.xforms.Widget.extend({
     else
     {
       this._createPicker();
+    }
+  },
+
+  _expando_keypressHandler: function(event)
+  {
+    if ((null != event) && ((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))))
+    {
+      this._expando_clickHandler();
     }
   }
 });
@@ -2677,6 +2869,20 @@ alfresco.xforms.AbstractGroup = alfresco.xforms.Widget.extend({
                                   id: child.id + "-label", 
                                   "class": "xformsItemLabelContainer"
                                 });
+
+    var result = labelNode;
+
+    var needsInLabel = (null != child.domNode) && (null != child.domNode.id) && !document.getElementById(child.domNode.id);
+
+    if (needsInLabel)
+    {
+      var labelLabel = new Element("label", {"id": (child.id + "-accessibility-label")});
+
+      labelNode.appendChild(labelLabel);
+
+      labelNode = labelLabel;
+    }
+
     var requiredImage = new Element("img", { "class": "xformsItemRequiredImage" });
     requiredImage.src = alfresco.xforms.AbstractGroup._requiredImage.src;
 
@@ -2689,20 +2895,56 @@ alfresco.xforms.AbstractGroup = alfresco.xforms.Widget.extend({
     var label = child.getLabel();
     if (label)
     {
-      child.labelNode = labelNode;
-      child.labelNode.appendChild(document.createTextNode(label));
+      child.labelNode = result;
+
+      if (needsInLabel)
+      {
+        labelLabel.appendChild(document.createTextNode(label));
+      }
+      else
+      {
+    	child.labelNode.appendChild(document.createTextNode(label));
+      }
     }
     var hint = child.getHint();
     if (hint)
     {
-      labelNode.setAttribute("title", hint);
-      requiredImage.setAttribute("alt", hint);
+      result.setAttribute("title", hint);
+      requiredImage.setAttribute("alt", (alfresco.resources["mandatory_parameter"] + " " + hint));
     }
-    labelNode.style.width = "0px";
-    $pick(attach_point, child.domContainer).appendChild(labelNode);
-    labelNode.style.width = labelNode.scrollWidth + "px";
-    return labelNode;
+    else
+    {
+      requiredImage.setAttribute("alt", alfresco.resources["mandatory_parameter"]);
+    }
+    result.style.width = "0px";
+    $pick(attach_point, child.domContainer).appendChild(result);
+    result.style.width = result.scrollWidth + "px";
+
+    return result;
   },
+
+  _findControlElement: function(element)
+  {
+    if ((("A" == element.tagName) || ("INPUT" == element.tagName) || ("SELECT" == element.tagName)) && ("hidden" != element.visibility) && ("none" != element.style.display) && (element.tabIndex >= 0))
+    {
+      return element;
+    }
+
+    if(null != element.children)
+    {
+      for (var i = 0; i < element.children.length; i++)
+      {
+        var result = this._findControlElement(element.children[i]);
+
+        if(null != result)
+        {
+          return result;
+        }
+      }
+    }
+
+    return null;
+  },	  
 
   /////////////////////////////////////////////////////////////////
   // overridden methods & properties
@@ -2876,7 +3118,14 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
     }
     contentDiv.style.width = contentDivWidth;
     child.render(contentDiv);
-    
+
+    var labelLabel = document.getElementById(child.id + "-accessibility-label");
+    if (null != labelLabel)
+    {
+      var labelOwner = this._findControlElement(child.domNode);
+      labelLabel.setAttribute("for", ((null != labelOwner) ? (labelOwner) : (child.domNode)).id);
+    }
+
     var oh = contentDiv.offsetHeight;
     var mt = contentDiv.getStyle("margin-top").toInt();
     if (!(child instanceof alfresco.xforms.AbstractGroup))
@@ -2947,15 +3196,23 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
                                           });
       this.domNode.appendChild(this._groupHeaderNode);
 
+      var imageTitle = this._buildAccessibilityLabel(this.getLabel(), true);
+
       this.toggleExpandedImage = new Element("img",
                                              {
+    	                                       "id": (this.id + "-exapndoImage"),
                                                "align": "absmiddle",
                                                "styles": { "margin": "0px 5px" },
-                                               "src": alfresco.xforms.constants.EXPANDED_IMAGE.src
+                                               "src": alfresco.xforms.constants.EXPANDED_IMAGE.src,
+                                               "tabIndex": 0,
+                                               "alt": imageTitle,
+                                               "title": this.getLabel()
                                              });
-      this._groupHeaderNode.appendChild(this.toggleExpandedImage);
+      this._configureHeadingElements(this._groupHeaderNode, this.toggleExpandedImage);
+
       this.toggleExpandedImage.onclick = this._toggleExpanded_clickHandler.bindAsEventListener(this);
-      
+      this.toggleExpandedImage.onkeypress = this._toggleExpanded_keypressHandler.bindAsEventListener(this);
+
       this._groupHeaderNode.appendChild(document.createTextNode(this.getLabel()));
     }
     attach_point.appendChild(this.domNode);
@@ -2965,6 +3222,34 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
                                                     "styles": { "position": "relative", "width": "100%" }
                                                   });
     return this.domNode;
+  },
+
+  _buildAccessibilityLabel: function(label, expanded)
+  {
+    var result = "";
+    if ((null != label) && (0 != label.length))
+    {
+    	result = label + ". ";
+    }
+    result += ((expanded) ? (alfresco.resources["state_expanded"]) : (alfresco.resources["state_not_expanded"])) + ".";
+
+    return result;
+  },
+
+  _configureHeadingElements: function(parentWidget, child)
+  {
+    if (null != parentWidget)
+    {
+      var heading = new Element("span",
+                                {
+                                  "id": (this.id + "-headingElement"),
+                                  "role": "heading",
+                                  "aria-level": "3",
+                                  "aria-labelledby": (this.id + "-exapndoImage")
+                                });
+	  heading.appendChild(child);
+      parentWidget.appendChild(heading);
+    }
   },
 
   /** Indicates if the group is expanded. */
@@ -2987,6 +3272,9 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
          ? alfresco.xforms.constants.EXPANDED_IMAGE.src 
          : alfresco.xforms.constants.COLLAPSED_IMAGE.src);
       this.domNode.childContainerNode.style.display = expanded ? "block" : "none";
+
+      this.toggleExpandedImage.alt = this._buildAccessibilityLabel(this.getLabel(), this.isExpanded());
+      this.toggleExpandedImage.title = this.toggleExpandedImage.alt;
     }
   },
 
@@ -3074,6 +3362,14 @@ alfresco.xforms.VGroup = alfresco.xforms.AbstractGroup.extend({
   _toggleExpanded_clickHandler: function(event)
   {
     this.setExpanded(!this.isExpanded());
+  },
+
+  _toggleExpanded_keypressHandler: function(event)
+  {
+    if ((null != event) && ((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))))
+    {
+      this.setExpanded(!this.isExpanded());
+    }
   }
 });
 
@@ -3127,7 +3423,18 @@ alfresco.xforms.HGroup = alfresco.xforms.AbstractGroup.extend({
 
     contentDiv.labelNode = labelNode;
     child.render(contentDiv);
-    
+
+    var labelLabel = document.getElementById(child.id + "-accessibility-label");
+    if (null != labelLabel)
+    {
+      var labelOwner = this._findControlElement(child.domNode);
+      labelLabel.setAttribute("for", ((null != labelOwner) ? (labelOwner) : (child.domNode)).id);
+    }
+
+    var labelOwner = this._findControlElement(child.domNode);
+    var labelLabel = document.getElementById(child.id + "-accessibility-label");
+    labelLabel.setAttribute("for", ((null != labelOwner) ? (labelOwner) : (child.domNode)).id);
+
     var w = child.domNode.style.width;
     if (!w || w[w.length - 1] != "%")
     {
@@ -3587,12 +3894,29 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
   {
     var insertEnabled = this.isInsertRepeatItemEnabled();
     var removeEnabled = this.isRemoveRepeatItemEnabled();
+
+    var label = this.getLabel();
+    label = (null != label) ? (label + " ") : ("");
+
     for (var i = 0; i < this._repeatControls.length; i++)
     {
+      var labelPrefix = label + alfresco.resources["item_title"] + " " + (i + 1) + ". "
+
       this._repeatControls[i].moveRepeatItemUpImage.setOpacity(i == 0 ? .3 : 1);
+      this._repeatControls[i].moveRepeatItemUpImage.tabIndex = (0 == i) ? (-1) : (0);
+      this._repeatControls[i].moveRepeatItemUpImage.alt = labelPrefix + alfresco.resources["move_up_title"];
+
       this._repeatControls[i].moveRepeatItemDownImage.setOpacity(i == this._repeatControls.length - 1 ? .3 : 1);
+      this._repeatControls[i].moveRepeatItemDownImage.tabIndex = (i == (this._repeatControls.length - 1)) ? (-1) : (0);
+      this._repeatControls[i].moveRepeatItemDownImage.alt = labelPrefix + alfresco.resources["move_down_title"];
+
       this._repeatControls[i].insertRepeatItemImage.setOpacity(insertEnabled ? 1 : .3);
+      this._repeatControls[i].insertRepeatItemImage.tabIndex = (insertEnabled) ? (0) : (-1);
+      this._repeatControls[i].insertRepeatItemImage.alt = labelPrefix + alfresco.resources["add_item_title"];
+
       this._repeatControls[i].removeRepeatItemImage.setOpacity(removeEnabled ? 1 : .3);
+      this._repeatControls[i].removeRepeatItemImage.tabIndex = (removeEnabled) ? (0) : (-1);
+      this._repeatControls[i].removeRepeatItemImage.alt = labelPrefix + alfresco.resources["remove_item_title"];
     }
   },
 
@@ -3615,12 +3939,14 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
   _insertChildAt: function(child, position)
   {
     this._repeatControls.splice(position, 0, new Element("div"));
+    var label = this.parentWidget.getLabel(); // this.getLabel() breaks dynamic dispatching mechanism of mootools for _insertChildAt()!
+    var labelPrefix = ((null != label) ? (label + " ") : ("")) + "Item " + (position + 1) + ". ";
     var images = 
       [ 
-        { name: "insertRepeatItemImage", src: "plus", action: this._insertRepeatItemAfter_handler },
-        { name: "moveRepeatItemUpImage", src: "arrow_up", action: this._moveRepeatItemUp_handler },
-        { name: "moveRepeatItemDownImage", src: "arrow_down", action: this._moveRepeatItemDown_handler }, 
-        { name: "removeRepeatItemImage", src: "minus", action: this._removeRepeatItem_handler }
+        { name: "insertRepeatItemImage", src: "plus", action: this._insertRepeatItemAfter_handler, accessibilityAction: this._insertRepeatItemAfter_keypressHandler, title: alfresco.resources["add_item_title"] },
+        { name: "moveRepeatItemUpImage", src: "arrow_up", action: this._moveRepeatItemUp_handler, accessibilityAction: this._moveRepeatItemUp_keypressHandler, title: alfresco.resources["move_up_title"] },
+        { name: "moveRepeatItemDownImage", src: "arrow_down", action: this._moveRepeatItemDown_handler, accessibilityAction: this._moveRepeatItemDown_keypressHandler, title: alfresco.resources["move_down_title"] }, 
+        { name: "removeRepeatItemImage", src: "minus", action: this._removeRepeatItem_handler, accessibilityAction: this._removeRepeatItem_keypressHandler, title: alfresco.resources["remove_item_title"] }
       ];
     var _repeatControlsWidth = 0;
     for (var i = 0; i < images.length; i++)
@@ -3629,7 +3955,9 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
                             { 
                               "src": (alfresco.constants.WEBAPP_CONTEXT + "/images/icons/" + 
                                       images[i].src + ".gif"),
-                              "styles": { "width" : "16px", "height" : "16px" } 
+                              "styles": { "width" : "16px", "height" : "16px" },
+                              "alt": (labelPrefix + images[i].title),
+                              "title": images[i].title
                             });
       this._repeatControls[position][images[i].name] = img;
       var imgMargin = [2, 5, 2, (i == 0 ? 5 : 0) ];
@@ -3637,6 +3965,7 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
       _repeatControlsWidth += (parseInt(img.style.width) + imgMargin[1] + imgMargin[3]);
       this._repeatControls[position].appendChild(img);
       img.onclick = images[i].action.bindAsEventListener(this);
+      img.onkeypress = images[i].accessibilityAction.bindAsEventListener(this);
     }
 
     var result = this.parent(child, position);
@@ -3691,6 +4020,7 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
   _childAdded: function(child)
   {
     this.headerInsertRepeatItemImage.setOpacity(.3);
+    this.headerInsertRepeatItemImage.tabIndex = -1;
     this._updateRepeatControls();
   },
 
@@ -3700,6 +4030,7 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     if (this._children.length == 0)
     {
       this.headerInsertRepeatItemImage.setOpacity(1);
+      this.headerInsertRepeatItemImage.tabIndex = 0;
     }
     this._updateRepeatControls();
   },
@@ -3726,13 +4057,22 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
           event.currentTarget.repeat.setFocusedChild(null);
         }
       };
-  
+
+    var imageTitle = "";
+    if ((null != this.getLabel()) && (this.getLabel().length > 0))
+    {
+      imageTitle = this.getLabel() + " ";
+    }
+    imageTitle += alfresco.resources["add_item_title"];
+
     this.headerInsertRepeatItemImage = 
       new Element("img",
                   { 
                     "align": "absmiddle",
                     "src": alfresco.constants.WEBAPP_CONTEXT + "/images/icons/plus.gif",
-                    "styles": { "margin-left": "5px", "width": "16px", "height": "16px" }
+                    "styles": { "margin-left": "5px", "width": "16px", "height": "16px" },
+                    "title": alfresco.resources["add_item_title"],
+                    "alt": imageTitle
                   });
 
     this.headerInsertRepeatItemImage.repeat = this;
@@ -3740,6 +4080,7 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
 
     this.headerInsertRepeatItemImage.onclick = 
       this._headerInsertRepeatItemBefore_handler.bindAsEventListener(this);
+    this.headerInsertRepeatItemImage.onkeypress = this._headerInsertRepeatItemBefore_keypressHandler.bindAsEventListener(this);
 
     return this.domNode;
   },
@@ -3807,6 +4148,14 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     }
   },
 
+  _insertRepeatItemAfter_keypressHandler: function(event)
+  {
+    if ((null != event) && ((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))))
+    {
+      this._insertRepeatItemAfter_handler(event);
+    }
+  },
+
   /** 
    * Event handler for insert before.  If insert is enabled, causes a setRepeatIndeces
    * and an insert.
@@ -3823,6 +4172,14 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
         var trigger = this._getRepeatItemTrigger("insert", { position: "before" });
         trigger.fire();
       }
+    }
+  },
+
+  _headerInsertRepeatItemBefore_keypressHandler: function(event)
+  {
+    if ((null != event) && ((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))))
+    {
+      this._headerInsertRepeatItemBefore_handler(event);
     }
   },
 
@@ -3844,6 +4201,14 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     }
   },
 
+  _removeRepeatItem_keypressHandler: function(event)
+  {
+    if ((null != event) && ((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))))
+    {
+      this._removeRepeatItem_handler(event);
+    }
+  },
+
   /** 
    * Event handler for move up.  Calls swap children with the child before
    * if the current select child is not the first child.
@@ -3861,6 +4226,14 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
     }
   },
 
+  _moveRepeatItemUp_keypressHandler: function(event)
+  {
+    if ((null != event) && ((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))))
+    {
+      this._moveRepeatItemUp_handler(event);
+    }
+  },
+
   /** 
    * Event handler for move down.  Calls swap children with the child after
    * if the current select child is not the last child.
@@ -3875,6 +4248,14 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
       var repeatItem = this.getChildAt(index);
       this.setFocusedChild(repeatItem);
       this._swapChildren(index, index + 1);
+    }
+  },
+
+  _moveRepeatItemDown_keypressHandler: function(event)
+  {
+    if ((null != event) && ((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))))
+    {
+      this._moveRepeatItemDown_handler(event);
     }
   },
 
@@ -4492,6 +4873,8 @@ alfresco.xforms.XForm = new Class({
                                     this._handleEventLog.bindAsEventListener(this));
   },
 
+  _previousInvalidWidgets: null,
+
   /** Handles the xforms event log resulting from a call to the XFormsBean. */
   _handleEventLog: function(events)
   {
@@ -4715,15 +5098,23 @@ alfresco.xforms.XForm = new Class({
       {
         this.submitWidget = null;
         var invalid_widgets = this.rootWidget.getWidgetsInvalidForSubmit();
-        _show_error(document.createTextNode(alfresco.resources["validation_provide_values_for_required_fields"]));
+        _show_error(document.createTextNode(alfresco.resources["validation_provide_values_for_required_fields"]), invalid_widgets.length);
         var error_list = document.createElement("ul");
+
+        _removeAccessibilityErrorNotification(this._previousInvalidWidgets);
+        var strongTabIndex = 2;
         invalid_widgets.each(function(invalid)
         {
           var error_item = document.createElement("li");
+          error_item.id = invalid.domNode.id + "-alertItem";
           error_item.appendChild(document.createTextNode(invalid.getAlert()));
           error_list.appendChild(error_item);
+          _applyAccessibilityErrorNotification(invalid, strongTabIndex++, error_item.id);
           invalid.showAlert();
         });
+
+        this._previousInvalidWidgets = invalid_widgets;
+
         _show_error(error_list);
         break;
       }
@@ -4764,10 +5155,18 @@ function _hide_errors()
     errorDiv.empty();
     errorDiv.style.display = "none";
   }
+
+  var errorLink = $("errorLink-with-key-v");
+  if (null != errorLink)
+  {
+    errorLink.tabIndex = -1;
+    errorLink.parentNode.removeChild(errorLink);
+    errorLink = null;
+  }
 }
 
 /** shows the error message display. */
-function _show_error(msg)
+function _show_error(msg, errorCount)
 {
   var errorDiv = $(alfresco.xforms.constants.XFORMS_ERROR_DIV_ID);
   if (!errorDiv)
@@ -4775,6 +5174,44 @@ function _show_error(msg)
     errorDiv = new Element("div", { "id": alfresco.xforms.constants.XFORMS_ERROR_DIV_ID });
     errorDiv.addClass("infoText statusErrorText xformsError");
     errorDiv.injectBefore($(alfresco.xforms.constants.XFORMS_UI_DIV_ID));
+  }
+
+  var errorLink = $("errorLink-with-key-v");
+  if (null == errorLink)
+  {
+    errorLink = new Element("a",
+                            {
+                              "id": "errorLink-with-key-v",
+                              "src": "javascript: ;",
+                              "accessKey": "v",
+                              "role": "alert",
+                              "tabIndex": 1
+                            });
+    errorLink.onclick = "return false;"
+    errorLink.onmousedown = "return false;"
+
+    var errorMessage = new Element("div",
+                                   {
+                                     "id": "accessibility-error-message"
+                                   });
+
+    if (null != errorCount)
+    {
+        errorMessage.appendChild(document.createTextNode(errorCount + " " + alfresco.resources["accessibility_validation_message_with_error_count"]));
+    }
+    else
+    {
+      errorMessage.appendChild(document.createTextNode(alfresco.resources["accessibility_validation_message"]));
+    }
+
+    errorLink.appendChild(errorMessage);
+    errorLink.injectBefore($(alfresco.xforms.constants.XFORMS_ERROR_DIV_ID));
+
+    errorMessage.style.width = "1px";
+    errorMessage.style.height = "1px";
+    errorMessage.style.filter = "alpha(opacity=0.01)";
+    errorMessage.style.color = "transparent";
+    errorMessage.style.overflow = "hidden";
   }
 
   if (errorDiv.style.display == "block")
@@ -4786,6 +5223,194 @@ function _show_error(msg)
     errorDiv.style.display = "block";
   }
   errorDiv.appendChild(msg);
+
+  errorLink.focus();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Accessibility helpers related to the fields validation
+////////////////////////////////////////////////////////////////////////////////
+
+function _getDateTimePickerLabels(parent)
+{
+  return [
+           {
+             "tagName": "div",
+             "id": "increase-week-label",
+             "style": "width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden",
+             "parent": parent,
+             "text": alfresco.resources["increase_week_label"]
+           },
+           {
+             "tagName": "div",
+             "id": "increase-month-label",
+             "style": "width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden",
+             "parent": parent,
+             "text": alfresco.resources["increase_month_label"]
+           },
+           {
+             "tagName": "div",
+             "id": "decrease-week-label",
+             "style": "width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden",
+             "parent": parent,
+             "text": alfresco.resources["decrease_week_label"]
+           },
+           {
+             "tagName": "div",
+             "id": "decrease-month-label",
+             "style": "width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden",
+             "parent": parent,
+             "text": alfresco.resources["decrease_month_label"]
+           }
+         ];
+}
+
+function _createExternalLabels(labelIds)
+{
+  if ((null == labelIds) || (null == labelIds.length) || (0 == labelIds.length))
+  {
+    return;
+  }
+
+  for (var i = 0; i < labelIds.length; i++)
+  {
+    var el = labelIds[i];
+    if (null == document.getElementById(el.id))
+    {
+      var label = new Element(el.tagName,
+                              {
+                                "id": el.id,
+                                "style": el.style
+                              });
+
+      if (null != el.parent)
+      {
+        el.parent.appendChild(label);
+      }
+      else
+      {
+        document.appendChild(label);
+      }
+
+      label.appendChild(document.createTextNode(el.text));
+    }
+  }
+}
+
+function _removeAccessibilityErrorNotification(widgets)
+{
+  if (null != widgets)
+  {
+    widgets.each(function(invalid)
+                 {
+                   _applyAccessibilityErrorNotification(invalid, 0, null);
+                 });
+  }
+}
+
+function _applyAccessibilityErrorNotification(field, tabIndex, alertId)
+{
+  if ((null == field) || (null == tabIndex))
+  {
+    return;
+  }
+
+  var control = _findFirstControl(field.domNode);
+
+  if (null != control)
+  {
+    control.tabIndex = tabIndex;
+
+    if (null == alertId)
+    {
+      control.removeAttribute("aria-labelledby");
+    }
+    else
+    {
+      control.setAttribute("aria-labelledby", alertId);
+    }
+
+    if ((tabIndex > 0) && (null == control.getAttribute("role")))
+    {
+      switch (control.tagName)
+      {
+      case "SELECT":
+      {
+        control.setAttribute("role", ((control.multiple) ? ("listbox") : ("combobox")));
+        break;
+      }
+      case "A":
+      {
+        control.setAttribute("role", "link");
+        break;
+      }
+      case "TEXTAREA": case "DIV":
+      {
+        control.setAttribute("role", "textbox");
+        control.setAttribute("aria-multiline", true);
+        break;
+      }
+      case "INPUT":
+      {
+        switch (control.type)
+        {
+        case "button": case "checkbox": case "radio":
+        {
+          control.setAttribute("role", control.type);
+          break;
+        }
+        case "hidden": case "password": case "text":
+        {
+          control.setAttribute("role", "textbox");
+          break;
+        }
+        case "submit": case "reset":
+        {
+          control.setAttribute("role", "button");
+        }
+        }
+      }
+      }
+    }
+    else
+    {
+      if (0 == tabIndex)
+      {
+        control.removeAttribute("role");
+      }
+    }
+  }
+}
+
+function _findFirstControl(element)
+{
+  if (null == element)
+  {
+    return null;
+  }
+
+  if (("INPUT" == element.tagName) || ("SELECT" == element.tagName) || ("TEXTAREA" == element.tagName) || ((null != element.id) && (0 == element.id.toLowerCase().indexOf("textarea"))))
+  {
+    if (("DIV" == element.tagName) && (null != element.parentNode.children) && (0 != element.parentNode.children.length) && ("A" == element.parentNode.children[0].tagName))
+    {
+      return element.parentNode.children[0];
+    }
+    return element;
+  }
+
+  if (null != element.children)
+  {
+    for (var i = 0; i < element.children.length; i++)
+    {
+      var result = _findFirstControl(element.children[i]);
+      if (null != result)
+      {
+        return result;
+      }
+    }
+  }
+
+  return null;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,398 @@
+<?xml version="1.0"?>
+<!--
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Contains elements that will result in all default widgets being used.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:alf="http://www.alfresco.org"
+           xmlns:w="http://www.alfresco.org/alfresco/widgets"
+           targetNamespace="http://www.alfresco.org/alfresco/widgets"
+           elementFormDefault="qualified">
+
+<!--
+ List of standard widgets (taken from web-client-config-wcm.xml).
+ 
+ - widget
+   the javascript method in "alfresco.xforms" called to create the widget
+ - xform-type, schema-type and appearance
+   values for each widget to select a widget or a variant of a widget.
+ - source-schema-type
+   The schema type plus any special conditions that need to be met for the widget to
+   be used.
+   
+widget           xforms-type  schema-type     appearance                    source-schema-type
+======           ===========  ===========     ==========                    ==================
+TextField        xf:input                     *                             xs:normalizedString
+PlainTextEditor  xf:textarea                  minimal                       xs:string @minimal
+RichTextEditor   xf:textarea                  *                             xs:string
+RichTextEditor   xf:textarea                  custom                        xs:string @custom
+RichTextEditor   xf:textarea                  full                          xs:string @full
+
+DatePicker       xf:input     xs:date         *                             xs:date
+TimePicker       xf:input     xs:time         *                             xs:time
+DateTimePicker   xf:input     xs:dateTime     *                             xs:dateTime
+DayPicker        xf:input     xs:gDay         *                             xs:gDay
+MonthPicker      xf:input     xs:gMonth       *                             xs:gMonth
+YearPicker       xf:input     xs:gYear        *                             xs:gYear
+MonthDayPicker   xf:input     xs:gMonthDay    *                             xs:gMonthDay
+YearMonthPicker  xf:input     xs:gYearMonth   *                             xs:gYearMonth
+
+Checkbox         xf:select1   xs:boolean      *                             xs:boolean
+
+NumericalRange   xf:range                     *                             xs:restriction xs:integer xs:minInclusive xs:maxInclusive
+
+FilePicker       xf:upload                    *                             xs:anyURI
+FilePicker       xf:upload                    file_picker                   xs:anyURI @file_picker
+FilePicker       xf:upload                    folder_picker                 xs:anyURI @folder_picker
+FilePicker       xf:upload                    html_file_picker              xs:anyURI @html_file_picker
+FilePicker       xf:upload                    image_file_picker             xs:anyURI @image_file_picker
+FilePicker       xf:upload                    search_restricted_file_picker xs:anyURI @search_restricted_file_picker
+FilePicker       xf:upload                    folder_restricted_file_picker xs:anyURI @folder_restricted_file_picker
+
+CheckboxSelect   xf:select                    full                          xs:list @full checkboxes
+ListSelect       xf:select                    minimal                       xs:list @minimal multi-select list                     (web-client-config-wcm only has @*    - in code?)
+CheckboxSelect   xf:select                    *                             xs:list 'short list' checkboxes                        (web-client-config-wcm only has @full - in code?)
+ListSelect       xf:select                    *                             xs:list 'long list' multi-select list
+
+RadioSelect1     xf:select1                   full                          xs:enumeration @full radio button group
+ComboboxSelect1  xf:select1                   minimal                       xs:enumeration @minimal combobox                       (web-client-config-wcm only has @*    - in code?)
+RadioSelect1     xf:select1                   *                             xs:enumeration short list of values radio button group (web-client-config-wcm only has @full - in code?)
+ComboboxSelect1  xf:select1                   *                             xs:enumeration long list of value combobox
+
+VGroup           xf:group                     *                             surround all complexTypes (unless @minimal set) and repeating simpleTypes
+HGroup           xf:group                     minimal                       xs:complexType @minimal
+
+Repeat           xf:repeat                    *                             @maxOccurs > 1 can be added to group and both simple and complex types
+Trigger          xf:trigger                   *                               used by Repeats (added at end of the form) to 'insert_before', 'insert_after' and 'delete' 
+
+SwitchGroup      xf:switch                    *                             xs:complexContent with Base
+CaseGroup        xf:case                      *                               case within a SwitchGroup
+Trigger          xf:trigger                   *                               prefix SwitchGroup to select case.
+
+Submit           xf:submit                    *                             Added automatically at the end of the form 'Submit' and 'Save Draft'
+-->
+
+  <!-- Used to create SwitchGroup -->
+  <xs:complexType name="complexContentType">
+    <xs:complexContent>
+      <xs:extension base="w:baseComplexType">
+        <xs:sequence>
+          <xs:element name="part3" type="xs:normalizedString"/>
+          <xs:element name="part4" type="xs:normalizedString"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType> 
+
+  <xs:complexType name="complexContentType2">
+    <xs:complexContent>
+      <xs:extension base="w:baseComplexType">
+        <xs:sequence>
+          <xs:element name="part5" type="xs:normalizedString"/>
+          <xs:element name="part6" type="xs:normalizedString"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType> 
+
+  <xs:complexType name="baseComplexType">
+    <xs:sequence>
+      <xs:element name="part1" type="xs:normalizedString"/>
+      <xs:element name="part2" type="xs:normalizedString"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="AllWidgetsType">
+    <xs:sequence>
+    
+      <!-- Widget: TextField -->
+      <!-- Becomes: <xf:input xf:appearance="full" .../> -->
+      <xs:element name="TextField_NormalizedString" type="xs:normalizedString"/>
+
+      <!-- Widget: PlainTextEditor -->
+      <!-- Becomes: <xf:textarea appearance="minimal" .../> -->
+      <xs:element name="PlainTextEditor_String_Minimal" type="xs:string"><xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation></xs:element>
+
+      <!-- Widget: RichTextEditors -->
+      <!-- Becomes: <xf:textarea appearance="compact" .../> -->
+      <!--          <xf:textarea appearance="custom" .../> -->
+      <!--          <xf:textarea appearance="full" .../> -->
+      <xs:element name="RichTextEditor_String"         type="xs:string"/> 
+      <xs:element name="RichTextEditor_String_Custom"  type="xs:string"><xs:annotation><xs:appinfo><alf:appearance>custom</alf:appearance></xs:appinfo></xs:annotation></xs:element>
+      <xs:element name="RichTextEditor_String_Full"    type="xs:string"><xs:annotation><xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo></xs:annotation></xs:element>
+      
+      <!-- Widgets: Date and Time fields -->
+      <!-- Becomes: <xf:input .../> in all cases - the schema type is used in selecting the widget -->
+      <xs:element name="DatePicker_date"            type="xs:date"/>
+      <xs:element name="TimePicker_time"            type="xs:time"/>
+      <xs:element name="DateTimePicker_dateTime"    type="xs:dateTime"/>
+      <xs:element name="DayPicker_gDay"             type="xs:gDay"/>
+      <xs:element name="MonthPicker_gMonth"         type="xs:gMonth"/>
+      <xs:element name="YearPicker_gYear"           type="xs:gYear"/>
+      <xs:element name="MonthDayPicker_gMonthDay"   type="xs:gMonthDay"/>
+      <xs:element name="YearMonthPicker_gYearMonth" type="xs:gYearMonth"/>
+      
+      <!-- Widget: Checkbox -->
+      <!-- Becomes: <xf:select1 .../> - the schema type is used in selecting the widget -->
+      <xs:element name="Checkbox_Boolean" type="xs:boolean" />
+            
+      <!-- Widget: NumericalRange -->
+      <!-- Becomes: <xf:range id="range_0" xf:end="99" xf:start="0" .../> -->
+      <xs:element name="NumericalRange_Integer">
+        <xs:simpleType>
+          <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="99"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element> 
+
+      <!-- Widget: FilePickers -->
+      <!-- Becomes: <xf:upload> -->
+      <!--          <xf:upload xf:appearance="file_picker"> -->
+      <!--          <xf:upload xf:appearance="folder_picker"> -->
+      <!--          <xf:upload xf:appearance="html_file_picker"> -->
+      <!--          <xf:upload xf:appearance="image_file_picker"> -->
+      <!--          <xf:upload xf:appearance="search_restricted_file_picker"> -->
+      <!--          <xf:upload xf:appearance="folder_restricted_file_picker"> -->
+      <xs:element name="FilePicker_AnyURI"                               type="xs:anyURI"/>
+      <xs:element name="FilePicker_AnyURI_file_picker"                   type="xs:anyURI"><xs:annotation><xs:appinfo><alf:appearance>file_picker</alf:appearance></xs:appinfo></xs:annotation></xs:element>
+      <xs:element name="FilePicker_AnyURI_folder_picker"                 type="xs:anyURI"><xs:annotation><xs:appinfo><alf:appearance>folder_picker</alf:appearance></xs:appinfo></xs:annotation></xs:element>
+      <xs:element name="FilePicker_AnyURI_html_file_picker"              type="xs:anyURI"><xs:annotation><xs:appinfo><alf:appearance>html_file_picker</alf:appearance></xs:appinfo></xs:annotation></xs:element>
+      <xs:element name="FilePicker_AnyURI_image_file_picker"             type="xs:anyURI"><xs:annotation><xs:appinfo><alf:appearance>image_file_picker</alf:appearance></xs:appinfo></xs:annotation></xs:element>
+      <xs:element name="FilePicker_AnyURI_search_restricted_file_picker" type="xs:anyURI"><xs:annotation><xs:appinfo><alf:appearance>search_restricted_file_picker</alf:appearance></xs:appinfo></xs:annotation></xs:element>
+      <xs:element name="FilePicker_AnyURI_folder_restricted_file_picker" type="xs:anyURI"><xs:annotation><xs:appinfo><alf:appearance>folder_restricted_file_picker</alf:appearance></xs:appinfo></xs:annotation></xs:element>
+
+      <!-- Widgets: ComboboxSelect and ListSelect -->
+      <!-- Becomes: <xf:select xf:appearance="full" .../> -->
+      <!--          <xf:select xf:appearance="minimal" .../> -->
+      <!--          <xf:select xf:appearance="full" .../> -->
+      <!--          <xf:select xf:appearance="compact" .../> -->
+      <xs:element name="CheckboxSelect_List_Full">
+        <xs:annotation><xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo></xs:annotation>
+        <xs:simpleType>
+            <xs:list>
+              <xs:simpleType>
+                <xs:restriction base="xs:normalizedString">
+                  <xs:enumeration value="Checkbox List full 1"/>
+                  <xs:enumeration value="Checkbox List full 2"/>
+                  <xs:enumeration value="Checkbox List full 3"/>
+                  <xs:enumeration value="Checkbox List full 4"/>
+                  <xs:enumeration value="Checkbox List full 5"/>
+                  <xs:enumeration value="Checkbox List full 6"/>
+                  <xs:enumeration value="Checkbox List full 7"/>
+                  <xs:enumeration value="Checkbox List full 8"/>
+                  <xs:enumeration value="Checkbox List full 9"/>
+                  <xs:enumeration value="Checkbox List full 10"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:list>
+        </xs:simpleType>
+      </xs:element>
+
+      <xs:element name="ListSelect_List_Minimal">
+        <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+        <xs:simpleType>
+            <xs:list>
+              <xs:simpleType>
+                <xs:restriction base="xs:normalizedString">
+                  <xs:enumeration value="List List minimal 1"/>
+                  <xs:enumeration value="List List minimal 2"/>
+                  <xs:enumeration value="List List minimal 3"/>
+                  <xs:enumeration value="List List minimal 4"/>
+                  <xs:enumeration value="List List minimal 5"/>
+                  <xs:enumeration value="List List minimal 6"/>
+                  <xs:enumeration value="List List minimal 7"/>
+                  <xs:enumeration value="List List minimal 8"/>
+                  <xs:enumeration value="List List minimal 9"/>
+                  <xs:enumeration value="List List minimal 10"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:list>
+        </xs:simpleType>
+      </xs:element>
+
+      <xs:element name="CheckboxSelect_List_Default_Short">
+        <xs:simpleType>
+            <xs:list>
+              <xs:simpleType>
+                <xs:restriction base="xs:normalizedString">
+                  <xs:enumeration value="Checkbox List default short 1"/>
+                  <xs:enumeration value="Checkbox List default short 2"/>
+                  <xs:enumeration value="Checkbox List default short 3"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:list>
+        </xs:simpleType>
+      </xs:element>
+      
+      <xs:element name="ListSelect_List_Default_Long">
+        <xs:simpleType>
+            <xs:list>
+              <xs:simpleType>
+                  <xs:restriction base="xs:normalizedString">
+                  <xs:enumeration value="List List default long 1"/>
+                  <xs:enumeration value="List List default long 2"/>
+                  <xs:enumeration value="List List default long 3"/>
+                  <xs:enumeration value="List List default long 4"/>
+                  <xs:enumeration value="List List default long 5"/>
+                  <xs:enumeration value="List List default long 6"/>
+                  <xs:enumeration value="List List default long 7"/>
+                  <xs:enumeration value="List List default long 8"/>
+                  <xs:enumeration value="List List default long 9"/>
+                  <xs:enumeration value="List List default long 10"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:list>
+        </xs:simpleType>
+      </xs:element>
+      
+      <!-- Widgets: ComboboxSelect1 and RadioSelect1 -->
+      <!-- Becomes: <xf:select1 xf:appearance="full" .../> -->
+      <!--          <xf:select1 xf:appearance="minimal" .../> -->
+      <!--          <xf:select1 xf:appearance="full" .../> -->
+      <!--          <xf:select1 xf:appearance="compact" .../> -->
+      <xs:element name="RadioSelect1_Enum_Full">
+        <xs:annotation><xs:appinfo><alf:appearance>full</alf:appearance></xs:appinfo></xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:normalizedString">
+            <xs:enumeration value="Radio enum full 1"/>
+            <xs:enumeration value="Radio enum full 2"/>
+            <xs:enumeration value="Radio enum full 3"/>
+            <xs:enumeration value="Radio enum full 4"/>
+            <xs:enumeration value="Radio enum full 5"/>
+            <xs:enumeration value="Radio enum full 6"/>
+            <xs:enumeration value="Radio enum full 7"/>
+            <xs:enumeration value="Radio enum full 8"/>
+            <xs:enumeration value="Radio enum full 9"/>
+            <xs:enumeration value="Radio enum full 10"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      
+      <xs:element name="ComboboxSelect1_Enum_Minimal">
+        <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:normalizedString">
+            <xs:enumeration value="Combobox enum minimal 1"/>
+            <xs:enumeration value="Combobox enum minimal 2"/>
+            <xs:enumeration value="Combobox enum minimal 3"/>
+            <xs:enumeration value="Combobox enum minimal 4"/>
+            <xs:enumeration value="Combobox enum minimal 5"/>
+            <xs:enumeration value="Combobox enum minimal 6"/>
+            <xs:enumeration value="Combobox enum minimal 7"/>
+            <xs:enumeration value="Combobox enum minimal 8"/>
+            <xs:enumeration value="Combobox enum minimal 9"/>
+            <xs:enumeration value="Combobox enum minimal 10"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+
+      <xs:element name="RadioSelect1_Enum_Default_Short">
+        <xs:simpleType>
+          <xs:restriction base="xs:normalizedString">
+            <xs:enumeration value="Radio enum default short 1"/>
+            <xs:enumeration value="Radio enum default short 2"/>
+            <xs:enumeration value="Radio enum default short 3"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+
+      <xs:element name="ComboboxSelect1_Enum_Default_Long">
+        <xs:simpleType>
+          <xs:restriction base="xs:normalizedString">
+            <xs:enumeration value="Combobox enum default long 1"/>
+            <xs:enumeration value="Combobox enum default long 2"/>
+            <xs:enumeration value="Combobox enum default long 3"/>
+            <xs:enumeration value="Combobox enum default long 4"/>
+            <xs:enumeration value="Combobox enum default long 5"/>
+            <xs:enumeration value="Combobox enum default long 6"/>
+            <xs:enumeration value="Combobox enum default long 7"/>
+            <xs:enumeration value="Combobox enum default long 8"/>
+            <xs:enumeration value="Combobox enum default long 9"/>
+            <xs:enumeration value="Combobox enum default long 10"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+
+      <!-- Widget: VGroup -->
+      <!-- Note: <xs:choice> is currently implemented in the same way as <xs:sequence> so an example is not included. -->
+      <!-- Becomes: <xf:group xf:appearance="full" .../>   -->
+      <xs:element name="VGroup_ComplexType_Sequence">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="SequenceString">
+              <xs:simpleType>
+                <xs:restriction base="xs:normalizedString">
+                  <xs:length value="3" />
+                </xs:restriction>
+              </xs:simpleType>
+              </xs:element>
+            <xs:element name="SequenceDecimal" type="xs:decimal"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+      <!-- Widget: HGroup -->
+      <!-- Becomes: <xf:group xf:appearance="minimal" .../> -->
+      <xs:element name="HGroup_ComplexType_All_Minimal">
+        <xs:annotation><xs:appinfo><alf:appearance>minimal</alf:appearance></xs:appinfo></xs:annotation>
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="horizontal1" type="xs:normalizedString"/>
+            <xs:element name="horizontal2" type="xs:normalizedString"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>
+      
+      <!-- Widget: Repeat and Triggers to support it -->
+      <!-- Becomes: <xf:group xf:appearance="repeated"> -->
+      <!--             <xf:repeat xf:appearance="full" .../>  -->
+      <!--           </xf:group> -->
+      <!--           ... -->
+      <!--           <xf:trigger ... <xf:insert xf:position="before" .../> .../>  -->
+      <!--           <xf:trigger ... <xf:insert xf:position="after" .../> .../>  -->
+      <!--           <xf:trigger ... <xf:delete .../> .../>  -->
+      <xs:element name="Repeat_1to3_NormalizedString" type="xs:normalizedString" minOccurs="1" maxOccurs="3"/>
+
+      <!-- Widgets: SwitchGroup and CaseGroup + Trigger to support it -->      
+      <!-- Note: WIKI says we should get a SwitchGroup when we use have a <xs:complexContent> with a Base, but this -->
+      <!--       appears to be wrong. Using the base type, we get an <xf:switch> with each of the parent types and -->
+      <!--       base type. -->
+      <!--       Having the <xs:complexContent> in-line also does not work. -->
+      
+      <!-- Becomes: <xf:trigger ...<xf:setvalue .../> .../>  // one for each type -->
+      <!--          <xf:switch xf:appearance="full" ... -->
+      <!--            <xf:case ...\>  // one for each type -->
+      <!--          </xf:switch> -->
+      <xs:element name="Trigger_SwitchGroup_CaseGroup_ComplexType" type="w:baseComplexType"/>
+
+      <!-- Widget: Submit -->
+      <!-- Note: 2 xf:submits automatically added at end of form (no visible component?) -->
+      <!-- Becomes: <xf:submit xf:submission="submission-validate" .../> -->
+      <!--           <xf:submit xf:submission="submission-draft" .../> -->
+
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Root Element -->
+  <xs:element name="AllWidgets" type="w:AllWidgetsType" />
+
+</xs:schema>

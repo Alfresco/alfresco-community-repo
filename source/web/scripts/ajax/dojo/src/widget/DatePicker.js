@@ -264,6 +264,11 @@ dojo.widget.defineWidget(
 					this.selectedNode = currentCalendarNode;
 				}
 				nextDate = dojo.date.add(nextDate, dojo.date.dateParts.DAY, 1);
+
+				// DOJO accessibility for Alfresco WCM: ALF-11956
+				var drawableDate = this._getSelectDayMonthAndYear({"target": currentCalendarNode});
+				var month = dojo.date.getNames('months', 'wide', 'standAlone', this.lang)[drawableDate.month];
+				currentCalendarNode.setAttribute("aria-label", (drawableDate.day + " (" + month + ", " + drawableDate.year + ")"));
 			}
 			this.lastDay = dojo.date.add(nextDate,dojo.date.dateParts.DAY,-1);
 			this._initControls();
@@ -395,6 +400,17 @@ dojo.widget.defineWidget(
 				this._incrementWeek(evt);
 			}
 		},
+
+		onIncrementWeekPressed: function(event) {
+			// DOJO accessibility for Alfresco WCM: ALF-11956
+			if(null != event){
+				event.stopPropagation();
+
+				if((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))){
+					this.onIncrementWeek(event);
+				}
+			}
+		},
 	
 		onIncrementMonth: function(/*Event*/evt) {
 			// summary: handler for increment month event
@@ -403,7 +419,18 @@ dojo.widget.defineWidget(
 				this._incrementMonth(evt);
 			}
 		},
-		
+
+		onIncrementMonthPressed: function(event) {
+			// DOJO accessibility for Alfresco WCM: ALF-11956
+			if(null != event){
+				event.stopPropagation();
+
+				if((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))){
+					this.onIncrementMonth(event);
+				}
+			}
+		},
+
 		onIncrementYear: function(/*Event*/evt) {
 			// summary: handler for increment year event
 			evt.stopPropagation();
@@ -411,7 +438,18 @@ dojo.widget.defineWidget(
 				this._incrementYear(evt);
 			}
 		},
-	
+
+		onIncrementYearPressed: function(event) {
+			// DOJO accessibility for Alfresco WCM: ALF-11956
+			if(null != event){
+				event.stopPropagation();
+
+				if((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))){
+					this.onIncrementYear(event);
+				}
+			}
+		},
+
 		_setMonthLabel: function(monthIndex) {
 			this.monthLabelNode.innerHTML = dojo.date.getNames('months', 'wide', 'standAlone', this.lang)[monthIndex];
 		},
@@ -448,14 +486,27 @@ dojo.widget.defineWidget(
 		},
 
 		_handleUiClick: function(/*Event*/evt) {
+			// DOJO accessibility for Alfresco WCM: ALF-11956
+			var selectedDate = this._getSelectDayMonthAndYear(evt);
+			if(null == selectedDate){
+				return;
+			}
+			this.clickedNode = evt.target;
+			this.setDate(new Date(selectedDate.year, selectedDate.month, evt.target.innerHTML));
+		},
+
+		_getSelectDayMonthAndYear: function(evt) {
+			// DOJO accessibility for Alfresco WCM: ALF-11956
 			var eventTarget = evt.target;
 			if(eventTarget.nodeType != dojo.dom.ELEMENT_NODE){eventTarget = eventTarget.parentNode;}
-			dojo.event.browser.stopEvent(evt);
+			if(null != evt.preventDefault){
+				dojo.event.browser.stopEvent(evt);
+			}
 			this.selectedIsUsed = this.todayIsUsed = false;
 			var month = this.curMonth.getMonth();
 			var year = this.curMonth.getFullYear();
 			if(dojo.html.hasClass(eventTarget, this.classNames["disabledPrevious"])||dojo.html.hasClass(eventTarget, this.classNames["disabledCurrent"])||dojo.html.hasClass(eventTarget, this.classNames["disabledNext"])){
-				return; //this date is disabled... ignore it
+				return null; //this date is disabled... ignore it
 			}else if (dojo.html.hasClass(eventTarget, this.classNames["next"])) {
 				month = ++month % 12;
 				if(month===0){++year;}
@@ -463,10 +514,21 @@ dojo.widget.defineWidget(
 				month = --month % 12;
 				if(month==11){--year;}
 			}
-			this.clickedNode = eventTarget;
-			this.setDate(new Date(year, month, eventTarget.innerHTML));
+
+			return {"day": eventTarget.innerHTML, "month": month, "year": year};
 		},
-		
+
+		_handleUiPress: function(event) {
+			// DOJO accessibility for Alfresco WCM: ALF-11956
+			if(null != event){
+				event.stopPropagation();
+
+				if((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))){
+					this._handleUiClick(event);
+				}
+			}
+		},
+
 		onValueChanged: function(/*Date*/date) {
 			//summary: the set date event handler
 		},

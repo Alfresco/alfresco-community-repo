@@ -45,7 +45,7 @@
 			if (s.image)
 				h += '<img class="mceIcon" src="' + s.image + '" />' + l + '</a>';
 			else
-				h += '<span class="mceIcon ' + s['class'] + '"></span>' + (l ? '<span class="' + cp + 'Label">' + l + '</span>' : '') + '</a>';
+				h += '<span class="mceIcon ' + s['class'] + '"><div style="clear: none; width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden;">' + s.title + '</div></span>' + (l ? '<span class="' + cp + 'Label">' + l + '</span>' : '') + '</a>';
 
 			return h;
 		},

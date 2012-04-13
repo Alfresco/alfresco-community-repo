@@ -196,7 +196,7 @@ function checkButtonState(inputField)
                                     <td align="center">
                                        <h:commandButton id="ok-button" value="#{msg.ok}" action="#{WizardManager.bean.addCondition}" 
                                                         styleClass="wizardButton"
-                                                        disabled="#{WizardManager.bean.conditionProperties.qname == null}"  />
+                                                        disabled="#{empty WizardManager.bean.conditionProperties.qname}" />
                                     </td>
                                  </tr>
                                  <tr>

@@ -676,12 +676,13 @@ public abstract class BaseDownloadContentServlet extends BaseServlet
       
       // TODO: investigate using getFileChannel() on ContentReader
       
-      if (r.start != 0L)
+      if (r.start != 0L && r.start > offset)
       {
-         long skipped = offset;
-         while (skipped < r.start)
+         long skipped = offset + is.skip(r.start - offset);
+         if (skipped < r.start)
          {
-            skipped += is.skip(r.start - skipped);
+             // Nothing left to download!
+             return;
          }
       }
       long span = (r.end - r.start) + 1L;

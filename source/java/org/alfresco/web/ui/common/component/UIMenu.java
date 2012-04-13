@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -76,7 +76,7 @@ public class UIMenu extends SelfRenderingComponent
       // output image
       if (getAttributes().get("image") != null)
       {
-         out.write(Utils.buildImageTag(context, (String)getAttributes().get("image"), null, "-4px"));
+         out.write(Utils.buildImageTag(context, (String)getAttributes().get("image"), tooltip, "-4px"));
       }
       
       out.write("</a>");

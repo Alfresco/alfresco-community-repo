@@ -30,9 +30,12 @@
    
    function pageLoaded()
    {
-      document.getElementById("dialog:dialog-body:subject").focus();
-      okEnabled = !document.getElementById("dialog:finish-button").disabled;
-      checkButtonState();
+      if (document.getElementById("dialog:dialog-body:subject") != null) 
+      { 
+         document.getElementById("dialog:dialog-body:subject").focus(); 
+      } 
+      okEnabled = !document.getElementById("dialog:finish-button").disabled; 
+      checkButtonState(); 
    }
    
    function checkButtonState()

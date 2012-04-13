@@ -15,7 +15,7 @@
    <#assign page = p.page>
    <item>
       <title>${(page.title!"")?html}</title>
-      <link>${shareUrl}/page/site/${siteId}/wiki-page?title=${page.systemName}</link>
+      <link>${shareUrl}/page/site/${siteId}/wiki-page?title=${page.systemName?url('UTF-8')}</link>
       <pubDate>${page.modifiedAt?string("EEE, dd MMM yyyy HH:mm:ss zzz")}</pubDate>
       <guid isPermaLink="false">${node.id}</guid>
    </item>

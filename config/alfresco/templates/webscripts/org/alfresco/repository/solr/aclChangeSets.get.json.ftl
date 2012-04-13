@@ -7,4 +7,11 @@
          <#if aclChangeSet_has_next>,</#if>
       </#list>
    ]
+   <#if maxChangeSetCommitTime??>
+    ,"maxChangeSetCommitTime": ${maxChangeSetCommitTime?c}
+   </#if>
+   <#if maxChangeSetId??>
+    ,"maxChangeSetId": ${maxChangeSetId?c}
+   </#if>
+   
 }

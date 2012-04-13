@@ -37,7 +37,6 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -52,6 +51,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,7 +90,7 @@ public class WebDAVHelper
     private NamespaceService m_namespaceService;
     private DictionaryService m_dictionaryService;
     private MimetypeService m_mimetypeService;
-    private LockService m_lockService;
+    private WebDAVLockService m_lockService;
     private LockStore m_lockStore;
     private ActionService m_actionService;
     private AuthenticationService m_authService;
@@ -114,7 +114,7 @@ public class WebDAVHelper
         m_namespaceService  = m_serviceRegistry.getNamespaceService();
         m_dictionaryService = m_serviceRegistry.getDictionaryService();
         m_mimetypeService   = m_serviceRegistry.getMimetypeService();
-        m_lockService       = m_serviceRegistry.getLockService();
+        m_lockService       = (WebDAVLockService)m_serviceRegistry.getService(QName.createQName(NamespaceService.ALFRESCO_URI, WebDAVLockService.BEAN_NAME));
         m_actionService     = m_serviceRegistry.getActionService();
         m_permissionService = m_serviceRegistry.getPermissionService();
         m_tenantService     = tenantService;
@@ -187,7 +187,7 @@ public class WebDAVHelper
     /**
      * @return          Return the lock service
      */
-    public final LockService getLockService()
+    public final WebDAVLockService getLockService()
     {
         return m_lockService;
     }

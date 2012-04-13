@@ -87,6 +87,11 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
 
         checkNode(sourceFileInfo);
 
+        if (destFileInfo != null && (isShuffleOperation(sourceFileInfo) || isVersioned(destFileInfo)))
+        {
+             copyOnlyContent(sourceNodeRef, destFileInfo, fileFolderService);
+        }
+        else
         // ALF-7079 fix, if source is working copy then it is just copied to destination
         if (nodeService.hasAspect(sourceNodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
@@ -98,12 +103,7 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
         else if (destFileInfo != null && nodeService.hasAspect(destFileInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY))
         {
             // copy only content for working copy destination
-            ContentService contentService = getContentService();
-            ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
-            ContentWriter contentWriter = contentService.getWriter(destFileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-            contentWriter.putContent(reader);
-
-            fileFolderService.delete(sourceNodeRef);
+            copyOnlyContent(sourceNodeRef, destFileInfo, fileFolderService);
         }
         else
         {
@@ -118,5 +118,15 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
                 fileFolderService.moveFrom(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name); 
             } 
         }
+    }
+    
+    private void copyOnlyContent(NodeRef sourceNodeRef, FileInfo destFileInfo, FileFolderService fileFolderService)
+    {
+    	ContentService contentService = getContentService();
+        ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+        ContentWriter contentWriter = contentService.getWriter(destFileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+        contentWriter.putContent(reader);
+
+        fileFolderService.delete(sourceNodeRef);
     }
 }

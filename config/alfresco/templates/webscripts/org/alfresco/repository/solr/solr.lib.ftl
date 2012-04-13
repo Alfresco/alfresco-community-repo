@@ -23,7 +23,7 @@
          "readers" :
          [
             <#list aclReaders.readers as reader>
-               ${reader?string}
+               "${reader?string}"
                <#if reader_has_next>,</#if>
             </#list>
          ]

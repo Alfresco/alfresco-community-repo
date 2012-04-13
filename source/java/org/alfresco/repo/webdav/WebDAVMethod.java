@@ -333,6 +333,9 @@ public abstract class WebDAVMethod
                 WebDAVMethod.this.m_inputStream = null;
                 WebDAVMethod.this.m_reader = null;
 
+                // cache current session
+                WebDAVLockService.setCurrentSession(m_request.getSession());
+
                 executeImpl();
                 return null;
             }

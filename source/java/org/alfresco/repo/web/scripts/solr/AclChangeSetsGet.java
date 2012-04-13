@@ -65,6 +65,19 @@ public class AclChangeSetsGet extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("aclChangeSets", changesets);
 
+        Long maxChangeSetCommitTime = solrTrackingComponent.getMaxChangeSetCommitTime();
+        if(maxChangeSetCommitTime != null)
+        {
+            model.put("maxChangeSetCommitTime", maxChangeSetCommitTime);
+        }
+        
+        Long maxChangeSetId = solrTrackingComponent.getMaxChangeSetId();
+        if(maxChangeSetId != null)
+        {
+            model.put("maxChangeSetId", maxChangeSetId);
+        }
+
+        
         if (logger.isDebugEnabled())
         {
             logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);

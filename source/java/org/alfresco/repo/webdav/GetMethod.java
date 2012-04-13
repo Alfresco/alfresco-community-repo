@@ -178,8 +178,8 @@ public class GetMethod extends WebDAVMethod
             // is content required
             if (!m_returnContent)
             {
-                // it is a folder and no content is required
-                throw new WebDAVServerException(HttpServletResponse.SC_BAD_REQUEST);
+                // ALF-7883 fix, HEAD for collection (see http://www.webdav.org/specs/rfc2518.html#rfc.section.8.4)
+                return;
             }
             
             // Generate a folder listing

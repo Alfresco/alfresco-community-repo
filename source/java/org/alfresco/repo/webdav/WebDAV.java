@@ -61,6 +61,7 @@ public class WebDAV
     public static final int DEPTH_1 = 1;
     public static final int DEPTH_INFINITY = -1;
     public static final short TIMEOUT_INFINITY = -1;
+    public static final int TIMEOUT_24_HOURS = 86400;
 
     // WebDAV HTTP response codes
     

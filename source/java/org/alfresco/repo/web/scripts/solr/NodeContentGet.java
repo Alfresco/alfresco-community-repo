@@ -117,6 +117,11 @@ public class NodeContentGet extends StreamContent
 
         // check If-Modified-Since header and set Last-Modified header as appropriate
         Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        // May be null - if so treat as just changed 
+        if(modified == null)
+        {
+            modified = new Date();
+        }
         long modifiedSince = -1;
         String modifiedSinceStr = req.getHeader("If-Modified-Since");
         if(modifiedSinceStr != null)

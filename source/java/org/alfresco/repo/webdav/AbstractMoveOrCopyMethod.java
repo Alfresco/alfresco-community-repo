@@ -25,6 +25,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Implements the WebDAV COPY and MOVE methods
@@ -125,7 +126,8 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
                 throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
             }
             // delete the destination node if it is not the same as the source node and not a working copy
-            if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()) && !isDestWorkingCopy)
+            if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()) && !isDestWorkingCopy &&
+                !isShuffleOperation(sourceInfo) && !isVersioned(destInfo))
             {
                 checkNode(destInfo);
 
@@ -161,4 +163,22 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
         }
     }       
    
+    
+    protected boolean isVersioned(FileInfo fileInfo)
+    {
+        NodeService nodeService = getNodeService();
+        boolean versioned = nodeService.hasAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_VERSIONABLE);
+        return versioned;
+    }
+
+    protected boolean isShuffleOperation(FileInfo sourceInfo)
+    {
+    	NodeService nodeService = getNodeService();
+    	boolean hidden = nodeService.hasAspect(sourceInfo.getNodeRef(), ContentModel.ASPECT_HIDDEN);
+    	boolean temporary = nodeService.hasAspect(sourceInfo.getNodeRef(), ContentModel.ASPECT_TEMPORARY);
+    	boolean shuffleOperation = hidden && temporary;
+    	return shuffleOperation;
+    }
+    
+    
 }

@@ -54,7 +54,7 @@ public class LockMethod extends WebDAVMethod
     
     private static Timer timer = new Timer(true);
 
-    protected int m_timeoutDuration = WebDAV.TIMEOUT_INFINITY;
+    protected int m_timeoutDuration = WebDAV.TIMEOUT_24_HOURS;
     
     protected LockInfo lockInfo = new LockInfoImpl();
 
@@ -370,7 +370,6 @@ public class LockMethod extends WebDAVMethod
                 lockInfo.getRWLock().writeLock().unlock();
             }
         }
-
 
         m_response.setHeader(WebDAV.HEADER_LOCK_TOKEN, "<" + WebDAV.makeLockToken(lockNodeInfo.getNodeRef(), userName) + ">");
         m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, WebDAV.XML_CONTENT_TYPE);

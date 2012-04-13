@@ -362,8 +362,10 @@ public class ADMRemoteStore extends BaseRemoteStore
                         FileInfo fileInfo = fileFolderService.create(
                                 parentFolder.getNodeRef(), encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
 
-                        contentService.getWriter(
-                                fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true).putContent(content);
+                        ContentWriter writer = contentService.getWriter(
+                                fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                        writer.guessMimetype(fileInfo.getName());
+                        writer.putContent(content);
                         if (logger.isDebugEnabled())
                             logger.debug("createDocument: " + fileInfo.toString());
                         return null;

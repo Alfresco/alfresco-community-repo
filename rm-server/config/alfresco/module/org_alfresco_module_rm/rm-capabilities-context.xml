@@ -48,7 +48,6 @@
     <bean id="capabilityCondition.filling" 
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FillingCapabilityCondition">
-      	<property name="dictionaryService" ref="DictionaryService" />
     </bean>
     
     <bean id="capabilityCondition.transferred" 
@@ -244,7 +243,12 @@
 				<value>RECORD_CATEGORY</value>
 				<value>DISPOSITION_SCHEDULE</value>
 			</list>
-		</property>	
+		</property>		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   			</map>
+   		</property>
     </bean>
     
     <bean id="rmCreateModifyDestroyFileplanTypesCapability" 
@@ -513,12 +517,11 @@
    		</property>
     </bean> 
     
-    <bean id="rmEditRecordMetadataCapability" 
+    <bean id="rmEditRecordMetadataCapability"
           parent="rmBaseCapability" 
           class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditRecordMetadataCapability">
    		<property name="name" value="EditRecordMetadata"/>
-   		<property name="permission" value="EditRecordMetadata"/>   		
-   		<property name="ownableService" ref="OwnableService"/>
+   		<property name="permission" value="EditRecordMetadata"/>  
 		<property name="kinds">
 			<list>
 				<value>RECORD</value>
@@ -827,7 +830,9 @@
     	<property name="groupCapability" value="true"/>
     </bean>
     
-    <bean id="rmUpdateProperties" parent="rmBaseCapability" class="org.alfresco.module.org_alfresco_module_rm.capability.group.UpdatePropertiesCapability">
+    <bean id="rmUpdateProperties" 
+          parent="rmBaseCapability" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.group.UpdatePropertiesCapability">
         <property name="name" value="UpdateProperties"/>
     	<property name="groupCapability" value="true"/>
     </bean>

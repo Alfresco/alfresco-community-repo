@@ -23,8 +23,8 @@ import java.util.Map;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
+import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
-import org.alfresco.module.org_alfresco_module_rm.capability.impl.AbstractCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 

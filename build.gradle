@@ -15,16 +15,6 @@ task wrapper(type: Wrapper) {
     gradleVersion = '1.0-milestone-8'
 }
 
-task downloadAlfresco << {
-
-	def address = "https://bamboo.alfresco.com/bamboo/artifact/ALF-ENTERPRISEV40/JOB1/build-891/ALL/alfresco-enterprise-4.0.1.zip?os_authType=basic&os_username=rwetherall&os_password=31vegaleg"
-
-	def file = new FileOutputStream(file('alfresco.zip'))
-    def out = new BufferedOutputStream(file)
-    out << new URL(address).openStream()
-    out.close()
-}
-
 /** Subproject configuration */
 subprojects {
 
@@ -50,6 +40,7 @@ subprojects {
 	jarFile = "${baseName}.jar"
 	ampFile = "${baseName}.amp"
 	tomcatRoot = System.getenv(tomcatEnv)
+	jarFilePath = "${buildLibDir}/${jarFile}"
 		
 	sourceSets {
 		main {
@@ -161,7 +152,6 @@ subprojects {
 	
 	task amp(dependsOn: 'jar') << {
 	
-		def jarFilePath = "${buildLibDir}/${jarFile}"
 		def jarFileObj = file(jarFilePath)
 		def configDirObj = file(configDir)
 		def sourceWebObj = file(sourceWebDir)
@@ -195,6 +185,46 @@ subprojects {
 				ant.zipfileset(dir: sourceWebDir, prefix: 'web')
 			}
 		}	
+	}
+	
+	task deployExploded(dependsOn: 'jar') << {
+	
+		def jarFileObj = file(jarFilePath)
+		def configDirObj = file(configDir)
+		def sourceWebObj = file(sourceWebDir)
+	
+		explodedWebAppDir = new File("${tomcatRoot}/webapps/${webAppName}")
+		if (explodedWebAppDir.exists() == true) {
+		
+				// copy module properties
+				
+				// copy jars
+				if (jarFileObj.exists()) {
+					copy {
+						from jarFilePath
+						into "${explodedWebAppDir}/WEB-INF/lib"
+					}
+				}
+				
+				// copy config
+				if (configDirObj.exists() == true) {
+					copy {
+						from(configDir) {
+							exclude "**/${moduleProperties}"
+							exclude  "**/${fileMapping}"
+						}
+						into "${explodedWebAppDir}/WEB-INF/classes"
+						
+					}
+				}
+				
+				// copy web
+				if (sourceWebObj.exists() == true) {
+				}
+		}
+		else {
+			println "Exploded webapp directory ${explodedWebAppDir} does not exist."
+		}
 	}
 	
 	task installAmp(dependsOn: ['amp', 'copyWar']) << {

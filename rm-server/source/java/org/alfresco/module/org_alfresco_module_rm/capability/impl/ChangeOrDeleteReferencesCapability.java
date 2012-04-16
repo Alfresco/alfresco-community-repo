@@ -41,7 +41,7 @@ public class ChangeOrDeleteReferencesCapability extends DeclarativeCapability
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.impl.AbstractCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     public int evaluate(NodeRef source, NodeRef target)
     {

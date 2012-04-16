@@ -249,7 +249,7 @@
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/spring-surf-api-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/spring-surf-core-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/spring-surf-core-configservice-1.0.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/spring-webscripts-1.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/spring-webscripts-1.0.0.jar" sourcepath="C:/mywork/projects/v4/code/root/projects/3rd-party/src/spring-webscripts-1.0.0-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/spring-webscripts-api-1.0.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/springmodules-jbpm31.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/standard.jar"/>

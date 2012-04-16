@@ -26,7 +26,7 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
-import org.alfresco.module.org_alfresco_module_rm.capability.impl.AbstractCapability;
+import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.springframework.beans.BeansException;
@@ -41,7 +41,7 @@ import org.springframework.context.ApplicationContextAware;
 public class DeclarativeCapability extends AbstractCapability implements ApplicationContextAware
 {
     /** Application Context */
-    private ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
     
     /** Required permissions */
     private List<String> permissions;
@@ -233,7 +233,7 @@ public class DeclarativeCapability extends AbstractCapability implements Applica
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.impl.AbstractCapability#hasPermissionImpl(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability#hasPermissionImpl(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     public int evaluate(NodeRef nodeRef)

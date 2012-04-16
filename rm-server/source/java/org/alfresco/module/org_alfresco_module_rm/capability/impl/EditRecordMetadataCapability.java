@@ -31,17 +31,17 @@ import org.alfresco.service.cmr.security.OwnableService;
  * 
  * @author Roy Wetherall
  */
-public class EditRecordMetadataCapability extends DeclarativeCapability
+public class EditRecordMetadataCapability extends DeclarativeCapability 
 {
-    /** Ownable service */
     private OwnableService ownableService;
-    
-    /**
-     * @param ownableService    ownable service
-     */
-    public void setOwnableService(OwnableService ownableService)
+
+    private OwnableService getOwnableService()
     {
-        this.ownableService = ownableService;
+        if (ownableService == null)
+        {
+            ownableService = (OwnableService)applicationContext.getBean("OwnableService");
+        }
+        return ownableService;
     }
     
     /**
@@ -76,11 +76,11 @@ public class EditRecordMetadataCapability extends DeclarativeCapability
                                 
                             // Since we know this is undeclared if you are the owner then you should be able to 
                             // edit the records meta-data (otherwise how can it be declared by the user?)
-                            if (ownableService.hasOwner(nodeRef) == true)
+                            if (getOwnableService().hasOwner(nodeRef) == true)
                             {
                                 String user = AuthenticationUtil.getFullyAuthenticatedUser();
                                 if (user != null &&
-                                    ownableService.getOwner(nodeRef).equals(user) == true)
+                                    getOwnableService().getOwner(nodeRef).equals(user) == true)
                                 {
                                     result = Integer.valueOf(AccessDecisionVoter.ACCESS_GRANTED);
                                 }

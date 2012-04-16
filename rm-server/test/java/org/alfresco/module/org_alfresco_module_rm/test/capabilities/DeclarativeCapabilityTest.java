@@ -237,9 +237,4 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         
         return result;
     }
-    
-    public void testFrozenCondition()
-    {
-        
-    }
 }

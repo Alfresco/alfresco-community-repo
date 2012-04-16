@@ -389,6 +389,17 @@ public class AbstractActivitiComponentTest
                 return (String) arg;
             }
         });
+        
+        when(tenantService.getName(anyString())).thenAnswer(new Answer<String>()
+                {
+                    public String answer(InvocationOnMock invocation) throws Throwable
+                    {
+                        Object arg= invocation.getArguments()[0];
+                        return (String) arg;
+                    }
+                });
+        
+        when(tenantService.getCurrentUserDomain()).thenReturn("");
     }
     
     @After

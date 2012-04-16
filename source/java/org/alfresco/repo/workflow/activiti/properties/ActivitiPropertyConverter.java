@@ -385,10 +385,12 @@ public class ActivitiPropertyConverter
         Serializable existingValue = existingValues.get(WorkflowModel.PROP_PRIORITY);
         try
         {
-            for (ConstraintDefinition constraintDef : priorDef.getConstraints())
-            {
-                constraintDef.getConstraint().evaluate(existingValue);
-            }
+        	if(priorDef != null) {
+	            for (ConstraintDefinition constraintDef : priorDef.getConstraints())
+	            {
+	                constraintDef.getConstraint().evaluate(existingValue);
+	            }
+        	}
         }
         catch (ConstraintException ce)
         {
@@ -687,6 +689,7 @@ public class ActivitiPropertyConverter
                     if (existingAdd == null)
                     {
                         existingAdd = (List<NodeRef>) existingProperties.get(toAdd.getKey());
+                        newProperties.put(toAdd.getKey(), (Serializable) existingAdd);
                     }
 
                     // make the additions
@@ -718,6 +721,10 @@ public class ActivitiPropertyConverter
                     if (existingRemove == null)
                     {
                         existingRemove = (List<NodeRef>) existingProperties.get(toRemove.getKey());
+                        if(existingRemove != null) {
+                        	existingRemove = new ArrayList<NodeRef>(existingRemove);
+                            newProperties.put(toRemove.getKey(), (Serializable) existingRemove);
+                        }
                     }
 
                     // make the subtractions

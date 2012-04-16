@@ -448,13 +448,13 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         
         // Test query by process-name
         taskQuery =  createWorkflowTaskQuery(WorkflowTaskState.IN_PROGRESS);
-        taskQuery.setProcessName(QName.createQName("testTask"));
+        taskQuery.setWorkflowDefinitionName("testTask");
         tasks = workflowEngine.queryTasks(taskQuery);
         
         Assert.assertNotNull(tasks);
         Assert.assertEquals(1, tasks.size());
         
-        taskQuery.setProcessName(QName.createQName("unexistingTaskName"));
+        taskQuery.setWorkflowDefinitionName("unexistingTaskName");
         tasks = workflowEngine.queryTasks(taskQuery);
         Assert.assertNotNull(tasks);
         Assert.assertEquals(0, tasks.size());
@@ -635,14 +635,14 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         
         // Test query by process-name
         taskQuery =  createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
-        taskQuery.setProcessName(QName.createQName("testTask"));
+        taskQuery.setWorkflowDefinitionName("testTask");
         taskQuery.setActive(Boolean.FALSE);
         tasks = workflowEngine.queryTasks(taskQuery);
         
         Assert.assertNotNull(tasks);
         Assert.assertEquals(1, tasks.size());
         
-        taskQuery.setProcessName(QName.createQName("unexistingTaskName"));
+        taskQuery.setWorkflowDefinitionName("unexistingTaskName");
         tasks = workflowEngine.queryTasks(taskQuery);
         Assert.assertNotNull(tasks);
         Assert.assertEquals(0, tasks.size());
@@ -702,6 +702,61 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         List<WorkflowTask> tasks = workflowEngine.queryTasks(taskQuery);
         assertNotNull(tasks);
         assertEquals(1, tasks.size());
+    }
+    
+    @SuppressWarnings("unchecked")
+	@Test
+    public void testUpdateTask() {
+        NodeRef nodeRef = new NodeRef("workspace:///someRef");
+        NodeRef anotherRef = new NodeRef("workspace:///anotherRef");
+        
+        QName propQname = QName.createQName("testProp");
+        QName nodeRefPropQname = QName.createQName("testAssoc");
+        HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
+              
+        // Start the workflow-path
+        WorkflowPath path = workflowEngine.startWorkflow(workflowDef.getId(), props);
+        WorkflowTask startTask = workflowEngine.getStartTask(path.getInstance().getId());
+        
+        // End the start-task
+        workflowEngine.endTask(startTask.getId(), null);
+               
+        // Get the task to update
+        WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.IN_PROGRESS);
+        taskQuery.setProcessId(path.getInstance().getId());
+
+        List<WorkflowTask> tasks = workflowEngine.queryTasks(taskQuery);
+        WorkflowTask task = tasks.get(0);
+        
+        // Test altering plain properties
+        props = new HashMap<QName, Serializable>();
+        props.put(propQname, "54321");
+        workflowEngine.updateTask(task.getId(), props, null, null);
+        
+        tasks = workflowEngine.queryTasks(taskQuery);
+        task = tasks.get(0);
+        assertEquals("54321", task.getProperties().get(propQname));
+        
+        // Test adding association
+        HashMap<QName, List<NodeRef>> toAdd = new HashMap<QName, List<NodeRef>>();
+        toAdd.put(nodeRefPropQname, Arrays.asList(anotherRef, nodeRef));
+        
+        workflowEngine.updateTask(task.getId(), null, toAdd, null);
+        
+        tasks = workflowEngine.queryTasks(taskQuery);
+        task = tasks.get(0);
+        assertEquals(2, ((List<NodeRef>)task.getProperties().get(nodeRefPropQname)).size());
+        
+        // Test removing association
+        HashMap<QName, List<NodeRef>> toRemove = new HashMap<QName, List<NodeRef>>();
+        toRemove.put(nodeRefPropQname, Arrays.asList(nodeRef));
+        
+        workflowEngine.updateTask(task.getId(), null, null, toRemove);
+        
+        tasks = workflowEngine.queryTasks(taskQuery);
+        task = tasks.get(0);
+        assertEquals(1, ((List<NodeRef>)task.getProperties().get(nodeRefPropQname)).size());
+        assertEquals(anotherRef, ((List<NodeRef>)task.getProperties().get(nodeRefPropQname)).get(0));
     }
     
     private void checkTaskVariableTaskPresent(WorkflowTaskState state,

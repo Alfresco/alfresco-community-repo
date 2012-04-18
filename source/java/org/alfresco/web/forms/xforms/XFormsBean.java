@@ -49,7 +49,7 @@ import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormProcessor;
-import org.alfresco.web.forms.XMLUtil;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.xs.XSModel;

@@ -20,6 +20,7 @@ package org.alfresco.web.forms;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,6 +54,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.SAXException;
+
+import org.alfresco.util.XMLUtil;
 
 /**
  * A rendering engine which uses xsl templates to render renditions of
@@ -258,14 +261,12 @@ public class XSLTRenderingEngine
       final Element docEl = xslTemplate.getDocumentElement();
       final String XALAN_NS = Constants.S_BUILTIN_EXTENSIONS_URL;
       final String XALAN_NS_PREFIX = "xalan";
-      docEl.setAttribute("xmlns:" + XALAN_NS_PREFIX, XALAN_NS);
 
       final Set<String> excludePrefixes = new HashSet<String>();
       if (docEl.hasAttribute("exclude-result-prefixes"))
       {
          excludePrefixes.addAll(Arrays.asList(docEl.getAttribute("exclude-result-prefixes").split(" ")));
       }
-      excludePrefixes.add(XALAN_NS_PREFIX);
 
       final List<String> result = new LinkedList<String>();
       for (QName ns : methods.keySet())
@@ -384,7 +385,7 @@ public class XSLTRenderingEngine
       Document xslTemplate = null;
       try
       {
-         xslTemplate = XMLUtil.parse(ret.getInputStream());
+         xslTemplate = XMLUtil.secureParseXSL(ret.getInputStream());
       }
       catch (final SAXException sax)
       {

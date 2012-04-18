@@ -794,6 +794,51 @@
          <transport-guarantee>CONFIDENTIAL</transport-guarantee>
       </user-data-constraint>
    </security-constraint>
+
+   <security-constraint>
+      <web-resource-collection>
+         <web-resource-name>SOLR</web-resource-name>
+         <url-pattern>/s/api/solr/*</url-pattern>
+      </web-resource-collection>
+
+      <auth-constraint>
+         <role-name>repoclient</role-name>
+      </auth-constraint>
+
+      <user-data-constraint>
+         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+   </security-constraint>
+   
+   <security-constraint>
+      <web-resource-collection>
+         <web-resource-name>SOLR</web-resource-name>
+         <url-pattern>/wcservice/api/solr/*</url-pattern>
+      </web-resource-collection>
+
+      <auth-constraint>
+         <role-name>repoclient</role-name>
+      </auth-constraint>
+
+      <user-data-constraint>
+         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+   </security-constraint>
+   
+   <security-constraint>
+      <web-resource-collection>
+         <web-resource-name>SOLR</web-resource-name>
+         <url-pattern>/wcs/api/solr/*</url-pattern>
+      </web-resource-collection>
+
+      <auth-constraint>
+         <role-name>repoclient</role-name>
+      </auth-constraint>
+
+      <user-data-constraint>
+         <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+      </user-data-constraint>
+   </security-constraint>
    
    <login-config>
       <auth-method>CLIENT-CERT</auth-method>

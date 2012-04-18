@@ -64,7 +64,7 @@ import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngine;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.RenderingEngineTemplateImpl;
-import org.alfresco.web.forms.XMLUtil;
+import org.alfresco.util.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.WebResources;

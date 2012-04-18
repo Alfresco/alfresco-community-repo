@@ -24,6 +24,8 @@ import java.util.Random;
 
 import junit.framework.TestCase;
 
+import org.alfresco.util.XMLUtil;
+
 /**
  * Simple XMLUtil test
  */

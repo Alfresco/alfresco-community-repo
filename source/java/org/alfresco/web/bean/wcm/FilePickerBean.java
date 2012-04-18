@@ -64,7 +64,7 @@ import org.alfresco.web.app.servlet.ajax.InvokeCommand;
 import org.alfresco.web.bean.FileUploadBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.forms.XMLUtil;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;

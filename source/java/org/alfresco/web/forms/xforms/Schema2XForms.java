@@ -42,7 +42,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.forms.XMLUtil;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.lang.StringUtils;

@@ -1056,10 +1056,57 @@ if (!YAHOO.util.Event) {
                     }
                 }
 
+                var n = 100;
                 if (recurse && el && el.childNodes) {
-                    for (i=0,len=el.childNodes.length; i<len ; ++i) {
-                        this.purgeElement(el.childNodes[i], recurse, sType);
+                    if (YAHOO.env.ua.ie > 8 || YAHOO.env.ua.ie == 0) {
+                        for (i=0,len=el.childNodes.length; i<len ; ++i) {
+                            this.purgeElement(el.childNodes[i], recurse, sType);
+                        }
+                    } else {
+                        var elements = new Array();
+                        this.gatherElements(el, elements);
+                        this.purgeElementBatch(elements, n, sType);
                     }
+                }
+            },
+
+            purgeElementBatch: function(elements, n, sType) {
+                var cycle = 0;
+                while (elements.length > 0) {
+                    var elListeners = this.getListeners(elements[0], sType);
+                    if (elListeners) {
+                        for (var i=0,len=elListeners.length; i<len ; i++) {
+                            var l = elListeners[i];
+                            this.removeListener(elements[0], l.type, l.fn);
+                        }
+                    }
+                    elements.shift();
+                    cycle++;
+                    if (cycle == n) {
+                        var t = setTimeout(function(){YAHOO.util.Event.purgeElementBatch(elements, n, sType);}, 1);
+                        break;
+                    }
+                }
+            },
+ 
+            gatherElements: function(el, elements) {
+                var nodes = new Array();
+                nodes.push(el);
+                elements.push(el);
+                var nextNodes = new Array();
+                while (nodes.length > 0) {
+                    nextNodes.length = 0;
+                    for (var i=0, len=nodes.length; i<len; i++) {
+                        var curNode = nodes[i];
+                        if (curNode.childNodes) {
+                            for (var j=0, curLen=curNode.childNodes.length; j<curLen ; j++) {
+                                nextNodes.push(curNode.childNodes[j]);
+                                elements.push(curNode.childNodes[j]);
+                            }
+                        }
+                    }
+                    nodes.length = 0;
+                    nodes = nextNodes.slice(0);
                 }
             },
 

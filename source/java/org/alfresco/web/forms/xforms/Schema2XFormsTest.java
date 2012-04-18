@@ -26,7 +26,7 @@ import java.util.ResourceBundle;
 import junit.framework.AssertionFailedError;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.BaseTest;
-import org.alfresco.web.forms.XMLUtil;
+import org.alfresco.util.XMLUtil;
 import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.jxpath.Pointer;
 import org.apache.commons.logging.Log;

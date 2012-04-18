@@ -89,9 +89,9 @@ function saveContent(id, content)
 	<%-- Inline editor --%>
 	<tr>
 		<td width="100%" valign="top" height="100%">
-			<div id='editor' style='width:100%; height:360px'>
+			<textarea id='editor' style='width:100%; height:360px'>
 			</f:verbatim><h:outputText value="#{CCProperties.documentContent}" escape="false" /><f:verbatim>
-			</div>
+			</textarea>
 			</f:verbatim><h:inputHidden id="editorOutput" value="#{CCProperties.editorOutput}" /><f:verbatim>
 		</td>
 	</tr>

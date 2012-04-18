@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.XMLUtil;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.alfresco.web.app.Application;

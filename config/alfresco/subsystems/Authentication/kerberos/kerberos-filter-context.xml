@@ -45,6 +45,9 @@
       <property name="configService">
          <ref bean="webClientConfigService" />
       </property>
+      <property name="stripKerberosUsernameSuffix">
+         <value>${kerberos.authentication.stripUsernameSuffix}</value>
+      </property>
    </bean>
 
    <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptSSOAuthenticationFilter">
@@ -105,6 +108,9 @@
       <property name="jaasConfigEntryName">
          <value>${kerberos.authentication.http.configEntryName}</value>
       </property>
+      <property name="stripKerberosUsernameSuffix">
+         <value>${kerberos.authentication.stripUsernameSuffix}</value>
+      </property>
    </bean>
    
    <bean id="sharepointAuthenticationHandler" class="org.alfresco.web.sharepoint.auth.kerberos.KerberosAuthenticationHandler">
@@ -137,6 +143,9 @@
       </property>
       <property name="jaasConfigEntryName">
          <value>${kerberos.authentication.http.configEntryName}</value>
+      </property>
+      <property name="stripKerberosUsernameSuffix">
+         <value>${kerberos.authentication.stripUsernameSuffix}</value>
       </property>
    </bean>
    

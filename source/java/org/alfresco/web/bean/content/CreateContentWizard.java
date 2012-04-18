@@ -50,7 +50,7 @@ import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormNotFoundException;
 import org.alfresco.web.forms.FormProcessor;
 import org.alfresco.web.forms.FormsService;
-import org.alfresco.web.forms.XMLUtil;
+import org.alfresco.util.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;

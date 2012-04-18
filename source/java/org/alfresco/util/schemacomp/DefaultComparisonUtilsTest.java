@@ -69,6 +69,9 @@ public class DefaultComparisonUtilsTest
         comparisonUtils.compareSimple(prop("not_null_string"), prop("not_null_string"), ctx);
         verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, prop("not_null_string"), prop("not_null_string"));
         
+        comparisonUtils.compareSimple(prop("Not_Null_String"), prop("NOT_NULL_STRING"), ctx);
+        verify(differences).add(Where.IN_BOTH_NO_DIFFERENCE, prop("Not_Null_String"), prop("NOT_NULL_STRING"));
+        
         comparisonUtils.compareSimple(prop("left"), prop("right"), ctx);
         verify(differences).add(Where.IN_BOTH_BUT_DIFFERENCE, prop("left"), prop("right"));
         

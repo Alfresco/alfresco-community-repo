@@ -103,7 +103,7 @@ public abstract class AbstractDbObject implements DbObject
                 sameParent = true;
             }
             // Same parent & same name - it must be considered the same object.
-            return sameParent && getName().equals(other.getName());
+            return sameParent && getName().equalsIgnoreCase(other.getName());
         }
         
         return false;

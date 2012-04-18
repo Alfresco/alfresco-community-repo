@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
@@ -44,8 +43,6 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.TypeNames;
 import org.springframework.context.ApplicationContext;
-
-import com.sun.crypto.provider.DESCipher;
 
 
 /**
@@ -205,12 +202,23 @@ public class ExportDb
         String schemaName = getSchemaName(dbmd);
 
         schema = new Schema(schemaName, namePrefix, schemaVersion);
-        String prefixFilter = namePrefixFilter(dbmd);
+        String[] prefixFilters = namePrefixFilters(dbmd);
         
+        for (String filter : prefixFilters)
+        {
+            extractSchema(dbmd, schemaName, filter);
+        }
+    }
+
+    
+    private void extractSchema(DatabaseMetaData dbmd, String schemaName, String prefixFilter)
+                throws SQLException, IllegalArgumentException, IllegalAccessException
+    {
         if (log.isDebugEnabled())
         {
             log.debug("Retrieving tables: schemaName=[" + schemaName + "], prefixFilter=[" + prefixFilter + "]");
         }
+        
         
         final ResultSet tables = dbmd.getTables(null, schemaName, prefixFilter, new String[]
         {
@@ -371,7 +379,6 @@ public class ExportDb
         tables.close();
     }
 
-
     /**
      * Assume that if there are schemas, we want the one named after the connection user
      * or the one called "dbo" (MS SQL hack)
@@ -481,35 +488,16 @@ public class ExportDb
         return this.namePrefix;
     }
 
-    private String namePrefixFilter(DatabaseMetaData dbmd) throws SQLException
+    private String[] namePrefixFilters(DatabaseMetaData dbmd) throws SQLException
     {
         String filter = namePrefix + "%";
-        
-        // Note, MySQL on Linux reports true for:
-        //  dbmd.storesMixedCaseIdentifiers()
-        //  dbmd.storesMixedCaseQuotedIdentifiers()
-        //  dbmd.storesUpperCaseQuotedIdentifiers()
-        // and false for the other storesXYZ() methods. In reality it stores
-        // the table names in whatever case was provided, quoted or not.
-        
-        // Make sure the filter works for the particular DBMS.
-        if (dbmd.storesLowerCaseIdentifiers())
+        // We're assuming the prefixes are either PREFIX_ or prefix_
+        // but not mixed-case.
+        return new String[]
         {
-            if (log.isDebugEnabled())
-            {
-                log.debug("DB uses lowercase identifiers");
-            }
-            filter = filter.toLowerCase();
-        }
-        else if (dbmd.storesUpperCaseIdentifiers())
-        {
-            if (log.isDebugEnabled())
-            {
-                log.debug("DB uses uppercase identifiers");
-            }
-            filter = filter.toUpperCase();
-        }
-        return filter;
+            filter.toLowerCase(),
+            filter.toUpperCase()
+        };
     }
 
     

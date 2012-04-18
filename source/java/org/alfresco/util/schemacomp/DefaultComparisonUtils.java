@@ -295,7 +295,18 @@ public class DefaultComparisonUtils implements ComparisonUtils
         else
         {
             // neither are null
-            if (left.equals(right))
+            boolean objectsAreEqual;
+            // Strings are compared case-insensitively, e.g. table names.
+            if (left instanceof String && right instanceof String)
+            {
+                objectsAreEqual = ((String) left).equalsIgnoreCase((String) right);
+            }
+            else
+            {
+                objectsAreEqual = left.equals(right);
+            }
+            
+            if (objectsAreEqual)
             {
                 where = Where.IN_BOTH_NO_DIFFERENCE;
             }

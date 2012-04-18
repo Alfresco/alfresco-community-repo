@@ -37,10 +37,10 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
-import org.alfresco.module.org_alfresco_module_rm.capability.group.CreateCapability;
-import org.alfresco.module.org_alfresco_module_rm.capability.group.UpdateCapability;
-import org.alfresco.module.org_alfresco_module_rm.capability.group.UpdatePropertiesCapability;
+import org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.MoveRecordsCapability;
+import org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdateCapability;
+import org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdatePropertiesCapability;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;

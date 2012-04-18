@@ -23,6 +23,7 @@ import junit.framework.TestSuite;
 
 import org.alfresco.module.org_alfresco_module_rm.test.capabilities.CapabilitiesTest;
 import org.alfresco.module.org_alfresco_module_rm.test.capabilities.DeclarativeCapabilityTest;
+import org.alfresco.module.org_alfresco_module_rm.test.capabilities.CompositeCapabilityTest;
 
 
 /**
@@ -42,6 +43,7 @@ public class CapabilitiesTestSuite extends TestSuite
         TestSuite suite = new TestSuite();
         suite.addTestSuite(CapabilitiesTest.class);
         suite.addTestSuite(DeclarativeCapabilityTest.class);
+        suite.addTestSuite(CompositeCapabilityTest.class);
         return suite;
     }
 }

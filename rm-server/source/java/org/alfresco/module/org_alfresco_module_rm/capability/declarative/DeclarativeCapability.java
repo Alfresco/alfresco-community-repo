@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -118,7 +118,7 @@ public class DeclarativeCapability extends AbstractCapability implements Applica
      */
     protected boolean checkPermissionsImpl(NodeRef nodeRef, String ... permissions)
     {
-        boolean result = true;
+        boolean result = true;        
         NodeRef filePlan = rmService.getFilePlan(nodeRef);
         
         for (String permission : permissions)

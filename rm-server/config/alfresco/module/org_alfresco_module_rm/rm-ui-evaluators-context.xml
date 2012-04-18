@@ -394,6 +394,7 @@
 				<value>RECORD_FOLDER</value>
 			</set>
 		</property>
+		<property name="capability" value ="FileRecords"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.reviewedAction"

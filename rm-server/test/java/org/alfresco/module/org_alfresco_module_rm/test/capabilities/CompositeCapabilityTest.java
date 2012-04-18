@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
  * 
  * @author Roy Wetherall
  */
-public class GroupCapabilityTest extends BaseRMTestCase
+public class CompositeCapabilityTest extends BaseRMTestCase
 {
     private NodeRef record;
     private NodeRef declaredRecord;

@@ -62,11 +62,12 @@ public interface Capability
     int evaluate(NodeRef source, NodeRef target);
     
     /**
-     * Indicates whether this is a group capability or not
+     * Indicates whether this is a private capability or not.  Private capabilities are used internally, otherwise
+     * they are made available to the user to assign to roles.
      * 
      * @return
      */
-    boolean isGroupCapability();
+    boolean isPrivate();
     
     /**
      * Get the name of the capability

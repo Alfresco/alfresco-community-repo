@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
-import org.alfresco.module.org_alfresco_module_rm.capability.group.CreateCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;

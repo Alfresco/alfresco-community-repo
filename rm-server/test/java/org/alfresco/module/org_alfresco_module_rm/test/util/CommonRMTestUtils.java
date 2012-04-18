@@ -169,6 +169,19 @@ public class CommonRMTestUtils implements RecordsManagementModel
         
 	}
     
+    public void closeFolder(final NodeRef recordFolder)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                actionService.executeRecordsManagementAction(recordFolder, "closeRecordFolder");            
+                return null;
+            }
+        }, AuthenticationUtil.getAdminUserName());
+    }
+    
     public void freeze(final NodeRef nodeRef)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()

@@ -52,8 +52,8 @@ public abstract class AbstractCapability extends RMSecurityCommon
     /** Capability name */
     protected String name;
     
-    /** Indicates whether this is a group capability or not */
-    protected boolean isGroupCapability = false;
+    /** Indicates whether this is a private capability or not */
+    protected boolean isPrivate = false;
 
     /** List of actions */
     protected List<RecordsManagementAction> actions = new ArrayList<RecordsManagementAction>(1);
@@ -116,19 +116,19 @@ public abstract class AbstractCapability extends RMSecurityCommon
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#isGroupCapability()
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#isPrivate()
      */
-    public boolean isGroupCapability()
+    public boolean isPrivate()
     {
-        return isGroupCapability;
+        return isPrivate;
     }
 
     /**
-     * @param isGroupCapability indicates whether this is a group capability or not
+     * @param isPrivate indicates whether the capability is private or not
      */
-    public void setGroupCapability(boolean isGroupCapability)
+    public void setPrivate(boolean isPrivate)
     {
-        this.isGroupCapability = isGroupCapability;
+        this.isPrivate = isPrivate;
     }
     
     /**

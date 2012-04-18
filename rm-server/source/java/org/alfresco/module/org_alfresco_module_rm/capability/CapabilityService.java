@@ -26,21 +26,25 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
+ * Capability service implementation
+ * 
  * @author Roy Wetherall
  * @since 2.0
  */
 public interface CapabilityService
 {
     /**
+     * Register a capability
      * 
-     * @param capability
+     * @param capability    capability
      */
     void registerCapability(Capability capability);
     
     /**
+     * Get a named capability.
      * 
-     * @param name
-     * @return
+     * @param name  capability name
+     * @return {@link Capability}   capability or null if not found
      */
     Capability getCapability(String name);
     

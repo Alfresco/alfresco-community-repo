@@ -29,6 +29,8 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
@@ -122,7 +124,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("aspectTypeQName", aspectTypeQName);
@@ -132,27 +134,35 @@ public class VitalRecordServiceImpl implements VitalRecordService,
             onUpdateProperties.disable();
             try
             {
-                // get the immediate parent
-                NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-                
-                // is the parent a record category
-                if (parentRef != null && 
-                    FilePlanComponentKind.RECORD_CATEGORY.equals(rmService.getFilePlanComponentKind(parentRef)) == true)
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
-                    // is the child a record category or folder
-                    FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
-                    if (kind.equals(FilePlanComponentKind.RECORD_CATEGORY) == true ||
-                        kind.equals(FilePlanComponentKind.RECORD_FOLDER) == true)
+                    public Void doWork() throws Exception 
                     {
-                        // set the vital record definition values to match that of the parent
-                        nodeService.setProperty(nodeRef, 
-                                                PROP_VITAL_RECORD_INDICATOR, 
-                                                nodeService.getProperty(parentRef, PROP_VITAL_RECORD_INDICATOR));
-                        nodeService.setProperty(nodeRef, 
-                                                PROP_REVIEW_PERIOD, 
-                                                nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
+                        // get the immediate parent
+                        NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                        
+                        // is the parent a record category
+                        if (parentRef != null && 
+                            FilePlanComponentKind.RECORD_CATEGORY.equals(rmService.getFilePlanComponentKind(parentRef)) == true)
+                        {
+                            // is the child a record category or folder
+                            FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
+                            if (kind.equals(FilePlanComponentKind.RECORD_CATEGORY) == true ||
+                                kind.equals(FilePlanComponentKind.RECORD_FOLDER) == true)
+                            {
+                                // set the vital record definition values to match that of the parent
+                                nodeService.setProperty(nodeRef, 
+                                                        PROP_VITAL_RECORD_INDICATOR, 
+                                                        nodeService.getProperty(parentRef, PROP_VITAL_RECORD_INDICATOR));
+                                nodeService.setProperty(nodeRef, 
+                                                        PROP_REVIEW_PERIOD, 
+                                                        nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
+                            }
+                        }
+                        
+                        return null;
                     }
-                }
+                }, AuthenticationUtil.getSystemUserName());
             }
             finally
             {

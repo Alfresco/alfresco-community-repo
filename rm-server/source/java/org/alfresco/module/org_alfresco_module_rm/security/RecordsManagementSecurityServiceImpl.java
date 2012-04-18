@@ -354,7 +354,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
         Set<Capability> result = new HashSet<Capability>(caps.size());
         for (Capability cap : caps)
         {
-            if (cap.isGroupCapability() == false)
+            if (cap.isPrivate() == false)
             {
                 result.add(cap);
             }

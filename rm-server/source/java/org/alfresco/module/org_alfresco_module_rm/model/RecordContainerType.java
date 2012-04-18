@@ -186,6 +186,6 @@ public class RecordContainerType implements RecordsManagementModel,
                 }
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
 }

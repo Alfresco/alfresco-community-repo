@@ -101,16 +101,24 @@
         <property name="capabilityService" ref="CapabilityService"/>
     </bean>
     
+    <bean id="declarativeCapability"
+          abstract="true"
+          parent="rmBaseCapability"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability"/>
+    
+    <bean id="compositeCapability"
+          abstract="true"
+          parent="rmBaseCapability"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability" />
+    
     <bean id="rmAccessAuditCapability" 
-          parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+          parent="declarativeCapability">
    		<property name="name" value="AccessAudit"/>
    		<property name="permission" value="AccessAudit"/>
     </bean>
     
     <bean id="rmAddModifyEventDatesCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="AddModifyEventDates"/>
    		<property name="permission" value="AddModifyEventDates"/>   		
 		<property name="kinds">
@@ -129,8 +137,7 @@
     </bean>
     
     <bean id="rmApproveRecordsScheduledForCutoffCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="ApproveRecordsScheduledForCutoff"/>
    		<property name="permission" value="ApproveRecordsScheduledForCutoff"/>   		
 		<property name="kinds">
@@ -148,15 +155,13 @@
     </bean>
     
     <bean id="rmAttachRulesToMetadataPropertiesCapability" 
-          parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+          parent="declarativeCapability">
     	<property name="name" value="AttachRulesToMetadataProperties"/>
    		<property name="permission" value="AttachRulesToMetadataProperties"/>
     </bean>
         
     <bean id="rmAuthorizeAllTransfersCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="AuthorizeAllTransfers"/>
    		<property name="permission" value="AuthorizeAllTransfers"/>   		
    		<property name="conditions">
@@ -167,8 +172,7 @@
     </bean>
     
     <bean id="rmAuthorizeNominatedTransfersCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="AuthorizeNominatedTransfers"/>
    		<property name="permission" value="AuthorizeNominatedTransfers"/>   		
    		<property name="conditions">
@@ -192,8 +196,7 @@
     </bean>
     
     <bean id="rmCloseFoldersCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="CloseFolders"/>
    		<property name="permission" value="CloseFolders"/>   		
 		<property name="kinds">
@@ -212,29 +215,25 @@
     </bean>
     
     <bean id="rmCreateAndAssociateSelectionListsCapability" 
-    	  parent="rmBaseCapability"  
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
     	<property name="name" value="CreateAndAssociateSelectionLists"/>
    		<property name="permission" value="CreateAndAssociateSelectionLists"/>
     </bean>
     
     <bean id="rmCreateModifyDestroyClassificationGuidesCapability" 
-          parent="rmBaseCapability"   
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+          parent="declarativeCapability">
     	<property name="name" value="CreateModifyDestroyClassificationGuides"/>
    		<property name="permission" value="CreateModifyDestroyClassificationGuides"/>
     </bean>
     
     <bean id="rmCreateModifyDestroyEventsCapability" 
-	      parent="rmBaseCapability" 
-	      class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+	      parent="declarativeCapability">
 		<property name="name" value="CreateModifyDestroyEvents" />
 		<property name="permission" value="CreateModifyDestroyEvents" />
 	</bean>
 
     <bean id="rmCreateModifyDestroyFileplanMetadataCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="CreateModifyDestroyFileplanMetadata"/>
    		<property name="permission" value="CreateModifyDestroyFileplanMetadata"/>   		
 		<property name="kinds">
@@ -252,22 +251,20 @@
     </bean>
     
     <bean id="rmCreateModifyDestroyFileplanTypesCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="CreateModifyDestroyFileplanTypes" />
 		<property name="permission" value="CreateModifyDestroyFileplanTypes" />
 	</bean>
 
     <bean id="rmCreateModifyDestroyFoldersCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="CreateModifyDestroyFolders"/>
    		<property name="permission" value="CreateModifyDestroyFolders"/>   		
 		<property name="kinds">
 			<list>
 			    <value>RECORD_CATEGORY</value>
 				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
+				<!-- <value>RECORD</value> -->
 			</list>
 		</property>	
    		<property name="conditions">
@@ -281,43 +278,37 @@
     </bean>
         
     <bean id="rmCreateModifyDestroyRecordTypesCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="CreateModifyDestroyRecordTypes" />
 		<property name="permission" value="CreateModifyDestroyRecordTypes" />
 	</bean>
         
     <bean id="rmCreateModifyDestroyReferenceTypesCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="CreateModifyDestroyReferenceTypes" />
 		<property name="permission" value="CreateModifyDestroyReferenceTypes" />
 	</bean>
     
     <bean id="rmCreateModifyDestroyRolesCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="CreateModifyDestroyRoles" />
 		<property name="permission" value="CreateModifyDestroyRoles" />
 	</bean>
     
     <bean id="rmCreateModifyDestroyTimeframesCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="CreateModifyDestroyTimeframes" />
 		<property name="permission" value="CreateModifyDestroyTimeframes" />
 	</bean>
     
     <bean id="rmCreateModifyDestroyUsersAndGroupsCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="CreateModifyDestroyUsersAndGroups" />
 		<property name="permission" value="CreateModifyDestroyUsersAndGroups" />
 	</bean>
     
     <bean id="rmCreateModifyRecordsInCuttoffFoldersCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="CreateModifyRecordsInCutoffFolders"/>
    		<property name="permission" value="CreateModifyRecordsInCutoffFolders"/>   		
 		<property name="kinds">
@@ -337,8 +328,7 @@
     </bean>
     
     <bean id="rmCycleVitalRecordsCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="CycleVitalRecords"/>
    		<property name="permission" value="CycleVitalRecords"/>   		
 		<property name="kinds">
@@ -359,15 +349,13 @@
     </bean>
     
     <bean id="rmDeclareAuditAsRecordCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="DeclareAuditAsRecord" />
 		<property name="permission" value="DeclareAuditAsRecord" />
 	</bean>
     
     <bean id="rmDeclareRecordsCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="DeclareRecords"/>
    		<property name="permission" value="DeclareRecords"/>   		
 		<property name="kinds">
@@ -387,8 +375,7 @@
     </bean>
         
     <bean id="rmDeclareRecordsInClosedFoldersCapability"  
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="DeclareRecordsInClosedFolders"/>
    		<property name="permission" value="DeclareRecordsInClosedFolders"/>   		
 		<property name="kinds">
@@ -408,8 +395,7 @@
     </bean>
     
     <bean id="rmDeleteAuditCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="DeleteAudit" />
 		<property name="permission" value="DeleteAudit" />
 	</bean>
@@ -429,12 +415,12 @@
     </bean>
    
     <bean id="rmDeleteRecordsCapability"   
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="DeleteRecords"/>
    		<property name="permission" value="DeleteRecords"/>   		
 		<property name="kinds">
-			<list>
+			<list>			    
+				<!-- <value>RECORD_FOLDER</value> -->
 				<value>RECORD</value>
 			</list>
 		</property>	
@@ -446,8 +432,7 @@
     </bean>   
    
     <bean id="rmDestroyRecordsCapability"
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="DestroyRecords"/>
    		<property name="permission" value="DestroyRecords"/>   		
 		<property name="kinds">
@@ -465,8 +450,7 @@
     </bean>    
     
     <bean id="rmDestroyRecordsScheduledForDestructionCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="DestroyRecordsScheduledForDestruction"/>
    		<property name="permission" value="DestroyRecordsScheduledForDestruction"/>   		
    		<property name="conditions">
@@ -478,15 +462,13 @@
     </bean>
     
     <bean id="rmDisplayRightsReportCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="DisplayRightsReport" />
 		<property name="permission" value="DisplayRightsReport" />
 	</bean>
     
     <bean id="rmEditDeclaredRecordMetadataCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="EditDeclaredRecordMetadata"/>
    		<property name="permission" value="EditDeclaredRecordMetadata"/>   		
 		<property name="kinds">
@@ -506,8 +488,7 @@
     </bean>    
     
     <bean id="rmEditNonRecordMetadataCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="EditNonRecordMetadata"/>
    		<property name="permission" value="EditNonRecordMetadata"/>   		
    		<property name="conditions">
@@ -539,29 +520,25 @@
     </bean>  
     
     <bean id="rmEditSelectionListsCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="EditSelectionLists" />
 		<property name="permission" value="EditSelectionLists" />
 	</bean>
 	
     <bean id="rmEnableDisableAuditByTypesCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="EnableDisableAuditByTypes" />
 		<property name="permission" value="EnableDisableAuditByTypes" />
 	</bean>
 
     <bean id="rmExportAuditCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="ExportAudit" />
 		<property name="permission" value="ExportAudit" />
 	</bean>
 
     <bean id="rmExtendRetentionPeriodOrFreezeCapability"  
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="ExtendRetentionPeriodOrFreeze"/>
    		<property name="permission" value="ExtendRetentionPeriodOrFreeze"/>   	 		
 		<property name="kinds">
@@ -578,30 +555,46 @@
    		</property>
     </bean>
     
+    <bean id="rmFileCapability"
+          parent="declarativeCapability">
+    	<property name="name" value="File"/>
+    	<property name="private" value="true"/>
+    	<property name="conditions">
+    		<map>
+    			<entry key="capabilityCondition.filling" value="true"/>
+            	<entry key="capabilityCondition.frozen" value="false"/> 
+            	<entry key="capabilityCondition.cutoff" value="false"/>  
+            	<entry key="capabilityCondition.closed" value="false"/>  
+            	<entry key="capabilityCondition.declared" value="false"/>
+    		</map>
+    	</property>
+    </bean>
+    
     <bean id="rmFileRecordsCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.FileRecordsCapability">
+    	  parent="compositeCapability">
 		<property name="name" value="FileRecords" />
-		<property name="dictionaryService" ref="DictionaryService"/>
+		<property name="capabilities">
+			<list>
+				<ref bean="rmFileCapability"/>				
+				<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>	
+			</list>
+		</property>	
 	</bean>
     
     <bean id="rmMakeOptionalPropertiesMandatoryCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="MakeOptionalParametersMandatory" />
 		<property name="permission" value="MakeOptionalParametersMandatory" />
 	</bean>
     
     <bean id="rmManageAccessControlsCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="ManageAccessControls" />
 		<property name="permission" value="ManageAccessControls" />
 	</bean>
 
     <bean id="rmManageAccessRightsCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="ManageAccessRights"/>
    		<property name="permission" value="ManageAccessRights"/>   		
    		<property name="conditions">
@@ -612,8 +605,7 @@
     </bean>    
     
     <bean id="rmManuallyChangeDispositionDatesCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="ManuallyChangeDispositionDates"/>
    		<property name="permission" value="ManuallyChangeDispositionDates"/>   		
    		<property name="conditions">
@@ -625,15 +617,13 @@
     </bean>
     
     <bean id="rmMapClassificationGuideMetadataCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="MapClassificationGuideMetadata" />
 		<property name="permission" value="MapClassificationGuideMetadata" />
 	</bean>
 
     <bean id="rmMapEmailMetadataCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="MapEmailMetadata" />
 		<property name="permission" value="MapEmailMetadata" />
 	</bean>
@@ -645,8 +635,7 @@
 	</bean>
     
     <bean id="rmPasswordControlCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="PasswordControl" />
 		<property name="permission" value="PasswordControl" />
 	</bean>
@@ -667,8 +656,7 @@
     </bean>
     
     <bean id="rmReOpenFoldersCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="ReOpenFolders"/>
    		<property name="permission" value="ReOpenFolders"/>   		
 		<property name="kinds">
@@ -687,15 +675,13 @@
     </bean>
     
     <bean id="rmSelectAuditMetadataCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="SelectAuditMetadata" />
 		<property name="permission" value="SelectAuditMetadata" />
 	</bean>
     
     <bean id="rmTriggerAnEventCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="TriggerAnEvent"/>
    		<property name="permission" value="TriggerAnEvent"/>   		
 		<property name="kinds">
@@ -714,8 +700,7 @@
     </bean>    
     
     <bean id="rmUndeclareRecordsCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="UndeclareRecords"/>
    		<property name="permission" value="UndeclareRecords"/>   		
 		<property name="kinds">
@@ -733,8 +718,7 @@
     </bean>
     
     <bean id="rmUnfreezeCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="Unfreeze"/>
    		<property name="permission" value="Unfreeze"/>   		
    		<property name="conditions">
@@ -746,22 +730,19 @@
     </bean>
     
     <bean id="rmUpdateClassificationDatesCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="UpdateClassificationDates" />
 		<property name="permission" value="UpdateClassificationDates" />
 	</bean>
 
     <bean id="rmUpdateExemptionCategoriesCapability" 
-		  parent="rmBaseCapability" 
-		  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+		  parent="declarativeCapability">
 		<property name="name" value="UpdateExemptionCategories" />
 		<property name="permission" value="UpdateExemptionCategories" />
 	</bean>
 
     <bean id="rmUpdateTriggerDatesCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="UpdateTriggerDates"/>
    		<property name="permission" value="UpdateTriggerDates"/>   		
    		<property name="conditions">
@@ -772,8 +753,7 @@
     </bean>    
     
     <bean id="rmUpdateVitalRecordCycleInformationCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="UpdateVitalRecordCycleInformation"/>
    		<property name="permission" value="UpdateVitalRecordCycleInformation"/>   		
    		<property name="conditions">
@@ -784,8 +764,7 @@
     </bean>
     
     <bean id="rmUpgradeDowngradeAndDeclassifyRecordsCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="UpgradeDowngradeAndDeclassifyRecords"/>
    		<property name="permission" value="UpgradeDowngradeAndDeclassifyRecords"/>   		
    		<property name="conditions">
@@ -802,8 +781,7 @@
 	</bean>
     
     <bean id="rmViewUpdateReasonsForFreezeCapability" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="ViewUpdateReasonsForFreeze"/>
    		<property name="permission" value="ViewUpdateReasonsForFreeze"/>   		
    		<property name="conditions">
@@ -812,41 +790,79 @@
    			</map>
    		</property>
     </bean>
-
-    <!--  Group capabilities -->
     
-    <bean id="rmCreate" parent="rmBaseCapability" class="org.alfresco.module.org_alfresco_module_rm.capability.group.CreateCapability">
+    <!--  'private' capabilities -->
+    
+    <bean id="rmCreate" 
+    	  parent="rmBaseCapability" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability">
         <property name="name" value="Create"/>
-    	<property name="groupCapability" value="true"/>
+    	<property name="private" value="true"/>
     </bean>
     
-    <bean id="rmDelete" parent="rmBaseCapability" class="org.alfresco.module.org_alfresco_module_rm.capability.group.DeleteCapability">
+    <bean id="rmDelete" 
+    	  parent="compositeCapability">
         <property name="name" value="Delete"/>
-    	<property name="groupCapability" value="true"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmDestroyRecordsScheduledForDestructionCapability"/>    			
+    			<ref bean="rmDestroyRecordsCapability"/>    			
+    			<ref bean="rmDeleteRecordsCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    		</list>
+    	</property>
     </bean>
     
-    <bean id="rmUpdate" parent="rmBaseCapability" class="org.alfresco.module.org_alfresco_module_rm.capability.group.UpdateCapability">
+    <bean id="rmUpdate" 
+    	  parent="compositeCapability" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdateCapability">
         <property name="name" value="Update"/>
-    	<property name="groupCapability" value="true"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmEditDeclaredRecordMetadataCapability"/>
+    			<ref bean="rmEditNonRecordMetadataCapability"/>
+    			<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
+    		</list>
+    	</property>
     </bean>
     
     <bean id="rmUpdateProperties" 
-          parent="rmBaseCapability" 
-          class="org.alfresco.module.org_alfresco_module_rm.capability.group.UpdatePropertiesCapability">
+          parent="compositeCapability" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdatePropertiesCapability">
         <property name="name" value="UpdateProperties"/>
-    	<property name="groupCapability" value="true"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmEditDeclaredRecordMetadataCapability"/>
+    			<ref bean="rmEditNonRecordMetadataCapability"/>
+    			<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
+    		</list>
+    	</property>
     </bean>
     
-    <bean id="rmDeclare" parent="rmBaseCapability" class="org.alfresco.module.org_alfresco_module_rm.capability.group.DeclareCapability">
+    <bean id="rmDeclare" 
+    	  parent="compositeCapability">
     	<property name="name" value="Declare"/>
-    	<property name="groupCapability" value="true"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmDeclareRecordsCapability"/>    			
+    			<ref bean="rmDeclareRecordsInClosedFoldersCapability"/>   
+    		</list>
+    	</property>
     </bean>
     
     <bean id="rmWriteContent" 
-    	  parent="rmBaseCapability" 
-    	  class="org.alfresco.module.org_alfresco_module_rm.capability.group.WriteContentCapability">
+    	  parent="declarativeCapability">
    		<property name="name" value="WriteContent"/>  		
-    	<property name="groupCapability" value="true"/>  		
+    	<property name="private" value="true"/>  		
 		<property name="kinds">
 			<list>
 				<value>RECORD</value>

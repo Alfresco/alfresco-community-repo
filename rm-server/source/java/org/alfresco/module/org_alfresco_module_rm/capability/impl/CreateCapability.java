@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.capability.group;
+package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,6 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
-import org.alfresco.module.org_alfresco_module_rm.capability.impl.ChangeOrDeleteReferencesCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;

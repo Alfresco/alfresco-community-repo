@@ -51,6 +51,8 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
     private NodeRef frozenRecord2;
     private NodeRef frozenRecordFolder;
     
+    private NodeRef closedFolder;
+    
     @Override
     protected boolean isUserTest()
     {
@@ -66,9 +68,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         record = utils.createRecord(rmFolder, "record.txt");
         declaredRecord = utils.createRecord(rmFolder, "declaredRecord.txt");
         
-     
-        // Open folder
         // Closed folder
+        closedFolder = rmService.createRecordFolder(rmContainer, "closedFolder");
+        utils.closeFolder(closedFolder);
 
         recordFolderContainsFrozen = rmService.createRecordFolder(rmContainer, "containsFrozen");
         frozenRecord = utils.createRecord(rmFolder, "frozenRecord.txt");
@@ -130,7 +132,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         for (Capability capability : capabilities)
         {
             if (capability instanceof DeclarativeCapability && 
-                capability.isGroupCapability() == false &&
+                capability.isPrivate() == false &&
                 capability.getName().equals("MoveRecords") == false &&
                 capability.getName().equals("DeleteLinks") == false &&
                 capability.getName().equals("ChangeOrDeleteReferences") == false &&
@@ -236,5 +238,49 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         }
         
         return result;
+    }
+    
+    /** Specific declarative capability tests */
+    
+    public void testFileCapability()
+    {
+        final Capability capability = capabilityService.getCapability("File");
+        assertNotNull(capability);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
+                assertEquals(AccessStatus.ALLOWED, capability.hasPermission(rmFolder)); 
+                assertEquals(AccessStatus.ALLOWED, capability.hasPermission(record));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(declaredRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(closedFolder)); 
+                
+                return null;
+            }
+        }, recordsManagerName);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
+                assertEquals(AccessStatus.ALLOWED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.ALLOWED, capability.hasPermission(record));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(declaredRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(closedFolder)); 
+                
+                return null;
+            }
+        }, rmUserName);
     }
 }

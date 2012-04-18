@@ -89,6 +89,7 @@
         <property name="dispositionService" ref="dispositionService"/>
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
         <property name="vitalRecordService" ref="VitalRecordService"/>
+        <property name="nodeService" ref="nodeService"/>
     </bean>
     
     <!--  Base bean definition for customisable types bootstrap -->

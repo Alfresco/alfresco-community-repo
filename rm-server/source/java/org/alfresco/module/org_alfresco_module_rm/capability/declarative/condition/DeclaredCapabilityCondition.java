@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition;
 
+import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.AbstractCapabilityCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -29,6 +30,11 @@ public class DeclaredCapabilityCondition extends AbstractCapabilityCondition
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
-        return rmService.isRecordDeclared(nodeRef);
+        boolean result = false;
+        if (FilePlanComponentKind.RECORD.equals(rmService.getFilePlanComponentKind(nodeRef)) == true)
+        {
+            result = rmService.isRecordDeclared(nodeRef);
+        }
+        return result;
     }
 }

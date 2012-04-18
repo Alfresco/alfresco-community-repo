@@ -104,7 +104,7 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
         // Get the root rm node
         NodeRef root = this.recordsManagementService.getFilePlan(dispositionLifeCycleNodeRef);
         
-        // Get the hold object
+        // Get the transfer object
         NodeRef transferNodeRef = (NodeRef)AlfrescoTransactionSupport.getResource(KEY_TRANSFER_NODEREF);            
         if (transferNodeRef == null)
         {
@@ -139,7 +139,7 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
             AlfrescoTransactionSupport.bindResource(KEY_TRANSFER_NODEREF, transferNodeRef);
         }
         
-        // Link the record to the hold
+        // Link the record to the trasnfer object
         this.nodeService.addChild(transferNodeRef, 
                                   dispositionLifeCycleNodeRef, 
                                   ASSOC_TRANSFERRED, 
@@ -147,6 +147,9 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
         
         // Set PDF indicator flag
         setPDFIndicationFlag(transferNodeRef, dispositionLifeCycleNodeRef);
+        
+        // Set the transferring indicator aspect
+        nodeService.addAspect(dispositionLifeCycleNodeRef, ASPECT_TRANSFERRING, null);
         
         // Set the return value of the action
         action.setParameterValue(ActionExecuter.PARAM_RESULT, transferNodeRef);

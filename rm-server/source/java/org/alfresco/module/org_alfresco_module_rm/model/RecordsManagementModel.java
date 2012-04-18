@@ -188,6 +188,9 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 	public static final QName PROP_TRANSFER_LOCATION = QName.createQName(RM_URI, "transferLocation");
     public static final QName ASSOC_TRANSFERRED = QName.createQName(RM_URI, "transferred");
     
+    // Transferring aspect
+    public static final QName ASPECT_TRANSFERRING = QName.createQName(RM_URI, "transferring");
+    
     // Versioned record aspect
     public static final QName ASPECT_VERSIONED_RECORD = QName.createQName(RM_URI, "versionedRecord");
     

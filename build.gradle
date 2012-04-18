@@ -197,6 +197,7 @@ subprojects {
 		if (explodedWebAppDir.exists() == true) {
 		
 				// copy module properties
+				// TODO but not so important for now
 				
 				// copy jars
 				if (jarFileObj.exists()) {
@@ -220,6 +221,11 @@ subprojects {
 				
 				// copy web
 				if (sourceWebObj.exists() == true) {
+					copy {
+						from sourceWebObj
+						into "${explodedWebAppDir}"
+						
+					}
 				}
 		}
 		else {

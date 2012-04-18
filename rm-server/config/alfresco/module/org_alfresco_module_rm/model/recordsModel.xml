@@ -919,6 +919,11 @@
             </property>
          </properties>
       </aspect>
+      
+      <!--  Indicates that an object is being transferred -->
+      <aspect name="rma:transferring">
+         <title>TransferringS</title>	
+      </aspect>
 
       <!-- Transfered marker aspect -->
       <aspect name="rma:transferred">

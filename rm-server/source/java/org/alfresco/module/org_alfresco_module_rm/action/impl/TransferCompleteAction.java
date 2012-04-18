@@ -116,6 +116,9 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
             nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
         }
         
+        // Remove the transferring indicator aspect
+        nodeService.removeAspect(nodeRef, ASPECT_TRANSFERRING);
+        
         // Determine which marker aspect to use
         QName markerAspectQName = null;
         if (accessionIndicator == true)

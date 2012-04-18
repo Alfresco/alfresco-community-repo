@@ -5036,11 +5036,11 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toString() + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTASPECT:\"" + testAspect.toString() + "\"", null);
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASPECT:\"" + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "EXACTASPECT:\"" + testAspect.toPrefixString(namespacePrefixResolver) + "\"", null);
         assertEquals(1, results.length());
         results.close();
 

@@ -96,6 +96,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -2488,7 +2490,7 @@ public class ContentDiskDriverTest extends TestCase
         final String FILE_NAME = "ContentDiskDriver.docx";
         //final String FILE_OLD_TEMP = "._Word Work File D_1725484373.tmp";
         final String FILE_NEW_TEMP = "Word Work File D_1725484373.tmp";
-         
+                 
         class TestContext
         {
             NodeRef testDirNodeRef;
@@ -2503,7 +2505,7 @@ public class ContentDiskDriverTest extends TestCase
         
         ServerConfiguration scfg = new ServerConfiguration("testServer");
         TestServer testServer = new TestServer("testServer", scfg);
-        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        final SrvSession testSession = new TestSrvSession(666, testServer, "cifs", "remoteName");
         DiskSharedDevice share = getDiskSharedDevice();
         final TreeConnection testConnection = testServer.getTreeConnection(share);
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -2694,6 +2696,8 @@ public class ContentDiskDriverTest extends TestCase
              
              // Check that the temporary aspect has been applied.
              assertTrue("temporary aspect has not been removed", !nodeService.hasAspect(testContext.testNodeRef, ContentModel.ASPECT_TEMPORARY));
+             assertTrue("hidden aspect has not been removed", !nodeService.hasAspect(testContext.testNodeRef, ContentModel.ASPECT_HIDDEN));
+
         
           
              // These metadata values should be extracted.
@@ -3553,6 +3557,144 @@ public class ContentDiskDriverTest extends TestCase
         tran.doInTransaction(validateCB, false, true);
                 
     } // testOpenCloseFileScenario
+    
+    
+    /**
+     * Test Open Close File Scenario II  ALF-13401
+     * Open Read Only of a file already open for read/write.
+     * 
+     * 1) open(readWrite)
+     * 2) write some content.
+     * 3) open(readOnly).
+     * 4) read some content.
+     * 5) close - updates the repo
+     */
+    public void testScenarioOpenCloseFileTwo() throws Exception
+    {    
+        logger.debug("start of testScenarioOpenCloseFileTwo");
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        class TestContext
+        {
+            NodeRef testDirNodeRef;
+            NodeRef targetNodeRef;
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String FILE_NAME="testScenarioOpenFileTwo.txt";
+        final String FILE_PATH= TEST_ROOT_DOS_PATH + "\\" + FILE_NAME;
+        
+        FileOpenParams dirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadOnly, FileAttribute.NTDirectory, 0);
+        driver.createDirectory(testSession, testConnection, dirParams);  
+        
+        testContext.testDirNodeRef = getNodeForPath(testConnection, TEST_ROOT_DOS_PATH);
+        
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, FILE_PATH);
+                return null;
+            }
+        };
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+       
+        /**
+         * Step 1: Now create the file through the node service and open it.
+         */
+        logger.debug("Step 1) Create File and Open file created by node service");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {   
+                logger.debug("create file and close it immediatly");
+                FileOpenParams createFileParams = new FileOpenParams(FILE_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                NetworkFile dummy = driver.createFile(testSession, testConnection, createFileParams);    
+                driver.closeFile(testSession, testConnection, dummy);
+                logger.debug("after create and close");
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+        
+        testContext.targetNodeRef = getNodeForPath(testConnection, FILE_PATH);
+       
+        FileOpenParams openRO = new FileOpenParams(FILE_PATH, FileAction.CreateNotExist, AccessMode.ReadOnly, FileAttribute.NTNormal, 0);
+        FileOpenParams openRW = new FileOpenParams(FILE_PATH, FileAction.CreateNotExist, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+        
+        /**
+         * First open - read write 
+         */
+        logger.debug("open file1 read only");
+        NetworkFile file1 = driver.openFile(testSession, testConnection, openRW);
+        assertNotNull(file1);
+        
+        final String testString = "Yankee doodle went to town, riding on a donkey.";
+        byte[] stuff = testString.getBytes("UTF-8");
+        
+        driver.writeFile(testSession, testConnection, file1, stuff, 0, stuff.length, 0);
+        
+        logger.debug("open file 2 for read only");
+        NetworkFile file2 = driver.openFile(testSession, testConnection, openRO);
+        assertNotNull(file2);
+        
+        
+        assertTrue("file size is 0", file2.getFileSize() > 0);
+        
+        
+        /**
+         * Write Some More Content 
+         */
+        driver.writeFile(testSession, testConnection, file1, stuff, 0, stuff.length, 0);
+                 
+        logger.debug("first close");
+        driver.closeFile(testSession, testConnection, file2);
+        
+        logger.debug("second close");
+        driver.closeFile(testSession, testConnection, file1);
+       
+        logger.debug("now validate");
+         
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                Map<QName,Serializable> props = nodeService.getProperties(testContext.targetNodeRef);
+                ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+                assertNotNull("data is null", data);
+                assertEquals("data wrong length", testString.length(), data.getSize());
+           
+                ContentReader reader = contentService.getReader(testContext.targetNodeRef, ContentModel.PROP_CONTENT);
+                String s = reader.getContentString();
+                assertEquals("content not written", testString, s);
+
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(validateCB, false, true);
+                
+    } // testOpenCloseFileScenarioTwo
+
 
     
     
@@ -4774,7 +4916,198 @@ public class ContentDiskDriverTest extends TestCase
 
     } // testScenarioLionTextEdit
 
-    
+    /**
+     * Simulates a Save from Powerpoint 2011 Mac
+     * 0. FileA.pptx already exists.
+     * 1. Create new document FileA1.pptx
+     * 2. Delete FileA.pptx
+     * 3. Rename FileA1.pptx to FileA.pptx 
+     */
+    public void testScenarioMSPowerpoint2011MacSaveShuffle() throws Exception
+    {
+        logger.debug("testScenarioMSPowerpoint2011MacSaveShuffle(");
+        
+        final String FILE_NAME = "FileA.pptx";
+        final String FILE_NEW_TEMP = "FileA1.pptx";
+        
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testScenarioMSPowerpoint2011MacSaveShuffle";
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "cifs", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();        
+
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+     
+        /**
+         * Create a file in the test directory
+         */    
+        
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+        
+        logger.debug("0) create new file");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+  
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                
+                /**
+                 * Create the file we are going to use (FileA.pptx)
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+                
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                
+                NodeRef file1NodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                nodeService.addAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                
+                
+                        
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+             
+        /**
+         * b) Save the new file
+         * Write ContentDiskDriverTest3.doc to the test file,
+         */
+        logger.debug("b) write some content");
+        RetryingTransactionCallback<Void> writeFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);    
+         
+                ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest3.doc");
+                assertNotNull("unable to find test resource filesys/ContentDiskDriverTest3.doc", fileResource);
+
+                byte[] buffer= new byte[1000];
+                InputStream is = fileResource.getInputStream();
+                try
+                {
+                    long offset = 0;
+                    int i = is.read(buffer, 0, buffer.length);
+                    while(i > 0)
+                    {
+                        testContext.firstFileHandle.writeFile(buffer, i, 0, offset);
+                        offset += i;
+                        i = is.read(buffer, 0, buffer.length);
+                    }                 
+                }
+                finally
+                {
+                    is.close();
+                }
+            
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
+                    
+                return null;
+            }
+        };
+        tran.doInTransaction(writeFileCB, false, true);
+        
+        /**
+         * c) delete the old file
+         */
+        logger.debug("c) delete old file");
+        RetryingTransactionCallback<Void> renameOldFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameOldFileCB, false, true);
+           
+        /**
+         * d) Move the new file into place, stuff should get shuffled
+         */
+        logger.debug("d) rename new file into place");
+        RetryingTransactionCallback<Void> moveNewFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NAME); 
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(moveNewFileCB, false, true);
+        
+        logger.debug("e) validate results");
+        /**
+         * Now validate everything is correct
+         */
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               
+               Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+               
+               ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+               assertNotNull("data is null", data);
+               assertEquals("size is wrong", 26112, data.getSize());
+               assertEquals("mimeType is wrong", "application/msword",data.getMimetype());
+               
+               assertTrue("versionable aspect missing", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+               assertTrue("hidden aspect still applied", !nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_HIDDEN));
+               assertTrue("temporary aspect still applied", !nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_TEMPORARY));
+           
+               return null;
+            }
+        };
+        
+        tran.doInTransaction(validateCB, true, true);
+        
+    } // testScenarioMSPowerpoint2011MacSaveShuffle
+
     
     
     /**

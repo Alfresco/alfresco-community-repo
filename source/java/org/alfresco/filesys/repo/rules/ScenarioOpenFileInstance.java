@@ -66,6 +66,11 @@ import org.apache.commons.logging.LogFactory;
  * 4) close(readWrite) - does nothing.   Decrements Open Count.
  * 5) close(readWrite) - updates the repo.
  * 6) close(readOnly) - closes read only
+ * <p>
+ * 1) open (readWrite)
+ * 2) open (readOnly)   - file already open for read/write
+ * 3) close
+ * 4) close
  * 
  */
 class ScenarioOpenFileInstance implements ScenarioInstance
@@ -307,7 +312,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     if(name != null && name.equalsIgnoreCase(o.getName()))
                     {
                         if(o.getMode() == OpenFileMode.READ_WRITE)
-                        {
+                        {    
                             // This is an open of a read write access
                             if(openReadWriteCount == 0)
                             {
@@ -329,6 +334,15 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                         else
                         {
                             // This is an open for read only access
+                            
+                            if(openReadWriteCount > 0)
+                            {
+                                //however the file is already open for read/write
+                                openReadWriteCount++;
+                                logger.debug("Return already open read/write file handle from scenario:" + this);
+                                return new ReturnValueCommand(fileHandleReadWrite);
+                            }
+                            
                             if(openReadOnlyCount == 0)
                             {
                                 logger.debug("Open first read only from scenario:" + this);

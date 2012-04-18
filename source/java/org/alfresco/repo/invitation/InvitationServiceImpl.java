@@ -469,14 +469,22 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     public Invitation cancel(String invitationId)
     {
-        WorkflowTask startTask = getStartTask(invitationId);
-        if(taskTypeMatches(startTask, WorkflowModelModeratedInvitation.WF_START_TASK))
+        try
         {
-            return cancelModeratedInvitation(startTask);
+            WorkflowTask startTask = getStartTask(invitationId);
+            if (taskTypeMatches(startTask, WorkflowModelModeratedInvitation.WF_START_TASK))
+            {
+                return cancelModeratedInvitation(startTask);
+            }
+            else
+            {
+                return cancelNominatedInvitation(startTask);
+            }
         }
-        else
+        catch (InvitationExceptionNotFound e)
         {
-            return cancelNominatedInvitation(startTask);
+            // Invitation already deleted or deleted in background
+            return null;
         }
     }
 

@@ -1267,6 +1267,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         catch (IOException ex)
         {
             // Allow I/O Exceptions to pass through
+            if ( logger.isDebugEnabled())
+            {
+                logger.debug("Delete file error - pass through IO Exception", ex);
+            }
             throw ex;
         }
         catch (Exception ex)
@@ -1526,6 +1530,15 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 }
                 
                 //TODO MER Think we may need to implement, Temporary, Hidden, System, Archive
+                if(info.isSystem())
+                {
+                    logger.debug("Set system aspect (not yet implemented)" + name);
+                }
+                if(info.isTemporary())
+                {
+                    logger.debug("Set temporary aspect (not yet implemented)" + name);
+                }
+                        
                 if(info.isHidden())
                 {
                     // yes is hidden
@@ -1560,6 +1573,24 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     logger.debug("Set allocation size" + name + info.getAllocationSize());
                 }
                 // Not yet implemented
+            }
+            
+            if( info.hasSetFlag(FileInfo.SetFileSize))
+            {
+                if ( logger.isDebugEnabled())
+                {
+                    logger.debug("Set file size" + name + info.getSize());
+                }
+                // Not yet implemented
+            }
+            
+            if( info.hasSetFlag(FileInfo.SetMode))
+            {
+                if ( logger.isDebugEnabled())
+                {
+                    logger.debug("Set Mode" + name + info.getMode());
+                }
+                // Not yet implemented - set the unix mode e.g. 777
             }
                     
             // Set the creation and modified date/time
@@ -2634,7 +2665,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     {   
         if ( logger.isDebugEnabled())
         {
-            logger.debug("Close file:" + path);
+            logger.debug("Close file:" + path + ", readOnly=" + file.isReadOnly() );
         }
         
         if( file instanceof PseudoNetworkFile)
@@ -2650,7 +2681,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         {
             if(logger.isDebugEnabled())
             {
-                logger.debug("closeFile has delete on close set");
+                logger.debug("closeFile has delete on close set path:" + path);
             }
             try
             {
@@ -2686,7 +2717,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         {   
             if(logger.isDebugEnabled())
             {
-                logger.debug("Got a temp network file to close");
+                logger.debug("Got a temp network file to close path:" + path);
             }
             
             // Some content was written to the temp file.

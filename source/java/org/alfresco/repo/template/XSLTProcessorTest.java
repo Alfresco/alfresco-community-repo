@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -74,6 +75,30 @@ public class XSLTProcessorTest extends BaseAlfrescoSpringTest
         ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
                 "/app:company_home");
         this.companyHome = rs.getNodeRef(0);
+    }
+    
+    public void testSecurityFilter() throws Exception
+    {
+        try
+        {
+            FileInfo file = createXmlFile(companyHome);
+            XSLTemplateModel model = new XSLTemplateModel();
+            model.put(XSLTProcessor.ROOT_NAMESPACE, XMLUtil.parse(file.getNodeRef(), contentService));
+
+            StringWriter writer = new StringWriter();
+            xsltProcessor.processString(insecureVerySimpleXSLT, model, writer);
+            log.error("This insecure template should not process!");
+            fail();
+        }
+        catch (TemplateException e) 
+    	{
+    		//pass!
+    	}
+        catch (Exception ex)
+        {
+            log.error("Error!", ex);
+            fail();
+        }
     }
 
     public void testSimplestStringTemplate() throws Exception
@@ -267,4 +292,14 @@ public class XSLTProcessorTest extends BaseAlfrescoSpringTest
 
             "<xsl:template match=\"/\">" + "<xsl:for-each select=\"/nutrition/food\">"
             + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
+    
+    private String insecureVerySimpleXSLT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<xsl:stylesheet version=\"1.0\"  "
+    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
+    + "xmlns:rt=\"http://xml.apache.org/xalan/java/java.lang.Runtime\"> "
+    + "xmlns:fn=\"http://www.w3.org/2005/02/xpath-functions\"> " + "<xsl:output method=\"text\" />" +
+
+    "<xsl:preserve-space elements=\"*\"/>" +
+
+    "<xsl:template match=\"/\">" + "<xsl:for-each select=\"/nutrition/food\">"
+    + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
 }

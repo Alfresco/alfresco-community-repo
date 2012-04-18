@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -134,7 +135,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         Document xslTemplate;
         try
         {
-            xslTemplate = XMLUtil.parse(templateSource.getReader(defaultEncoding));
+            xslTemplate = XMLUtil.secureParseXSL(templateSource.getReader(defaultEncoding));
         }
         catch (IOException ex)
         {
@@ -314,18 +315,17 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         final Element docEl = xslTemplate.getDocumentElement();
         final String XALAN_NS = Constants.S_BUILTIN_EXTENSIONS_URL;
         final String XALAN_NS_PREFIX = "xalan";
-        docEl.setAttribute("xmlns:" + XALAN_NS_PREFIX, XALAN_NS);
 
         final Set<String> excludePrefixes = new HashSet<String>();
         if (docEl.hasAttribute("exclude-result-prefixes"))
         {
             excludePrefixes.addAll(Arrays.asList(docEl.getAttribute("exclude-result-prefixes").split(" ")));
         }
-        excludePrefixes.add(XALAN_NS_PREFIX);
 
         final List<String> result = new LinkedList<String>();
         for (QName ns : methods.keySet())
         {
+
             final String prefix = ns.getLocalName();
             docEl.setAttribute("xmlns:" + prefix, ns.getNamespaceURI());
             excludePrefixes.add(prefix);
@@ -365,6 +365,11 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         }
         docEl.setAttribute("exclude-result-prefixes", StringUtils.join(excludePrefixes
                 .toArray(new String[excludePrefixes.size()]), " "));
+        if (log.isDebugEnabled()) {
+            StringWriter writer = new StringWriter();
+            XMLUtil.print(xslTemplate, writer);
+            log.debug(writer);
+        }        
         return result;
     }
 

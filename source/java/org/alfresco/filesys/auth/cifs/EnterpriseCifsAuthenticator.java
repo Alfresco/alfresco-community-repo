@@ -112,6 +112,10 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
 
     private boolean m_acceptNTLMv1 = true;
 
+    // Should we strip the @domain suffix from the Kerberos username?
+
+    private boolean m_stripKerberosUsernameSuffix = true;
+
     // Kerberos settings
     //
     // Account name and password for server ticket
@@ -212,6 +216,11 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     public void setDisallowNTLMv1(boolean disallowNTLMv1)
     {
         this.m_acceptNTLMv1 = !disallowNTLMv1;
+    }
+    
+    public void setStripKerberosUsernameSuffix(boolean stripKerberosUsernameSuffix)
+    {
+        m_stripKerberosUsernameSuffix = stripKerberosUsernameSuffix;
     }
 
     /**
@@ -1585,6 +1594,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             	// Check if this is a null logon
             	
             	String userName = krbDetails.getUserName();
+            	String userId = m_stripKerberosUsernameSuffix ? krbDetails.getUserName() : krbDetails.getSourceName();
             	
             	if ( userName != null)
             	{
@@ -1602,7 +1612,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
                 		//  Debug
                         
                         if ( logger.isDebugEnabled())
-                            logger.debug("Machine account logon, " + userName + ", as null logon");
+                            logger.debug("Machine account logon, " + userId + ", as null logon");
             		}
             		else
             		{
@@ -1611,7 +1621,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
             		    try
             		    {          		          
                             AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
-                            getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(krbDetails.getUserName(), true));
+                            getAuthenticationComponent().setCurrentUser( mapUserNameToPerson(userId, true));
                             alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket() );
                         }
                         catch (AuthenticationException e)
@@ -1622,11 +1632,9 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     
                         }
                         
-                        // Store the full user name in the client information, indicate that this is not a guest logon
-                        
-                        // ALF-4599: CIFS access to alfresco creates wrong users with Realm suffix 
-                        // client.setUserName( krbDetails.getSourceName());
-                        client.setUserName( krbDetails.getUserName());
+                        // Store the user name in the client information, indicate that this is not a guest logon
+
+                        client.setUserName( userId);
                         client.setGuest( false);
 	                        
                         // Indicate that the session is logged on

@@ -76,9 +76,12 @@
       <property name="disableNTLM">
          <value>true</value>
       </property>
-	  <property name="enableTicketCracking">
-		 <value>${kerberos.authentication.cifs.enableTicketCracking}</value>
-	  </property>
+      <property name="enableTicketCracking">
+         <value>${kerberos.authentication.cifs.enableTicketCracking}</value>
+      </property>
+      <property name="stripKerberosUsernameSuffix">
+         <value>${kerberos.authentication.stripUsernameSuffix}</value>
+      </property>
    </bean>
 
 </beans>

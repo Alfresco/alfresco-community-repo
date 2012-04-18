@@ -146,23 +146,6 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         super.tearDown();
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
-        // Tidy-up any site's created during the execution of the test
-        for (String shortName : this.createdSites)
-        {
-            sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 0);
-        }
-
-        // Clear the list
-        this.createdSites.clear();
-
-        for (Tracker invite : this.createdInvitations)
-        {
-            sendRequest(new DeleteRequest(URL_SITES + "/" + invite.siteName + "/invitations/" + invite.inviteId), 0);
-        }
-
-        // Clear the list
-        this.createdInvitations.clear();
-
         RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -175,6 +158,17 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
+
+        // Tidy-up any sites created during the execution of the test
+        for (String shortName : this.createdSites)
+        {
+            sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 0);
+        }
+
+        // Clear the list
+        this.createdSites.clear();
+        // Clear the list
+        this.createdInvitations.clear();
     }
 
     private JSONObject createSite(String sitePreset, String shortName, String title, String description,

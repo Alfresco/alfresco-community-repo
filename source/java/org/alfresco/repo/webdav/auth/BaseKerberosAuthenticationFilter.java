@@ -87,6 +87,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
     
     private LoginContext m_loginContext;
         
+    // Should we strip the @domain suffix from the Kerberos username?
+
+    private boolean m_stripKerberosUsernameSuffix = true;
+
     /**
      * Sets the HTTP service account password. (the Principal should be configured in java.login.config)
      * 
@@ -118,8 +122,18 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
     {
         m_loginEntryName = jaasConfigEntryName;
     }
-
     
+    /**
+     * Indicates whether the @domain suffix should be removed from Kerberos user IDs
+     * 
+     * @param stripKerberosUsernameSuffix
+     *            <code>true</code> if the @domain suffix should be removed from Kerberos user IDs
+     */
+    public void setStripKerberosUsernameSuffix(boolean stripKerberosUsernameSuffix)
+    {
+        m_stripKerberosUsernameSuffix = stripKerberosUsernameSuffix;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#init()
      */
@@ -484,6 +498,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         //  Authenticate the user
         
         KerberosDetails krbDetails = null;
+        String userName = null;
         NegTokenTarg negTokenTarg = null;
         
         try
@@ -498,6 +513,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 // Access the Kerberos response
                 
                 krbDetails = (KerberosDetails) result;
+                userName = m_stripKerberosUsernameSuffix ? krbDetails.getUserName() : krbDetails.getSourceName();
                 
                 // Create the NegTokenTarg response blob
                 
@@ -509,7 +525,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 {
                     // Create and store the user authentication context
 
-                    SessionUser user = createUserEnvironment(httpSess, krbDetails.getUserName());
+                    SessionUser user = createUserEnvironment(httpSess, userName);
 
                     // Debug
 
@@ -529,7 +545,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         {
             // Pass on validation failures
             if (getLogger().isDebugEnabled())
-                getLogger().debug("Failed to validate user " + krbDetails.getUserName(), ex);
+                getLogger().debug("Failed to validate user " + userName, ex);
 
             throw ex;
         }

@@ -134,6 +134,12 @@ public class SiteServiceTest extends BaseWebScriptTest
         super.tearDown();
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
+        // Clear the users
+        deleteUser(USER_ONE);
+        deleteUser(USER_TWO);
+        deleteUser(USER_THREE);
+        deleteUser(USER_NUMERIC);
+
         // Tidy-up any site's create during the execution of the test
         for (String shortName : this.createdSites)
         {
@@ -141,13 +147,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         }
         
         // Clear the list
-        this.createdSites.clear();
-        
-        // Clear the users
-        deleteUser(USER_ONE);
-        deleteUser(USER_TWO);
-        deleteUser(USER_THREE);
-        deleteUser(USER_NUMERIC);
+        this.createdSites.clear();        
     }
     
     public void testCreateSite() throws Exception

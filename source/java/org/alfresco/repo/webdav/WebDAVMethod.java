@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1152,7 +1152,7 @@ public abstract class WebDAVMethod
         }, AuthenticationUtil.getSystemUserName());
     }
     
-    private LockInfo getNodeLockInfoImpl(FileInfo nodeInfo)
+    private LockInfo getNodeLockInfoImpl(final FileInfo nodeInfo)
     {
         // Check if node is locked directly.
         LockInfo lockInfo = getNodeLockInfoDirect(nodeInfo);
@@ -1162,74 +1162,86 @@ public abstract class WebDAVMethod
         }
         
         // Node isn't locked directly, try to search for an indirect lock.
-        NodeService nodeService = getNodeService();
-        NodeRef node = nodeInfo.getNodeRef();
-        
-        while (true)
+
+        // ALF-13472: In accordance with http://www.webdav.org/specs/rfc2518.html#rfc.section.8.10.4 lock of collection causes locking each resource within it.
+        // It should be possible to receive information about direct or indirect lock because it is one of the states of requested resource.
+        return AuthenticationUtil.runAsSystem(new RunAsWork<LockInfo>()
         {
-            NodeRef parent = m_childToParent.get(node);
-            
-            if ((parent == null) && (! m_childToParent.containsKey(node)))
+            @Override
+            public LockInfo doWork() throws Exception
             {
-                ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(node);
-                parent = childAssocRef.getParentRef();
+                NodeService nodeService = getNodeService();
+        
+                NodeRef node = nodeInfo.getNodeRef();
                 
-                if (! childAssocRef.getTypeQName().equals(ContentModel.ASSOC_CONTAINS))
+                while (true)
                 {
-                    parent = null;
-                }
-                
-                // temporarily cache - for this request
-                m_childToParent.put(node, parent);
-            }
-            
-            if (parent == null)
-            {
-                // Node has no lock and Lock token
-                return new LockInfoImpl();
-            }
-            
-            lockInfo = m_parentLockInfo.get(parent);
-            
-            if (lockInfo != null)
-            {
-                lockInfo.getRWLock().readLock().lock();
-                try
-                {
-                    if (lockInfo.isLocked())
+                    NodeRef parent = m_childToParent.get(node);
+                    
+                    if ((parent == null) && (! m_childToParent.containsKey(node)))
                     {
-                        return lockInfo;
+                        ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(node);
+                        parent = childAssocRef.getParentRef();
+                        
+                        if (! childAssocRef.getTypeQName().equals(ContentModel.ASSOC_CONTAINS))
+                        {
+                            parent = null;
+                        }
+                        
+                        // temporarily cache - for this request
+                        m_childToParent.put(node, parent);
                     }
-                }
-                finally
-                {
-                    lockInfo.getRWLock().readLock().unlock();                    
-                }
-            }
+                    
+                    if (parent == null)
+                    {
+                        // Node has no lock and Lock token
+                        return new LockInfoImpl();
+                    }
+                    
+                    LockInfo lockInfo = m_parentLockInfo.get(parent);
             
-            if (lockInfo == null)
-            {
-                try
-                {
-                    lockInfo = getNodeLockInfoIndirect(parent);
                     if (lockInfo != null)
                     {
-                        return lockInfo;
+                        lockInfo.getRWLock().readLock().lock();
+                        try
+                        {
+                            if (lockInfo.isLocked())
+                            {
+                                return lockInfo;
+                            }
+                        }
+                        finally
+                        {
+                            lockInfo.getRWLock().readLock().unlock();                    
+                        }
                     }
-                }
-                finally
-                {
+                    
                     if (lockInfo == null)
                     {
-                        lockInfo = new LockInfoImpl();
+                        try
+                        {
+                            lockInfo = getNodeLockInfoIndirect(parent);
+                            if (lockInfo != null)
+                            {
+                                return lockInfo;
+                            }
+                        }
+                        finally
+                        {
+                            if (lockInfo == null)
+                            {
+                                lockInfo = new LockInfoImpl();
+                            }
+                            // temporarily cache - for this request
+                            m_parentLockInfo.put(parent, lockInfo);
+                        }
                     }
-                    // temporarily cache - for this request
-                    m_parentLockInfo.put(parent, lockInfo);
-                }
+                    
+                    node = parent;
+                } // end while
             }
-            
-            node = parent;
-        }
+        });
+        
     }
     
     /**
@@ -1280,15 +1292,30 @@ public abstract class WebDAVMethod
 
         parentLock.getRWLock().readLock().lock();
         try
-        {
-            // now check for lock status ...
+                {
+                    // In this case node is locked indirectly.
             if (parentLock.isLocked() && WebDAV.INFINITY.equals(parentLock.getDepth()))
             {
                 // In this case node is locked indirectly.
+                //Get lock scope
+                // Get shared lock tokens
+                
+                // Store lock information to the lockInfo object
+                
+                // Get lock token of the locked node - this is indirect lock token.
+                
                 return parentLock;
-            }
+                }
             return null;
-        }
+            }
+                // No has no exclusive lock but can be locked with shared lock
+                    // Check node lock depth.
+                    // If depth is WebDAV.INFINITY then return this node's Lock token.
+                        // In this case node is locked indirectly.
+
+                        //Get lock scope
+        
+                        // Node has it's own Lock token.
         finally
         {
             parentLock.getRWLock().readLock().unlock();

@@ -791,8 +791,6 @@
    		</property>
     </bean>
     
-    <!--  'private' capabilities -->
-    
     <bean id="rmCreate" 
     	  parent="rmBaseCapability" 
     	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability">
@@ -803,7 +801,7 @@
     <bean id="rmDelete" 
     	  parent="compositeCapability">
         <property name="name" value="Delete"/>
-    	<property name="private" value="true"/>
+    	<property name="private" value="true"/>    	
     	<property name="capabilities">
     		<list>
     			<ref bean="rmDestroyRecordsScheduledForDestructionCapability"/>    			

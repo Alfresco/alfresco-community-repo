@@ -213,7 +213,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
             Map<Capability, AccessStatus> accessStatus = capabilityService.getCapabilitiesAccessState(nodeRef, capabilities);
             for (AccessStatus value : accessStatus.values())
             {
-                if (AccessStatus.ALLOWED.equals(value) == false)
+                if (AccessStatus.DENIED.equals(value) == true)
                 {
                     result = false;
                     break;

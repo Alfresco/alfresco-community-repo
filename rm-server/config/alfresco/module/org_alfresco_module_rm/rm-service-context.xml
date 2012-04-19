@@ -326,7 +326,7 @@
                 	{
                 		"name" : "Records Eligible For Transfer",
                 		"description" : "All records currently eligible for transfer.",
-                		"search" : "dispositionActionName:\"transfer\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:"rma:transferred" AND NOT ASPECT:"rma:transferring"",
+                		"search" : "dispositionActionName:\"transfer\" AND (dispositionEventsEligible:true OR dispositionActionAsOf:[MIN TO TODAY]) AND NOT ASPECT:\"rma:transferred\" AND NOT ASPECT:\"rma:transferring\"",
                 		"searchparams" :
                 		{
                 			"records" : true,

@@ -216,6 +216,19 @@
 		<property name="capability" value ="UpdateProperties"/>
 	</bean>
 	
+	<bean id="jsonConversionComponent.deleteAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="delete"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value="Delete"/>      
+	</bean>	  
+	
 	<bean id="jsonConversionComponent.managePermissionsAction"
 	      parent="jsonConversionComponent.baseAction">
 		<property name="name" value="managePermissions"/>

@@ -633,6 +633,51 @@ function escapeString(value)
    }
    return result;
 }
+ 
+/**
+ * Helper method used to determine whether the property value is multi-valued.
+ *
+ * @param propValue the property value to test
+ * @param modePropValue the logical operand that should be used for multi-value property
+ * @return true if it is multi-valued, false otherwise
+ */
+function isMultiValueProperty(propValue, modePropValue)
+{
+   return modePropValue != null && propValue.indexOf(",") !== -1;
+}
+
+/**
+ * Helper method used to construct lucene query fragment for a multi-valued property.
+ *
+ * @param propName property name
+ * @param propValue property value (comma separated)
+ * @param operand logical operand that should be used
+ * @param pseudo is it a pseudo property
+ * @return lucene query with multi-valued property
+ */
+function processMultiValue(propName, propValue, operand, pseudo)
+{
+   var multiValue = propValue.split(","),
+       formQuery = "";
+   for (var i = 0; i < multiValue.length; i++)
+   {
+      if (i > 0)
+      {
+         formQuery += ' ' + operand + ' ';
+      }
+      
+      if (pseudo)
+      {
+         formQuery += '(cm:content.' + propName + ':"' + multiValue[i] + '")';
+      }
+      else
+      {
+         formQuery += '(' + escapeQName(propName) + ':"' + multiValue[i] + '")';
+      }
+   }
+   
+   return formQuery;
+}
 
 /**
  * Return Search results with the given search terms.
@@ -653,7 +698,7 @@ function getSearchResults(params)
    // Simple keyword search and tag specific search
    if (term !== null && term.length !== 0)
    {
-      // TAG is now part of the default macro
+      // TAG is now part of the default search macro
       ftsQuery = term + " ";
    }
    else if (tag !== null && tag.length !== 0)
@@ -670,6 +715,8 @@ function getSearchResults(params)
    // - underscore represents colon character in name
    // - pseudo property is one of any cm:content url property: mimetype|encoding|size
    // - always string values - interogate DD for type data
+   // - an additional "-mode" suffixed parameter for a value is allowed to specify
+   //   either an AND or OR join condition for multi-value property searches
    if (formData !== null && formData.length !== 0)
    {
       var formQuery = "",
@@ -682,10 +729,10 @@ function getSearchResults(params)
       {
          // retrieve value and check there is someting to search for
          // currently all values are returned as strings
-         var propValue = formJson[p];
+         var propValue = formJson[p], modePropValue = formJson[p + "-mode"];
          if (propValue.length !== 0)
          {
-            if (p.indexOf("prop_") === 0)
+            if (p.indexOf("prop_") === 0 && p.match("-mode$") != "-mode")
             {
                // found a property - is it namespace_propertyname or pseudo property format?
                var propName = p.substr(5);
@@ -760,6 +807,12 @@ function getSearchResults(params)
                         }
                      }
                   }
+                  else if (isMultiValueProperty(propValue, modePropValue))
+                  {
+                     formQuery += (first ? '(' : ' AND (');
+                     formQuery += processMultiValue(propName, propValue, modePropValue, false);
+                     formQuery += ')';
+                  }
                   else
                   {
                      formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':"' + propValue + '"';
@@ -768,8 +821,18 @@ function getSearchResults(params)
                }
                else
                {
-                  // pseudo cm:content property - e.g. mimetype, size or encoding
-                  formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':"' + propValue + '"';
+                  if (isMultiValueProperty(propValue, modePropValue))
+                  {
+                     // multi-valued pseudo cm:content property - e.g. mimetype, size or encoding
+                     formQuery += (first ? '(' : ' AND (');
+                     formQuery += processMultiValue(propName, propValue, modePropValue, true);
+                     formQuery += ')';
+                  }
+                  else
+                  {
+                     // single pseudo cm:content property - e.g. mimetype, size or encoding
+                     formQuery += (first ? '' : ' AND ') + 'cm:content.' + propName + ':"' + propValue + '"';
+                  }
                   first = false;
                }
             }

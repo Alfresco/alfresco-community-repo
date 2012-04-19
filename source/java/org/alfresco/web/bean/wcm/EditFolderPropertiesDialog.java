@@ -30,6 +30,7 @@ import javax.faces.context.FacesContext;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.avm.LayeredFolderType;
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -168,8 +169,20 @@ public class EditFolderPropertiesDialog extends EditSpaceDialog
       // perform the rename last as for an AVM it changes the NodeRef
       if (name != null)
       {
-         this.getFileFolderService().rename(nodeRef, name);
-         editedProps.put(ContentModel.PROP_NAME.toString(), name);
+         // OnMoveNodePolicy behavior differs for Web-Client and external calls (FTP, CIFS)
+         // Flag is set for the current thread
+         Boolean wasIssuedByWebClient = LayeredFolderType.isIssuedByWebClient();
+         try
+         {
+            LayeredFolderType.setIssuedByWebClient(true);
+            this.getFileFolderService().rename(nodeRef, name);
+            editedProps.put(ContentModel.PROP_NAME.toString(), name);
+         }
+         finally
+         {
+            LayeredFolderType.setIssuedByWebClient(wasIssuedByWebClient);
+         }
+
       }
       
       return outcome;

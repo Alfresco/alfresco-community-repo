@@ -20,6 +20,24 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="/WEB-INF/alfresco.tld" prefix="a" %>
 <%@ taglib uri="/WEB-INF/repo.tld" prefix="r" %>
+<%@ page import="org.alfresco.web.ui.common.PanelGenerator" %>
+
+<f:verbatim>
+<table cellspacing="0" cellpadding="0" border="0" width="100%">
+<tr>
+<td width="100%" valign="top">
+<% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %>
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+<tr>
+<td valign=top style="padding-top:2px" width=20></f:verbatim><h:graphicImage url="/images/icons/info_icon.gif" width="16" height="16"/><f:verbatim></td>
+<td class="mainSubText"></f:verbatim><h:outputText value="#{msg.folder_props_warn}" /><f:verbatim></td>
+</tr>
+</table>
+<% PanelGenerator.generatePanelEnd(out, request.getContextPath(), "yellowInner"); %>
+</td>
+</tr>
+</table>
+</f:verbatim>
 
 <h:panelGrid columns="1" rowClasses="wizardSectionHeading, paddingRow" 
              cellpadding="2" cellspacing="2" width="100%">

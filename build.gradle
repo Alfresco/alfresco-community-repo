@@ -15,6 +15,25 @@ task wrapper(type: Wrapper) {
     gradleVersion = '1.0-milestone-8'
 }
 
+task packageBuild (dependsOn: [':rm-server:amp', ':rm-share:amp']) << {
+	
+	distDir = file('dist')
+	if (distDir.exists() == false) {
+		distDir.mkdirs();
+	}
+	
+	packageBaseName = "${groupid}-${packageName}-${version}-${build}"
+	packageZipFile = "${packageBaseName}.zip"
+	alfrescoAmp = "${project(':rm-server').name}/${project(':rm-server').buildDistDir}/${project(':rm-server').ampFile}"
+	shareAmp = "${project(':rm-share').name}/${project(':rm-share').buildDistDir}/${project(':rm-share').ampFile}"
+	
+	ant.zip(destfile: "${distDir}/${packageZipFile}", update: 'true') {	
+		
+		ant.zipfileset(file: "${alfrescoAmp}")
+		ant.zipfileset(file: "${shareAmp}")		
+	}
+}
+
 /** Subproject configuration */
 subprojects {
 
@@ -36,7 +55,7 @@ subprojects {
 	configModuleDir = "config/alfresco/module/${moduleid}"
 	moduleProperties = 'module.properties'
 	fileMapping = 'file-mapping.properties'
-	baseName = "${groupid}-${appName}-${version}"
+	baseName = "${groupid}-${appName}-${version}-${build}"
 	jarFile = "${baseName}.jar"
 	ampFile = "${baseName}.amp"
 	tomcatRoot = System.getenv(tomcatEnv)
@@ -223,8 +242,7 @@ subprojects {
 				if (sourceWebObj.exists() == true) {
 					copy {
 						from sourceWebObj
-						into "${explodedWebAppDir}"
-						
+						into "${explodedWebAppDir}"						
 					}
 				}
 		}

@@ -113,7 +113,10 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
 
         // Get the 'kind' of the file plan component
         FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(nodeRef);
-        rmNodeValues.put("kind", kind.toString());           
+        rmNodeValues.put("kind", kind.toString());        
+        
+        // File plan node reference
+        rmNodeValues.put("filePlan", recordsManagementService.getFilePlan(nodeRef).toString());
         
         // Set the indicators array
         setIndicators(rmNodeValues, nodeRef);

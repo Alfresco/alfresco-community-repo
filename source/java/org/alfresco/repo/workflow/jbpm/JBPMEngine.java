@@ -1593,7 +1593,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         TaskInstance helperTi = taskInstanceCache.get(ti.getId());
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> variables = variablesCache.get(contextInstance.getId()).getVariables();
+        Map<String, Object> variables = variablesCache.get(contextInstance.getTokenVariableMap(token).getToken().getId()).getVariables();
         // WorkflowTaskProperies
         Map<QName, Serializable> properties = getTaskProperties(helperTi != null ? helperTi : ti, false, variablesCache);
 
@@ -1640,7 +1640,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         List<TokenVariableMap> results = (List<TokenVariableMap>) query.list();
         for (TokenVariableMap tokenVariableMap : results)
         {
-            variablesCache.put(tokenVariableMap.getContextInstance().getId(), tokenVariableMap);
+            variablesCache.put(tokenVariableMap.getToken().getId(), tokenVariableMap);
         }
     }
     
@@ -2676,9 +2676,9 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             while (token != null)
             {
                 TokenVariableMap varMap = null;
-                if (variablesCache != null && variablesCache.containsKey(context.getId()))
+                if (variablesCache != null && variablesCache.containsKey(context.getTokenVariableMap(token).getToken().getId()))
                 {
-                    varMap = variablesCache.get(context.getId());
+                    varMap = variablesCache.get(context.getTokenVariableMap(token).getToken().getId());
                 }
                 else
                 {

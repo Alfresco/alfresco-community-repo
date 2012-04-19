@@ -24,7 +24,7 @@
    <!-- Tenant Routing File Content Store -->
    <!--                                   -->
    
-   <bean id="tenantFileContentStore" class="org.alfresco.repo.content.TenantRoutingFileContentStore">
+   <bean id="tenantFileContentStore" class="org.alfresco.repo.content.TenantRoutingFileContentStore" init-method="init">
       <property name="defaultRootDir">
          <value>${dir.contentstore}</value>
       </property>
@@ -33,7 +33,7 @@
       </property>
       <property name="storesCache">
          <ref bean="tenantFileStoresCache" />
-      </property>
+      </property>    
    </bean>
    
    <!-- override content store cleaner to use tenant routing file content store -->

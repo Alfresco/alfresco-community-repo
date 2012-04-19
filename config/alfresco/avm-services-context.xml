@@ -245,4 +245,21 @@
         </property>
 	</bean>
 
+    <!-- LayeredFolderType -->
+
+    <bean id="layeredFolderType" class="org.alfresco.repo.avm.LayeredFolderType" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="fileFolderService">
+            <ref bean="fileFolderService" />
+        </property>
+        <property name="avmService">
+            <ref bean="avmService" />
+        </property>
+        <property name="maxTime" >
+            <value>${wcm.rename.max.time.milliseconds}</value>
+        </property>
+    </bean>	
+
 </beans>

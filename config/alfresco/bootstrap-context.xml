@@ -95,6 +95,7 @@
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ActivityTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-UsageTables.sql</value>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-SubscriptionTables.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-TenantTables.sql</value>
           </list>
        </property>
        <property name="postCreateScriptUrls">
@@ -135,6 +136,7 @@
              <ref bean="patch.db-V3.2-AddFKIndexes-2" />
              <ref bean="patch.db-V3.0-ActivityTables" />
              <ref bean="patch.db-V4.0-Activiti-task-id-indexes" />
+             <ref bean="patch.db-V4.0-TenantTables" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">
@@ -831,9 +833,6 @@
     <bean id="startupLog" class="org.alfresco.repo.descriptor.DescriptorStartupLog">
        <property name="descriptorService">
            <ref local="descriptorComponent"/>
-       </property>
-       <property name="tenantService">
-           <ref bean="tenantService"/>
        </property>
        <property name="transactionService">
            <ref bean="transactionService"/>

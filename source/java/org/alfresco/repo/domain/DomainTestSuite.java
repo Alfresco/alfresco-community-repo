@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.propval.PropertyValueDAOTest;
 import org.alfresco.repo.domain.qname.QNameDAOTest;
 import org.alfresco.repo.domain.query.CannedQueryDAOTest;
 import org.alfresco.repo.domain.solr.SOLRDAOTest;
+import org.alfresco.repo.domain.tenant.TenantAdminDAOTest;
 import org.alfresco.repo.domain.usage.UsageDAOTest;
 
 /**
@@ -62,6 +63,7 @@ public class DomainTestSuite extends TestSuite
         suite.addTestSuite(UsageDAOTest.class);
         suite.addTestSuite(CannedQueryDAOTest.class);
         suite.addTestSuite(SOLRDAOTest.class);
+        suite.addTestSuite(TenantAdminDAOTest.class);
         
         return suite;
     }

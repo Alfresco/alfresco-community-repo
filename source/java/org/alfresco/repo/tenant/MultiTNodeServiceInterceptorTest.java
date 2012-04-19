@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,7 +24,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -59,7 +58,7 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
             enableTest = false;
             return;
         }
-
+        
         // Create a tenant
         RetryingTransactionCallback<Object> createTenantCallback = new RetryingTransactionCallback<Object>()
         {
@@ -71,7 +70,28 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(createTenantCallback, false, true);
     }
-
+    
+    @Override
+    public void tearDown() throws Exception
+    {
+        // If MT is disabled, then disable all tests
+        if (!tenantAdminService.isEnabled())
+        {
+            return;
+        }
+        
+        // Delete a tenant
+        RetryingTransactionCallback<Object> createTenantCallback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                tenantAdminService.deleteTenant(tenant1);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(createTenantCallback, false, true);
+    }
+    
     /**
      * Control case.
      */

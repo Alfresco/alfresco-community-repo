@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,7 +22,7 @@ import java.security.Principal;
 import java.util.Date;
 import java.util.Properties;
 
-import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -46,7 +46,6 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
 
     // Dependencies
     private DescriptorService descriptorService;
-    private TenantService tenantService;
     private TransactionService transactionService;
     
     private final String SYSTEM_INFO_STARTUP = "system.info.startup";
@@ -60,14 +59,6 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         this.descriptorService = descriptorService;
     }
     
-    /**
-     * @param tenantService  Tenant Service
-     */
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
-    }
-
     /**
      * @param transactionService        service to tell about read-write mode
      */
@@ -200,7 +191,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             Object[] params = new Object[] {
                     serverEdition,
                     currentMode != LicenseMode.TEAM ? "" : (" " + currentMode),     // only append TEAM
-                    !tenantService.isEnabled() ? "" : (" Multi-Tenant"),
+                    (!AuthenticationUtil.isMtEnabled() ? "" : (" Multi-Tenant")),
                     currentVersion, currentSchemaVersion, installedRepoVersion, installedSchemaVersion};
             logger.info(I18NUtil.getMessage(SYSTEM_INFO_STARTUP, params));
         }

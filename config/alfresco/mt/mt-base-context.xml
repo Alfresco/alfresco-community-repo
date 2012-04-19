@@ -26,7 +26,7 @@
       <property name="repoAdminService" ref="RepoAdminService"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="transactionService" ref="transactionComponent"/>
-      <property name="attributeService" ref="AttributeService"/>
+      <property name="tenantAdminDAO" ref="tenantAdminDAO"/>
       <property name="passwordEncoder" ref="passwordEncoder"/>
       <property name="tenantFileContentStore" ref="tenantFileContentStore"/>     
       <property name="workflowService" ref="WorkflowService"/>

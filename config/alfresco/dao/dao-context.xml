@@ -306,4 +306,9 @@
       <property name="qNameDAO" ref="qnameDAO"/>
    </bean>
    
+   <bean id="tenantAdminDAO" class="org.alfresco.repo.domain.tenant.ibatis.TenantAdminDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="tenantEntityCache" ref="tenantEntityCache"/>
+   </bean>
+   
 </beans>

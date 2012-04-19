@@ -53,7 +53,9 @@ import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFolderNetworkFile;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.WildCard;
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMAppModel;
+import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.CreateStoreTxnListener;
 import org.alfresco.repo.avm.CreateVersionTxnListener;
 import org.alfresco.repo.avm.PurgeStoreTxnListener;
@@ -74,6 +76,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -1725,7 +1729,8 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
         	else if ( newAVMPath.isReadOnlyAccess() )
         		throw new AccessDeniedException("Cannot rename folder to read-only folder, " + newName);
         }
-
+        final NodeRef oldNodeRef = AVMNodeConverter.ToNodeRef(-1, buildStorePath(ctx, oldName, sess).getAVMPath());
+        final NodeRef newNodeParentRef = AVMNodeConverter.ToNodeRef(-1, newAVMPath.getAVMPath());
         try
         {
             doInWriteTransaction(sess, new CallableIO<Void>(){
@@ -1734,21 +1739,21 @@ public class AVMDiskDriver extends AlfrescoTxDiskDriver implements DiskInterface
                 {
                     // Rename the file/folder
 
-                    m_avmService.rename(oldAVMPath.getAVMPath(), oldPaths[1], newAVMPath.getAVMPath(), newPaths[1]);
+                    m_nodeService.moveNode(oldNodeRef, newNodeParentRef, ContentModel.ASSOC_CONTAINS, QName.createQName(newPaths[1]));
                     return null;
                 }});
         }
-        catch (AVMNotFoundException ex)
+        catch (InvalidNodeRefException ex)
         {
-            throw new IOException("Source not found, " + oldName);
+            throw new IOException("Node reference no longer exists");
+        }
+        catch (CyclicChildRelationshipException ex)
+        {
+             throw new IOException("Cyclic parent-child relationship");
         }
         catch (AVMWrongTypeException ex)
         {
             throw new IOException("Invalid path, " + oldName);
-        }
-        catch (AVMExistsException ex)
-        {
-            throw new FileExistsException("Destination exists, " + newName);
         }
         catch ( org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {

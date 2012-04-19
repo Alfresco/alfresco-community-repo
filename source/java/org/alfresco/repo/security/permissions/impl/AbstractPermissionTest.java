@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PublicServiceAccessService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -103,6 +104,8 @@ public class AbstractPermissionTest extends TestCase
 
     protected PermissionServiceImpl permissionServiceImpl;
 
+    protected PublicServiceAccessService publicServiceAccessService;
+    
     public AbstractPermissionTest()
     {
         super();
@@ -137,6 +140,8 @@ public class AbstractPermissionTest extends TestCase
         authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         aclDaoComponent = (AclDAO) applicationContext.getBean("aclDAO");
+        
+        publicServiceAccessService = (PublicServiceAccessService) applicationContext.getBean("publicServiceAccessService");
         
         retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
         

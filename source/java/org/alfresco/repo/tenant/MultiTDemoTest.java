@@ -79,7 +79,7 @@ public class MultiTDemoTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(MultiTDemoTest.class);
     
-    private static ApplicationContext ctx =new ClassPathXmlApplicationContext(
+    private static ApplicationContext ctx = new ClassPathXmlApplicationContext(
             new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:tenant/mt-*context.xml"}
             );
     
@@ -563,10 +563,12 @@ public class MultiTDemoTest extends TestCase
                 {
                     public Object doWork() throws Exception
                     {
-                        Set<NodeRef> personRefs = personService.getAllPeople();
+                        List<PersonInfo> persons = personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
                         
-                        for (NodeRef personRef : personRefs)
+                        for (PersonInfo person : persons)
                         {
+                            NodeRef personRef = person.getNodeRef();
+                            
                             String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME); 
                             assertTrue(userName.endsWith(tenantDomain));
                             
@@ -578,11 +580,11 @@ public class MultiTDemoTest extends TestCase
                         
                         if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
                         {
-                            assertEquals(5, personRefs.size()); // admin@tenant, guest@tenant, alice@tenant, bob@tenant, eve@tenant
+                            assertEquals(5, persons.size()); // admin@tenant, guest@tenant, alice@tenant, bob@tenant, eve@tenant
                         }
                         else
                         {
-                            assertEquals(4, personRefs.size()); // admin@tenant, guest@tenant, alice@tenant, bob@tenant
+                            assertEquals(4, persons.size()); // admin@tenant, guest@tenant, alice@tenant, bob@tenant
                         }
                         
                         return null;
@@ -1217,15 +1219,16 @@ public class MultiTDemoTest extends TestCase
     }
     
     // pseudo cleanup - if this test runs last
-    public void testDeleteTenants()
+    public void testDeleteAllTenants()
     {
-        logger.info("test delete tenant");
+        logger.info("test delete tenants");
         
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
-        for (final String tenantDomain : tenants)
+        List<Tenant> allTenants = tenantAdminService.getAllTenants();
+        for (final Tenant tenant : allTenants)
         {    
-            deleteTenant(tenantDomain);
+            deleteTenant(tenant.getTenantDomain());
         }
     }
     

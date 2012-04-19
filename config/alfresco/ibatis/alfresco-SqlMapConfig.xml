@@ -162,6 +162,10 @@ Inbound settings from iBatis
         
         <typeAlias alias="Subscription" type="org.alfresco.repo.domain.subscriptions.SubscriptionEntity"/>
         <typeAlias alias="SubscriptionNode" type="org.alfresco.repo.domain.subscriptions.SubscriptionNodeEntity"/>
+        
+        <!-- Tenants -->
+        
+        <typeAlias alias="Tenant" type="org.alfresco.repo.domain.tenant.TenantEntity"/>
  
     </typeAliases>
     
@@ -197,6 +201,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/avm-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/avm-insert-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/subscriptions-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/tenants-common-SqlMap.xml"/>
         <!-- Canned queries -->
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-test-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-usages-common-SqlMap.xml"/>

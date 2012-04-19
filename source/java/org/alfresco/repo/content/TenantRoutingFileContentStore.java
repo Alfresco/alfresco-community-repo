@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -89,7 +89,13 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
                 {
                     allEnabledStores.add(tenantFileStores.get(tenantDomain)); // note: cache should only contain enabled stores
                 }
-                return allEnabledStores;
+                
+                if (allEnabledStores.size() > 0)
+                {
+                    return allEnabledStores;
+                }
+                
+                // drop through to ensure default content store has been init'ed
             }
         }
         return Arrays.asList(getTenantFileStore(tenantService.getCurrentUserDomain()));

@@ -64,6 +64,14 @@ public class PermissionServiceTest extends AbstractPermissionTest
         // TODO Auto-generated constructor stub
     }
 
+    public void testPublicAccessService()
+    {
+        runAs("admin");
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllSetPermissions", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("SiteService", "createSite", "", "", "", "", true) == AccessStatus.ALLOWED);
+      
+    }
+    
     public void testAnyDenyDeniesAndRead()
     {
         personService.getPerson("andy");

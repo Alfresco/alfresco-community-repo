@@ -554,14 +554,14 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         String dstParent = dst.getSecond();
         String dstName = assocQName.getLocalName();
         // TODO Invoke policy behavior. Not quite sure how to translate this.
-//        NodeRef oldParentRef = AVMNodeConverter.ToNodeRef(-1, srcParent);
-//        ChildAssociationRef oldAssocRef = 
-//            new ChildAssociationRef(assocTypeQName,
-//                                    oldParentRef,
-//                                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, srcName),
-//                                    nodeToMoveRef,
-//                                    true,
-//                                    -1);
+        NodeRef oldParentRef = AVMNodeConverter.ToNodeRef(-1, srcParent);
+        ChildAssociationRef oldAssocRef = 
+            new ChildAssociationRef(assocTypeQName,
+                                    oldParentRef,
+                                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, srcName),
+                                    nodeToMoveRef,
+                                    true,
+                                    -1);
 //        invokeBeforeDeleteChildAssociation(oldAssocRef);
         String dstPath = AVMNodeConverter.ExtendAVMPath(dstParent, dstName);
         NodeRef newChildRef = AVMNodeConverter.ToNodeRef(-1, dstPath);
@@ -579,6 +579,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
                     newChildRef,
                     true,
                     -1);
+            invokeOnMoveNode(oldAssocRef, newAssocRef);
 //            invokeOnCreateChildAssociation(newAssocRef);
 //            invokeOnDeleteChildAssociation(oldAssocRef);
 //            invokeOnUpdateNode(oldParentRef);

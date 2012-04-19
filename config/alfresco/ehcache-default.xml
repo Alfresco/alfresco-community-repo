@@ -330,7 +330,7 @@
     <!-- Tenants Cache -->
     
     <cache 
-        name="org.alfresco.cache.tenantsCache" 
+        name="org.alfresco.cache.tenantEntityCache" 
         maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false"
@@ -341,7 +341,7 @@
     
     <cache 
         name="org.alfresco.cache.tenantFileStoresCache"
-        maxElementsInMemory="10000"
+        maxElementsInMemory="100"
         eternal="true"
         overflowToDisk="false"
         statistics="false"

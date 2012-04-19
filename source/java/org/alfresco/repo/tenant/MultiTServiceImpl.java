@@ -21,7 +21,8 @@ package org.alfresco.repo.tenant;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.tenant.TenantAdminDAO;
+import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -31,8 +32,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
@@ -42,18 +41,12 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * Adapts names to be tenant specific or vice-versa.
  */
 public class MultiTServiceImpl implements TenantService
-{ 
-    private static Log logger = LogFactory.getLog(MultiTServiceImpl.class);
+{
+    private TenantAdminDAO tenantAdminDAO;
     
-    // clusterable cache of enabled/disabled tenants - managed via TenantAdmin Service
-    private SimpleCache<String, Tenant> tenantsCache;  
-    
-    private MultiTAdminServiceImpl tenantAdminService = null; // registered (rather than injected) - to avoid circular dependency
-    
-
-    public void setTenantsCache(SimpleCache<String, Tenant> tenantsCache)
+    public void setTenantAdminDAO(TenantAdminDAO tenantAdminDAO)
     {
-        this.tenantsCache = tenantsCache;
+        this.tenantAdminDAO = tenantAdminDAO;
     }
     
     /* (non-Javadoc)
@@ -674,31 +667,18 @@ public class MultiTServiceImpl implements TenantService
             throw new TenantDisabledException(tenantDomain);
         }
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.tenant.TenantService#getTenant(java.lang.String)
      */
     public Tenant getTenant(String tenantDomain)
     {
-    	tenantDomain = getTenantDomain(tenantDomain);
-        Tenant tenant = tenantsCache.get(tenantDomain);
-        if (tenant == null)
+        TenantEntity tenantEntity = tenantAdminDAO.getTenant(tenantDomain);
+        Tenant tenant = null;
+        if (tenantEntity != null)
         {
-            // backed by TenantAdminService - update this cache, e.g. could have been invalidated and/or expired
-            if (tenantAdminService != null)
-            {    
-                tenant = tenantAdminService.getTenant(tenantDomain);
-                if (tenant == null)
-                {
-                    throw new AlfrescoRuntimeException("No such tenant " + tenantDomain);
-                }
-                else
-                {
-                    putTenant(tenantDomain, tenant);
-                }
-            }
+            tenant = new Tenant(tenantEntity.getTenantDomain(), tenantEntity.getEnabled(), tenantEntity.getContentRoot());
         }
-        
         return tenant;
     }
     
@@ -708,32 +688,6 @@ public class MultiTServiceImpl implements TenantService
     public boolean isEnabled()
     {
         return true;
-    }
-    
-    // should only be called by Tenant Admin Service
-    protected void register(MultiTAdminServiceImpl tenantAdminService)
-    {
-        this.tenantAdminService = tenantAdminService;
-    }
-    
-    // should only be called by Tenant Admin Service
-    protected void putTenant(String tenantDomain, Tenant tenant)
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("putTenant " + tenantDomain);
-        }
-        tenantsCache.put(tenantDomain, tenant);
-    }
-    
-    // should only be called by Tenant Admin Service
-    protected void removeTenant(String tenantDomain)
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("removeTenant " + tenantDomain);
-        }
-        tenantsCache.remove(tenantDomain);
     }
     
     private String getTenantDomain(String tenantDomain)

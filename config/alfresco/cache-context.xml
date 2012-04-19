@@ -1346,5 +1346,38 @@
       <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
+   
+   <!-- ===================================== -->
+   <!-- Tenant Entity Cache                   -->
+   <!-- ===================================== -->
 
+   <!-- The cross-transaction shared cache for in-memory Tenants -->
+   
+   <bean name="tenantEntitySharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.tenantEntityCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- The transactional cache for in-memory Tenants -->
+   
+   <bean name="tenantEntityCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="tenantEntitySharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.tenantsTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="100" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+   </bean>
+   
 </beans>

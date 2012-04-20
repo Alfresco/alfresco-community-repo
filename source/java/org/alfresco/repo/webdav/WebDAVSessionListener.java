@@ -65,7 +65,7 @@ public class WebDAVSessionListener implements HttpSessionListener, ServletContex
     @Override
     public void sessionDestroyed(HttpSessionEvent hse)
     {
-        WebDAVLockService.setCurrentSession(hse.getSession());
+        webDAVLockService.setCurrentSession(hse.getSession());
         webDAVLockService.sessionDestroyed();
 
         if (logger.isDebugEnabled())

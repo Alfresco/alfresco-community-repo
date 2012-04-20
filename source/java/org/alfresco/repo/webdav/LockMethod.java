@@ -90,7 +90,7 @@ public class LockMethod extends WebDAVMethod
     }
 
     /**
-     * Return the lock timeout, in minutes
+     * Return the lock timeout, in seconds.
      * 
      * @return int
      */
@@ -426,7 +426,7 @@ public class LockMethod extends WebDAVMethod
             // Store the owner of this lock
             lockInfo.setOwner(userName);
             // Lock the node
-            getLockStore().put(lockNode.getNodeRef(), lockInfo);
+            getDAVLockService().lock(lockNode.getNodeRef(), lockInfo);
             
             if (logger.isDebugEnabled())
             {

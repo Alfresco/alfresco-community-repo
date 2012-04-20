@@ -91,7 +91,6 @@ public class WebDAVHelper
     private DictionaryService m_dictionaryService;
     private MimetypeService m_mimetypeService;
     private WebDAVLockService m_lockService;
-    private LockStore m_lockStore;
     private ActionService m_actionService;
     private AuthenticationService m_authService;
     private PermissionService m_permissionService;
@@ -104,7 +103,7 @@ public class WebDAVHelper
     /**
      * Class constructor
      */
-    protected WebDAVHelper(ServiceRegistry serviceRegistry, LockStore lockStore, AuthenticationService authService, TenantService tenantService)
+    protected WebDAVHelper(ServiceRegistry serviceRegistry, AuthenticationService authService, TenantService tenantService)
     {
         m_serviceRegistry = serviceRegistry;
         
@@ -119,8 +118,6 @@ public class WebDAVHelper
         m_permissionService = m_serviceRegistry.getPermissionService();
         m_tenantService     = tenantService;
         m_authService       = authService;
-        
-        m_lockStore         = lockStore;
     }
     
     /**
@@ -190,14 +187,6 @@ public class WebDAVHelper
     public final WebDAVLockService getLockService()
     {
         return m_lockService;
-    }
-
-    /** 
-     * @return          Return the {@link LockStore lock store}.
-     */
-    public final LockStore getLockStore()
-    {
-        return m_lockStore;
     }
     
     /**

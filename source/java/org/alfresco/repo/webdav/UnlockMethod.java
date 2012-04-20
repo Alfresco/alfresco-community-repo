@@ -130,7 +130,7 @@ public class UnlockMethod extends WebDAVMethod
         }
 
         NodeRef nodeRef = lockNodeInfo.getNodeRef();        
-        LockInfo lockInfo = getLockStore().get(nodeRef);
+        LockInfo lockInfo = getDAVLockService().getLockInfo(nodeRef);
         
         if (lockInfo == null)
         {
@@ -169,7 +169,7 @@ public class UnlockMethod extends WebDAVMethod
                 String currentUser = getAuthenticationService().getCurrentUserName();
                 if (currentUser.equals(lockInfo.getOwner()))
                 {
-                    getLockStore().remove(nodeRef);
+                    getDAVLockService().unlock(nodeRef);
         
                     // Indicate that the unlock was successful
                     m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);            

@@ -33,7 +33,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Ivan Rybnikov
  *
  */
-public final class LockInfoImpl implements Serializable, LockInfo
+public class LockInfoImpl implements Serializable, LockInfo
 {
     private static final long serialVersionUID = 1L;
 
@@ -262,7 +262,7 @@ public final class LockInfoImpl implements Serializable, LockInfo
         {
             return false;
         }
-        Date now = new Date();
+        Date now = dateNow();
         return now.after(expires);
     }
 
@@ -322,6 +322,25 @@ public final class LockInfoImpl implements Serializable, LockInfo
     }
     
     /**
+     * Remaining time before lock expires, in seconds.
+     */
+    @Override
+    public long getRemainingTimeoutSeconds()
+    {
+        Date expires = getExpires();
+        if (expires == null)
+        {
+            return WebDAV.TIMEOUT_INFINITY;
+        }
+        else
+        {
+            Date now = dateNow();
+            long timeout = ((expires.getTime() - now.getTime()) / 1000);
+            return timeout;
+        }
+    }
+
+    /**
      * Sanity check the state of this LockInfo.
      */
     private void checkLockState()
@@ -336,21 +355,50 @@ public final class LockInfoImpl implements Serializable, LockInfo
      * Sets the expiry date/time to lockTimeout seconds into the future. Provide
      * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
      * 
-     * @param lockTimeout
+     * @param lockTimeoutSecs
      */
     @Override
-    public void setTimeoutSeconds(int lockTimeout)
+    public void setTimeoutSeconds(int lockTimeoutSecs)
     {
-        if (lockTimeout == WebDAV.TIMEOUT_INFINITY)
+        if (lockTimeoutSecs == WebDAV.TIMEOUT_INFINITY)
         {
             setExpires(null);
         }
         else
         {
-            int timeoutMillis = (lockTimeout * 60 * 1000);
-            Date now = new Date();
+            int timeoutMillis = (lockTimeoutSecs * 1000);
+            Date now = dateNow();
             Date nextExpiry = new Date(now.getTime() + timeoutMillis);
             setExpires(nextExpiry);
         }
+    }
+    
+    /**
+     * Sets the expiry date/time to lockTimeout minutes into the future. Provide
+     * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
+     * 
+     * @param lockTimeoutMins
+     */
+    @Override
+    public void setTimeoutMinutes(int lockTimeoutMins)
+    {
+        if (lockTimeoutMins != WebDAV.TIMEOUT_INFINITY)
+        {
+            setTimeoutSeconds(lockTimeoutMins * 60); 
+        }
+        else
+        {
+            setTimeoutSeconds(WebDAV.TIMEOUT_INFINITY);
+        }
+    }
+    
+    /**
+     * Hook to allow unit testing - gets the current date/time.
+     * 
+     * @return Date
+     */
+    protected Date dateNow()
+    {
+        return new Date();
     }
 }

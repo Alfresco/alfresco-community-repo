@@ -190,7 +190,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         }
         
         String userName = getDAVHelper().getAuthenticationService().getCurrentUserName();
-        LockInfo lockInfo = getLockStore().get(contentNodeInfo.getNodeRef());
+        LockInfo lockInfo = getDAVLockService().getLockInfo(contentNodeInfo.getNodeRef());
         
         if (lockInfo != null)
         {

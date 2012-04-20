@@ -334,7 +334,7 @@ public abstract class WebDAVMethod
                 WebDAVMethod.this.m_reader = null;
 
                 // cache current session
-                WebDAVLockService.setCurrentSession(m_request.getSession());
+                getDAVHelper().getLockService().setCurrentSession(m_request.getSession());
 
                 executeImpl();
                 return null;
@@ -674,13 +674,13 @@ public abstract class WebDAVMethod
     }
     
     /**
-     * Retrieve the (WebDAV protocol-level) {@link LockStore lock store}.
+     * Retrieve the (WebDAV protocol-level) locking service.
      * 
-     * @return LockStore
+     * @return WebDAVLockService
      */
-    protected final LockStore getLockStore()
+    protected final WebDAVLockService getDAVLockService()
     {
-        return m_davHelper.getLockStore();
+        return m_davHelper.getLockService();
     }
     
     /**
@@ -1253,7 +1253,7 @@ public abstract class WebDAVMethod
      */
     private LockInfo getNodeLockInfoDirect(FileInfo nodeInfo)
     {
-        LockInfo lock = getLockStore().get(nodeInfo.getNodeRef());
+        LockInfo lock = getDAVLockService().getLockInfo(nodeInfo.getNodeRef());
         
         if (lock == null)
         {
@@ -1283,7 +1283,7 @@ public abstract class WebDAVMethod
      */
     private LockInfo getNodeLockInfoIndirect(NodeRef parent)
     {
-        LockInfo parentLock = getLockStore().get(parent);
+        LockInfo parentLock = getDAVLockService().getLockInfo(parent);
         
         if (parentLock == null)
         {

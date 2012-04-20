@@ -1,5 +1,12 @@
 function main()
 {
+   // Ensure the user has Create Site capability
+   if (!siteService.hasCreateSitePermissions())
+   {
+      status.setCode(status.STATUS_FORBIDDEN, "error.noPermissions");
+      return;
+   }
+   
    // Get the details of the site
    if (json.has("shortName") == false || json.get("shortName").length == 0)
    {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,6 +32,7 @@ import junit.textui.ResultPrinter;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.web.scripts.servlet.LocalTestRunAsAuthenticatorFactory;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -338,6 +339,14 @@ public abstract class BaseWebScriptTest extends TestCase
         throws IOException
     {
         asUser = (asUser == null) ? defaultRunAs : asUser;
+        
+        TestWebScriptServer tws = getServer();
+        if (AuthenticationUtil.isMtEnabled())
+        {
+            // MT repository container requires non-none authentication (ie. guest or higher)
+            tws.setServletAuthenticatorFactory(new LocalTestRunAsAuthenticatorFactory());
+        }
+        
         if (asUser == null)
         {
             return getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getEncoding(), req.getType());
@@ -345,7 +354,6 @@ public abstract class BaseWebScriptTest extends TestCase
         else
         {
             // send request in context of specified user
-            getServer();
             return AuthenticationUtil.runAs(new RunAsWork<Response>()
             {
                 @SuppressWarnings("synthetic-access")

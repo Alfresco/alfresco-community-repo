@@ -301,6 +301,17 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 //
                 if (auth == null || auth.authenticate(required, isGuest))
                 {
+                    // The user will now have been authenticated, based on HTTP Auth, Ticket etc
+                    // Check that the user they authenticated as has appropriate access to the script
+                    
+                    // Check to see if they supplied HTTP Auth or Ticket as guest, on a script that needs more
+                    isGuest = authorityService.isGuestAuthority(AuthenticationUtil.getFullyAuthenticatedUser());
+                    if (isGuest && (required == RequiredAuthentication.user || required == RequiredAuthentication.admin))
+                    {
+                        throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires user authentication; however, a guest has attempted access.");
+                    }
+                    
+                    // Check to see if they're admin or system on an Admin only script
                     if (required == RequiredAuthentication.admin && !(authorityService.hasAdminAuthority() || AuthenticationUtil.getFullyAuthenticatedUser().equals(AuthenticationUtil.getSystemUserName())))
                     {
                         throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires admin authentication; however, a non-admin has attempted access.");

@@ -116,7 +116,8 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                 logger.debug("URL ticket provided: " + (ticket != null && ticket.length() > 0));
             }
             
-            // authenticate as guest, if service allows
+            // If they requested explicit guest authentication,
+            //  Authenticate as guest (if allowed)
             if (isGuest && RequiredAuthentication.guest == required)
             {
                 if (logger.isDebugEnabled())

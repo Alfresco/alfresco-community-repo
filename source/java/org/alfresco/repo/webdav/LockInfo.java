@@ -144,7 +144,7 @@ public interface LockInfo
     boolean isExclusive();
 
     /**
-     * Who owns the lock?
+     * Retrieves the username of the lock owner.
      * 
      * @return the owner
      */
@@ -170,6 +170,13 @@ public interface LockInfo
      * @return the expires
      */
     Date getExpires();
+    
+    /**
+     * Retrieve the remaining time before the lock expires, in seconds
+     * 
+     * @return long
+     */
+    long getRemainingTimeoutSeconds();
 
     /**
      * Sets the expiry date/time to lockTimeout seconds into the future. Provide
@@ -177,5 +184,13 @@ public interface LockInfo
      * 
      * @param lockTimeout
      */
-    void setTimeoutSeconds(int lockTimeout);
+    void setTimeoutSeconds(int lockTimeoutSecs);
+    
+    /**
+     * Sets the expiry date/time to lockTimeout minutes into the future. Provide
+     * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
+     * 
+     * @param lockTimeoutMins
+     */
+    void setTimeoutMinutes(int lockTimeoutMins);
 }

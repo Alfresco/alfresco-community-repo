@@ -307,7 +307,7 @@
       </property>
    </bean>
    
-   <bean id="webDAVLockService" class="org.alfresco.repo.webdav.WebDAVLockService">
+   <bean id="webDAVLockService" class="org.alfresco.repo.webdav.WebDAVLockServiceImpl">
       <property name="lockService">
          <ref bean="LockService" />
       </property>
@@ -320,6 +320,7 @@
       <property name="checkOutCheckInService">
          <ref bean="CheckoutCheckinService" />
       </property>
+      <property name="lockStoreFactory" ref="webdavLockStoreFactory"/>
    </bean>
 
 </beans>

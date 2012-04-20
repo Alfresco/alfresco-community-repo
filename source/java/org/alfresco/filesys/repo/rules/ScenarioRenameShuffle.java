@@ -50,7 +50,7 @@ public class ScenarioRenameShuffle implements Scenario
     private long timeout = 30000;
     
     @Override
-    public ScenarioInstance createInstance(final List<ScenarioInstance> currentInstances, Operation operation)
+    public ScenarioInstance createInstance(final EvaluatorContext ctx, Operation operation)
     {
         /**
          * This scenario is triggered by a rename of a file matching

@@ -72,6 +72,8 @@ public class PersonTest extends TestCase
     
     private TransactionService transactionService;
     private PersonService personService;
+    private UserNameMatcherImpl userNameMatcher;
+
     private BehaviourFilter policyBehaviourFilter;
     private NodeService nodeService;
     private NodeRef rootNodeRef;
@@ -93,6 +95,7 @@ public class PersonTest extends TestCase
         
         transactionService = (TransactionService) ctx.getBean("transactionService");
         personService = (PersonService) ctx.getBean("personService");
+        userNameMatcher = (UserNameMatcherImpl) ctx.getBean("userNameMatcher");
         nodeService = (NodeService) ctx.getBean("nodeService");
         permissionService = (PermissionService) ctx.getBean("permissionService");
         authorityService = (AuthorityService) ctx.getBean("authorityService");
@@ -124,6 +127,7 @@ public class PersonTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
+        userNameMatcher.setUserNamesAreCaseSensitive(false); // Put back the default
 
         if ((testTX.getStatus() == Status.STATUS_ACTIVE) || (testTX.getStatus() == Status.STATUS_MARKED_ROLLBACK))
         {
@@ -1125,9 +1129,7 @@ public class PersonTest extends TestCase
         final String TEST_PERSON_UPPER = TEST_PERSON_MIXED.toUpperCase();
         final String TEST_PERSON_LOWER = TEST_PERSON_MIXED.toLowerCase();
         
-        UserNameMatcherImpl usernameMatcher = new UserNameMatcherImpl();
-        usernameMatcher.setUserNamesAreCaseSensitive(true);
-        ((PersonServiceImpl)personService).setUserNameMatcher(usernameMatcher); // case-sensitive
+        userNameMatcher.setUserNamesAreCaseSensitive(true);
         
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
@@ -1217,9 +1219,6 @@ public class PersonTest extends TestCase
             }
             // ignore - expected
         }
-        
-        usernameMatcher.setUserNamesAreCaseSensitive(false);
-        ((PersonServiceImpl)personService).setUserNameMatcher(usernameMatcher); // case-insensitive
     }
     
     public void testUpdateUserNameCase()
@@ -1227,6 +1226,7 @@ public class PersonTest extends TestCase
         final String TEST_PERSON_UPPER = "TEST_PERSON_THREE";
         final String TEST_PERSON_LOWER = TEST_PERSON_UPPER.toLowerCase();
         
+        userNameMatcher.setUserNamesAreCaseSensitive(true);
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();

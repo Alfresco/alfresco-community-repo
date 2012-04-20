@@ -432,11 +432,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     /**
      * Create tenant by restoring from a complete repository export. This is equivalent to a bootstrap import using restore-context.xml.
      */
-    public void importTenant(String tenantDomain, final File directorySource, String rootContentStoreDir)
-    {   
-    	tenantDomain = getTenantDomain(tenantDomain);
-
-        initTenant(tenantDomain, rootContentStoreDir);      
+    public void importTenant(final String tenantDomainIn, final File directorySource, String contentRoot)
+    {
+        final String tenantDomain = getTenantDomain(tenantDomainIn);
+        
+        initTenant(tenantDomain, contentRoot);
         
         try
         {

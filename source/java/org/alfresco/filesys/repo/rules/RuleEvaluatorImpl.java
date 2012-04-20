@@ -33,17 +33,23 @@ import org.apache.commons.logging.LogFactory;
  * The Rule Evaluator evaluates the operation and returns 
  * details of the commands to implement those operations.
  * <p>
- * It is configured with a list of scenarios.
+ * It is configured with a list of scenarios which act as factories for scenario instances.
  */
 public class RuleEvaluatorImpl implements RuleEvaluator
 {
     private static Log logger = LogFactory.getLog(RuleEvaluatorImpl.class);
     
     /**
-     * The evaluator context
+     * The evaluator context, one for each folder
      */
     private class EvaluatorContextImpl implements EvaluatorContext
     {
+        Map<String, Object>sessionState;
+        
+        EvaluatorContextImpl (Map<String, Object>sessionState)
+        {
+            this.sessionState = sessionState;
+        }
         /**
          * Current instances of scenarios
          */
@@ -53,6 +59,12 @@ public class RuleEvaluatorImpl implements RuleEvaluator
         public List<ScenarioInstance> getScenarioInstances()
         {
             return currentScenarioInstances;
+        }
+
+        @Override
+        public Map<String, Object> getSessionState()
+        {
+            return sessionState;
         }     
     } 
     
@@ -87,7 +99,7 @@ public class RuleEvaluatorImpl implements RuleEvaluator
         {
             for(Scenario scenario : scenarios)
             {
-                ScenarioInstance instance = scenario.createInstance(context.getScenarioInstances(), operation);
+                ScenarioInstance instance = scenario.createInstance(context, operation);
                 if(instance != null)
                 {
                     context.getScenarioInstances().add(instance);
@@ -161,9 +173,11 @@ public class RuleEvaluatorImpl implements RuleEvaluator
     }
 
     @Override
-    public EvaluatorContext createContext()
+    public EvaluatorContext createContext(Map<String, Object>sessionState)
     {
-        return new EvaluatorContextImpl();
+        EvaluatorContextImpl impl = new EvaluatorContextImpl(sessionState);
+        
+        return impl;
     } 
    
 }

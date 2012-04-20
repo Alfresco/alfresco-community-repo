@@ -71,6 +71,11 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     private class DriverState
     {
         /**
+         * key, value pair storage for the session
+         */
+        Map<String, Object> sessionState = new ConcurrentHashMap<String, Object>();
+        
+        /**
          * Map of folderName to Evaluator Context.
          */
         Map<String, EvaluatorContext> contextMap = new ConcurrentHashMap<String, EvaluatorContext>();
@@ -150,16 +155,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         String folder = paths[0];
         String file = paths[1];
         
-        EvaluatorContext ctx = driverState.contextMap.get(folder);
-        if(ctx == null)
-        {
-            ctx =  ruleEvaluator.createContext();
-            driverState.contextMap.put(folder, ctx);
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("new driver context: " + folder);
-            }
-        }
+        EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
 
         Operation o = new CloseFileOperation(file, param, rootNode, param.getFullName(), param.hasDeleteOnClose());
         Command c = ruleEvaluator.evaluate(ctx, o);
@@ -586,7 +582,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             EvaluatorContext ctx = driverState.contextMap.get(folder);
             if(ctx == null)
             {
-                ctx =  ruleEvaluator.createContext();
+                ctx =  ruleEvaluator.createContext(driverState.sessionState);
                 driverState.contextMap.put(folder, ctx);
                 if(logger.isDebugEnabled())
                 {

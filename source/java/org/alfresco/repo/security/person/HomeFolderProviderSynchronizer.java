@@ -22,11 +22,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
@@ -100,6 +101,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
 {
     private static final Log logger = LogFactory.getLog(HomeFolderProviderSynchronizer.class);
+    private static final Log batchLogger = LogFactory.getLog(HomeFolderProviderSynchronizer.class+".batch");
     
     private static final String GUEST_HOME_FOLDER_PROVIDER = "guestHomeFolderProvider";
     private static final String BOOTSTRAP_HOME_FOLDER_PROVIDER = "bootstrapHomeFolderProvider";
@@ -225,6 +227,8 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
          * 
          * Alternative approaches are possible, but the above has the advantage that
          * nodes are not moved if they are already in their preferred location.
+         * 
+         * Also needed to change the case of parent folders.
          */
         
         // Using authorities rather than Person objects as they are much lighter
@@ -279,9 +283,9 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         for (RunAsWorker worker: workers)
         {
             String name = worker.getName();
-            if (logger.isDebugEnabled())
+            if (logger.isInfoEnabled())
             {
-                logger.debug("  -- "+
+                logger.info("  -- "+
                         (TenantService.DEFAULT_DOMAIN.equals(tenantDomain)? "" : tenantDomain+" ")+
                         name+" --");
             }
@@ -296,11 +300,11 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                     new WorkProvider(authorities),
                     threadCount, peoplePerTransaction,
                     null,
-                    logger, 100);
+                    batchLogger, 100);
             processor.process(worker, true);
             if (processor.getTotalErrors() > 0)
             {
-                logger.debug("  -- Give up after error --");
+                logger.info("  -- Give up after error --");
                 break;
             }
         }
@@ -319,7 +323,11 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                 {
                     public Set<String> execute() throws Exception
                     {
-                        return authorityService.getAllAuthorities(AuthorityType.USER);
+                        // Returns a sorted set (using natural ordering) rather than a hashCode
+                        // so that it is more obvious what the order is for processing users.
+                        Set<String> result = new TreeSet<String>();
+                        result.addAll(authorityService.getAllAuthorities(AuthorityType.USER));
+                        return result;
                     }
                 };
                 return txnHelper.doInTransaction(restoreCallback, false, true);
@@ -414,17 +422,24 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
             private String createTmpFolderName(NodeRef root)
             {
                 // Try a few times but then give up.
-                for (int i = 1; i <= 100; i++)
+                String temporary = "Temporary-";
+                int from = 1;
+                int to = 100;
+                for (int i = from; i <= to; i++)
                 {
-                    String tmpFolderName = "Temporary"+i;
+                    String tmpFolderName = temporary+i;
                     if (fileFolderService.searchSimple(root, tmpFolderName) == null)
                     {
                         fileFolderService.create(root, tmpFolderName, ContentModel.TYPE_FOLDER);
                         return tmpFolderName;
                     }
                 }
-                throw new PersonException("Unable to create a temporty " +
-                	"folder into which home folders could be moved.");
+                String msg = "Unable to create a temporary " +
+                        "folder into which home folders will be moved. " +
+                        "Tried creating " + temporary + from + " .. " + temporary + to +
+                        ". Remove these folders and try again.";
+                logger.error("     # "+msg);
+                throw new PersonException(msg);
             }
         }.doWork();
     }
@@ -480,18 +495,18 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
             @Override
             protected void handleInPreferredLocation()
             {
-                if (logger.isDebugEnabled())
+                if (logger.isInfoEnabled())
                 {
-                    logger.debug("  "+toPath(actualPath)+" is already in preferred location.");
+                    logger.info("     # "+toPath(actualPath)+" is already in preferred location.");
                 }
             }
             
             @Override
             protected void handleSharedHomeProvider()
             {
-                if (logger.isDebugEnabled())
+                if (logger.isInfoEnabled())
                 {
-                    logger.debug("  "+userName+" "+providerName+" creates shared home folders - These are not moved.");
+                    logger.info("     # "+userName+" "+providerName+" creates shared home folders - These are not moved.");
                 }
             }
 
@@ -499,36 +514,36 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
             @Override
             protected void handleOriginalSharedHomeProvider()
             {
-                if (logger.isDebugEnabled())
+                if (logger.isInfoEnabled())
                 {
-                    logger.debug("  "+userName+" Original "+originalProviderName+" creates shared home folders - These are not moved.");
+                    logger.info("     # "+userName+" Original "+originalProviderName+" creates shared home folders - These are not moved.");
                 }
             }
 
             @Override
             protected void handleNotAHomeFolderProvider2()
             {
-                if (logger.isDebugEnabled())
+                if (logger.isInfoEnabled())
                 {
-                    logger.debug("  "+userName+" "+providerName+" for is not a HomeFolderProvider2.");
+                    logger.info("     # "+userName+" "+providerName+" for is not a HomeFolderProvider2.");
                 }
             }
 
             @Override
             protected void handleSpecialHomeFolderProvider()
             {
-                if (logger.isDebugEnabled())
+                if (logger.isInfoEnabled())
                 {
-                    logger.debug("  "+userName+" Original "+originalProviderName+" is an internal type - These are not moved.");
+                    logger.info("     # "+userName+" Original "+originalProviderName+" is an internal type - These are not moved.");
                 }
             }
 
             @Override
             protected void handleHomeFolderNotSet()
             {
-                if (logger.isDebugEnabled())
+                if (logger.isInfoEnabled())
                 {
-                    logger.debug("  "+userName+" Home folder is not set - ignored");
+                    logger.info("     # "+userName+" Home folder is not set - ignored");
                 }
             }
        }.doWork();
@@ -538,6 +553,11 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
      * @return a String for debug a folder list.
      */
     private String toPath(List<String> folders)
+    {
+        return toPath(folders, (folders == null) ? 0 : folders.size()-1);
+    }
+    
+    private String toPath(List<String> folders, int depth)
     {
         StringBuilder sb = new StringBuilder("");
         if (folders != null)
@@ -549,7 +569,15 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                     sb.append('/');
                 }
                 sb.append(folder);
+                if (depth-- <= 0)
+                {
+                    break;
+                }
             }
+        }
+        else
+        {
+            sb.append('.');
         }
         return sb.toString();
     }
@@ -634,19 +662,22 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
             // parent folders should have been created.
             NodeRef newParent = createNewParentIfRequired(root, preferredPath);
 
+            // If the preferred home folder already exists, append "-N"
+            homeFolderManager.modifyHomeFolderNameIfItExists(root, preferredPath);
             String homeFolderName = preferredPath.get(preferredPath.size() - 1);
             
-            // Throw our own FileExistsException before we get one that
-            // marks the transaction for rollback, as there is no point
-            // trying again.
-            if (nodeService.getChildByName(newParent, ContentModel.ASSOC_CONTAINS,
-                    homeFolderName) != null)
-            {
-                throw new FileExistsException(newParent, homeFolderName);
-            }
-       
             // Get the old parent before we move anything.
             NodeRef oldParent = nodeService.getPrimaryParent(homeFolder) .getParentRef();
+
+            // Log action
+            if (logger.isInfoEnabled())
+            {
+               logger.info("     mv "+toPath(actualPath)+
+                        " "+ toPath(preferredPath)+
+                        ((providerName != null && !providerName.equals(originalProviderName))
+                        ? "    # AND reset provider to "+providerName
+                        : "") + ".");
+            }
 
             // Perform the move
             homeFolder = fileFolderService.move(homeFolder, newParent,
@@ -662,16 +693,6 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                         ContentModel.PROP_HOME_FOLDER_PROVIDER, providerName);
             }
                 
-            // Log action
-            if (logger.isDebugEnabled())
-            {
-               logger.debug("  mv "+toPath(actualPath)+
-                        " "+ toPath(preferredPath)+
-                        ((providerName != null && !providerName.equals(originalProviderName))
-                        ? "    AND reset provider to "+providerName
-                        : "") + ".");
-            }
-
             // Tidy up
             removeEmptyParentFolders(oldParent, oldRoot);
         }
@@ -679,7 +700,7 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         {
             String message = "mv "+toPath(actualPath)+" "+toPath(preferredPath)+
                     " failed as the target already existed.";
-            logger.error("  "+message);
+            logger.error("     # "+message);
             throw new PersonException(message);
         }
         catch (FileNotFoundException e)
@@ -691,7 +712,7 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
             throw new PersonException(message);
         }
     }
-    
+
     private NodeRef createNewParentIfRequired(NodeRef root, List<String> homeFolderPath)
     {
         NodeRef parent = root;
@@ -701,8 +722,13 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
             String pathElement = homeFolderPath.get(i);
             NodeRef nodeRef = nodeService.getChildByName(parent,
                     ContentModel.ASSOC_CONTAINS, pathElement);
+            String path = toPath(homeFolderPath, i);
             if (nodeRef == null)
             {
+                if (logger.isInfoEnabled())
+                {
+                   logger.info("     mkdir "+path);
+                }
                 parent = fileFolderService.create(parent, pathElement,
                         ContentModel.TYPE_FOLDER).getNodeRef();
             }
@@ -714,7 +740,13 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                 // there is no point trying again.
                 if (!fileFolderService.getFileInfo(nodeRef).isFolder())
                 {
-                    throw new FileExistsException(parent, null);
+                    if (logger.isErrorEnabled())
+                    {
+                       logger.error("     # cannot create folder " + path +
+                               " as content with the same name exists. " +
+                               "Move the content and try again.");
+                    }
+                    throw new FileExistsException(parent, path);
                 }
 
                 parent = nodeRef;
@@ -757,9 +789,9 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                 {
                     return;
                 }
-                if (logger.isDebugEnabled())
+                if (logger.isInfoEnabled())
                 {
-                    logger.debug("    rm "+toPath(root, nodeRef));
+                    logger.info("       rm "+toPath(root, nodeRef));
                 }
                 nodeService.deleteNode(nodeRef);
             }
@@ -983,83 +1015,225 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         }
     }
     
-    // Gathers and checks parent folder paths.
+    // Records the parents of the preferred folder paths (the leaf folder are not recorded)
+    // and checks actual paths against these.
     private class ParentFolderStructure
     {
-        // Sets of parent folders within each root node 
-        private Map<NodeRef, Set<List<String>>> folders = new HashMap<NodeRef, Set<List<String>>>();
+        // Parent folders within each root node 
+        private Map<NodeRef, RootFolder> folders = new HashMap<NodeRef, RootFolder>();
         
         public void recordParentFolder(NodeRef root, List<String> path)
         {
-            Set<List<String>> rootsFolders = getFolders(root);
+            RootFolder rootsFolders = getFolders(root);
             synchronized(rootsFolders)
             {
-                // If parent is the root, all home folders clash
-                int parentSize = path.size() - 1;
-                if (parentSize == 0)
-                {
-                    // We could optimise the code a little by clearing
-                    // all other entries and putting a contains(null)
-                    // check just inside the synchronized(rootsFolders)
-                    // but it might be useful to have a complete lit of
-                    // folders.
-                    rootsFolders.add(null);
-
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("  Recorded root as parent");
-                    }
-                }
-				else
-                {
-                    while (parentSize-- > 0)
-                    {
-                        List<String> parentPath = new ArrayList<String>();
-                        for (int j = 0; j <= parentSize; j++)
-                        {
-                            parentPath.add(path.get(j));
-                        }
-
-                        if (logger.isDebugEnabled()
-                                && !rootsFolders.contains(parentPath))
-                        {
-                            logger.debug("  Recorded parent: "
-                                    + toPath(parentPath));
-                        }
-
-                        rootsFolders.add(parentPath);
-                    }
-                }
+                rootsFolders.add(path);
             }
         }
         
         /**
-         * @return {@code true} if the {@code path} is a parent folder
-         *         or the parent folders includes the root itself. In
-         *         the latter case all existing folders might clash
-         *         so must be moved out of the way.
+         * Checks to see if there is a clash between the preferred paths and the
+         * existing folder structure. If there is a clash, the existing home folder
+         * (the leaf folder) is moved to a temporary structure. This allows any
+         * parent folders to be tidied up (if empty), so that the new preferred
+         * structure can be recreated.<p>
+         * 
+         * 1. There is no clash if the path is null or empty.
+         * 
+         * 2. There is a clash if there is a parent structure included the root
+         *    folder itself.<p>
+         * 
+         * 3. There is a clash if the existing path exists in the parent structure.
+         *    This comparison ignores case as Alfresco does not allow duplicates
+         *    regardless of case.<p>
+         *
+         * 4. There is a clash if any of the folders in the existing path don't
+         *    match the case of the parent folders.
+         * 
+         * 5. There is a clash there are different case versions of the parent
+         *    folders themselves or other existing folders.
+         *    
+         * When 4 takes place, we will end up with the first one we try to recreate
+         * being used for all.
          */
         public boolean clash(NodeRef root, List<String> path)
         {
-            Set<List<String>> rootsFolders = getFolders(root);
+            if (path == null || path.isEmpty())
+            {
+                return false;
+            }
+            
+            RootFolder rootsFolders = getFolders(root);
             synchronized(rootsFolders)
             {
-                return rootsFolders.contains(path) ||
-                       rootsFolders.contains(null);
+                return rootsFolders.clash(path);
             }
         }
 
-        private Set<List<String>> getFolders(NodeRef root)
+        private RootFolder getFolders(NodeRef root)
         {
             synchronized(folders)
             {
-                Set<List<String>> rootsFolders = folders.get(root);
+                RootFolder rootsFolders = folders.get(root);
                 if (rootsFolders == null)
                 {
-                    rootsFolders = new HashSet<List<String>>();
+                    rootsFolders = new RootFolder();
                     folders.put(root, rootsFolders);
                 }
                 return rootsFolders;
+            }
+        }
+        
+        // Records the parents of the preferred folder paths (the leaf folder are not recorded)
+        // and checks actual paths against these BUT only for a single root.
+        private class RootFolder extends Folder
+        {
+            private boolean includesRoot;
+            
+            public RootFolder()
+            {
+                super(null);
+            }
+            
+            // Adds a path (but not the leaf folder) if it does not already exist.
+            public void add(List<String> path)
+            {
+                if (!includesRoot)
+                {
+                    int parentSize = path.size() - 1;
+                    if (parentSize == 0)
+                    {
+                        includesRoot = true;
+                        children = null; // can discard children as all home folders now clash.
+                        if (logger.isInfoEnabled())
+                        {
+                            logger.info("   # Recorded root as parent - no need to record other parents as all home folders will clash");
+                        }
+                    }
+                    else
+                    {
+                        add(path, 0);
+                    }
+                }
+            }
+
+            /**
+             * See description of {@link ParentFolderStructure#clash(NodeRef, List)}.<p>
+             * 
+             * Performs check 2 and then calls {@link Folder#clash(List, int)} to
+             * perform 3, 4 and 5.
+             */
+            public boolean clash(List<String> path)
+            {
+                // Checks 2.
+                return includesRoot ? false : clash(path, 0);
+            }
+        }
+        
+        private class Folder
+        {
+            // Case specific name of first folder added.
+            String name;
+            
+            // Indicates if there is another preferred name that used different case.
+            boolean duplicateWithDifferentCase;
+            
+            List<Folder> children;
+            
+            public Folder(String name)
+            {
+                this.name = name;
+            }
+            
+            /**
+             * Adds a path (but not the leaf folder) if it does not already exist.
+             * @param path the full path to add
+             * @param depth the current depth into the path starting with 0.
+             */
+            protected void add(List<String> path, int depth)
+            {
+                int parentSize = path.size() - 1;
+                String name = path.get(depth);
+                Folder child = getChild(name);
+                if (child == null)
+                {
+                    child = new Folder(name);
+                    if (children == null)
+                    {
+                        children = new LinkedList<Folder>();
+                    }
+                    children.add(child);
+                    if (logger.isInfoEnabled())
+                    {
+                        logger.info("     " + toPath(path, depth));
+                    }
+                }
+                else if (!child.name.equals(name))
+                {
+                    child.duplicateWithDifferentCase = true;
+                }
+                
+                // Don't add the leaf folder
+                if (++depth < parentSize)
+                {
+                    add(path, depth);
+                }
+            }
+
+            /**
+             * See description of {@link ParentFolderStructure#clash(NodeRef, List)}.<p>
+             * 
+             * Performs checks 3, 4 and 5 for a single level and then recursively checks
+             * lower levels.
+             */
+            protected boolean clash(List<String> path, int depth)
+            {
+                String name = path.get(depth);
+                Folder child = getChild(name); // Uses equalsIgnoreCase
+                if (child == null)
+                {
+                    // Negation of check 3.
+                    return false;
+                }
+                else if (child.duplicateWithDifferentCase) // if there folders using different case!
+                {
+                    // Check 5.
+                    return true;
+                }
+                else if (!child.name.equals(name)) // if the case does not match
+                {
+                    // Check 4.
+                    child.duplicateWithDifferentCase = true;
+                    return true;
+                }
+                
+                // If a match (including case) has been made to the end of the path
+                if (++depth == path.size())
+                {
+                    // Check 3.
+                    return true;
+                }
+                
+                // Check lower levels.
+                return clash(path, depth);
+            }
+            
+            /**
+             * Returns the child folder with the specified name (ignores case).
+             */
+            private Folder getChild(String name)
+            {
+                if (children != null)
+                {
+                    for (Folder child: children)
+                    {
+                        if (name.equalsIgnoreCase(child.name))
+                        {
+                            return child;
+                        }
+                    }
+                }
+                return null;
             }
         }
     }

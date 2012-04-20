@@ -18,6 +18,8 @@
  */
 package org.alfresco.filesys.repo.rules;
 
+import java.util.Map;
+
 /**
  * The Rule Evaluator evaluates the operation and returns 
  * details of the commands to implement those operations.
@@ -31,7 +33,7 @@ public interface RuleEvaluator
      * An evaluator context groups operations together.
      * @return the new context.
      */
-    public EvaluatorContext createContext();
+    public EvaluatorContext createContext(Map<String, Object>sessionContext);
     
     /**
      * Evaluate the scenarios contained within the context against the current operation

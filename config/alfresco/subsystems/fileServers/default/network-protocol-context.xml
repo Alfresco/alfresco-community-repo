@@ -145,8 +145,10 @@
        <property name="scenarios">
             <list>
                 <!-- TextEdit Mac Lion -->
-                <bean id="deleteShuffle" class="org.alfresco.filesys.repo.rules.ScenarioLockedDeleteShuffle">
-                    <property name="pattern"><value>^\._.txt*</value></property>
+                <bean id="tempDeleteShuffle" class="org.alfresco.filesys.repo.rules.ScenarioTempDeleteShuffle">
+                    <property name="pattern"><value>^.*\.txt$</value></property>
+                                                          
+                    <property name="tempDirPattern"><value>.*(\\\..*\\)+.*</value></property>
                     <property name="timeout"><value>60000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>
@@ -176,7 +178,7 @@
                 </bean>
                 <!--  Powerpoint Mac 2011 -->
                 <bean id="createShufflePPT2011" class="org.alfresco.filesys.repo.rules.ScenarioCreateDeleteRenameShuffle">
-                    <property name="pattern"><value>^[^\._].*[0-9].pptx$</value></property>
+                    <property name="pattern"><value>^[^\._].*[0-9].ppt[x]*$</value></property>
                     <property name="timeout"><value>60000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>

@@ -34,7 +34,7 @@ public class ScenarioSimpleNonBuffered implements Scenario
     private Ranking ranking = Ranking.LOW;
     
     @Override
-    public ScenarioInstance createInstance(final List<ScenarioInstance> currentInstances, Operation operation)
+    public ScenarioInstance createInstance(final EvaluatorContext ctx, Operation operation)
     {
         /**
          * The bog standard scenario is always interested.

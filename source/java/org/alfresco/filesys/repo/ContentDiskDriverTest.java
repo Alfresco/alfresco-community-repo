@@ -4733,18 +4733,16 @@ public class ContentDiskDriverTest extends TestCase
      * This test tries to simulate the cifs shuffling that is done 
      * from Save from Mac Lion by TextEdit
      * 
-     * a) Lock file created. (._test.txt)
-     * b) Temp file created in temporary folder (test.txt)
-     * c) Target file deleted
-     * d) Temp file renamed to target file.
-     * e) Lock file deleted
-     *  
+     * a) Temp file created in temporary folder (test.txt)
+     * b) Resource fork file created in temporary folder (._test.txt)
+     * b) Target file deleted
+     * c) Temp file moved to target file.
      */
-    public void DISABLED_TestScenarioMacLionTextEdit() throws Exception
+    public void testScenarioMacLionTextEdit() throws Exception
     {
         logger.debug("testScenarioLionTextEdit");
         final String FILE_NAME = "test.txt";
-        final String LOCK_FILE_NAME = "._test.txt";
+        final String FORK_FILE_NAME = "._test.txt";
         final String TEMP_FILE_NAME = "test.txt";
         
         final String UPDATED_TEXT = "Mac Lion Text Updated Content";
@@ -4813,23 +4811,10 @@ public class ContentDiskDriverTest extends TestCase
                 driver.writeFile(testSession, testConnection, testContext.tempFileHandle, testContentBytes, 0, testContentBytes.length, 0);
                 driver.closeFile(testSession, testConnection, testContext.tempFileHandle); 
                 
-                return null;
-            }
-        };
-        tran.doInTransaction(createFileCB, false, true);
-        
-        /**
-         * a) create the lock file
-         */
-        RetryingTransactionCallback<Void> createLockFileCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
                 /**
-                 * Create the lock file we are going to use
+                 * Create the temp resource fork file we are going to use
                  */
-                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + LOCK_FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                createFileParams = new FileOpenParams(TEST_TEMP_DIR + "\\" + FORK_FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
                 testContext.lockFileHandle = driver.createFile(testSession, testConnection, createFileParams);
                 assertNotNull(testContext.lockFileHandle);
                 testContext.lockFileHandle.closeFile();
@@ -4840,12 +4825,11 @@ public class ContentDiskDriverTest extends TestCase
                 testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
                 nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
                 
-
                 return null;
             }
         };
-        tran.doInTransaction(createLockFileCB, false, true);
-        
+        tran.doInTransaction(createFileCB, false, true);
+            
         /**
          * b) Delete the target file
          */
@@ -4869,28 +4853,15 @@ public class ContentDiskDriverTest extends TestCase
             public Void execute() throws Throwable
             {
                 driver.renameFile(testSession, testConnection, TEST_TEMP_DIR + "\\" + TEMP_FILE_NAME, TEST_DIR + "\\" + FILE_NAME); 
+                driver.renameFile(testSession, testConnection, TEST_TEMP_DIR + "\\" + FORK_FILE_NAME, TEST_DIR + "\\" + FORK_FILE_NAME); 
                 return null;
             }
         };
         tran.doInTransaction(moveTempFileCB, false, true);
         
-        
         /**
-         * d) Delete Lock File
+         * Validate results.
          */
-        RetryingTransactionCallback<Void> deleteLockFileCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + LOCK_FILE_NAME);
-                
-                return null;
-            }
-        };
-        
-        tran.doInTransaction(deleteLockFileCB, false, true);
-        
         RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
 
             @Override
@@ -4900,7 +4871,7 @@ public class ContentDiskDriverTest extends TestCase
                 NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
 
                 assertEquals("shuffledNode ref is different", shuffledNodeRef, testContext.testNodeRef);
-                assertTrue("", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                assertTrue("node is not versionable", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
                 
                 ContentReader reader = contentService.getReader(shuffledNodeRef, ContentModel.PROP_CONTENT);
                 assertNotNull("Reader is null", reader);

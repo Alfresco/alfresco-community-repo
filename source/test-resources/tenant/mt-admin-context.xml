@@ -14,25 +14,26 @@
     <bean id="spacesArchiveBootstrap-mt" parent="spacesArchiveBootstrap-base" singleton="false" />
     <bean id="spacesBootstrap-mt" parent="spacesBootstrap-base" singleton="false" />
     
-   <!--                                           -->
-   <!-- MT Admin Service Implementation -->
-   <!--                                           -->
-            
-   <bean id="tenantAdminService" parent="baseMultiTAdminService" />
-                
-   <bean id="tenantInterpreter" class="org.alfresco.repo.tenant.TenantInterpreter" parent="interpreterBase">
+    <!--                                           -->
+    <!-- MT Admin Service Implementation -->
+    <!--                                           -->
+    
+    <bean id="tenantAdminService" parent="baseMultiTAdminService" class="org.alfresco.repo.tenant.MultiTAdminServiceImpl" />
+    
+    <bean id="tenantInterpreter" class="org.alfresco.repo.tenant.TenantInterpreter" parent="interpreterBase">
         <property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="authenticationService" ref="AuthenticationService"/>
         <property name="baseAdminUsername"><value>${alfresco_user_store.adminusername}</value></property>
-   </bean>
-
-   <bean id="tenantInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+    </bean>
+    
+    <bean id="tenantInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.tenant-interpreter-help</value>
             </list>
         </property>
-   </bean>
+    </bean>
    
 </beans>
+

@@ -28,8 +28,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -51,7 +51,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -83,6 +82,7 @@ public class HomeFolderProviderSynchronizerTest
     private static AuthorityService authorityService;
     private static TenantAdminService tenantAdminService;
     private static TenantService tenantService;
+    private static UserNameMatcherImpl userNameMatcher;
     private static PortableHomeFolderManager homeFolderManager;
     private static RegexHomeFolderProvider largeHomeFolderProvider;
     private static String largeHomeFolderProviderName;
@@ -109,6 +109,7 @@ public class HomeFolderProviderSynchronizerTest
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
         tenantAdminService = (TenantAdminService) applicationContext.getBean("tenantAdminService");
         tenantService = (TenantService) applicationContext.getBean("tenantService");
+        userNameMatcher = (UserNameMatcherImpl) applicationContext.getBean("userNameMatcher");
         homeFolderManager = (PortableHomeFolderManager) applicationContext.getBean("homeFolderManager");
         largeHomeFolderProvider = (RegexHomeFolderProvider) applicationContext.getBean("largeHomeFolderProvider");
         largeHomeFolderProviderName = largeHomeFolderProvider.getName();
@@ -207,6 +208,7 @@ public class HomeFolderProviderSynchronizerTest
         trans.commit();
         trans = null;
         AuthenticationUtil.clearCurrentSecurityContext();
+        userNameMatcher.setUserNamesAreCaseSensitive(false); // Put back the default
     }
 
     private Set<NodeRef> deleteNonAdminGuestUsers()
@@ -704,6 +706,8 @@ public class HomeFolderProviderSynchronizerTest
     @Test
     public void testPathAlreadyInUseByContent() throws Exception
     {
+        System.out.println("testPathAlreadyInUseByContent: EXPECT TO SEE AN EXCEPTION IN THE LOG ======================== ");
+        
         createUser("", "fred");
         createContent("", "fr");
         
@@ -731,7 +735,7 @@ public class HomeFolderProviderSynchronizerTest
         assertHomeFolderLocation("peter", "pe/peter");
         assertHomeFolderLocation("pe", "pe/pe");
         
-        assertFalse("The Temporary1 folder should have been removed", exists("Temporary1"));
+        assertFalse("The Temporary-1 folder should have been removed", exists("Temporary-1"));
     }
 
     @Test
@@ -739,24 +743,26 @@ public class HomeFolderProviderSynchronizerTest
     {
         createUser("", "fr");
         createUser("", "fred");
-        createFolder("Temporary1");
-        createFolder("Temporary2");
-        createFolder("Temporary3");
+        createFolder("Temporary-1");
+        createFolder("Temporary-2");
+        createFolder("Temporary-3");
         
         // Don't delete the temporary folder
         homeFolderProviderSynchronizer.setKeepEmptyParents("true");
         
         moveUserHomeFolders();
 
-        assertTrue("The existing Temporary1 folder should still exist", exists("Temporary1"));
-        assertTrue("The existing Temporary2 folder should still exist", exists("Temporary2"));
-        assertTrue("The existing Temporary3 folder should still exist", exists("Temporary3"));
-        assertTrue("The existing Temporary4 folder should still exist", exists("Temporary4"));
+        assertTrue("The existing Temporary-1 folder should still exist", exists("Temporary-1"));
+        assertTrue("The existing Temporary-2 folder should still exist", exists("Temporary-2"));
+        assertTrue("The existing Temporary-3 folder should still exist", exists("Temporary-3"));
+        assertTrue("The existing Temporary-4 folder should still exist", exists("Temporary-4"));
     }
 
     @Test
     public void testException() throws Exception
     {
+        System.out.println("testException: EXPECT TO SEE AN EXCEPTION IN THE LOG ======================== ");
+        
         // Force the need for a temporary folder
         createUser("", "fr");
         createUser("", "fred");
@@ -764,7 +770,7 @@ public class HomeFolderProviderSynchronizerTest
         // Use up all possible temporary folder names
         for (int i=1; i<=100; i++)
         {
-            createFolder("Temporary"+i);
+            createFolder("Temporary-"+i);
         }
 
         moveUserHomeFolders();
@@ -938,5 +944,39 @@ public class HomeFolderProviderSynchronizerTest
             assertHomeFolderLocation(tenant1, "fred", "fr/"+tenantService.getDomainUser("fred", tenant1));
             assertHomeFolderLocation(tenant2, "fred", "fr/"+tenantService.getDomainUser("fred", tenant2));
         }
+    }
+    
+    // ALF-11535
+    @Test
+    public void testChangeParentFolderCase() throws Exception
+    {
+        // By default, user names are case sensitive
+        createUser("fr", "FRED");
+        moveUserHomeFolders();
+        assertHomeFolderLocation("FRED", "FR/FRED");
+        assertHomeFolderLocation("fred", "FR/FRED"); // Same user
+    }
+    
+    // ALF-11535
+    @Test
+    public void testCaseSensitiveUsers() throws Exception
+    {
+        userNameMatcher.setUserNamesAreCaseSensitive(true);
+        
+        // Users are processed in a sorted order (natural ordering).
+        // The preferred parent folder structure of the first user
+        // is used where there is a clash between users.
+
+        // The following users are in their natural order.
+        createUser("Ab", "Abby");
+        createUser("TE", "TESS");
+        createUser("TE", "Tess");
+        createUser("Ab", "aBBY");
+        
+        moveUserHomeFolders();
+        assertHomeFolderLocation("Abby", "Ab/Abby");
+        assertHomeFolderLocation("TESS", "TE/TESS");
+        assertHomeFolderLocation("Tess", "TE/Tess-1");
+        assertHomeFolderLocation("aBBY", "Ab/aBBY-1");
     }
 }

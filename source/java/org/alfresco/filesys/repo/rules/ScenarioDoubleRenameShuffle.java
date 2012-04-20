@@ -51,7 +51,7 @@ public class ScenarioDoubleRenameShuffle implements Scenario
     private Ranking ranking = Ranking.HIGH;
     
     @Override
-    public ScenarioInstance createInstance(final List<ScenarioInstance> currentInstances, Operation operation)
+    public ScenarioInstance createInstance(final EvaluatorContext ctx, Operation operation)
     {
         /**
          * This scenario is triggered by a rename of a file matching

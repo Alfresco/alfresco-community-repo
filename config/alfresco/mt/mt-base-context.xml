@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    
+
    <!--
         Bootstrap Data: Prototype beans for the per-tenant bootstrap.
         These are fetched by the MultiTAdminServiceImpl when new tenant is created.
@@ -13,9 +13,8 @@
    <bean id="version2Bootstrap-mt" parent="version2Bootstrap-base" singleton="false" />
    <bean id="spacesArchiveBootstrap-mt" parent="spacesArchiveBootstrap-base" singleton="false" />
    <bean id="spacesBootstrap-mt" parent="spacesBootstrap-base" singleton="false" />
-    
-    
-   <bean id="baseMultiTAdminService" class="org.alfresco.repo.tenant.MultiTAdminServiceImpl" abstract="true">
+   
+   <bean id="baseMultiTAdminService" abstract="true">
    
       <!--
       <property name="nodeService" ref="NodeService"/>
@@ -28,13 +27,17 @@
       <property name="transactionService" ref="transactionComponent"/>
       <property name="tenantAdminDAO" ref="tenantAdminDAO"/>
       <property name="passwordEncoder" ref="passwordEncoder"/>
-      <property name="tenantFileContentStore" ref="tenantFileContentStore"/>     
+      <property name="tenantFileContentStore" ref="fileContentStore"/> <!-- see 'mt-contentstore-context.xml' (or any further overrides) -->
       <property name="workflowService" ref="WorkflowService"/>
       <property name="repositoryExporterService" ref="repositoryExporterComponent"/>
       <property name="moduleService" ref="moduleService"/>
-      <property name="baseAdminUsername"><value>${alfresco_user_store.adminusername}</value></property>
+      <property name="baseAdminUsername" value="${alfresco_user_store.adminusername}"/>
       <property name="thumbnailRegistry" ref="thumbnailRegistry"/>
-      
+   </bean>
+   
+   <bean id="baseTenantRoutingContentStore" class="org.alfresco.repo.content.TenantRoutingFileContentStore" abstract="true">
+      <property name="tenantService" ref="tenantService" />
+      <property name="storesCache" ref="routingContentStoreCache" />
    </bean>
    
 </beans>

@@ -353,43 +353,51 @@ public class PortableHomeFolderManager implements HomeFolderManager
         }
         else
         {
+            // If the preferred home folder already exists, append "-N"
+            NodeRef root = getRootPathNodeRef(provider);
             List<String> homeFolderPath = provider.getHomeFolderPath(person);
-            
-            FileInfo fileInfo;
+            modifyHomeFolderNameIfItExists(root, homeFolderPath);
 
-            // Test if it already exists
-            NodeRef existing = getExisting(provider, fileFolderService, homeFolderPath);
-            if (existing != null)
-            {
-                fileInfo = fileFolderService.getFileInfo(existing);
-            }
-            else
-            {
-                fileInfo = createTree(provider, getRootPathNodeRef(provider), homeFolderPath,
-                        provider.getTemplateNodeRef(), fileFolderService);
-            }
+            // Create folder
+            FileInfo fileInfo = createTree(provider, getRootPathNodeRef(provider), homeFolderPath,
+                    provider.getTemplateNodeRef(), fileFolderService);
             NodeRef homeFolderNodeRef = fileInfo.getNodeRef();
             return new HomeSpaceNodeRef(homeFolderNodeRef, HomeSpaceNodeRef.Status.CREATED);
         }
         return homeSpaceNodeRef;
     }
 
-    private NodeRef getExisting(HomeFolderProvider2 provider, FileFolderService fileFolderService,
-            List<String> homeFolderPath)
+    /**
+     * Modifies (if required) the leaf folder name in the {@code homeFolderPath} by
+     * appending {@code "-N"} (where N is an integer starting with 1), so that a
+     * new folder will be created.
+     * @param root folder.
+     * @param homeFolderPath the full path. Only the final element is used.
+     */
+    public void modifyHomeFolderNameIfItExists(NodeRef root, List<String> homeFolderPath)
     {
-        NodeRef existing;
+        int n = 0;
+        int last = homeFolderPath.size()-1;
+        String name = homeFolderPath.get(last);
+        String homeFolderName = name;
         try
         {
-            FileInfo existingFileInfo = fileFolderService.resolveNamePath(getRootPathNodeRef(provider), homeFolderPath);
-            existing = existingFileInfo.getNodeRef();
+            do
+            {
+                if (n > 0)
+                {
+                    homeFolderName = name+'-'+n;
+                    homeFolderPath.set(last, homeFolderName);
+                }
+                n++;
+            } while (fileFolderService.resolveNamePath(root, homeFolderPath, false) != null);
         }
-        catch (FileNotFoundException fnfe)
+        catch (FileNotFoundException e)
         {
-            existing = null;// home folder noderef doesn't exist yet
+            // Should not be thrown as call to resolveNamePath passes in false
         }
-        return existing;
     }
-
+    
     /**
      * creates a tree of folder nodes based on the path elements provided.
      */

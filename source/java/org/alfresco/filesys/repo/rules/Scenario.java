@@ -35,7 +35,7 @@ public interface Scenario
      * @param operation the operation to be performed
      * @return the scenario instance or null if a new instance is not required.
      */
-    ScenarioInstance createInstance(final List<ScenarioInstance> currentInstances, Operation operation);
+    ScenarioInstance createInstance(EvaluatorContext ctx, Operation operation);
       
     
 }

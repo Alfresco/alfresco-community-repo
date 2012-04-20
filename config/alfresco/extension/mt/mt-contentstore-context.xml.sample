@@ -7,9 +7,8 @@
    <!-- (Tenant Routing) File Content Store  -->
    <!--                                      -->
    
-   <bean id="fileContentStore" class="org.alfresco.repo.tenant.TenantRoutingFileContentStore" parent="baseTenantRoutingContentStore">
+   <bean id="fileContentStore" class="org.alfresco.repo.content.TenantRoutingFileContentStore" parent="baseTenantRoutingContentStore">
       <property name="defaultRootDir" value="${dir.contentstore}" />
-      <property name="contentLimitProvider" ref="defaultContentLimitProvider"/>
    </bean>
    
 </beans>

@@ -54,7 +54,7 @@ public class ScenarioOpenFile implements Scenario
     private long timeout = 300000;
     
     @Override
-    public ScenarioInstance createInstance(final List<ScenarioInstance> currentInstances, Operation operation)
+    public ScenarioInstance createInstance(final EvaluatorContext ctx, Operation operation)
     {
        /**
          * This scenario is triggered by an open or create of a new file
@@ -71,7 +71,7 @@ public class ScenarioOpenFile implements Scenario
             if(c.getName().matches(pattern))
             {
                 
-                if(checkScenarioActive(c.getName(),currentInstances))
+                if(checkScenarioActive(c.getName(),ctx.getScenarioInstances()))
                 {
                     logger.debug("scenario already active for name" + c.getName());
                     return null;
@@ -102,7 +102,7 @@ public class ScenarioOpenFile implements Scenario
             
             if(o.getName().matches(pattern))
             {
-                if(checkScenarioActive(o.getName(),currentInstances))
+                if(checkScenarioActive(o.getName(),ctx.getScenarioInstances()))
                 {
                     logger.debug("scenario already active for name" + o.getName());
                     return null;

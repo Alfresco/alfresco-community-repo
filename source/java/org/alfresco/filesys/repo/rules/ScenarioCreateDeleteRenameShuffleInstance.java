@@ -46,11 +46,11 @@ import org.apache.commons.logging.LogFactory;
  * 
  * <p>
  * If this filter is active then this is what happens.
- * a) New file created.   New file created (X).
- * b) Existing file deleted (Y to Z).   File moved to temporary location.
+ * a) New file created.   New file created.
+ * b) Existing file deleted.   File moved to temporary location instead.
  * c) Rename - Scenario fires 
  * - File moved back from temporary location
- * - Content updated/
+ * - Content updated.
  * - temporary file deleted
  */
 public class ScenarioCreateDeleteRenameShuffleInstance implements ScenarioInstance

@@ -153,6 +153,7 @@
        <property name="sitesPermissionsCleaner" ref="sitesPermissionsCleaner"/>
        <property name="cannedQueryRegistry" ref="siteCannedQueryRegistry"/>
        <property name="policyComponent" ref="policyComponent"/>
+       <property name="publicServiceAccessService" ref="PublicServiceAccessService" />
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

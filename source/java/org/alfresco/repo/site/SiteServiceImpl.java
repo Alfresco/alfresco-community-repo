@@ -80,6 +80,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PublicServiceAccessService;
 import org.alfresco.service.cmr.security.AuthorityService.AuthorityFilter;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -161,6 +162,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private BehaviourFilter behaviourFilter;
     private SitesPermissionCleaner sitesPermissionsCleaner;
     private PolicyComponent policyComponent;
+    private PublicServiceAccessService publicServiceAccessService;
     
     private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
 
@@ -327,6 +329,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         this.sitesPermissionsCleaner = sitesPermissionsCleaner;
     }
     
+    public void setPublicServiceAccessService(PublicServiceAccessService publicServiceAccessService)
+    {
+        this.publicServiceAccessService = publicServiceAccessService;
+    }
+
     /**
      * Set the registry of {@link CannedQueryFactory canned queries}
      */
@@ -385,13 +392,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */
     public boolean hasCreateSitePermissions()
     {
-        final NodeRef siteRoot = getSiteRoot();
-        if (siteRoot == null)
-        {
-            throw new SiteServiceException("No root sites folder exists");
-        }
-        boolean result = permissionService.hasPermission(siteRoot, PermissionService.CONTRIBUTOR).equals(AccessStatus.ALLOWED);
-		return result;
+        // NOTE: see ALF-13580 - since 3.4.6 PermissionService.CONTRIBUTOR is no longer used as the default on the Sites folder
+        // instead the ability to call createSite() and the Spring configured ACL is the mechanism used to protect access.
+        return (publicServiceAccessService.hasAccess("SiteService", "createSite", "", "", "", "", true) == AccessStatus.ALLOWED);
     }
     
     /**

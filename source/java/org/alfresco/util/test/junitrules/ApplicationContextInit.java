@@ -108,7 +108,7 @@ public class ApplicationContextInit extends ExternalResource
         return new ApplicationContextInit(contextsAsArray);
     }
     
-    @Override protected void before() throws Throwable
+    @Override protected void before()
     {
         // Were any context locations specified in the constructor?
         if (configLocations.length > 0)
@@ -144,6 +144,11 @@ public class ApplicationContextInit extends ExternalResource
      */
     public ApplicationContext getApplicationContext()
     {
+        if (this.appContext == null)
+        {
+            // Chain order is wrong, try to help out by doing the @Before now
+            before();
+        }
         return this.appContext;
     }
     

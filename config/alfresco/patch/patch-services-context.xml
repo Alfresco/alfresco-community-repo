@@ -3103,4 +3103,56 @@
         </property>
     </bean>
     
+    <bean id="patch.remoteCredentialsContainer" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.remoteCredentialsContainer</value></property>
+        <property name="description"><value>patch.remoteCredentialsContainer.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6005</value></property>
+        <property name="targetSchema"><value>6006</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${system.system_container.childname}/${system.remote_credentials_container.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${system.system_container.childname}</prop>
+                <prop key="location">alfresco/bootstrap/remoteCredentialsSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.syncSetDefinitionsContainer" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.syncSetDefinitionsContainer</value></property>
+        <property name="description"><value>patch.syncSetDefinitionsContainer.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6005</value></property>
+        <property name="targetSchema"><value>6006</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${system.system_container.childname}/${system.syncset_definition_container.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${system.system_container.childname}</prop>
+                <prop key="location">alfresco/bootstrap/syncSetDefinitionsSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
 </beans>

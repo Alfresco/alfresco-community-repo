@@ -402,6 +402,8 @@
                 <prop key="spaces.wcm_deployed.childname">${spaces.wcm_deployed.childname}</prop>
                 <prop key="spaces.publishing.root.childname">${spaces.publishing.root.childname}</prop>
                 <prop key="spaces.nodetemplates.childname">${spaces.nodetemplates.childname}</prop>
+                <prop key="system.remote_credentials_container.childname">${system.remote_credentials_container.childname}</prop>
+                <prop key="system.syncset_definition_container.childname">${system.syncset_definition_container.childname}</prop>
             </props>
         </property>
     </bean>
@@ -606,6 +608,18 @@
                 <props>
                     <prop key="path">/${system.system_container.childname}</prop>
                     <prop key="location">alfresco/bootstrap/alfrescoAuthorityStoreDefaultMembers.xml</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${system.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/remoteCredentialsSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+
+                <props>
+                    <prop key="path">/${system.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/syncSetDefinitionsSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
 
                 <props>

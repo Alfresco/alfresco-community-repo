@@ -784,6 +784,25 @@ public class CalendarHelpersTest
    }
    
    /**
+    * eg the last Tuesday of the month
+    */
+   @Test public void monthlyRecurrenceByLastDayOfWeek()
+   {
+       List<Date> dates = new ArrayList<Date>();
+       Calendar currentDate = Calendar.getInstance();
+       
+       // The last Tuesday of every 2nd month
+       // FREQ=MONTHLY;INTERVAL=2;BYDAY=TU;BYSETPOS=-1
+       Map<String,String> params = new HashMap<String, String>();
+       params.put("FREQ", "MONTHLY");
+       params.put("INTERVAL", "2");
+       params.put("BYDAY", "TU");
+       params.put("BYSETPOS", "-1");
+
+       // TODO Add tests for this case, ALF-13287
+   }
+   
+   /**
     * eg every 21st of February
     */
    @Test public void yearlyRecurrenceByDateInMonth()

@@ -764,6 +764,9 @@
 
                 <!-- Links model -->
                 <value>alfresco/model/linksModel.xml</value>
+
+                <!-- Remote Credentials model -->
+                <value>alfresco/model/remoteCredentialsModel.xml</value>
                 
                 <!-- Share Data Lists model -->
                 <value>alfresco/model/datalistModel.xml</value>

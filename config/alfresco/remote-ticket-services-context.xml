@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+                           http://www.springframework.org/schema/tx      http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+   <!-- Remote Connector Service -->
+   <!--  For now, takes no services, so no public/private split -->
+   <alias alias="RemoteConnectorService" name="remoteConnectorService" />
+   <bean id="remoteConnectorService" class="org.alfresco.repo.remoteconnector.RemoteConnectorServiceImpl" />
+
+   <!-- Remote Alfresco Ticket Service -->
+   <bean id="RemoteAlfrescoTicketService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService</value>
+      </property>
+      <property name="target">
+         <ref bean="remoteAlfrescoTicketService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="remoteAlfrescoTicketServiceReadTxnAdvisor" />
+            <idref bean="remoteAlfrescoTicketServiceWriteTxnAdvisor" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref bean="remoteAlfrescoTicketService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- Transaction Interceptors for the Remote AlfrescoTicket Service -->
+   <bean id="remoteAlfrescoTicketServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getRemoteCredentials</value>
+                <value>registerRemoteSystem</value>
+
+                <!-- These create their own write transaction internally if recording problems -->
+                <value>getAlfrescoTicket</value>
+                <value>refetchAlfrescoTicket</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="remoteAlfrescoTicketServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>storeRemoteCredentials</value>
+                <value>deleteRemoteCredentials</value>
+            </list>
+        </property>
+   </bean>
+
+   <!-- Remote Alfresco Ticket Service base bean -->
+	<bean id="remoteAlfrescoTicketService" class="org.alfresco.repo.remoteticket.RemoteAlfrescoTicketServiceImpl">
+        <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
+        <property name="remoteCredentialsService" ref="RemoteCredentialsService"/>
+        <property name="remoteConnectorService" ref="RemoteConnectorService" />
+        <property name="ticketsCache" ref="remoteAlfrescoTicketService.ticketsCache" />
+	</bean>
+
+
+   <!-- Remote Alfresco Ticket Cache, cross-transaction shared cache -->
+   <bean name="remoteAlfrescoTicketService.ticketsCache" class="org.alfresco.repo.cache.EhCacheAdapter">
+      <property name="cache">
+         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
+            <property name="cacheManager">
+               <ref bean="internalEHCacheManager" />
+            </property>
+            <property name="cacheName">
+               <value>org.alfresco.cache.remote.auth.ticketCache</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+</beans>

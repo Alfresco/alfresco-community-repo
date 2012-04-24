@@ -15,6 +15,8 @@
     <import resource="classpath:alfresco/discussions-services-context.xml"/>
     <import resource="classpath:alfresco/links-services-context.xml"/>
     <import resource="classpath:alfresco/rating-services-context.xml"/>
+    <import resource="classpath:alfresco/remote-credentials-services-context.xml"/>
+    <import resource="classpath:alfresco/remote-ticket-services-context.xml"/>
     <import resource="classpath:alfresco/rendition-services-context.xml"/>
     <import resource="classpath:alfresco/replication-services-context.xml"/>
     <import resource="classpath:alfresco/thumbnail-service-context.xml"/>

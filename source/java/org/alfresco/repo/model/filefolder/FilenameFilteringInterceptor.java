@@ -247,7 +247,6 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 else
                 {
                     ret = invocation.proceed();
-                
     
                     FileInfoImpl fileInfo = (FileInfoImpl)ret;
     
@@ -265,20 +264,20 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                     // Name is changing
                     // check against all the regular expressions
                     checkTemporaryAspect(temporaryFiles.isFiltered(newName), sourceNodeRef);
-                    if(getMode() == Mode.ENHANCED)
-                    {
-                        hiddenAspect.checkHidden(sourceNodeRef, true);
-                    }
                 }
               
                 // now do the move
                 ret = invocation.proceed();
+
+                if(getMode() == Mode.ENHANCED)
+                {
+                    hiddenAspect.checkHidden(sourceNodeRef, true);
+                }
             }
             else if (methodName.startsWith("copy"))
             {
                 ret = invocation.proceed();
-            
-    
+
                 FileInfoImpl fileInfo = (FileInfoImpl) ret;
                 String filename = fileInfo.getName();
     
@@ -317,13 +316,14 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                   
                     // check against all the regular expressions
                     checkTemporaryAspect(temporaryFiles.isFiltered(newName), sourceNodeRef);
+                    
+                    ret = invocation.proceed();
+
                     if(getMode() == Mode.ENHANCED)
                     {
                         hiddenAspect.checkHidden(sourceNodeRef, true);
                     }
-                    
-                    ret = invocation.proceed();
-                    
+
                     return ret;
                 }
                 else

@@ -29,7 +29,9 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -50,12 +52,14 @@ public class GetMethod extends WebDAVMethod
 {
     // Request parameters
 
+    private static final String RANGE_HEADER_UNIT_SPECIFIER = "bytes=";
     private ArrayList<String> ifMatchTags = null;
     private ArrayList<String> ifNoneMatchTags = null;
     private Date m_ifModifiedSince = null;
     private Date m_ifUnModifiedSince = null;
 
     protected boolean m_returnContent = true;
+    private String byteRanges;
 
     /**
      * Default constructor
@@ -77,7 +81,11 @@ public class GetMethod extends WebDAVMethod
 
         if (strRange != null && strRange.length() > 0)
         {
-            logger.warn("Range header (" + strRange + ") not supported");
+            byteRanges = strRange;
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Range header supplied: " + byteRanges);
+            }
         }
 
         // Capture all the If headers, process later
@@ -208,14 +216,35 @@ public class GetMethod extends WebDAVMethod
                     (ContentReader) reader,
                     I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
                     realNodeInfo.getNodeRef(), reader);
-            // there is content associated with the node
-            m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, Long.toString(reader.getSize()));
-            m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, reader.getMimetype());
             
-            if (m_returnContent)
+            if (byteRanges != null && byteRanges.startsWith(RANGE_HEADER_UNIT_SPECIFIER))
             {
-                // copy the content to the response output stream
-                reader.getContent(m_response.getOutputStream());
+                HttpRangeProcessor rangeProcessor = new HttpRangeProcessor(getContentService());
+                String userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT);
+                
+                if (m_returnContent)
+                {
+                    rangeProcessor.processRange(
+                            m_response,
+                            reader,
+                            byteRanges.substring(6),
+                            realNodeInfo.getNodeRef(),
+                            ContentModel.PROP_CONTENT,
+                            reader.getMimetype(),
+                            userAgent);
+                }
+            }
+            else
+            {
+                // there is content associated with the node
+                m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, Long.toString(reader.getSize()));
+                m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, reader.getMimetype());
+                
+                if (m_returnContent)
+                {
+                    // copy the content to the response output stream
+                    reader.getContent(m_response.getOutputStream());
+                }
             }
         }
     }

@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -364,8 +365,40 @@ public abstract class WebDAVMethod
             }
             else
             {
+                boolean logOnly = false;
+                
+                Throwable t = e;
+                while ((t = t.getCause()) != null)
+                {
+                    if (t instanceof SocketException)
+                    {
+                        logOnly = true;
+                        
+                        // The client aborted the connection - we can't do much about this, except log it.
+                        if (logger.isTraceEnabled() || logger.isDebugEnabled())
+                        {
+                            String message = "Client dropped connection [uri=" + m_request.getRequestURI() + "]";
+
+                            if (logger.isTraceEnabled())
+                            {
+                                // Include a stack trace when trace is enabled.
+                                logger.trace(message, e);
+                            }
+                            else if (logger.isDebugEnabled())
+                            {
+                                // Just a message for debug-level output.
+                                logger.debug(message);
+                            }
+                        }
+                        break;
+                    }
+                }
+                
                 // Convert error to a server error
-                throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
+                if (!logOnly)
+                {
+                    throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
+                }
             }
         }
         finally

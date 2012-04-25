@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.rule;
 
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -25,6 +26,7 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -45,7 +47,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class RulesAspect implements
                  CopyServicePolicies.OnCopyNodePolicy,
-                 CopyServicePolicies.OnCopyCompletePolicy
+                 CopyServicePolicies.OnCopyCompletePolicy,
+                 NodeServicePolicies.OnAddAspectPolicy,
+                 NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
@@ -93,6 +97,10 @@ public class RulesAspect implements
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), 
                 RuleModel.ASPECT_RULES, 
                 new JavaBehaviour(this, "onAddAspect"));
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
+                RuleModel.ASPECT_RULES, 
+                new JavaBehaviour(this, "beforeDeleteNode"));
     }
     
     /**
@@ -120,6 +128,39 @@ public class RulesAspect implements
         finally
         {
             this.ruleService.enableRules(nodeRef);
+        }
+    }
+    
+    /**
+     * @since Odin
+     * @author Neil Mc Erlean
+     */
+    @Override public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        this.ruleService.disableRules(nodeRef);
+        
+        // The rule folder & below will be deleted automatically in the normal way, so we don't
+        // need to worry about them.
+        // But we need additional handling for any other folders which have rules linked to this folder's rules. See ALF-11923.
+        List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
+        if ( !children.isEmpty())
+        {
+            final ChildAssociationRef primaryRulesFolderAssoc = children.get(0);
+            NodeRef rulesSystemFolder = primaryRulesFolderAssoc.getChildRef();
+            
+            List<ChildAssociationRef> foldersLinkedToThisRuleFolder = nodeService.getParentAssocs(rulesSystemFolder, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
+            
+            for (ChildAssociationRef linkedFolder : foldersLinkedToThisRuleFolder)
+            {
+                // But don't delete the primary child-assoc, which is done automatically
+                if ( !linkedFolder.getParentRef().equals(primaryRulesFolderAssoc.getParentRef()))
+                {
+                    // Remove the aspect that marks the other folder has having rules (linked ones)
+                    nodeService.removeAspect(linkedFolder.getParentRef(), RuleModel.ASPECT_RULES);
+                    // And remove the child-assoc to the rules folder.
+                    nodeService.removeSecondaryChildAssociation(linkedFolder);
+                }
+            }
         }
     }
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -257,6 +257,43 @@ public class RuleLinkTest extends BaseSpringTest
         assertNotNull(rules);
         assertFalse(rules.isEmpty());
         assertEquals(2, rules.size());
+    }
+    
+    /**
+     * ALF-11923
+     * @since Odin
+     * @author Neil Mc Erlean.
+     */
+    public void testDeleteFolderWithRulesLinkedTo()
+    {
+        // Setup test data
+        Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        
+        link(folderOne, folderTwo);
+        link(folderOne, folderThree);
+        
+        List<Rule> rules1 = ruleService.getRules(folderOne);
+        assertNotNull(rules1);
+        assertFalse(rules1.isEmpty());
+        assertEquals(1, rules1.size());
+        
+        List<Rule> rules2 = ruleService.getRules(folderTwo);
+        assertEquals(rules1, rules2);
+        
+        List<Rule> rules3 = ruleService.getRules(folderThree);
+        assertEquals(rules1, rules3);
+        
+        // Now delete folder 1.
+        nodeService.deleteNode(folderOne);
+        rules2 = ruleService.getRules(folderTwo);
+        rules3 = ruleService.getRules(folderThree);
+        
+        assertTrue(rules2.isEmpty());
+        assertFalse(nodeService.hasAspect(folderTwo, RuleModel.ASPECT_RULES));
+        
+        assertTrue(rules3.isEmpty());
+        assertFalse(nodeService.hasAspect(folderThree, RuleModel.ASPECT_RULES));
     }
     
     protected Rule createTestRule(boolean isAppliedToChildren, String title)

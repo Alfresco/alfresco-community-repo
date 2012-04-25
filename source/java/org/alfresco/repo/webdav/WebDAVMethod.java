@@ -78,6 +78,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /**
@@ -315,14 +316,43 @@ public abstract class WebDAVMethod
     /**
      * Executes the method, wrapping the call to {@link #executeImpl()} in an appropriate transaction
      * and handling the error conditions.
+     * @throws IOException 
      */
-    public void execute() throws WebDAVServerException
+    public void execute() throws WebDAVServerException, IOException
     {
         // Parse the HTTP headers
         parseRequestHeaders();
 
         // Parse the HTTP body
-        parseRequestBody();
+        try
+        {
+            parseRequestBody();
+        }
+        catch (WebDAVServerException e)
+        {
+            if (e.getCause() != null && e.getCause() instanceof SAXParseException)
+            {
+                SAXParseException saxParseEx = (SAXParseException) e.getCause();
+                if (logger.isTraceEnabled())
+                {
+                    // Include stack trace.
+                    logger.trace("Malformed request body", saxParseEx);
+                }
+                else if (logger.isDebugEnabled())
+                {
+                    // Log message only.
+                    logger.debug("Malformed request body: " + saxParseEx.getMessage());
+                }
+                m_response.sendError(e.getHttpStatusCode());
+                // Halt processing.
+                return;
+            }
+            else
+            {
+                // Rethrow the exception, as we haven't dealt with it here.
+                throw e;
+            }
+        }
         
         m_userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT);
 
@@ -403,18 +433,26 @@ public abstract class WebDAVMethod
         }
         finally
         {
-			// Remove temporary file if created
-            if (this.m_requestBody != null)
+			cleanUp();
+        }
+    }
+
+    /**
+     * Clean up resources if about to finish processing the request.
+     */
+    private void cleanUp()
+    {
+        // Remove temporary file if created
+        if (this.m_requestBody != null)
+        {
+            try
             {
-                try
-                {
-                    this.m_requestBody.delete();
-					this.m_requestBody = null;
-                }
-                catch (Throwable t)
-                {
-                    WebDAVMethod.logger.error("Failed to delete temp file", t);
-                }
+                this.m_requestBody.delete();
+        		this.m_requestBody = null;
+            }
+            catch (Throwable t)
+            {
+                WebDAVMethod.logger.error("Failed to delete temp file", t);
             }
         }
     }

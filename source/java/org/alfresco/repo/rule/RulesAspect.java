@@ -132,7 +132,7 @@ public class RulesAspect implements
     }
     
     /**
-     * @since Odin
+     * @since 4.0.2
      * @author Neil Mc Erlean
      */
     @Override public void beforeDeleteNode(NodeRef nodeRef)
@@ -158,7 +158,10 @@ public class RulesAspect implements
                     // Remove the aspect that marks the other folder has having rules (linked ones)
                     nodeService.removeAspect(linkedFolder.getParentRef(), RuleModel.ASPECT_RULES);
                     // And remove the child-assoc to the rules folder.
-                    nodeService.removeSecondaryChildAssociation(linkedFolder);
+                    if (nodeService.exists(linkedFolder.getChildRef()))
+                    {
+                        nodeService.removeSecondaryChildAssociation(linkedFolder);
+                    }
                 }
             }
         }

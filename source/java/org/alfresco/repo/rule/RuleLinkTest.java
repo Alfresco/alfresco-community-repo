@@ -261,7 +261,7 @@ public class RuleLinkTest extends BaseSpringTest
     
     /**
      * ALF-11923
-     * @since Odin
+     * @since 4.0.2
      * @author Neil Mc Erlean.
      */
     public void testDeleteFolderWithRulesLinkedTo()

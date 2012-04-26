@@ -162,10 +162,18 @@ public class RuleServiceTest extends BaseWebScriptTest
             @Override
             public Void execute() throws Throwable
             {
-                nodeService.deleteNode(testNodeRef2);
-                nodeService.deleteNode(testNodeRef);
-                nodeService.deleteNode(testWorkNodeRef);
+                deleteNodeIfExists(testNodeRef2);
+                deleteNodeIfExists(testNodeRef);
+                deleteNodeIfExists(testWorkNodeRef);
                 return null;
+            }
+            
+            private void deleteNodeIfExists(NodeRef nodeRef)
+            {
+                if (nodeService.exists(nodeRef))
+                {
+                    nodeService.deleteNode(nodeRef);
+                }
             }
         };
         this.transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);

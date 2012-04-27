@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.util.TempFileProvider;
+import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream.UnicodeExtraFieldPolicy;
@@ -154,6 +155,7 @@ public class ACPExportPackageHandler
         zipStream.setCreateUnicodeExtraFields(UnicodeExtraFieldPolicy.ALWAYS);
         zipStream.setUseLanguageEncodingFlag(true);
         zipStream.setFallbackToUTF8(true);
+        zipStream.setUseZip64(Zip64Mode.Always);
     }
 
     /* (non-Javadoc)

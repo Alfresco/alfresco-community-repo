@@ -533,7 +533,7 @@ public final class People extends BaseScopableProcessorExtension implements Init
             {
                 String term = filter.replace("\\", "").replace("\"", "");
                 StringTokenizer t = new StringTokenizer(term, " ");
-                int propIndex = term.indexOf(':');
+                int propIndex = term.lastIndexOf(':');
                 int wildPosition = term.indexOf('*');
                 
                 if ((t.countTokens() == 1) && (propIndex == -1) && ((wildPosition == -1) || (wildPosition == (term.length() - 1) )))
@@ -568,18 +568,18 @@ public final class People extends BaseScopableProcessorExtension implements Init
                      if (t.countTokens() == 1)
                      {
                         // single word with no field will go against _PERSON and expand  
-                         
+                        
                         // fts-alfresco property search i.e. location:"maidenhead"
                         query.append(term.substring(0, propIndex+1))
                              .append('"')
                              .append(term.substring(propIndex+1));
-                        if(propIndex > 0)
+                        if (propIndex > 0)
                         {
                             query.append('"');
                         }
                         else
                         {
-                             query.append("*\"");
+                            query.append("*\"");
                         }
                     }
                     else
@@ -638,7 +638,7 @@ public final class People extends BaseScopableProcessorExtension implements Init
                             else
                             {
                                 // fts-alfresco property search i.e. "location:maidenhead"
-                                propIndex = term.indexOf(':');
+                                propIndex = term.lastIndexOf(':');
                                 query.append(term.substring(0, propIndex+1))
                                      .append('"')
                                      .append(term.substring(propIndex+1))

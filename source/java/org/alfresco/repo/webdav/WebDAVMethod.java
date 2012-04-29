@@ -318,7 +318,7 @@ public abstract class WebDAVMethod
      * and handling the error conditions.
      * @throws IOException 
      */
-    public void execute() throws WebDAVServerException, IOException
+    public void execute() throws WebDAVServerException
     {
         // Parse the HTTP headers
         parseRequestHeaders();
@@ -343,7 +343,18 @@ public abstract class WebDAVMethod
                     // Log message only.
                     logger.debug("Malformed request body: " + saxParseEx.getMessage());
                 }
-                m_response.sendError(e.getHttpStatusCode());
+                
+                try
+                {
+                    m_response.sendError(e.getHttpStatusCode());
+                }
+                catch (IOException ioe)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Unable to send status code", ioe);
+                    }
+                }
                 // Halt processing.
                 return;
             }

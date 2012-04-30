@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.QName;
@@ -397,6 +398,50 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
         
         // Historic process instance shouldn't be present
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
+            .processInstanceId(processInstance.getProcessInstanceId())
+            .singleResult();
+        
+        assertNull(historicProcessInstance);
+    }
+    
+    @Test
+    public void testDeleteFinishedWorkflow() throws Exception
+    {
+        WorkflowDefinition def = deployTestAdhocDefinition();
+        
+        ProcessInstance processInstance = runtime.startProcessInstanceById(BPMEngineRegistry.getLocalId(def.getId()));
+        
+        // Validate if a workflow exists
+        List<WorkflowInstance> instances = workflowEngine.getActiveWorkflows(def.getId());
+        assertNotNull(instances);
+        assertEquals(1, instances.size());
+        assertEquals(processInstance.getId(), BPMEngineRegistry.getLocalId(instances.get(0).getId()));
+        
+        WorkflowInstance instance = instances.get(0);
+        
+        WorkflowTask startTask = workflowEngine.getStartTask(instance.getId());
+        workflowEngine.endTask(startTask.getId(), null);
+        
+        WorkflowTask adhocTask = workflowEngine.getTasksForWorkflowPath(instance.getId()).get(0);
+        workflowEngine.endTask(adhocTask.getId(), null);
+        
+        // Validate if workflow is ended and has history
+        instances = workflowEngine.getActiveWorkflows(def.getId());
+        assertNotNull(instances);
+        assertEquals(0, instances.size());
+        
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
+            .processInstanceId(processInstance.getProcessInstanceId())
+            .singleResult();
+    
+        assertNotNull(historicProcessInstance);
+        
+        
+        // Call delete method on component
+        workflowEngine.deleteWorkflow(instance.getId());
+        
+        // Historic process instance shouldn't be present anymore
+        historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
             .processInstanceId(processInstance.getProcessInstanceId())
             .singleResult();
         

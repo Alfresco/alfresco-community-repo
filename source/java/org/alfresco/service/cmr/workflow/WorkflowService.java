@@ -307,7 +307,7 @@ public interface WorkflowService
     public List<WorkflowInstance> cancelWorkflows(List<String> workflowIds);
 
     /**
-     * Delete an "in-flight" Workflow instance
+     * Delete a Workflow instance.
      * 
      * NOTE: This will force a delete, meaning that the workflow instance may not
      *       go through all the appropriate cancel events.

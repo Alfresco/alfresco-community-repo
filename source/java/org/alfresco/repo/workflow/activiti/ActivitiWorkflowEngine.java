@@ -280,19 +280,22 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         String localId = createLocalId(workflowId);
         try
         {
+            // Delete the runtime process instance if still running, this calls the end-listeners if any
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(localId).singleResult();
-            if(processInstance == null) 
+            if(processInstance != null) 
             {
-                throw new WorkflowException(messageService.getMessage(ERR_DELETE_UNEXISTING_WORKFLOW));
+                runtimeService.deleteProcessInstance(processInstance.getId(), ActivitiConstants.DELETE_REASON_DELETED);
             }
-            
-            // Delete the process instance
-            runtimeService.deleteProcessInstance(processInstance.getId(), ActivitiConstants.DELETE_REASON_DELETED);
             
             // Convert historic process instance
             HistoricProcessInstance deletedInstance = historyService.createHistoricProcessInstanceQuery()
-            	.processInstanceId(processInstance.getId())
+            	.processInstanceId(localId)
             	.singleResult();
+            
+            if(deletedInstance == null) {
+                throw new WorkflowException(messageService.getMessage(ERR_DELETE_UNEXISTING_WORKFLOW, localId));
+            }
+            
             WorkflowInstance result =  typeConverter.convert(deletedInstance);
             
             // Delete the historic process instance

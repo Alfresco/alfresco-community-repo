@@ -72,13 +72,21 @@ public class CancelWorkflowDialog extends BaseDialogBean
          throws Exception
    {
       if (logger.isDebugEnabled())
-         logger.debug("Cancelling workflow with id: " + this.getWorkflowInstance().id);
+         logger.debug("Cancelling workflow with id: " + this.getWorkflowInstance().getId());
       
-      // cancel the workflow
-      this.getWorkflowService().cancelWorkflow(this.getWorkflowInstance().id);
+      WorkflowInstance instance = this.getWorkflowInstance();
+      if(instance.isActive()) {
+          // cancel the workflow
+          this.getWorkflowService().cancelWorkflow(this.getWorkflowInstance().getId());
+      }
+      else
+      {
+          // delete the workflow
+          this.getWorkflowService().deleteWorkflow(this.getWorkflowInstance().getId());
+      }
       
       if (logger.isDebugEnabled())
-         logger.debug("Cancelled workflow with id: " + this.getWorkflowInstance().id);
+         logger.debug("Cancelled workflow with id: " + this.getWorkflowInstance().getId());
       
       return outcome;
    }
@@ -120,10 +128,10 @@ public class CancelWorkflowDialog extends BaseDialogBean
       String confirmMsg = Application.getMessage(FacesContext.getCurrentInstance(), 
                "cancel_workflow_confirm");
       
-      String workflowLabel = this.getWorkflowInstance().definition.title;
-      if (this.getWorkflowInstance().description != null && this.getWorkflowInstance().description.length() > 0)
+      String workflowLabel = this.getWorkflowInstance().getDefinition().getTitle();
+      if (this.getWorkflowInstance().getDescription() != null && this.getWorkflowInstance().getDescription().length() > 0)
       {
-         workflowLabel = workflowLabel + " (" + this.getWorkflowInstance().description + ")";
+         workflowLabel = workflowLabel + " (" + this.getWorkflowInstance().getDescription() + ")";
       }
       
       return MessageFormat.format(confirmMsg, new Object[] {workflowLabel});

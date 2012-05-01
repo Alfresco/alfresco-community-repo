@@ -7,6 +7,8 @@ dependencies {
 	
 	testRuntime files(explodedConfigDir)
 	testRuntime files(configDir)
+	
+	testRuntime group: 'org.alfresco.enterprise', name: 'alfresco', version: '4.0.1-35934', type: 'war'
 }
 
 test {

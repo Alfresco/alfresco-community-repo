@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="rmt:rmtest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+ 
+   <description>RM Test Model</description>
+   <author>Roy Wetherall</author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->   
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+      <!-- Import Alfresco Records Management Model Definitions -->
+      <import uri="http://www.alfresco.org/model/recordsmanagement/1.0" prefix="rma" />
+   </imports>
+
+   <!-- Records Management Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/rmtest/1.0" prefix="rmt"/>
+   </namespaces>
+      
+   <types>
+   
+      <type name="rmt:customType">  
+         <parent>cm:content</parent>                                                
+      </type> 
+    
+   </types>
+   
+   <aspects>
+      		
+      <aspect name="rmt:customAspect">            
+      </aspect>
+     
+      <aspect name="rmt:recordMetaData">
+        <parent>rma:recordMetaData</parent>        
+      </aspect>
+       
+   </aspects>
+   
+</model>

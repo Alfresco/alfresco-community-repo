@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of Records Management Model -->
+
+<!-- Note: the rmc: namespace is defined further on in the document -->
+<model name="rmc:rmcustom" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Meta-data about the model -->
+   <description>Records Management Custom Model</description>
+   <author>Alfresco</author>
+   <version>1.0</version>
+   
+   <!-- Imports are required to allow references to definitions in other models -->
+   <imports>
+      <!-- Import Alfresco Records Management Definitions -->
+      <import uri="http://www.alfresco.org/model/recordsmanagement/1.0" prefix="rma"/>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+   </imports>
+   
+   <!-- Records Management Custom Models Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/rmcustom/1.0" prefix="rmc"/>
+   </namespaces>
+   
+   <constraints>
+   
+      <!-- Note: intentionally empty list of values - allowed values can be added/updated dynamically -->
+      <constraint name="rmc:smList" type="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
+         <title>Supplemental Markings</title>
+         <parameter name="allowedValues">
+            <list>
+            </list>
+            </parameter>
+         <parameter name="caseSensitive"><value>true</value></parameter>
+      </constraint>
+
+      <!-- Note: intentionally empty list of values - allowed values can be added/updated dynamically -->
+      <constraint name="rmc:tlList" type="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
+         <title>Transfer Locations</title>
+         <parameter name="allowedValues">
+            <list>
+            </list>
+            </parameter>
+         <parameter name="caseSensitive"><value>true</value></parameter>
+      </constraint>
+
+   </constraints>
+   
+   <aspects>
+   
+      <aspect name="rmc:customSupplementalMarkingList">
+         <properties>
+            <property name="rmc:supplementalMarkingList">
+               <title>Supplemental Marking List</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <constraints>
+                  <constraint ref="rmc:smList"/>
+               </constraints>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="rmc:customAssocs">
+         
+         <title>Records Management Custom Associations</title>
+         
+         <associations>
+            
+            <child-association name="rmc:supersedes">
+                <title>SupersededBy__Supersedes</title>
+                <source>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </source>
+                <target>
+                    <class>rma:record</class>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </target>
+            </child-association>
+            
+            <child-association name="rmc:obsoletes">
+                <title>ObsoletedBy__Obsoletes</title>
+                <source>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </source>
+                <target>
+                    <class>rma:record</class>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </target>
+            </child-association>
+            
+            <child-association name="rmc:versions">
+                <title>VersionedBy__Versions</title>
+                <source>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </source>
+                <target>
+                    <class>rma:record</class>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </target>
+            </child-association>                       
+            
+            <child-association name="rmc:supports">
+                <title>Supporting Documentation__Supported Documentation</title>
+                <source>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </source>
+                <target>
+                    <class>rma:record</class>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </target>
+            </child-association>                       
+            
+            <association name="rmc:crossreference">
+                <title>Cross-Reference</title>
+                <source>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </source>
+                <target>
+                    <class>rma:record</class>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </target>
+            </association>
+            
+            <association name="rmc:rendition">
+                <title>Rendition</title>
+                <source>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </source>
+                <target>
+                    <class>rma:record</class>
+                    <mandatory>false</mandatory>
+                    <many>true</many>
+                </target>
+            </association>
+         
+         </associations>
+      </aspect>
+      
+   </aspects>
+   
+</model>

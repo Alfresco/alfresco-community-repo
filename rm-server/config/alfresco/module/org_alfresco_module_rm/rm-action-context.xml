@@ -1,0 +1,811 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- I18N -->
+    <bean id="rmActionResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.module.org_alfresco_module_rm.rm-actions</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- Actions -->
+    
+    <bean id="rmAction" parent="action-executer" abstract="true">
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="contentService" ref="contentService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="actionService" ref="actionService"/>
+        <property name="recordsManagementAuditService" ref="recordsManagementAuditService"/>
+        <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
+        <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
+        <property name="recordsManagementService" ref="recordsManagementService"/>
+        <property name="dispositionService" ref="dispositionService"/>
+        <property name="vitalRecordService" ref="vitalRecordService"/>
+        <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
+        <property name="publicAction" value="false"/>
+        <property name="ownableService" ref="ownableService"/>
+    </bean>
+    
+    <bean id="rmProxyAction" init-method="registerAction" abstract="true">
+        <property name="runtimeActionService" ref="actionService"/>
+        <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction</value>
+                <value>org.alfresco.repo.action.executer.ActionExecuter</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="actionSecurity" abstract="true">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+    </bean>
+    
+    <bean id="actionProxy" abstract="true">
+        
+    </bean>
+
+    <!-- file action -->
+    <!-- Bound to policy: allow -->
+
+    
+    <bean id="file_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="file"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="file_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="file_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <!-- disable normal registration - the proxy will do it so the proxy is registered -->
+    <bean id="file" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileAction" parent="rmAction" depends-on="rmFileRecordsCapability">
+        <property name="capability" ref="rmFileRecordsCapability"/>
+    </bean>    
+    
+
+    <!-- Cutoff action -->
+    
+    
+    <bean id="cutoff_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="cutoff"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="cutoff_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="cutoff_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ApproveRecordsScheduledForCutoff
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="cutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction" parent="rmAction" depends-on="rmApproveRecordsScheduledForCutoffCapability">
+        <property name="capability" ref="rmApproveRecordsScheduledForCutoffCapability"/>
+    </bean>   
+    
+    <!-- UnCutoff action -->    
+    
+    <bean id="unCutoff_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="unCutoff"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="unCutoff_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="unCutoff_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ApproveRecordsScheduledForCutoff
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="unCutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnCutoffAction" parent="rmAction" depends-on="rmApproveRecordsScheduledForCutoffCapability">
+        <property name="capability" ref="rmApproveRecordsScheduledForCutoffCapability"/>
+    </bean> 
+    
+    <!-- Destroy -->
+    
+    <bean id="destroy_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="destroy"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="destroy_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="destroy_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.DestroyRecordsScheduledForDestruction
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+
+    <bean id="destroy" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction" parent="rmAction"
+        depends-on="rmDestroyRecordsScheduledForDestructionCapability">
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+        <property name="eagerContentStoreCleaner" ref="eagerContentStoreCleaner"/>
+        <property name="ghostingEnabled">
+            <value>${rm.ghosting.enabled}</value>
+        </property>
+        <property name="capability" ref="rmDestroyRecordsScheduledForDestructionCapability" />
+    </bean>    
+    
+    <!-- retain -->
+    <!-- No permissoin?? : allow -->
+    
+    <bean id="retain_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="retain"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="retain_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="retain_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="retain" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RetainAction" parent="rmAction" depends-on="rmFileRecordsCapability"/>
+    
+    <!-- open record folder -->
+    
+    <bean id="openRecordFolder_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="openRecordFolder"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="openRecordFolder_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="openRecordFolder_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ReOpenFolders
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="openRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.OpenRecordFolderAction" parent="rmAction" depends-on="rmReOpenFoldersCapability">
+        <property name="capability" ref="rmReOpenFoldersCapability"/>
+    </bean>    
+    
+    <!-- close record folder -->
+    
+    <bean id="closeRecordFolder_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="closeRecordFolder"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="closeRecordFolder_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="closeRecordFolder_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CloseFolders
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="closeRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CloseRecordFolderAction" parent="rmAction" depends-on="rmCloseFoldersCapability">
+        <property name="capability" ref="rmCloseFoldersCapability"/>
+    </bean>    
+    
+    <!-- reviewed -->
+    
+    <bean id="reviewed_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="reviewed"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="reviewed_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="reviewed_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CycleVitalRecords
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="reviewed" class="org.alfresco.module.org_alfresco_module_rm.vital.ReviewedAction" parent="rmAction" depends-on="rmCycleVitalRecordsCapability">
+        <property name="capability" ref="rmCycleVitalRecordsCapability"/>
+    </bean>    
+    
+    <!-- set up record folder -->
+    <!-- bound to policy: allow -->
+    
+    <bean id="setupRecordFolder_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="setupRecordFolder"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="setupRecordFolder_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="setupRecordFolder_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="setupRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SetupRecordFolderAction" parent="rmAction" depends-on="rmFileRecordsCapability"/>
+    
+    <!-- declare record -->
+    <!-- fileable?? -->
+    
+    <bean id="declareRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="declareRecord"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="declareRecord_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="declareRecord_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM.Declare.0
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="declareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction" parent="rmAction" depends-on="rmDeclareRecordsCapability">
+        <property name="capabilities">
+            <list>
+                <ref bean="rmDeclareRecordsCapability" />
+                <ref bean="rmDeclareRecordsInClosedFoldersCapability" />
+            </list>
+        </property>
+        <property name="capability" ref="rmDeclareRecordsCapability"/>
+    </bean>    
+    
+    <!-- undeclare record -->
+    
+    <bean id="undeclareRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="undeclareRecord"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="undeclareRecord_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="undeclareRecord_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.UndeclareRecords
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="undeclareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UndeclareRecordAction" parent="rmAction" depends-on="rmUndeclareRecordsCapability">
+        <property name="capability" ref="rmUndeclareRecordsCapability"/>
+    </bean>    
+
+    <!-- Freeze record -->
+
+    <bean id="freeze_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="freeze"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="freeze_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="freeze_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ExtendRetentionPeriodOrFreeze
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability">
+        <property name="capability" ref="rmExtendRetentionPeriodOrFreezeCapability"/>
+    </bean>       
+
+    <!-- Unfreeze record -->
+
+    <bean id="unfreeze_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="unfreeze"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="unfreeze_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="unfreeze_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.Unfreeze
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction" depends-on="rmUnfreezeCapability">
+        <property name="capability" ref="rmUnfreezeCapability"/>
+    </bean>        
+    
+    <!-- Relinquish Hold Action-->
+
+    <bean id="relinquishHold_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="relinquishHold"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="unfreeze_security"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="relinquishHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RelinquishHoldAction" parent="rmAction" depends-on="rmUnfreezeCapability">
+        <property name="capability" ref="rmUnfreezeCapability"/>
+    </bean>      
+    
+    <!-- Edit hold reason -->
+
+    <bean id="editHoldReason_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="editHoldReason"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="editHoldReason_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="editHoldReason_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ViewUpdateReasonsForFreeze
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="editHoldReason" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditHoldReasonAction" parent="rmAction" depends-on="rmViewUpdateReasonsForFreezeCapability">
+        <property name="capability" ref="rmViewUpdateReasonsForFreezeCapability"/>
+    </bean>  
+    
+    <!-- Edit review as of date -->
+
+    <bean id="editReviewAsOfDate_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="editReviewAsOfDate"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="editReviewAsOfDate_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="editReviewAsOfDate_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.PlanningReviewCycles
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="editReviewAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditReviewAsOfDateAction" parent="rmAction" depends-on="rmPlanningReviewCyclesCapability">
+        <property name="capability" ref="rmPlanningReviewCyclesCapability"/>
+    </bean> 
+    
+    <!-- Edit disposition action as of date -->
+
+    <bean id="editDispositionActionAsOfDate_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="editDispositionActionAsOfDate"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="editDispositionActionAsOfDate_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="editDispositionActionAsOfDate_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ManuallyChangeDispositionDates
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="editDispositionActionAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditDispositionActionAsOfDateAction" parent="rmAction" depends-on="rmManuallyChangeDispositionDatesCapability">
+        <property name="capability" ref="rmManuallyChangeDispositionDatesCapability"/>
+    </bean> 
+    
+    <!-- broadcast vital record definition -->
+    <!-- bound to policy: allow -->
+    
+    <bean id="broadcastVitalRecordDefinition_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="broadcastVitalRecordDefinition"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="broadcastVitalRecordDefinition_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="broadcastVitalRecordDefinition_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="broadcastVitalRecordDefinition" class="org.alfresco.module.org_alfresco_module_rm.vital.BroadcastVitalRecordDefinitionAction"
+                                            parent="rmAction" />
+    
+    <!-- broadcast disposition action definition update -->
+    <!-- bound to policy: allow -->
+    
+    <bean id="broadcastDispositionActionDefinitionUpdate_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="broadcastDispositionActionDefinitionUpdate"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="broadcastDispositionActionDefinitionUpdate_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="broadcastDispositionActionDefinitionUpdate_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="broadcastDispositionActionDefinitionUpdate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction"
+                                            parent="rmAction" />
+    
+    
+    <!-- complete event -->
+    
+    <bean id="completeEvent_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="completeEvent"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="completeEvent_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="completeEvent_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.AddModifyEventDates
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="completeEvent" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction" parent="rmAction" depends-on="rmAddModifyEventDatesCapability">
+        <property name="capability" ref="rmAddModifyEventDatesCapability"/>
+    </bean>    
+    
+    <!-- undo event -->
+    
+    <bean id="undoEvent_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="undoEvent"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="undoEvent_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="undoEvent_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.AddModifyEventDates
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="undoEvent" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UndoEventAction" parent="rmAction" depends-on="rmAddModifyEventDatesCapability">
+        <property name="capability" ref="rmAddModifyEventDatesCapability"/>
+    </bean>   
+    
+    <!-- transfer -->
+
+    <bean id="transfer_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="transfer"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="transfer_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="transfer_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.AuthorizeAllTransfers
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="transfer" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction" depends-on="rmAuthorizeAllTransfersCapability">
+        <property name="capability" ref="rmAuthorizeAllTransfersCapability"/>
+        <property name="isAccession" value="false"/>
+    </bean>  
+    
+    <!-- Transfer complete -->
+    
+    <bean id="transferComplete_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="transferComplete"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="transfer_security"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="transferComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction" depends-on="rmAuthorizeAllTransfersCapability">
+        <property name="capability" ref="rmAuthorizeAllTransfersCapability"/>
+    </bean> 
+    
+    <!-- accession -->
+    
+    <bean id="accession_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="accession"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="accession_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="accession_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.AuthorizeNominatedTransfers
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="accession" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction" depends-on="rmAuthorizeNominatedTransfersCapability">
+        <property name="capability" ref="rmAuthorizeNominatedTransfersCapability"/>
+        <property name="isAccession" value="true"/>
+    </bean> 
+        
+    <!-- Accession complete -->
+    
+    <bean id="accessionComplete_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="accessionComplete"/>
+        </property>
+        <!--
+        <property name="interceptorNames">
+            <list>
+                <idref bean="accesion_security"/>
+            </list>
+        </property>
+        -->
+    </bean>
+    
+    <bean id="accessionComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction" depends-on="rmAuthorizeNominatedTransfersCapability">
+        <property name="capability" ref="rmAuthorizeNominatedTransfersCapability"/>
+    </bean> 
+    
+    <!-- Split Email -->
+    <bean id="splitEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction" parent="rmAction" >
+    </bean>  
+    
+    <bean id="splitEmail_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="splitEmail"/>
+        </property>
+    </bean>
+    
+    <!--  Create disposition schedule --> 
+    
+    <bean id="createDispositionSchedule_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="createDispositionSchedule"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="createDispositionSchedule_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="createDispositionSchedule_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyFileplanMetadata
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+    
+    <bean id="createDispositionSchedule" 
+          class="org.alfresco.module.org_alfresco_module_rm.action.impl.CreateDispositionScheduleAction" 
+          parent="rmAction" />
+    
+    <!-- Actions to create DOD 5015 custom types -->
+    <!--
+     <bean id="applyScannedRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="applyScannedRecord"/>
+        </property>
+    </bean>
+    
+    <bean id="applyScannedRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.ApplyCustomTypeAction" parent="rmAction">
+        <property name="customTypeAspect" value="dod:scannedRecord" />
+    </bean>
+    
+    
+    <bean id="applyPdfRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="applyPdfRecord"/>
+        </property>
+    </bean>
+    
+    <bean id="applyPdfRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.ApplyCustomTypeAction" parent="rmAction">
+        <property name="customTypeAspect" value="dod:pdfRecord" />
+    </bean>
+    
+    <bean id="applyDigitalPhotographRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="applyDigitalPhotographRecord"/>
+        </property>
+    </bean>
+    
+    <bean id="applyDigitalPhotographRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.ApplyCustomTypeAction" parent="rmAction">
+        <property name="customTypeAspect" value="dod:digitalPhotographRecord" />
+    </bean>
+    
+    <bean id="applyWebRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="applyWebRecord"/>
+        </property>
+    </bean>
+    
+    <bean id="applyWebRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.ApplyCustomTypeAction" parent="rmAction">
+        <property name="customTypeAspect" value="dod:webRecord" />
+    </bean>
+    -->
+    
+</beans>    

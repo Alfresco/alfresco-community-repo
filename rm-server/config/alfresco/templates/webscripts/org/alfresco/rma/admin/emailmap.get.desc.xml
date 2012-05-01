@@ -1,0 +1,29 @@
+<webscript>
+  <shortname>Get the custom email property map</shortname>
+  <description><![CDATA[
+  Get the custom email property map.
+  <br />
+  fields are specified with "from" and "to".
+  <br />
+  Example data.
+  <pre>
+    "mappings":
+    [ 
+       {"from" : "messageTo", "to" : "imap:messageTo" } , 
+       {"from" : "Thread-Index", "to" : "imap:threadIndex" } , 
+       {"from" : "messageFrom", "to" : "imap:messageFrom" } , 
+       {"from" : "messageSubject", "to" : "cm:title" } , 
+       {"from" : "messageSubject", "to" : "imap:messageSubject" } , 
+       {"from" : "messageSubject", "to" : "cm:description" } , 
+       {"from" : "messageCc", "to" : "imap:messageCc" } , 
+       {"from" : "Message-ID", "to" : "imap:messageId" } 
+    ] 
+  </pre>
+  ]]>
+  </description>
+  <url>/api/rma/admin/emailmap</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

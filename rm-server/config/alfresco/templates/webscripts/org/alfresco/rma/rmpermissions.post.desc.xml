@@ -1,0 +1,36 @@
+<webscript>
+   <shortname>Apply Records Management Permissions to a node</shortname>
+   <description><![CDATA[
+   Apply Records Management specific Permissions to a node.<br/>
+   <br/>
+   The body of the post json should be of the form:
+   <pre>
+   {
+      "permissions":
+      [
+         {
+            "id": "Filing",
+            "authority": "GROUP_Administrator"
+         },
+         {
+            "id": "ReadRecords",
+            "authority": "userxyz"
+            "remove": true
+         },
+         ...
+      ]
+   }
+   </pre>
+   Existing permissions will be updated by the supplied permission set,
+   where 'id' and 'authority' are mandatory values.<br/>
+   If the optional 'remove' flag is set then the permission will be removed.
+   Note that it is only valid to set the following RM related permissions:
+   'Filing', 'ReadRecords' and 'FileRecords'.
+   ]]>
+   </description>
+   <url>/api/node/{store_type}/{store_id}/{id}/rmpermissions</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

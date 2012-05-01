@@ -1,0 +1,18 @@
+<webscript>
+  <shortname>Attempts to remove specified Custom Property Definitions from the custom model</shortname>
+  <description><![CDATA[
+  An attempt will be made to remove the custom property definition from the custom model.<BR/>
+  It should be noted that it may not be possible to honour this request in all cases.<BR/>
+  In cases where instances of the specified property are already present in the system,<BR/>
+  the request will not succeed. In cases where there are no instances of the specified<BR/>
+  property in the system, the request will attempted.<BR/>
+  <BR/>
+  The propId is that returned by custompropertydefinitions.get.
+  ]]>
+  </description>
+  <url>/api/rma/admin/custompropertydefinitions/{propId}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

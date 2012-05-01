@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Records Management Transfer Report</shortname>
+  <description>Returns a transfer report to the caller in JSON format</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/transfers/{transfer_id}/report</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

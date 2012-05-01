@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Load the RM DOD bootstrap data.</shortname>
+   <description>WebScript to import and fix up the RM DOD bootstrap data.</description>
+   <url>/api/rma/bootstraptestdata?site={site?}&amp;import={import?}</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

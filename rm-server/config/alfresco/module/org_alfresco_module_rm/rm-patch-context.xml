@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+	
+   <bean id="org_alfresco_module_rm_notificationTemplatePatch" 
+         parent="module.baseComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.NotificationTemplatePatch">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_notificationTemplatePatch"/>
+       <property name="description" value="Patches new versions of the notification templates."/>
+       <property name="sinceVersion" value="2.0"/>
+       <property name="appliesFromVersion" value="2.0"/>	
+       <property name="nodeService" ref="NodeService"/>
+       <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
+       <property name="contentService" ref="ContentService"/>
+       <property name="versionService" ref="VersionService"/>
+   </bean>
+   
+   <bean id="org_alfresco_module_rm_RMv2ModelPatch" 
+         parent="module.baseComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2ModelPatch">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_RMv2ModelPatch"/>
+       <property name="description" value="Patches the existing RM data for the RM v2.0 model updates."/>
+       <property name="sinceVersion" value="2.0"/>
+       <property name="appliesFromVersion" value="2.0"/>
+       <property name="patchDAO" ref="patchDAO"/>
+       <property name="nodeDAO" ref="nodeDAO" />
+       <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+   </bean>
+
+</beans>

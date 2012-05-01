@@ -1,0 +1,880 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- The beans that implement RM capabilities -->
+
+<beans>
+
+    <!--  Capability Conditions -->
+    
+    <bean id="capabilityCondition.base"
+          abstract="true">
+		<property name="recordsManagementService" ref="recordsManagementService" />
+		<property name="permissionService" ref="PermissionService" />    
+		<property name="nodeService" ref="NodeService" />
+    </bean>
+    
+    <bean id="capabilityCondition.frozen" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FrozenCapabilityCondition">
+    </bean>
+    
+    <bean id="capabilityCondition.frozenOrFrozenChildren" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FrozenCapabilityCondition">
+    	<property name="checkChildren" value="true" />
+    </bean>
+    
+    <bean id="capabilityCondition.frozenOrHold" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FrozenOrHoldCondition">
+    </bean>
+    
+    <bean id="capabilityCondition.cutoff" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.CutoffCapabilityCondition">
+    </bean>
+    
+    <bean id="capabilityCondition.closed" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.ClosedCapabilityCondition">
+    </bean>
+    
+    <bean id="capabilityCondition.declared" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.DeclaredCapabilityCondition">
+    </bean>
+    
+    <bean id="capabilityCondition.filling" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FillingCapabilityCondition">
+    </bean>
+    
+    <bean id="capabilityCondition.transferred" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.TransferredCapabilityCondition">
+    </bean>
+    
+    <bean id="capabilityCondition.destroyed" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.DestroyedCapabilityCondition">
+    </bean>
+    
+    <bean id="capabilityCondition.vitalRecordOrFolder" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.VitalRecordOrFolderCapabilityCondition">
+    </bean>
+    
+    <bean id="capabilityCondition.destroyMayBeScheduled" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.MayBeScheduledCapabilityCondition">
+    	<property name="dispositionService" ref="DispositionService"/>
+    	<property name="dispositionAction"  value="destroy"/>
+    </bean>
+    
+    <bean id="capabilityCondition.destroyIsScheduled" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsScheduledCapabilityCondition">
+    	<property name="dispositionService" ref="DispositionService"/>
+    	<property name="dispositionAction"  value="destroy"/>
+    </bean>
+    
+    <bean id="capabilityCondition.hasEvents" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasEventsCapabilityCondition">
+    	<property name="dispositionService" ref="DispositionService"/>
+    </bean>
+    
+    <bean id="capabilityCondition.fileable" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FileableCapabilityCondition">
+    	<property name="dictionaryService" ref="DictionaryService"/>
+    </bean>
+
+    <!--  Capability beans -->
+
+    <bean id="rmBaseCapability" 
+          abstract="true" 
+          parent="RMSecurityCommon" 
+          init-method="init">
+        <property name="voter" ref="rmEntryVoter"/>
+        <property name="capabilityService" ref="CapabilityService"/>
+    </bean>
+    
+    <bean id="declarativeCapability"
+          abstract="true"
+          parent="rmBaseCapability"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability"/>
+    
+    <bean id="compositeCapability"
+          abstract="true"
+          parent="rmBaseCapability"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability" />
+    
+    <bean id="rmAccessAuditCapability" 
+          parent="declarativeCapability">
+   		<property name="name" value="AccessAudit"/>
+   		<property name="permission" value="AccessAudit"/>
+    </bean>
+    
+    <bean id="rmAddModifyEventDatesCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="AddModifyEventDates"/>
+   		<property name="permission" value="AddModifyEventDates"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>
+   				<entry key="capabilityCondition.hasEvents" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmApproveRecordsScheduledForCutoffCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="ApproveRecordsScheduledForCutoff"/>
+   		<property name="permission" value="ApproveRecordsScheduledForCutoff"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>   				
+   				<entry key="capabilityCondition.frozen" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmAttachRulesToMetadataPropertiesCapability" 
+          parent="declarativeCapability">
+    	<property name="name" value="AttachRulesToMetadataProperties"/>
+   		<property name="permission" value="AttachRulesToMetadataProperties"/>
+    </bean>
+        
+    <bean id="rmAuthorizeAllTransfersCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="AuthorizeAllTransfers"/>
+   		<property name="permission" value="AuthorizeAllTransfers"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozen" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmAuthorizeNominatedTransfersCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="AuthorizeNominatedTransfers"/>
+   		<property name="permission" value="AuthorizeNominatedTransfers"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozen" value="false"/>
+   			</map>
+   		</property>
+    </bean>    
+    
+    <bean id="rmChangeOrDeleteReferencesCapability" 
+    	  parent="rmBaseCapability" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.ChangeOrDeleteReferencesCapability">
+   		<property name="name" value="ChangeOrDeleteReferences"/>
+   		<property name="permission" value="ChangeOrDeleteReferences"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmCloseFoldersCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="CloseFolders"/>
+   		<property name="permission" value="CloseFolders"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   				
+   				<entry key="capabilityCondition.closed" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmCreateAndAssociateSelectionListsCapability" 
+    	  parent="declarativeCapability">
+    	<property name="name" value="CreateAndAssociateSelectionLists"/>
+   		<property name="permission" value="CreateAndAssociateSelectionLists"/>
+    </bean>
+    
+    <bean id="rmCreateModifyDestroyClassificationGuidesCapability" 
+          parent="declarativeCapability">
+    	<property name="name" value="CreateModifyDestroyClassificationGuides"/>
+   		<property name="permission" value="CreateModifyDestroyClassificationGuides"/>
+    </bean>
+    
+    <bean id="rmCreateModifyDestroyEventsCapability" 
+	      parent="declarativeCapability">
+		<property name="name" value="CreateModifyDestroyEvents" />
+		<property name="permission" value="CreateModifyDestroyEvents" />
+	</bean>
+
+    <bean id="rmCreateModifyDestroyFileplanMetadataCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="CreateModifyDestroyFileplanMetadata"/>
+   		<property name="permission" value="CreateModifyDestroyFileplanMetadata"/>   		
+		<property name="kinds">
+			<list>
+			    <value>FILE_PLAN</value>
+				<value>RECORD_CATEGORY</value>
+				<value>DISPOSITION_SCHEDULE</value>
+			</list>
+		</property>		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmCreateModifyDestroyFileplanTypesCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="CreateModifyDestroyFileplanTypes" />
+		<property name="permission" value="CreateModifyDestroyFileplanTypes" />
+	</bean>
+
+    <bean id="rmCreateModifyDestroyFoldersCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="CreateModifyDestroyFolders"/>
+   		<property name="permission" value="CreateModifyDestroyFolders"/>   		
+		<property name="kinds">
+			<list>
+			    <value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+				<!-- <value>RECORD</value> -->
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   				
+   				<entry key="capabilityCondition.closed" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+        
+    <bean id="rmCreateModifyDestroyRecordTypesCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="CreateModifyDestroyRecordTypes" />
+		<property name="permission" value="CreateModifyDestroyRecordTypes" />
+	</bean>
+        
+    <bean id="rmCreateModifyDestroyReferenceTypesCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="CreateModifyDestroyReferenceTypes" />
+		<property name="permission" value="CreateModifyDestroyReferenceTypes" />
+	</bean>
+    
+    <bean id="rmCreateModifyDestroyRolesCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="CreateModifyDestroyRoles" />
+		<property name="permission" value="CreateModifyDestroyRoles" />
+	</bean>
+    
+    <bean id="rmCreateModifyDestroyTimeframesCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="CreateModifyDestroyTimeframes" />
+		<property name="permission" value="CreateModifyDestroyTimeframes" />
+	</bean>
+    
+    <bean id="rmCreateModifyDestroyUsersAndGroupsCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="CreateModifyDestroyUsersAndGroups" />
+		<property name="permission" value="CreateModifyDestroyUsersAndGroups" />
+	</bean>
+    
+    <bean id="rmCreateModifyRecordsInCuttoffFoldersCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="CreateModifyRecordsInCutoffFolders"/>
+   		<property name="permission" value="CreateModifyRecordsInCutoffFolders"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="true"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   				<entry key="capabilityCondition.closed" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmCycleVitalRecordsCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="CycleVitalRecords"/>
+   		<property name="permission" value="CycleVitalRecords"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   				
+   				<entry key="capabilityCondition.transferred" value="false"/>
+   				<entry key="capabilityCondition.destroyed" value="false"/>
+   				<entry key="capabilityCondition.vitalRecordOrFolder" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmDeclareAuditAsRecordCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="DeclareAuditAsRecord" />
+		<property name="permission" value="DeclareAuditAsRecord" />
+	</bean>
+    
+    <bean id="rmDeclareRecordsCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="DeclareRecords"/>
+   		<property name="permission" value="DeclareRecords"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   				<entry key="capabilityCondition.closed" value="false"/>   				   				
+   				<entry key="capabilityCondition.declared" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+        
+    <bean id="rmDeclareRecordsInClosedFoldersCapability"  
+    	  parent="declarativeCapability">
+   		<property name="name" value="DeclareRecordsInClosedFolders"/>
+   		<property name="permission" value="DeclareRecordsInClosedFolders"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   				<entry key="capabilityCondition.closed" value="true"/>   				   				
+   				<entry key="capabilityCondition.declared" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmDeleteAuditCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="DeleteAudit" />
+		<property name="permission" value="DeleteAudit" />
+	</bean>
+    
+    <bean id="rmDeleteLinksCapability" 
+          parent="rmBaseCapability" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.DeleteLinksCapability">
+   		<property name="name" value="DeleteLinks"/>
+   		<property name="permission" value="DeleteLinks"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   
+   			</map>
+   		</property>
+    </bean>
+   
+    <bean id="rmDeleteRecordsCapability"   
+    	  parent="declarativeCapability">
+   		<property name="name" value="DeleteRecords"/>
+   		<property name="permission" value="DeleteRecords"/>   		
+		<property name="kinds">
+			<list>			    
+				<!-- <value>RECORD_FOLDER</value> -->
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				   				
+   			</map>
+   		</property>
+    </bean>   
+   
+    <bean id="rmDestroyRecordsCapability"
+    	  parent="declarativeCapability">
+   		<property name="name" value="DestroyRecords"/>
+   		<property name="permission" value="DestroyRecords"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+   				<entry key="capabilityCondition.destroyMayBeScheduled" value="true"/>
+   			</map>
+   		</property>
+    </bean>    
+    
+    <bean id="rmDestroyRecordsScheduledForDestructionCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="DestroyRecordsScheduledForDestruction"/>
+   		<property name="permission" value="DestroyRecordsScheduledForDestruction"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+   				<entry key="capabilityCondition.destroyIsScheduled" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmDisplayRightsReportCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="DisplayRightsReport" />
+		<property name="permission" value="DisplayRightsReport" />
+	</bean>
+    
+    <bean id="rmEditDeclaredRecordMetadataCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="EditDeclaredRecordMetadata"/>
+   		<property name="permission" value="EditDeclaredRecordMetadata"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   				<entry key="capabilityCondition.closed" value="false"/>   				   				
+   				<entry key="capabilityCondition.declared" value="true"/>
+   			</map>
+   		</property>
+    </bean>    
+    
+    <bean id="rmEditNonRecordMetadataCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="EditNonRecordMetadata"/>
+   		<property name="permission" value="EditNonRecordMetadata"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.fileable" value="true"/>   				   				
+   			</map>
+   		</property>
+    </bean> 
+    
+    <bean id="rmEditRecordMetadataCapability"
+          parent="rmBaseCapability" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditRecordMetadataCapability">
+   		<property name="name" value="EditRecordMetadata"/>
+   		<property name="permission" value="EditRecordMetadata"/>  
+		<property name="kinds">
+			<list>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   				<entry key="capabilityCondition.closed" value="false"/>   				   				
+   				<entry key="capabilityCondition.declared" value="false"/>
+   			</map>
+   		</property>
+    </bean>  
+    
+    <bean id="rmEditSelectionListsCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="EditSelectionLists" />
+		<property name="permission" value="EditSelectionLists" />
+	</bean>
+	
+    <bean id="rmEnableDisableAuditByTypesCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="EnableDisableAuditByTypes" />
+		<property name="permission" value="EnableDisableAuditByTypes" />
+	</bean>
+
+    <bean id="rmExportAuditCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="ExportAudit" />
+		<property name="permission" value="ExportAudit" />
+	</bean>
+
+    <bean id="rmExtendRetentionPeriodOrFreezeCapability"  
+    	  parent="declarativeCapability">
+   		<property name="name" value="ExtendRetentionPeriodOrFreeze"/>
+   		<property name="permission" value="ExtendRetentionPeriodOrFreeze"/>   	 		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property>		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmFileCapability"
+          parent="declarativeCapability">
+    	<property name="name" value="File"/>
+    	<property name="private" value="true"/>
+    	<property name="conditions">
+    		<map>
+    			<entry key="capabilityCondition.filling" value="true"/>
+            	<entry key="capabilityCondition.frozen" value="false"/> 
+            	<entry key="capabilityCondition.cutoff" value="false"/>  
+            	<entry key="capabilityCondition.closed" value="false"/>  
+            	<entry key="capabilityCondition.declared" value="false"/>
+    		</map>
+    	</property>
+    </bean>
+    
+    <bean id="rmFileRecordsCapability" 
+    	  parent="compositeCapability">
+		<property name="name" value="FileRecords" />
+		<property name="capabilities">
+			<list>
+				<ref bean="rmFileCapability"/>				
+				<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>	
+			</list>
+		</property>	
+	</bean>
+    
+    <bean id="rmMakeOptionalPropertiesMandatoryCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="MakeOptionalParametersMandatory" />
+		<property name="permission" value="MakeOptionalParametersMandatory" />
+	</bean>
+    
+    <bean id="rmManageAccessControlsCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="ManageAccessControls" />
+		<property name="permission" value="ManageAccessControls" />
+	</bean>
+
+    <bean id="rmManageAccessRightsCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="ManageAccessRights"/>
+   		<property name="permission" value="ManageAccessRights"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozen" value="false"/>   	
+   			</map>
+   		</property>
+    </bean>    
+    
+    <bean id="rmManuallyChangeDispositionDatesCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="ManuallyChangeDispositionDates"/>
+   		<property name="permission" value="ManuallyChangeDispositionDates"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/> 
+   				<entry key="capabilityCondition.frozen" value="false"/>   	
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmMapClassificationGuideMetadataCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="MapClassificationGuideMetadata" />
+		<property name="permission" value="MapClassificationGuideMetadata" />
+	</bean>
+
+    <bean id="rmMapEmailMetadataCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="MapEmailMetadata" />
+		<property name="permission" value="MapEmailMetadata" />
+	</bean>
+
+    <bean id="rmMoveRecordsCapability" 
+          parent="rmBaseCapability" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.MoveRecordsCapability">
+		<property name="name" value="MoveRecords" />		
+	</bean>
+    
+    <bean id="rmPasswordControlCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="PasswordControl" />
+		<property name="permission" value="PasswordControl" />
+	</bean>
+    
+    <bean id="rmPlanningReviewCyclesCapability" 
+          parent="rmBaseCapability" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditRecordMetadataCapability">
+   		<property name="name" value="PlanningReviewCycles"/>
+   		<property name="permission" value="PlanningReviewCycles"/>  
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   
+   				<entry key="capabilityCondition.vitalRecordOrFolder" value="true"/>	
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmReOpenFoldersCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="ReOpenFolders"/>
+   		<property name="permission" value="ReOpenFolders"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   				
+   				<entry key="capabilityCondition.closed" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmSelectAuditMetadataCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="SelectAuditMetadata" />
+		<property name="permission" value="SelectAuditMetadata" />
+	</bean>
+    
+    <bean id="rmTriggerAnEventCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="TriggerAnEvent"/>
+   		<property name="permission" value="TriggerAnEvent"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>
+   				<entry key="capabilityCondition.hasEvents" value="true"/>
+   			</map>
+   		</property>
+    </bean>    
+    
+    <bean id="rmUndeclareRecordsCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="UndeclareRecords"/>
+   		<property name="permission" value="UndeclareRecords"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   				<entry key="capabilityCondition.declared" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmUnfreezeCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="Unfreeze"/>
+   		<property name="permission" value="Unfreeze"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozenOrHold" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmUpdateClassificationDatesCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="UpdateClassificationDates" />
+		<property name="permission" value="UpdateClassificationDates" />
+	</bean>
+
+    <bean id="rmUpdateExemptionCategoriesCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="UpdateExemptionCategories" />
+		<property name="permission" value="UpdateExemptionCategories" />
+	</bean>
+
+    <bean id="rmUpdateTriggerDatesCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="UpdateTriggerDates"/>
+   		<property name="permission" value="UpdateTriggerDates"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozen" value="false"/>
+   			</map>
+   		</property>
+    </bean>    
+    
+    <bean id="rmUpdateVitalRecordCycleInformationCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="UpdateVitalRecordCycleInformation"/>
+   		<property name="permission" value="UpdateVitalRecordCycleInformation"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozen" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmUpgradeDowngradeAndDeclassifyRecordsCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="UpgradeDowngradeAndDeclassifyRecords"/>
+   		<property name="permission" value="UpgradeDowngradeAndDeclassifyRecords"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozen" value="false"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmViewRecordsCapability" 
+    	  parent="rmBaseCapability" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability">
+    	<property name="name" value="ViewRecords" />
+	</bean>
+    
+    <bean id="rmViewUpdateReasonsForFreezeCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="ViewUpdateReasonsForFreeze"/>
+   		<property name="permission" value="ViewUpdateReasonsForFreeze"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozenOrHold" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmCreate" 
+    	  parent="rmBaseCapability" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability">
+        <property name="name" value="Create"/>
+    	<property name="private" value="true"/>
+    </bean>
+    
+    <bean id="rmDelete" 
+    	  parent="compositeCapability">
+        <property name="name" value="Delete"/>
+    	<property name="private" value="true"/>    	
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmDestroyRecordsScheduledForDestructionCapability"/>    			
+    			<ref bean="rmDestroyRecordsCapability"/>    			
+    			<ref bean="rmDeleteRecordsCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    		</list>
+    	</property>
+    </bean>
+    
+    <bean id="rmUpdate" 
+    	  parent="compositeCapability" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdateCapability">
+        <property name="name" value="Update"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmEditDeclaredRecordMetadataCapability"/>
+    			<ref bean="rmEditNonRecordMetadataCapability"/>
+    			<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
+    		</list>
+    	</property>
+    </bean>
+    
+    <bean id="rmUpdateProperties" 
+          parent="compositeCapability" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdatePropertiesCapability">
+        <property name="name" value="UpdateProperties"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmEditDeclaredRecordMetadataCapability"/>
+    			<ref bean="rmEditNonRecordMetadataCapability"/>
+    			<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
+    		</list>
+    	</property>
+    </bean>
+    
+    <bean id="rmDeclare" 
+    	  parent="compositeCapability">
+    	<property name="name" value="Declare"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmDeclareRecordsCapability"/>    			
+    			<ref bean="rmDeclareRecordsInClosedFoldersCapability"/>   
+    		</list>
+    	</property>
+    </bean>
+    
+    <bean id="rmWriteContent" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="WriteContent"/>  		
+    	<property name="private" value="true"/>  		
+		<property name="kinds">
+			<list>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   				<entry key="capabilityCondition.declared" value="false"/>
+   				<entry key="capabilityCondition.closed" value="false"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   			</map>
+   		</property>
+    </bean>   
+
+</beans>

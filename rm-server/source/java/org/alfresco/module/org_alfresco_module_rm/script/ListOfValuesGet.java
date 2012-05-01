@@ -1,0 +1,304 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.alfresco.module.org_alfresco_module_rm.script;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.audit.AuditEvent;
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.Period;
+import org.alfresco.service.cmr.repository.PeriodProvider;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.util.StringUtils;
+
+/**
+ * Implementation for Java backed webscript to return lists
+ * of values for various records management services.
+ * 
+ * @author Gavin Cornwell
+ */
+public class ListOfValuesGet extends DeclarativeWebScript
+{
+    protected RecordsManagementService rmService;
+    protected RecordsManagementActionService rmActionService;
+    protected RecordsManagementAuditService rmAuditService;
+    protected RecordsManagementEventService rmEventService;
+    protected DispositionService dispositionService;
+    protected DictionaryService ddService;
+    protected NamespaceService namespaceService;
+    
+    /**
+     * Sets the RecordsManagementService instance
+     * 
+     * @param rmService The RecordsManagementService instance
+     */
+    public void setRecordsManagementService(RecordsManagementService rmService)
+    {
+        this.rmService = rmService;
+    }
+    
+    /**
+     * Sets the RecordsManagementActionService instance
+     * 
+     * @param rmActionService The RecordsManagementActionService instance
+     */
+    public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
+    {
+        this.rmActionService = rmActionService;
+    }
+    
+    /**
+     * Sets the RecordsManagementAuditService instance
+     * 
+     * @param rmAuditService The RecordsManagementAuditService instance
+     */
+    public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService)
+    {
+        this.rmAuditService = rmAuditService;
+    }
+    
+    /**
+     * Sets the RecordsManagementEventService instance
+     * 
+     * @param rmEventService The RecordsManagementEventService instance
+     */
+    public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
+    {
+        this.rmEventService = rmEventService;
+    }
+    
+    /**
+     * Sets the disposition service
+     * 
+     * @param dispositionService    the disposition service
+     */
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+
+    /**
+     * Sets the DictionaryService instance
+     * 
+     * @param ddService The DictionaryService instance
+     */
+    public void setDictionaryService(DictionaryService ddService)
+    {
+        this.ddService = ddService;
+    }
+    
+    /**
+     * Sets the NamespaceService instance
+     * 
+     * @param namespaceService The NamespaceService instance
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+    
+    /*
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
+     */
+    @Override
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    {
+        // add all the lists data to a Map
+        Map<String, Object> listsModel = new HashMap<String, Object>(4);
+        String requestUrl = req.getURL();
+        listsModel.put("dispositionActions", createDispositionActionsModel(requestUrl));
+        listsModel.put("events", createEventsModel(requestUrl));
+        listsModel.put("periodTypes", createPeriodTypesModel(requestUrl));
+        listsModel.put("periodProperties", createPeriodPropertiesModel(requestUrl));
+        listsModel.put("auditEvents", createAuditEventsModel(requestUrl));
+        
+        // create model object with the lists model
+        Map<String, Object> model = new HashMap<String, Object>(1);
+        model.put("lists", listsModel);
+        return model;
+    }
+    
+    /**
+     * Creates the model for the list of disposition actions.
+     * 
+     * @param baseUrl The base URL of the service
+     * @return model of disposition actions list
+     */
+    protected Map<String, Object> createDispositionActionsModel(String baseUrl)
+    {
+        // iterate over the disposition actions
+        List<RecordsManagementAction> dispositionActions = this.rmActionService.getDispositionActions();
+        List<Map<String, String>> items = new ArrayList<Map<String, String>>(dispositionActions.size());
+        for (RecordsManagementAction dispositionAction : dispositionActions)
+        {
+            Map<String, String> item = new HashMap<String, String>(2);
+            item.put("label", dispositionAction.getLabel());
+            item.put("value", dispositionAction.getName());
+            items.add(item);
+        }
+        
+        // create the model
+        Map<String, Object> model = new HashMap<String, Object>(2);
+        model.put("url", baseUrl + "/dispositionactions");
+        model.put("items", items);
+        
+        return model;
+    }
+    
+    /**
+     * Creates the model for the list of events.
+     * 
+     * @param baseUrl The base URL of the service
+     * @return model of events list
+     */
+    protected Map<String, Object> createEventsModel(String baseUrl)
+    {
+        // get all the events including their display labels from the event service
+        List<RecordsManagementEvent> events = this.rmEventService.getEvents();
+        List<Map<String, Object>> items = new ArrayList<Map<String, Object>>(events.size());
+        for (RecordsManagementEvent event : events)
+        {
+            Map<String, Object> item = new HashMap<String, Object>(3);
+            item.put("label", event.getDisplayLabel());
+            item.put("value", event.getName());
+            item.put("automatic", 
+                        this.rmEventService.getEventType(event.getType()).isAutomaticEvent());
+            items.add(item);
+        }
+        
+        // create the model
+        Map<String, Object> model = new HashMap<String, Object>(2);
+        model.put("url", baseUrl + "/events");
+        model.put("items", items);
+        
+        return model;
+    }
+    
+    /**
+     * Creates the model for the list of period types.
+     * 
+     * @param baseUrl The base URL of the service
+     * @return model of period types list
+     */
+    protected Map<String, Object> createPeriodTypesModel(String baseUrl)
+    {
+        // iterate over all period provides, but ignore 'cron'
+        Set<String> providers = Period.getProviderNames();
+        List<Map<String, String>> items = new ArrayList<Map<String, String>>(providers.size());
+        for (String provider : providers)
+        {
+            PeriodProvider pp = Period.getProvider(provider);
+            if (!pp.getPeriodType().equals("cron"))
+            {
+                Map<String, String> item = new HashMap<String, String>(2);
+                item.put("label", pp.getDisplayLabel());
+                item.put("value", pp.getPeriodType());
+                items.add(item);
+            }
+        }
+        
+        // create the model
+        Map<String, Object> model = new HashMap<String, Object>(2);
+        model.put("url", baseUrl + "/periodtypes");
+        model.put("items", items);
+        
+        return model;
+    }
+    
+    /**
+     * Creates the model for the list of period properties.
+     * 
+     * @param baseUrl The base URL of the service
+     * @return model of period properties list
+     */
+    protected Map<String, Object> createPeriodPropertiesModel(String baseUrl)
+    {
+        // iterate over all period properties and get the label from their type definition
+        List<QName> periodProperties = dispositionService.getDispositionPeriodProperties();
+        List<Map<String, String>> items = new ArrayList<Map<String, String>>(periodProperties.size());
+        for (QName periodProperty : periodProperties)
+        {
+            PropertyDefinition propDef = this.ddService.getProperty(periodProperty);
+            
+            if (propDef != null)
+            {
+                Map<String, String> item = new HashMap<String, String>(2);
+                String propTitle = propDef.getTitle();
+                if (propTitle == null || propTitle.length() == 0)
+                {
+                    propTitle = StringUtils.capitalize(periodProperty.getLocalName());
+                }
+                item.put("label", propTitle);
+                item.put("value", periodProperty.toPrefixString(this.namespaceService));
+                items.add(item);
+            }
+        }
+        
+        // create the model
+        Map<String, Object> model = new HashMap<String, Object>(2);
+        model.put("url", baseUrl + "/periodproperties");
+        model.put("items", items);
+        
+        return model;
+    }
+    
+    /**
+     * Creates the model for the list of audit events.
+     * 
+     * @param baseUrl The base URL of the service
+     * @return model of audit events list
+     */
+    protected Map<String, Object> createAuditEventsModel(String baseUrl)
+    {
+        // iterate over all audit events
+        List<AuditEvent> auditEvents = this.rmAuditService.getAuditEvents();
+        List<Map<String, String>> items = new ArrayList<Map<String, String>>(auditEvents.size());
+        for (AuditEvent event : auditEvents)
+        {
+            Map<String, String> item = new HashMap<String, String>(2);
+            item.put("label", event.getLabel());
+            item.put("value", event.getName());
+            items.add(item);
+        }
+        
+        // create the model
+        Map<String, Object> model = new HashMap<String, Object>(2);
+        model.put("url", baseUrl + "/auditevents");
+        model.put("items", items);
+        
+        return model;
+    }
+}

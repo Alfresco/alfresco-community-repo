@@ -83,6 +83,13 @@ subprojects {
 			dirs explodedLibsDir
 		}
 		mavenCentral()
+		maven {
+			url "http://maven.alfresco.com/nexus/content/repositories/enterprise-releases/"
+			credentials {
+				username 'bamboo'
+				password 'b@mb00'
+			}
+		}
 	}
 	
 	dependencies {		     		
@@ -91,7 +98,14 @@ subprojects {
 	}	
 	
 	/** --- Compile tasks --- */
-	
+
+	task fetchWarFile(type:Copy) {
+		from configurations.testRuntime
+		into '.'
+		include '*.war'
+		rename { String filename -> warFile }
+	}
+		
 	// make sure that the dependancies have been unpacked before compiling the Java
 	compileJava.doFirst {
 		explodeDeps.execute()
@@ -100,7 +114,7 @@ subprojects {
 	jar.archiveName = jarFile
 	
 	/** --- Dependancy tasks --- */
-				
+
 	task explodeDeps << {
 	
 		explodedDir = file(explodedDepsDir)

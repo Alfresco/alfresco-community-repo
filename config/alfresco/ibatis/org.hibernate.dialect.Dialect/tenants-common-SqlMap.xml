@@ -4,6 +4,8 @@
 
 <mapper namespace="alfresco.tenants">
 
+    <!--NOTE: MyBatis #224 - eg. Oracle -->
+    
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
@@ -22,8 +24,23 @@
     <!--                -->
     
     <insert id="insert_Tenant" parameterType="Tenant">
-        insert into alf_tenant (tenant_domain, version, enabled, tenant_name, content_root, db_url)
-        values (#{tenantDomain}, #{version}, #{enabled}, #{tenantName}, #{contentRoot}, #{dbUrl})
+        insert into alf_tenant 
+            (
+                tenant_domain, 
+                version, 
+                enabled, 
+                tenant_name, 
+                content_root, 
+                db_url)
+        values 
+            (
+                #{tenantDomain},
+                #{version}, 
+                #{enabled}, 
+                #{tenantName,jdbcType=VARCHAR}, 
+                #{contentRoot,jdbcType=VARCHAR}, 
+                #{dbUrl,jdbcType=VARCHAR}
+            )
     </insert>
     
     <delete id="delete_Tenant" parameterType="Tenant">
@@ -62,9 +79,9 @@
             alf_tenant
         set
             enabled = #{enabled},
-            content_root =#{contentRoot},
-            db_url = #{dbUrl},
-            tenant_name = #{tenantName},
+            content_root = #{contentRoot,jdbcType=VARCHAR},
+            db_url = #{dbUrl,jdbcType=VARCHAR},
+            tenant_name = #{tenantName,jdbcType=VARCHAR},
             version = #{version}
         where
             tenant_domain = #{tenantDomain}

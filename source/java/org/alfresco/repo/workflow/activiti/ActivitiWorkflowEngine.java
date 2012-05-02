@@ -1347,6 +1347,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             String msg = messageService.getMessage(ERR_END_UNEXISTING_TASK, taskId);
             throw new WorkflowException(msg);
         }
+        
+        // Check if the assignee is equal to the current logged-in user. If not, assign task before ending
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
+        if(task.getAssignee() == null || !task.getAssignee().equals(currentUserName)) {
+        	taskService.setAssignee(localTaskId, currentUserName);
+        	// Also update pojo used to set the outcome, this will read assignee as wel
+        	task.setAssignee(currentUserName);
+        }
+        
         setOutcome(task, transition);
         taskService.complete(localTaskId);
         // The task should have a historicTaskInstance

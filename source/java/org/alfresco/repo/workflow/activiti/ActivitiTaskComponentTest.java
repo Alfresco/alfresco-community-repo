@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.activiti.engine.history.HistoricDetail;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableUpdate;
 import org.activiti.engine.task.Task;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
@@ -308,6 +309,11 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         }
         
         Assert.assertTrue("Task variables are not flushed to process-instance", found);
+        
+        // Check task assignee, should be currently logged in user
+        HistoricTaskInstance hti = historyService.createHistoricTaskInstanceQuery().taskId(task.getId()).singleResult();
+        assertNotNull(hti);
+        assertEquals("admin", hti.getAssignee());
     }
       
     @SuppressWarnings("unchecked")

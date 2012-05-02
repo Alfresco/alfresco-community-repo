@@ -36,6 +36,7 @@ import org.activiti.engine.history.HistoricDetail;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableUpdate;
 import org.activiti.engine.task.Task;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -568,8 +569,10 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         // Set process prop
         runtime.setVariable(task.getExecutionId(), "processVar", "testing");
         
-        // End the task
+        // End the task as TEST_USER
+        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
         workflowEngine.endTask(globalTaskId, null);
+        AuthenticationUtil.setFullyAuthenticatedUser("admin");
 
         // Test query by taskId
         WorkflowTaskQuery taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);

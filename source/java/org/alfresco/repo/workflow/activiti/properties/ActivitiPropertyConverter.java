@@ -517,7 +517,8 @@ public class ActivitiPropertyConverter
     {
         HistoricDetailQuery query = activitiUtil.getHistoryService()
             .createHistoricDetailQuery()
-            .processInstanceId(processId);
+            .processInstanceId(processId)
+            .excludeTaskDetails();
         return getHistoricVariables(query);
     }
     

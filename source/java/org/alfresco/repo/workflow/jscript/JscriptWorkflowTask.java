@@ -20,6 +20,7 @@ package org.alfresco.repo.workflow.jscript;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ScriptableHashMap;
 import org.alfresco.repo.jscript.ScriptableQNameMap;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -280,18 +282,20 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
      */
     public boolean isPooled()
     {
-        return pooled;
+    	if(properties != null) {
+    		Collection<?> actors = (Collection<?>) properties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
+    		return actors != null && !actors.isEmpty();
+    	}
+    	return false;
     }
 
     /**
-     * Sets whether task is pooled('true') or not('false')
-     * 
-     * @param pooled
-     *            the pooled to set
+     * @deprecated pooled state cannot be altered. 
      */
+    @Deprecated
     public void setPooled(boolean pooled)
     {
-        this.pooled = pooled;
+    	
     }
 
     /**

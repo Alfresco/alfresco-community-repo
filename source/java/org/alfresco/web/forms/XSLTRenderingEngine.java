@@ -20,7 +20,6 @@ package org.alfresco.web.forms;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +42,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.alfresco.service.namespace.QName;
 import org.apache.bsf.BSFManager;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
@@ -448,7 +448,7 @@ public class XSLTRenderingEngine
 
             try
             {
-               final Document d = XMLUtil.parse(in);
+               final Document d = XMLUtil.secureParseXSL(in);
                if (LOGGER.isDebugEnabled())
                   LOGGER.debug("loaded " + XMLUtil.toString(d));
                return new DOMSource(d);
@@ -481,7 +481,12 @@ public class XSLTRenderingEngine
             final StringBuilder msg = new StringBuilder("errors encountered creating tranformer ... \n");
             for (TransformerException te : errors)
             {
-               msg.append(te.getMessageAndLocation()).append("\n"); 
+            	msg.append(te.getMessageAndLocation()).append("\n");
+            	String cause = ExceptionUtils.getRootCauseMessage(te);
+            	if (cause != null) 
+            	{
+            		msg.append(" caused by: " + cause);
+            	}
             }
             throw new RenderingEngine.RenderingException(msg.toString());
          }
@@ -516,7 +521,12 @@ public class XSLTRenderingEngine
          final StringBuilder msg = new StringBuilder("errors encountered during transformation ... \n");
          for (TransformerException te : errors)
          {
-            msg.append(te.getMessageAndLocation()).append("\n"); 
+            msg.append(te.getMessageAndLocation()).append("\n");
+            String cause = ExceptionUtils.getRootCauseMessage(te);
+        	if (cause != null) 
+        	{
+        		msg.append(" caused by: " + cause);
+        	}
          }
          throw new RenderingEngine.RenderingException(msg.toString());
       }

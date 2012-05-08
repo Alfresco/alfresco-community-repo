@@ -352,7 +352,7 @@ public class ClipboardBean implements Serializable
          FacesContext context = FacesContext.getCurrentInstance();
          if (Application.getClientConfig(context).isClipboardStatusVisible())
          {
-            String pattern = Application.getMessage(context, "node_added_clipboard");
+            String pattern = Application.getMessage(context, StoreRef.PROTOCOL_AVM.equals(ref.getStoreRef().getProtocol()) ? "node_added_clipboard_avm" : "node_added_clipboard");
             String msg = MessageFormat.format(pattern, items.size());
             FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);
             context.addMessage(null, facesMsg);

@@ -595,6 +595,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         
         String workflowInstanceId = startAdhocWorkflow(workflowDef, USER2);
         
+        personManager.setUser(USER2);
         // End start task to progress workflow
         WorkflowTask startTask = workflowService.getStartTask(workflowInstanceId);
         String startTaskId = startTask.getId();

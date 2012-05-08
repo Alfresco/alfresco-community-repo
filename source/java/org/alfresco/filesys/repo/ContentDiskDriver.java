@@ -3183,8 +3183,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
                                 //Change state for tmp node to allow delete it without special permission
                                 String newStateNodeName = (String) nodeService.getProperty(newStateNode, ContentModel.PROP_NAME);
-                                FileState stateForTmp = ctx.getStateCache().findFileState(newName.substring(0,newName.lastIndexOf("\\")) +"\\"+ newStateNodeName);
+                                FileState stateForTmp = ctx.getStateCache().findFileState(newName.substring(0,newName.lastIndexOf("\\")) +"\\"+ newStateNodeName, true);
                                 stateForTmp.addAttribute(CanDeleteWithoutPerms, true);
+                                stateForTmp.setFileStatus(FileStatus.FileExists); 
                                 stateForTmp.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
                                 if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Set CanDeleteWithoutPerms=true for " + stateForTmp);
@@ -3268,8 +3269,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                                 cloneNode( name, nodeToMoveRef, targetNodeRef, ctx);
                                 
                                 //Change state for tmp node to allow delete it without special permission
-                                FileState stateForTmp = ctx.getStateCache().findFileState(newName);
+                                FileState stateForTmp = ctx.getStateCache().findFileState(newName, true);
                                 stateForTmp.addAttribute(CanDeleteWithoutPerms, true);
+                                stateForTmp.setFileStatus(FileStatus.FileExists); 
                                 stateForTmp.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
                                 if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Set CanDeleteWithoutPerms=true for " + stateForTmp);

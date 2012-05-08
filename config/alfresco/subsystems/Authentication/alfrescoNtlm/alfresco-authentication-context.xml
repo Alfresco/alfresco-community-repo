@@ -84,6 +84,7 @@
       <property name="passwordEncoder" ref="passwordEncoder" />
       <property name="policyComponent" ref="policyComponent" />
       <property name="authenticationCache" ref="authenticationCache" />
+      <property name="singletonCache" ref="immutableSingletonCache"/>
    </bean>
 
    <!-- Authentication service for chaining -->

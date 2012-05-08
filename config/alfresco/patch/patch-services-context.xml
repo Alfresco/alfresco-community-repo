@@ -2566,6 +2566,7 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>${version.schema}</value></property>
         <property name="targetSchema"><value>10000</value></property>
+        <property name="disabled"><value>${sample.site.disabled}</value></property>
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.updateDmPermissions" />
@@ -3155,4 +3156,23 @@
         </property>
     </bean>
 
+    <bean id="patch.migrateTenantsFromAttrsToTable" class="org.alfresco.repo.admin.patch.impl.MigrateTenantsFromAttrsToTablePatch" parent="basePatch">
+        <property name="id"><value>patch.migrateTenantsFromAttrsToTable</value></property>
+        <property name="description"><value>patch.migrateTenantsFromAttrsToTable.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6006</value></property>
+        <property name="targetSchema"><value>6007</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="attributeService">
+            <ref bean="attributeService"/>
+        </property>
+        <property name="tenantAdminDAO">
+            <ref bean="tenantAdminDAO"/>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V4.0-TenantTables"/>
+            </list>
+        </property>
+    </bean>
 </beans>

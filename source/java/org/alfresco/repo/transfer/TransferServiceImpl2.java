@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2009-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.UserTransaction;
 import javax.xml.parsers.ParserConfigurationException;
@@ -49,8 +48,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
@@ -162,7 +160,6 @@ public class TransferServiceImpl2 implements TransferService2
     private ActionService actionService;
     private TransferManifestNodeFactory transferManifestNodeFactory;
     private TransferReporter transferReporter;
-    private TenantService tenantService;
     private DescriptorService descriptorService;
     private TransferVersionChecker transferVersionChecker;
     private NamespaceService namespaceService;
@@ -573,8 +570,6 @@ public class TransferServiceImpl2 implements TransferService2
         // Wire in the transferReport - so any callbacks are stored in transferReport
         TransferCallback reportCallback = new TransferCallback()
         {
-            private static final long serialVersionUID = 4072579605731036522L;
-
             public void processEvent(TransferEvent event)
             {
                 transferReportEvents.add(event);
@@ -1160,9 +1155,9 @@ public class TransferServiceImpl2 implements TransferService2
         this.searchService = searchService;
     }
 
-    public void setTenantService(TenantService tenantService)
+    public void setSingletonCache(SimpleCache<String, NodeRef> singletonCache)
     {
-        this.tenantService = tenantService;
+        this.singletonCache = singletonCache;
     }
 
     public void setTransferSpaceQuery(String transferSpaceQuery)
@@ -1184,34 +1179,31 @@ public class TransferServiceImpl2 implements TransferService2
     {
         this.transmitter = transmitter;
     }
-
-    private Map<String,NodeRef> transferHomeMap = new ConcurrentHashMap<String, NodeRef>();
+    
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    
+    private SimpleCache<String, NodeRef> singletonCache; // eg. for transferHomeNodeRef
+    private final String KEY_TRANSFER_HOME_NODEREF = "key.transferServiceImpl2Home.noderef";
+    
     protected NodeRef getTransferHome()
     {
-        String tenantDomain = tenantService.getUserDomain(AuthenticationUtil.getRunAsUser());
-
-        synchronized (transferHomeMap)
+        NodeRef transferHome = singletonCache.get(KEY_TRANSFER_HOME_NODEREF);
+        if(transferHome == null)
         {
-            NodeRef transferHome = transferHomeMap.get(tenantDomain);
-            if(transferHome == null)
+            String query = transferSpaceQuery;
+            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), query, null, namespaceService, false);
+            if (refs.size() == 0)
             {
-                String query = transferSpaceQuery;
-
-                List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), query, null, namespaceService, false);
-
-                if (refs.size() == 0)
-                {
-                    // No transfer home.
-                    throw new TransferException(MSG_NO_HOME, new Object[] { query });
-                }
-                if (refs.size() != 0)
-                {
-                    transferHome = refs.get(0);
-                    transferHomeMap.put(tenantDomain, transferHome);
-                }
+                // No transfer home.
+                throw new TransferException(MSG_NO_HOME, new Object[] { query });
             }
-            return transferHome;
+            if (refs.size() != 0)
+            {
+                transferHome = refs.get(0);
+                singletonCache.put(KEY_TRANSFER_HOME_NODEREF, transferHome);
+            }
         }
+        return transferHome;
     }
     
     private char[] encrypt(char[] text)

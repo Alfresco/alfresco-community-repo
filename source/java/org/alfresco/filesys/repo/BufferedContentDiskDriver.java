@@ -28,6 +28,7 @@ import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
+import org.alfresco.jlan.server.core.SharedDevice;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSizeInterface;
@@ -134,14 +135,29 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
          */
         private static final long serialVersionUID = 1L;
         
+        String deviceName;
         String path;
         String user;
         int hashCode;
         
-        public FileInfoKey(String user, String path)
+        public FileInfoKey(SrvSession sess, String path, TreeConnection tree)
         {
             this.path = path;
-            this.user = user;
+            this.user = sess.getUniqueId();
+            this.deviceName = tree.getSharedDevice().getName();
+            
+//            if(deviceName == null)
+//            {
+//                throw new RuntimeException("device name is null");
+//            }
+//            if(path == null)
+//            {
+//                throw new RuntimeException("path is null");
+//            }
+//            if(user == null)
+//            {
+//                throw new RuntimeException("unique id is null");
+//            }
         }
         
         @Override
@@ -158,7 +174,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
               
            FileInfoKey o = (FileInfoKey)other;
            
-           return path.equals(o.path) && user.equals(o.user);
+           return path.equals(o.path) && user.equals(o.user) && deviceName.equals(o.deviceName);
         }     
           
         @Override
@@ -166,7 +182,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
         {
             if(hashCode == 0)
             {
-                hashCode = (user+path).hashCode();
+                hashCode = (user+path+deviceName).hashCode();
             }
             return hashCode;
         }
@@ -176,11 +192,13 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             String path) throws IOException
     {
                
-        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+        //String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+        SharedDevice device = tree.getSharedDevice();
+        String deviceName = device.getName();
        
         if(logger.isDebugEnabled())
         {
-            logger.debug("getFileInformation userName:" + userName + ", path:" + path);
+            logger.debug("getFileInformation session:" + sess.getUniqueId() + ", deviceName:" + deviceName + ", path:" + path);
         }
         
         if(path == null)
@@ -188,7 +206,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
             throw new IllegalArgumentException("Path is null");
         }
         
-        FileInfoKey key = new FileInfoKey(userName, path);
+        FileInfoKey key = new FileInfoKey(sess, path, tree);
         
         FileInfo fromCache = fileInfoCache.get(key);
         
@@ -311,7 +329,7 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
                             ", fileId:" +finfo.getFileId() +
                             ", fileSize:" +finfo.getSize() +
                             ", directoryId:" + finfo.getDirectoryId() + 
-                            ", createdDate: " + finfo.getCreationDateTime() + 
+                            ", createdDate: " + new Date(finfo.getCreationDateTime()) + 
                             ", accessDate:" + new Date(finfo.getAccessDateTime()) +
                             ", modifiedDate:" + new Date(finfo.getModifyDateTime()) +
                             ", changeDate:" + new Date(finfo.getChangeDateTime()) +
@@ -335,15 +353,14 @@ public class BufferedContentDiskDriver implements ExtendedDiskInterface,
     @Override
     public int fileExists(SrvSession sess, TreeConnection tree, String path)
     {
-       
-        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+        String deviceName = tree.getSharedDevice().getName();
         
         if(logger.isDebugEnabled())
         {
-            logger.debug("fileExists userName:" + userName + ", path:" + path);
+            logger.debug("fileExists session:" + sess.getUniqueId() + ", deviceName" + deviceName + ", path:" + path);
         }
         
-        FileInfoKey key = new FileInfoKey(userName, path);
+        FileInfoKey key = new FileInfoKey(sess, path, tree);
         
         FileInfo fromCache = fileInfoCache.get(key);
         

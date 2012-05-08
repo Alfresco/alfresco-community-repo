@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
@@ -67,12 +66,14 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     private TenantService tenantService;
     private NamespacePrefixResolver namespacePrefixResolver;
     private PasswordEncoder passwordEncoder;
-    private PolicyComponent policyComponent;    
-
-    /** User folder ref cache (Tennant aware) */
-    private Map<String, NodeRef> userFolderRefs = new ConcurrentHashMap<String, NodeRef>(4);
+    private PolicyComponent policyComponent;
     
-    private SimpleCache<String, NodeRef> authenticationCache;    
+    // note: caches are tenant-aware (if using EhCacheAdapter shared cache)
+    
+    private SimpleCache<String, NodeRef> singletonCache; // eg. for user folder nodeRef
+    private final String KEY_USERFOLDER_NODEREF = "key.userfolder.noderef";
+    
+    private SimpleCache<String, NodeRef> authenticationCache;
     
     public RepositoryAuthenticationDao()
     {
@@ -98,7 +99,12 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     {
         this.tenantService = tenantService;
     }
-
+    
+    public void setSingletonCache(SimpleCache<String, NodeRef> singletonCache)
+    {
+        this.singletonCache = singletonCache;
+    }
+    
     public void setPasswordEncoder(PasswordEncoder passwordEncoder)
     {
         this.passwordEncoder = passwordEncoder;
@@ -199,18 +205,17 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI,
                 caseSensitiveUserName), ContentModel.TYPE_USER, properties);
     }
-
+    
     private NodeRef getUserFolderLocation(String caseSensitiveUserName)
     {
-        String cacheKey = tenantService.getUserDomain(caseSensitiveUserName);
-        NodeRef userNodeRef = userFolderRefs.get(cacheKey);
+        NodeRef userNodeRef = singletonCache.get(KEY_USERFOLDER_NODEREF);
         if (userNodeRef == null)
         {
             QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);
-            QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver); // see
-    
+            QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver);
+            
             StoreRef userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
-    
+            
             // AR-527
             NodeRef rootNode = nodeService.getRootNode(userStoreRef);
             List<ChildAssociationRef> results = nodeService.getChildAssocs(rootNode, RegexQNamePattern.MATCH_ALL, qnameAssocSystem);
@@ -232,7 +237,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             {
                 userNodeRef = tenantService.getName(results.get(0).getChildRef());
             }
-            userFolderRefs.put(cacheKey, userNodeRef);            
+            singletonCache.put(KEY_USERFOLDER_NODEREF, userNodeRef);
         }
         return userNodeRef;
     }

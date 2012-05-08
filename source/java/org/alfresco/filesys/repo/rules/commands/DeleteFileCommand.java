@@ -31,6 +31,12 @@ public class DeleteFileCommand implements Command
   private NodeRef rootNode;
   private String path;
     
+  /**
+   * 
+   * @param name name of file
+   * @param rootNode root node
+   * @param path full path of file
+   */
     public DeleteFileCommand(String name, NodeRef rootNode, String path)
     {
         this.name = name;

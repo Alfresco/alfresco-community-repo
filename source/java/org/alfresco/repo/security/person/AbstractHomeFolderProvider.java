@@ -59,12 +59,12 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      * Service registry to get hold of public services (so that actions are audited)
      */
     private ServiceRegistry serviceRegistry;
-
+    
     /**
      * The path to a folder
      */
     private String path;
-
+    
     /**
      * The owner to set on creation of a home folder (if unset this will be the uid).
      */
@@ -84,6 +84,11 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
      * Adaptor for this instance to be a HomeFolderProvider2
      */
     private V2Adaptor v2Adaptor = new V2Adaptor(this);
+
+    public AbstractHomeFolderProvider()
+    {
+        super();
+    }
 
     /**
      * Register with the homeFolderManagewr
@@ -191,7 +196,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     {
         this.serviceRegistry = serviceRegistry;
     }
-
+    
     /**
      * Set the tenant service
      */
@@ -199,7 +204,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     {
         // keep class signature but no longer use value
     }
-
+    
     /**
      * Set the permission manager
      */
@@ -252,7 +257,7 @@ public abstract class AbstractHomeFolderProvider implements HomeFolderProvider, 
     {
         return homeFolderManager.getRootPathNodeRef(v2Adaptor);
     }
-
+    
     /**
      * Utility method to resolve paths to nodes.
      */

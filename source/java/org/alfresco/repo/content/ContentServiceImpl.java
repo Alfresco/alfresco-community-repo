@@ -18,8 +18,11 @@
  */
 package org.alfresco.repo.content;
 
+import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +36,7 @@ import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
@@ -104,6 +108,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private ContentTransformer imageMagickContentTransformer;
     /** Should we consider zero byte content to be the same as no content? */
     private boolean ignoreEmptyContent;
+    private boolean transformerFailover;
     
     /**
      * The policy component
@@ -170,6 +175,18 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     public void setIgnoreEmptyContent(boolean ignoreEmptyContent)
     {
         this.ignoreEmptyContent = ignoreEmptyContent;
+    }
+
+    /**
+     * Allows fail over form one transformer to another when there is
+     * more than one transformer available. The cost is that the output
+     * of the transformer must go to a temporary file in case it fails.
+     * @param transformerFailover {@code true} indicate that fail over 
+     *        should take place.
+     */
+    public void setTransformerFailover(boolean transformerFailover)
+    {
+        this.transformerFailover = transformerFailover;
     }
 
     /* (non-Javadoc)
@@ -584,15 +601,21 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
             transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.transform(...)");
             
-            if (transformers.isEmpty())
+            int count = transformers.size(); 
+            if (count == 0)
             {
                 throw new NoTransformerException(sourceMimetype, targetMimetype);
             }
-
-            // we have a transformer, so do it
-            ContentTransformer transformer = transformers.size() == 0 ? null : transformers.get(0);
-            transformer.transform(reader, writer, options);
-            // done
+            
+            if (count == 1 || !transformerFailover)
+            {
+                ContentTransformer transformer = transformers.size() == 0 ? null : transformers.get(0);
+                transformer.transform(reader, writer, options);
+            }
+            else
+            {
+                failoverTransformers(reader, writer, options, targetMimetype, transformers);
+            }
         }
         finally
         {
@@ -600,6 +623,99 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             {
                 transformerDebug.popAvailable();
                 debugActiveTransformers(sourceMimetype, targetMimetype, sourceSize, options);
+            }
+        }
+    }
+
+    private void failoverTransformers(ContentReader reader, ContentWriter writer,
+            TransformationOptions options, String targetMimetype,
+            List<ContentTransformer> transformers)
+    {
+        List<AlfrescoRuntimeException> exceptions = null;
+        boolean done = false;
+        try
+        {
+            // Try the best transformer and then the next if it fails
+            // and so on down the list
+            char c = 'a';
+            String outputFileExt = mimetypeService.getExtension(targetMimetype);
+            for (ContentTransformer transformer : transformers)
+            {
+                ContentWriter currentWriter = writer;
+                File tempFile = null;
+                try
+                {
+                    // We can't know in advance which of the
+                    // available transformer will work - if any.
+                    // We can't write into the ContentWriter stream.
+                    // So make a temporary file writer with the
+                    // current transformer name.
+                    tempFile = TempFileProvider.createTempFile(
+                            "FailoverTransformer_intermediate_"
+                                    + transformer.getClass().getSimpleName() + "_", "."
+                                    + outputFileExt);
+                    currentWriter = new FileContentWriter(tempFile);
+                    currentWriter.setMimetype(targetMimetype);
+                    currentWriter.setEncoding(writer.getEncoding());
+
+                    if (c != 'a' && transformerDebug.isEnabled())
+                    {
+                        transformerDebug.debug("");
+                        transformerDebug.debug("Try " + c + ")");
+                    }
+                    c++;
+
+                    transformer.transform(reader, currentWriter, options);
+
+                    if (tempFile != null)
+                    {
+                        writer.putContent(tempFile);
+                    }
+
+                    // No need to close input or output streams
+                    // (according
+                    // to comment in FailoverContentTransformer)
+                    done = true;
+                    return;
+                }
+                catch (AlfrescoRuntimeException e)
+                {
+                    if (exceptions == null)
+                    {
+                        exceptions = new ArrayList<AlfrescoRuntimeException>();
+                    }
+                    exceptions.add(e);
+
+                    // Set a new reader to refresh the input stream.
+                    reader = reader.getReader();
+                }
+            }
+            // Throw the exception from the first transformer. The
+            // others are consumed.
+            if (exceptions != null)
+            {
+                throw exceptions.get(0);
+            }
+        }
+        finally
+        {
+            // Log exceptions that we have consumed. We may have thrown the first one if
+            // none of the transformers worked.
+            if (exceptions != null)
+            {
+                boolean first = true;
+                for (Exception e : exceptions)
+                {
+                    if (done)
+                    {
+                        logger.error("Transformer succeeded after previous transformer failed.", e);
+                    }
+                    else if (!first)
+                    {
+                        logger.error("Transformer exception.", e);
+                        first = false;
+                    }
+                }
             }
         }
     }
@@ -663,8 +779,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         try
         {
             transformerDebug.pushMisc();
-            transformerDebug.debug("Active and inactive transformers (list not reduced by 'explicit' settings)");
+            transformerDebug.debug("Active and inactive transformers");
             TransformationOptions options = new TransformationOptions();
+
+            Map<String, Set<String>> explicitTransforms = debugExplicitTransforms();
+
             for (ContentTransformer transformer: transformerRegistry.getTransformers())
             {
                 try
@@ -680,8 +799,18 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                             {
                                 long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
                                         sourceMimetype, targetMimetype, options);
-                                boolean explicit = transformer.isExplicitTransformation(sourceMimetype,
+                                
+                                // Is this an explicit transform, ignored because there are explicit transforms
+                                // or does not have explicit transforms.
+                                Boolean explicit = transformer.isExplicitTransformation(sourceMimetype,
                                         targetMimetype, options);
+                                if (!explicit)
+                                {
+                                    Set<String> targetMimetypes = explicitTransforms.get(sourceMimetype);
+                                    explicit = (targetMimetypes == null || !targetMimetypes.contains(targetMimetype))
+                                        ? null
+                                        : Boolean.FALSE;
+                                }
                                 transformerDebug.activeTransformer(++mimetypePairCount, transformer,
                                         sourceMimetype, targetMimetype, maxSourceSizeKBytes, explicit, first);
                                 first = false;
@@ -703,6 +832,43 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         {
             transformerDebug.popMisc();
         }
+    }
+
+    /**
+     * Returns the explicit mimetype transformations. Key is the source mimetype
+     * and the value is a set of target mimetypes that are explicit.
+     */
+    private Map<String, Set<String>> debugExplicitTransforms()
+    {
+        Map<String, Set<String>> explicitTransforms = new HashMap<String, Set<String>>();
+
+        TransformationOptions options = new TransformationOptions();
+        for (String sourceMimetype : mimetypeService.getMimetypes())
+        {
+            for (String targetMimetype : mimetypeService.getMimetypes())
+            {
+                for (ContentTransformer transformer : transformerRegistry.getTransformers())
+                {
+                    if (transformer.isTransformable(sourceMimetype, -1, targetMimetype, options))
+                    {
+                        if (transformer.isExplicitTransformation(sourceMimetype, targetMimetype,
+                                options))
+                        {
+                            Set<String> targetMimetypes = explicitTransforms.get(sourceMimetype);
+                            if (targetMimetypes == null)
+                            {
+                                targetMimetypes = new HashSet<String>();
+                                explicitTransforms.put(sourceMimetype, targetMimetypes);
+                            }
+                            targetMimetypes.add(targetMimetype);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return explicitTransforms;
     }
     
     /**

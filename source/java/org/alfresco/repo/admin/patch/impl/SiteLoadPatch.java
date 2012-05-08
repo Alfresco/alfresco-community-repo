@@ -73,6 +73,7 @@ public class SiteLoadPatch extends AbstractPatch
     private static final String MSG_NO_BOOTSTRAP_VIEWS_GIVEN = "patch.siteLoadPatch.noBootstrapViews";
     private static final String MSG_SITE_CREATED = "patch.siteLoadPatch.result";
     private static final String MSG_SITE_NOT_CREATED = "patch.siteLoadPatch.siteNotCreated";
+    private static final String MSG_SITE_LOAD_DISABLED = "patch.siteLoadPatch.siteLoadDisabled";
     
     // Logger
     private static final Log logger = LogFactory.getLog(SiteLoadPatch.class);
@@ -88,6 +89,8 @@ public class SiteLoadPatch extends AbstractPatch
     private ImporterBootstrap usersBootstrap;
     
     private Map<String,Properties> bootstrapViews;
+    
+    private Boolean disabled = false;
     
     public SiteLoadPatch()
     {
@@ -157,7 +160,16 @@ public class SiteLoadPatch extends AbstractPatch
         this.behaviourFilter = behaviourFilter;
     }
 
-    @Override
+	public void setDisabled(boolean disabled)
+	{
+		this.disabled = disabled;
+	}
+	
+	public boolean isDisabled() {
+		return disabled;
+	}
+
+	@Override
     protected void checkProperties()
     {
         super.checkProperties();
@@ -169,6 +181,15 @@ public class SiteLoadPatch extends AbstractPatch
     @Override
     protected String applyInternal() throws Exception
     {
+    	//skip sites that we don't want imported automatically
+		if (isDisabled()) 
+		{
+			 if (logger.isDebugEnabled())
+			 {
+				 logger.debug("Load of site \"" + siteName + "\" is disabled.");
+			 }
+			 return I18NUtil.getMessage(MSG_SITE_LOAD_DISABLED, siteName);
+		}
         AuthenticationUtil.pushAuthentication();
         try
         {

@@ -35,9 +35,11 @@
       <property name="thumbnailRegistry" ref="thumbnailRegistry"/>
    </bean>
    
-   <bean id="baseTenantRoutingContentStore" class="org.alfresco.repo.content.TenantRoutingFileContentStore" abstract="true">
+   <bean id="baseTenantRoutingContentStore" class="org.alfresco.repo.tenant.AbstractTenantRoutingContentStore" abstract="true">
       <property name="tenantService" ref="tenantService" />
+      <property name="tenantAdminDAO" ref="tenantAdminDAO" />
       <property name="storesCache" ref="routingContentStoreCache" />
+      <property name="singletonCache" ref="immutableSingletonCache"/>
    </bean>
    
 </beans>

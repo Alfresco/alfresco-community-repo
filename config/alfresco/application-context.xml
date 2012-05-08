@@ -19,7 +19,7 @@
     <!--
          Import activation extensions for Multi-Tenancy.
     -->
-    <import resource="classpath:alfresco/mt/mt-base-context.xml"/>
+    <import resource="classpath*:alfresco/mt/mt-*context.xml"/>
     <import resource="classpath*:alfresco/extension/mt/*-context.xml"/>
     
     <!--

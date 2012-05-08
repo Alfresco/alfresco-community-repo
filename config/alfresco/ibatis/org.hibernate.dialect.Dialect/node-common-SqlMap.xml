@@ -927,7 +927,6 @@
 
     <sql id="select_ChildAssoc_OrderBy">
         order by
-            assoc.assoc_index ASC,
             assoc.id ASC
     </sql>
     <sql id="select_ChildAssocsOfParent_Query">
@@ -1286,6 +1285,18 @@
         )
         <![CDATA[and commit_time_ms >= #{minCommitTime}]]>
         <![CDATA[and commit_time_ms <= #{maxCommitTime}]]>
+    </delete>
+
+    <delete id="delete_Txns_Unused_MySQL" parameterType="TransactionQuery">
+        delete
+            txn
+        from
+            alf_transaction txn
+            left join alf_node n on (txn.id = n.transaction_id)
+        where
+            n.id is null        
+            <![CDATA[and txn.commit_time_ms >= #{minCommitTime}]]>
+            <![CDATA[and txn.commit_time_ms <= #{maxCommitTime}]]>
     </delete>
 
     <select id="select_TxnCount" resultType="java.lang.Integer">

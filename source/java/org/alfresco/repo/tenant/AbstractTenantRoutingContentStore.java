@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,20 +16,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.content;
+package org.alfresco.repo.tenant;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.content.AbstractRoutingContentStore;
+import org.alfresco.repo.content.ContentContext;
+import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.domain.tenant.TenantAdminDAO;
+import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.Tenant;
-import org.alfresco.repo.tenant.TenantDeployer;
-import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -39,15 +39,16 @@ import org.springframework.context.ApplicationContextAware;
  * 
  * Note: Need to initialise before the dictionary service, in the case that models are dynamically loaded for the tenant.
  */
-public class TenantRoutingFileContentStore extends AbstractRoutingContentStore implements TenantDeployer, ApplicationContextAware
+public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingContentStore implements ApplicationContextAware, TenantRoutingContentStore
 {
-    // cache of tenant file stores
-    Map<String, FileContentStore> tenantFileStores = new ConcurrentHashMap<String, FileContentStore>();
-    
     private String defaultRootDirectory;
+    private TenantAdminDAO tenantAdminDAO;
     private TenantService tenantService;
     private ApplicationContext applicationContext;
     
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    private SimpleCache<String, ContentStore> singletonCache; // eg. for contentStore
+    private final String KEY_CONTENT_STORE = "key.tenant.routing.content.store";
     
     public void setDefaultRootDir(String defaultRootDirectory)
     {
@@ -58,7 +59,17 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
     {
         this.tenantService = tenantService;
     }
-
+    
+    public void setTenantAdminDAO(TenantAdminDAO tenantAdminDAO)
+    {
+        this.tenantAdminDAO = tenantAdminDAO;
+    }
+    
+    public void setSingletonCache(SimpleCache<String, ContentStore> singletonCache)
+    {
+        this.singletonCache = singletonCache;
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
@@ -72,7 +83,7 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
     @Override
     protected ContentStore selectWriteStore(ContentContext ctx)
     {
-        return getTenantFileStore(tenantService.getCurrentUserDomain());
+        return getTenantContentStore();
     }
     
     @Override
@@ -83,50 +94,62 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
             String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
             if ((currentUser == null) || (tenantService.getBaseNameUser(currentUser).equals(AuthenticationUtil.getSystemUserName())))
             {
-                // return enabled stores across all tenants, if running as system/null user, for example, ContentStoreCleaner scheduled job      
-                List<ContentStore> allEnabledStores = new ArrayList<ContentStore>();
-                for (String tenantDomain : tenantFileStores.keySet())
+                // return enabled stores across all tenants, if running as system/null user, for example, ContentStoreCleaner scheduled job
+                final List<ContentStore> allEnabledStores = new ArrayList<ContentStore>();
+                
+                List<TenantEntity> tenants = tenantAdminDAO.listTenants();
+                for (TenantEntity tenant : tenants)
                 {
-                    allEnabledStores.add(tenantFileStores.get(tenantDomain)); // note: cache should only contain enabled stores
+                    if (tenant.getEnabled())
+                    {
+                        String tenantDomain = tenant.getTenantDomain();
+                        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+                        {
+                            public Void doWork() throws Exception
+                            {
+                                allEnabledStores.add(getTenantContentStore()); // note: cache should only contain enabled stores
+                                return null;
+                            }
+                        }, tenantDomain);
+                    }
                 }
                 
                 if (allEnabledStores.size() > 0)
                 {
+                    allEnabledStores.add(getTenantContentStore());
                     return allEnabledStores;
                 }
                 
                 // drop through to ensure default content store has been init'ed
             }
         }
-        return Arrays.asList(getTenantFileStore(tenantService.getCurrentUserDomain()));
+        return Arrays.asList(getTenantContentStore());
     }
     
-    private ContentStore getTenantFileStore(String tenantDomain)
+    private ContentStore getTenantContentStore()
     {
-        ContentStore cs = tenantFileStores.get(tenantDomain);
+        ContentStore cs = (ContentStore)singletonCache.get(KEY_CONTENT_STORE);
         if (cs == null)
         {
             init();
-            cs = tenantFileStores.get(tenantDomain);
+            cs = (ContentStore)singletonCache.get(KEY_CONTENT_STORE);
         }
         return cs;
     }
     
-    private void putTenantFileStore(String tenantDomain, FileContentStore fileStore)
+    private void putTenantContentStore(ContentStore contentStore)
     {
-        tenantFileStores.put(tenantDomain, fileStore);
+        singletonCache.put(KEY_CONTENT_STORE, contentStore);
     }
     
-    private void removeTenantFileStore(String tenantDomain)
+    private void removeTenantContentStore()
     {
-        tenantFileStores.remove(tenantDomain);
+        singletonCache.remove(KEY_CONTENT_STORE);
     }
     
     public void init()
     {
-        String tenantDomain = TenantService.DEFAULT_DOMAIN;
         String rootDir = defaultRootDirectory;
-        
         Tenant tenant = tenantService.getTenant(tenantService.getCurrentUserDomain());
         if (tenant != null)
         {
@@ -134,15 +157,14 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
             {
                rootDir = tenant.getRootContentStoreDir();
             }
-            tenantDomain = tenant.getTenantDomain();
         }
         
-        putTenantFileStore(tenantDomain, new FileContentStore(this.applicationContext, new File(rootDir)));
+        putTenantContentStore(initContentStore(this.applicationContext, rootDir));
     }
     
     public void destroy()
     {
-        removeTenantFileStore(tenantService.getCurrentUserDomain());
+        removeTenantContentStore();
     }
     
     public void onEnableTenant()
@@ -159,4 +181,6 @@ public class TenantRoutingFileContentStore extends AbstractRoutingContentStore i
     {
         return this.defaultRootDirectory;
     }
+    
+    protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);
 }

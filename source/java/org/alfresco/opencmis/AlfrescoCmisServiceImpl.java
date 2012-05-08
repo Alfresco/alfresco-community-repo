@@ -1270,10 +1270,22 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
 
         // create relationship
-        AssociationRef assocRef = connector.getNodeService().createAssociation(
-                sourceNodeRef, targetNodeRef, type.getAlfrescoClass());
+        // ALF-10085 : disable auditing behaviour for this use case
+        boolean wasEnabled = connector.disableBehaviour(ContentModel.ASPECT_AUDITABLE, sourceNodeRef);        // Lasts for txn
+        try
+        {
+            AssociationRef assocRef = connector.getNodeService().createAssociation(
+                    sourceNodeRef, targetNodeRef, type.getAlfrescoClass());
 
-        return CMISConnector.ASSOC_ID_PREFIX + assocRef.getId();
+            return CMISConnector.ASSOC_ID_PREFIX + assocRef.getId();
+        }
+        finally
+        {
+            if(wasEnabled)
+            {
+                connector.enableBehaviour(ContentModel.ASPECT_AUDITABLE, sourceNodeRef);
+            }
+        }
     }
 
     @Override

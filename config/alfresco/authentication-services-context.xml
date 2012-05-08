@@ -387,9 +387,9 @@
 		<property name="NamespaceService">
 			<ref bean="NamespaceService" />
 		</property>
-		<property name="tenantService">
-			<ref bean="tenantService" />
-		</property>
+		<property name="singletonCache">
+            <ref bean="immutableSingletonCache" />
+        </property>
 	</bean>
 
 	<bean id="HomeFolderManager" class="org.springframework.aop.framework.ProxyFactoryBean">

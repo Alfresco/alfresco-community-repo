@@ -353,7 +353,7 @@ public class ADMLuceneCategoryTest extends TestCase
         indexer.setDictionaryService(dictionaryService);
         indexer.setTenantService(tenantService);
         indexer.setFullTextSearchIndexer(luceneFTS);
-        //indexer.clearIndex();
+        indexer.deleteIndex(rootNodeRef.getStoreRef());
         indexer.createNode(new ChildAssociationRef(null, null, null, rootNodeRef));
         indexer.createNode(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, QName.createQName("{namespace}one"), n1));
         indexer.createNode(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, QName.createQName("{namespace}two"), n2));

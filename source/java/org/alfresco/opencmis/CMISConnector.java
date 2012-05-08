@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,7 +36,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -58,6 +57,8 @@ import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.opencmis.search.CMISResultSet;
 import org.alfresco.opencmis.search.CMISResultSetColumn;
 import org.alfresco.opencmis.search.CMISResultSetRow;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.PermissionReference;
@@ -248,12 +249,18 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private NamespaceService namespaceService;
     private SearchService searchService;
     private DictionaryService dictionaryService;
+    private BehaviourFilter behaviourFilter;
 
     private StoreRef storeRef;
     private String rootPath;
     private Map<String, List<String>> kindToRenditionNames;
-    private Map<String, NodeRef> rootNodeRefs = new ConcurrentHashMap<String, NodeRef>(1);
-    private Map<String, CMISRenditionMapping> renditionMapping = new ConcurrentHashMap<String, CMISRenditionMapping>(1);
+    
+    // note: caches are tenant-aware (if using EhCacheAdapter shared cache)
+    
+    private SimpleCache<String, Object> singletonCache; // eg. for cmisRootNodeRef, cmisRenditionMapping
+    private final String KEY_CMIS_ROOT_NODEREF = "key.cmisRoot.noderef";
+    private final String KEY_CMIS_RENDITION_MAPPING_NODEREF = "key.cmisRenditionMapping.noderef";
+    
     private String proxyUser;
     private boolean openHttpSession = false;
 
@@ -363,6 +370,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return descriptorService;
     }
 
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
     /**
      * Sets the node service.
      */
@@ -376,7 +388,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return nodeService;
     }
 
-    /**
+	/**
      * Sets the version service.
      */
     public void setVersionService(VersionService versionService)
@@ -456,7 +468,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         this.tenantAdminService = tenantAdminService;
     }
-
+    
+    public void setSingletonCache(SimpleCache<String, Object> singletonCache)
+    {
+        this.singletonCache = singletonCache;
+    }
+    
     /**
      * Sets the transaction service.
      */
@@ -590,13 +607,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     public void init()
     {
-        // initialise root node ref
+        // register as tenant deployer
         tenantAdminService.register(this);
 
-        // set up rendition mapping
-        String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        renditionMapping.put(tenantDomain, new CMISRenditionMapping(nodeService, contentService, renditionService,
-                transactionService, kindToRenditionNames));
+        // set up and cache rendition mapping
+        getRenditionMapping();
 
         // cache root node ref
         getRootNodeRef();
@@ -608,7 +623,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     public void destroy()
     {
-        rootNodeRefs.remove(tenantAdminService.getCurrentUserDomain());
+        singletonCache.remove(KEY_CMIS_ROOT_NODEREF);
+        singletonCache.remove(KEY_CMIS_RENDITION_MAPPING_NODEREF);
     }
 
     public void onEnableTenant()
@@ -652,6 +668,26 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     // Alfresco methods
     // --------------------------------------------------------------
 
+    public boolean disableBehaviour(QName className, NodeRef nodeRef)
+    {
+        boolean wasEnabled = behaviourFilter.isEnabled(nodeRef, className);
+        if(wasEnabled)
+        {
+            behaviourFilter.disableBehaviour(nodeRef, className);
+        }
+        return wasEnabled;
+    }
+    
+    public boolean enableBehaviour(QName className, NodeRef nodeRef)
+    {
+        boolean isEnabled = behaviourFilter.isEnabled(nodeRef, className);
+        if(!isEnabled)
+        {
+            behaviourFilter.enableBehaviour(nodeRef, className);
+        }
+        return isEnabled;
+    }
+    
     public StoreRef getRootStoreRef()
     {
         return getRootNodeRef().getStoreRef();
@@ -662,8 +698,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public NodeRef getRootNodeRef()
     {
-        String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        NodeRef rootNodeRef = rootNodeRefs.get(tenantDomain);
+        NodeRef rootNodeRef = (NodeRef)singletonCache.get(KEY_CMIS_ROOT_NODEREF);
         if (rootNodeRef == null)
         {
             rootNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
@@ -693,7 +728,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 throw new CmisObjectNotFoundException("Root folder path '" + rootPath + "' not found!");
             }
 
-            rootNodeRefs.put(tenantDomain, rootNodeRef);
+            singletonCache.put(KEY_CMIS_ROOT_NODEREF, rootNodeRef);
         }
 
         return rootNodeRef;
@@ -701,8 +736,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     public String getName(NodeRef nodeRef)
     {
-        Object name = nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        return (name instanceof String ? (String) name : null);
+        try
+        {
+            Object name = nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            return (name instanceof String ? (String) name : null);
+        }
+        catch(InvalidNodeRefException inre)
+        {
+            return null;
+        }
     }
 
     /**
@@ -769,8 +811,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public TypeDefinitionWrapper getType(NodeRef nodeRef)
     {
-        QName typeQName = nodeService.getType(nodeRef);
-        return getType(typeQName);
+        try
+        {
+            QName typeQName = nodeService.getType(nodeRef);
+            return getType(typeQName);
+        }
+        catch(InvalidNodeRefException inre)
+        {
+            return null;
+        }
     }
 
     private TypeDefinitionWrapper getType(QName typeQName)
@@ -993,37 +1042,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     public String getPath(NodeRef nodeRef)
     {
-        Path path = nodeService.getPath(nodeRef);
-
-        // skip to CMIS root path
-        NodeRef rootNode = getRootNodeRef();
-        int i = 0;
-        while (i < path.size())
+        try
         {
-            Path.Element element = path.get(i);
-            if (element instanceof ChildAssocElement)
-            {
-                ChildAssociationRef assocRef = ((ChildAssocElement) element).getRef();
-                NodeRef node = assocRef.getChildRef();
-                if (node.equals(rootNode))
-                {
-                    break;
-                }
-            }
-            i++;
-        }
+            Path path = nodeService.getPath(nodeRef);
 
-        StringBuilder displayPath = new StringBuilder(64);
-
-        if (path.size() - i == 1)
-        {
-            // render root path
-            displayPath.append("/");
-        }
-        else
-        {
-            // render CMIS scoped path
-            i++;
+            // skip to CMIS root path
+            NodeRef rootNode = getRootNodeRef();
+            int i = 0;
             while (i < path.size())
             {
                 Path.Element element = path.get(i);
@@ -1031,14 +1056,45 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 {
                     ChildAssociationRef assocRef = ((ChildAssocElement) element).getRef();
                     NodeRef node = assocRef.getChildRef();
-                    displayPath.append("/");
-                    displayPath.append(nodeService.getProperty(node, ContentModel.PROP_NAME));
+                    if (node.equals(rootNode))
+                    {
+                        break;
+                    }
                 }
                 i++;
             }
-        }
 
-        return displayPath.toString();
+            StringBuilder displayPath = new StringBuilder(64);
+
+            if (path.size() - i == 1)
+            {
+                // render root path
+                displayPath.append("/");
+            }
+            else
+            {
+                // render CMIS scoped path
+                i++;
+                while (i < path.size())
+                {
+                    Path.Element element = path.get(i);
+                    if (element instanceof ChildAssocElement)
+                    {
+                        ChildAssociationRef assocRef = ((ChildAssocElement) element).getRef();
+                        NodeRef node = assocRef.getChildRef();
+                        displayPath.append("/");
+                        displayPath.append(nodeService.getProperty(node, ContentModel.PROP_NAME));
+                    }
+                    i++;
+                }
+            }
+
+            return displayPath.toString();
+        }
+        catch(InvalidNodeRefException inre)
+        {
+            return null;
+        }
     }
 
     /**
@@ -1640,9 +1696,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public List<RenditionData> getRenditions(NodeRef nodeRef, String renditionFilter, BigInteger maxItems,
             BigInteger skipCount)
     {
-        String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        CMISRenditionMapping mapping = renditionMapping.get(tenantDomain);
-
+        CMISRenditionMapping mapping = getRenditionMapping();
         return mapping.getRenditions(nodeRef, renditionFilter, maxItems, skipCount);
     }
 
@@ -2822,5 +2876,18 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
 
         return result;
+    }
+    
+    private CMISRenditionMapping getRenditionMapping()
+    {
+        CMISRenditionMapping renditionMapping = (CMISRenditionMapping)singletonCache.get(KEY_CMIS_RENDITION_MAPPING_NODEREF);
+        if (renditionMapping == null)
+        {
+            renditionMapping = new CMISRenditionMapping(nodeService, contentService, renditionService,
+                    transactionService, kindToRenditionNames);
+            
+            singletonCache.put(KEY_CMIS_RENDITION_MAPPING_NODEREF, renditionMapping);
+        }
+        return renditionMapping;
     }
 }

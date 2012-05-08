@@ -49,6 +49,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.XMLUtil;
 import org.apache.bsf.BSFManager;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xml.utils.Constants;
@@ -201,7 +202,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
                         throw new TransformerException("unable to resolve href " + href);
                     }
 
-                    Document d = XMLUtil.parse(in);
+                    Document d = XMLUtil.secureParseXSL(in);
                     if (log.isDebugEnabled())
                     {
                         log.debug("loaded " + XMLUtil.toString(d));
@@ -240,7 +241,12 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
                 final StringBuilder msg = new StringBuilder("errors encountered creating tranformer ... \n");
                 for (TransformerException te : errors)
                 {
-                    msg.append(te.getMessageAndLocation()).append("\n");
+                    msg.append("message: " + te.getMessageAndLocation()).append("\n");
+                    String cause = ExceptionUtils.getRootCauseMessage(te);
+                	if (cause != null) 
+                	{
+                		msg.append(" caused by: " + cause);
+                	}
                 }
                 throw new TemplateException(msg.toString());
             }
@@ -284,6 +290,11 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
             for (TransformerException te : errors)
             {
                 msg.append(te.getMessageAndLocation()).append("\n");
+                String cause = ExceptionUtils.getRootCauseMessage(te);
+            	if (cause != null) 
+            	{
+            		msg.append(" caused by: " + cause);
+            	}
             }
             throw new TemplateException(msg.toString());
         }

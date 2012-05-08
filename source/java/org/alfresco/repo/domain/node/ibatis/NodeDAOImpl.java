@@ -1716,4 +1716,30 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             template.delete(DELETE_SUBSCRIPTIONS, nodeId);
         }
     }
+    
+    /**
+     * MySQL-specific DAO overrides
+     */
+    public static class MySQL extends NodeDAOImpl
+    {
+        private static final String DELETE_TXNS_UNUSED_MYSQL = "alfresco.node.delete_Txns_Unused_MySQL";
+
+        private SqlSessionTemplate template;
+        
+        public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+        {
+            super.setSqlSessionTemplate(sqlSessionTemplate);
+            this.template = sqlSessionTemplate;
+        }
+
+        @Override
+        public int deleteTxnsUnused(long fromCommitTime, long toCommitTime)
+        {
+            TransactionQueryEntity txnQuery = new TransactionQueryEntity();
+            txnQuery.setMinCommitTime(fromCommitTime);
+            txnQuery.setMaxCommitTime(toCommitTime);
+            int numDeleted = template.delete(DELETE_TXNS_UNUSED_MYSQL, txnQuery);
+            return numDeleted;
+        }
+    }
 }

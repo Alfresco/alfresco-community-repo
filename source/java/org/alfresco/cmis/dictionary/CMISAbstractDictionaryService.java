@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryService;
@@ -36,15 +35,15 @@ import org.alfresco.cmis.CMISTypeDefinition;
 import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 
 /**
@@ -61,7 +60,6 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     private DictionaryDAO dictionaryDAO;
     protected CMISMapping cmisMapping;
     protected DictionaryService dictionaryService;
-    protected TenantService tenantService;
 
     /**
      * Set the mapping service
@@ -93,20 +91,15 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         this.dictionaryDAO = dictionaryDAO;
     }
     
-    /**
-     * Set the tenant Service
-     * 
-     * @param tenantService
-     */
-    public void setTenantService(TenantService tenantService)
+    public void setSingletonCache(SimpleCache<String, DictionaryRegistry> singletonCache)
     {
-        this.tenantService = tenantService;
+        this.singletonCache = singletonCache;
     }
-
-
-    /** CMIS Dictionary Registry (tenant-aware) */
-    private Map<String, DictionaryRegistry> registryMap = new ConcurrentHashMap<String, DictionaryRegistry>(4);
-
+    
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    
+    private SimpleCache<String, DictionaryRegistry> singletonCache; // eg. for cmisDictionaryRegistry
+    private final String KEY_CMIS_DICTIONARY_REGISTRY = "key.cmisDictionaryRegistry";
     
     /**
      * CMIS Dictionary registry
@@ -217,12 +210,11 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     
     private DictionaryRegistry getRegistry()
     {
-        String tenantDomain = tenantService.getCurrentUserDomain();
-        DictionaryRegistry registry = registryMap.get(tenantDomain);
+        DictionaryRegistry registry = singletonCache.get(KEY_CMIS_DICTIONARY_REGISTRY);
         if (registry == null)
         {
             init();
-            registry = registryMap.get(tenantDomain);
+            registry = singletonCache.get(KEY_CMIS_DICTIONARY_REGISTRY);
         }
         return registry;
     }
@@ -472,7 +464,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         }
         
         // publish new registry
-        registryMap.put(tenantService.getCurrentUserDomain(), registry);
+        singletonCache.put(KEY_CMIS_DICTIONARY_REGISTRY, registry);
         
         if (logger.isInfoEnabled())
             logger.info("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Base Types:" + registry.baseTypes.size() + ", Properties:" + registry.propDefsByPropId.size());
@@ -501,7 +493,7 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     public void afterDictionaryDestroy()
     {
-        registryMap.remove(tenantService.getCurrentUserDomain());
+        singletonCache.remove(KEY_CMIS_DICTIONARY_REGISTRY);
     }
     
     /*

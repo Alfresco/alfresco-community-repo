@@ -18,6 +18,7 @@
  */
 package org.alfresco.opencmis;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.client.api.Repository;
 import org.apache.chemistry.opencmis.client.api.Session;
@@ -144,5 +146,59 @@ public class OpenCmisLocalTest extends TestCase
             fileContent.setStream(reader.getContentInputStream());
         }
         folder.createDocument(fileProps, fileContent, VersioningState.MAJOR);
+    }
+    
+    public void testALF10085() throws InterruptedException
+    {
+        Repository repository = getRepository("admin", "admin");
+        Session session = repository.createSession();
+        Folder rootFolder = session.getRootFolder();
+
+        Map<String, String> props = new HashMap<String, String>();
+        {
+            props.put(PropertyIds.OBJECT_TYPE_ID, "D:cmiscustom:document");
+            props.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
+        }
+        Document doc1 = rootFolder.createDocument(props, null, null);
+        
+        props = new HashMap<String, String>();
+        {
+            props.put(PropertyIds.OBJECT_TYPE_ID, "D:cmiscustom:document");
+            props.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
+        }
+        Document doc2 = rootFolder.createDocument(props, null, null);
+        
+        Thread.sleep(6000); 
+        
+        session.getObject(doc1);
+
+        doc1.refresh();
+        Calendar doc1LastModifiedBefore = (Calendar)doc1.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        assertNotNull(doc1LastModifiedBefore);
+
+        doc2.refresh();
+        Calendar doc2LastModifiedBefore = (Calendar)doc2.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        assertNotNull(doc2LastModifiedBefore);
+
+        // Add relationship A to B
+        props = new HashMap<String, String>();
+        {
+            props.put(PropertyIds.OBJECT_TYPE_ID, "R:cmiscustom:assoc");
+            props.put(PropertyIds.NAME, "A Relationship"); 
+            props.put(PropertyIds.SOURCE_ID, doc1.getId()); 
+            props.put(PropertyIds.TARGET_ID, doc2.getId()); 
+        }
+        session.createRelationship(props); 
+
+        doc1.refresh();
+        Calendar doc1LastModifiedAfter = (Calendar)doc1.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        assertNotNull(doc1LastModifiedAfter);
+        
+        doc2.refresh();
+        Calendar doc2LastModifiedAfter = (Calendar)doc2.getProperty(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        assertNotNull(doc2LastModifiedAfter);
+
+        assertEquals(doc1LastModifiedBefore, doc1LastModifiedAfter);
+        assertEquals(doc2LastModifiedBefore, doc2LastModifiedAfter);
     }
 }

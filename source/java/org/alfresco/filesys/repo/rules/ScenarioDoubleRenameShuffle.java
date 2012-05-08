@@ -33,6 +33,8 @@ import org.apache.commons.logging.LogFactory;
  * 
  * a) Existing file renamed out of the way.  X.fm to X.backup.fm
  * b) New file moved renamed into place. X.fm.C29
+ * 
+ * Scenario is triggered by the first rename matching a pattern.
  */
 public class ScenarioDoubleRenameShuffle implements Scenario
 {
@@ -44,6 +46,7 @@ public class ScenarioDoubleRenameShuffle implements Scenario
      */
     private Pattern pattern;
     private String strPattern;
+    private boolean deleteBackup;
     
     
     private long timeout = 30000;
@@ -71,6 +74,7 @@ public class ScenarioDoubleRenameShuffle implements Scenario
                 ScenarioDoubleRenameShuffleInstance instance = new ScenarioDoubleRenameShuffleInstance();
                 instance.setTimeout(timeout);
                 instance.setRanking(ranking);
+                instance.setDeleteBackup(deleteBackup);
                 return instance;
             }
         }
@@ -109,5 +113,15 @@ public class ScenarioDoubleRenameShuffle implements Scenario
     public Ranking getRanking()
     {
         return ranking;
+    }
+
+    public void setDeleteBackup(boolean deleteBackup)
+    {
+        this.deleteBackup = deleteBackup;
+    }
+
+    public boolean isDeleteBackup()
+    {
+        return deleteBackup;
     }
 }

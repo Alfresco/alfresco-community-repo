@@ -326,6 +326,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          try 
          {
              String resourceName = GUID.generate() + BpmnDeployer.BPMN_RESOURCE_SUFFIX;
+             
+             if(tenantService.isEnabled())
+             {
+                 name = tenantService.getName(name);
+             }
+             
              Deployment deployment = repoService.createDeployment()
                  .addInputStream(resourceName, workflowDefinition)
                  .name(name)

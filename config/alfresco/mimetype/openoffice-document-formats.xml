@@ -75,6 +75,33 @@
     </export-filters>
   </document-format>
 
+  <document-format><name>Microsoft Word 2007 macro-enabled document</name>
+    <family>Text</family>
+    <mime-type>application/vnd.ms-word.document.macroEnabled.12</mime-type>
+    <file-extension>docm</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>MS Word 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft Word template 2007</name>
+    <family>Text</family>
+    <mime-type>application/vnd.openxmlformats-officedocument.wordprocessingml.template</mime-type>
+    <file-extension>dotx</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>MS Word 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft Word 2007 macro-enabled document template</name>
+    <family>Text</family>
+    <mime-type>application/vnd.ms-word.template.macroEnabled.12</mime-type>
+    <file-extension>dotm</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>MS Word 2007</string></entry>
+    </export-filters>
+  </document-format>
+
   <document-format><name>WordPerfect</name>
     <family>Text</family>
     <mime-type>application/wordperfect</mime-type>
@@ -140,6 +167,53 @@
     </export-filters>
   </document-format>
 
+  <document-format><name>Microsoft Excel template 2007</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.openxmlformats-officedocument.spreadsheetml.template</mime-type>
+    <file-extension>xltx</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>MS Excel 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft Excel 2007 macro-enabled workbook</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.ms-excel.sheet.macroEnabled.12</mime-type>
+    <file-extension>xlsm</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>MS Excel 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft Excel 2007 macro-enabled workbook template</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.ms-excel.template.macroEnabled.12</mime-type>
+    <file-extension>xltm</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>MS Excel 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <!-- Not supported in OpenOffice 3.2 (might be in later versions)
+  <document-format><name>Microsoft Excel 2007 add-in</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.ms-excel.addin.macroEnabled.12</mime-type>
+    <file-extension>xlam</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>MS Excel 2007</string></entry>
+    </export-filters>
+  </document-format>
+  -->
+
+  <document-format><name>Microsoft Excel 2007 binary workbook</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.ms-excel.sheet.binary.macroEnabled.12</mime-type>
+    <file-extension>xlsb</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>MS Excel 2007</string></entry>
+    </export-filters>
+  </document-format>
+
   <!-- Not properly supported by OpenOffice via the Java API -->
 <!--
   <document-format><name>Comma Separated Values (CSV)</name>
@@ -182,10 +256,86 @@
     </export-filters>
   </document-format>
 
-  <document-format><name>Microsoft PowerPoint 2007</name>
+  <document-format><name>Microsoft PowerPoint 2007 presentation</name>
     <family>Presentation</family>
     <mime-type>application/vnd.openxmlformats-officedocument.presentationml.presentation</mime-type>
     <file-extension>pptx</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft owerPoint 2007 macro-enabled presentation</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.ms-powerpoint.presentation.macroEnabled.12</mime-type>
+    <file-extension>pptm</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <!-- Not supported in OpenOffice 3.2 (might be in later versions)
+  <document-format><name>Microsoft PowerPoint 2007 slide show</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.openxmlformats-officedocument.presentationml.slideshow</mime-type>
+    <file-extension>ppsx</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
+    </export-filters>
+  </document-format>
+  -->
+  
+  <!-- Not supported in OpenOffice 3.2 (might be in later versions)
+  <document-format><name>Microsoft PowerPoint 2007 macro-enabled slide show</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.ms-powerpoint.slideshow.macroEnabled.12</mime-type>
+    <file-extension>ppsm</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
+    </export-filters>
+  </document-format>
+  -->
+
+  <document-format><name>Microsoft PowerPoint 2007 template</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.openxmlformats-officedocument.presentationml.template</mime-type>
+    <file-extension>potx</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft PowerPoint 2007 macro-enabled presentation template</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.ms-powerpoint.template.macroEnabled.12</mime-type>
+    <file-extension>potm</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft PowerPoint 2007 add-in</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.ms-powerpoint.addin.macroEnabled.12</mime-type>
+    <file-extension>ppam</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft PowerPoint 2007 slide</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.openxmlformats-officedocument.presentationml.slide</mime-type>
+    <file-extension>sldx</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>Microsoft PowerPoint 2007 macro-enabled slide</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.ms-powerpoint.slideshow.macroEnabled.12</mime-type>
+    <file-extension>sldm</file-extension>
     <export-filters>
       <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
     </export-filters>

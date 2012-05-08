@@ -225,10 +225,11 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
             break;
             
         case DELETE:
-            
+           
             /**
              * Looking for a delete of the destination
              */
+            
             if(operation instanceof DeleteFileOperation)
             {
                 DeleteFileOperation d = (DeleteFileOperation)operation;
@@ -241,6 +242,14 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
                     isComplete = true;
                 }
             }
+            
+            /**
+             * Todo consider create shuffle with backup file which will never 
+             * calls delete - do we need to pattern match on "Backup*".  
+             * At the moment the delete state does nothing - hence 
+             * we can simply set complete here for all situations.
+             */
+            isComplete = true;
             
             break;
         }

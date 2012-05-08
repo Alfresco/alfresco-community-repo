@@ -19,7 +19,6 @@
 
 package org.alfresco.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.CharArrayReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,6 +49,7 @@ import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Attr;
@@ -499,8 +499,13 @@ public class XMLUtil
 
 		   {
 			   add("xalan://");
+			   add("http://exslt.org/");
+			   add("http://xml.apache.org/xalan/PipeDocument");
+			   add("http://xml.apache.org/xalan/sql");
+			   add("http://xml.apache.org/xalan/redirect");
+			   add("http://xml.apache.org/xalan/xsltc/java");
 			   add("http://xml.apache.org/xalan/java");
-			   add("http://xml.apache.org/xslt/java");
+			   add("http://xml.apache.org/xslt");
 			   add("http://xml.apache.org/java");
 		   }
 	   };
@@ -538,7 +543,7 @@ public class XMLUtil
 	   {
 		   for (String insecureURI : insecureURIs) 
 		   {
-			   if (uri.startsWith(insecureURI)) return true;
+			   if (StringUtils.startsWithIgnoreCase(uri, insecureURI)) return true;
 		   }
 		   return false;
 	   }

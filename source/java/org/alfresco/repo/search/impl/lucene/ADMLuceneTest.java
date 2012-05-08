@@ -3778,11 +3778,12 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setContentService(contentService);
         indexer.setTransactionService(transactionService);
 
-        // //indexer.clearIndex();
+        indexer.deleteIndex(rootNodeRef.getStoreRef());
 
         indexer.createNode(new ChildAssociationRef(null, null, null, rootNodeRef));
         indexer.createNode(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, QName.createQName("{namespace}one"), n1));
         indexer.createNode(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, QName.createQName("{namespace}two"), n2));
+        indexer.createNode(new ChildAssociationRef(ASSOC_TYPE_QNAME, n1, QName.createQName("{namespace}five"), n5));
         indexer.updateNode(n1);
         // indexer.deleteNode(new ChildRelationshipRef(rootNode, "path",
         // newNode));
@@ -3962,7 +3963,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         indexer.setTransactionService(transactionService);
         indexer.setTransformerDebug(transformerDebug);
         
-        // indexer.clearIndex();
+        indexer.deleteIndex(rootNodeRef.getStoreRef());
         indexer.createNode(new ChildAssociationRef(null, null, null, rootNodeRef));
         indexer.createNode(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, QName.createQName("{namespace}one"), n1));
         indexer.createNode(new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, rootNodeRef, QName.createQName("{namespace}two"), n2));

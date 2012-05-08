@@ -26,6 +26,7 @@ import java.util.Map;
 import org.alfresco.filesys.repo.OpenFileMode;
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
 import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
+import org.alfresco.filesys.repo.rules.commands.DeleteFileCommand;
 import org.alfresco.filesys.repo.rules.commands.RenameFileCommand;
 import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
@@ -44,7 +45,9 @@ import org.apache.commons.logging.LogFactory;
  * <p>
  * If this filter is active then this is what happens.
  * a) Existing file moved out of the way (Y to Z).   Raname tracked.
- * b) New file moved into place (X to Y).   Scenario kicks in to change commands.
+ * b) New file moved into place (X to Y).   
+ * 
+ * Scenario kicks in to change commands.
  */
 public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
 {
@@ -66,6 +69,7 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
     private String fileEnd;
     
     private Ranking ranking;
+    private boolean deleteBackup;
     
     /**
      * Timeout in ms.  Default 30 seconds.
@@ -132,7 +136,7 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
         case RENAME1:
             
             /**
-             * Looking for the seconf of two renames X(createName) to Y(middle) to Z(end)
+             * Looking for the second of two renames X(createName) to Y(middle) to Z(end)
              */              
             if(operation instanceof RenameFileOperation)
             {
@@ -169,13 +173,27 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                     String oldFolder = paths[0];
            
                     ArrayList<Command> commands = new ArrayList<Command>();
+                    
                     RenameFileCommand r1 = new RenameFileCommand(fileEnd, fileMiddle, r.getRootNodeRef(), oldFolder + "\\" + fileEnd, oldFolder + "\\" + fileMiddle);
-                    CopyContentCommand copyContent = new CopyContentCommand(fileFrom, fileMiddle, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, oldFolder + "\\" + fileMiddle);
-                    RenameFileCommand r2 = new RenameFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, oldFolder + "\\" + fileEnd); 
-                        
                     commands.add(r1);
+                    CopyContentCommand copyContent = new CopyContentCommand(fileFrom, fileMiddle, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, oldFolder + "\\" + fileMiddle);
                     commands.add(copyContent);
-                    commands.add(r2);
+                    if(deleteBackup)
+                    {
+                        logger.debug("deleteBackup option turned on");
+                        DeleteFileCommand d1 = new DeleteFileCommand(oldFolder, r.getRootNodeRef(), oldFolder + "\\" + fileFrom);
+                        commands.add(d1);
+                    }
+                    else
+                    {
+                        RenameFileCommand r2 = new RenameFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, oldFolder + "\\" + fileEnd);                     
+                        commands.add(r2);
+                    }   
+                    
+                    /**
+                     * TODO - we may need to copy a new node for the backup and delete the temp node.
+                     * It depends if we care about the contents of the Backup file.
+                     */
                     
                     isComplete = true;
                     return new CompoundCommand(commands);                                        
@@ -218,5 +236,15 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
     public long getTimeout()
     {
         return timeout;
+    }
+
+    public void setDeleteBackup(boolean deleteBackup)
+    {
+        this.deleteBackup = deleteBackup;
+    }
+
+    public boolean isDeleteBackup()
+    {
+        return deleteBackup;
     }
 }

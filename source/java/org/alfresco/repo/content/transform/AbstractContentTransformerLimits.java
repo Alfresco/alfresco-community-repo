@@ -351,11 +351,13 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
         TransformationOptionLimits mimetypeLimits = null;
         if (this.mimetypeLimits != null)
         {
+            boolean anySource = false;
             Map<String, TransformationOptionLimits> targetLimits =
                 this.mimetypeLimits.get(sourceMimetype);
             if (targetLimits == null)
             {
                 targetLimits = this.mimetypeLimits.get("*");
+                anySource = true;
             }
             if (targetLimits != null)
             {
@@ -363,6 +365,22 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
                 if (mimetypeLimits == null)
                 {
                     mimetypeLimits = targetLimits.get("*");
+                    
+                    // Allow for the case where have specific source and target mimetype limits
+                    // and general source limits (avoid having to repeat the general values in
+                    // each specific source definition)
+                    if (mimetypeLimits == null && !anySource)
+                    {
+                        targetLimits = this.mimetypeLimits.get("*");
+                        if (targetLimits != null)
+                        {
+                            mimetypeLimits = targetLimits.get(targetMimetype);
+                            if (mimetypeLimits == null)
+                            {
+                                mimetypeLimits = targetLimits.get("*");
+                            }
+                        }
+                    }
                 }
             }
         }

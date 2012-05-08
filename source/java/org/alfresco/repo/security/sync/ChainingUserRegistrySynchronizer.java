@@ -756,14 +756,20 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                     getContainedAuthorities(parent);
                 }
 
-                // Return the cached children if it is now processed
-                children = this.finalGroupChildAssocs.get(groupName);
+                // Now descend on unprocessed parents.
+                return cacheContainedAuthorities(groupName);
+            }
+
+            private Set<String> cacheContainedAuthorities(String groupName)
+            {
+                // Return the cached children if it is processed
+                Set<String> children = this.finalGroupChildAssocs.get(groupName);
                 if (children != null)
                 {
                     return children;
                 }
 
-                // Now descend on unprocessed parents.
+                // Descend on unprocessed parents.
                 children = ChainingUserRegistrySynchronizer.this.authorityService.getContainedAuthorities(null,
                         groupName, true);
                 this.finalGroupChildAssocs.put(groupName, children);
@@ -772,7 +778,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                 {
                     if (AuthorityType.getAuthorityType(child) != AuthorityType.USER)
                     {
-                        getContainedAuthorities(child);
+                        cacheContainedAuthorities(child);
                     }
                 }
                 return children;

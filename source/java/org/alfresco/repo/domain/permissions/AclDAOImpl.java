@@ -776,16 +776,16 @@ public class AclDAOImpl implements AclDAO
                 Long aclMemberId = member.getId();
                 Long aclId = member.getAclId();
                 Long aceId = member.getAceId();
-
+                
                 boolean hasAnotherTenantNodes = false;
                 if (AuthenticationUtil.isMtEnabled())
                 {
                     // ALF-3563
-
+                    
                     // Retrieve dependent nodes
                     List<Long> nodeIds = aclCrudDAO.getADMNodesByAcl(aclId, -1);
                     nodeIds.addAll(aclCrudDAO.getAVMNodesByAcl(aclId, -1));
-
+                    
                     if (nodeIds.size() > 0)
                     {
                         for (Long nodeId : nodeIds)
@@ -796,23 +796,25 @@ public class AclDAOImpl implements AclDAO
                                 logger.warn("Node does not exist: " + nodeId);
                                 continue;
                             }
-                            NodeRef nodeRef = nodePair.getSecond();
-
-                            try
+                            else
                             {
-                                // Throws AlfrescoRuntimeException in case of domain mismatch
-                                tenantService.checkDomain(nodeRef.getStoreRef().getIdentifier());
-                            }
-                            catch (AlfrescoRuntimeException e)
-                            {
-                                hasAnotherTenantNodes = true;
-                                leaveAuthority = true;
-                                break;
+                                NodeRef nodeRef = nodePair.getSecond();
+                                try
+                                {
+                                    // Throws AlfrescoRuntimeException in case of domain mismatch
+                                    tenantService.checkDomain(nodeRef.getStoreRef().getIdentifier());
+                                }
+                                catch (AlfrescoRuntimeException e)
+                                {
+                                    hasAnotherTenantNodes = true;
+                                    leaveAuthority = true;
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-
+                
                 if (!hasAnotherTenantNodes)
                 {
                     aclCache.remove(aclId);

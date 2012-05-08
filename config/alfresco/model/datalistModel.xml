@@ -271,7 +271,7 @@
          </properties>
       </type>
 
-      <!-- Data List - Contact List -->
+      <!-- Data List - Issue List -->
       <type name="dl:issue">
          <title>Issues List</title>
          <parent>dl:dataListItem</parent>
@@ -363,7 +363,7 @@
          </mandatory-aspects>
       </type>
 
-      <!-- Data List - Event List -->
+      <!-- Data List - Location List -->
       <type name="dl:location">
          <title>Location</title>
          <parent>dl:dataListItem</parent>

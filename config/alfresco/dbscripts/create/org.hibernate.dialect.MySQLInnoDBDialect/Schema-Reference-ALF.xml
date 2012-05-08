@@ -2420,6 +2420,47 @@
         </index>
       </indexes>
     </table>
+    <table name="alf_tenant">
+      <columns>
+        <column name="tenant_domain" order="1">
+          <type>varchar(75)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="version" order="2">
+          <type>bigint</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="enabled" order="3">
+          <type>bit</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="tenant_name" order="4">
+          <type>varchar(75)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="content_root" order="5">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="db_url" order="6">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+      </columns>
+      <primarykey name="PRIMARY">
+        <columnnames>
+          <columnname order="1">id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys/>
+      <indexes/>
+    </table>
     <table name="alf_transaction">
       <columns>
         <column name="id" order="1">

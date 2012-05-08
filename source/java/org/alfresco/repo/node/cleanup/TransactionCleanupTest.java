@@ -19,9 +19,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -53,6 +53,7 @@ public class TransactionCleanupTest
     public void before()
     {
     	ServiceRegistry serviceRegistry = (ServiceRegistry)ctx.getBean("ServiceRegistry");
+        NamespaceService namespaceService = serviceRegistry.getNamespaceService();
 		this.transactionService = serviceRegistry.getTransactionService();
 		this.authenticationService = (MutableAuthenticationService)ctx.getBean("authenticationService");
 		this.nodeService = serviceRegistry.getNodeService();
@@ -65,9 +66,10 @@ public class TransactionCleanupTest
         authenticationService.authenticate("admin", "admin".toCharArray());
 
 		StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-		ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home\"");
-		final NodeRef companyHome = resultSet.getNodeRef(0);
-		resultSet.close();
+		NodeRef storeRoot = nodeService.getRootNode(storeRef);
+		List<NodeRef> nodeRefs = searchService.selectNodes(
+		        storeRoot, "/app:company_home", null, namespaceService, false);
+		final NodeRef companyHome = nodeRefs.get(0);
 
     	RetryingTransactionHelper.RetryingTransactionCallback<NodeRef> createNode = new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
     	{

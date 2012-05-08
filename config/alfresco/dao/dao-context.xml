@@ -123,6 +123,7 @@
       <property name="childByNameCache" ref="node.childByNameCache"/>
    </bean>
    <bean id="nodeDAO.org.hibernate.dialect.Dialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" parent="nodeDAObase" />
+   <bean id="nodeDAO.org.hibernate.dialect.MySQLInnoDBDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MySQL" parent="nodeDAO.org.hibernate.dialect.Dialect" />
    <bean id="nodeDAO.org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MSSQL" parent="nodeDAO.org.hibernate.dialect.Dialect" />
    
    <bean id="lockDAO" class="org.alfresco.repo.domain.locks.ibatis.LockDAOImpl">

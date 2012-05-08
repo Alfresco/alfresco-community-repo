@@ -87,7 +87,7 @@
 
     <cache
         name="org.alfresco.cache.node.rootNodesCache"
-        maxElementsInMemory="500"
+        maxElementsInMemory="1000"
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
@@ -106,7 +106,7 @@
 
     <cache
         name="org.alfresco.cache.node.allRootNodesCache"
-        maxElementsInMemory="500"
+        maxElementsInMemory="1000"
         eternal="true"
         timeToIdleSeconds="0"
         timeToLiveSeconds="0"
@@ -569,7 +569,7 @@
         
     <cache 
         name="org.alfresco.cache.globalConfigCache" 
-        maxElementsInMemory="100"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"
@@ -589,7 +589,7 @@
     
     <cache
         name="org.alfresco.cache.resourceBundleBaseNamesCache" 
-        maxElementsInMemory="100"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"
@@ -607,7 +607,7 @@
         
     <cache 
         name="org.alfresco.cache.loadedResourceBundlesCache" 
-        maxElementsInMemory="100"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"
@@ -625,7 +625,7 @@
         
     <cache 
         name="org.alfresco.cache.messagesCache"
-        maxElementsInMemory="100"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"
@@ -645,7 +645,7 @@
     
     <cache 
         name="org.alfresco.cache.compiledModelsCache" 
-        maxElementsInMemory="100"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"
@@ -663,7 +663,7 @@
     
     <cache 
         name="org.alfresco.cache.prefixesCache" 
-        maxElementsInMemory="100"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"
@@ -684,7 +684,7 @@
     
     <cache 
         name="org.alfresco.cache.tenantsCache" 
-        maxElementsInMemory="100"
+        maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
         statistics="false"
@@ -699,26 +699,7 @@
                                  replicateAsynchronously = false"/>
 
     </cache>
-
-    <!-- Tenant-based Routing File Content Store -->
     
-    <cache 
-        name="org.alfresco.cache.tenantFileStoresCache"
-        maxElementsInMemory="10000"
-        eternal="true"
-        overflowToDisk="false"
-        statistics="false"
-        >
-        
-             <cacheEventListenerFactory
-                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                     properties="replicatePuts = false,
-                                 replicateUpdates = true,
-                                 replicateRemovals = true,
-                                 replicateUpdatesViaCopy = false,
-                                 replicateAsynchronously = false"/>
-
-    </cache>
          
     <!-- Web Scripts Registry -->
     

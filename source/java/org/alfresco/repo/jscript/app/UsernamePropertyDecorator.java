@@ -78,7 +78,7 @@ public class UsernamePropertyDecorator extends BasePropertyDecorator
 
         map.put("firstName", firstName);
         map.put("lastName", lastName);
-        map.put("displayName", (firstName != null ? firstName + " " : "" + lastName != null ? lastName : "").replaceAll("^\\s+|\\s+$", ""));
+        map.put("displayName", ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).replaceAll("^\\s+|\\s+$", ""));
         return map;
     }
 }

@@ -112,6 +112,9 @@
       <property name="ignoreEmptyContent" >
          <value>${policy.content.update.ignoreEmpty}</value>
       </property>
+      <property name="transformerFailover" >
+         <value>${content.transformer.failover}</value>
+      </property>
       <property name="transformerDebug">
          <ref bean="transformerDebug"></ref>
       </property>
@@ -352,22 +355,6 @@
    <bean id="transformer.OOXMLThumbnail"
          class="org.alfresco.repo.content.transform.OOXMLThumbnailContentTransformer"
          parent="baseContentTransformer" >
-      <property name="explicitTransformations">
-         <list>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
-                <property name="sourceMimetype"><value>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</value></property>
-                <property name="targetMimetype"><value>image/jpeg</value></property>
-            </bean>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
-                <property name="sourceMimetype"><value>application/vnd.openxmlformats-officedocument.wordprocessingml.document</value></property>
-                <property name="targetMimetype"><value>image/jpeg</value></property>
-            </bean>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
-                <property name="sourceMimetype"><value>application/vnd.openxmlformats-officedocument.presentationml.presentation</value></property>
-                <property name="targetMimetype"><value>image/jpeg</value></property>
-            </bean>
-         </list>
-      </property>
    </bean>
 
    <bean id="transformer.PdfBox"
@@ -493,22 +480,6 @@
    <bean id="transformer.complex.OOXML.Image"
          class="org.alfresco.repo.content.transform.ComplexContentTransformer"
          parent="baseContentTransformer">
-      <property name="explicitTransformations">
-         <list>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
-                <property name="sourceMimetype"><value>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</value></property>
-                <property name="targetMimetype"><value>image/png</value></property>
-            </bean>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
-                <property name="sourceMimetype"><value>application/vnd.openxmlformats-officedocument.wordprocessingml.document</value></property>
-                <property name="targetMimetype"><value>image/png</value></property>
-            </bean>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
-                <property name="sourceMimetype"><value>application/vnd.openxmlformats-officedocument.presentationml.presentation</value></property>
-                <property name="targetMimetype"><value>image/png</value></property>
-            </bean>
-         </list>
-      </property>  
       <property name="transformers">
          <list>
             <ref bean="transformer.OOXMLThumbnail" />
@@ -536,7 +507,7 @@
             <value>application/pdf</value>
          </list>
       </property>
-      <!-- Note: there are maxSourceSizeKBytes limit on transformer.OpenOffice for xlsx->pdf
+      <!-- Note: there are maxSourceSizeKBytes limits on transformer.OpenOffice transforming to pdf
            which may cause this transformer not to be selected because it is too slow. -->
    </bean>   
 
@@ -656,47 +627,69 @@
          <ref bean="transformer.worker.OpenOffice" />
       </property>
       <property name="mimetypeLimits">
-        <map>
-            <entry key="text/plain">
-                <map>
-                    <!-- Don't use for text to text as there are better options -->
-                    <entry key="text/plain">
-                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
-                            <property name="maxSourceSizeKBytes"><value>0</value></property>
-                        </bean>
-                    </entry>
-                    <!-- Don't use for text to pdf (and onwards to swf) if too large -->
-                    <entry key="application/pdf">
-                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
-                            <property name="maxSourceSizeKBytes"><value>${content.transformer.OpenOffice.mimeTypeLimits.txt.pdf.maxSourceSizeKBytes}</value></property>
-                        </bean>
-                    </entry>
-                </map>
-            </entry>
-            <!-- Limit use of xlsx to pdf (and onwards to swf) if too large -->
-            <entry key="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-                <map>
-                    <entry key="application/pdf">
-                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
-                            <property name="maxSourceSizeKBytes"><value>${content.transformer.OpenOffice.mimeTypeLimits.xlsx.pdf.maxSourceSizeKBytes}</value></property>
-                        </bean>
-                    </entry>
-                </map>
-            </entry>
-            <!-- Limit use of xls to pdf (and onwards to swf) if too large -->
-            <entry key="application/vnd.ms-excel">
-                <map>
-                    <entry key="application/pdf">
-                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
-                            <property name="maxSourceSizeKBytes"><value>${content.transformer.OpenOffice.mimeTypeLimits.xls.pdf.maxSourceSizeKBytes}</value></property>
-                        </bean>
-                    </entry>
-                </map>
-            </entry>
-        </map>
+         <ref bean="transformer.OpenOffice.mimetypeLimits"/>
       </property>
    </bean>
 
+   <!-- Don't use for anything to text as there are better options (TikaAuto, TextMining) -->
+   <!-- Don't use for text to pdf (and onwards to swf) if too large -->
+   <!-- doc and dot use the same mimetype -->
+   <!-- Can only read Microsoft Office 2007 types with the 3.2 version of OpenOffice.  -->
+   <bean id="transformer.OpenOffice.mimetypeLimits" class="org.alfresco.service.cmr.repository.TransformationOptionLimitsMap">
+      <constructor-arg>
+         <value>
+            *    txt  maxSourceSizeKBytes 0 ;
+
+            txt  pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.txt.pdf.maxSourceSizeKBytes}  ;
+            doc  pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.doc.pdf.maxSourceSizeKBytes}  ;
+            docx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.docx.pdf.maxSourceSizeKBytes} ;
+            docm pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.docm.pdf.maxSourceSizeKBytes} ;
+            dotx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.dotx.pdf.maxSourceSizeKBytes} ;
+            dotm pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.dotm.pdf.maxSourceSizeKBytes} ;
+            ppt  pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.ppt.pdf.maxSourceSizeKBytes}  ;
+            pptx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.pptx.pdf.maxSourceSizeKBytes} ;
+            pptm pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.pptm.pdf.maxSourceSizeKBytes} ;
+            ppsx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.ppsx.pdf.maxSourceSizeKBytes} ;
+            ppsm pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.ppsm.pdf.maxSourceSizeKBytes} ;
+            potx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.potx.pdf.maxSourceSizeKBytes} ;
+            potm pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.potm.pdf.maxSourceSizeKBytes} ;
+            ppam pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.ppam.pdf.maxSourceSizeKBytes} ;
+            sldx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.sldx.pdf.maxSourceSizeKBytes} ;
+            sldm pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.sldm.pdf.maxSourceSizeKBytes} ;
+            xls  pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xls.pdf.maxSourceSizeKBytes}  ;
+            xlsx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xlsx.pdf.maxSourceSizeKBytes} ;
+            xltx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xltx.pdf.maxSourceSizeKBytes} ;
+            xlsm pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xlsm.pdf.maxSourceSizeKBytes} ;
+            xltm pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xltm.pdf.maxSourceSizeKBytes} ;
+            xlam pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xlam.pdf.maxSourceSizeKBytes} ;
+            xlsb pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xlsb.pdf.maxSourceSizeKBytes} ;
+            
+            *    docx maxSourceSizeKBytes 0 ;
+            *    docm maxSourceSizeKBytes 0 ;
+            *    dotx maxSourceSizeKBytes 0 ;
+            *    dotm maxSourceSizeKBytes 0 ;
+            *    pptx maxSourceSizeKBytes 0 ;
+            *    pptm maxSourceSizeKBytes 0 ;
+            *    ppsx maxSourceSizeKBytes 0 ;
+            *    ppsm maxSourceSizeKBytes 0 ;
+            *    potx maxSourceSizeKBytes 0 ;
+            *    potm maxSourceSizeKBytes 0 ;
+            *    ppam maxSourceSizeKBytes 0 ;
+            *    sldx maxSourceSizeKBytes 0 ;
+            *    sldm maxSourceSizeKBytes 0 ;
+            *    xlsx maxSourceSizeKBytes 0 ;
+            *    xltx maxSourceSizeKBytes 0 ;
+            *    xlsm maxSourceSizeKBytes 0 ;
+            *    xltm maxSourceSizeKBytes 0 ;
+            *    xlam maxSourceSizeKBytes 0 ;
+            *    xlsb maxSourceSizeKBytes 0
+         </value>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="mimetypeService" />
+      </constructor-arg>
+   </bean>
+         
    <bean id="transformer.complex.OpenOffice.PdfBox"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
         parent="baseContentTransformer" >
@@ -712,41 +705,47 @@
          </list>    
       </property>
       <property name="mimetypeLimits">
-        <map>
-            <!-- Don't use for text to text as there are better options -->
-            <entry key="text/plain">
-                <map>
-                    <entry key="text/plain">
-                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
-                            <property name="maxSourceSizeKBytes"><value>0</value></property>
-                        </bean>
-                    </entry>
-                </map>
-            </entry>
-            <!-- Don't use for xlsx to text as there are better options -->
-            <entry key="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-                <map>
-                    <entry key="text/plain">
-                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
-                            <property name="maxSourceSizeKBytes"><value>0</value></property>
-                        </bean>
-                    </entry>
-                </map>
-            </entry>
-            <!-- Don't use for xls to text as there are better options -->
-            <entry key="application/vnd.ms-excel">
-                <map>
-                    <entry key="text/plain">
-                        <bean class="org.alfresco.service.cmr.repository.TransformationOptionLimits">
-                            <property name="maxSourceSizeKBytes"><value>0</value></property>
-                        </bean>
-                    </entry>
-                </map>
-            </entry>
-        </map>
+         <ref bean="transformer.complex.OpenOffice.PdfBox.mimetypeLimits"/>
       </property>
+      <!-- Note: there are maxSourceSizeKBytes limits on transformer.OpenOffice transforming to pdf
+           which may cause this transformer not to be selected because it is too slow. -->
    </bean>
-   
+
+   <!-- Don't use for text to text as there are better options -->
+   <!-- Don't use for Microsoft formats to text as there are better options -->
+   <bean id="transformer.complex.OpenOffice.PdfBox.mimetypeLimits" class="org.alfresco.service.cmr.repository.TransformationOptionLimitsMap">
+      <constructor-arg>
+         <value>
+            txt  txt  maxSourceSizeKBytes 0 ;
+            doc  txt  maxSourceSizeKBytes 0 ;
+            docx txt  maxSourceSizeKBytes 0 ;
+            docm txt  maxSourceSizeKBytes 0 ;
+            dotx txt  maxSourceSizeKBytes 0 ;
+            dotm txt  maxSourceSizeKBytes 0 ;
+            ppt  txt  maxSourceSizeKBytes 0 ;
+            pptx txt  maxSourceSizeKBytes 0 ;
+            pptm txt  maxSourceSizeKBytes 0 ;
+            ppsx txt  maxSourceSizeKBytes 0 ;
+            ppsm txt  maxSourceSizeKBytes 0 ;
+            potx txt  maxSourceSizeKBytes 0 ;
+            potm txt  maxSourceSizeKBytes ${content.transformer.OpenOffice.PdfBox.mimeTypeLimits.potm.txt.maxSourceSizeKBytes} ;
+            ppam txt  maxSourceSizeKBytes 0 ;
+            sldx txt  maxSourceSizeKBytes 0 ;
+            sldm txt  maxSourceSizeKBytes 0 ;
+            xls  txt  maxSourceSizeKBytes 0 ;
+            xlsx txt  maxSourceSizeKBytes 0 ;
+            xltx txt  maxSourceSizeKBytes 0 ;
+            xlsm txt  maxSourceSizeKBytes 0 ;
+            xltm txt  maxSourceSizeKBytes 0 ;
+            xlam txt  maxSourceSizeKBytes 0 ;
+            xlsb txt  maxSourceSizeKBytes ${content.transformer.OpenOffice.PdfBox.mimeTypeLimits.xlsb.txt.maxSourceSizeKBytes}
+         </value>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="mimetypeService" />
+      </constructor-arg>
+   </bean>
+
    <bean id="transformer.OutlookMsg"
          class="org.alfresco.repo.content.transform.MailContentTransformer"
          parent="baseContentTransformer" />

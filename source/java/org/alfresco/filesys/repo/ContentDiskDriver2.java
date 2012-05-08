@@ -148,6 +148,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     private NodeMonitorFactory m_nodeMonitorFactory;
     private ContentComparator contentComparator;
 
+    // TODO Should not be here - should be specific to a context.
 	private boolean isLockedFilesAsOffline;
 	
     /**
@@ -1345,11 +1346,25 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 if (sameFolder == true)
                 {
                     fileFolderService.rename(nodeToMoveRef, name);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("  Renamed " + (isFolder ? "folder" : "file") + ":" +
+                                "   Old name:      " + oldName + "\n" +
+                                "   New name:      " + newName + "\n" );
+                    }
                     
                 }
                 else
                 {
                     fileFolderService.moveFrom(nodeToMoveRef,  sourceFolderRef, targetFolderRef, name);
+                    logger.debug(
+                            "Moved between different folders: \n" +
+                            "   Old name:      " + oldName + "\n" +
+                            "   New name:      " + newName + "\n" +
+                            "   Source folder: " + sourceFolderRef + "\n" +
+                            "   Target folder: " + targetFolderRef + "\n" +
+                            "   Node:          " + nodeToMoveRef + "\n" +
+                            "   Aspects:       " + nodeService.getAspects(nodeToMoveRef));
                 }
                 
                 if (logger.isDebugEnabled())
@@ -1629,7 +1644,26 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 }
                 
             }
-
+            
+            // Change Date is last write ?
+            if ( info.hasSetFlag(FileInfo.SetChangeDate) && info.hasChangeDateTime()) 
+            {                
+                Date changeDate = new Date( info.getChangeDateTime());
+                if ( logger.isDebugEnabled())
+                {
+                    logger.debug("Set change date (Not implemented)" + name + ", " + changeDate);
+                }
+                
+            }
+            if ( info.hasSetFlag(FileInfo.SetAccessDate) && info.hasAccessDateTime()) 
+            {
+                Date accessDate = new Date( info.getAccessDateTime());
+                if ( logger.isDebugEnabled())
+                {
+                    logger.debug("Set access date (Not implemented)" + name + ", " + accessDate);
+                }
+            }
+            
             // Did we have any cm:auditable properties?
             if (auditableProps.size() > 0)
             {
@@ -2298,12 +2332,25 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                              
             NodeRef nodeRef = cifsHelper.createNode(dirNodeRef, folderName, ContentModel.TYPE_CONTENT);
 
+            
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
                                     
             File file = TempFileProvider.createTempFile("cifs", ".bin");
             
             TempNetworkFile netFile = new TempNetworkFile(file, path);
             netFile.setChanged(true);
+            
+            Serializable created = nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED); 
+            if(created != null && created instanceof Date)
+            {
+                Date d = (Date)created;
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("replacing create date to date:" + d);
+                }
+                netFile.setCreationDate(d.getTime());
+                netFile.setModifyDate(d.getTime());
+            }
             
             // Always allow write access to a newly created file
             netFile.setGrantedAccess(NetworkFile.READWRITE);
@@ -2499,6 +2546,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                             }
 
                             netFile = new TempNetworkFile(file, name);
+                            netFile.setCreationDate(fileInfo.getCreationDateTime());
+                            netFile.setModifyDate(fileInfo.getModifyDateTime());
                             
                             netFile.setGrantedAccess( NetworkFile.READWRITE);
                              

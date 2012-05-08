@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,6 +28,8 @@ import java.util.Set;
 import net.sf.ehcache.CacheException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.TransactionListener;
@@ -76,7 +78,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     
     private Log logger;
     private boolean isDebugEnabled;
-
+    
     /** a name used to uniquely identify the transactional caches */
     private String name;
     /** enable/disable write through to the shared cache */
@@ -91,7 +93,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     private int maxCacheSize = 500;
     /** a unique string identifying this instance when binding resources */
     private String resourceKeyTxnData;
-
+    
+    private boolean isTenantAware = true; // true if tenant-aware (default), false if system-wide
+    
     /**
      * Public constructor.
      */
@@ -203,7 +207,12 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     {
         this.name = name;
     }
-
+    
+    public void setTenantAware(boolean isTenantAware)
+    {
+        this.isTenantAware = isTenantAware;
+    }
+    
     /**
      * Ensures that all properties have been set
      */
@@ -236,8 +245,8 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         {
             data = new TransactionData();
             // create and initialize caches
-            data.updatedItemsCache = new LRULinkedHashMap<K, CacheBucket<V>>(23);
-            data.removedItemsCache = new HashSet<K>(13);
+            data.updatedItemsCache = new LRULinkedHashMap<Serializable, CacheBucket<V>>(23);
+            data.removedItemsCache = new HashSet<Serializable>(13);
             data.isReadOnly = AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
 
             // ensure that we get the transaction callbacks as we have bound the unique
@@ -285,20 +294,25 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * The keys returned are a union of the set of keys in the current transaction and
      * those in the backing cache.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Collection<K> getKeys()
     {
-        Collection<K> keys = null;
+        Collection<Serializable> keys = null;
         // in-txn layering
         if (AlfrescoTransactionSupport.getTransactionId() != null)
         {
-            keys = new HashSet<K>(23);
+            keys = new HashSet<Serializable>(23);
             TransactionData txnData = getTransactionData();
             if (!txnData.isClearOn)
             {
                 // the backing cache is not due for a clear
-                Collection<K> backingKeys = (Collection<K>) sharedCache.getKeys();
-                keys.addAll(backingKeys);
+                Collection<K> backingKeys = (Collection<K>)sharedCache.getKeys();
+                Collection<Serializable> backingCacheKeys = new HashSet<Serializable>(backingKeys.size());
+                for (K backingKey : backingKeys)
+                {
+                    backingCacheKeys.add(getCacheKey(backingKey));
+                }
+                keys.addAll(backingCacheKeys);
             }
             // add keys
             keys.addAll(txnData.updatedItemsCache.keySet());
@@ -308,10 +322,29 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         else
         {
             // no transaction, so just use the backing cache
-            keys = (Collection<K>) sharedCache.getKeys();
+            keys = (Collection) sharedCache.getKeys();
+        }
+        
+        Collection<K> cacheKeys = new HashSet<K>(keys.size());
+        String currentCacheRegion = TenantUtil.getCurrentDomain();
+        
+        for (Serializable key : keys)
+        {
+            if (key instanceof CacheRegionKey)
+            {
+                CacheRegionKey cacheRegionKey = (CacheRegionKey)key;
+                if (currentCacheRegion.equals(cacheRegionKey.getCacheRegion()))
+                {
+                    cacheKeys.add((K)cacheRegionKey.getCacheKey());
+                }
+            }
+            else
+            {
+                cacheKeys.add((K)key);
+            }
         }
         // done
-        return keys;
+        return cacheKeys;
     }
     
     /**
@@ -321,7 +354,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * @return              Returns the value or <tt>null</tt>
      */
     @SuppressWarnings("unchecked")
-    private V getSharedCacheValue(K key)
+    private V getSharedCacheValue(Serializable key)
     {
         return (V) sharedCache.get(key);
     }
@@ -330,8 +363,10 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * Checks the per-transaction caches for the object before going to the shared cache.
      * If the thread is not in a transaction, then the shared cache is accessed directly.
      */
-    public V get(K key)
+    public V get(K keyIn)
     {
+        final Serializable key = getCacheKey(keyIn);
+        
         boolean ignoreSharedCache = false;
         // are we in a transaction?
         if (AlfrescoTransactionSupport.getTransactionId() != null)
@@ -429,8 +464,10 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * thread and the <tt>Object</tt> put onto that. 
      */
     @SuppressWarnings("unchecked")
-    public void put(K key, V value)
+    public void put(K keyIn, V value)
     {
+        final Serializable key = getCacheKey(keyIn);
+        
         // are we in a transaction?
         if (AlfrescoTransactionSupport.getTransactionId() == null)  // not in transaction
         {
@@ -514,8 +551,10 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * Where a transaction is present, a cache of removed items is lazily added to the
      * thread and the <tt>Object</tt> put onto that. 
      */
-    public void remove(K key)
+    public void remove(K keyIn)
     {
+        final Serializable key = getCacheKey(keyIn);
+        
         // are we in a transaction?
         if (AlfrescoTransactionSupport.getTransactionId() == null)  // not in transaction
         {
@@ -679,12 +718,12 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     logger.debug("Removed " + txnData.removedItemsCache.size() + " values from shared cache in commit");
                 }
             }
-
+            
             // transfer updates
-            Set<K> keys = (Set<K>) txnData.updatedItemsCache.keySet();
-            for (Map.Entry<K, CacheBucket<V>> entry : (Set<Map.Entry<K, CacheBucket<V>>>) txnData.updatedItemsCache.entrySet())
+            Set<Serializable> keys = (Set<Serializable>) txnData.updatedItemsCache.keySet();
+            for (Map.Entry<Serializable, CacheBucket<V>> entry : (Set<Map.Entry<Serializable, CacheBucket<V>>>) txnData.updatedItemsCache.entrySet())
             {
-                K key = entry.getKey();
+                Serializable key = entry.getKey();
                 CacheBucket<V> bucket = entry.getValue();
                 bucket.doPreCommit(
                         sharedCache,
@@ -740,12 +779,12 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     logger.debug("Removed " + txnData.removedItemsCache.size() + " values from shared cache in commit");
                 }
             }
-
+            
             // transfer updates
-            Set<K> keys = (Set<K>) txnData.updatedItemsCache.keySet();
-            for (Map.Entry<K, CacheBucket<V>> entry : (Set<Map.Entry<K, CacheBucket<V>>>) txnData.updatedItemsCache.entrySet())
+            Set<Serializable> keys = (Set<Serializable>) txnData.updatedItemsCache.keySet();
+            for (Map.Entry<Serializable, CacheBucket<V>> entry : (Set<Map.Entry<Serializable, CacheBucket<V>>>) txnData.updatedItemsCache.entrySet())
             {
-                K key = entry.getKey();
+                Serializable key = entry.getKey();
                 CacheBucket<V> bucket = entry.getValue();
                 bucket.doPostCommit(
                         sharedCache,
@@ -1020,8 +1059,8 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     /** Data holder to bind data to the transaction */
     private class TransactionData
     {
-        private LRULinkedHashMap<K, CacheBucket<V>> updatedItemsCache;
-        private Set<K> removedItemsCache;
+        private LRULinkedHashMap<Serializable, CacheBucket<V>> updatedItemsCache;
+        private Set<Serializable> removedItemsCache;
         private boolean haveIssuedFullWarning;
         private boolean isClearOn;
         private boolean isClosed;
@@ -1054,6 +1093,73 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         protected boolean removeEldestEntry(Map.Entry<K1, V1> eldest)
         {
             return (size() > maxCacheSize);
+        }
+    }
+    
+    private Serializable getCacheKey(final K key)
+    {
+        if (isTenantAware)
+        {
+            final String tenantDomain = TenantUtil.getCurrentDomain();
+            if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+            {
+                return new CacheRegionKey(tenantDomain, key);
+            }
+            // drop through
+        }
+        return key;
+    }
+    
+    public static class CacheRegionKey implements Serializable
+    {
+        private static final long serialVersionUID = -213050301938804468L;
+        
+        private final String cacheRegion;
+        private final Serializable cacheKey;
+        private final int hashCode;
+        
+        public CacheRegionKey(String cacheRegion, Serializable cacheKey)
+        {
+            this.cacheRegion = cacheRegion;
+            this.cacheKey = cacheKey;
+            this.hashCode = cacheRegion.hashCode() + cacheKey.hashCode();
+        }
+        
+        public Serializable getCacheKey()
+        {
+            return cacheKey;
+        }
+        
+        public String getCacheRegion()
+        {
+            return cacheRegion;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return cacheRegion + (cacheRegion != "" ? "." : "") + cacheKey.toString();
+        }
+        
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            else if (!(obj instanceof CacheRegionKey))
+            {
+                return false;
+            }
+            CacheRegionKey that = (CacheRegionKey) obj;
+            return this.cacheRegion.equals(that.cacheRegion) && this.cacheKey.equals(that.cacheKey);
+        }
+        
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
         }
     }
 }

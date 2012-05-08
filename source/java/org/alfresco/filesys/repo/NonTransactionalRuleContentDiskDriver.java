@@ -227,7 +227,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         else
         {
             // Error - contact broken
-            logger.error("contract broken - NetworkFile not returned");
+            logger.error("contract broken - NetworkFile not returned. " + ret == null ? "Return value is null" : ret);
             return null;
         }
     }
@@ -376,7 +376,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         else
         {
             // Error - contact broken
-            logger.error("contract broken - NetworkFile not returned");
+            logger.error("contract broken - NetworkFile not returned. " + ret == null ? "Return value is null" : ret);
             return null;
         }
 

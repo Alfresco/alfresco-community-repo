@@ -4936,6 +4936,7 @@ public class ContentDiskDriverTest extends TestCase
         
         try
         {
+            logger.debug("expect to get exception - cleaning garbage");
             tran.doInTransaction(deleteGarbageFileCB);
         }
         catch (Exception e)
@@ -5079,7 +5080,181 @@ public class ContentDiskDriverTest extends TestCase
         
     } // testScenarioMSPowerpoint2011MacSaveShuffle
 
-    
+    /**
+     * This test tries to simulate the cifs shuffling that is done to
+     * support MS Word 2011 on Mac with backup turned on. 
+     * 
+     * a) TEST.DOCX
+     * b) Create new temp file in temp dir Word Work File D_.tmp
+     * c) Delete backup file.
+     * c) Rename TEST.DOCX to Backup of TEST.docx
+     * d) Move temp file to target dir
+     * d) Rename Word Work File D_.tmp to TEST.docx
+     */
+    public void testScenarioMSWord20011MacSaveWithBackup() throws Exception
+    {
+        logger.debug("testScenarioMSWord20011MacSaveWithBackup");
+        final String FILE_NAME = "TEST.DOCX";
+        final String FILE_BACKUP = "Backup of TEST.docx";
+        final String FILE_NEW_TEMP = "Word Work File D_.tmp";
+        
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+            NetworkFile newFileHandle;            
+            NodeRef testNodeRef;   // node ref of test.doc
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String TEST_ROOT_DIR = "\\ContentDiskDriverTest";
+        final String TEST_DIR = "\\ContentDiskDriverTest\\testScenarioMSWord20011MacSaveWithBackup";
+        final String TEST_TEMP_DIR = "\\ContentDiskDriverTest\\testScenarioMSWord20011MacSaveWithBackup\\.Temporary Items";
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "cifs", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        logger.debug("Step 0 - initialise");
+        
+        /**
+         * Create a file in the test directory
+         */           
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createTempDirParams = new FileOpenParams(TEST_TEMP_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                driver.createDirectory(testSession, testConnection, createTempDirParams);
+                
+                /**
+                 * Create the file we are going to use
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+                
+                // no need to test lots of different properties, that's already been tested above
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
+                nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                
+                String testContent = "MS Word 2011 shuffle test";
+                byte[] testContentBytes = testContent.getBytes();
+                testContext.firstFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+                testContext.firstFileHandle.close();  
+                        
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+               
+        /**
+         * a) Save the temp file in the temp dir
+         */
+        logger.debug("Step a - create a temp file in the temp dir");
+        RetryingTransactionCallback<Void> saveNewFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                FileOpenParams createFileParams = new FileOpenParams(TEST_TEMP_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.newFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.newFileHandle);
+                String testContent = "MS Word 2011 shuffle test This is new content";
+                byte[] testContentBytes = testContent.getBytes();
+                testContext.newFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+                testContext.newFileHandle.close();
+              
+                return null;
+            }
+        };
+        tran.doInTransaction(saveNewFileCB, false, true);
+        
+        /*
+         * Step b not used in test case
+         */
+        
+        /**
+         * c) rename the target file to a backup file
+         */
+        logger.debug("Step c - rename the target file");
+        RetryingTransactionCallback<Void> renameOldFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + FILE_BACKUP);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameOldFileCB, false, true);
+        
+        
+        /**
+         * d) Move the new file into target dir
+         */
+        logger.debug("Step d - move new file into target dir");
+        RetryingTransactionCallback<Void> moveNewFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_TEMP_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NEW_TEMP); 
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(moveNewFileCB, false, true);
+        
+        /**
+         * e) Rename temp file into place.
+         */
+        logger.debug("Step e - rename temp file into place");
+        RetryingTransactionCallback<Void> renameTempFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameTempFileCB, false, true);
+        
+        
+        /**
+         * Validate
+         */
+        
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               
+               Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+               assertTrue("node does not contain shuffled ENABLED property", props.containsKey(TransferModel.PROP_ENABLED));
+               assertEquals("name wrong", FILE_NAME, nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_NAME) );    
+               return null;
+            }
+        };
+        
+        tran.doInTransaction(validateCB, false, true);
+
+    } // testScenarioMSMacWord20011SaveWithBackup save
     
     /**
      * Test server
@@ -5125,6 +5300,7 @@ public class ContentDiskDriverTest extends TestCase
             // Set the client info to user "fred"
             ClientInfo cinfo = ClientInfo.createInfo("fred", null);
             setClientInformation(cinfo);
+            setUniqueId("test:" + sessId);
 
         }
 

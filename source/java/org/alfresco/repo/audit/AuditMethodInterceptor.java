@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.audit;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -92,6 +94,11 @@ public class AuditMethodInterceptor implements MethodInterceptor
     public static final String AUDIT_SNIPPET_RESULT = "/result";
     public static final String AUDIT_SNIPPET_ERROR = "/error";
     public static final String AUDIT_SNIPPET_NO_ERROR = "/no-error";
+    
+    private static final String NOT_RECORDABLE = "not auditable";
+    
+    @SuppressWarnings("rawtypes")
+    private static final Class[] NON_RECORDABLE_CLASSES = new Class[] { InputStream.class,  OutputStream.class };
     
     private static final Log logger = LogFactory.getLog(AuditMethodInterceptor.class);
 
@@ -296,41 +303,75 @@ public class AuditMethodInterceptor implements MethodInterceptor
                     continue;
                 }
             }
-            Serializable arg;
-            if (args[i] == null)
+            Serializable value = getRecordableValue(args[i]);
+            if (value == NOT_RECORDABLE)
             {
-                arg = null;
+                // No viable conversion
+                continue;
             }
-            else if (args[i] instanceof Serializable)
-            {
-                arg = (Serializable) args[i];
-            }
-            else
-            {
-                // TODO: How to treat non-serializable args
-                // arg = args[i].toString();
-                try
-                {
-                    arg = DefaultTypeConverter.INSTANCE.convert(String.class, args[i]);
-                }
-                catch (TypeConversionException e)
-                {
-                    // No viable conversion
-                    continue;
-                }
-            }
-            // Trim strings
-            if (arg instanceof String)
-            {
-                arg = SchemaBootstrap.trimStringForTextFields((String)arg);
-            }
+
             // It is named and recordable
-            namedArgs.put(params[i], arg);
+            namedArgs.put(params[i], value);
         }
         // Done
         return namedArgs;
     }
     
+    /**
+     * Returns a value that may be included in audit map data. Called for method arguments and return
+     * values. Not all values may be audited. Some cannot be converted to something that can be
+     * serialised or may only be read once (so would be damaged). String audit values may be trimmed.
+     * @param value to be audited.
+     * @return Return {@link NOT_AUDITABLE} if it is not possible to audit the value,a value that may be audited. May be null.
+     * @throws TypeConversionException if not possible to convert the original object.
+     */
+    private Serializable getRecordableValue(Object value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        
+        Serializable audit = instanceofNonAuditClass(value);
+        if (audit == null)
+        {
+            if (value instanceof Serializable)
+            {
+                audit = (Serializable) value;
+            }
+            else
+            {
+                try
+                {
+                    audit = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+                }
+                catch (TypeConversionException e)
+                {
+                    return NOT_RECORDABLE;
+                }
+            }
+            // Trim strings
+            if (audit instanceof String)
+            {
+                audit = SchemaBootstrap.trimStringForTextFields((String) audit);
+            }
+        }
+        return audit;
+    }
+    
+    // Returns a non null value if the supplied value is a non auditable class.
+    private Serializable instanceofNonAuditClass(Object value)
+    {
+        for (@SuppressWarnings("rawtypes") Class clazz: NON_RECORDABLE_CLASSES)
+        {
+            if (clazz.isInstance(value))
+            {
+                return NOT_RECORDABLE;
+            }
+        }
+        return null;
+    }
+
     /**
      * Audit values before the invocation
      * 
@@ -413,30 +454,10 @@ public class AuditMethodInterceptor implements MethodInterceptor
             auditData.put(path, entry.getValue());
         }
         
-        if (ret != null)
+        Serializable value = getRecordableValue(ret);
+        if (value != null && value != NOT_RECORDABLE)
         {
-            if (ret instanceof String)
-            {
-                // Make sure the string fits
-                ret = SchemaBootstrap.trimStringForTextFields((String) ret);
-            }
-            if (ret instanceof Serializable)
-            {
-                auditData.put(AUDIT_SNIPPET_RESULT, (Serializable) ret);
-            }
-            else
-            {
-                // TODO: How do we treat non-serializable return values
-                try
-                {
-                    ret = DefaultTypeConverter.INSTANCE.convert(String.class, ret);
-                    auditData.put(AUDIT_SNIPPET_RESULT, (String) ret);
-                }
-                catch (TypeConversionException e)
-                {
-                    // No viable conversion
-                }
-            }
+            auditData.put(AUDIT_SNIPPET_RESULT, value);
         }
 
         if (thrown != null)

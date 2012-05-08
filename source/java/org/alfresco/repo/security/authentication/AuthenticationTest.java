@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -101,7 +101,8 @@ public class AuthenticationTest extends TestCase
 
     private PolicyComponent policyComponent;
 
-    private SimpleCache<String, NodeRef> authenticationCache;    
+    private SimpleCache<String, NodeRef> authenticationCache;
+    private SimpleCache<String, NodeRef> immutableSingletonCache;
 
     public AuthenticationTest()
     {
@@ -137,6 +138,7 @@ public class AuthenticationTest extends TestCase
         personService =  (PersonService) ctx.getBean("personService");
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         authenticationCache = (SimpleCache<String, NodeRef>) ctx.getBean("authenticationCache");
+        immutableSingletonCache = (SimpleCache<String, NodeRef>) ctx.getBean("immutableSingletonCache");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
@@ -182,7 +184,8 @@ public class AuthenticationTest extends TestCase
         dao.setPasswordEncoder(passwordEncoder);
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
-
+        dao.setSingletonCache(immutableSingletonCache);
+        
         if (dao.getUserOrNull("andy") != null)
         {
             dao.deleteUser("andy");
@@ -399,6 +402,8 @@ public class AuthenticationTest extends TestCase
         dao.setPasswordEncoder(passwordEncoder);
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
+        dao.setSingletonCache(immutableSingletonCache);
+        
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
 

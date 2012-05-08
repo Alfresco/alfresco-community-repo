@@ -84,6 +84,8 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
@@ -760,27 +762,26 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 @Override
                 public Void doWork() throws Exception
                 {
+                    // Remember if we have already cascaded
+                    boolean cascaded = false;
+
                     // We we must cope with the possibility of the container not existing for some of this node's parents
-                    for (ChildAssociationRef assocRef: nodeService.getParentAssocs(nodeRef))
+                    for (ChildAssociationRef assocRef : nodeService.getParentAssocs(nodeRef))
                     {
                         NodeRef parentRef = tenantService.getName(assocRef.getParentRef());
                         if (!childAssociationsSinceFlush.containsKey(parentRef))
                         {
                             String parentRefSString = parentRef.toString();
-                            if (!locateContainer(parentRefSString, deltaReader)
-                                    && !locateContainer(parentRefSString, mainReader))
+                            if (!locateContainer(parentRefSString, deltaReader) && (containerDeletions.contains(parentRefSString) || !locateContainer(parentRefSString, mainReader)))
                             {
-                                generateContainersAndBelow(nodeService.getPaths(parentRef, false), docs, false,
-                                        pathsProcessedSinceFlush, childAssociationsSinceFlush);
+                                generateContainersAndBelow(nodeService.getPaths(parentRef, false), docs, cascade, pathsProcessedSinceFlush, childAssociationsSinceFlush);
+                                cascaded = cascade;
                             }
                         }
                     }
                     
-                    // Now regenerate the containers for this node, cascading if necessary
-                    // Only process 'containers' - not leaves
-                    if (isCategory(getDictionaryService().getType(nodeService.getType(nodeRef)))
-                            || mayHaveChildren(nodeRef)
-                            && !getCachedChildren(childAssociationsSinceFlush, nodeRef).isEmpty())
+                    // Now regenerate the containers for this node if necessary
+                    if (cascade && !cascaded || isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
                     {
                         generateContainersAndBelow(nodeService.getPaths(nodeRef, false), docs, cascade,
                                 pathsProcessedSinceFlush, childAssociationsSinceFlush);
@@ -1004,7 +1005,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         // Cache the children in case there are many paths to the same node
         if (children == null)
         {
-            children = nodeService.getChildAssocs(nodeRef);
+            children = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
             for (ChildAssociationRef childRef : children)
             {
                 // We don't want index numbers in generated paths

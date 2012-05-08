@@ -521,6 +521,17 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
             }
 
             @Override
+            protected void handleRootOrAbove()
+            {
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("     # "+userName+" has a home folder that is the provider's root directory (or is above it). " +
+                    		"This is normally for users that origanally had an internal provider or a provider that uses " +
+                    		"shared home folders - These are not moved.");
+                }
+            }
+            
+            @Override
             protected void handleNotAHomeFolderProvider2()
             {
                 if (logger.isInfoEnabled())
@@ -562,22 +573,29 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         StringBuilder sb = new StringBuilder("");
         if (folders != null)
         {
-            for (String folder : folders)
+            if (folders.isEmpty())
             {
-                if (sb.length() > 0)
+                sb.append('.');
+            }
+            else
+            {
+                for (String folder : folders)
                 {
-                    sb.append('/');
-                }
-                sb.append(folder);
-                if (depth-- <= 0)
-                {
-                    break;
+                    if (sb.length() > 0)
+                    {
+                        sb.append('/');
+                    }
+                    sb.append(folder);
+                    if (depth-- <= 0)
+                    {
+                        break;
+                    }
                 }
             }
         }
         else
         {
-            sb.append('.');
+            sb.append("<notUnderSameRoot>");
         }
         return sb.toString();
     }
@@ -588,14 +606,25 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         List<String> path = getRelativePath(root, leaf);
         if (path != null)
         {
-            for (String folder : path)
+            if (path.isEmpty())
             {
-                if (sb.length() > 0)
-                {
-                    sb.append('/');
-                }
-                sb.append(folder);
+                sb.append('.');
             }
+            else
+            {
+                for (String folder : path)
+                {
+                    if (sb.length() > 0)
+                    {
+                        sb.append('/');
+                    }
+                    sb.append(folder);
+                }
+            }
+        }
+        else
+        {
+            sb.append("<notUnderSameRoot>");
         }
         return sb.toString();
     }
@@ -603,7 +632,8 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
     /**
      * @return the relative 'path' (a list of folder names) of the {@code homeFolder}
      * from the {@code root} or {@code null} if the homeFolder is not under the root
-     * or is the root.
+     * or is the root. An empty list is returned if the homeFolder is the same as the
+     * root or the root is below the homeFolder.
      */
     private List<String> getRelativePath(NodeRef root, NodeRef homeFolder)
     {
@@ -612,13 +642,18 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
             return null;
         }
         
+        if (root.equals(homeFolder))
+        {
+            return Collections.emptyList();
+        }
+        
         Path rootPath = nodeService.getPath(root);
         Path homeFolderPath = nodeService.getPath(homeFolder);
         int rootSize = rootPath.size();
         int homeFolderSize = homeFolderPath.size();
         if (rootSize >= homeFolderSize)
         {
-            return null;
+            return Collections.emptyList();
         }
         
         // Check homeFolder is under root
@@ -676,7 +711,7 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                         " "+ toPath(preferredPath)+
                         ((providerName != null && !providerName.equals(originalProviderName))
                         ? "    # AND reset provider to "+providerName
-                        : "") + ".");
+                        : ""));
             }
 
             // Perform the move
@@ -962,8 +997,13 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                             else
                             {
                                 actualPath = getRelativePath(root, homeFolder);
-                                
-                                if (preferredPath.equals(actualPath))
+
+                                if (actualPath != null && actualPath.isEmpty())
+                                {
+                                    handleRootOrAbove();
+                                }
+                                else 
+                                    if (preferredPath.equals(actualPath))
                                 {
                                     handleInPreferredLocation();
                                 }
@@ -999,6 +1039,10 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         }
         
         protected void handleOriginalSharedHomeProvider()
+        {
+        }
+        
+        protected void handleRootOrAbove()
         {
         }
         

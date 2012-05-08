@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Alfresco Software Limited.
+ * Copyright (C) 2009-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -40,6 +40,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -191,17 +192,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private AlienProcessor alienProcessor;
     private JobLockService jobLockService;
     private TransferVersionChecker transferVersionChecker;
-
-    /**
-     * Where the temporary files are stored.    Tenant Domain Name, NodeRef
-     */
-    private Map<String,NodeRef> transferTempFolderMap = new ConcurrentHashMap<String, NodeRef>();
-
-    /**
-     * Where the destination side transfer report is generated.    Tenant Domain Name, NodeRef
-     */
-    private Map<String,NodeRef> inboundTransferRecordsFolderMap = new ConcurrentHashMap<String, NodeRef>();
-
+    
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    private SimpleCache<String, NodeRef> singletonCache; // eg. for transfer temp folder nodeRef
+    private final String KEY_TRANSFER_TEMP_NODEREF = "key.transferTempFolder.noderef"; // where temp files are stored
+    private final String KEY_INBOUND_TRANSFER_RECORDS_NODEREF = "key.inboundTransferRecordsFolder.noderef"; // where the destination side transfer report is generated
+    
     private ClassPolicyDelegate<BeforeStartInboundTransferPolicy> beforeStartInboundTransferDelegate;
     private ClassPolicyDelegate<OnStartInboundTransferPolicy> onStartInboundTransferDelegate;
     private ClassPolicyDelegate<OnEndInboundTransferPolicy> onEndInboundTransferDelegate;
@@ -352,8 +348,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
     public NodeRef getTempFolder(String transferId)
     {
-        String tenantDomain = tenantService.getUserDomain(AuthenticationUtil.getRunAsUser());
-        NodeRef transferTempFolder = transferTempFolderMap.get(tenantDomain);
+        NodeRef transferTempFolder = singletonCache.get(KEY_TRANSFER_TEMP_NODEREF);
 
         // Have we already resolved the node that is the temp folder?
         // If not then do so.
@@ -364,7 +359,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             if (rs.length() > 0)
             {
                 transferTempFolder = rs.getNodeRef(0);
-                transferTempFolderMap.put(tenantDomain, transferTempFolder);
+                singletonCache.put(KEY_TRANSFER_TEMP_NODEREF, transferTempFolder);
             }
             else
             {
@@ -500,8 +495,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private NodeRef createTransferRecord()
     {
         log.debug("Receiver createTransferRecord");
-        String tenantDomain = tenantService.getUserDomain(AuthenticationUtil.getRunAsUser());
-        NodeRef inboundTransferRecordsFolder = inboundTransferRecordsFolderMap.get(tenantDomain);
+        NodeRef inboundTransferRecordsFolder = singletonCache.get(KEY_INBOUND_TRANSFER_RECORDS_NODEREF);
 
         if (inboundTransferRecordsFolder == null)
         {
@@ -511,7 +505,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
             if (rs.length() > 0)
             {
                 inboundTransferRecordsFolder = rs.getNodeRef(0);
-                inboundTransferRecordsFolderMap.put(tenantDomain, inboundTransferRecordsFolder);
+                singletonCache.put(KEY_INBOUND_TRANSFER_RECORDS_NODEREF, inboundTransferRecordsFolder);
                 log.debug("Found inbound transfer records folder: " + inboundTransferRecordsFolder);
             }
             else
@@ -1013,7 +1007,12 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     {
         this.tenantService = tenantService;
     }
-
+    
+    public void setSingletonCache(SimpleCache<String, NodeRef> singletonCache)
+    {
+        this.singletonCache = singletonCache;
+    }
+    
     /**
      * @param transferLockFolderPath
      *            the transferLockFolderPath to set

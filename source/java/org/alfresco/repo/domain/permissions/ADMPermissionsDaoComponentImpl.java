@@ -47,10 +47,10 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
             properties.setAclType(ACLType.DEFINING);
             properties.setInherits(inherit);
             properties.setVersioned(false);
-            
+
             Acl acl = aclDaoComponent.createAccessControlList(properties);
             long id = acl.getId();
-            
+
             List<AclChange> changes = new ArrayList<AclChange>();
             changes.add(new AclDAOImpl.AclChangeImpl(null, id, null, acl.getAclType()));
             changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, id, null));
@@ -75,16 +75,16 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
             properties.setAclType(ACLType.DEFINING);
             properties.setInherits(existing.getInherits());
             properties.setVersioned(false);
-            
+
             acl = aclDaoComponent.createAccessControlList(properties);
             id = acl.getId();
-            
+
             changes = new ArrayList<AclChange>();
             changes.add(new AclDAOImpl.AclChangeImpl(existing.getId(), id, existing.getAclType(), acl.getAclType()));
             changes.addAll(aclDaoComponent.mergeInheritedAccessControlList(existing.getId(), id));
             // set this to inherit to children
             changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, id, aclDaoComponent.getInheritedAccessControlList(existing.getId())));
-            
+
             getACLDAO(nodeRef).setAccessControlList(nodeRef, acl);
             return new CreationReport(acl, changes);
         case LAYERED:
@@ -93,7 +93,7 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
             throw new IllegalStateException("Unknown type " + existing.getAclType());
         }
     }
-    
+
     public void deletePermissions(NodeRef nodeRef)
     {
         Acl acl = null;
@@ -112,32 +112,27 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
             case OLD:
                 throw new IllegalStateException("Can not mix old and new style permissions");
             case DEFINING:
-                if (acl.getInheritsFrom() != null)
+                if (acl.getInherits())
                 {
-                    Long inheritsFrom = acl.getInheritsFrom();
-                    getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getAcl(inheritsFrom));
-                    List<AclChange> changes = new ArrayList<AclChange>();
-                    changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, inheritsFrom, aclDaoComponent.getInheritedAccessControlList(acl.getId())));
-                    getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
-                    aclDaoComponent.deleteAccessControlList(acl.getId());
-                }
+                    // Check the primary parent to set inheritance
+                    Long inheritsFrom = getACLDAO(nodeRef).getInheritedAcl(nodeRef);
+                    if(inheritsFrom != null)
+                    {
+                        inheritsFrom = aclDaoComponent.getInheritedAccessControlList(inheritsFrom);
+                        getACLDAO(nodeRef).setAccessControlList(nodeRef, aclDaoComponent.getAcl(inheritsFrom));
+                        List<AclChange> changes = new ArrayList<AclChange>();
+                        changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, inheritsFrom, aclDaoComponent.getInheritedAccessControlList(acl.getId())));
+                        getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
+                        aclDaoComponent.deleteAccessControlList(acl.getId());
+                    }
+                    else
+                    {
+                        replaceWithCleanDefiningAcl(nodeRef, acl);
+                    }
+                } 
                 else
                 {
-                    // TODO: could just clear out existing
-                    SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
-                    properties = new SimpleAccessControlListProperties();
-                    properties.setAclType(ACLType.DEFINING);
-                    properties.setInherits(Boolean.FALSE);
-                    properties.setVersioned(false);
-                    
-                    Acl newAcl = aclDaoComponent.createAccessControlList(properties);
-                    long id = newAcl.getId();
-                    
-                    getACLDAO(nodeRef).setAccessControlList(nodeRef, newAcl);
-                    List<AclChange> changes = new ArrayList<AclChange>();
-                    changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, id, acl.getInheritedAcl()));
-                    getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
-                    aclDaoComponent.deleteAccessControlList(acl.getId());
+                    replaceWithCleanDefiningAcl(nodeRef, acl);
                 }
                 break;
             case FIXED:
@@ -153,5 +148,29 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
                 throw new IllegalStateException("Unknown type " + acl.getAclType());
             }
         }
+    }
+
+
+    /**
+     * @param nodeRef
+     * @param acl
+     */
+    private void replaceWithCleanDefiningAcl(NodeRef nodeRef, Acl acl)
+    {
+        // TODO: could just clear out existing
+        SimpleAccessControlListProperties properties = new SimpleAccessControlListProperties();
+        properties = new SimpleAccessControlListProperties();
+        properties.setAclType(ACLType.DEFINING);
+        properties.setInherits(Boolean.FALSE);
+        properties.setVersioned(false);
+
+        Acl newAcl = aclDaoComponent.createAccessControlList(properties);
+        long id = newAcl.getId();
+
+        getACLDAO(nodeRef).setAccessControlList(nodeRef, newAcl);
+        List<AclChange> changes = new ArrayList<AclChange>();
+        changes.addAll(getACLDAO(nodeRef).setInheritanceForChildren(nodeRef, id, acl.getInheritedAcl()));
+        getACLDAO(nodeRef).updateChangedAcls(nodeRef, changes);
+        aclDaoComponent.deleteAccessControlList(acl.getId());
     }
 }

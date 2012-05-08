@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -133,6 +133,9 @@ public abstract class AbstractTenantAdminDAOImpl implements TenantAdminDAO
         TenantUpdateEntity updateEntity = new TenantUpdateEntity(entity.getTenantDomain());
         updateEntity.setVersion(entity.getVersion());
         updateEntity.setEnabled(entity.getEnabled());
+        updateEntity.setContentRoot(entity.getContentRoot());
+        updateEntity.setDbUrl(entity.getDbUrl());
+        updateEntity.setTenantName(entity.getTenantName());
         
         return updateEntity;
     }

@@ -40,9 +40,47 @@
             <value>application/pdf</value>
          </list>
       </property>
-      <!-- Note: there are maxSourceSizeKBytes limits on transformer.OpenOffice for txt->pdf and xlsx->pdf
-           which may cause this transformer not to be selected because it is too slow. -->
+      <property name="mimetypeLimits">
+         <ref bean="transformer.complex.OpenOffice.Pdf2swf.mimetypeLimits"/>
+      </property>
    </bean>
+ 
+   <!-- Note: there are maxSourceSizeKBytes limits on transformer.OpenOffice transforming to pdf
+        which may cause this transformer not to be selected because it is too slow. -->
+   <!-- The following further restricts this as some types convert to PDF quickly but are large
+        so convert to swf slowly.  -->
+   <bean id="transformer.complex.OpenOffice.Pdf2swf.mimetypeLimits" class="org.alfresco.service.cmr.repository.TransformationOptionLimitsMap">
+      <constructor-arg>
+         <value>
+            doc  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.doc.swf.maxSourceSizeKBytes}  ;
+            docx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.docx.swf.maxSourceSizeKBytes} ;
+            docm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.docm.swf.maxSourceSizeKBytes} ;
+            dotx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.dotx.swf.maxSourceSizeKBytes} ;
+            dotm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.dotm.swf.maxSourceSizeKBytes} ;
+            ppt  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.ppt.swf.maxSourceSizeKBytes}  ;
+            pptx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.pptx.swf.maxSourceSizeKBytes} ;
+            pptm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.pptm.swf.maxSourceSizeKBytes} ;
+            ppsx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.ppsx.swf.maxSourceSizeKBytes} ;
+            ppsm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.ppsm.swf.maxSourceSizeKBytes} ;
+            potx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.potx.swf.maxSourceSizeKBytes} ;
+            potm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.potm.swf.maxSourceSizeKBytes} ;
+            ppam swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.ppam.swf.maxSourceSizeKBytes} ;
+            sldx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.sldx.swf.maxSourceSizeKBytes} ;
+            sldm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.sldm.swf.maxSourceSizeKBytes} ;
+            xls  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xls.swf.maxSourceSizeKBytes}  ;
+            xlsx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xlsx.swf.maxSourceSizeKBytes} ;
+            xltx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xltx.swf.maxSourceSizeKBytes} ;
+            xlsm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xlsm.swf.maxSourceSizeKBytes} ;
+            xltm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xltm.swf.maxSourceSizeKBytes} ;
+            xlam swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xlam.swf.maxSourceSizeKBytes} ;
+            xlsb swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xlsb.swf.maxSourceSizeKBytes}
+         </value>
+      </constructor-arg>
+      <constructor-arg>
+         <ref bean="mimetypeService" />
+      </constructor-arg>
+   </bean>
+ 
    
    <bean id="transformer.complex.iWorks.Pdf2swf"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
@@ -74,7 +112,7 @@
             <value>application/pdf</value>
          </list>
       </property>
-      <!-- Note: there are maxSourceSizeKBytes limit on transformer.PdfBox.TextToPdf for txt->pdf
+      <!-- Note: there are maxSourceSizeKBytes limits on transformer.PdfBox.TextToPdf for txt->pdf
            which may cause this transformer not to be selected because it is too slow and another
            maxSourceSizeKBytes limit on transformer.Pdf2swf, but what is the point of doing the
            first one only to give up on the second when we can guess the pdf size is just a bit 

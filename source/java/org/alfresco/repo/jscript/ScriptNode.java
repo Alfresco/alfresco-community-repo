@@ -2138,7 +2138,19 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         QName aspectQName = createQName(type);
         if (aspectQName.equals(ContentModel.ASPECT_VERSIONABLE))
         {
-            ensureVersioningEnabled(true, true);
+            // ALF-13719 need to taking into account script properties for versionable aspect
+            if (aspectProps != null)
+            {
+                Serializable autoVersionObj, autoVersionPropsObj;
+                autoVersionObj = aspectProps.get(ContentModel.PROP_AUTO_VERSION);
+                autoVersionPropsObj = aspectProps.get(ContentModel.PROP_AUTO_VERSION_PROPS);
+                ensureVersioningEnabled(autoVersionObj instanceof Boolean ? ((Boolean) autoVersionObj) : true,
+                        autoVersionPropsObj instanceof Boolean ? ((Boolean) autoVersionPropsObj) : true);
+            }
+            else
+            {
+                ensureVersioningEnabled(true, true);
+            }
         }
         else
         {
@@ -2859,7 +2871,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      * 
      * @return  String[]    array of thumbnail names that are valid for the current content type
      */
-    public String[] getThumbnailDefintions()
+    public String[] getThumbnailDefinitions()
     {
         ContentService contentService = this.services.getContentService();
         ThumbnailService thumbnailService = this.services.getThumbnailService();
@@ -2878,6 +2890,15 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         }
         
         return (String[])result.toArray(new String[result.size()]);
+    }
+    /**
+     * This version of the method name spelling is retained (for now) for backwards compatibility
+     * @see #getThumbnailDefinitions() 
+     */
+    @Deprecated
+    public String[] getThumbnailDefintions()
+    {
+        return getThumbnailDefinitions();
     }
     
     

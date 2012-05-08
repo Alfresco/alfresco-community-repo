@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -321,15 +322,22 @@ public class HomeFolderProviderSynchronizerTest
                 properties.put(ContentModel.PROP_FIRSTNAME, firstName);
                 properties.put(ContentModel.PROP_LASTNAME, lastName);
                 properties.put(ContentModel.PROP_EMAIL, emailAddress);
-                properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, testHomeFolderProviderName);
-                properties.put(PROP_PARENT_PATH, parentPath);
+                if (parentPath != null)
+                {
+                    properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, testHomeFolderProviderName);
+                    properties.put(PROP_PARENT_PATH, parentPath);
+                }
+                else
+                {
+                    properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, homeFolderProviderName);
+                }
                 personService.setHomeFolderCreationEager(createHomeDirectory);
                 NodeRef person = personService.createPerson(properties);
                 assertNotNull("The person nodeRef for "+domainUsername+" should have been created", person);
                 NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(
                         NodeRef.class, nodeService.getProperty(person,
                         ContentModel.PROP_HOMEFOLDER));
-                if (createHomeDirectory)
+                if (createHomeDirectory && parentPath != null)
                 {
                     assertNotNull("The homeFolder for "+domainUsername+" should have been created", homeFolder);
                 }
@@ -411,6 +419,11 @@ public class HomeFolderProviderSynchronizerTest
         if (root == null || homeFolder == null)
         {
             return null;
+        }
+        
+        if (root.equals(homeFolder))
+        {
+            return ".";
         }
         
         Path rootPath = nodeService.getPath(root);
@@ -519,8 +532,10 @@ public class HomeFolderProviderSynchronizerTest
                     NodeRef person = personService.getPerson(domainUsername, false);
                     NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class,
                             nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
-                    assertNotNull("User: "+domainUsername+" home folder should exist", homeFolder);
-
+                    if (expectedPath != null)
+                    {
+                        assertNotNull("User: "+domainUsername+" home folder should exist", homeFolder);
+                    }
                     NodeRef rootPath = homeFolderManager.getRootPathNodeRef(largeHomeFolderProvider);
                     String actualPath = toPath(rootPath, homeFolder);
                     assertEquals("User: "+domainUsername+" home folder location", expectedPath, actualPath);
@@ -798,6 +813,8 @@ public class HomeFolderProviderSynchronizerTest
     @Test
     public void testPathNotUnderRoot() throws Exception
     {
+        System.out.println("-------------- testPathNotUnderRoot --------------");
+        
         createUser("a/b/c", "fred");
 
         createFolder("root");
@@ -809,6 +826,46 @@ public class HomeFolderProviderSynchronizerTest
         moveUserHomeFolders();
 
         assertHomeFolderLocation("fred", "fr/fred");
+    }
+    
+    @Test
+    public void testPathIsRoot() throws Exception
+    {
+        System.out.println("-------------- testPathIsRoot --------------");
+        
+        createUser("", "fred");
+
+        createFolder("root");
+        String rootPath = origRootPath + "/cm:fred";
+        largeHomeFolderProvider.setRootPath(rootPath);
+
+        assertHomeFolderLocation("fred", ".");
+
+        moveUserHomeFolders();
+
+        assertHomeFolderLocation("fred", ".");
+    }
+    
+    @Test
+    public void testPathIsAboveRoot() throws Exception
+    {
+        System.out.println("-------------- testPathIsAboveRoot --------------");
+        
+        createUser("", "fred");
+
+        createFolder("fred/under1/under2");
+        String rootPath = origRootPath + "/cm:fred/cm:under1/cm:under2";
+        String origRootPath = largeHomeFolderProvider.getRootPath();
+        largeHomeFolderProvider.setRootPath(rootPath);
+
+        assertHomeFolderLocation("fred", null);
+
+        moveUserHomeFolders();
+
+        assertHomeFolderLocation("fred", null);
+
+        largeHomeFolderProvider.setRootPath(origRootPath);
+        assertHomeFolderLocation("fred", "fred");
     }
     
     @Test
@@ -910,7 +967,6 @@ public class HomeFolderProviderSynchronizerTest
         v1Provider.setPath(largeHomeFolderProvider.getRootPath());
         v1Provider.setServiceRegistry(serviceRegistry);
         v1Provider.setStoreUrl(largeHomeFolderProvider.getStoreUrl());
-        v1Provider.setTenantService(tenantService);
         v1Provider.afterPropertiesSet();
 
         createUser("a/b/c", "fred");

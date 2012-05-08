@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,8 +32,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /*
  * MT Service implementation
@@ -55,7 +55,7 @@ public class MultiTServiceImpl implements TenantService
     public NodeRef getName(NodeRef nodeRef)
     {
         if (nodeRef == null) { return null; }
-
+        
         return new NodeRef(nodeRef.getStoreRef().getProtocol(), getName(nodeRef.getStoreRef().getIdentifier()), nodeRef.getId());
     }
     
@@ -65,16 +65,16 @@ public class MultiTServiceImpl implements TenantService
     public NodeRef getName(NodeRef inNodeRef, NodeRef nodeRef)
     {
         if (inNodeRef == null || nodeRef == null) { return null; }
-
+        
         int idx = inNodeRef.getStoreRef().getIdentifier().lastIndexOf(SEPARATOR);
         if (idx != -1)
         {   
             String tenantDomain = inNodeRef.getStoreRef().getIdentifier().substring(1, idx);
             return new NodeRef(nodeRef.getStoreRef().getProtocol(), getName(nodeRef.getStoreRef().getIdentifier(), tenantDomain), nodeRef.getId());            
         }
-
-        return nodeRef;       
-    }    
+        
+        return nodeRef;
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.tenant.TenantService#getName(org.alfresco.service.cmr.repository.StoreRef)
@@ -131,16 +131,19 @@ public class MultiTServiceImpl implements TenantService
                 return new StoreRef(storeRef.getProtocol(), getName(storeRef.getIdentifier(), tenantDomain));
             }
         }
-
+        
         return storeRef;
     }
-  
+    
     protected String getName(String name, String tenantDomain)
     {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
-                
+        
+        if (name == null)
+        {
+            return null;
+        }
+        
         checkTenantEnabled(tenantDomain);
         
         int idx1 = name.indexOf(SEPARATOR);
@@ -157,9 +160,9 @@ public class MultiTServiceImpl implements TenantService
             {
                 throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
             }
-        }               
-
-        return name;          
+        }
+        
+        return name;
     }
     
     /* (non-Javadoc)
@@ -167,9 +170,6 @@ public class MultiTServiceImpl implements TenantService
      */
     public QName getName(QName name)
     {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("Name", name);
-
         String tenantDomain = getCurrentUserDomain();
         
         if (! tenantDomain.equals(DEFAULT_DOMAIN))
@@ -186,10 +186,8 @@ public class MultiTServiceImpl implements TenantService
      */
     public QName getName(NodeRef inNodeRef, QName name)
     {
-        // Check that all the passed values are not null
         ParameterCheck.mandatory("InNodeRef", inNodeRef);
-        ParameterCheck.mandatory("Name", name);
-
+        
         int idx = inNodeRef.getStoreRef().getIdentifier().lastIndexOf(SEPARATOR);
         if (idx != -1)
         {
@@ -197,13 +195,17 @@ public class MultiTServiceImpl implements TenantService
             checkTenantEnabled(tenantDomain);
             return getName(name, tenantDomain);
         }
-
-        return name;       
         
+        return name;
     }
-
+    
     private QName getName(QName name, String tenantDomain)
-    {            
+    {
+        if (name == null)
+        {
+            return null;
+        }
+        
         String namespace = name.getNamespaceURI();
         int idx1 = namespace.indexOf(SEPARATOR);
         if (idx1 == -1)
@@ -221,8 +223,8 @@ public class MultiTServiceImpl implements TenantService
                 throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
             }
         }
-
-        return name;  
+        
+        return name;
     }
 
     /* (non-Javadoc)
@@ -230,8 +232,10 @@ public class MultiTServiceImpl implements TenantService
      */
     public String getName(String name)
     {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("name", name);
+        if (name == null)
+        {
+            return null;
+        }
         
         String tenantDomain = getCurrentUserDomain();
         
@@ -251,12 +255,12 @@ public class MultiTServiceImpl implements TenantService
                 {
                     throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
                 }
-            }               
+            }
         }
-
-        return name;          
+        
+        return name;
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.tenant.TenantService#getBaseName(org.alfresco.service.namespace.QName, boolean)
      */
@@ -343,12 +347,14 @@ public class MultiTServiceImpl implements TenantService
      * @see org.alfresco.repo.tenant.TenantService#getBaseName(java.lang.String, boolean)
      */
     public String getBaseName(String name, boolean forceForNonTenant)
-    {   
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("name", name);
-
+    {
+        if (name == null)
+        {
+            return null;
+        }
+        
         String tenantDomain = getCurrentUserDomain();
-               
+        
         int idx1 = name.indexOf(SEPARATOR);
         if (idx1 == 0)
         {
@@ -365,8 +371,8 @@ public class MultiTServiceImpl implements TenantService
                 // remove tenant domain
                 name = name.substring(idx2+1);
             }
-        } 
-
+        }
+        
         return name;
     }
     
@@ -391,14 +397,13 @@ public class MultiTServiceImpl implements TenantService
      * @see org.alfresco.repo.tenant.TenantService#checkDomainUser(java.lang.String)
      */
     public void checkDomainUser(String username)
-    {   
-        // Check that all the passed values are not null        
+    {
         ParameterCheck.mandatory("Username", username);
         
         String tenantDomain = getCurrentUserDomain();
-          
-         if (! tenantDomain.equals(DEFAULT_DOMAIN))
-         {
+        
+        if (! tenantDomain.equals(DEFAULT_DOMAIN))
+        {
             int idx2 = username.lastIndexOf(SEPARATOR);
             if ((idx2 > 0) && (idx2 < (username.length()-1)))
             {
@@ -406,12 +411,12 @@ public class MultiTServiceImpl implements TenantService
                 
                 if ((tenantUserDomain == null) || (! tenantDomain.equals(tenantUserDomain)))
                 {
-                    throw new TenantDomainMismatchException(tenantDomain, tenantUserDomain); 
+                    throw new TenantDomainMismatchException(tenantDomain, tenantUserDomain);
                 }
             }
             else
             {
-                throw new TenantDomainMismatchException(tenantDomain, null); 
+                throw new TenantDomainMismatchException(tenantDomain, null);
             }
         }
     }
@@ -420,10 +425,12 @@ public class MultiTServiceImpl implements TenantService
      * @see org.alfresco.repo.tenant.TenantService#checkDomain(java.lang.String)
      */
     public void checkDomain(String name)
-    {       
-        // Check that all the passed values are not null        
-        ParameterCheck.mandatory("Name", name);
-          
+    {
+        if (name == null)
+        {
+            return;
+        }
+        
         String nameDomain = null;
         
         int idx1 = name.indexOf(SEPARATOR);
@@ -432,7 +439,7 @@ public class MultiTServiceImpl implements TenantService
             int idx2 = name.indexOf(SEPARATOR, 1);
             nameDomain = name.substring(1, idx2);
         }
-                
+        
         String tenantDomain = getCurrentUserDomain();
         
         if (((nameDomain == null) && (! tenantDomain.equals(DEFAULT_DOMAIN))) || 
@@ -447,19 +454,18 @@ public class MultiTServiceImpl implements TenantService
      */
     public NodeRef getRootNode(NodeService nodeService, SearchService searchService, NamespaceService namespaceService, String rootPath, NodeRef rootNodeRef)
     {
-        // Check that all the passed values are not null
         ParameterCheck.mandatory("NodeService", nodeService);
         ParameterCheck.mandatory("SearchService", searchService);  
         ParameterCheck.mandatory("NamespaceService", namespaceService);
         ParameterCheck.mandatory("RootPath", rootPath);  
         ParameterCheck.mandatory("RootNodeRef", rootNodeRef); 
-
+        
         String username = AuthenticationUtil.getFullyAuthenticatedUser();
         StoreRef storeRef = getName(username, rootNodeRef.getStoreRef());
         
         AuthenticationUtil.RunAsWork<NodeRef> action = new GetRootNode(nodeService, searchService, namespaceService, rootPath, rootNodeRef, storeRef);
         return getBaseName(AuthenticationUtil.runAs(action, AuthenticationUtil.getSystemUserName()));
-    }         
+    }
     
     private class GetRootNode implements AuthenticationUtil.RunAsWork<NodeRef>
     {
@@ -546,15 +552,28 @@ public class MultiTServiceImpl implements TenantService
      */
     public boolean isTenantName(String name)
     {
-        return (! TenantService.DEFAULT_DOMAIN.equals(getDomain(name, false)));
+        ParameterCheck.mandatory("name", name);
+        
+        int idx1 = name.indexOf(SEPARATOR);
+        if (idx1 == 0)
+        {
+            int idx2 = name.indexOf(SEPARATOR, 1);
+            if (idx2 != -1)
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.tenant.TenantService#getUserDomain(java.lang.String)
      */
+    // TODO review usages (re: cloud external user => more than one domain)
     public String getUserDomain(String username)
     {
-    	// can be null (e.g. for System user / during app ctx init)
+        // can be null (e.g. for System user / during app ctx init)
         if (username != null) 
         {
             int idx = username.lastIndexOf(SEPARATOR);
@@ -575,8 +594,12 @@ public class MultiTServiceImpl implements TenantService
      */
     public String getCurrentUserDomain()
     {
-    	String user = AuthenticationUtil.getRunAsUser();
-        return getUserDomain(user);
+        String tenantDomain = TenantUtil.getCurrentDomain();
+        if (! tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+        {
+            checkTenantEnabled(tenantDomain);
+        }
+        return tenantDomain;
     }
     
     /* (non-Javadoc)
@@ -597,6 +620,7 @@ public class MultiTServiceImpl implements TenantService
         if (idx1 == 0)
         {
             int idx2 = name.indexOf(SEPARATOR, 1);
+            
             nameDomain = getTenantDomain(name.substring(1, idx2));
             
             if (checkCurrentDomain)
@@ -608,7 +632,7 @@ public class MultiTServiceImpl implements TenantService
                     throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
                 }
             }
-        } 
+        }
         
         return nameDomain;
     }
@@ -635,12 +659,11 @@ public class MultiTServiceImpl implements TenantService
      */
     public String getDomainUser(String baseUsername, String tenantDomain)
     {
-        // Check that all the passed values are not null
         ParameterCheck.mandatory("baseUsername", baseUsername);
         
         if ((tenantDomain == null) || (tenantDomain.equals(DEFAULT_DOMAIN)))
         {
-        	return baseUsername;
+            return baseUsername;
         }
         else
         {
@@ -653,7 +676,7 @@ public class MultiTServiceImpl implements TenantService
             {
                 throw new AlfrescoRuntimeException("Invalid tenant domain: " + tenantDomain);
             }
-        
+            
             tenantDomain = getTenantDomain(tenantDomain);
             return baseUsername + SEPARATOR + tenantDomain;
         }

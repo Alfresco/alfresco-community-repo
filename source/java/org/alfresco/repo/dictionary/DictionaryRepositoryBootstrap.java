@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -242,7 +242,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                 
                 if (! nodeService.exists(storeRef))
                 {
-                    logger.warn("StoreRef '"+ storeRef+"' does not exist");
+                    logger.info("StoreRef '"+ storeRef+"' does not exist");
                     continue; // skip this location
                 }
                 
@@ -347,7 +347,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                 
                 if (! nodeService.exists(storeRef))
                 {
-                    logger.warn("StoreRef '"+ storeRef+"' does not exist");
+                    logger.info("StoreRef '"+ storeRef+"' does not exist");
                     continue; // skip this location
                 }
                 
@@ -391,7 +391,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             
             if (! nodeService.exists(storeRef))
             {
-                logger.warn("StoreRef '"+ storeRef+"' does not exist");
+                logger.info("StoreRef '"+ storeRef+"' does not exist");
                 continue; // skip this location
             }
             

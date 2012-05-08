@@ -28,7 +28,6 @@ import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -122,7 +121,7 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
             lockToken.set(token);
             
             // Do the work
-            return doCleanWithTxn();
+            return doCleanAsSystem();
         }
         catch (LockAcquisitionException e)
         {
@@ -163,20 +162,21 @@ public abstract class AbstractNodeCleanupWorker implements NodeCleanupWorker
         }
     }
     
-    private List<String> doCleanWithTxn()
+    private List<String> doCleanAsSystem()
     {
-        final RetryingTransactionCallback<List<String>> doCleanCallback = new RetryingTransactionCallback<List<String>>()
-        {
-            public List<String> execute() throws Throwable
-            {
-                return doCleanInternal();
-            }
-        };
         final RunAsWork<List<String>> doCleanRunAs = new RunAsWork<List<String>>()
         {
             public List<String> doWork() throws Exception
             {
-                return transactionService.getRetryingTransactionHelper().doInTransaction(doCleanCallback, false, true);
+                try
+                {
+                    return doCleanInternal();
+                }
+                catch (Throwable e)
+                {
+                    logger.error(e);
+                    return Collections.emptyList();
+                }
             }
         };
         return AuthenticationUtil.runAs(doCleanRunAs, AuthenticationUtil.getSystemUserName());

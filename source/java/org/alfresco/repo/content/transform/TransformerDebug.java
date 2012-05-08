@@ -249,18 +249,16 @@ public class TransformerDebug
         {
             frame.callType = Call.AVAILABLE_AND_TRANSFORM;
         }
-        else
-        {
-            // Create a new frame. Logging level is set to trace if the file size is 0
-            boolean origDebugOutput = ThreadInfo.setDebugOutput(ThreadInfo.getDebugOutput() && sourceSize != 0);
-            frame = new Frame(frame, fromUrl, sourceMimetype, targetMimetype, options, callType, origDebugOutput);
-            ourStack.push(frame);
+
+        // Create a new frame. Logging level is set to trace if the file size is 0
+        boolean origDebugOutput = ThreadInfo.setDebugOutput(ThreadInfo.getDebugOutput() && sourceSize != 0);
+        frame = new Frame(frame, fromUrl, sourceMimetype, targetMimetype, options, callType, origDebugOutput);
+        ourStack.push(frame);
             
-            if (callType == Call.TRANSFORM)
-            {
-                // Log the basic info about this transformation
-                logBasicDetails(frame, sourceSize, name, (ourStack.size() == 1));
-            }
+        if (callType == Call.TRANSFORM)
+        {
+            // Log the basic info about this transformation
+            logBasicDetails(frame, sourceSize, name, (ourStack.size() == 1));
         }
     }
     
@@ -320,9 +318,12 @@ public class TransformerDebug
             for (ContentTransformer trans : transformers)
             {
                 String name = getName(trans);
-                int pad = longestNameLength - name.length();
-                log((c == 'a' ? "**" : "  ") + (c++) + ") " +
-                    name + spaces(pad+1) + ms(trans.getTransformationTime()));
+                int padName = longestNameLength - name.length() + 1;
+                long maxSourceSizeKBytes = trans.getMaxSourceSizeKBytes(frame.sourceMimetype, frame.targetMimetype, frame.options);
+                String size = maxSourceSizeKBytes > 0 ? "< "+fileSize(maxSourceSizeKBytes*1024) : "";
+                int padSize = 10 - size.length();
+                log((c == 'a' ? "**" : "  ") + (c++) + ") " + name + spaces(padName) + 
+                    size + spaces(padSize) + ms(trans.getTransformationTime()));
             }
             if (frame.unavailableTransformers != null)
             {
@@ -342,7 +343,7 @@ public class TransformerDebug
     }
 
     public void activeTransformer(int mimetypePairCount, ContentTransformer transformer, String sourceMimetype,
-            String targetMimetype, long maxSourceSizeKBytes, boolean explicit, boolean firstMimetypePair)
+            String targetMimetype, long maxSourceSizeKBytes, Boolean explicit, boolean firstMimetypePair)
     {
         if (firstMimetypePair)
         {
@@ -351,7 +352,8 @@ public class TransformerDebug
         String i = Integer.toString(mimetypePairCount);
         log(spaces(5-i.length())+mimetypePairCount+") "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype)+
                 ' '+fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
-                (explicit ? " EXPLICIT" : ""));
+                (maxSourceSizeKBytes == 0 || (explicit != null && !explicit) ? " disabled" : "")+ 
+                (explicit == null ? "" : explicit ? " EXPLICIT" : " not explicit"));
     }
     
     private int getLongestTransformerNameLength(List<ContentTransformer> transformers,

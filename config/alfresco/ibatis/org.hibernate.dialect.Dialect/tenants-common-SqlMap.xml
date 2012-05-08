@@ -11,12 +11,12 @@
     <!--                -->
     
     <resultMap id="result_Tenant" type="Tenant">
-        <result property="tenantDomain" column="tenant_domain" jdbcType="VARCHAR" javaType="string"/>
-        <result property="version" column="version" jdbcType="BIGINT" javaType="long"/>
-        <result property="enabled" column="enabled" jdbcType="BIT" javaType="boolean"/>
-        <result property="tenantName" column="tenant_name" jdbcType="VARCHAR" javaType="string"/>
-        <result property="contentRoot" column="content_root" jdbcType="VARCHAR" javaType="string"/>
-        <result property="dbUrl" column="db_url" jdbcType="VARCHAR" javaType="string"/>
+        <result property="tenantDomain" column="tenant_domain" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="enabled" column="enabled" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <result property="tenantName" column="tenant_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="contentRoot" column="content_root" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="dbUrl" column="db_url" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
     <!--                -->

@@ -19,7 +19,7 @@
         <property name="cmisMapping"                  ref="OpenCMISMapping" />
         <property name="dictionaryService"            ref="dictionaryService" />
         <property name="dictionaryDAO"                ref="dictionaryDAO" />
-        <property name="tenantService"                ref="tenantService" />
+        <property name="singletonCache"               ref="immutableSingletonCache"/>
         <property name="propertyLuceneBuilderMapping" ref="OpenCMISPropertyLuceneBuilderMapping" />
         <property name="propertyAccessorMapping"      ref="OpenCMISPropertyAccessorMapping" />
     </bean>
@@ -96,6 +96,7 @@
         <property name="contentService"         ref="ContentService" />
         <property name="renditionService"       ref="RenditionService" />
         <property name="tenantAdminService"     ref="tenantAdminService" />
+        <property name="singletonCache"         ref="immutableSingletonCache" />
         <property name="transactionService"     ref="transactionService"/>
         <property name="authenticationService"  ref="authenticationService" />
         <property name="permissionService"      ref="PermissionService" />
@@ -105,6 +106,7 @@
         <property name="namespaceService"       ref="namespaceService" />
         <property name="searchService"          ref="SearchService" />
         <property name="dictionaryService"      ref="DictionaryService" />
+        <property name="behaviourFilter"        ref="policyBehaviourFilter" />
     </bean>
     
     <bean id="OpenCMISQueryService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">

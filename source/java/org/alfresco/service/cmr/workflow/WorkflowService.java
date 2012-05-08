@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -385,7 +385,7 @@ public interface WorkflowService
      * @return image view of the workflow instance as an InputStream or null if a diagram is not available
      * @since 4.0
      */
-    @Auditable(parameters = {"workflowInstanceId"})
+    @Auditable(parameters = {"workflowInstanceId"}, recordReturnedObject=false)
     public InputStream getWorkflowImage(String workflowInstanceId);
     
     //

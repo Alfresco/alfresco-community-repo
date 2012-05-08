@@ -84,7 +84,9 @@ class ScenarioOpenFileInstance implements ScenarioInstance
     enum InternalState
     {
         NONE,
-        OPEN
+        OPENING,
+        OPEN,
+        ERROR
     } ;
     
     InternalState state = InternalState.NONE;
@@ -158,11 +160,15 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     
                     if(name != null)
                     {
+                        state = InternalState.OPENING;
+                        logger.debug("Create File name:" + name);
                         ArrayList<Command> commands = new ArrayList<Command>();
                         ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                        ArrayList<Command> postErrorCommands = new ArrayList<Command>();
                         commands.add(new CreateFileCommand(c.getName(), c.getRootNodeRef(), c.getPath(), c.getAllocationSize()));
                         postCommitCommands.add(newOpenFileCallbackCommand());
-                        return new CompoundCommand(commands, postCommitCommands);
+                        postErrorCommands.add(newOpenFileErrorCallbackCommand());
+                        return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
                     }
                 }
                 else if(operation instanceof OpenFileOperation)
@@ -171,17 +177,67 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                     name = o.getName();
                     if(name != null)
                     {
+                        state = InternalState.OPENING;
+                        logger.debug("Open File name:" + name);
                         ArrayList<Command> commands = new ArrayList<Command>();
                         commands.add(new OpenFileCommand(o.getName(), o.getMode(), o.isTruncate(), o.getRootNodeRef(), o.getPath()));
                         ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                        ArrayList<Command> postErrorCommands = new ArrayList<Command>();
                         postCommitCommands.add(newOpenFileCallbackCommand());
-                        return new CompoundCommand(commands, postCommitCommands);
+                        postErrorCommands.add(newOpenFileErrorCallbackCommand());
+                        return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
                     }
                 }
                 
                 // Scenario Not Started
+                logger.debug("Scenario not started - no name");
                 isComplete = true;
                 return null;
+                
+            case OPENING:
+                
+                if(operation instanceof OpenFileOperation)
+                {
+                    OpenFileOperation o = (OpenFileOperation)operation;
+                    
+                    if(o.getName() == null)
+                    {
+                        return null;
+                    }
+                    
+                    if(name.equalsIgnoreCase(o.getName()))
+                    {
+                        /**
+                         * TODO What to do here - one thread is in the middle of 
+                         * opening a file while another tries to open the same file 
+                         * sleep for a bit? then check state again?  What happens if file 
+                         * closes while sleeping.   For now log an error.
+                         */
+                        logger.error("Second open while in opening state. :" + name);
+//                        isComplete = true;
+//                        return null;  
+                    }
+                }
+                
+                /**
+                 * Anti-pattern : timeout - is this needed ?
+                 */
+                Date now = new Date();
+                if(now.getTime() > startTime.getTime() + getTimeout())
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("Instance in OPENING STATE timed out name" + name);
+                    }
+                    isComplete = true; 
+                }
+                return null;
+                
+            case ERROR:
+                
+                logger.debug("Open has failed :" + name);
+                isComplete = true;
+                return null; 
                 
             case OPEN:
                 
@@ -453,6 +509,30 @@ class ScenarioOpenFileInstance implements ScenarioInstance
             }   
         };
     }
+    
+    /**
+     * Called for open file error.
+     */
+    private ResultCallback newOpenFileErrorCallbackCommand()
+    {
+        return new ResultCallback()
+        {
+            @Override
+            public void execute(Object result)
+            {
+                logger.debug("error handler - set state to error for name:" + name);
+                isComplete = true;
+                state = InternalState.ERROR;
+            }
+
+            @Override
+            public TxnReadState getTransactionRequired()
+            {
+                return TxnReadState.TXN_NONE;
+            }   
+        };
+    }
+
     
     private boolean isReadOnly(NetworkFile file)
     {

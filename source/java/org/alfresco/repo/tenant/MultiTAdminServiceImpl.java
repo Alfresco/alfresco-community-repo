@@ -32,7 +32,6 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.RepoModelDefinition;
-import org.alfresco.repo.content.TenantRoutingFileContentStore;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.domain.tenant.TenantAdminDAO;
 import org.alfresco.repo.domain.tenant.TenantEntity;
@@ -350,7 +349,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         AuthenticationUtil.setMtEnabled(true); // in case this is the 1st tenant
         
         long start = System.currentTimeMillis();
-        
+
         initTenant(tenantDomain, rootContentStoreDir);
         
         try
@@ -1155,11 +1154,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
         else
         {
-        	File tenantRootDir = new File(rootContentStoreDir);
-        	if ((tenantRootDir.exists()) && (tenantRootDir.list().length != 0))
-        	{
-        		throw new AlfrescoRuntimeException("Tenant root directory is not empty: " + rootContentStoreDir);
-        	}
+            File tenantRootDir = new File(rootContentStoreDir);
+            if ((tenantRootDir.exists()) && (tenantRootDir.list().length != 0))
+            {
+                logger.warn("Tenant root directory is not empty: " + rootContentStoreDir);
+            }
         }
         
         // init - need to enable tenant (including tenant service) before stores bootstrap

@@ -22,10 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -52,7 +51,6 @@ public class PortableHomeFolderManager implements HomeFolderManager
     private FileFolderService fileFolderService;
     private NamespaceService namespaceService;
     private SearchService searchService;
-    private TenantService tenantService;
     
     /**
      * A default provider
@@ -73,9 +71,11 @@ public class PortableHomeFolderManager implements HomeFolderManager
     /**
      * Cache the result of the path look up.
      */
-    private Map<String, Map<String, NodeRef>> rootPathNodeRefMaps =
-        new ConcurrentHashMap<String, Map<String, NodeRef>>();
-
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    
+    private SimpleCache<String, NodeRef> singletonCache; // eg. for rootPathNodeRef
+    private final String KEY_HOME_PATH_NODEREF = "key.homeFolder.rootPathNodeRef";
+    
     /**
      * Set the node service.
      */
@@ -108,12 +108,9 @@ public class PortableHomeFolderManager implements HomeFolderManager
         this.searchService = searchService;
     }
 
-    /**
-     * Set the tenant service
-     */
-    public void setTenantService(TenantService tenantService)
+    public void setSingletonCache(SimpleCache<String, NodeRef> singletonCache)
     {
-        this.tenantService = tenantService;
+        this.singletonCache = singletonCache;
     }
 
     /**
@@ -281,37 +278,23 @@ public class PortableHomeFolderManager implements HomeFolderManager
     
     void clearCaches(HomeFolderProvider2 provider)
     {
-        getRootPathNodeRefMap(provider).clear();
+        String key = KEY_HOME_PATH_NODEREF + "." + provider.getName();
+        singletonCache.remove(key);
     }
     
     NodeRef getRootPathNodeRef(HomeFolderProvider2 provider)
     {
-        String rootPath = provider.getRootPath();
-        String tenantDomain = (tenantService != null ? tenantService.getCurrentUserDomain() : TenantService.DEFAULT_DOMAIN);
-        Map<String, NodeRef> rootPathNodeRefMap = getRootPathNodeRefMap(provider);
-        NodeRef rootPathNodeRef = rootPathNodeRefMap.get(tenantDomain);
+        String key = KEY_HOME_PATH_NODEREF + "." + provider.getName();
+        NodeRef rootPathNodeRef = singletonCache.get(key);
         if (rootPathNodeRef == null)
         {
             // ok with race condition for initial construction
-            rootPathNodeRef = resolvePath(provider, rootPath);
-            rootPathNodeRefMap.put(tenantDomain, rootPathNodeRef);
+            rootPathNodeRef = resolvePath(provider, provider.getRootPath());
+            singletonCache.put(KEY_HOME_PATH_NODEREF, rootPathNodeRef);
         }
         return rootPathNodeRef;
     }
     
-    private Map<String, NodeRef> getRootPathNodeRefMap(HomeFolderProvider2 provider)
-    {
-        String name = provider.getName();
-        Map<String, NodeRef> rootPathNodeRefMap = rootPathNodeRefMaps.get(name);
-        if (rootPathNodeRefMap == null)
-        {
-            // ok with race condition for initial construction
-            rootPathNodeRefMap = new ConcurrentHashMap<String, NodeRef>();
-            rootPathNodeRefMaps.put(name, rootPathNodeRefMap);
-        }
-        return rootPathNodeRefMap;
-    }
-
     /**
      * Utility method to resolve paths to nodes.
      */

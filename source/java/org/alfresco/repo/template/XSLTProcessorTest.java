@@ -100,6 +100,36 @@ public class XSLTProcessorTest extends BaseAlfrescoSpringTest
             fail();
         }
     }
+    
+    public void testIncludeSecurityFilter() throws Exception 
+    {
+    	try
+    	{
+            FileInfo file = createXmlFile(companyHome);
+            FileInfo insecureXSLFile = createXmlFile(companyHome, insecureVerySimpleXSLT);
+            
+            String includeInsecureXSLTemplate = String.format(insecureIncludeVerySimpleXSLT, insecureXSLFile.getName());
+            FileInfo includeInsecureXSLFile = createXmlFile(companyHome, includeInsecureXSLTemplate);
+            
+            XSLTemplateModel model = new XSLTemplateModel();
+            model.put(XSLTProcessor.ROOT_NAMESPACE, XMLUtil.parse(file.getNodeRef(), contentService));
+
+            StringWriter writer = new StringWriter();
+            xsltProcessor.process(includeInsecureXSLFile.getNodeRef().toString(), model, writer);
+            log.error("This insecure include template should not process!");
+            fail();
+    	}
+    	catch (TemplateException e) 
+    	{
+    		//pass!
+    	}
+        catch (Exception ex)
+        {
+
+        	log.error("Error!", ex);
+        	fail();
+        }
+    }
 
     public void testSimplestStringTemplate() throws Exception
     {
@@ -292,6 +322,13 @@ public class XSLTProcessorTest extends BaseAlfrescoSpringTest
 
             "<xsl:template match=\"/\">" + "<xsl:for-each select=\"/nutrition/food\">"
             + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
+    
+    private String insecureIncludeVerySimpleXSLT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<xsl:stylesheet version=\"1.0\"  "
+    	    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" >"
+    	    + "<xsl:template match=\"/\">"		
+    		+ "</xsl:template>"
+    	    + "<xsl:include href=\"%1$s\"/>"
+    	    + "</xsl:stylesheet>";
     
     private String insecureVerySimpleXSLT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<xsl:stylesheet version=\"1.0\"  "
     + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "

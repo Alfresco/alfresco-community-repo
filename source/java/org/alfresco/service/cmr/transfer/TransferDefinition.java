@@ -123,11 +123,11 @@ public class TransferDefinition implements Serializable
     /**
      * Sets which aspects to exclude from transfer
      * 
-     * @param exludedAspects collection of aspects to exclude
+     * @param excludedAspects collection of aspects to exclude
      */
-    public void setExcludedAspects(Collection<QName> exludedAspects)
+    public void setExcludedAspects(Collection<QName> excludedAspects)
     {
-        this.excludedAspects = new HashSet<QName>(exludedAspects);
+        this.excludedAspects = new HashSet<QName>(excludedAspects);
     }
 
     /**

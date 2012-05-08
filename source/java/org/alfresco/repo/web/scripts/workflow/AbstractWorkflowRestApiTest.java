@@ -387,6 +387,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         checkWorkflowTaskDefinition(startTask.getDefinition(), result.getJSONObject("definition"));
         
         // Finish the start-task, and fetch it again
+        personManager.setUser(USER2);
         workflowService.endTask(startTask.getId(), null);
         startTask = workflowService.getTaskById(startTask.getId()); 
 

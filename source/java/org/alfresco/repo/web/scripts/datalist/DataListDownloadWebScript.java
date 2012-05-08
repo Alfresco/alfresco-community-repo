@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.DataListModel;
 import org.alfresco.repo.web.scripts.DeclarativeSpreadsheetWebScript;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -72,8 +73,7 @@ public class DataListDownloadWebScript extends DeclarativeSpreadsheetWebScript
     // Logger
     private static final Log logger = LogFactory.getLog(DataListDownloadWebScript.class);
     
-    private static final QName DATA_LIST_ITEM_TYPE = 
-        QName.createQName(NamespaceService.DATALIST_MODEL_1_0_URI, "dataListItemType");
+    private static final QName DATA_LIST_ITEM_TYPE = DataListModel.TYPE_DATALIST_ITEM; 
     
     private NodeService nodeService;
     private SiteService siteService;

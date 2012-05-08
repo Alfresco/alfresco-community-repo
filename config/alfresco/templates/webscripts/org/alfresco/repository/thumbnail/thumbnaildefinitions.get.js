@@ -13,7 +13,7 @@ function main()
    }
    
    // Get the thumbnail definitions
-   var thumbnailDefinitions = node.getThumbnailDefintions();
+   var thumbnailDefinitions = node.getThumbnailDefinitions();
    
    // Add them to the model
    model.node = node;

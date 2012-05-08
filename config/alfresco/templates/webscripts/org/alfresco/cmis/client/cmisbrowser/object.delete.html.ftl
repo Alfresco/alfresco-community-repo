@@ -31,7 +31,9 @@
           <h3>${object.name?html} deleted!</h3>
         </#if>
       </#if>
+      <#if conn??>
         <p><a href="<@cmisLib.cmisContextUrl conn.id/>/folder?id=${parent.id?url}">Return to folder</a></p>
+      </#if>
      </div>
    </div>
   </body>

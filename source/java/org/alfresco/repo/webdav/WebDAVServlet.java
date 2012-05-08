@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -31,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
@@ -66,27 +68,35 @@ public class WebDAVServlet extends HttpServlet
     
     // Constants
     public static final String WEBDAV_PREFIX = "webdav"; 
-    private static final String INTERNAL_SERVER_ERROR = "Internal Server Error: ";
-
+    //private static final String INTERNAL_SERVER_ERROR = "Internal Server Error: ";
+    
     // Init parameter names
     private static final String BEAN_INIT_PARAMS = "webdav.initParams";
     
     // Service registry, used by methods to find services to process requests
-    private ServiceRegistry m_serviceRegistry;
+    private ServiceRegistry serviceRegistry;
     
-    // Transaction service, each request is wrapped in a transaction
-    private TransactionService m_transactionService;
-
+    private TransactionService transactionService;
+    private static TenantService tenantService;
+    private static NodeService nodeService;
+    private static SearchService searchService;
+    private static NamespaceService namespaceService;
+    
     // WebDAV method handlers
     protected Hashtable<String,Class<? extends WebDAVMethod>> m_davMethods;
     
-    // Root node
-    private static MTNodesCache m_rootNodes;
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    
+    private static SimpleCache<String, NodeRef> singletonCache; // eg. for webdavRootNodeRef
+    private static final String KEY_WEBDAV_ROOT_NODEREF = "key.webdavRoot.noderef";
+    
+    private static String rootPath;
+    
+    private static NodeRef defaultRootNode; // for default domain
     
     // WebDAV helper class
     private WebDAVHelper m_davHelper;
     private ActivityPoster activityPoster;
-    private TenantService tenantService;
 
     /**
      * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
@@ -222,8 +232,7 @@ public class WebDAVServlet extends HttpServlet
             {
                 // Create the handler method    
                 method = methodClass.newInstance();
-                NodeRef rootNodeRef = m_rootNodes.getNodeForCurrentTenant();
-                method.setDetails(request, response, m_davHelper, rootNodeRef);
+                method.setDetails(request, response, m_davHelper, getRootNodeRef());
                 
                 // A very few WebDAV methods produce activity posts.
                 if (method instanceof ActivityPostProducer)
@@ -245,6 +254,19 @@ public class WebDAVServlet extends HttpServlet
         
         return method;
     }
+    
+    private static NodeRef getRootNodeRef()
+    {
+        NodeRef rootNodeRef = singletonCache.get(KEY_WEBDAV_ROOT_NODEREF);
+        
+        if (rootNodeRef == null)
+        {
+            rootNodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, rootPath, defaultRootNode);
+            singletonCache.put(KEY_WEBDAV_ROOT_NODEREF, rootNodeRef);
+        }
+        
+        return rootNodeRef;
+    }
 
     /**
      * Initialize the servlet
@@ -252,6 +274,7 @@ public class WebDAVServlet extends HttpServlet
      * @param config ServletConfig
      * @exception ServletException
      */
+    @SuppressWarnings("unchecked")
     public void init(ServletConfig config) throws ServletException
     {
         super.init(config);
@@ -268,7 +291,7 @@ public class WebDAVServlet extends HttpServlet
         // Get global configuration properties
         WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         WebDAVInitParameters initParams = (WebDAVInitParameters) wc.getBean(BEAN_INIT_PARAMS);
-
+        
         // Render this servlet permanently unavailable if its enablement property is not set
         if (!initParams.getEnabled())
         {
@@ -278,30 +301,33 @@ public class WebDAVServlet extends HttpServlet
         // Get root paths
         
         String storeValue = initParams.getStoreName();
-        String rootPath = initParams.getRootPath();
-
+        
+        rootPath = initParams.getRootPath();
+        
         // Get beans
         
-        m_serviceRegistry = (ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        serviceRegistry = (ServiceRegistry)context.getBean(ServiceRegistry.SERVICE_REGISTRY);
         
-        m_transactionService = m_serviceRegistry.getTransactionService();
+        transactionService = serviceRegistry.getTransactionService();
         tenantService = (TenantService) context.getBean("tenantService");
+        
         AuthenticationService authService = (AuthenticationService) context.getBean("authenticationService");
+
         NodeService nodeService = (NodeService) context.getBean("NodeService");
         SearchService searchService = (SearchService) context.getBean("SearchService");
         NamespaceService namespaceService = (NamespaceService) context.getBean("NamespaceService");
         ActivityService activityService = (ActivityService) context.getBean("activityService");
-        PersonService personService = m_serviceRegistry.getPersonService();
+        PersonService personService = serviceRegistry.getPersonService();
+        singletonCache = (SimpleCache<String, NodeRef>)context.getBean("immutableSingletonCache");
         
         // Collaborator used by WebDAV methods to create activity posts.
         activityPoster = new ActivityPosterImpl(activityService, nodeService, personService);
         
         // Create the WebDAV helper
-        m_davHelper = new WebDAVHelper(m_serviceRegistry, authService, tenantService);
+        m_davHelper = new WebDAVHelper(serviceRegistry, authService, tenantService);
         
         // Initialize the root node
-
-        initializeRootNode(storeValue, rootPath, context, nodeService, searchService, namespaceService, tenantService, m_transactionService);
+        initializeRootNode(storeValue, rootPath, context, nodeService, searchService, namespaceService, tenantService, transactionService);
         
         // Create the WebDAV methods table
         
@@ -352,11 +378,30 @@ public class WebDAVServlet extends HttpServlet
 
             if (tx != null)
                 tx.begin();
-
-            m_rootNodes = new MTNodesCache(new StoreRef(storeValue), rootPath, nodeService, searchService, namespaceService, tenantService);
-
+            
+            StoreRef storeRef = new StoreRef(storeValue);
+            
+            if (nodeService.exists(storeRef) == false)
+            {
+                throw new RuntimeException("No store for path: " + storeRef);
+            }
+            
+            NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+            
+            List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPath, null, namespaceService, false);
+            
+            if (nodeRefs.size() > 1)
+            {
+                throw new RuntimeException("Multiple possible children for : \n" + "   path: " + rootPath + "\n" + "   results: " + nodeRefs);
+            }
+            else if (nodeRefs.size() == 0)
+            {
+                throw new RuntimeException("Node is not found for : \n" + "   root path: " + rootPath);
+            }
+            
+            defaultRootNode = nodeRefs.get(0);
+            
             // Commit the transaction
-
             if (tx != null)
             	tx.commit();
         }
@@ -378,7 +423,7 @@ public class WebDAVServlet extends HttpServlet
      */
     public static NodeRef getWebdavRootNode()
     {
-        return m_rootNodes.getNodeForCurrentTenant();
+        return getRootNodeRef();
     }
     
     /**

@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Get the Share URL to View a Site Node</shortname>
+  <description>Gets the appropriate Share URL to view a given Site Node within Share</description>
+  <url>/api/sites/shareUrl</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

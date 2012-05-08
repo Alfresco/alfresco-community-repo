@@ -129,7 +129,7 @@ public class WikiPagePut extends AbstractWikiWebScript
          {
             // Update the page
             page.setContents(contents);
-            if (tags != null && tags.size() > 0)
+            if (tags != null)
             {
                page.getTags().clear();
                page.getTags().addAll(tags);

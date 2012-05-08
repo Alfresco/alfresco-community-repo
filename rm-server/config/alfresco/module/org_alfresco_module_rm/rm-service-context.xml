@@ -66,6 +66,7 @@
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isFilePlanComponent=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlanComponentKind=ACL_NODE.0.sys:base.ReadProperties, RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlanComponentKindFromType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isFilePlan=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordCategory=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordFolder=RM.Read.0

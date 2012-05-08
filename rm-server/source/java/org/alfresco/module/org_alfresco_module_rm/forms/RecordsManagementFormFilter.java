@@ -18,20 +18,24 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.forms;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.processor.AbstractFilter;
+import org.alfresco.repo.forms.processor.node.FieldUtils;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,13 +48,10 @@ import org.apache.commons.logging.LogFactory;
 public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilter<ItemType, NodeRef>
 {
     /** Logger */
-    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(RecordsManagementFormFilter.class);
 
     public static final String CUSTOM_RM_FIELD_GROUP_ID = "rm-custom";
-
-    protected static final FieldGroup CUSTOM_RM_FIELD_GROUP = new FieldGroup(CUSTOM_RM_FIELD_GROUP_ID, null, false,
-                false, null);
+    public static final String RM_METADATA_PREFIX = "rm-metadata-";
 
     protected NamespaceService namespaceService;
     protected NodeService nodeService;
@@ -97,7 +98,7 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
     {
         this.rmService = rmService;
     }
-    
+
     /**
      * Sets the RecordsManagementAdminService instance
      * 
@@ -106,6 +107,39 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
         this.rmAdminService = rmAdminService;
+    }
+    
+    /**
+     * Add property fields to group
+     * 
+     * @param form
+     * @param props
+     * @param setId
+     */
+    protected void addPropertyFieldsToGroup(Form form, Map<QName, PropertyDefinition> props, String setId)
+    {
+        if (props != null)
+        {
+            for (Map.Entry<QName, PropertyDefinition> entry : props.entrySet())
+            {
+                PropertyDefinition prop = entry.getValue();
+                
+                String id = form.getItem().getId();
+                id = id.replaceFirst("/", "://");
+                NodeRef nodeRef = new NodeRef(id);
+                Serializable value = nodeService.getProperty(nodeRef, entry.getKey());
+                
+                FieldGroup group = new FieldGroup(setId, null, false, false, null);
+                Field field = FieldUtils.makePropertyField(prop, value, group, namespaceService);
+                
+                form.addField(field);
+                
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Adding custom property .. " + prop.getName().toString() + " .. with value " + value + ".. to group .. " + setId);
+                }
+            }
+        }
     }
 
     /**

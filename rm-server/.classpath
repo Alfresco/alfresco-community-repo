@@ -19,17 +19,8 @@
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/activiti-engine-5.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/activiti-spring-5.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/addressing-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-core-4.0.d.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-data-model-4.0.d.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-deployment-4.0.d.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-jlan-embed-4.0.d.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-mbeans-4.0.d.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-opencmis-extension-0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-remote-api-4.0.d.jar" sourcepath="C:/mywork/projects/v4/code/root/projects/remote-api/source/java"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-repository-4.0.d.jar" sourcepath="C:/mywork/projects/v4/code/root/projects/repository/source/java"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-wdr-deployment.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-web-client-4.0.d.jar"/>
-	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/alfresco-web-framework-commons-4.0.d.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/ant-1.7.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/antlr-3.3-complete.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/aopalliance.jar"/>
@@ -279,5 +270,16 @@
 	<classpathentry exported="true" kind="lib" path="C:/mywork/projects/rmhead/code/rm-server/explodedDeps/lib/xstream-1.2.2.jar"/>
 	<classpathentry kind="lib" path="libs/spring-webscripts-1.0.0-tests.jar"/>
 	<classpathentry kind="lib" path="libs/postgresql-9.0-801.jdbc4.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-core-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-data-model-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-deployment-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-enterprise-remote-api-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-enterprise-repo-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-jlan-embed-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-mbeans-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-remote-api-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-repository-4.0.1.jar" sourcepath="C:/mywork/projects/v4/code/root/projects/repository/source/java"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-web-client-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-web-framework-commons-4.0.1.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

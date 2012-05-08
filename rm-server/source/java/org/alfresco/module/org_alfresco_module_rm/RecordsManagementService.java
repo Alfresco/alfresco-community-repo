@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -48,17 +47,30 @@ public interface RecordsManagementService
     
     /**
      * Returns the 'kind' of file plan component the node reference is.
+     * <p>
      * Returns null if the given node reference is not a
      * file plan component.
      *
      * @param nodeRef   node reference
      * @return FilePlanComponentKind    the kind of file plan component the
      *                                  node is
-     *                                  kind
      *
      * @since 2.0
      */
     FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef);
+    
+    /**
+     * Returns the file plan component 'kind' that relates to the passed 
+     * content type.
+     * <p>
+     * Returns null if the type does not relate to a file plan component.
+     * 
+     * @param type  qualified name of content type 
+     * @return FilePlanComponentKind    the kind relating to the passed type
+     * 
+     * @since 2.0
+     */
+    FilePlanComponentKind getFilePlanComponentKindFromType(QName type);
     
     /**
      * Indicates whether the given node is file plan node or not.

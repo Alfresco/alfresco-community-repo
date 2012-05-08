@@ -341,4 +341,12 @@
     	<property name="personService" ref="PersonService"/>
     	<property name="contentService" ref="ContentService"/>
     </bean>
+    
+    <bean id="webscript.org.alfresco.slingshot.forms.metadata.get" 
+          class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.forms.RMMetaDataGet" 
+          parent="webscript">
+    	<property name="recordsManagementService" ref="RecordsManagementService"/>
+    	<property name="namespaceService" ref="namespaceService"/>
+    </bean>
+    
 </beans>

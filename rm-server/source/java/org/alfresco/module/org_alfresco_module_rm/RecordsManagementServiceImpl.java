@@ -473,6 +473,51 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     }
     
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getFilePlanComponentKindFromType(org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public FilePlanComponentKind getFilePlanComponentKindFromType(QName type)
+    {
+        FilePlanComponentKind result = null;
+        
+        if (ASPECT_FILE_PLAN_COMPONENT.equals(type) == true)
+        {
+            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
+        }
+        else if (dictionaryService.isSubClass(type, ASPECT_RECORD) == true)
+        {
+            result = FilePlanComponentKind.RECORD;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_FILE_PLAN) == true)
+        {
+            result = FilePlanComponentKind.FILE_PLAN;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY) == true)
+        {
+            result = FilePlanComponentKind.RECORD_CATEGORY;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER) == true)
+        {
+            result = FilePlanComponentKind.RECORD_FOLDER;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_HOLD) == true)
+        {
+            result = FilePlanComponentKind.HOLD;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_TRANSFER) == true)
+        {
+            result = FilePlanComponentKind.TRANSFER;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_DISPOSITION_SCHEDULE) == true || 
+                 dictionaryService.isSubClass(type, TYPE_DISPOSITION_ACTION_DEFINITION) == true)
+        {
+            result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
+        }
+        
+        return result;
+    }
+    
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecordCategory(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isRecordCategory(NodeRef nodeRef)

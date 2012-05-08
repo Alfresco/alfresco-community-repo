@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>RM node metadata retrieval service</shortname>
+  <description>Used by the extended RM forms service to retrieve RM node metadata.</description>
+  <url>/api/rmmetadata?noderef={noderef?}&amp;type={type?}</url>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

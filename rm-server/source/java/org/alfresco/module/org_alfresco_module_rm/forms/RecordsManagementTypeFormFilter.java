@@ -23,17 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.forms.Field;
-import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.processor.node.FieldUtils;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -108,7 +104,7 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
         }
         
         // Group fields
-        groupFields(form); 
+       // groupFields(form); 
     }
 
     /**
@@ -135,7 +131,8 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
 	
 	        // setup field definition for each custom property
 	        Collection<PropertyDefinition> properties = customProps.values();
-	        List<Field> fields = FieldUtils.makePropertyFields(properties, CUSTOM_RM_FIELD_GROUP, namespaceService);
+	        FieldGroup group = new FieldGroup(CUSTOM_RM_FIELD_GROUP_ID, null, false, false, null);
+	        List<Field> fields = FieldUtils.makePropertyFields(properties, group, namespaceService);
 	        form.addFields(fields);
         }
     }
@@ -146,77 +143,42 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     public void afterPersist(TypeDefinition item, FormData data, final NodeRef nodeRef)
     {
     }
-
-    /**
-     * Generates a unique identifier for the given node (based on the dbid).
-     * 
-     * @param nodeRef The NodeRef to generate a unique id for
-     * @return The identifier
-     */
-    protected String generateIdentifier(NodeRef nodeRef)
-    {
-        String identifier = identifierService.generateIdentifier(nodeRef);
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("Generated '" + identifier + "' for unique identifier");
-        }
-        return identifier;
-    }
-
-    /**
-     * Function to pad a string with zero '0' characters to the required length
-     * 
-     * @param s String to pad with leading zero '0' characters
-     * @param len Length to pad to
-     * @return padded string or the original if already at >=len characters
-     */
-    protected String padString(String s, int len)
-    {
-        String result = s;
-
-        for (int i = 0; i < (len - s.length()); i++)
-        {
-            result = "0" + result;
-        }
-
-        return result;
-    }
     
     /**
      * Puts all fields in a group to workaround ALF-6089.
      * 
      * @param form The form being generated
      */
-    protected void groupFields(Form form)
-    {
-        // to control the order of the fields add the name, title and description fields to
-        // a field group containing just that field, all other fields that are not already 
-        // in a group go into an "other" field group. The client config can then declare a 
-        // client side set with the same id and order them correctly.
-        
-        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-        for (FieldDefinition fieldDef : fieldDefs)
-        {
-            FieldGroup group = fieldDef.getGroup();
-            if (group == null)
-            {
-                if (fieldDef.getName().equals(ContentModel.PROP_NAME.toPrefixString(this.namespaceService)))
-                {
-                    fieldDef.setGroup(NAME_FIELD_GROUP);
-                }
-                else if (fieldDef.getName().equals(ContentModel.PROP_TITLE.toPrefixString(this.namespaceService)))
-                {
-                    fieldDef.setGroup(TITLE_FIELD_GROUP);
-                }
-                else if (fieldDef.getName().equals(ContentModel.PROP_DESCRIPTION.toPrefixString(this.namespaceService)))
-                {
-                    fieldDef.setGroup(DESC_FIELD_GROUP);
-                }
-                else
-                {
-                    fieldDef.setGroup(OTHER_FIELD_GROUP);
-                }
-            }
-        }
-    }
+//    protected void groupFields(Form form)
+//    {
+//        // to control the order of the fields add the name, title and description fields to
+//        // a field group containing just that field, all other fields that are not already 
+//        // in a group go into an "other" field group. The client config can then declare a 
+//        // client side set with the same id and order them correctly.
+//        
+//        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+//        for (FieldDefinition fieldDef : fieldDefs)
+//        {
+//            FieldGroup group = fieldDef.getGroup();
+//            if (group == null)
+//            {
+//                if (fieldDef.getName().equals(ContentModel.PROP_NAME.toPrefixString(this.namespaceService)))
+//                {
+//                    fieldDef.setGroup(NAME_FIELD_GROUP);
+//                }
+//                else if (fieldDef.getName().equals(ContentModel.PROP_TITLE.toPrefixString(this.namespaceService)))
+//                {
+//                    fieldDef.setGroup(TITLE_FIELD_GROUP);
+//                }
+//                else if (fieldDef.getName().equals(ContentModel.PROP_DESCRIPTION.toPrefixString(this.namespaceService)))
+//                {
+//                    fieldDef.setGroup(DESC_FIELD_GROUP);
+//                }
+//                else
+//                {
+//                    fieldDef.setGroup(OTHER_FIELD_GROUP);
+//                }
+//            }
+//        }
+//    }
 }

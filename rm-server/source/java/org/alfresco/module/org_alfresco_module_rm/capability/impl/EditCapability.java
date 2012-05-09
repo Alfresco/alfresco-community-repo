@@ -27,11 +27,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.OwnableService;
 
 /**
- * Edit record metadata capability implementation.
+ * Edit capability, checks the permission and whether the current user is the owner of the 
+ * object.
  * 
  * @author Roy Wetherall
  */
-public class EditRecordMetadataCapability extends DeclarativeCapability 
+public class EditCapability extends DeclarativeCapability 
 {
     private OwnableService ownableService;
 

@@ -18,14 +18,19 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot.forms;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
@@ -43,6 +48,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
     /** Query parameters */
     private static final String PARAM_NODEREF = "noderef";
     private static final String PARAM_TYPE = "type";
+    private static final String PARAM_EXTENDED = "extended";
     
     /** NodeRef pattern */
     private static final Pattern nodeRefPattern = Pattern.compile(".+://.+/.+");
@@ -52,6 +58,9 @@ public class RMMetaDataGet extends DeclarativeWebScript
     
     /** Namespace service */
     private NamespaceService namespaceService;
+    
+    /** Node service */
+    private NodeService nodeService;
     
     /**
      * @param rmService records management service
@@ -69,6 +78,14 @@ public class RMMetaDataGet extends DeclarativeWebScript
         this.namespaceService = namespaceService;
     }
     
+    /**
+     * @param nodeService   node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
@@ -78,6 +95,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
         // create model object with the lists model
         Map<String, Object> model = new HashMap<String, Object>(1);
 
+        boolean extended = false;
         String result = "NONE";
         
         // Get the nodeRef and confirm it is valid        
@@ -93,7 +111,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
                 {
                     result = kind.toString();
                 }
-            }
+            }          
         }
         else
         {
@@ -103,16 +121,89 @@ public class RMMetaDataGet extends DeclarativeWebScript
                 Matcher m = nodeRefPattern.matcher(nodeRef);
                 if (m.matches())
                 {
-                    FilePlanComponentKind kind = rmService.getFilePlanComponentKind(new NodeRef(nodeRef));
+                    NodeRef nodeRefObj = new NodeRef(nodeRef);
+                    
+                    FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRefObj);
                     if (kind != null)
                     {
                         result = kind.toString();
+                    }
+                    
+                    String extendedValue = req.getParameter(PARAM_EXTENDED);
+                    if (extendedValue != null && extendedValue.length() != 0)
+                    {
+                        extended = Boolean.parseBoolean(extendedValue);
+                        if (extended == true)
+                        {                        
+                            // get the aspects of the node
+                            model.put("aspects", getAspects(nodeRefObj));
+                        }
                     }
                 }
             }
         }
         
         model.put("kind", result);
+        model.put("extended", extended);
         return model;
+    }
+    
+    /**
+     * Gets the current node aspects
+     * 
+     * @return node aspects
+     */
+    public List<Aspect> getAspects(NodeRef nodeRef)
+    {
+        Set<QName> qnames = nodeService.getAspects(nodeRef);
+        List<Aspect> aspects = new ArrayList<Aspect>(qnames.size());
+        for (QName qname : qnames)
+        {
+            aspects.add(new Aspect(qname));
+        }
+        return aspects;
+    }
+    
+    /**
+     * Qname wrapper class
+     */
+    public class QNameBean implements Serializable
+    {
+        private static final long serialVersionUID = 6982292337846270774L;
+        
+        protected QName name;
+
+        public QNameBean(QName name)
+        {
+            this.name = name;
+        }
+        
+        public String getName()
+        {
+            return name.toString();
+        }
+        
+        public String getPrefixedName()
+        {
+            return name.toPrefixString(namespaceService);
+        }
+        
+        public String toString()
+        {
+            return getName();
+        }
+    }
+
+    /**
+     * Aspect wrapper class
+     */
+    public class Aspect extends QNameBean
+    {
+        private static final long serialVersionUID = -6448182941386934326L;
+
+        public Aspect(QName name)
+        {
+            super(name);
+        }
     }
 }

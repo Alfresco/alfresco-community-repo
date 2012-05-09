@@ -488,7 +488,8 @@
     </bean>    
     
     <bean id="rmEditNonRecordMetadataCapability" 
-    	  parent="declarativeCapability">
+    	  parent="declarativeCapability"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditCapability">
    		<property name="name" value="EditNonRecordMetadata"/>
    		<property name="permission" value="EditNonRecordMetadata"/>   		
    		<property name="conditions">
@@ -500,7 +501,7 @@
     
     <bean id="rmEditRecordMetadataCapability"
           parent="rmBaseCapability" 
-          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditRecordMetadataCapability">
+          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditCapability">
    		<property name="name" value="EditRecordMetadata"/>
    		<property name="permission" value="EditRecordMetadata"/>  
 		<property name="kinds">
@@ -641,8 +642,7 @@
 	</bean>
     
     <bean id="rmPlanningReviewCyclesCapability" 
-          parent="rmBaseCapability" 
-          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditRecordMetadataCapability">
+          parent="declarativeCapability" >
    		<property name="name" value="PlanningReviewCycles"/>
    		<property name="permission" value="PlanningReviewCycles"/>  
    		<property name="conditions">
@@ -824,7 +824,8 @@
     			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
     			<ref bean="rmEditDeclaredRecordMetadataCapability"/>
     			<ref bean="rmEditNonRecordMetadataCapability"/>
-    			<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
+    			<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>    			
+    			<ref bean="rmEditRecordMetadataCapability"/>
     		</list>
     	</property>
     </bean>
@@ -841,6 +842,7 @@
     			<ref bean="rmEditDeclaredRecordMetadataCapability"/>
     			<ref bean="rmEditNonRecordMetadataCapability"/>
     			<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
+    			<ref bean="rmEditRecordMetadataCapability"/>
     		</list>
     	</property>
     </bean>

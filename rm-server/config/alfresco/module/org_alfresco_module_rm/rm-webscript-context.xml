@@ -347,6 +347,7 @@
           parent="webscript">
     	<property name="recordsManagementService" ref="RecordsManagementService"/>
     	<property name="namespaceService" ref="namespaceService"/>
+    	<property name="nodeService" ref="NodeService"/>
     </bean>
     
 </beans>

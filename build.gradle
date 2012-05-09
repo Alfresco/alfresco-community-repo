@@ -50,7 +50,7 @@ subprojects {
 	sourceJavaDir = 'source/java'
 	sourceWebDir = 'source/web'
 	testJavaDir = 'test/java'
-	testResourceDir = 'test/resource'
+	testResourceDir = 'test/resources'
 	configDir = 'config'
 	configModuleDir = "config/alfresco/module/${moduleid}"
 	moduleProperties = 'module.properties'
@@ -98,13 +98,6 @@ subprojects {
 	}	
 	
 	/** --- Compile tasks --- */
-
-	task fetchWarFile(type:Copy) {
-		from configurations.testRuntime
-		into '.'
-		include '*.war'
-		rename { String filename -> warFile }
-	}
 		
 	// make sure that the dependancies have been unpacked before compiling the Java
 	compileJava.doFirst {
@@ -114,6 +107,13 @@ subprojects {
 	jar.archiveName = jarFile
 	
 	/** --- Dependancy tasks --- */
+	
+	task fetchWarFile(type:Copy) {
+        from configurations.testRuntime
+        into '.'
+        include '*.war'
+        rename { String filename -> warFile }
+	}
 
 	task explodeDeps << {
 	
@@ -122,6 +122,7 @@ subprojects {
 		explodedConfigDir = file("${explodedDepsDir}/config")
 		warFileObj = file(warFile)
 	
+		// if the WAR file still isn't there raise an error
 		if (warFileObj.exists() == true) {
 			
 			logger.lifecycle "${warFile} was found.  Checking dependancies ..."

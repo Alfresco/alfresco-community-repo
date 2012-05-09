@@ -19,9 +19,11 @@
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -33,6 +35,23 @@ import org.alfresco.service.namespace.QName;
  */
 public interface DispositionService
 {
+    /** ========= Disposition Property Methods ========= */
+    
+    /**
+     * Register a disposition property.
+     * 
+     * @param dispositionProperty   disposition property
+     */
+    void registerDispositionProperty(DispositionProperty dispositionProperty);
+        
+    /**
+     * Returns the list of disposition period properties
+     * 
+     * @return list of disposition period properties
+     */
+    Collection<DispositionProperty> getDispositionProperties();
+    
+    
     /** ========= Disposition Schedule Methods ========= */
     
     /**
@@ -175,14 +194,5 @@ public interface DispositionService
      * @return DispositionAction    last completed disposition action, null if none
      */
     DispositionAction getLastCompletedDispostionAction(NodeRef nodeRef);
-    
-    /** =========  ========= */
-    
-    /**
-     * Returns the list of disposition period properties
-     * 
-     * @return list of disposition period properties
-     */
-    List<QName> getDispositionPeriodProperties();
 
 }

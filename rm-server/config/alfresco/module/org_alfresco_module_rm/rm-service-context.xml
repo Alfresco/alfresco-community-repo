@@ -205,6 +205,8 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.registerDispositionProperty=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionProperties=RM_ALLOW 
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedRecordsManagementContainer=RM_ALLOW
@@ -218,8 +220,7 @@
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isNextDispositionActionEligible=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getNextDispositionAction=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getCompletedDispositionActions=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0                 
-                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionPeriodProperties=RM.Read.0               
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0                                               
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.*=RM_DENY
                 ]]>
             </value>
@@ -996,19 +997,6 @@
                 <idref local="CaveatConfigService_transaction"/>
                 <idref local="CaveatConfigService_security"/>
                 <idref bean="exceptionTranslator"/>
-            </list>
-        </property>
-    </bean>
-    
-    <!-- Period Properties -->
-    
-    <bean id="DispositionPeriodProperties" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionPeriodProperties">
-        <property name="propertyList">
-            <list>
-                <value>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</value>
-                <value>{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionAsOf</value>
-                <value>{http://www.alfresco.org/model/recordsmanagement/1.0}dateFiled</value>
-                <value>{http://www.alfresco.org/model/recordsmanagement/1.0}publicationDate</value>
             </list>
         </property>
     </bean>

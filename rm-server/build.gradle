@@ -7,18 +7,19 @@ dependencies {
 	
 	testRuntime files(explodedConfigDir)
 	testRuntime files(configDir)
+	testRuntime files(testResourceDir)
 	
 	testRuntime group: 'org.alfresco.enterprise', name: 'alfresco', version: alfrescoBaseVersion, type: 'war'
 }
 
 test {
-  //makes the standard streams (err and out) visible at console when running tests
+
+  include '**/DispositionServiceImplTest.class'
+
   testLogging.showStandardStreams = true
 
-  //tweaking memory settings for the forked vm that runs tests
   jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'
   
-  //listening to test execution events
   beforeTest { descriptor ->
      logger.lifecycle("Running test: " + descriptor)
   }

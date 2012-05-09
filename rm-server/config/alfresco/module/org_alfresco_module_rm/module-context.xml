@@ -96,6 +96,9 @@
     <!-- Import RM UI evaluators -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-ui-evaluators-context.xml"/>
     
+    <!--  Import disposition properties -->
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-disposition-properties-context.xml"/>
+    
     <!-- RM Script API -->
     
     <bean id="scriptRecordsManagementService" parent="baseJavaScriptExtension" class="org.alfresco.module.org_alfresco_module_rm.jscript.ScriptRecordsManagmentService">

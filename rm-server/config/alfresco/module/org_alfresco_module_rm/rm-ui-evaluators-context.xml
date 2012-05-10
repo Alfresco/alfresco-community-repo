@@ -216,6 +216,54 @@
 		<property name="capability" value ="UpdateProperties"/>
 	</bean>
 	
+	
+	<bean id="jsonConversionComponent.CopyAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="copy"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<!-- <property name="capability" value="Delete"/> -->      
+	</bean>
+	
+	<bean id="jsonConversionComponent.moveAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="move"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<!-- <property name="capability" value="Delete"/> -->      
+	</bean>
+	
+	<bean id="jsonConversionComponent.fileToAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="fileTo"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="jsonConversionComponent.file"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="file"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>
+		<property name="capability" value ="FileRecords"/>
+	</bean>
+	
 	<bean id="jsonConversionComponent.deleteAction"
 	      parent="jsonConversionComponent.baseAction">
 		<property name="name" value="delete"/>
@@ -386,28 +434,6 @@
 			</set>
 		</property>	
 		<property name="capability" value ="Unfreeze"/>
-	</bean>
-	
-	<bean id="jsonConversionComponent.fileToAction"
-	      parent="jsonConversionComponent.baseAction">
-		<property name="name" value="fileTo"/>
-		<property name="kinds">
-			<set>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</set>
-		</property>
-	</bean>
-	
-	<bean id="jsonConversionComponent.file"
-	      parent="jsonConversionComponent.baseAction">
-		<property name="name" value="file"/>
-		<property name="kinds">
-			<set>
-				<value>RECORD_FOLDER</value>
-			</set>
-		</property>
-		<property name="capability" value ="FileRecords"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.reviewedAction"

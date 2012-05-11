@@ -721,6 +721,7 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         
         QName propQname = QName.createQName("testProp");
         QName nodeRefPropQname = QName.createQName("testAssoc");
+        QName singleNodeRefPropQname = QName.createQName("testAssocSingleValue");
         HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
               
         // Start the workflow-path
@@ -740,6 +741,7 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         // Test altering plain properties
         props = new HashMap<QName, Serializable>();
         props.put(propQname, "54321");
+        props.put(singleNodeRefPropQname, nodeRef);
         workflowEngine.updateTask(task.getId(), props, null, null);
         
         tasks = workflowEngine.queryTasks(taskQuery);
@@ -766,6 +768,31 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         task = tasks.get(0);
         assertEquals(1, ((List<NodeRef>)task.getProperties().get(nodeRefPropQname)).size());
         assertEquals(anotherRef, ((List<NodeRef>)task.getProperties().get(nodeRefPropQname)).get(0));
+        
+        // Test changing single-valued association
+        toAdd = new HashMap<QName, List<NodeRef>>();
+        toRemove = new HashMap<QName, List<NodeRef>>();
+        
+        toRemove.put(singleNodeRefPropQname, Arrays.asList(nodeRef));
+        toAdd.put(singleNodeRefPropQname, Arrays.asList(anotherRef));
+        
+        workflowEngine.updateTask(task.getId(), null, toAdd, toRemove);
+        tasks = workflowEngine.queryTasks(taskQuery);
+        task = tasks.get(0);
+        
+        assertEquals(anotherRef, task.getProperties().get(singleNodeRefPropQname));
+        
+        // Test clearing single-valued association
+        toRemove = new HashMap<QName, List<NodeRef>>();
+        
+        toRemove.put(singleNodeRefPropQname, Arrays.asList(anotherRef));
+        
+        workflowEngine.updateTask(task.getId(), null, null, toRemove);
+        tasks = workflowEngine.queryTasks(taskQuery);
+        task = tasks.get(0);
+        
+        // Association value should be empty now
+        assertNull(task.getProperties().get(singleNodeRefPropQname));
     }
     
     private void checkTaskVariableTaskPresent(WorkflowTaskState state,

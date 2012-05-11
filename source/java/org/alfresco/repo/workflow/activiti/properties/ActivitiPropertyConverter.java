@@ -684,29 +684,38 @@ public class ActivitiPropertyConverter
                 // add new associations
                 for (Entry<QName, List<NodeRef>> toAdd : add.entrySet())
                 {
-                    // retrieve existing list of noderefs for
-                    // association
-                    List<NodeRef> existingAdd = (List<NodeRef>) newProperties.get(toAdd.getKey());
+                    // Retrieve existing list of noderefs for  association OR single nodeRef
+                    Serializable existingAdd = newProperties.get(toAdd.getKey());
                     if (existingAdd == null)
                     {
-                        existingAdd = (List<NodeRef>) existingProperties.get(toAdd.getKey());
+                    	// Get the property values from the existing values, if any
+                    	existingAdd = existingProperties.get(toAdd.getKey());
                         newProperties.put(toAdd.getKey(), (Serializable) existingAdd);
                     }
-
-                    // make the additions
+                    
+                    // Add property values, if nessesairy
                     if (existingAdd == null)
                     {
                         newProperties.put(toAdd.getKey(), (Serializable) toAdd.getValue());
                     }
                     else
                     {
-                        for (NodeRef nodeRef : toAdd.getValue())
-                        {
-                            if (!(existingAdd.contains(nodeRef)))
-                            {
-                                existingAdd.add(nodeRef);
-                            }
-                        }
+                    	if(existingAdd instanceof List<?>) {
+                    		List<NodeRef> existingList = (List<NodeRef>) existingAdd;
+                    		
+                    		 for (NodeRef nodeRef : toAdd.getValue())
+                             {
+                                 if (!(existingList.contains(nodeRef)))
+                                 {
+                                 	existingList.add(nodeRef);
+                                 }
+                             }
+                    	} else {
+                    		// Single valued property, add first value
+                    		if(toAdd.getValue().size() > 0) {
+                    			newProperties.put(toAdd.getKey(), (Serializable) toAdd.getValue().get(0));
+                    		}
+                    	}
                     }
                 }
             }
@@ -718,23 +727,32 @@ public class ActivitiPropertyConverter
                 {
                     // retrieve existing list of noderefs for
                     // association
-                    List<NodeRef> existingRemove = (List<NodeRef>) newProperties.get(toRemove.getKey());
+                    Serializable existingRemove = (Serializable) newProperties.get(toRemove.getKey());
+                    boolean isAlreadyNewProperty = existingRemove != null;
+                    
                     if (existingRemove == null)
                     {
-                        existingRemove = (List<NodeRef>) existingProperties.get(toRemove.getKey());
-                        if(existingRemove != null) {
-                        	existingRemove = new ArrayList<NodeRef>(existingRemove);
-                            newProperties.put(toRemove.getKey(), (Serializable) existingRemove);
-                        }
+                    	existingRemove = (Serializable) existingProperties.get(toRemove.getKey());
                     }
-
-                    // make the subtractions
-                    if (existingRemove != null)
-                    {
-                        for (NodeRef nodeRef : toRemove.getValue())
-                        {
-                            existingRemove.remove(nodeRef);
-                        }
+                        
+                    // Only if the current property value is set, remove makes sense
+                    if(existingRemove != null) {
+                    	if(existingRemove instanceof List<?>) {
+                    		existingRemove = new ArrayList<NodeRef>((List<NodeRef>)existingRemove);
+                    		
+                    		for (NodeRef nodeRef : toRemove.getValue())
+                            {
+                    			((List<NodeRef>)existingRemove).remove(nodeRef);
+                            }
+                    		newProperties.put(toRemove.getKey(),existingRemove);
+                    	} else {
+                    		// It's a single-valued property and an "add" has been done. No need to remove
+                    		// previous value, since it's overridden by the new value.
+                    		if(!isAlreadyNewProperty) {
+                    			// Property is single-valued and should be removed
+                    			newProperties.put(toRemove.getKey(), null);
+                    		}
+                    	}
                     }
                 }
             }

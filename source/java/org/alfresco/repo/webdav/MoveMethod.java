@@ -23,6 +23,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -31,6 +32,9 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.dom4j.DocumentHelper;
+import org.dom4j.io.XMLWriter;
+import org.xml.sax.Attributes;
 
 /**
  * Implements the WebDAV MOVE method
@@ -109,8 +113,25 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
         {
             if (sourceParentNodeRef.equals(destParentNodeRef)) 
             { 
-               // It is rename method 
-               fileFolderService.rename(sourceNodeRef, name); 
+               // It is rename method
+               try
+               {
+                   fileFolderService.rename(sourceNodeRef, name);
+               }
+               catch (AccessDeniedException e)
+               {
+                   XMLWriter xml = createXMLWriter();
+
+                   Attributes nullAttr = getDAVHelper().getNullAttributes();
+
+                   xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ERROR, WebDAV.XML_NS_ERROR, nullAttr);
+                   // Output error
+                   xml.write(DocumentHelper.createElement(WebDAV.XML_NS_CANNOT_MODIFY_PROTECTED_PROPERTY));
+
+                   xml.endElement(WebDAV.DAV_NS, WebDAV.XML_ERROR, WebDAV.XML_NS_ERROR);
+                   m_response.setStatus(HttpServletResponse.SC_CONFLICT);
+                   return; 
+               }
             } 
             else 
             { 

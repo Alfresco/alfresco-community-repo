@@ -794,14 +794,9 @@ public class ADMRemoteStore extends BaseRemoteStore
             properties.put(ContentModel.PROP_NAME, (Serializable) SURF_CONFIG);
             ChildAssociationRef ref = this.unprotNodeService.createNode(
                     rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
-
-            // surf-config needs to be hidden
+            
+            // surf-config needs to be hidden - applies index control aspect as part of the hidden aspect
             hiddenAspect.hideNode(ref.getChildRef());
-
-            surfConfigRef = ref.getChildRef();
-            Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
-            aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
-            this.unprotNodeService.addAspect(surfConfigRef, ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
         }
         return surfConfigRef;
     }

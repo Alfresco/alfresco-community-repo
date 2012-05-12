@@ -296,7 +296,7 @@ var MyTasks = {
             {
                MyTasks.displayMessage(successMessage);
                MyTasks.refreshList();
-            },
+            }.delay(500),
             failure: function(e)
             {
                alert(e.status + " : ERROR failed to transition task.");

@@ -27,21 +27,24 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorRequest;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorResponse;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorService;
+import org.alfresco.util.HttpClientHelper;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.extensions.webscripts.Status;
 
 /**
  * HttpClient powered implementation of {@link RemoteConnectorService}, which 
- *  performs requests to remote HTTP servers
+ *  performs requests to remote HTTP servers.
+ *  
+ * Note - this class assumes direct connectivity is available to the destination
+ *  system, and does not support proxies.
  *  
  * @author Nick Burch
  * @since 4.0.2
@@ -54,13 +57,8 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
     private static Log logger = LogFactory.getLog(RemoteConnectorServiceImpl.class);
     private static final long MAX_BUFFER_RESPONSE_SIZE = 10*1024*1024;
             
-    private HttpClient httpClient;
-    
     public RemoteConnectorServiceImpl()
-    {
-        httpClient = new HttpClient();
-        httpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
-    }
+    {}
     
     /**
      * Builds a new Request object
@@ -105,38 +103,59 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
         if (logger.isDebugEnabled())
             logger.debug("Performing " + request.getMethod() + " request to " + request.getURL());
         
-        // Perform the request
-        int status = httpClient.executeMethod(httpRequest);
-        String statusText = httpRequest.getStatusText();
+        // Grab our thread local HttpClient instance
+        // Remember - we must then clean it up!
+        HttpClient httpClient = HttpClientHelper.getHttpClient();
         
-        Header[] responseHdrs = httpRequest.getResponseHeaders();
-        Header responseContentTypeH = httpRequest.getResponseHeader(RemoteConnectorRequestImpl.HEADER_CONTENT_TYPE);
-        String responseCharSet = httpRequest.getResponseCharSet();
-        String responseContentType = (responseContentTypeH != null ? responseContentTypeH.getValue() : null);
-        
-        
-        // Decide on how best to handle the response, based on the size
-        // Ideally, we want to close the HttpClient resources immediately, but
-        //  that isn't possible for very large responses
+        // Perform the request, and wrap the response
+        int status = -1;
+        String statusText = null;
         RemoteConnectorResponse response = null;
-        if (httpRequest.getResponseContentLength() > MAX_BUFFER_RESPONSE_SIZE)
+        try
         {
-            // Need to wrap the InputStream in something that'll close
-            InputStream wrappedStream = new HttpClientReleasingInputStream(httpRequest);
+            status = httpClient.executeMethod(httpRequest);
+            statusText = httpRequest.getStatusText();
             
-            // Now build the response
-            response = new RemoteConnectorResponseImpl(request, responseContentType, responseCharSet,
-                                                       responseHdrs, wrappedStream);
+            Header[] responseHdrs = httpRequest.getResponseHeaders();
+            Header responseContentTypeH = httpRequest.getResponseHeader(RemoteConnectorRequestImpl.HEADER_CONTENT_TYPE);
+            String responseCharSet = httpRequest.getResponseCharSet();
+            String responseContentType = (responseContentTypeH != null ? responseContentTypeH.getValue() : null);
+            
+            
+            // Decide on how best to handle the response, based on the size
+            // Ideally, we want to close the HttpClient resources immediately, but
+            //  that isn't possible for very large responses
+            // If we can close immediately, it makes cleanup simpler and fool-proof
+            if (httpRequest.getResponseContentLength() > MAX_BUFFER_RESPONSE_SIZE)
+            {
+                // Need to wrap the InputStream in something that'll close
+                InputStream wrappedStream = new HttpClientReleasingInputStream(httpRequest);
+                httpRequest = null;
+                
+                // Now build the response
+                response = new RemoteConnectorResponseImpl(request, responseContentType, responseCharSet,
+                                                           responseHdrs, wrappedStream);
+            }
+            else
+            {
+                // Fairly small response, just keep the bytes and make life simple
+                response = new RemoteConnectorResponseImpl(request, responseContentType, responseCharSet,
+                                                           responseHdrs, httpRequest.getResponseBody());
+                
+                // Now we have the bytes, we can close the HttpClient resources
+                httpRequest.releaseConnection();
+                httpRequest = null;
+            }
         }
-        else
+        finally
         {
-            // Fairly small response, just keep the bytes and make life simple
-            response = new RemoteConnectorResponseImpl(request, responseContentType, responseCharSet,
-                                                       responseHdrs, httpRequest.getResponseBody());
-            
-            // Now we have the bytes, we can close the HttpClient resources
-            httpRequest.releaseConnection();
-            httpRequest = null;
+            // Make sure, problems or not, we always tidy up (if not large stream based)
+            // This is important because we use a thread local HttpClient instance
+            if (httpRequest != null)
+            {
+                httpRequest.releaseConnection();
+                httpRequest = null;
+            }
         }
         
         
@@ -224,6 +243,26 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
                 httpRequest.releaseConnection();
                 httpRequest = null;
             }
+        }
+
+        /**
+         * In case the caller has neglected to close the Stream, warn
+         *  (as this will break things for other users!) and then close 
+         */
+        @Override
+        protected void finalize() throws Throwable
+        {
+            if (httpRequest != null)
+            {
+                logger.warn("RemoteConnector response InputStream wasn't closed but must be! This can cause issues for " +
+                		    "other requests in this Thread!");
+                
+                httpRequest.releaseConnection();
+                httpRequest = null;
+            }
+         
+            // Let the InputStream tidy up if it wants to too
+            super.finalize();
         }
     }
 }

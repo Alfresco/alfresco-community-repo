@@ -2304,13 +2304,18 @@ public class IndexInfo implements IndexMonitor
 
     private void registerReferenceCountingIndexReader(String id, IndexReader reader) throws IOException
     {
-        clearInvalid(Collections.singleton(id));
         ReferenceCounting referenceCounting = (ReferenceCounting) reader;
         if (!referenceCounting.getId().equals(id))
         {
             throw new IllegalStateException("Registering " + referenceCounting.getId() + " as " + id);
         }
-        referenceCountingReadOnlyIndexReaders.put(id, reader);
+        // ALF-13981: Be careful not to invalidate the segment reader if we are trying to re-register exactly the same
+        // one (e.g. in a doWithFileLock() retry loop)
+        if (referenceCountingReadOnlyIndexReaders.get(id) != reader)
+        {
+            clearInvalid(Collections.singleton(id));
+            referenceCountingReadOnlyIndexReaders.put(id, reader);
+        }
     }
 
     private double getSizeInMb(File file)

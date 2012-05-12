@@ -99,7 +99,7 @@ public abstract class WorkflowNotificationUtils
         notificationContext.setSubject(subject);
         
         // Set the email template
-        notificationContext.setBodyTemplate(WF_ASSIGNED_TEMPLATE);    
+        notificationContext.setBodyTemplate(services.getFileFolderService().getLocalizedSibling(WF_ASSIGNED_TEMPLATE));   
         
         // Build the template args
         Map<String, Serializable>templateArgs = new HashMap<String, Serializable>(7);

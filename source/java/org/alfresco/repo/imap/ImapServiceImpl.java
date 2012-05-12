@@ -991,17 +991,23 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         }
         else
         {
-            policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
-            policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-            
             checkForFlaggableAspect(nodeRef);
-
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("set flag nodeRef:" + nodeRef + ",flag:" + flagToQname.get(flag) + ", value:" + value);
+            policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+            try
+            {                    
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("set flag nodeRef:" + nodeRef + ",flag:" + flagToQname.get(flag) + ", value:" + value);
+                }
+                nodeService.setProperty(nodeRef, flagToQname.get(flag), value);
+                messageCache.remove(nodeRef);
             }
-            nodeService.setProperty(nodeRef, flagToQname.get(flag), value);
-            messageCache.remove(nodeRef);
+            finally
+            {
+                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);                
+            }
         }
     }
 
@@ -1429,14 +1435,16 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             {    
                 try
                 {
-                    policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                    policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                    policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
                     logger.debug("[checkForFlaggableAspect] Adding flaggable aspect to nodeRef: " + nodeRef);
                     Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>();
                     nodeService.addAspect(nodeRef, ImapModel.ASPECT_FLAGGABLE, aspectProperties);
                 }
                 finally
                 {
-                    policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                    policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                    policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
                 }
             }
         }

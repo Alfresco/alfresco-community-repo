@@ -43,9 +43,9 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
-import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -64,7 +64,7 @@ public class OpenCmisLocalTest extends TestCase
      * @author Derek Hulley
      * @since 4.0
      */
-    public static class TestCmisServiceFactory implements CmisServiceFactory
+    public static class TestCmisServiceFactory extends AbstractServiceFactory
     {
         private static AlfrescoCmisServiceFactory serviceFactory = (AlfrescoCmisServiceFactory) ctx.getBean("CMISServiceFactory");
         @Override

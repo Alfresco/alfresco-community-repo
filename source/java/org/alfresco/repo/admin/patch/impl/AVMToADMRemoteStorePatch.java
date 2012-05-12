@@ -560,11 +560,9 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                         // create new node and perform writer content copy of the content from the AVM to the DM store
                         FileInfo fileInfo = fileFolderService.create(
                                 parentFolder, avmNode.getName(), ContentModel.TYPE_CONTENT);
-                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
-                        aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
-                        nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
                         ContentWriter writer = contentService.getWriter(
                                 fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                        writer.guessMimetype(fileInfo.getName());
                         writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));
                     }
                     finally
@@ -577,11 +575,9 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                     // create new node and perform writer content copy of the content from the AVM to the DM store
                     FileInfo fileInfo = fileFolderService.create(
                             parentFolder, avmNode.getName(), ContentModel.TYPE_CONTENT);
-                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
-                    aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
-                    nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
                     ContentWriter writer = contentService.getWriter(
                             fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                    writer.guessMimetype(fileInfo.getName());
                     writer.putContent(avmService.getContentReader(-1, avmNode.getPath()));
                 }
             }
@@ -631,8 +627,8 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 ChildAssociationRef ref = this.nodeService.createNode(
                         rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
                 surfConfigRef = ref.getChildRef();
-
-                // surf-config needs to be hidden
+                
+                // surf-config needs to be hidden - applies index control aspect as part of the hidden aspect
                 hiddenAspect.hideNode(ref.getChildRef());
             }
             catch (DuplicateChildNodeNameException dupErr)

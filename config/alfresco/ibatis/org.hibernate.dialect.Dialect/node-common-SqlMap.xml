@@ -927,6 +927,7 @@
 
     <sql id="select_ChildAssoc_OrderBy">
         order by
+            assoc.assoc_index ASC,
             assoc.id ASC
     </sql>
     <sql id="select_ChildAssocsOfParent_Query">

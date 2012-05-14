@@ -56,6 +56,13 @@ public interface CapabilityService
     
     /**
      * 
+     * @param includePrivate
+     * @return
+     */
+    Set<Capability> getCapabilities(boolean includePrivate);
+    
+    /**
+     * 
      * @param nodeRef
      * @return
      */

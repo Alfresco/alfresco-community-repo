@@ -60,7 +60,33 @@ public class CapabilityServiceImpl implements CapabilityService
     @Override
     public Set<Capability> getCapabilities()
     {
-        return new HashSet<Capability>(capabilities.values());
+        return getCapabilities(true);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilities(boolean)
+     */
+    @Override
+    public Set<Capability> getCapabilities(boolean includePrivate)
+    {
+        Set<Capability> result = null;
+        if (includePrivate == true)
+        {
+            result = new HashSet<Capability>(capabilities.values());
+        }
+        else
+        {
+            result = new HashSet<Capability>(capabilities.size());
+            for (Capability capability : capabilities.values())
+            {
+                if (capability.isPrivate() == false)
+                {
+                    result.add(capability);
+                }
+            }
+        }
+        
+        return result;
     }
 
     /**

@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <bean id="rmCreate" 
+    	  parent="rmBaseCapability" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability">
+        <property name="name" value="Create"/>
+    	<property name="private" value="true"/>
+    </bean>
+    
+    <bean id="rmDelete" 
+    	  parent="compositeCapability">
+        <property name="name" value="Delete"/>
+    	<property name="private" value="true"/>    	
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmDestroyRecordsScheduledForDestructionCapability"/>    			
+    			<ref bean="rmDestroyRecordsCapability"/>    			
+    			<ref bean="rmDeleteRecordsCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    		</list>
+    	</property>
+    </bean>
+    
+    <bean id="rmUpdate" 
+    	  parent="compositeCapability" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdateCapability">
+        <property name="name" value="Update"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmEditDeclaredRecordMetadataCapability"/>
+    			<ref bean="rmEditNonRecordMetadataCapability"/>
+    			<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>    			
+    			<ref bean="rmEditRecordMetadataCapability"/>
+    		</list>
+    	</property>
+    </bean>
+    
+    <bean id="rmUpdateProperties" 
+          parent="compositeCapability" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdatePropertiesCapability">
+        <property name="name" value="UpdateProperties"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmEditDeclaredRecordMetadataCapability"/>
+    			<ref bean="rmEditNonRecordMetadataCapability"/>
+    			<ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
+    			<ref bean="rmEditRecordMetadataCapability"/>
+    		</list>
+    	</property>
+    </bean>
+    
+    <bean id="rmDeclare" 
+    	  parent="compositeCapability">
+    	<property name="name" value="Declare"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmDeclareRecordsCapability"/>    			
+    			<ref bean="rmDeclareRecordsInClosedFoldersCapability"/>   
+    		</list>
+    	</property>
+    </bean>
+    
+    <bean id="rmWriteContent" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="WriteContent"/>  		
+    	<property name="private" value="true"/>  		
+		<property name="kinds">
+			<list>
+				<value>RECORD</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   				<entry key="capabilityCondition.declared" value="false"/>
+   				<entry key="capabilityCondition.closed" value="false"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   			</map>
+   		</property>
+    </bean>   
+    
+    <bean id="rmMove" 
+    	  parent="compositeCapability">
+    	<property name="name" value="Move"/>
+    	<property name="private" value="true"/>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmMoveRecordCategoryCapability"/>
+                <ref bean="rmMoveRecordFolderCapability"/>
+                <ref bean="rmMoveRecordsCapability"/>
+            </list>
+        </property>
+    </bean>
+    	
+
+</beans>

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
@@ -45,6 +47,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
 {
     private NodeRef record;
     private NodeRef declaredRecord;
+    private NodeRef undeclaredRecord;
     
     private NodeRef recordFolderContainsFrozen;    
     private NodeRef frozenRecord;
@@ -52,6 +55,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
     private NodeRef frozenRecordFolder;
     
     private NodeRef closedFolder;
+    
+    private NodeRef moveToFolder;
+    private NodeRef moveToCategory;
     
     @Override
     protected boolean isUserTest()
@@ -67,16 +73,21 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         // Pre-filed content
         record = utils.createRecord(rmFolder, "record.txt");
         declaredRecord = utils.createRecord(rmFolder, "declaredRecord.txt");
+        undeclaredRecord = utils.createRecord(rmFolder, "undeclaredRecord.txt");
         
         // Closed folder
         closedFolder = rmService.createRecordFolder(rmContainer, "closedFolder");
         utils.closeFolder(closedFolder);
 
+        // Frozen artifacts
         recordFolderContainsFrozen = rmService.createRecordFolder(rmContainer, "containsFrozen");
         frozenRecord = utils.createRecord(rmFolder, "frozenRecord.txt");
         frozenRecord2 = utils.createRecord(recordFolderContainsFrozen, "frozen2.txt");
         frozenRecordFolder = rmService.createRecordFolder(rmContainer, "frozenRecordFolder");
-               
+        
+        // MoveTo artifacts
+        moveToFolder = rmService.createRecordFolder(rmContainer, "moveToFolder");
+        moveToCategory = rmService.createRecordCategory(rmContainer, "moveToCategory");       
     }
     
     @Override
@@ -123,6 +134,8 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         for (String user : testUsers)
         {
             securityService.setPermission(rmFolder, user, RMPermissionModel.FILING);
+            securityService.setPermission(moveToFolder, user, RMPermissionModel.READ_RECORDS);
+            securityService.setPermission(moveToCategory, user, RMPermissionModel.READ_RECORDS);
         }                
     }
     
@@ -278,6 +291,192 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecord));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(closedFolder)); 
+                
+                return null;
+            }
+        }, rmUserName);
+    }
+    
+    public void testMoveRecordCapability()
+    {
+        // grab the move record capability
+        final Capability capability = capabilityService.getCapability("MoveRecords");
+        assertNotNull(capability);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                // first take a look at just the record
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(record));
+                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(declaredRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(closedFolder)); 
+                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(undeclaredRecord));
+                
+                // now lets take a look when we know what the destination is
+                // NOTE:  should be denied since we do not have file permission on the destination folder 
+                //        despite having the capability!
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(record, moveToFolder));
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(declaredRecord, moveToFolder));
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(undeclaredRecord, moveToFolder));
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(frozenRecord, moveToFolder));
+                
+                return null;
+            }
+        }, recordsManagerName);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                for (String user : testUsers)
+                {
+                    securityService.setPermission(moveToFolder, user, RMPermissionModel.FILING);
+                }
+                return null;
+            }
+        }, rmAdminName);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                // first take a look at just the record
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(record));
+                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(declaredRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(closedFolder)); 
+                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(undeclaredRecord));
+                
+                // now lets take a look when we know what the destination is
+                // NOTE:  should be allowed now since we have filling permission on the destination folder
+                assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(record, moveToFolder));
+                assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(declaredRecord, moveToFolder));
+                assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(undeclaredRecord, moveToFolder));
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(frozenRecord, moveToFolder));
+                
+                return null;
+            }
+        }, recordsManagerName);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                // first take a look at just the record
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(record));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(declaredRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(closedFolder)); 
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(undeclaredRecord));
+                
+                // now lets take a look when we know what the destination is
+                // NOTE:  should be allowed now since we have filling permission on the destination folder
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(record, moveToFolder));
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(declaredRecord, moveToFolder));
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(undeclaredRecord, moveToFolder));
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(frozenRecord, moveToFolder));
+                
+                return null;
+            }
+        }, rmUserName);
+    }
+    
+    public void testMoveRecordFolderCapability()
+    {
+        // grab the move record capability
+        final Capability capability = capabilityService.getCapability("MoveRecordFolder");
+        assertNotNull(capability);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                // first take a look at just the record
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
+                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(record));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(declaredRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(closedFolder)); 
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(undeclaredRecord));
+                
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(rmFolder, moveToCategory));
+                
+                return null;
+            }
+        }, recordsManagerName);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                for (String user : testUsers)
+                {
+                    securityService.setPermission(moveToCategory, user, RMPermissionModel.FILING);
+                }
+                return null;
+            }
+        }, rmAdminName);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
+                assertEquals(AccessStatus.UNDETERMINED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(record));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(declaredRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(closedFolder)); 
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(undeclaredRecord));
+                
+                assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(rmFolder, moveToCategory));
+                
+                return null;
+            }
+        }, recordsManagerName);
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(record));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(declaredRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecord));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(closedFolder)); 
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(undeclaredRecord));
+                
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, capability.evaluate(rmFolder, moveToCategory));
                 
                 return null;
             }

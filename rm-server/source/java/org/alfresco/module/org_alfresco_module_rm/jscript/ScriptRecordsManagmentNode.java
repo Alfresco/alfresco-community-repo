@@ -18,20 +18,21 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.jscript;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.mozilla.javascript.Scriptable;
 
 /**
- * Base records managment script node
+ * Base records management script node
+ * 
+ * NOTE: this could be removed, but is being kept as a place holder for future development
  * 
  * @author Roy Wetherall
  */
@@ -52,39 +53,26 @@ public class ScriptRecordsManagmentNode extends ScriptNode
         super(nodeRef, services);
         rmServices = services;
     }
-
-    public ScriptCapability[] getCapabilities()
-    {
-        return capabilitiesSet(null);
-    }
     
-    public ScriptCapability[] capabilitiesSet(String capabilitiesSet)
+    public boolean hasCapability(String capabilityName)
     {
-        RecordsManagementSecurityService rmSecurity = rmServices.getRecordsManagementSecurityService();
-        Map<Capability, AccessStatus> cMap = null;
-        if (capabilitiesSet == null)
+        boolean result = false;
+        
+        CapabilityService capabilityService = (CapabilityService)rmServices.getCapabilityService();
+        Capability capability = capabilityService.getCapability(capabilityName);
+        if (capability != null)
         {
-            // Get all capabilities            
-            cMap = rmSecurity.getCapabilities(this.nodeRef);
-        }
-        else
-        {
-            cMap = rmSecurity.getCapabilities(this.nodeRef, capabilitiesSet);
-        }
-            
-        List<ScriptCapability> list = new ArrayList<ScriptCapability>(cMap.size());
-        for (Map.Entry<Capability, AccessStatus> entry : cMap.entrySet())
-        {
-            if (AccessStatus.ALLOWED.equals(entry.getValue()) == true ||
-                AccessStatus.UNDETERMINED.equals(entry.getValue()) == true)
+            Map<Capability, AccessStatus> map = capabilityService.getCapabilitiesAccessState(nodeRef, Collections.singletonList(capabilityName));
+            if (map.containsKey(capability) == true)
             {
-                Capability cap = entry.getKey();
-                String[] actions = (String[])cap.getActionNames().toArray(new String[cap.getActionNames().size()]);
-                ScriptCapability scriptCap = new ScriptCapability(cap.getName(), cap.getName(), actions);
-                list.add(scriptCap);
+                AccessStatus accessStatus = map.get(capability);
+                if (accessStatus.equals(AccessStatus.DENIED) == false)
+                {
+                    result = true;
+                }
             }
         }
-                                
-        return (ScriptCapability[])list.toArray(new ScriptCapability[list.size()]);
+        
+        return result;
     }
 }

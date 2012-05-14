@@ -34,35 +34,6 @@ import org.alfresco.service.namespace.QName;
 public interface RecordsManagementSecurityService
 {    
     /**
-     * Get a list of the capabilities available
-     * 
-     * @return  List<Capability>    list of capabilities available
-     */
-    Set<Capability> getCapabilities();
-    
-    /**
-     * Get the full set of capabilities for the current user.
-     * @param nodeRef
-     * @return
-     */
-    Map<Capability, AccessStatus> getCapabilities(NodeRef nodeRef);
-    
-    /**
-     * 
-     * @param nodeRef
-     * @param capabilitySet
-     * @return
-     */
-    Map<Capability, AccessStatus> getCapabilities(NodeRef nodeRef, String capabilitySet);
-    
-    /**
-     * Get a capability by name
-     * @param name
-     * @return
-     */
-    Capability getCapability(String name);    
-    
-    /**
      * Get the set of aspect QNames which can not be added direct via the public node service;
      * they must be managed via the appropriate actions.
      * @return

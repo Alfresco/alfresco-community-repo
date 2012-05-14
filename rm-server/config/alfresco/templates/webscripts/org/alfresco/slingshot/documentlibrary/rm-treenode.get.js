@@ -55,13 +55,18 @@ function getTreenode()
          {
             if (itemIsAllowed(item) && !(item.type in ignoredTypes))
             {
-               capabilities = {};
+               //capabilities = {};
                rmNode = rmService.getRecordsManagementNode(item);
-               for each (cap in rmNode.capabilitiesSet("Create"))
-               {
-                  capabilities[cap.name] = true;
-               }
+               
+               //for each (cap in rmNode.capabilitiesSet("Create"))
+               //{
+               //   capabilities[cap.name] = true;
+               //}
+               
+               //
 
+               hasCreateCapability = rmNode.hasCapability("Create");
+               
                if (evalChildFolders)
                {
                   hasSubfolders = item.childFileFolders(false, true, "fm:forum").length > 0;
@@ -73,7 +78,7 @@ function getTreenode()
                   hasSubfolders: hasSubfolders,
                   permissions:
                   {
-                     create: capabilities["Create"]
+                     create: hasCreateCapability
                   }
                });
             }

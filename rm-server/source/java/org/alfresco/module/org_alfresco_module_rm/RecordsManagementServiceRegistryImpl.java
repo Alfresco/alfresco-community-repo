@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
@@ -88,5 +89,14 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     public DispositionService getDispositionService()
     {
         return (DispositionService)getService(DISPOSITION_SERVICE);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getCapabilityService()
+     */
+    @Override
+    public CapabilityService getCapabilityService()
+    {
+        return (CapabilityService)getService(CAPABILITY_SERVICE);
     }
 }

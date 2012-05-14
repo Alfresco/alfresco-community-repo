@@ -22,11 +22,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -51,7 +48,6 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -83,9 +79,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     /** Policy component */
     private PolicyComponent policyComponent;
     
-    /** Owner service */
-    private OwnableService ownableService;
-    
     /** Records management service */
     private RecordsManagementService recordsManagementService;
     
@@ -94,12 +87,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     
     /** RM Entry voter */
     private RMEntryVoter voter;
-    
-    /** 
-     * Capability sets.  Allow sub-sets of capabilities to be defined enhancing performance when 
-     * only a sub-set need be evaluated.
-     */
-    private Map<String, List<String>> capabilitySets;
     
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
@@ -148,16 +135,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     }
     
     /**
-     * Set the ownable service
-     * 
-     * @param ownableService	ownable service
-     */
-    public void setOwnableService(OwnableService ownableService) 
-    {
-		this.ownableService = ownableService;
-	}
-    
-    /**
      * Set records management service
      * 
      * @param recordsManagementService  records management service
@@ -175,15 +152,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
-    }
-    
-    /**
-     * Set the capability sets
-     * @param capabilitySets    map of capability sets (configured in Spring)
-     */
-    public void setCapabilitySets(Map<String, List<String>> capabilitySets)
-    {
-        this.capabilitySets = capabilitySets;
     }
     
     /**
@@ -217,7 +185,11 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     
     public void beforeDeleteFrozenNode(NodeRef nodeRef)
     {
-        throw new AccessDeniedException("Frozen nodes can not be deleted");
+        if (nodeService.exists(nodeRef) && recordsManagementService.isFrozen(nodeRef) == true)
+        {
+            // Never allowed to delete a frozen node 
+            throw new AccessDeniedException("Frozen nodes can not be deleted");
+        }
     }
     
     /**
@@ -344,63 +316,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
             }, AuthenticationUtil.getAdminUserName());         
         }
     }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getCapabilities()
-     */
-    public Set<Capability> getCapabilities()
-    {
-        Collection<Capability> caps = capabilityService.getCapabilities();
-        Set<Capability> result = new HashSet<Capability>(caps.size());
-        for (Capability cap : caps)
-        {
-            if (cap.isPrivate() == false)
-            {
-                result.add(cap);
-            }
-        }
-        return result;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getCapabilities(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public Map<Capability, AccessStatus> getCapabilities(NodeRef nodeRef)
-    {
-        return capabilityService.getCapabilitiesAccessState(nodeRef);
-    }        
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getCapabilities(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    public Map<Capability, AccessStatus> getCapabilities(NodeRef nodeRef, String capabilitySet)
-    {
-        List<String> capabilities = capabilitySets.get(capabilitySet);
-        if (capabilities == null)
-        {
-            if (getCapability(capabilitySet) != null)
-            {
-                // If the capability set is the name of a capability assume we just want that single
-                // capability
-                capabilities = new ArrayList<String>(1);
-                capabilities.add(capabilitySet);
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("Unable to find the capability set '" + capabilitySet + "'");
-            }
-        }
-        
-        return capabilityService.getCapabilitiesAccessState(nodeRef, capabilities);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getCapability(java.lang.String)
-     */
-    public Capability getCapability(String name)
-    {
-        return capabilityService.getCapability(name);
-    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getProtectedAspects()
@@ -488,7 +403,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                             for (int index = 0; index < arrCaps.length(); index++)
                             {
                                 String capName = arrCaps.getString(index);
-                                Capability capability = getCapability(capName);
+                                Capability capability = capabilityService.getCapability(capName);
                                 if (capability == null)
                                 {
                                     throw new AlfrescoRuntimeException("The capability '" + capName + "' configured for the deafult boostrap role '" + name + "' is invalid.");
@@ -675,7 +590,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
             if (permission.getAuthority().equals(roleAuthority) == true)
             {
                 String capabilityName = permission.getPermission();
-                if (getCapability(capabilityName) != null)
+                if (capabilityService.getCapability(capabilityName) != null)
                 {
                     capabilities.add(permission.getPermission());
                 }

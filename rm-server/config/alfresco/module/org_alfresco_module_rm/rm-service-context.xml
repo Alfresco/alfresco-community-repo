@@ -428,37 +428,7 @@
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="ownableService" ref="OwnableService"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
-        <property name="capabilitySets">
-        	<map>
-        		<entry key="doclibBrowse">
-        			<list>
-        				 <value>Create</value>
-						 <value>UpdateProperties</value>
-						 <value>ManageAccessRights</value>
-						 <value>Delete</value>
-						 <value>AccessAudit</value>
-						 <value>CycleVitalRecords</value>
-						 <value>ApproveRecordsScheduledForCutoff</value>
-						 <value>DestroyRecordsCapability</value>
-						 <value>DestroyRecordsScheduledForDestruction</value>
-						 <value>AuthorizeAllTransfers</value>
-						 <value>AuthorizeNominatedTransfers</value>
-						 <value>CreateModifyRecordsInCutoffFolders</value>
-						 <value>ManuallyChangeDispositionDates</value>
-						 <value>PlanningReviewCycles</value>
-						 <value>UndeclareRecords</value>
-						 <value>Declare</value>			
-						 <value>Unfreeze</value>
-						 <value>ViewUpdateReasonsForFreeze</value>
-						 <value>CloseFolders</value>
-						 <value>ReOpenFolders</value>
-						 <value>ExtendRetentionPeriodOrFreeze</value>
-        			</list>
-        		</entry>
-        	</map>
-        </property>
+        <property name="recordsManagementService" ref="RecordsManagementService"/>        
     </bean>
     
     <bean id="RecordsManagementSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -503,8 +473,6 @@
                 <![CDATA[  
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getProtectedAspects=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getProtectedProperties=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getCapabilities=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getCapability=RM_ALLOW                  
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.setPermission=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deletePermission=RM_ALLOW                            
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.bootstrapDefaultRoles=RM_ALLOW

@@ -30,6 +30,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
@@ -72,6 +73,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
 	private RecordsManagementSecurityService rmSecurityService;
 	private RecordsManagementActionService rmActionService;
 	private RetryingTransactionHelper transactionHelper;
+	private CapabilityService capabilityService;
 	
 	@Override
 	protected void onSetUpInTransaction() throws Exception 
@@ -87,6 +89,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
 		this.transactionHelper = (RetryingTransactionHelper)this.applicationContext.getBean("retryingTransactionHelper");
 		this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
 		this.rmActionService = (RecordsManagementActionService)this.applicationContext.getBean("RecordsManagementActionService");
+		this.capabilityService = (CapabilityService)this.applicationContext.getBean("CapabilityService");
 		
 		// Set the current security context as admin
 		AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -205,7 +208,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
 	private Set<Capability> getListOfCapabilities(int size, int offset)
 	{
 	    Set<Capability> result = new HashSet<Capability>(size);
-	    Set<Capability> caps = rmSecurityService.getCapabilities();
+	    Set<Capability> caps = capabilityService.getCapabilities(false);
 	    int count = 0;
 	    for (Capability cap : caps)
         {
@@ -362,7 +365,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
                 System.out.println("\nUser capabilities: ");
                 for (String cap : caps)
                 {
-                    assertNotNull(rmSecurityService.getCapability(cap));
+                    assertNotNull(capabilityService.getCapability(cap));
                     System.out.println(cap);
                 }                
                 
@@ -375,7 +378,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
                 System.out.println("\nPowerUser capabilities: ");
                 for (String cap : caps)
                 {
-                    assertNotNull(rmSecurityService.getCapability(cap));
+                    assertNotNull(capabilityService.getCapability(cap));
                     System.out.println(cap);
                 }
                 
@@ -388,7 +391,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
                 System.out.println("\nSecurityOfficer capabilities: ");
                 for (String cap : caps)
                 {
-                    assertNotNull(rmSecurityService.getCapability(cap));
+                    assertNotNull(capabilityService.getCapability(cap));
                     System.out.println(cap);
                 }
                 
@@ -401,7 +404,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
                 System.out.println("\nRecordsManager capabilities: ");
                 for (String cap : caps)
                 {
-                    assertNotNull(rmSecurityService.getCapability(cap));
+                    assertNotNull(capabilityService.getCapability(cap));
                     System.out.println(cap);
                 }
                 
@@ -414,7 +417,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
                 System.out.println("\nAdministrator capabilities: ");
                 for (String cap : caps)
                 {
-                    assertNotNull("No capability called " + cap, rmSecurityService.getCapability(cap));
+                    assertNotNull("No capability called " + cap, capabilityService.getCapability(cap));
                     System.out.println(cap);
                 }
                 
@@ -449,7 +452,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
             {       
                 // Create a new role
                 Set<Capability> caps = new HashSet<Capability>(1);
-                caps.add(rmSecurityService.getCapability(RMPermissionModel.VIEW_RECORDS));
+                caps.add(capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS));
                 
                 Role role = rmSecurityService.createRole(rmRootNode, "TestRole", "My Test Role", caps);
                 String user = createUser();
@@ -562,8 +565,8 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
                 
                 // Add the capability to the role
                 Set<Capability> caps2 = new HashSet<Capability>(1);
-                caps2.add(rmSecurityService.getCapability(RMPermissionModel.VIEW_RECORDS));
-                caps2.add(rmSecurityService.getCapability(RMPermissionModel.CLOSE_FOLDERS));
+                caps2.add(capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS));
+                caps2.add(capabilityService.getCapability(RMPermissionModel.CLOSE_FOLDERS));
                 rmSecurityService.updateRole(rmRootNode, "TestRole", "My Test Role", caps2);
                 
                 Set<AccessPermission> aps = permissionService.getAllSetPermissions(rmRootNode);
@@ -616,7 +619,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseSpringTest
             {       
                 // Create a new role
                 Set<Capability> caps = new HashSet<Capability>(1);
-                caps.add(rmSecurityService.getCapability(RMPermissionModel.VIEW_RECORDS));
+                caps.add(capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS));
                 
                 Role role = rmSecurityService.createRole(rmRootNode, "TestRole", "My Test Role", caps);
                 String user = createUser();

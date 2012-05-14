@@ -18,14 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import org.alfresco.module.org_alfresco_module_rm.test.service.DispositionServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementActionServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementAdminServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementSearchServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.VitalRecordServiceImplTest;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 
 /**
@@ -45,7 +46,7 @@ public class ServicesTestSuite extends TestSuite
         TestSuite suite = new TestSuite();
         suite.addTestSuite(RecordsManagementServiceImplTest.class);
         suite.addTestSuite(DispositionServiceImplTest.class);
-        //suite.addTestSuite(RecordsManagementActionServiceImplTest.class);
+        suite.addTestSuite(RecordsManagementActionServiceImplTest.class);
         suite.addTestSuite(RecordsManagementAdminServiceImplTest.class);
         //suite.addTestSuite(RecordsManagementAuditServiceImplTest.class);
         //suite.addTestSuite(RecordsManagementEventServiceImplTest.class);

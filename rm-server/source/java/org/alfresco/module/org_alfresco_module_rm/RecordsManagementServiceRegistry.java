@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
@@ -43,6 +44,7 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     static final QName RECORDS_MANAGEMENT_EVENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementEventService");
     static final QName RECORDS_MANAGEMENT_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementSecurityService");
     static final QName RECORDS_MANAGEMENT_AUDIT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementAuditService");
+    static final QName CAPABILITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CapabilityService");
     
     /**
      * @return  records management service
@@ -85,4 +87,10 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
      */
     @NotAuditable
     RecordsManagementAuditService getRecordsManagementAuditService();
+    
+    /**
+     * @return  capability service
+     */
+    @NotAuditable
+    CapabilityService getCapabilityService();
 }

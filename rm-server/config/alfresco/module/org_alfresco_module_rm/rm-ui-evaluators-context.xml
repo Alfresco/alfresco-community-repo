@@ -230,17 +230,37 @@
 		<!-- <property name="capability" value="Delete"/> -->      
 	</bean>
 	
-	<bean id="jsonConversionComponent.moveAction"
+	<bean id="jsonConversionComponent.moveRecordAction"
 	      parent="jsonConversionComponent.baseAction">
-		<property name="name" value="move"/>
+		<property name="name" value="moveRecord"/>
 		<property name="kinds">
 			<set>
-				<value>RECORD_CATEGORY</value>
-				<value>RECORD_FOLDER</value>
 				<value>RECORD</value>
 			</set>
 		</property>	
-		<!-- <property name="capability" value="Delete"/> -->      
+		<property name="capability" value="MoveRecords"/>     
+	</bean>
+	
+	<bean id="jsonConversionComponent.moveRecordFolderAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="moveRecordFolder"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>	
+		<property name="capability" value="MoveRecordFolder"/>     
+	</bean>
+	
+	<bean id="jsonConversionComponent.moveRecordCategoryAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="moveRecordCategory"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+			</set>
+		</property>	
+		<property name="capability" value="MoveRecordCategory"/> 
 	</bean>
 	
 	<bean id="jsonConversionComponent.fileToAction"

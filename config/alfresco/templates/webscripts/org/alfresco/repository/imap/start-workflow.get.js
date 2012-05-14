@@ -9,7 +9,13 @@ function main()
       status.redirect = true;
       return;
    }      
-    var workflowType = "jbpm$wf:" + args.workflowType;
+   
+    // ALF-13898: accept FULL workflow-definition name if provided, otherwise revert to prefixing behavior
+    var workflowType = args.workflowType;
+    if(workflowType.indexOf('$') < 0) {
+       workflowType = "jbpm$wf:" + workflowType;
+    }
+    
     var assignTo = people.getPerson(args.assignTo);
     if (assignTo == undefined)
     {
@@ -32,7 +38,12 @@ function main()
     workflow.parameters.workflowName = workflowType;
     workflow.parameters["bpm:workflowDescription"] = description;
     workflow.parameters["bpm:assignee"] = assignTo;
-    workflow.parameters["bpm:workflowPriority"] = args.workflowPriority;
+    
+    if (args.workflowPriority != null)
+    {
+       workflow.parameters["bpm:workflowPriority"] = args.workflowPriority;
+    }
+    
     if (dueDate != null)
     {
        workflow.parameters["bpm:workflowDueDate"] = dueDate;

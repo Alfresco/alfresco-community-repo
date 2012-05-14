@@ -1457,6 +1457,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             {
                 List<HistoricTaskInstance> historicTasks = historyService.createHistoricTaskInstanceQuery()
                     .taskAssignee(authority)
+                    .finished()
                     .list();
                 return typeConverter.convert(historicTasks);
             }

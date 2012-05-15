@@ -313,9 +313,9 @@ public class WebDAVServlet extends HttpServlet
         
         AuthenticationService authService = (AuthenticationService) context.getBean("authenticationService");
 
-        NodeService nodeService = (NodeService) context.getBean("NodeService");
-        SearchService searchService = (SearchService) context.getBean("SearchService");
-        NamespaceService namespaceService = (NamespaceService) context.getBean("NamespaceService");
+        nodeService = (NodeService) context.getBean("NodeService");
+        searchService = (SearchService) context.getBean("SearchService");
+        namespaceService = (NamespaceService) context.getBean("NamespaceService");
         ActivityService activityService = (ActivityService) context.getBean("activityService");
         PersonService personService = serviceRegistry.getPersonService();
         singletonCache = (SimpleCache<String, NodeRef>)context.getBean("immutableSingletonCache");

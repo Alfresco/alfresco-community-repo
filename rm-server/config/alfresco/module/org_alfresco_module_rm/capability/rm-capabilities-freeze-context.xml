@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!--  Public Capabilities -->
+
+    <bean id="rmExtendRetentionPeriodOrFreezeCapability"  
+    	  parent="declarativeCapability">
+   		<property name="name" value="ExtendRetentionPeriodOrFreeze"/>
+   		<property name="permission" value="ExtendRetentionPeriodOrFreeze"/>   	 		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property>		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozen" value="false"/>   				
+   			</map>
+   		</property>
+    </bean>  
+    
+    <bean id="rmUnfreezeCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="Unfreeze"/>
+   		<property name="permission" value="Unfreeze"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.frozenOrHold" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmViewUpdateReasonsForFreezeCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="ViewUpdateReasonsForFreeze"/>
+   		<property name="permission" value="ViewUpdateReasonsForFreeze"/>   		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.frozenOrHold" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+
+</beans>

@@ -227,7 +227,7 @@
 				<value>RECORD</value>
 			</set>
 		</property>	
-		<!-- <property name="capability" value="Delete"/> -->      
+		<property name="capability" value="Copy"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.moveRecordAction"
@@ -271,6 +271,7 @@
 				<value>RECORD</value>
 			</set>
 		</property>
+		<property name="capability" value="FileToRecords" />
 	</bean>
 	
 	<bean id="jsonConversionComponent.file"

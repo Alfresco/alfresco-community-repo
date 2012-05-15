@@ -266,25 +266,7 @@
 		  parent="declarativeCapability">
 		<property name="name" value="ExportAudit" />
 		<property name="permission" value="ExportAudit" />
-	</bean>
-
-    <bean id="rmExtendRetentionPeriodOrFreezeCapability"  
-    	  parent="declarativeCapability">
-   		<property name="name" value="ExtendRetentionPeriodOrFreeze"/>
-   		<property name="permission" value="ExtendRetentionPeriodOrFreeze"/>   	 		
-		<property name="kinds">
-			<list>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</list>
-		</property>		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/>
-   				<entry key="capabilityCondition.frozen" value="false"/>   				
-   			</map>
-   		</property>
-    </bean>    
+	</bean>    
     
     <bean id="rmMakeOptionalPropertiesMandatoryCapability" 
 		  parent="declarativeCapability">
@@ -397,18 +379,6 @@
    		</property>
     </bean>    
     
-    <bean id="rmUnfreezeCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="Unfreeze"/>
-   		<property name="permission" value="Unfreeze"/>   		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/>
-   				<entry key="capabilityCondition.frozenOrHold" value="true"/>
-   			</map>
-   		</property>
-    </bean>
-    
     <bean id="rmUpdateClassificationDatesCapability" 
 		  parent="declarativeCapability">
 		<property name="name" value="UpdateClassificationDates" />
@@ -443,22 +413,14 @@
    		</property>
     </bean>
     
-    <bean id="rmViewUpdateReasonsForFreezeCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="ViewUpdateReasonsForFreeze"/>
-   		<property name="permission" value="ViewUpdateReasonsForFreeze"/>   		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.frozenOrHold" value="true"/>
-   			</map>
-   		</property>
-    </bean>
-    
     <!-- Record Folder capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-recordfolder-context.xml"/>
     
     <!-- Record capabilities -->
-    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-record-context.xml"/>
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-record-context.xml"/>    
+    
+    <!-- Freeze capabilities -->
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-freeze-context.xml"/>
     
     <!-- Group capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-group-context.xml"/>  

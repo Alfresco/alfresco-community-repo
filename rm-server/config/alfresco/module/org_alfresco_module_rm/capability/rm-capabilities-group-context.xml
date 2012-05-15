@@ -103,6 +103,17 @@
             </list>
         </property>
     </bean>
-    	
+    
+    <bean id="rmCopy"
+          parent="declarativeCapability">
+    	<property name="name" value="Copy"/>
+    	<property name="private" value="true"/>
+    	<property name="conditions">
+    		<map>
+    			<entry key="capabilityCondition.frozen" value="false"/>
+    		</map>
+    	</property>
+    	<property name="targetCapability" ref="rmCreate" />
+    </bean>
 
 </beans>

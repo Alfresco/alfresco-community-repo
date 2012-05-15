@@ -72,6 +72,18 @@
 			</list>
 		</property>	
 	</bean>
+	
+	<bean id="rmFileToRecordsCapability"
+	      parent="declarativeCapability">
+		<property name="name" value="FileToRecords"/>
+		<property name="private" value="true" />		
+    	<property name="conditions">
+    		<map>
+    			<entry key="capabilityCondition.frozen" value="false"/>
+    		</map>
+    	</property>
+    	<property name="targetCapability" ref="rmFileRecordsCapability" />
+	</bean>
 
     <bean id="rmDeclareRecordsCapability" 
     	  parent="declarativeCapability">
@@ -172,13 +184,14 @@
    			<map>
    				<entry key="capabilityCondition.filling" value="true"/>
    				<entry key="capabilityCondition.cutoff" value="false"/>
-   				<entry key="capabilityCondition.frozen" value="false"/>   				
-   				<entry key="capabilityCondition.closed" value="false"/>   				   				
+   				<entry key="capabilityCondition.frozen" value="false"/>   				  				   				
    				<entry key="capabilityCondition.declared" value="true"/>
    			</map>
    		</property>
     </bean>    
     
+    <!--  TODO .. this is being used for the wrong thing! ... should indicate that the use can edit the non-record meta-data of a record -->
+    <!--  TODO .. may need some kind of 'prep' record capability you get with file? .. I think this is what this is being used for atm -->
     <bean id="rmEditNonRecordMetadataCapability" 
     	  parent="declarativeCapability"
           class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditCapability">
@@ -186,7 +199,8 @@
    		<property name="permission" value="EditNonRecordMetadata"/>   		
    		<property name="conditions">
    			<map>
-   				<entry key="capabilityCondition.fileable" value="true"/>   				   				
+   				<entry key="capabilityCondition.fileable" value="true"/>   				
+   				<entry key="capabilityCondition.frozen" value="false"/>   				   				
    			</map>
    		</property>
     </bean> 

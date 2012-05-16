@@ -25,19 +25,14 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 /**
  * This job finds all Vital Records which are due for review, optionally
@@ -45,20 +40,37 @@ import org.quartz.JobExecutionException;
  * 
  * @author Neil McErlean
  */
-public class NotifyOfRecordsDueForReviewJob implements Job
+public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJobExecuter
 {
-    private static Log logger = LogFactory.getLog(NotifyOfRecordsDueForReviewJob.class);
+    private static Log logger = LogFactory.getLog(NotifyOfRecordsDueForReviewJobExecuter.class);
+    
+    private RecordsManagementNotificationHelper recordsManagementNotificationHelper;
+    
+    private NodeService nodeService;
+    
+    private SearchService searchService;
+    
+    public void setRecordsManagementNotificationHelper(
+            RecordsManagementNotificationHelper recordsManagementNotificationHelper)
+    {
+        this.recordsManagementNotificationHelper = recordsManagementNotificationHelper;
+    }
+    
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
     
     /**
-     * @see org.quartz.Job#execute(org.quartz.JobExecutionContext)
+     * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#execute()
      */
-    public void execute(JobExecutionContext context) throws JobExecutionException
-    {
-        final RecordsManagementNotificationHelper notificationHelper = (RecordsManagementNotificationHelper)context.getJobDetail().getJobDataMap().get("recordsManagementNotificationHelper");
-        final NodeService nodeService = (NodeService) context.getJobDetail().getJobDataMap().get("nodeService");
-        final SearchService searchService = (SearchService) context.getJobDetail().getJobDataMap().get("searchService");
-        final TransactionService trxService = (TransactionService) context.getJobDetail().getJobDataMap().get("transactionService");  
-        
+    public void execute() 
+    {       
         if (logger.isDebugEnabled())
         {
             logger.debug("Job " + this.getClass().getSimpleName() + " starting.");
@@ -91,8 +103,6 @@ public class NotifyOfRecordsDueForReviewJob implements Job
                 //If we have something to do and a template to do it with
                 if(resultNodes.size() != 0)
                 {
-                    RetryingTransactionHelper trn = trxService.getRetryingTransactionHelper();
-                    
                     //Send the email message - but we must not retry since email is not transactional
                     RetryingTransactionCallback<Boolean> txCallbackSendEmail = new RetryingTransactionCallback<Boolean>()
                     {
@@ -100,7 +110,7 @@ public class NotifyOfRecordsDueForReviewJob implements Job
                         public Boolean execute() throws Throwable
                         {
                             // Send notification
-                            notificationHelper.recordsDueForReviewEmailNotification(resultNodes);
+                            recordsManagementNotificationHelper.recordsDueForReviewEmailNotification(resultNodes);
                                     
                             return null;
                         }
@@ -122,10 +132,10 @@ public class NotifyOfRecordsDueForReviewJob implements Job
                     /**
                      * Now do the work, one action in each transaction
                      */
-                    trn.setMaxRetries(0);   // don't retry the send email
-                    trn.doInTransaction(txCallbackSendEmail);
-                    trn.setMaxRetries(10);
-                    trn.doInTransaction(txUpdateNodesCallback);
+                    retryingTransactionHelper.setMaxRetries(0);   // don't retry the send email
+                    retryingTransactionHelper.doInTransaction(txCallbackSendEmail);
+                    retryingTransactionHelper.setMaxRetries(10);
+                    retryingTransactionHelper.doInTransaction(txUpdateNodesCallback);
                 }
                 return null;
             }

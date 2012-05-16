@@ -49,21 +49,24 @@ public interface CapabilityService
     Capability getCapability(String name);
     
     /**
+     * Get a list of all the assignable capabilities.
      * 
-     * @return
+     * @return  {@link Set}<{@link Capability}>     set of all the assignable capabilities
      */
     Set<Capability> getCapabilities();
     
     /**
+     * Get a list of all the capabilities, optionally including those that are non-assignable.
      * 
-     * @param includePrivate
-     * @return
+     * @param includePrivate    indicates that the private, or non-assignable capabilities are included in the result
+     * @return  {@link Set}<{@link Capability}>     set of capabilities
      */
     Set<Capability> getCapabilities(boolean includePrivate);
     
     /**
+     * Get all the capabilities access state based on the current user.
      * 
-     * @param nodeRef
+     * @param nodeRef   node reference
      * @return
      */
     Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef);

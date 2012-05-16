@@ -24,7 +24,6 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutor;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorRegistry;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -37,47 +36,51 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 /**
  * Job to publish any pending updates on marked node references.
  * 
  * @author Roy Wetherall
  */
-public class PublishUpdatesJob implements Job, RecordsManagementModel
+public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter 
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(PublishUpdatesJob.class);
+    private static Log logger = LogFactory.getLog(PublishUpdatesJobExecuter.class);
     
     /** Node service */
     private NodeService nodeService;
     
     /** Search service */
-    private SearchService searchService;
-    
-    /** Retrying transaction helper */
-    private RetryingTransactionHelper retryingTransactionHelper;   
+    private SearchService searchService;    
     
     /** Publish executor register */
-    private PublishExecutorRegistry register;
+    private PublishExecutorRegistry publishExecutorRegistry;
     
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
     
-    /** Indicates whether the job bean has been initialised or not */
-    private boolean initialised = false;   
-
-    /**
-     * @see org.quartz.Job#execute(org.quartz.JobExecutionContext)
-     */
-    public void execute(JobExecutionContext context) throws JobExecutionException
+    public void setNodeService(NodeService nodeService)
     {
-        // Initialise the service references
-        initServices(context);
-        
+        this.nodeService = nodeService;
+    }
+    
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+    
+    public void setPublishExecutorRegistry(PublishExecutorRegistry publishExecutorRegistry)
+    {
+        this.publishExecutorRegistry = publishExecutorRegistry;
+    }
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }    
+    
+    public void execute()
+    {        
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("Job Starting");
@@ -157,25 +160,6 @@ public class PublishUpdatesJob implements Job, RecordsManagementModel
     }
     
     /**
-     * Initialise service based on the job execution context
-     * @param context   job execution context
-     */
-    private void initServices(JobExecutionContext context)
-    {
-        if (initialised == false)
-        {
-            // Get references to the required services
-            JobDataMap jobDataMap = context.getJobDetail().getJobDataMap();        
-            nodeService = (NodeService)jobDataMap.get("nodeService");
-            searchService = (SearchService)jobDataMap.get("searchService");
-            retryingTransactionHelper = (RetryingTransactionHelper)jobDataMap.get("retryingTransactionHelper");
-            register = (PublishExecutorRegistry)jobDataMap.get("publishExecutorRegistry");                                                                
-            behaviourFilter = (BehaviourFilter)jobDataMap.get("behaviourFilter");
-            initialised = true;
-        }
-    }
-    
-    /**
      * Mark the node as publish in progress.  This is often used as a marker to prevent any further updates 
      * to a node.
      * @param nodeRef   node reference
@@ -235,7 +219,7 @@ public class PublishUpdatesJob implements Job, RecordsManagementModel
                             }
                             
                             // Get the publish executor
-                            PublishExecutor executor = register.get(updateTo);
+                            PublishExecutor executor = publishExecutorRegistry.get(updateTo);
                             if (executor == null)
                             {
                                 if (logger.isDebugEnabled() == true)

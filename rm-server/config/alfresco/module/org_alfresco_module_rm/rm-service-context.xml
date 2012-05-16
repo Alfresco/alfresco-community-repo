@@ -229,10 +229,9 @@
     
     <!--  Capability Service -->
     
-    <bean id="CapabilityService" class="org.alfresco.module.org_alfresco_module_rm.capability.CapabilityServiceImpl">        
+    <bean id="capabilityService" class="org.alfresco.module.org_alfresco_module_rm.capability.CapabilityServiceImpl">        
     </bean>
     
-    <!-- 
     <bean id="CapabilityService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService</value>
@@ -244,7 +243,7 @@
             <list>
                 <idref local="CapabilityService_transaction"/>
                 <idref bean="exceptionTranslator"/>
-                <idref local="CapabilityService_security"/>
+                <!-- <idref local="CapabilityService_security"/>  -->
             </list>
         </property>
     </bean>
@@ -273,15 +272,11 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.registerCapability=RM_ALLOW               
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.getCapability=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.getCapabilities=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.getCapabilitiesAccessState=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.*=RM_DENY
+                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.*=RM_ALLOW
                 ]]>
             </value>
         </property>
-    </bean> -->
+    </bean>
     
     <!--  Records Management Search Service -->
     

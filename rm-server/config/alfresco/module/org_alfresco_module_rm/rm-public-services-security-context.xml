@@ -87,12 +87,16 @@
         </property>
     </bean>
     
-    <bean id="rmEntryVoter" class="org.alfresco.module.org_alfresco_module_rm.capability.RMEntryVoter" lazy-init="false" parent="RMSecurityCommon">
+    <bean id="rmEntryVoter" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.RMEntryVoter" 
+          lazy-init="false" 
+          parent="RMSecurityCommon"
+          depends-on="CapabilityService">
         <!-- Services -->
         <property name="namespacePrefixResolver" ref="namespaceService"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="dispositionService" ref="dispositionService"/>
-        <property name="capabilityService" ref="CapabilityService"/>
+        <property name="capabilityService" ref="capabilityService"/>
         
     </bean>
     

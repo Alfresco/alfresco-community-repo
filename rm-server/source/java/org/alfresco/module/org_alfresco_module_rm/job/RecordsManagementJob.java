@@ -42,7 +42,7 @@ import org.quartz.JobExecutionException;
  */
 public class RecordsManagementJob implements Job
 {
-    private static long DEFAULT_TIME = 2000L;
+    private static long DEFAULT_TIME = 30000L;
     
     private JobLockService jobLockService;
     

@@ -19,17 +19,13 @@
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
-import org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -39,15 +35,12 @@ import org.alfresco.module.org_alfresco_module_rm.model.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -60,6 +53,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.RetryingTransactionHelperTestCase;
@@ -106,6 +100,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected MutableAuthenticationService authenticationService;
     protected AuthorityService authorityService;
     protected PersonService personService;
+    protected TransactionService transactionService;
     
     /** RM Services */
     protected RecordsManagementService rmService;
@@ -259,6 +254,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         authorityService = (AuthorityService)this.applicationContext.getBean("AuthorityService");
         authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("AuthenticationService");
         personService = (PersonService)this.applicationContext.getBean("PersonService");
+        transactionService = (TransactionService)applicationContext.getBean("TransactionService");
         
         // Get RM services
         rmService = (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
@@ -462,24 +458,24 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         
         // Level 1
         mhContainer11 = rmService.createRecordCategory(mhContainer, "mhContainer11");
-        mhDispositionSchedule11 = utils.createBasicDispositionSchedule(mhContainer11, "ds11", utils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
+        mhDispositionSchedule11 = utils.createBasicDispositionSchedule(mhContainer11, "ds11", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
         mhContainer12 = rmService.createRecordCategory(mhContainer, "mhContainer12");
-        mhDispositionSchedule12 = utils.createBasicDispositionSchedule(mhContainer12, "ds12", utils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
+        mhDispositionSchedule12 = utils.createBasicDispositionSchedule(mhContainer12, "ds12", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
         
         // Level 2
         mhContainer21 = rmService.createRecordCategory(mhContainer11, "mhContainer21");
         mhContainer22 = rmService.createRecordCategory(mhContainer12, "mhContainer22");
         mhContainer23 = rmService.createRecordCategory(mhContainer12, "mhContainer23");
-        mhDispositionSchedule23 = utils.createBasicDispositionSchedule(mhContainer23, "ds23", utils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
+        mhDispositionSchedule23 = utils.createBasicDispositionSchedule(mhContainer23, "ds23", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
 
         // Level 3
         mhContainer31 = rmService.createRecordCategory(mhContainer21, "mhContainer31");
         mhContainer32 = rmService.createRecordCategory(mhContainer22, "mhContainer32");
         mhContainer33 = rmService.createRecordCategory(mhContainer22, "mhContainer33");
-        mhDispositionSchedule33 = utils.createBasicDispositionSchedule(mhContainer33, "ds33", utils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
+        mhDispositionSchedule33 = utils.createBasicDispositionSchedule(mhContainer33, "ds33", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
         mhContainer34 = rmService.createRecordCategory(mhContainer23, "mhContainer34");
         mhContainer35 = rmService.createRecordCategory(mhContainer23, "mhContainer35");
-        mhDispositionSchedule35 = utils.createBasicDispositionSchedule(mhContainer35, "ds35", utils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
+        mhDispositionSchedule35 = utils.createBasicDispositionSchedule(mhContainer35, "ds35", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
         
         // Record folders
         mhRecordFolder41 = rmService.createRecordFolder(mhContainer31, "mhFolder41");

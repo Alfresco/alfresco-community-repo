@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.Assert;
@@ -43,8 +42,8 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -128,10 +127,9 @@ public class PersonTest extends TestCase
     protected void tearDown() throws Exception
     {
         userNameMatcher.setUserNamesAreCaseSensitive(false); // Put back the default
-
-        if ((testTX.getStatus() == Status.STATUS_ACTIVE) || (testTX.getStatus() == Status.STATUS_MARKED_ROLLBACK))
+        if (testTX != null)
         {
-            testTX.rollback();
+            try { testTX.rollback(); } catch (Throwable e) {}
         }
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();

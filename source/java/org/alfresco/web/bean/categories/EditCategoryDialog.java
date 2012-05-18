@@ -38,6 +38,8 @@ import org.alfresco.service.cmr.search.CategoryService.Mode;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.bean.categories.CategoriesDialog.CategoryBreadcrumbHandler;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -66,6 +68,8 @@ public class EditCategoryDialog extends BaseDialogBean
    /** Currently visible category Node */
    private Node category = null;
    
+   private Boolean categoryFlag = false;
+   
    String categoryRef = null;
    
    /** Category path breadcrumb location */
@@ -85,6 +89,7 @@ public class EditCategoryDialog extends BaseDialogBean
    public void init(Map<String, String> parameters)
    {
       this.isFinished = false;
+      this.categoryFlag = false;
       
       // retrieve parameters
       categoryRef = parameters.get(CategoriesDialog.PARAM_CATEGORY_REF);
@@ -105,6 +110,8 @@ public class EditCategoryDialog extends BaseDialogBean
       // category dialog, this will allow it to be edited in the breadcrumb
       context.getExternalContext().getRequestMap().put(
                CategoriesDialog.KEY_CATEGORY, this.category.getName());
+      context.getExternalContext().getRequestMap().put(
+              CategoriesDialog.KEY_CATEGORY_FLAG, this.categoryFlag.toString());
       
       return outcome;
    }
@@ -167,6 +174,16 @@ public class EditCategoryDialog extends BaseDialogBean
       this.category = category;
    }
 
+   public Boolean getCategoryFlag()
+   {
+      return categoryFlag;
+   }
+
+   public void setCategoryFlag(Boolean categoryFlag)
+   {
+      this.categoryFlag = categoryFlag;
+   }
+   
    public Collection<ChildAssociationRef> getMembers()
    {
       return members;
@@ -242,14 +259,6 @@ public class EditCategoryDialog extends BaseDialogBean
     */
    public List<IBreadcrumbHandler> getLocation()
    {
-      if (this.location == null)
-      {
-         List<IBreadcrumbHandler> loc = new ArrayList<IBreadcrumbHandler>(8);
-         CategoriesDialog categoriesDialog = new CategoriesDialog();
-         loc.add(categoriesDialog.new CategoryBreadcrumbHandler(null, Application.getMessage(FacesContext.getCurrentInstance(), MSG_CATEGORIES)));
-
-         setLocation(loc);
-      }
       return this.location;
    }
 
@@ -287,12 +296,22 @@ public class EditCategoryDialog extends BaseDialogBean
             getNodeService().setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, getDescription());
          }
 
-         // edit the node in the breadcrumb if required
-         CategoriesDialog categoriesDialog = new CategoriesDialog();
+         //Figure out if the editing is made by an icon or by a list of actions
+         CategoriesDialog categoriesDialog = (CategoriesDialog) UIContextService.getInstance(FacesContext.getCurrentInstance())
+                 .getRegisteredBean(CategoriesDialog.CATEGORIES_DIALOG_CLASS_NAME);
+         setLocation(categoriesDialog.getLocation());
          List<IBreadcrumbHandler> location = getLocation();
-         IBreadcrumbHandler handler = categoriesDialog.new CategoryBreadcrumbHandler(nodeRef, Repository.getNameForNode(getNodeService(), nodeRef));
-         location.set(location.size() - 1, handler);
-         setCategory(new Node(nodeRef));
+         CategoryBreadcrumbHandler handler = (CategoryBreadcrumbHandler) location.get(location.size() - 1);
+         if (!handler.toString().equals(getCategory().getName()))
+         {
+             setCategoryFlag(true);
+         }
+         else
+         {
+             setCategoryFlag(false);
+         }
+         Node categoryNode = new Node(nodeRef);
+         setCategory(categoryNode);
       }
       catch (Throwable err)
       {

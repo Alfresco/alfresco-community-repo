@@ -95,6 +95,27 @@ public final class UIContextService implements Serializable
    }
    
    /**
+    * Returns a registered bean or null
+    * 
+    * @param className (fully qualified name)
+    * 
+    * @return IContextListener
+    */
+   public IContextListener getRegisteredBean(String className)
+   {
+      IContextListener bean = null;
+      for (Class clazz : this.registeredBeans.keySet())
+      {
+         if (clazz.getName().equals(className))
+         {
+            bean = this.registeredBeans.get(clazz);
+            break;
+         }
+      }
+      return bean;
+   }
+   
+   /**
     * Call to notify all register beans that the UI context has changed and they should
     * refresh themselves as appropriate.
     */

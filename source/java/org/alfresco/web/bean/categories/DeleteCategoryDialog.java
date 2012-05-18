@@ -36,8 +36,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.CategoryService.Depth;
 import org.alfresco.service.cmr.search.CategoryService.Mode;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.web.app.Application;
+import org.alfresco.web.app.context.UIContextService;
+import org.alfresco.web.bean.categories.CategoriesDialog.CategoryBreadcrumbHandler;
 import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
@@ -45,13 +46,15 @@ import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.IBreadcrumbHandler;
 import org.alfresco.web.ui.common.component.data.UIRichList;
-import org.alfresco.web.ui.repo.component.IRepoBreadcrumbHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 public class DeleteCategoryDialog extends BaseDialogBean
 {
     private static final long serialVersionUID = -8929785826091612856L;
+    
+    private static Log logger = LogFactory.getLog(DeleteCategoryDialog.class);
     
     private static final String DEFAULT_OUTCOME = "finish";
     private final static String MSG_DELETE_CATEGORY = "delete_category";
@@ -84,12 +87,14 @@ public class DeleteCategoryDialog extends BaseDialogBean
     /** Currently visible category Node */
     private Node category = null;
     
-    private static Log    logger = LogFactory.getLog(DeleteCategoryDialog.class);
+    private Boolean categoryFlag = false;
+    
     
     @Override
     public void init(Map<String, String> parameters)
     {
        this.isFinished = false;
+       this.categoryFlag = false;
        
        // retrieve parameters
        String categoryRef = parameters.get(CategoriesDialog.PARAM_CATEGORY_REF);
@@ -109,7 +114,9 @@ public class DeleteCategoryDialog extends BaseDialogBean
        // add the category to the request object so it gets picked up by
        // category dialog, this will allow it to be removed from the breadcrumb
        context.getExternalContext().getRequestMap().put(
-                CategoriesDialog.KEY_CATEGORY, this.category.getName());
+             CategoriesDialog.KEY_CATEGORY, this.category.getName());
+       context.getExternalContext().getRequestMap().put(
+             CategoriesDialog.KEY_CATEGORY_FLAG, this.categoryFlag.toString());
        
        return outcome;
     }
@@ -187,6 +194,16 @@ public class DeleteCategoryDialog extends BaseDialogBean
         this.category = category;
     }
     
+    public Boolean getCategoryFlag()
+    {
+        return categoryFlag;
+    }
+
+    public void setCategoryFlag(Boolean categoryFlag)
+    {
+        this.categoryFlag = categoryFlag;
+    }
+    
     /**
      * @param node    Set the Node to be used for the current category screen action.
      */
@@ -226,14 +243,6 @@ public class DeleteCategoryDialog extends BaseDialogBean
      */
     public List<IBreadcrumbHandler> getLocation()
     {
-       if (this.location == null)
-       {
-          List<IBreadcrumbHandler> loc = new ArrayList<IBreadcrumbHandler>(8);
-          CategoriesDialog categoriesDialog = new CategoriesDialog();
-          loc.add(categoriesDialog.new CategoryBreadcrumbHandler(null, Application.getMessage(FacesContext.getCurrentInstance(), MSG_CATEGORIES)));
-          
-          setLocation(loc);
-       }
        return this.location;
     }
     
@@ -378,24 +387,15 @@ public class DeleteCategoryDialog extends BaseDialogBean
                     }
                 };
                 NodeRef categoryNodeRef = txnHelper.doInTransaction(callback);
-
-                // remove this node from the breadcrumb if required
+                
+                // Figure out if the deletion is made by an icon or by a list of actions
+                CategoriesDialog categoriesDialog = (CategoriesDialog) UIContextService.getInstance(FacesContext.getCurrentInstance())
+                        .getRegisteredBean(CategoriesDialog.CATEGORIES_DIALOG_CLASS_NAME);
+                setLocation(categoriesDialog.getLocation());
                 List<IBreadcrumbHandler> location = getLocation();
-                IBreadcrumbHandler handler = location.get(location.size() - 1);
-
-                // see if the current breadcrumb location is our node
-                if (categoryNodeRef.equals(((IRepoBreadcrumbHandler) handler).getNodeRef()))
-                {
-                    location.remove(location.size() - 1);
-
-                    // now work out which node to set the list to refresh against
-                    if (location.size() != 0)
-                    {
-                        handler = location.get(location.size() - 1);
-                        this.setCurrentCategory(((IRepoBreadcrumbHandler) handler).getNodeRef());
-                    }
-                }
-
+                CategoryBreadcrumbHandler handler = (CategoryBreadcrumbHandler) location.get(location.size() - 1);
+                setCategoryFlag(!handler.toString().equals(getCategory().getName()));
+                
                 // clear action context
                 setActionCategory(null);
             }

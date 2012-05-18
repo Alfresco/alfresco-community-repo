@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -153,12 +153,11 @@ public class SearchContext implements Serializable
       // the QName for the well known "name" attribute
       String nameAttr = Repository.escapeQName(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, ELEMENT_NAME));
       
+      StringBuilder plBuf = new StringBuilder("(");
+      StringBuilder mnBuf = new StringBuilder("-(");
+      
       // match against content text
       String text = this.text.trim();
-      
-      StringBuilder fullTextBuf = new StringBuilder(64);
-      StringBuilder nameAttrBuf = new StringBuilder(128);
-      StringBuilder additionalAttrsBuf = new StringBuilder(128);
       
       if (text.length() != 0 && text.length() >= minimum)
       {
@@ -178,15 +177,16 @@ public class SearchContext implements Serializable
                // prepend NOT operator if supplied
                if (operatorNOT)
                {
-                  fullTextBuf.append(OP_NOT);
-                  nameAttrBuf.append(OP_NOT);
+                  processSearchTextAttribute(nameAttr, text, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, mnBuf);
                }
                
-               processSearchTextAttribute(nameAttr, text, nameAttrBuf, fullTextBuf);
-               for (QName qname : this.simpleSearchAdditionalAttrs)
+               // prepend AND operator if supplied
+               if (operatorAND)
                {
-                  processSearchAttribute(qname, text, additionalAttrsBuf, false, operatorNOT);
+              	 processSearchTextAttribute(nameAttr, text, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, plBuf);
                }
+               
+               processSearchAdditionalAttribute(text, operatorNOT, operatorAND, mnBuf, plBuf, this.simpleSearchAdditionalAttrs);
             }
          }
          else
@@ -196,11 +196,11 @@ public class SearchContext implements Serializable
             {
                // as a single quoted phrase
                String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
-               fullTextBuf.append("TEXT:").append(quotedSafeText);
-               nameAttrBuf.append("@").append(nameAttr).append(":").append(quotedSafeText);
+               plBuf.append("TEXT:").append(quotedSafeText);
+               plBuf.append(" @").append(nameAttr).append(":").append(quotedSafeText);
                for (QName qname : this.simpleSearchAdditionalAttrs)
                {
-                  additionalAttrsBuf.append(" @").append(
+            	   plBuf.append(" @").append(
                         Repository.escapeQName(qname)).append(":").append(quotedSafeText);
                }
             }
@@ -208,10 +208,6 @@ public class SearchContext implements Serializable
             {
                // as individual search terms
                StringTokenizer t = new StringTokenizer(text, " ");
-               
-               fullTextBuf.append('(');
-               nameAttrBuf.append('(');
-               additionalAttrsBuf.append('(');
                
                int termCount = 0;
                int tokenCount = t.countTokens();
@@ -240,35 +236,28 @@ public class SearchContext implements Serializable
                      // prepend NOT operator if supplied
                      if (operatorNOT)
                      {
-                        fullTextBuf.append(OP_NOT);
-                        nameAttrBuf.append(OP_NOT);
+                        processSearchTextAttribute(nameAttr, term, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, mnBuf);
                      }
                      
                      // prepend AND operator if supplied
                      if (operatorAND)
                      {
-                        fullTextBuf.append(OP_AND);
-                        nameAttrBuf.append(OP_AND);
+                    	 processSearchTextAttribute(nameAttr, term, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, plBuf);
                      }
                      
-                     processSearchTextAttribute(nameAttr, term, nameAttrBuf, fullTextBuf);
-                     for (QName qname : this.simpleSearchAdditionalAttrs)
+                     if (mode == SearchContext.SEARCH_ALL)
                      {
-                        processSearchAttribute(qname, term, additionalAttrsBuf, operatorAND, operatorNOT);
+                    	 processSearchAdditionalAttribute(term, operatorNOT, operatorAND, mnBuf, plBuf, this.simpleSearchAdditionalAttrs);
                      }
-                     
-                     fullTextBuf.append(' ');
-                     nameAttrBuf.append(' ');
-                     additionalAttrsBuf.append(' ');
                      
                      termCount++;
                   }
                }
-               fullTextBuf.append(')');
-               nameAttrBuf.append(')');
-               additionalAttrsBuf.append(')');
             }
          }
+         
+         plBuf.append(')');
+         mnBuf.append(')');
          
          validQuery = true;
       }
@@ -391,32 +380,37 @@ public class SearchContext implements Serializable
          folderTypeQuery = " TYPE:\"{" + NamespaceService.CONTENT_MODEL_1_0_URI + "}folder\" ";
       }
       
-      String fullTextQuery = fullTextBuf.toString();
-      String nameAttrQuery = nameAttrBuf.toString();
-      String additionalAttrsQuery =
-         (this.simpleSearchAdditionalAttrs.size() != 0) ? additionalAttrsBuf.toString() : "";
-      
       if (text.length() != 0 && text.length() >= minimum)
       {
+    	 StringBuilder buf = new StringBuilder(128);
+    	 if (plBuf.length() > 2)
+    	 {
+             buf.append(plBuf);
+             if (mnBuf.length() > 3)
+             {
+                 buf.append(" AND ");
+             }
+    	 }
+    	 if (mnBuf.length() > 3)
+         {
+    	     buf.append(mnBuf);
+         }
          // text query for name and/or full text specified
          switch (mode)
          {
             case SearchContext.SEARCH_ALL:
-               query = '(' + fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + additionalAttrsQuery + ' ' + fullTextQuery + ')' + ')' +
+               query = '(' + fileTypeQuery + " AND " + '(' + buf + ')' + ')' +
                        ' ' +
-                       '(' + folderTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + additionalAttrsQuery + "))";
+                       '(' + folderTypeQuery + " AND " + '(' + buf + "))";
                break;
             
             case SearchContext.SEARCH_FILE_NAMES:
-               query = fileTypeQuery + " AND " + nameAttrQuery;
-               break;
-            
             case SearchContext.SEARCH_FILE_NAMES_CONTENTS:
-               query = fileTypeQuery + " AND " + '(' + nameAttrQuery + ' ' + fullTextQuery + ')';
+               query = fileTypeQuery + " AND " + '(' + buf + ')';
                break;
             
             case SearchContext.SEARCH_SPACE_NAMES:
-               query = folderTypeQuery + " AND " + nameAttrQuery;
+               query = folderTypeQuery + " AND " + buf;
                break;
             
             default:
@@ -481,27 +475,12 @@ public class SearchContext implements Serializable
     * @param qname      QName of the attribute
     * @param value      Non-null value of the attribute
     * @param buf        Buffer to append lucene terms to
-    */
-   private static void processSearchAttribute(QName qname, String value, StringBuilder buf)
-   {
-      processSearchAttribute(qname, value, buf, true, false);
-   }
-   
-   /**
-    * Build the lucene search terms required for the specified attribute and append to a buffer.
-    * Supports text values with a wildcard '*' character as the prefix and/or the suffix. 
-    * 
-    * @param qname      QName of the attribute
-    * @param value      Non-null value of the attribute
-    * @param buf        Buffer to append lucene terms to
     * @param andOp      If true apply the '+' AND operator as the prefix to the attribute term
     * @param notOp      If true apply the '-' NOT operator as the prefix to the attribute term
     */
-   private static void processSearchAttribute(QName qname, String value, StringBuilder buf, boolean andOp, boolean notOp)
+   private static void processSearchAttribute(QName qname, String value, StringBuilder buf)
    {
-      if (andOp) buf.append('+');
-      else if (notOp) buf.append('-');
-      buf.append('@').append(Repository.escapeQName(qname)).append(":\"")
+      buf.append(" @").append(Repository.escapeQName(qname)).append(":\"")
          .append(SearchContext.escape(value)).append("\" ");
    }
    
@@ -514,11 +493,33 @@ public class SearchContext implements Serializable
     * @param attrBuf    Attribute search buffer to append lucene terms to
     * @param textBuf    Text search buffer to append lucene terms to
     */
-   private static void processSearchTextAttribute(String qname, String value, StringBuilder attrBuf, StringBuilder textBuf) 
+   private static void processSearchTextAttribute(String qname, String value, boolean appendText, StringBuilder mnBuf) 
    { 
-      textBuf.append("TEXT:\"").append(SearchContext.escape(value)).append('"');
-      attrBuf.append('@').append(qname).append(":\"") 
+      mnBuf.append('@').append(qname).append(":\"") 
              .append(SearchContext.escape(value)).append('"'); 
+      if (appendText)
+      {
+    	  mnBuf.append(" TEXT:\"").append(SearchContext.escape(value)).append("\" ");
+      }
+   } 
+   
+   private static void processSearchAdditionalAttribute(String value, boolean operatorNOT, boolean operatorAND, StringBuilder mnBuf, StringBuilder plBuf,
+		   List<QName> simpleSearchAdditionalAttrs) 
+   {
+   for (QName qname : simpleSearchAdditionalAttrs)
+   {
+	// prepend NOT operator if supplied
+       if (operatorNOT)
+       {
+  	     processSearchAttribute(qname, value, mnBuf);
+       }
+   
+       // prepend AND operator if supplied
+       if (operatorAND)
+       {
+  	     processSearchAttribute(qname, value, plBuf);
+       } 
+   }
    } 
    
    /**

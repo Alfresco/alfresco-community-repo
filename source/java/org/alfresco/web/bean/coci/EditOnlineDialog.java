@@ -33,6 +33,7 @@ import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
+import org.springframework.extensions.webscripts.ui.common.StringUtils;
 
 /**
  * This base dialog class provides methods for online editing. It does
@@ -132,7 +133,7 @@ public class EditOnlineDialog extends CCCheckoutFileDialog
             else
             {
                // make content available to the html editing screen
-               property.setDocumentContent(reader.getContentString());
+               property.setDocumentContent(StringUtils.stripUnsafeHTMLTags(reader.getContentString(), false));
                property.setEditorOutput(null);
                
                // navigate to appropriate screen

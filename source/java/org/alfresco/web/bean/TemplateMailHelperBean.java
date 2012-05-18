@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.UrlUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.BaseTemplateContentServlet;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -154,6 +155,7 @@ public class TemplateMailHelperBean implements Serializable
                 }
                 model.put("space", parentNodeRef);
             }
+            model.put("shareUrl", UrlUtil.getShareUrl(services.getSysAdminParams()));
             
             body = services.getTemplateService().processTemplate("freemarker", templateRef.toString(), model);
          }

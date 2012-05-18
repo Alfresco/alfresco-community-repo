@@ -834,6 +834,9 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
          out.write(bundle.getString(MSG_ACTIONS));
          out.write("</th></tr>");
          
+         // assets copy to set checkbox value by node index
+         List<AssetInfo> assetsCopy = new ArrayList<AssetInfo>(assets);
+         
          // move conflicts to top of list
          if (diffCount > 0)
          {
@@ -871,8 +874,9 @@ public class UIUserSandboxes extends SelfRenderingComponent implements Serializa
             out.write(id);
             out.write("' value='");
             // the value is a username index followed by a node lookup index
-            out.write(Integer.toString(index) + '_' + Integer.toString(rowIndex++));
+            out.write(Integer.toString(index) + '_' + Integer.toString(assetsCopy.indexOf(node)));
             out.write("'></td>");
+            rowIndex++;
             
             if (isGhost == false)
             {

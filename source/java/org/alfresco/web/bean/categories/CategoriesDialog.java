@@ -64,8 +64,11 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
    private static final long serialVersionUID = -1254971127977205987L;
 
    public static final String KEY_CATEGORY = "category";
+   public static final String KEY_CATEGORY_FLAG = "categoryFlag";
 	
    public static final String PARAM_CATEGORY_REF = "categoryRef";
+   
+   public static final String CATEGORIES_DIALOG_CLASS_NAME = "org.alfresco.web.bean.categories.CategoriesDialog";
    
    private static final String VIEW_ICONS = "icons";
    private static final String VIEW_DETAILS = "details";
@@ -460,19 +463,20 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
    }
    
    /**
-    * If category.equals(handler.label) then the breadcrumb reverts one step back
-    * (needed for deleting)
-    * Else current breadcrumb is updated accordingly to the current category
-    * (needed for editing)
+    * If category.equals(handler.label) then the breadcrumb reverts one step back<br>
+    * (for deleting)
+    * <p>
+    * Else current breadcrumb is updated accordingly to the current category<br>
+    * (for editing)
     */
-   protected void removeFromBreadcrumb(String category)
+   protected void removeFromBreadcrumb(String categoryToRemove, String categoryFlag)
    {
       // remove this node from the breadcrumb if required
       List<IBreadcrumbHandler> location = getLocation();
       CategoryBreadcrumbHandler handler = (CategoryBreadcrumbHandler) location.get(location.size() - 1);
       
       // see if the current breadcrumb location is our Category
-      if (category.equals(handler.label))
+      if (categoryToRemove.equals(handler.label))
       {
          location.remove(location.size() - 1);
          
@@ -483,14 +487,20 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
             this.setCurrentCategory(handler.nodeRef); 
          }
       }
+      else if (categoryFlag.equals("true"))
+      {
+         // We don't need to modify the breadcrumb, as editing/deleting is made through an icon.
+         // the dialog should get back to the original location.
+         this.setCurrentCategory(handler.nodeRef); 
+      }
       else
       {
          if (getCategory() != null)
          {
             handler = new CategoryBreadcrumbHandler(
                   getCategory().getNodeRef(), Repository.getNameForNode(getNodeService(), getCategory().getNodeRef()));
-            location.set(location.size() - 1, handler);
-            this.setCurrentCategory(handler.nodeRef);
+          location.set(location.size() - 1, handler);
+          this.setCurrentCategory(handler.nodeRef); 
          }
       }
    }
@@ -628,16 +638,22 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
    @Override
    public void restored()
    {
-	   Object categoryToRemove = FacesContext.getCurrentInstance().getExternalContext().
-	   getRequestMap().get(KEY_CATEGORY);
-	   if (categoryToRemove != null)
-	   {
-	       if (logger.isDebugEnabled())
-	           logger.debug("Removing group '" + categoryToRemove + "' from breadcrumb");
-	       
-	       removeFromBreadcrumb((String)categoryToRemove);
-	   }
-	   contextUpdated();
+      Object categoryToRemove = FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get(KEY_CATEGORY);
+      Object categoryFlag = FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get(KEY_CATEGORY_FLAG);
+      if (categoryToRemove != null)
+	   	{
+		   	if (logger.isDebugEnabled())
+		   		logger.debug("Removing group '" + categoryToRemove + "' from breadcrumb");
+         if (categoryFlag != null)
+         {
+            removeFromBreadcrumb((String)categoryToRemove, (String)categoryFlag);		   	    
+         }
+         else
+         {
+            removeFromBreadcrumb((String)categoryToRemove, Boolean.FALSE.toString());
+         }
+	   	}
+      contextUpdated();
    }
    
    public String getViewMode()

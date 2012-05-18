@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="hazelcastConfig" class="org.alfresco.repo.cluster.HazelcastConfigFactoryBean">
+        <property name="configFile" value="${alfresco.hazelcast.configLocation}"/>
+        <property name="properties">
+            <props>
+                <prop key="alfresco.cluster.name">${alfresco.cluster.name}</prop>
+                <prop key="alfresco.hazelcast.password">${alfresco.hazelcast.password}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="hazelcastInstanceFactory" class="org.alfresco.repo.cluster.HazelcastInstanceFactory">
+        <property name="config" ref="hazelcastConfig"/>
+    </bean>
+</beans>

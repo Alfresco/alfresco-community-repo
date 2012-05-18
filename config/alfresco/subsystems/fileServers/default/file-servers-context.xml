@@ -288,15 +288,7 @@
    
    <!-- Cluster Configuration -->
    <bean id="fileSystemClusterConfig" class="org.alfresco.filesys.config.ClusterConfigBean">
-      <property name="clusterEnabled">
-         <value>${filesystem.cluster.enabled}</value>
-      </property>
-      <property name="clusterName">
-         <value>${filesystem.cluster.name}</value>
-      </property>
-      <property name="configFile">
-         <value>${filesystem.cluster.configFile}</value>
-      </property>
+      <property name="hazelcastInstanceFactory" ref="hazelcastInstanceFactory"/>
       <property name="debugFlags">
           <value>${filesystem.cluster.debugFlags}</value>
       </property>

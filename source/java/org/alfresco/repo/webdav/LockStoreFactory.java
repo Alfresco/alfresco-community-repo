@@ -26,5 +26,5 @@ package org.alfresco.repo.webdav;
  */
 public interface LockStoreFactory
 {
-    LockStore getLockStore();
+    LockStore createLockStore();
 }

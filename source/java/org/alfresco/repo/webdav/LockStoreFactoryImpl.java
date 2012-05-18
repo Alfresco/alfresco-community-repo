@@ -22,14 +22,13 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.alfresco.repo.cluster.HazelcastInstanceFactory;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.PropertyCheck;
 
 import com.hazelcast.core.HazelcastInstance;
 
 
 /**
  * Default implementation of the {@link LockStoreFactory} interface. Creates {@link LockStore}s
- * backed by a Hazelcast distributed Map if the clusterName property is set,
+ * backed by a Hazelcast distributed Map if clustering is enabled,
  * otherwise it creates a non-clustered {@link SimpleLockStore}.
  * 
  * @see LockStoreFactory
@@ -40,22 +39,21 @@ public class LockStoreFactoryImpl implements LockStoreFactory
 {
     private static final String HAZELCAST_MAP_NAME = "webdav-locks";
     private HazelcastInstanceFactory hazelcastInstanceFactory;
-    private String clusterName;
     
     /**
      * This method should be used sparingly and the created {@link LockStore}s should be
      * retained (this factory does not cache instances of them).
      */
     @Override
-    public synchronized LockStore getLockStore()
+    public synchronized LockStore createLockStore()
     {
-        if (!PropertyCheck.isValidPropertyString(clusterName))
+        if (!hazelcastInstanceFactory.isClusteringEnabled())
         {
             return new SimpleLockStore();
         }
         else
         {
-            HazelcastInstance instance = hazelcastInstanceFactory.newInstance();
+            HazelcastInstance instance = hazelcastInstanceFactory.getInstance();
             ConcurrentMap<NodeRef, LockInfo> map = instance.getMap(HAZELCAST_MAP_NAME);
             return new LockStoreImpl(map);
         }
@@ -67,13 +65,5 @@ public class LockStoreFactoryImpl implements LockStoreFactory
     public synchronized void setHazelcastInstanceFactory(HazelcastInstanceFactory hazelcastInstanceFactory)
     {
         this.hazelcastInstanceFactory = hazelcastInstanceFactory;
-    }
-
-    /**
-     * @param clusterName the clusterName to set
-     */
-    public synchronized void setClusterName(String clusterName)
-    {
-        this.clusterName = clusterName;
     }
 }

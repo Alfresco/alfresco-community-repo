@@ -19,7 +19,6 @@
 package org.alfresco.filesys.config;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -83,6 +82,7 @@ import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.Platform;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.X64;
+import org.alfresco.repo.cluster.HazelcastInstanceFactory;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.extensions.config.element.GenericConfigElement;
@@ -2323,32 +2323,13 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             logger.info("Filesystem cluster cache not enabled");
             return;
         }
-        
-        String clusterName = clusterConfigBean.getClusterName();
-        if (clusterName == null || clusterName.length() == 0)
-        {
-            throw new InvalidConfigurationException("Cluster name not specified or invalid");
-        }
-        
-        String clusterFile = clusterConfigBean.getConfigFile();
-        if (clusterFile == null || clusterFile.length() == 0)
-        {
-            throw new InvalidConfigurationException("Cluster config file not specified or invalid");
-        }
-        
-        // New Hazelcast instance created here within the ClusterConfigSection       
-        ClusterConfigSection jlanClusterConfig = new ClusterConfigSection(this);
-        
-        try
-        {
-            //TODO replace config XML file with Hazelcast config bean backed by spring.
-            jlanClusterConfig.setConfigFile(clusterFile);
-            HazelcastInstance hazelcastInstance = jlanClusterConfig.getHazelcastInstance();
-        } 
-        catch (FileNotFoundException e)
-        {
-            throw new InvalidConfigurationException("Unable to start filsystem cluster", e);
-        }        
+                
+        // Create a ClusterConfigSection and attach it to 'this'.
+        ClusterConfigSection clusterConf = new ClusterConfigSection(this);
+        HazelcastInstanceFactory hazelcastInstanceFactory = clusterConfigBean.getHazelcastInstanceFactory();
+        // Clustering is enabled, so we can safely request the hazelcast instance.
+        HazelcastInstance hazelcast = hazelcastInstanceFactory.getInstance();
+        clusterConf.setHazelcastInstance(hazelcast);
     }
     
     

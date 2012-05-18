@@ -28,8 +28,10 @@ import java.util.Map;
 
 import net.sf.acegisecurity.Authentication;
 
+import org.alfresco.service.cmr.remoteconnector.RemoteConnectorClientException;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorRequest;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorResponse;
+import org.alfresco.service.cmr.remoteconnector.RemoteConnectorServerException;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -132,7 +134,8 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
     /**
      * Executes the specified request, and return the response
      */
-    public RemoteConnectorResponse executeRequest(RemoteConnectorRequest request) throws IOException, AuthenticationException
+    public RemoteConnectorResponse executeRequest(RemoteConnectorRequest request) 
+            throws IOException, AuthenticationException, RemoteConnectorClientException, RemoteConnectorServerException
     {
         // Convert the request object
         RemoteConnectorRequestImpl requestImpl = (RemoteConnectorRequestImpl)request;
@@ -196,7 +199,7 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
         if (logger.isInfoEnabled())
             logger.info("Response to request was " + resp.getStatus() + " - " + resp);
         
-        // Check the status
+        // Check the status for specific typed exceptions
         if (resp.getStatus() == Status.STATUS_UNAUTHORIZED)
         {
             throw new AuthenticationException("Not Authorized to access this resource");
@@ -205,7 +208,16 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
         {
             throw new AuthenticationException("Forbidden to access this resource");
         }
-        // TODO Handle others too
+        
+        // Check for some general ones
+        if (resp.getStatus() >= 400 && resp.getStatus() <= 499)
+        {
+            throw new RemoteConnectorClientException(resp.getStatus(), "(not available)", null);
+        }
+        if (resp.getStatus() >= 500 && resp.getStatus() <= 599)
+        {
+            throw new RemoteConnectorServerException(resp.getStatus(), "(not available)");
+        }
         
         // Convert the response
         String charset = null;
@@ -219,7 +231,8 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
         InputStream body = new ByteArrayInputStream(resp.getContentAsByteArray());
         Header[] respHeaders = new Header[0]; // TODO Can't easily get the list...
         
-        RemoteConnectorResponse response = new RemoteConnectorResponseImpl(request, contentType, charset, respHeaders, body);
+        RemoteConnectorResponse response = new RemoteConnectorResponseImpl(
+                request, contentType, charset, resp.getStatus(), respHeaders, body);
         return response;
     }
     

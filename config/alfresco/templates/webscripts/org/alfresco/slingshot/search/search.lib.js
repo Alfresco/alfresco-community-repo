@@ -515,11 +515,20 @@ function getItem(siteId, containerId, pathParts, node)
  * [1] = container or null if the node does not match
  * [2] = remaining part of the cm:name based path to the object - as an array
  */
-function splitQNamePath(node)
+function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath)
 {
    var path = node.qnamePath,
        displayPath = node.displayPath.split("/"),
        parts = null;
+   
+   // restructure the display path of the node if we have an overriden root node
+   if (rootNodeDisplayPath != null && path.indexOf(rootNodeQNamePath) === 0)
+   {
+      var nodeDisplayPath = node.displayPath.split("/");
+      nodeDisplayPath = nodeDisplayPath.splice(rootNodeDisplayPath.length);
+      nodeDisplayPath.unshift("");
+      displayPath = nodeDisplayPath;
+   }
    
    if (path.match("^"+SITES_SPACE_QNAME_PATH) == SITES_SPACE_QNAME_PATH)
    {
@@ -550,7 +559,7 @@ function splitQNamePath(node)
  * 
  * @return the final search results object
  */
-function processResults(nodes, maxResults)
+function processResults(nodes, maxResults, rootNode)
 {
    // empty cache state
    processedCache = {};
@@ -559,18 +568,19 @@ function processResults(nodes, maxResults)
       parts,
       item,
       failed = 0,
-      i, j;
+      rootNodeDisplayPath = rootNode ? rootNode.displayPath.split("/") : null,
+      rootNodeQNamePath = rootNode ? rootNode.qnamePath : null;
    
    if (logger.isLoggingEnabled())
       logger.log("Processing resultset of length: " + nodes.length);
    
-   for (i = 0, j = nodes.length; i < j && added < maxResults; i++)
+   for (var i = 0, j = nodes.length; i < j && added < maxResults; i++)
    {
       /**
        * For each node we extract the site/container qname path and then
        * let the per-container helper function decide what to do.
        */
-      parts = splitQNamePath(nodes[i]);
+      parts = splitQNamePath(nodes[i], rootNodeDisplayPath, rootNodeQNamePath);
       item = getItem(parts[0], parts[1], parts[2], nodes[i]);
       if (item !== null)
       {
@@ -679,6 +689,28 @@ function processMultiValue(propName, propValue, operand, pseudo)
    return formQuery;
 }
 
+function resolveRootNode(reference)
+{
+   var node;
+   if (reference == "alfresco://company/home")
+   {
+      node = null;
+   }
+   else if (reference == "alfresco://user/home")
+   {
+      node = userhome;
+   }
+   else if (reference == "alfresco://sites/home")
+   {
+      node = companyhome.childrenByXPath("st:sites")[0];
+   }
+   else if (reference.indexOf("://") > 0)
+   {
+      node = search.findNode(reference);
+   }
+   return node;
+}
+
 /**
  * Return Search results with the given search terms.
  * 
@@ -693,7 +725,8 @@ function getSearchResults(params)
       ftsQuery = "",
       term = params.term,
       tag = params.tag,
-      formData = params.query;
+      formData = params.query,
+      rootNode = resolveRootNode(params.rootNode);
    
    // Simple keyword search and tag specific search
    if (term !== null && term.length !== 0)
@@ -879,12 +912,16 @@ function getSearchResults(params)
          }
       }
       
-      if (path !== null)
+      // root node - generally used for overridden Repository root in Share
+      if (rootNode !== null)
       {
-         ftsQuery = 'PATH:"' + path + '/*" AND (' + ftsQuery + ') ';
+         ftsQuery = 'PATH:"' + rootNode.qnamePath + '//*" AND (' + ftsQuery + ')';
+      }
+      else if (path !== null)
+      {
+         ftsQuery = 'PATH:"' + path + '/*" AND (' + ftsQuery + ')';
       }
       ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating"';
-
       ftsQuery = '(' + ftsQuery + ') AND NOT ASPECT:"sys:hidden"';
 
       // sort field - expecting field to in one of the following formats:
@@ -946,7 +983,7 @@ function getSearchResults(params)
       nodes = [];
    }
    
-   return processResults(nodes, params.maxResults);
+   return processResults(nodes, params.maxResults, rootNode);
 }
 
 /**

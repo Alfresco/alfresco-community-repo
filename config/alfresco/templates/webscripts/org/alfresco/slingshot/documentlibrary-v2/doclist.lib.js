@@ -185,14 +185,25 @@ function doclist_main()
          item.location = location;
          
          // Check: thumbnail type is registered && node is a cm:content subtype && valid inputStream for content property
-         if (isThumbnailNameRegistered && item.node.isSubType("cm:content") && item.node.properties.content.inputStream != null)
+         var is = item.node.properties.content.inputStream;
+         try
          {
-            // Make sure we have a thumbnail.
-            thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
-            if (thumbnail === null)
+            if (isThumbnailNameRegistered && item.node.isSubType("cm:content") && (null != is))
             {
-               // No thumbnail, so queue creation
-               item.node.createThumbnail(THUMBNAIL_NAME, true);
+               // Make sure we have a thumbnail.
+               thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
+               if (thumbnail === null)
+               {
+                  // No thumbnail, so queue creation
+                  item.node.createThumbnail(THUMBNAIL_NAME, true);
+               }
+            }
+         }
+         finally
+         {
+            if (null != is)
+            {
+               is.close();
             }
          }
          

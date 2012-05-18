@@ -31,7 +31,16 @@ function getDoclist()
       {
          favourites: favourites
       }),
-      query = filterParams.query;
+      query = filterParams.query,
+      allSites = (parsedArgs.nodeRef == "alfresco://sites/home");
+
+   if (logger.isLoggingEnabled())
+      logger.log("doclist.get.js - NodeRef: " + parsedArgs.nodeRef + " Query: " + query);
+
+   var totalItemCount = filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : -1;
+   // For all sites documentLibrary query we pull in all available results and post filter
+   if (totalItemCount === 0) totalItemCount = -1;
+   else if (allSites) totalItemCount = -1;
    
    if ((filter || "path") == "path")
    {
@@ -77,7 +86,7 @@ function getDoclist()
             language: filterParams.language,
             page:
             {
-               maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
+               maxItems: totalItemCount
             },
             sort: filterParams.sort,
             templates: filterParams.templates,
@@ -87,28 +96,48 @@ function getDoclist()
          totalRecords = allNodes.length;
       }
    }
-   
+   if (logger.isLoggingEnabled())
+      logger.log("doclist.get.js - query results: " + allNodes.length);
+   // Generate the qname path match regex required for all sites 'documentLibrary' results match
+   var pathRegex;
+   if (allSites)
+   {
+      // escape the forward slash characters in the qname path
+      // TODO: replace with java.lang.String regex match for performance
+      var pathMatch = new String(parsedArgs.rootNode.qnamePath).replace(/\//g, '\\/') + "\\/.*\\/cm:documentLibrary\\/.*";
+      pathRegex = new RegExp(pathMatch, "gi");
+      if (logger.isLoggingEnabled())
+         logger.log("doclist.get.js - will match results using regex: " + pathMatch);
+   }
+
    // Ensure folders and folderlinks appear at the top of the list
    var folderNodes = [],
       documentNodes = [];
-   
+
    for each (node in allNodes)
    {
-      try
+      if (totalItemCount !== 0)
       {
-         if (node.isContainer || node.isLinkToContainer)
+         try
          {
-            folderNodes.push(node);
+            if (!allSites || node.qnamePath.match(pathRegex))
+            {
+               totalItemCount--;
+               if (node.isContainer || node.isLinkToContainer)
+               {
+                  folderNodes.push(node);
+               }
+               else
+               {
+                  documentNodes.push(node);
+               }
+            }
          }
-         else
+         catch (e)
          {
-            documentNodes.push(node);
+            // Possibly an old indexed node - ignore it
          }
-      }
-      catch (e)
-      {
-         // Possibly an old indexed node - ignore it
-      }
+      } else break;
    }
    
    // Node type counts
@@ -193,14 +222,25 @@ function getDoclist()
          item.location = location;
          
          // Is our thumbnail type registered?
-         if (isThumbnailNameRegistered && item.node.isSubType("cm:content") && item.node.properties.content.inputStream != null)
+         var is = item.node.properties.content.inputStream;
+         try
          {
-            // Make sure we have a thumbnail.
-            thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
-            if (thumbnail === null)
+            if (isThumbnailNameRegistered && item.node.isSubType("cm:content") && (null != is))
             {
-               // No thumbnail, so queue creation
-               item.node.createThumbnail(THUMBNAIL_NAME, true);
+               // Make sure we have a thumbnail.
+               thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
+               if (thumbnail === null)
+               {
+                  // No thumbnail, so queue creation
+                  item.node.createThumbnail(THUMBNAIL_NAME, true);
+               }
+            }
+         }
+         finally
+         {
+            if (null != is)
+            {
+               is.close();
             }
          }
          

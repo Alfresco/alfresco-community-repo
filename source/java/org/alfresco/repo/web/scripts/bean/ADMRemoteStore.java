@@ -794,7 +794,7 @@ public class ADMRemoteStore extends BaseRemoteStore
             properties.put(ContentModel.PROP_NAME, (Serializable) SURF_CONFIG);
             ChildAssociationRef ref = this.unprotNodeService.createNode(
                     rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
-            
+            surfConfigRef = ref.getChildRef();
             // surf-config needs to be hidden - applies index control aspect as part of the hidden aspect
             hiddenAspect.hideNode(ref.getChildRef());
         }

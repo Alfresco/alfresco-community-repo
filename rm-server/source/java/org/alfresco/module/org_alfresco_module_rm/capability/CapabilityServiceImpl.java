@@ -94,8 +94,18 @@ public class CapabilityServiceImpl implements CapabilityService
      */
     public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef)
     {        
+        return getCapabilitiesAccessState(nodeRef, false);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesAccessState(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef, boolean includePrivate)
+    {
+        Set<Capability> listOfCapabilites = getCapabilities(includePrivate);
         HashMap<Capability, AccessStatus> answer = new HashMap<Capability, AccessStatus>();
-        for (Capability capability : capabilities.values())
+        for (Capability capability : listOfCapabilites)
         {
             AccessStatus status = capability.hasPermission(nodeRef);
             if (answer.put(capability, status) != null)

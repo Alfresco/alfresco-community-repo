@@ -314,13 +314,6 @@
 	<bean id="jsonConversionComponent.viewAuditLogAction"
 	      parent="jsonConversionComponent.baseAction">
 		<property name="name" value="viewAuditLog"/>
-		<property name="kinds">
-			<set>
-				<value>RECORD_CATEGORY</value>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</set>
-		</property>	
 		<property name="capability" value ="AccessAudit"/>
 	</bean>
 	

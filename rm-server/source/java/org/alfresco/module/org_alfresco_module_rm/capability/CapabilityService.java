@@ -64,12 +64,20 @@ public interface CapabilityService
     Set<Capability> getCapabilities(boolean includePrivate);
     
     /**
-     * Get all the capabilities access state based on the current user.
+     * Get all the capabilities access state based on the current user for the assignable capabilities.
      * 
      * @param nodeRef   node reference
      * @return
      */
     Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef);
+    
+    /**
+     * Get all the capabilities access state based on the current user.
+     * 
+     * @param nodeRef   node reference
+     * @return
+     */
+    Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef, boolean includePrivate);
     
     /**
      * 

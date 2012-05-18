@@ -139,37 +139,7 @@
    				<entry key="capabilityCondition.frozen" value="false"/>   				   				
    			</map>
    		</property>
-    </bean>   
-   
-    <bean id="rmDestroyRecordsCapability"
-    	  parent="declarativeCapability">
-   		<property name="name" value="DestroyRecords"/>
-   		<property name="permission" value="DestroyRecords"/>   		
-		<property name="kinds">
-			<list>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</list>
-		</property>	
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
-   				<entry key="capabilityCondition.destroyMayBeScheduled" value="true"/>
-   			</map>
-   		</property>
-    </bean>    
-    
-    <bean id="rmDestroyRecordsScheduledForDestructionCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="DestroyRecordsScheduledForDestruction"/>
-   		<property name="permission" value="DestroyRecordsScheduledForDestruction"/>   		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
-   				<entry key="capabilityCondition.destroyIsScheduled" value="true"/>
-   			</map>
-   		</property>
-    </bean>
+    </bean> 
     
     <bean id="rmEditDeclaredRecordMetadataCapability" 
     	  parent="declarativeCapability">
@@ -251,5 +221,24 @@
    			</map>
    		</property>
     </bean>    
+    
+    <bean id="rmReOpenFoldersCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="ReOpenFolders"/>
+   		<property name="permission" value="ReOpenFolders"/>   		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+			</list>
+		</property>	
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   				
+   				<entry key="capabilityCondition.closed" value="true"/>
+   			</map>
+   		</property>
+    </bean>
 
 </beans>

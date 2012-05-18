@@ -24,7 +24,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Indicates whether the given disposition action 'may' be scheduled in the future
+ * Indicates whether the given disposition action is scheduled next
  * 
  * @author Roy Wetherall
  */

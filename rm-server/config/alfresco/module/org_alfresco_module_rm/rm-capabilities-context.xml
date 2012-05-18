@@ -53,50 +53,10 @@
    		</property>
     </bean>
     
-    <bean id="rmApproveRecordsScheduledForCutoffCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="ApproveRecordsScheduledForCutoff"/>
-   		<property name="permission" value="ApproveRecordsScheduledForCutoff"/>   		
-		<property name="kinds">
-			<list>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</list>
-		</property>	
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/>   				
-   				<entry key="capabilityCondition.frozen" value="false"/>
-   			</map>
-   		</property>
-    </bean>
-    
     <bean id="rmAttachRulesToMetadataPropertiesCapability" 
           parent="declarativeCapability">
     	<property name="name" value="AttachRulesToMetadataProperties"/>
    		<property name="permission" value="AttachRulesToMetadataProperties"/>
-    </bean>
-        
-    <bean id="rmAuthorizeAllTransfersCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="AuthorizeAllTransfers"/>
-   		<property name="permission" value="AuthorizeAllTransfers"/>   		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.frozen" value="false"/>
-   			</map>
-   		</property>
-    </bean>
-    
-    <bean id="rmAuthorizeNominatedTransfersCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="AuthorizeNominatedTransfers"/>
-   		<property name="permission" value="AuthorizeNominatedTransfers"/>   		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.frozen" value="false"/>
-   			</map>
-   		</property>
     </bean>    
     
     <bean id="rmChangeOrDeleteReferencesCapability" 
@@ -289,19 +249,7 @@
    				<entry key="capabilityCondition.frozen" value="false"/>   	
    			</map>
    		</property>
-    </bean>    
-    
-    <bean id="rmManuallyChangeDispositionDatesCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="ManuallyChangeDispositionDates"/>
-   		<property name="permission" value="ManuallyChangeDispositionDates"/>   		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/> 
-   				<entry key="capabilityCondition.frozen" value="false"/>   	
-   			</map>
-   		</property>
-    </bean>
+    </bean>  
     
     <bean id="rmMapClassificationGuideMetadataCapability" 
 		  parent="declarativeCapability">
@@ -331,25 +279,6 @@
    				<entry key="capabilityCondition.cutoff" value="false"/>
    				<entry key="capabilityCondition.frozen" value="false"/>   
    				<entry key="capabilityCondition.vitalRecordOrFolder" value="true"/>	
-   			</map>
-   		</property>
-    </bean>
-    
-    <bean id="rmReOpenFoldersCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="ReOpenFolders"/>
-   		<property name="permission" value="ReOpenFolders"/>   		
-		<property name="kinds">
-			<list>
-				<value>RECORD_FOLDER</value>
-			</list>
-		</property>	
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/>
-   				<entry key="capabilityCondition.cutoff" value="false"/>
-   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   				
-   				<entry key="capabilityCondition.closed" value="true"/>
    			</map>
    		</property>
     </bean>
@@ -421,6 +350,9 @@
     
     <!-- Freeze capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-freeze-context.xml"/>
+    
+    <!-- Disposition capabilities -->
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-disposition-context.xml"/>
     
     <!-- Group capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-group-context.xml"/>  

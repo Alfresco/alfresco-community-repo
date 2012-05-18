@@ -90,7 +90,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
      */
     public void setLockStoreFactory(LockStoreFactory lockStoreFactory)
     {
-        LockStore lockStore = lockStoreFactory.getLockStore();
+        LockStore lockStore = lockStoreFactory.createLockStore();
         this.lockStore = lockStore;
     }
 

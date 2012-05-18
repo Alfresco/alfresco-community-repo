@@ -53,7 +53,7 @@ public class WebDAVLockServiceImplTest
     {
         davLockService = new WebDAVLockServiceImpl();
         LockStoreFactory lockStoreFactory = Mockito.mock(LockStoreFactory.class);
-        Mockito.when(lockStoreFactory.getLockStore()).thenReturn(lockStore);
+        Mockito.when(lockStoreFactory.createLockStore()).thenReturn(lockStore);
         davLockService.setLockStoreFactory(lockStoreFactory);
         davLockService.setNodeService(nodeService);
         davLockService.setCheckOutCheckInService(cociService);

@@ -739,13 +739,22 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      */
     public ContentTransformer getTransformer(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
+        List<ContentTransformer> transformers = getTransformers(sourceUrl, sourceMimetype, sourceSize, targetMimetype, options);
+        return (transformers == null) ? null : transformers.get(0);
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.repository.ContentService#getTransformers(String, java.lang.String, long, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     */
+    public List<ContentTransformer> getTransformers(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
+    {
         try
         {
             // look for a transformer
             transformerDebug.pushAvailable(sourceUrl, sourceMimetype, targetMimetype, options);
             List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
             transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.getTransformer(...)");
-            return (transformers.isEmpty()) ? null : transformers.get(0);
+            return transformers.isEmpty() ? null : transformers;
         }
         finally
         {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -229,20 +229,85 @@ public class TransformationOptionLimitsTest
     @Test
     public void testCombine() throws Exception
     {
-        limits.setReadLimitTimeMs(123); // limit >
-        limits.setReadLimitKBytes(45);  // limit <
-        limits.setMaxPages(789);        // max =
+        limits.setReadLimitTimeMs(123);
+        limits.setReadLimitKBytes(45);
+        limits.setPageLimit(789);
 
         TransformationOptionLimits second = new TransformationOptionLimits();
-        second.setTimeoutMs(12);            // max <
-        second.setMaxSourceSizeKBytes(456); // max >
-        second.setMaxPages(789);            // max =
+        second.setTimeoutMs(12);
+        second.setMaxSourceSizeKBytes(456);
+        second.setMaxPages(789);
         
         TransformationOptionLimits combined = limits.combine(second);
 
         assertEquals("Expected the lower value", 12, combined.getTimeoutMs());       // max <
         assertEquals("Expected the lower value", 45, combined.getReadLimitKBytes()); // limit <
         assertEquals("Expected the lower value", 789, combined.getMaxPages());       // max =
+        
+        assertEquals("Expected -1 as max is set", -1, combined.getReadLimitTimeMs());       // max <
+        assertEquals("Expected -1 as limit is set", -1, combined.getMaxSourceSizeKBytes()); // limit <
+        assertEquals("Expected -1 as limit is the same", -1, combined.getPageLimit());      // max =
+    }
+    
+    @Test
+    public void testCombineLimits() throws Exception
+    {
+        limits.setReadLimitTimeMs(123);
+        limits.setReadLimitKBytes(45);
+        limits.setPageLimit(789);
+
+        TransformationOptionLimits second = new TransformationOptionLimits();
+        second.setReadLimitTimeMs(12);
+        second.setReadLimitKBytes(-1);
+        second.setPageLimit(789);
+        
+        TransformationOptionLimits combined = limits.combine(second);
+
+        assertEquals("Expected the lower value", 12, combined.getReadLimitTimeMs());
+        assertEquals("Expected the lower value", 45, combined.getReadLimitKBytes());
+        assertEquals("Expected the lower value", 789, combined.getPageLimit());
+    }
+    
+    @Test
+    public void testCombineUpper() throws Exception
+    {
+        limits.setReadLimitTimeMs(123);
+        limits.setReadLimitKBytes(45);
+        limits.setPageLimit(789);
+
+        TransformationOptionLimits second = new TransformationOptionLimits();
+        second.setTimeoutMs(12);
+        second.setMaxSourceSizeKBytes(456);
+        second.setMaxPages(789);
+        
+        TransformationOptionLimits combined = limits.combineUpper(second);
+
+        assertEquals("Expected -1 as only one max value was set", -1, combined.getTimeoutMs());
+        assertEquals("Expected -1 as only one max value was set", -1, combined.getMaxSourceSizeKBytes());
+        assertEquals("Expected -1 as only one max value was set", -1, combined.getMaxPages());
+        
+        assertEquals("Expected -1 as only one limit value was set", -1, combined.getReadLimitTimeMs());
+        assertEquals("Expected -1 as only one limit value was set", -1, combined.getReadLimitKBytes());
+        assertEquals("Expected -1 as only one limit value was set", -1, combined.getPageLimit());
+    }
+    
+    @Test
+    public void testCombineUpperLimits() throws Exception
+    {
+        limits.setReadLimitTimeMs(123);
+        limits.setReadLimitKBytes(45);
+        limits.setPageLimit(789);
+
+        TransformationOptionLimits second = new TransformationOptionLimits();
+        second.setReadLimitTimeMs(12);
+        second.setReadLimitKBytes(-1);
+        second.setPageLimit(789);
+        
+        TransformationOptionLimits combined = limits.combineUpper(second);
+
+        assertEquals("Expected the higher value", 123, combined.getReadLimitTimeMs());
+        assertEquals("Expected -1 as only one limit value was set", -1, combined.getReadLimitKBytes());
+        assertEquals("Expected the higher value", 789, combined.getPageLimit());
     }
     
     @Test

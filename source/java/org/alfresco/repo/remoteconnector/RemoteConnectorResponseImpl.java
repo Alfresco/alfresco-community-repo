@@ -42,6 +42,7 @@ public class RemoteConnectorResponseImpl implements RemoteConnectorResponse
     private String contentType;
     private String charset;
     
+    private int status;
     private Header[] headers;
     
     private InputStream bodyStream;
@@ -53,20 +54,27 @@ public class RemoteConnectorResponseImpl implements RemoteConnectorResponse
      *  InputStream shouldn't be used as cleanup is needed 
      */
     public RemoteConnectorResponseImpl(RemoteConnectorRequest request, String contentType, 
-            String charset, Header[] headers, InputStream response)
+            String charset, int status, Header[] headers, InputStream response)
     {
         this.request = request;
         this.contentType = contentType;
         this.charset = charset;
         this.headers = headers;
+        this.status = status;
         this.bodyStream = response;
         this.bodyBytes = null;
     }
     public RemoteConnectorResponseImpl(RemoteConnectorRequest request, String contentType, 
-            String charset, Header[] headers, byte[] response)
+            String charset, int status, Header[] headers, byte[] response)
     {
-        this(request, contentType, charset, headers, new ByteArrayInputStream(response));
+        this(request, contentType, charset, status, headers, new ByteArrayInputStream(response));
         this.bodyBytes = response;
+    }
+    
+    @Override
+    public int getStatus()
+    {
+        return status;
     }
 
     @Override

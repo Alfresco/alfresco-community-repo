@@ -18,6 +18,10 @@
  */
 package org.alfresco.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -238,5 +242,23 @@ public class ValueProtectingMapTest extends TestCase
     {
         map.putAll(holyMap);
         checkMaps(true);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testSerializability() throws Exception
+    {
+        map.put("MORE", "STUFF");
+        checkMaps(true);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        ObjectOutputStream os = new ObjectOutputStream(baos);
+        os.writeObject(map);
+        os.close();
+        // Read it back in
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ObjectInputStream ois = new ObjectInputStream(bais);
+        ValueProtectingMap<String, Serializable> reloadedMap = (ValueProtectingMap<String, Serializable>) ois.readObject();
+        ois.close();
+        // Make sure it has the value
+        assertEquals("Reloaded object not same.", "STUFF", reloadedMap.get("MORE"));
     }
 }

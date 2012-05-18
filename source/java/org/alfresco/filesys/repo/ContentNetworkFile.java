@@ -661,10 +661,12 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         setFileSize(channel.size());
         
-        // Update the modification date/time
+        // Update the modification date/time and live file size
         
-        if ( getFileState() != null)
+        if ( getFileState() != null) {
         	getFileState().updateModifyDateTime();
+        	getFileState().setFileSize( getFileSize());
+        }
 
         // DEBUG
         

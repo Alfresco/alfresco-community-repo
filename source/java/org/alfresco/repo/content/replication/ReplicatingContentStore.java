@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -212,6 +212,15 @@ public class ReplicatingContentStore extends AbstractContentStore
     public boolean isContentUrlSupported(String contentUrl)
     {
         return primaryStore.isContentUrlSupported(contentUrl);
+    }
+    
+    /**
+     * @return      Return the primary store root location
+     */
+    @Override
+    public String getRootLocation()
+    {
+        return primaryStore.getRootLocation();
     }
 
     /**

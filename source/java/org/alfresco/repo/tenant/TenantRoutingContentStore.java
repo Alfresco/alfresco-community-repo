@@ -24,5 +24,4 @@ package org.alfresco.repo.tenant;
  */
 public interface TenantRoutingContentStore extends TenantDeployer
 {
-    public String getDefaultRootDir();
 }

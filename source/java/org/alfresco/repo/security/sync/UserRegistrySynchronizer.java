@@ -52,7 +52,7 @@ public interface UserRegistrySynchronizer
      *            the user registry and updated locally. When <code>false</code> then each source is only queried for
      *            those users and groups modified since the most recent modification date of all the objects last
      *            queried from that same source.
-     * @param allowDeletions
+     * @param isFullSync
      *            Should a complete set of user and group IDs be queried from the user registries in order to determine
      *            deletions? This parameter is independent of <code>force</code> as a separate query is run to process
      *            updates.
@@ -62,7 +62,7 @@ public interface UserRegistrySynchronizer
      *            <code>false</code>, all users and groups are processed in the current transaction. This is required if
      *            calling synchronously (e.g. in response to an authentication event in the same transaction).
      */
-    public void synchronize(boolean forceUpdate, boolean allowDeletions, boolean splitTxns);
+    public void synchronize(boolean forceUpdate, boolean isFullSync, boolean splitTxns);
     
     /**
      * Gets the set of property names that are auto-mapped for the user with the given user name. These should remain

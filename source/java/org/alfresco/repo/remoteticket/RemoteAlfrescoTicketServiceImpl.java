@@ -404,7 +404,16 @@ public class RemoteAlfrescoTicketServiceImpl implements RemoteAlfrescoTicketServ
         // If the credentials indicate the previous attempt failed, record as now working
         if (! credentials.getLastAuthenticationSucceeded())
         {
-            remoteCredentialsService.updateCredentialsAuthenticationSucceeded(true, credentials);
+            retryingTransactionHelper.doInTransaction(
+                    new RetryingTransactionCallback<Void>()
+                    {
+                        public Void execute()
+                        {
+                            remoteCredentialsService.updateCredentialsAuthenticationSucceeded(true, credentials);
+                            return null;
+                        }
+                    }, false, true
+            );
         }
         
         // Wrap and return

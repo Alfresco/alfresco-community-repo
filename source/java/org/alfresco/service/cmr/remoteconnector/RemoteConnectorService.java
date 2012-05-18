@@ -44,9 +44,15 @@ public interface RemoteConnectorService
     RemoteConnectorRequest buildRequest(String url, String method);
 
     /**
-     * Executes the specified request, and return the response
+     * Executes the specified request, and return the response.
+     * 
+     * @throws IOException If there was a problem with the communication to the server
+     * @throws AuthenticationException If the authentication details supplied were not accepted
+     * @throws RemoteConnectorClientException If the server indicates the client request was invalid
+     * @throws RemoteConnectorServerException If the server was itself unable to perform the request
      */
-    RemoteConnectorResponse executeRequest(RemoteConnectorRequest request) throws IOException, AuthenticationException;
+    RemoteConnectorResponse executeRequest(RemoteConnectorRequest request) throws IOException, AuthenticationException,
+        RemoteConnectorClientException, RemoteConnectorServerException;
     
     /**
      * Executes the given request, requesting a JSON response, and

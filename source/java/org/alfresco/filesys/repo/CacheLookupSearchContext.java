@@ -104,8 +104,11 @@ public class CacheLookupSearchContext extends DotDotContentSearchContext {
     		if ( fstate.hasModifyDateTime())
     			info.setModifyDateTime( fstate.getModifyDateTime());
     		
-            // File allocation size
+            // File used/allocation size
             
+    		if ( fstate.hasFileSize())
+    			info.setFileSize( fstate.getFileSize());
+    		
             if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > info.getSize())
                 info.setAllocationSize( fstate.getAllocationSize());
     		

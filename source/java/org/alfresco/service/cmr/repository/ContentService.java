@@ -224,6 +224,25 @@ public interface ContentService
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype);
     
     /**
+     * Fetch the transformers that are capable of transforming the content in the
+     * given source mimetype to the given target mimetype with the provided transformation
+     * options.
+     * <p/>
+     * The transformation options provide a finer grain way of discovering the correct transformer, 
+     * since the values and type of the options provided are considered by the transformer when
+     * deciding whether it can satisfy the transformation request.
+     * @param sourceUrl TODO
+     * @param  sourceMimetype       the source mimetype
+     * @param  sourceSize           the source size (bytes). Ignored if negative. 
+     * @param  targetMimetype       the target mimetype
+     * @param  options              the transformation options
+     * 
+     * @return ContentTransformer   the transformers that can be used, or null if none are available
+     */
+    @Auditable(parameters = {"sourceMimetype", "sourceSize", "targetMimetype", "options"})
+    public List<ContentTransformer> getTransformers(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
+    
+    /**
      * Fetch the transformer that is capable of transforming the content in the
      * given source mimetype to the given target mimetype with the provided transformation
      * options.
@@ -261,32 +280,14 @@ public interface ContentService
     public long getMaxSourceSizeBytes(String sourceMimetype, String targetMimetype, TransformationOptions options);
 
     /**
-     * Fetch all the transformers that are capable of transforming the content in the
-     * given source mimetype to the given target mimetype with the provided transformation
-     * options.
-     * <p/>
-     * The transformation options provide a finer grain way of discovering the correct transformer, 
-     * since the values and type of the options provided are considered by the transformer when
-     * deciding whether it can satisfy the transformation request.
-     * <p/>
-     * The list will contain all currently active, applicable transformers sorted in repository preference order.
-     * The contents of this list may change depending on such factors as the availability of particular transformers
-     * as well as their current behaviour. For these reasons, this list should not be cached.
-     * 
-     * @param  sourceMimetype       the source mimetype
-     * @param  sourceSize           the source size (bytes). Ignored if negative. 
-     * @param  targetMimetype       the target mimetype
-     * @param  options              the transformation options
-     * @return ContentTransformers  a List of the transformers that can be used, or the empty list if none were available
-     * 
+     * @deprecated use {@link #getTransformers(String, String, long, String, TransformationOptions).
      * @since 3.5
-     * @see ContentAccessor#getMimetype()
      */
     @Auditable(parameters = {"sourceMimetype", "sourceSize", "targetMimetype", "options"})
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
     
     /**
-     * @deprecated use overloaded method with sourceSize parameter.
+     * @deprecated use {@link #getTransformers(String, String, long, String, TransformationOptions).
      */
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options);
 

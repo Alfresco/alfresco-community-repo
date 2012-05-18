@@ -32,6 +32,7 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.RepoModelDefinition;
+import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.domain.tenant.TenantAdminDAO;
 import org.alfresco.repo.domain.tenant.TenantEntity;
@@ -85,7 +86,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     protected DictionaryComponent dictionaryComponent;
     protected TenantAdminDAO tenantAdminDAO;
     protected PasswordEncoder passwordEncoder;
-    protected TenantRoutingFileContentStore tenantFileContentStore;
+    protected ContentStore tenantFileContentStore;
     
     private ThumbnailRegistry thumbnailRegistry;
     private WorkflowService workflowService;
@@ -166,7 +167,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void setTenantFileContentStore(TenantRoutingFileContentStore tenantFileContentStore)
+    public void setTenantFileContentStore(ContentStore tenantFileContentStore)
     {
         this.tenantFileContentStore = tenantFileContentStore;
     }
@@ -259,9 +260,12 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         // register dictionary - to allow enable/disable tenant callbacks
         register(dictionaryComponent);
         
-        // register file store - to allow enable/disable tenant callbacks
-        // note: tenantFileContentStore must be registed before dictionaryRepositoryBootstrap
-        register(tenantFileContentStore, 0);
+        if (tenantFileContentStore instanceof TenantDeployer)
+        {
+            // register file store - to allow enable/disable tenant callbacks
+            // note: tenantFileContentStore must be registed before dictionaryRepositoryBootstrap
+            register((TenantDeployer)tenantFileContentStore, 0);
+        }
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
         
@@ -272,12 +276,18 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             
             // bootstrap Tenant Service internal cache
             List<Tenant> tenants = getAllTenants();
-                    
+            
             int enabledCount = 0;
             int disabledCount = 0;
             
             for (Tenant tenant : tenants)
             {
+                if ((! (tenantFileContentStore instanceof AbstractTenantRoutingContentStore)) && (! tenantFileContentStore.getRootLocation().equals(tenant.getRootContentStoreDir())))
+                {
+                    // eg. MT will not work with replicating-content-services-context.sample if tenants are not co-mingled
+                    throw new AlfrescoRuntimeException("MT: cannot start tenants - TenantRoutingContentStore is not configured AND not all tenants use co-mingled content store");
+                }
+                
                 if (tenant.isEnabled())
                 {
                     // this will also call tenant deployers registered so far ...
@@ -359,7 +369,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             AuthenticationUtil.setFullyAuthenticatedUser(getSystemUser(tenantDomain));
             
             dictionaryComponent.init();
-            tenantFileContentStore.init();
+            
+            if (tenantFileContentStore instanceof TenantDeployer)
+            {
+                ((TenantDeployer)tenantFileContentStore).init();
+            }
             
             // create tenant-specific stores
             ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap-mt");
@@ -367,14 +381,14 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             
             ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap-mt");
             bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
-
+            
             // deprecated
             ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap-mt");
             bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
             
             ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap)ctx.getBean("version2Bootstrap-mt");
             bootstrapVersionTenantStore(version2ImporterBootstrap, tenantDomain);
-
+            
             ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap-mt");
             bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
             
@@ -444,7 +458,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             AuthenticationUtil.setFullyAuthenticatedUser(getSystemUser(tenantDomain));
             
             dictionaryComponent.init();
-            tenantFileContentStore.init();
+            
+            if (tenantFileContentStore instanceof TenantDeployer)
+            {
+                ((TenantDeployer)tenantFileContentStore).init();
+            }
             
             // import tenant-specific stores
             importBootstrapUserTenantStore(tenantDomain, directorySource);
@@ -1141,24 +1159,31 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     
     private void initTenant(String tenantDomain, String rootContentStoreDir)
     {
-    	validateTenantName(tenantDomain);
-    	
+        validateTenantName(tenantDomain);
+        
         if (existsTenant(tenantDomain))
         {
             throw new AlfrescoRuntimeException("Tenant already exists: " + tenantDomain);
-        }  
-        
-        if (rootContentStoreDir == null)
-        {
-            rootContentStoreDir = tenantFileContentStore.getDefaultRootDir();
         }
-        else
+        
+        if (rootContentStoreDir != null)
         {
+            if (! (tenantFileContentStore instanceof AbstractTenantRoutingContentStore))
+            {
+                // eg. MT will not work with replicating-content-services-context.sample
+                throw new AlfrescoRuntimeException("MT: cannot initialse tenant - TenantRoutingContentStore is not configured AND tenant is not using co-mingled content store (ie. default root location)");
+            }
+            
             File tenantRootDir = new File(rootContentStoreDir);
             if ((tenantRootDir.exists()) && (tenantRootDir.list().length != 0))
             {
                 logger.warn("Tenant root directory is not empty: " + rootContentStoreDir);
             }
+        }
+        
+        if (rootContentStoreDir == null)
+        {
+            rootContentStoreDir = tenantFileContentStore.getRootLocation();
         }
         
         // init - need to enable tenant (including tenant service) before stores bootstrap

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -208,7 +208,19 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     public void tearDownTestUsersAndGroups() throws Exception
     {
-        // Wipe out everything that was in Z1 and Z2
+        // Re-zone everything that may have gone astray
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]
+        {
+            newPerson("U1"), newPerson("U2"), newPerson("U3"), newPerson("U4"), newPerson("U5"), newPerson("U6"),
+            newPerson("U7")
+        }, new NodeDescription[]
+        {
+            newGroup("G1"), newGroup("G2"), newGroup("G3"), newGroup("G4"), newGroup("G5"), newGroup("G6"),
+            newGroup("G7")
+        }), new MockUserRegistry("Z1", new NodeDescription[] {}, new NodeDescription[] {}), new MockUserRegistry("Z2",
+                new NodeDescription[] {}, new NodeDescription[] {}));
+        this.synchronizer.synchronize(true, true, true);
+        // Wipe out everything that was in Z0 - Z2
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[] {},
                 new NodeDescription[] {}), new MockUserRegistry("Z1", new NodeDescription[] {},
                 new NodeDescription[] {}), new MockUserRegistry("Z2", new NodeDescription[] {},
@@ -376,6 +388,53 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 				assertExists("Z2", "G7");
                 assertGroupDisplayNameEquals("G7", "Late Arrival");
                 assertExists("Z2", "G8", "U1", "U8");
+                return null;
+            }
+        }, false, true);
+        tearDownTestUsersAndGroups();
+    }
+
+    /**
+     * Tests a forced update of the test users and groups with deletions disabled. No users or groups should be deleted,
+     * whether or not they move registry. Groups that would have been deleted should have no members and should only be
+     * in the default zone.
+     * 
+     * @throws Exception
+     *             the exception
+     */
+    public void testForcedUpdateWithoutDeletions() throws Exception
+    {
+        UserRegistrySynchronizer synchronizer = (UserRegistrySynchronizer) ChainingUserRegistrySynchronizerTest.context
+                .getBean("testUserRegistrySynchronizerPreventDeletions");
+        setUpTestUsersAndGroups();
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]
+        {
+            newPerson("U2"), newPerson("U3"), newPerson("U4"),
+        }, new NodeDescription[]
+        {
+            newGroup("G1"), newGroup("G2"),
+        }), new MockUserRegistry("Z1", new NodeDescription[]
+        {
+            newPerson("U5"), newPerson("u6"),
+        }, new NodeDescription[] {}), new MockUserRegistry("Z2", new NodeDescription[]
+        {
+            newPerson("U6"),
+        }, new NodeDescription[] {}));
+        synchronizer.synchronize(true, true, true);
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            public Object execute() throws Throwable
+            {
+                assertExists("Z0", "U2");
+                assertExists("Z0", "U3");
+                assertExists("Z0", "U4");
+                assertExists("Z1", "U5");
+                assertExists("Z1", "u6");
+                assertExists(null, "U1");
+                assertExists(null, "U7");
+                assertExists(null, "G5");
+                assertExists(null, "G6");
                 return null;
             }
         }, false, true);
@@ -604,8 +663,17 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         assertTrue(this.authorityService.authorityExists(longName));
 
         // Check in correct zone
-        assertTrue(this.authorityService.getAuthorityZones(longName).contains(
-                AuthorityService.ZONE_AUTH_EXT_PREFIX + zone));
+        if (zone == null)
+        {
+            assertEquals(Collections.singleton(AuthorityService.ZONE_APP_DEFAULT), this.authorityService
+                    .getAuthorityZones(longName));
+        }
+        else
+        {
+            assertTrue(this.authorityService.getAuthorityZones(longName).contains(
+                    AuthorityService.ZONE_AUTH_EXT_PREFIX + zone));
+        }
+
         if (AuthorityType.getAuthorityType(longName).equals(AuthorityType.GROUP))
         {
             // Check groups have expected members

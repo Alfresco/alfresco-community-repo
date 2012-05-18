@@ -571,6 +571,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 }
                 else
                 {
+                    if (LDAPUserRegistry.logger.isDebugEnabled())
+                    {
+                        LDAPUserRegistry.logger.debug("Person DN recognized: " + nameAttribute.get());
+                    }
                     personNames.add((String) nameAttribute.get());
                 }
             }
@@ -614,6 +618,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 else
                 {
                     String authority = "GROUP_" + (String) nameAttribute.get();
+                    if (LDAPUserRegistry.logger.isDebugEnabled())
+                    {
+                        LDAPUserRegistry.logger.debug("Group DN recognized: " + authority);
+                    }
                     groupNames.add(authority);
                 }
             }
@@ -716,7 +724,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 Attribute memAttribute = getRangeRestrictedAttribute(attributes,
                         LDAPUserRegistry.this.memberAttributeName);
                 int nextStart = LDAPUserRegistry.this.attributeBatchSize;
-
+                if (LDAPUserRegistry.logger.isDebugEnabled())
+                {
+                    LDAPUserRegistry.logger.debug("Processing group: " + gid +
+                            ", from source: " + group.getSourceId());
+                }
                 // Loop until we get to the end of the range
                 while (memAttribute != null)
                 {
@@ -745,6 +757,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                             && (nameAttribute = nameAttributes
                                                     .get(LDAPUserRegistry.this.userIdAttributeName)) != null)
                                     {
+                                        if (LDAPUserRegistry.logger.isDebugEnabled())
+                                        {
+                                            LDAPUserRegistry.logger.debug("User DN recognized: " + nameAttribute.get());
+                                        }
                                         childAssocs.add((String) nameAttribute.get());
                                         continue;
                                     }
@@ -754,6 +770,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                             && (nameAttribute = nameAttributes
                                                     .get(LDAPUserRegistry.this.groupIdAttributeName)) != null)
                                     {
+                                        if (LDAPUserRegistry.logger.isDebugEnabled())
+                                        {
+                                            LDAPUserRegistry.logger.debug("Group DN recognized: " + "GROUP_" + nameAttribute.get());
+                                        }
                                         childAssocs.add("GROUP_" + nameAttribute.get());
                                         continue;
                                     }
@@ -793,7 +813,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                                     continue;
                                                 }
                                             }
-
+                                            if (LDAPUserRegistry.logger.isDebugEnabled())
+                                            {
+                                                LDAPUserRegistry.logger.debug("User DN recognized by directory lookup: " + nameAttribute.get());
+                                            }
                                             childAssocs.add((String) nameAttribute.get());
                                             continue;
                                         }
@@ -814,6 +837,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                                     LDAPUserRegistry.logger.warn("Missing GID on " + childAttributes);
                                                     continue;
                                                 }
+                                            }
+                                            if (LDAPUserRegistry.logger.isDebugEnabled())
+                                            {
+                                                LDAPUserRegistry.logger.debug("Group DN recognized by directory lookup: " + "GROUP_" + nameAttribute.get());
                                             }
                                             childAssocs.add("GROUP_" + nameAttribute.get());
                                             continue;
@@ -844,6 +871,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                             {
                                 // The member attribute didn't parse as a DN. So assume we have a group class like
                                 // posixGroup (FDS) that directly lists user names
+                                if (LDAPUserRegistry.logger.isDebugEnabled())
+                                {
+                                    LDAPUserRegistry.logger.debug("Member DN recognized as posixGroup: " + attribute);
+                                }                                
                                 childAssocs.add(attribute);
                             }
                         }
@@ -1121,7 +1152,20 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         searchControls.setReturningAttributes(returningAttributes);
-
+        if (LDAPUserRegistry.logger.isDebugEnabled())
+        {
+            LDAPUserRegistry.logger.debug("Processing query");
+            LDAPUserRegistry.logger.debug("Search base: " + searchBase);
+            LDAPUserRegistry.logger.debug("    Return result limit: " + searchControls.getCountLimit());
+            LDAPUserRegistry.logger.debug("    DerefLink: " + searchControls.getDerefLinkFlag());
+            LDAPUserRegistry.logger.debug("    Return named object: " + searchControls.getReturningObjFlag());
+            LDAPUserRegistry.logger.debug("    Time limit for search: " + searchControls.getTimeLimit());
+            LDAPUserRegistry.logger.debug("    Attributes to return: " + returningAttributes.length + " items.");
+            for (String ra : returningAttributes)
+            {
+                LDAPUserRegistry.logger.debug("        Attribute: " + ra);
+            }
+        }
         InitialDirContext ctx = null;
         try
         {
@@ -1285,6 +1329,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     public void process(SearchResult result) throws NamingException, ParseException
                     {
                         this.count++;
+                        if (LDAPUserRegistry.logger.isDebugEnabled())
+                        {
+                            String personName = result.getNameInNamespace();
+                            LDAPUserRegistry.logger.debug("Processing person: " + personName);
+                        }
                     }
 
                     /*

@@ -50,7 +50,7 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     private SimpleCache<String, ContentStore> singletonCache; // eg. for contentStore
     private final String KEY_CONTENT_STORE = "key.tenant.routing.content.store";
     
-    public void setDefaultRootDir(String defaultRootDirectory)
+    public void setRootLocation(String defaultRootDirectory)
     {
         this.defaultRootDirectory = defaultRootDirectory;
     }
@@ -70,14 +70,19 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         this.singletonCache = singletonCache;
     }
     
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
      * ApplicationContext)
      */
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
+    }
+    
+    @Override
+    public String getRootLocation()
+    {
+        return defaultRootDirectory;
     }
     
     @Override
@@ -149,7 +154,7 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     
     public void init()
     {
-        String rootDir = defaultRootDirectory;
+        String rootDir = getRootLocation();
         Tenant tenant = tenantService.getTenant(tenantService.getCurrentUserDomain());
         if (tenant != null)
         {
@@ -175,11 +180,6 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     public void onDisableTenant()
     {
         destroy();
-    }
-    
-    public String getDefaultRootDir()
-    {
-        return this.defaultRootDirectory;
     }
     
     protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);

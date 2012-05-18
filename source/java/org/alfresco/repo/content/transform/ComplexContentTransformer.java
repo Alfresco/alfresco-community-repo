@@ -22,7 +22,10 @@ import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,7 @@ import javax.faces.el.MethodNotFoundException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
@@ -57,20 +61,37 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
      */
     private static Log logger = LogFactory.getLog(ComplexContentTransformer.class);
    
+    /**
+     *  Complex transformers contain lower level transformers. In order to find dynamic
+     * (defined as null) child transformers to use, they recursively check available
+     * transformers. It makes no sense to have a transformer that is its own child.
+     */
+    static final ThreadLocal<Deque<ContentTransformer>> parentTransformers = new ThreadLocal<Deque<ContentTransformer>>() {
+        @Override
+        protected Deque<ContentTransformer> initialValue() {
+                return new ArrayDeque<ContentTransformer>();
+        }
+    };
+    
     private List<ContentTransformer> transformers;
     private List<String> intermediateMimetypes;
     private Map<String,Serializable> transformationOptionOverrides;
-    
+    private ContentService contentService;
+
     public ComplexContentTransformer()
     {
     }
 
     /**
-     * The list of transformers to use.
+     * The list of transformers to use. If any element is null
+     * all possible transformers will be considered. If any element
+     * is null, the contentService property must be set.
      * <p>
      * If a single transformer is supplied, then it will still be used.
      * 
      * @param transformers list of <b>at least one</b> transformer
+     * 
+     * @see #setContentService(ContentService)
      */
     public void setTransformers(List<ContentTransformer> transformers)
     {
@@ -107,6 +128,16 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
         this.transformationOptionOverrides = transformationOptionOverrides;
     }
 
+    /**
+     * Sets the ContentService. Only required if {@code null} transformers
+     * are provided to {@link #setTransformers(List).
+     * @param contentService
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
    /**
      * Ensures that required properties have been set
      */
@@ -125,25 +156,35 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
         {
             throw new AlfrescoRuntimeException("'mimetypeService' is a required property");
         }
+        for (ContentTransformer transformer: transformers)
+        {
+            if (transformer == null)
+            {
+                if (contentService == null)
+                {
+                    throw new AlfrescoRuntimeException("'contentService' is a required property if " +
+                                "there are any null (dynamic) transformers");
+                }
+                break;
+            }
+        }
     }
     
-    /**
-     * Overrides this method to avoid calling
-     * {@link #isTransformableMimetype(String, String, TransformationOptions)}
-     * twice on each transformer in the list, as
-     * {@link #isTransformableSize(String, long, String, TransformationOptions)}
-     * in this class must check the mimetype too.
-     */
     @Override
     public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype,
             TransformationOptions options)
     {
+        // Don't allow transformer to be its own child.
+        if (parentTransformers.get().contains(this))
+        {
+            return false;
+        }
+
         overrideTransformationOptions(options);
         
-        // To make TransformerDebug output clearer, check the mimetypes and then the sizes.
-        // If not done, 'unavailable' transformers due to size might be reported even
-        // though they cannot transform the source to the target mimetype.
-
+        // Can use super isTransformableSize as it indirectly calls getLimits in this class
+        // which combines the limits from the first transformer. Other transformer in the chain
+        // are no checked as sizes are unknown.
         return
             isTransformableMimetype(sourceMimetype, targetMimetype, options) &&
             isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
@@ -201,72 +242,41 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     @Override
     public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        return isTransformableMimetypeAndSize(sourceMimetype, -1, targetMimetype, options);
-    }
-
-    @Override
-    public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
-    {
-        return (sourceSize < 0) ||
-            super.isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options) &&
-            isTransformableMimetypeAndSize(sourceMimetype, sourceSize, targetMimetype, options);
-    }
-
-    private boolean isTransformableMimetypeAndSize(String sourceMimetype, long sourceSize,
-            String targetMimetype, TransformationOptions options)
-    {
         boolean result = true;
         String currentSourceMimetype = sourceMimetype;
-        
         Iterator<ContentTransformer> transformerIterator = transformers.iterator();
         Iterator<String> intermediateMimetypeIterator = intermediateMimetypes.iterator();
         while (transformerIterator.hasNext())
         {
             ContentTransformer transformer = transformerIterator.next();
-            // determine the target mimetype.  This is the final target if we are on the last transformation
-            String currentTargetMimetype = null;
-            if (!transformerIterator.hasNext())
+            
+            // determine the target mimetype. This is the final target if we are on the last transformation
+            String currentTargetMimetype = transformerIterator.hasNext() ? intermediateMimetypeIterator.next() : targetMimetype;
+            if (transformer == null)
             {
-                currentTargetMimetype = targetMimetype;
-            }
-            else
-            {
-                // use an intermediate transformation mimetype
-                currentTargetMimetype = intermediateMimetypeIterator.next();
-            }
-
-            if (sourceSize < 0)
-            {
-                // check we can transform the current stage's mimetypes
-                if (transformer.isTransformableMimetype(currentSourceMimetype, currentTargetMimetype, options) == false)
-                {
-                    result = false;
-                    break;
-                }
-            }
-            else
-            {
-                // check we can transform the current stage's sizes
                 try
                 {
-                    transformerDebug.pushIsTransformableSize(this);
-                    //  (using -1 if not the first stage as we can't know the size)
-                    if (transformer.isTransformableSize(currentSourceMimetype, sourceSize, currentTargetMimetype, options) == false)
+                    parentTransformers.get().push(this);
+                    @SuppressWarnings("deprecation")
+                    List<ContentTransformer> firstTansformers = contentService.getActiveTransformers(
+                            currentSourceMimetype, -1, currentTargetMimetype, options);
+                    if (firstTansformers.isEmpty())
                     {
                         result = false;
                         break;
                     }
-                    
-                    // As the size is unknown for the next stages stop.
-                    // In future we might guess sizes such as excl to pdf
-                    // is about 110% of the original size, in which case
-                    // we would continue.
-                    break;
-                    // sourceSize += sourceSize * 10 / 100;
                 }
                 finally
                 {
-                    transformerDebug.popIsTransformableSize();
+                    parentTransformers.get().pop();
+                }
+            }
+            else
+            {
+                if (transformer.isTransformableMimetype(currentSourceMimetype, currentTargetMimetype, options) == false)
+                {
+                    result = false;
+                    break;
                 }
             }
             
@@ -279,30 +289,111 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
 
     /**
      * Indicates if 'page' limits are supported by the first transformer in the chain.
+     * If the first transformer is dynamic, all possible first transformers must support it.
      * @return true if the first transformer supports them.
      */
-    protected boolean isPageLimitSupported()
+    @Override
+    protected boolean isPageLimitSupported(String sourceMimetype, String targetMimetype,
+            TransformationOptions options)
     {
-        ContentTransformer firstTransformer = transformers.iterator().next();
-        return (firstTransformer instanceof AbstractContentTransformerLimits)
-            ? ((AbstractContentTransformerLimits)firstTransformer).isPageLimitSupported()
+        boolean pageLimitSupported;
+        ContentTransformer firstTransformer = transformers.get(0);
+        String firstTargetMimetype = intermediateMimetypes.get(0);
+        if (firstTransformer == null)
+        {
+                try
+                {
+                    parentTransformers.get().push(this);
+                    @SuppressWarnings("deprecation")
+                    List<ContentTransformer> firstTansformers = contentService.getActiveTransformers(
+                            sourceMimetype, -1, firstTargetMimetype, options);
+                    pageLimitSupported = !firstTansformers.isEmpty();
+                    if (pageLimitSupported)
+                    {
+                        for (ContentTransformer transformer: firstTansformers)
+                        {
+                            if (!isPageLimitSupported(transformer, sourceMimetype, targetMimetype, options))
+                            {
+                                pageLimitSupported = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    parentTransformers.get().pop();
+                }
+        }
+        else
+        {
+            pageLimitSupported = isPageLimitSupported(firstTransformer, sourceMimetype, targetMimetype, options);
+        }
+        return pageLimitSupported;
+    }
+
+    private boolean isPageLimitSupported(ContentTransformer transformer, String sourceMimetype,
+            String targetMimetype, TransformationOptions options)
+    {
+        return (transformer instanceof AbstractContentTransformerLimits)
+            ? ((AbstractContentTransformerLimits)transformer).isPageLimitSupported(sourceMimetype, targetMimetype, options)
             : false;
     }
     
     /**
      * Returns the limits from this transformer combined with those of the first transformer in the chain.
+     * If the first transformer is dynamic, the lowest common denominator between all possible first transformers
+     * are combined.
      */
     protected TransformationOptionLimits getLimits(String sourceMimetype, String targetMimetype,
             TransformationOptions options)
     {
+        TransformationOptionLimits firstTransformerLimits = null;
         TransformationOptionLimits limits = super.getLimits(sourceMimetype, targetMimetype, options);
         ContentTransformer firstTransformer = transformers.get(0);
-        if (firstTransformer instanceof AbstractContentTransformerLimits)
+        String firstTargetMimetype = intermediateMimetypes.get(0);
+        if (firstTransformer == null)
         {
-            String firstTargetMimetype = intermediateMimetypes.get(0);
-            limits = limits.combine(((AbstractContentTransformerLimits) firstTransformer).
-                    getLimits(sourceMimetype, firstTargetMimetype, options));
+            try
+            {
+                parentTransformers.get().push(this);
+                @SuppressWarnings("deprecation")
+                List<ContentTransformer> firstTansformers = contentService.getActiveTransformers(
+                        sourceMimetype, -1, firstTargetMimetype, options);
+                if (!firstTansformers.isEmpty())
+                {
+                    for (ContentTransformer transformer: firstTansformers)
+                    {
+                        if (transformer instanceof AbstractContentTransformerLimits)
+                        {
+                            TransformationOptionLimits transformerLimits = ((AbstractContentTransformerLimits)transformer).
+                                    getLimits(sourceMimetype, firstTargetMimetype, options);
+                            firstTransformerLimits = (firstTransformerLimits == null)
+                                ? transformerLimits
+                                : firstTransformerLimits.combineUpper(transformerLimits);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                parentTransformers.get().pop();
+            }
         }
+        else
+        {
+            if (firstTransformer instanceof AbstractContentTransformerLimits)
+            {
+                firstTransformerLimits = ((AbstractContentTransformerLimits)firstTransformer).
+                        getLimits(sourceMimetype, firstTargetMimetype, options);
+            }
+        }
+
+        if (firstTransformerLimits != null)
+        {
+            limits = limits.combine(firstTransformerLimits);
+        }
+        
         return limits;
     }
     
@@ -345,7 +436,22 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
                 }
                 
                 // transform
-                transformer.transform(currentReader, currentWriter, options);
+                if (transformer == null)
+                {
+                    try
+                    {
+                        parentTransformers.get().push(this);
+                        contentService.transform(currentReader, currentWriter, options);
+                    }
+                    finally
+                    {
+                        parentTransformers.get().pop();
+                    }
+                }
+                else
+                {
+                    transformer.transform(currentReader, currentWriter, options);
+                }
 
                 // Must clear the sourceNodeRef after the first transformation to avoid later 
                 // transformers thinking the intermediate file is the original node. However as

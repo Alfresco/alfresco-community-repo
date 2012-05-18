@@ -109,20 +109,11 @@ public class ContentTransformerRegistry
     {
         // Get the list of transformers
         List<ContentTransformer> transformers = findTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-
         final Map<ContentTransformer,Long> activeTransformers = new HashMap<ContentTransformer, Long>();
         
         // identify the performance of all the transformers
          for (ContentTransformer transformer : transformers)
         {
-            // Transformability can be dynamic, i.e. it may have become unusable
-            // Don't know why we do this test as it has already been done by findTransformers(...)
-            if (transformer.isTransformable(sourceMimetype, sourceSize, targetMimetype, options) == false)
-            {
-                // It is unreliable now.
-                continue;
-            }
-            
             long transformationTime = transformer.getTransformationTime();
             activeTransformers.put(transformer, transformationTime);
         }
@@ -151,34 +142,6 @@ public class ContentTransformerRegistry
      */
     private List<ContentTransformer> findTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
-        // search for a simple transformer that can do the job
-        List<ContentTransformer> transformers = findDirectTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-        // get the complex transformers that can do the job
-        List<ContentTransformer> complexTransformers = findComplexTransformer(sourceMimetype, targetMimetype, options);
-        transformers.addAll(complexTransformers);
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Searched for transformer: \n" +
-                    "   source mimetype: " + sourceMimetype + "\n" +
-                    "   target mimetype: " + targetMimetype + "\n" +
-                    "   transformers: " + transformers);
-        }
-        return transformers;
-    }
-    
-    /**
-     * Loops through the content transformers and picks the ones with the highest reliabilities.
-     * <p>
-     * Where there are several transformers that are equally reliable, they are all returned.
-     * 
-     * @return Returns the most reliable transformers for the translation - empty list if there
-     *      are none.
-     */
-    private List<ContentTransformer> findDirectTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
-    {
-        //double maxReliability = 0.0;
-        
         List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(2);
         boolean foundExplicit = false;
         
@@ -206,17 +169,14 @@ public class ContentTransformerRegistry
             }
         }
         // done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Searched for transformer: \n" +
+                    "   source mimetype: " + sourceMimetype + "\n" +
+                    "   target mimetype: " + targetMimetype + "\n" +
+                    "   transformers: " + transformers);
+        }
         return transformers;
-    }
-    
-    /**
-     * Uses a list of known mimetypes to build transformations from several direct transformations. 
-     */
-    private List<ContentTransformer> findComplexTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
-    {
-        // get a complete list of mimetypes
-        // TODO: Build complex transformers by searching for transformations by mimetype
-        return Collections.emptyList();
     }
     
     /**

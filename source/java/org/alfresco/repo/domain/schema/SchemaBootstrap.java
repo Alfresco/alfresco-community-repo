@@ -783,6 +783,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         final Dialect dialect = Dialect.getDialect(cfg.getProperties());
         String dialectStr = dialect.getClass().getSimpleName();
 
+        // Initialise Activiti DB, using an unclosable connection.
+        initialiseActivitiDBSchema(new UnclosableConnection(connection));
+        
         if (create)
         {
             // execute pre-create scripts (not patches)
@@ -864,9 +867,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // Execute any post-auto-update scripts
             checkSchemaPatchScripts(cfg, connection, postUpdateScriptPatches, true);
         }
-        
-        // Initialise Activiti DB, using an unclosable connection
-        initialiseActivitiDBSchema(new UnclosableConnection(connection));
         
         return create;
     }

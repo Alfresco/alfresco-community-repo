@@ -74,6 +74,9 @@
         <property name="workerThreads">
             <value>${synchronization.workerThreads}</value>
         </property>
+        <property name="allowDeletions">
+            <value>${synchronization.allowDeletions}</value>
+        </property>
     </bean>
 
 

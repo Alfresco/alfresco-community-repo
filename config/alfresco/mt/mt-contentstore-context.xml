@@ -8,7 +8,7 @@
    <!--                                      -->
    
    <bean id="fileContentStore" class="org.alfresco.repo.tenant.TenantRoutingFileContentStore" parent="baseTenantRoutingContentStore">
-      <property name="defaultRootDir" value="${dir.contentstore}" />
+      <property name="rootLocation" value="${dir.contentstore}" />
    </bean>
    
 </beans>

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.httpclient.Header;
+import org.springframework.extensions.webscripts.Status;
 
 /**
  * Helper wrapper around a Remote Response, for a request that
@@ -36,6 +37,11 @@ public interface RemoteConnectorResponse
      * @return The request that generated this response
      */
     RemoteConnectorRequest getRequest();
+    
+    /**
+     * @return The HTTP {@link Status} Code for the response
+     */
+    int getStatus();
     
     /**
      * @return The raw response content type, if available

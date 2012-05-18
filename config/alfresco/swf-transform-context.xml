@@ -28,7 +28,7 @@
    
    <bean id="transformer.complex.OpenOffice.Pdf2swf"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseContentTransformer" >
+        parent="baseComplexContentTransformer" >
       <property name="transformers">
          <list>
             <ref bean="transformer.OpenOffice" />
@@ -84,7 +84,7 @@
    
    <bean id="transformer.complex.iWorks.Pdf2swf"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseContentTransformer" >
+        parent="baseComplexContentTransformer" >
       <property name="transformers">
          <list>
             <ref bean="transformer.iWorksQuicklooks" />
@@ -100,7 +100,7 @@
    
    <bean id="transformer.complex.Text.Pdf2swf"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseContentTransformer" >
+        parent="baseComplexContentTransformer" >
       <property name="transformers">
          <list>
             <ref bean="transformer.PdfBox.TextToPdf" />
@@ -123,7 +123,7 @@
    <!-- This transformer allows for the webpreviewing of zip archive files. -->
    <bean id="transformer.complex.Archive.Pdf2swf"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseContentTransformer" >
+        parent="baseComplexContentTransformer" >
       <property name="transformers">
          <list>
             <ref bean="transformer.Archive" />
@@ -147,7 +147,7 @@
    <!-- This transformer allows for the webpreviewing of outlook msg files. --> 
    <bean id="transformer.complex.Msg2swf" 
         class="org.alfresco.repo.content.transform.ComplexContentTransformer" 
-        parent="baseContentTransformer" > 
+        parent="baseComplexContentTransformer" > 
       <property name="transformers"> 
          <list> 
             <ref bean="transformer.OutlookMsg" /> 

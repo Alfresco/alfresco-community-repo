@@ -24,8 +24,10 @@ import java.io.InputStream;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.cmr.remoteconnector.RemoteConnectorClientException;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorRequest;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorResponse;
+import org.alfresco.service.cmr.remoteconnector.RemoteConnectorServerException;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorService;
 import org.alfresco.util.HttpClientHelper;
 import org.apache.commons.httpclient.Header;
@@ -79,7 +81,8 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
     /**
      * Executes the specified request, and return the response
      */
-    public RemoteConnectorResponse executeRequest(RemoteConnectorRequest request) throws IOException, AuthenticationException
+    public RemoteConnectorResponse executeRequest(RemoteConnectorRequest request) throws IOException, AuthenticationException,
+        RemoteConnectorClientException, RemoteConnectorServerException
     {
         RemoteConnectorRequestImpl reqImpl = (RemoteConnectorRequestImpl)request;
         HttpMethodBase httpRequest = reqImpl.getMethodInstance();
@@ -134,13 +137,13 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
                 
                 // Now build the response
                 response = new RemoteConnectorResponseImpl(request, responseContentType, responseCharSet,
-                                                           responseHdrs, wrappedStream);
+                                                           status, responseHdrs, wrappedStream);
             }
             else
             {
                 // Fairly small response, just keep the bytes and make life simple
                 response = new RemoteConnectorResponseImpl(request, responseContentType, responseCharSet,
-                                                           responseHdrs, httpRequest.getResponseBody());
+                                                           status, responseHdrs, httpRequest.getResponseBody());
                 
                 // Now we have the bytes, we can close the HttpClient resources
                 httpRequest.releaseConnection();
@@ -164,26 +167,42 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             logger.debug("Response was " + status + " " + statusText);
         
         // Decide if we should throw an exception
-        if (status == Status.STATUS_FORBIDDEN)
+        if (status >= 300)
         {
             // Tidy if needed
             if (httpRequest != null)
                 httpRequest.releaseConnection();
-            // Then report the error
-            throw new AuthenticationException(statusText);
+            
+            // Specific exceptions
+            if (status == Status.STATUS_FORBIDDEN ||
+                status == Status.STATUS_UNAUTHORIZED)
+            {
+                throw new AuthenticationException(statusText);
+            }
+            
+            // Server side exceptions
+            if (status >= 500 && status <= 599)
+            {
+                throw new RemoteConnectorServerException(status, statusText);
+            }
+            else
+            {
+                // Client request exceptions
+                if (httpRequest != null)
+                {
+                    // Response wasn't too big and is available, supply it
+                    throw new RemoteConnectorClientException(status, statusText, response);
+                }
+                else
+                {
+                    // Response was too large, report without it
+                    throw new RemoteConnectorClientException(status, statusText, null);
+                }
+            }
         }
-        if (status == Status.STATUS_INTERNAL_SERVER_ERROR)
-        {
-            // Tidy if needed
-            if (httpRequest != null)
-                httpRequest.releaseConnection();
-            // Then report the error
-            throw new IOException(statusText);
-        }
-        // TODO Handle the rest of the different status codes
 
-        
-        // Return our created response
+        // If we get here, then the request/response was all fine
+        // So, return our created response
         return response;
     }
     

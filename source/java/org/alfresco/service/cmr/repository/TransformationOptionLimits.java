@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -56,11 +56,20 @@ public class TransformationOptionLimits
         pages = new TransformationOptionPair();
     }
     
-    private TransformationOptionLimits(TransformationOptionLimits a, TransformationOptionLimits b)
+    private TransformationOptionLimits(TransformationOptionLimits a, TransformationOptionLimits b, boolean lower)
     {
-        time = a.time.combine(b.time);
-        kbytes = a.kbytes.combine(b.kbytes);
-        pages = a.pages.combine(b.pages);
+        if (lower)
+        {
+            time = a.time.combine(b.time);
+            kbytes = a.kbytes.combine(b.kbytes);
+            pages = a.pages.combine(b.pages);
+        }
+        else
+        {
+            time = a.time.combineUpper(b.time);
+            kbytes = a.kbytes.combineUpper(b.kbytes);
+            pages = a.pages.combineUpper(b.pages);
+        }
     }
     
     // --------------- Time ---------------
@@ -179,7 +188,22 @@ public class TransformationOptionLimits
      */
     public TransformationOptionLimits combine(final TransformationOptionLimits that)
     {
-        return new TransformationOptionLimits(this, that)
+        return combine(that, true);
+    }
+    
+    /**
+     * Returns a TransformationOptionLimits that has getter methods that combine the
+     * the values from the getter methods of this and the supplied TransformationOptionLimits
+     * so that they return the lowest common denominator of the limits .
+     */
+    public TransformationOptionLimits combineUpper(final TransformationOptionLimits that)
+    {
+        return combine(that, false);
+    }
+
+    private TransformationOptionLimits combine(final TransformationOptionLimits that, boolean lower)
+    {
+        return new TransformationOptionLimits(this, that, lower)
         {
             @Override
             public void setTimeoutMs(long timeoutMs)

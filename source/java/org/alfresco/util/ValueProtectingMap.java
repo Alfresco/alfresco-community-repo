@@ -52,8 +52,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @since 3.4.9
  * @since 4.0.1
  */
-public class ValueProtectingMap<K extends Serializable, V extends Serializable> implements Map<K, V>
+public class ValueProtectingMap<K extends Serializable, V extends Serializable> implements Map<K, V>, Serializable
 {
+    private static final long serialVersionUID = -9073485393875357605L;
+    
     /**
      * Default immutable classes:
      * <li>String</li>

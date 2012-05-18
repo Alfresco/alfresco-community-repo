@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -128,6 +128,19 @@ public class TransformationOptionPair
         }
         return Math.min(value1, value2);
     }
+    
+    /**
+     * Returns the higher (common denominator) of the two value supplied.
+     * If either value is less than 0, -1 is returned.
+     */
+    private long maxSet(long value1, long value2)
+    {
+        if (value1 < 0 || value2 < 0)
+        {
+            return -1;
+        }
+        return Math.max(value1, value2);
+    }
 
     public Map<String, Object> toMap(Map<String, Object> optionsMap, String optMaxKey, String optLimitKey)
     {
@@ -161,46 +174,87 @@ public class TransformationOptionPair
      * Returns a TransformationOptionPair that has getter methods that combine the
      * the values from the getter methods of this and the supplied TransformationOptionPair.
      */
-    public TransformationOptionPair combine(final TransformationOptionPair that)
+    public TransformationOptionPair combine(TransformationOptionPair that)
+    {
+        return combine(that, true);
+    }
+    
+    /**
+     * Returns a TransformationOptionPair that has getter methods that combine the
+     * the values from the getter methods of this and the supplied TransformationOptionPair
+     * so that they return the lowest common denominator of the two limits .
+     */
+    public TransformationOptionPair combineUpper(final TransformationOptionPair that)
+    {
+        return combine(that, false);
+    }
+    
+    private TransformationOptionPair combine(final TransformationOptionPair that, final boolean lower)
     {
         return new TransformationOptionPair()
         {
             /**
              * Combines max values of this TransformationOptionPair and the supplied
-             * one to return the max to be used in a transformation. The limit
+             * one to return the max to be used in a transformation. When 'lower' the max
              * value is discarded (-1 is returned) if the combined limit value is lower.
+             * When 'not lower' (lowest common denominator) the max is only returned if the
+             * limit value is -1.
              */
             @Override
             public long getMax()
             {
-                long max = minSet(TransformationOptionPair.this.getMax(), that.getMax());
-                long limit = minSet(TransformationOptionPair.this.getLimit(), that.getLimit());
+                long max = getMaxValue();
+                long limit = getLimitValue();
                 
-                return (max >= 0 && (limit < 0 || limit >= max))
-                    ? max
-                    : -1;
+                return lower
+                    ? (max >= 0 && (limit < 0 || limit >= max))
+                      ? max
+                      : -1
+                    : (limit < 0)
+                      ? max
+                      : -1;
+            }
+            
+            /**
+             * Combines limit values of this TransformationOptionPair and the supplied
+             * one to return the limit to be used in a transformation. When 'lower' the limit
+             * value is discarded (-1 is returned) if the combined max value is lower.
+             * When 'not lower' (lowest common denominator) the limit is only returned if the
+             * max value is -1.
+             */
+            @Override
+            public long getLimit()
+            {
+                long max = getMaxValue();
+                long limit = getLimitValue();
+                
+                return lower
+                        ? (limit >= 0 && (max < 0 || max > limit))
+                          ? limit
+                          : -1
+                        : (max < 0)
+                          ? limit
+                          : -1;
+            }
+
+            private long getLimitValue()
+            {
+                return lower
+                        ? minSet(TransformationOptionPair.this.getLimit(), that.getLimit())
+                        : maxSet(TransformationOptionPair.this.getLimit(), that.getLimit());
+            }
+
+            private long getMaxValue()
+            {
+                return lower
+                        ? minSet(TransformationOptionPair.this.getMax(), that.getMax())
+                        : maxSet(TransformationOptionPair.this.getMax(), that.getMax());
             }
 
             @Override
             public void setMax(long max, String exceptionMessage)
             {
                 throw new UnsupportedOperationException();
-            }
-            
-            /**
-             * Combines limit values of this TransformationOptionPair and the supplied
-             * one to return the limit to be used in a transformation. The limit
-             * value is discarded (-1 is returned) if the combined max value is lower.
-             */
-            @Override
-            public long getLimit()
-            {
-                long max = minSet(TransformationOptionPair.this.getMax(), that.getMax());
-                long limit = minSet(TransformationOptionPair.this.getLimit(), that.getLimit());
-                
-                return (limit >= 0 && (max < 0 || max >= limit))
-                    ? limit
-                    : -1;
             }
 
             @Override

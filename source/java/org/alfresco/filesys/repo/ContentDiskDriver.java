@@ -1353,8 +1353,12 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             		}
            		}
             }
-            else
-            	searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0]);
+            else {
+            	if ( ctx.hasStateCache())
+                	searchCtx = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateCache());
+            	else
+                	searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0]);
+            }
             
             // Debug
             

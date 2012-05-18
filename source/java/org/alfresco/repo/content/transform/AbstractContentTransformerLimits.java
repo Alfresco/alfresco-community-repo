@@ -62,7 +62,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      * Indicates if 'page' limits are supported.
      * @return false by default.
      */
-    protected boolean isPageLimitSupported()
+    protected boolean isPageLimitSupported(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         return pageLimitsSupported;
     }
@@ -98,6 +98,10 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     @Override
     public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
+        // To make TransformerDebug output clearer, check the mimetypes and then the sizes.
+        // If not done, 'unavailable' transformers due to size might be reported even
+        // though they cannot transform the source to the target mimetype.
+
         return
             isTransformableMimetype(sourceMimetype, targetMimetype, options) &&
             isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
@@ -152,7 +156,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
         // of icons. Note the readLimitKBytes value is not checked as the combined limits
         // only have the max or limit KBytes value set (the smaller value is returned).
         TransformationOptionLimits limits = getLimits(sourceMimetype, targetMimetype, options);
-        if (!isPageLimitSupported() || limits.getPageLimit() <= 0)
+        if (!isPageLimitSupported(sourceMimetype, targetMimetype, options) || limits.getPageLimit() <= 0)
         {
             maxSourceSizeKBytes = limits.getMaxSourceSizeKBytes();
         }

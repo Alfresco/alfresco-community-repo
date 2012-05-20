@@ -90,36 +90,6 @@
 		<property name="permission" value="CreateModifyDestroyEvents" />
 	</bean>
 
-    <bean id="rmCreateModifyDestroyFileplanMetadataCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="CreateModifyDestroyFileplanMetadata"/>
-   		<property name="permission" value="CreateModifyDestroyFileplanMetadata"/>   		
-		<property name="kinds">
-			<list>
-			    <value>FILE_PLAN</value>
-				<value>RECORD_CATEGORY</value>
-				<value>DISPOSITION_SCHEDULE</value>
-			</list>
-		</property>		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/>
-   			</map>
-   		</property>
-    </bean>
-    
-    <bean id="rmMoveRecordCategoryCapability"  
-    	  parent="compositeCapability">
-        <property name="name" value="MoveRecordCategory"/>
-    	<property name="private" value="true"/>   
-    	<property name="undetermined" value="true"/> 	
-    	<property name="capabilities">
-    		<list>
-    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    	    			
-    		</list>
-    	</property>
-    	<property name="targetCapability" ref="rmCreateModifyDestroyFileplanMetadataCapability"/>
-    </bean>
     
     <bean id="rmCreateModifyDestroyFileplanTypesCapability" 
 		  parent="declarativeCapability">
@@ -350,6 +320,9 @@
     
     <!-- Freeze capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-freeze-context.xml"/>
+    
+    <!--  File Plan capabilities -->
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-fileplan-context.xml"/>
     
     <!-- Disposition capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-disposition-context.xml"/>

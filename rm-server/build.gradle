@@ -1,3 +1,6 @@
+
+sourceSets.main.java.srcDirs = [sourceJavaDir, 'source/compatibility']
+
 dependencies {
 	
 	compile fileTree(dir: 'libs', include: '*.jar')

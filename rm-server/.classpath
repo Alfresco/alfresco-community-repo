@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="source/java"/>
+	<classpathentry kind="src" path="source/compatibility"/>
 	<classpathentry kind="src" path="test/java"/>
 	<classpathentry kind="src" path="test/resources"/>
 	<classpathentry kind="src" path="explodedDeps/config"/>

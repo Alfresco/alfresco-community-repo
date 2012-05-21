@@ -23,11 +23,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.util.ISO8601DateFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -63,6 +65,11 @@ public class TypedPropertyValueGetter
         else if (isLocaleProperty(propDef)) 
         {
             return processLocaleValue(value);
+        }
+        else if(isDateProperty(propDef) && value instanceof String && !ISO8601DateFormat.isTimeComponentDefined((String) value))
+        {
+        	// Special handling for day-only date storage (ALF-10243)
+        	return ISO8601DateFormat.parseDayOnly((String) value, TimeZone.getDefault());
         }
         else if (value instanceof String)
         {
@@ -118,6 +125,11 @@ public class TypedPropertyValueGetter
     private boolean isBooleanProperty(PropertyDefinition propDef)
     {
         return propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN);
+    }
+    
+    private boolean isDateProperty(PropertyDefinition propDef) 
+    {
+    	 return propDef.getDataType().getName().equals(DataTypeDefinition.DATE);
     }
 
     private Serializable processLocaleValue(Object value)

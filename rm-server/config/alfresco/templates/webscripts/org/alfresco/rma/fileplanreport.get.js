@@ -19,8 +19,11 @@ function main()
       return;
    }
 
+   // Get rid of the model URL to enable support for both older DOD5015 and new recordsmanagement model namespaces
+   var nodeType = node.type.split("}")[1];
+
    // Get the record series, categories and/or folders
-   if(node.type == "{http://www.alfresco.org/model/dod5015/1.0}filePlan")
+   if(nodeType == "filePlan")
    {
       var recordSeries = [],
          seriesNodes = node.children,
@@ -28,7 +31,7 @@ function main()
       for (var rsi = 0, rsl = seriesNodes.length; rsi < rsl; rsi++)
       {
          var seriesNode = seriesNodes[rsi];
-         if(seriesNode.type == "{http://www.alfresco.org/model/dod5015/1.0}recordSeries")
+         if(seriesNode.type.split("}")[1] == "recordSeries")
          {
             recordSeries.push(getRecordSeries(seriesNode));
          }
@@ -36,24 +39,29 @@ function main()
       recordSeries.sort(sortByName);
       model.recordSeries = recordSeries;
    }
-   else if(node.type == "{http://www.alfresco.org/model/dod5015/1.0}recordSeries")
+   else if(nodeType == "recordSeries")
    {
       var recordSeries = [];
       recordSeries.push(getRecordSeries(node));
       model.recordSeries = recordSeries;
    }
-   else if(node.type == "{http://www.alfresco.org/model/dod5015/1.0}recordCategory")
+   else if(nodeType == "recordCategory")
    {
       var recordCategories = [];
       recordCategories.push(getRecordCategory(node, "/" + node.parent.name + "/"));
       model.recordCategories = recordCategories;
    }
-   else if(node.type == "{http://www.alfresco.org/model/recordsmanagement/1.0}recordFolder")
+   else if(nodeType == "recordFolder")
    {
       var recordFolders = [];
       var recordCategory = node.parent;
       recordFolders.push(getRecordFolder(node, "" + recordCategory.parent.name + "/" + recordCategory.name + "/"));
       model.recordFolders = recordFolders;
+   } else
+   {
+      // Throw an error if we don't recognise the node type
+      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Unrecognised node type: " + node.type)
+      return;
    }
 }
 

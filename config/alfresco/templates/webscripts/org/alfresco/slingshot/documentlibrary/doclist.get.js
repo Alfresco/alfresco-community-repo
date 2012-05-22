@@ -45,7 +45,6 @@ function getDoclist()
    if ((filter || "path") == "path")
    {
       // TODO also add DB filter by "node" (in addition to "path")
-       
       var parentNode = parsedArgs.pathNode;
       if (parentNode !== null)
       {
@@ -156,6 +155,9 @@ function getDoclist()
       nodes = folderNodes.concat(documentNodes);
    }
    
+   if (logger.isLoggingEnabled())
+      logger.log("doclist.get.js - totalRecords: " + totalRecords);
+   
    // Pagination
    var pageSize = args.size || nodes.length,
       pagePos = args.pos || "1",
@@ -199,6 +201,8 @@ function getDoclist()
          if (filterParams.variablePath || item.isLink)
          {
             locationNode = item.isLink ? item.linkedNode : item.node;
+            // Ensure we have Read permissions on the destination on the link object
+            if (!locationNode.hasPermission("Read")) break;
             location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
          }
          else

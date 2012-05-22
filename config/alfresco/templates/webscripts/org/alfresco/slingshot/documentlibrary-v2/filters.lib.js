@@ -171,21 +171,23 @@ var Filters =
             break;
 
          case "favourites":
-            var foundOne = false;
-
             for (var favourite in favourites)
             {
-               if (foundOne)
+               if (filterQuery)
                {
                   filterQuery += " OR ";
                }
-               foundOne = true;
                filterQuery += "ID:\"" + favourite + "\"";
             }
             
-            if (filterQuery.length > 0)
+            if (filterQuery.length !== 0)
             {
-               filterQuery = "+(" + filterQuery + ") " + this.constructPathQuery(parsedArgs);
+               filterQuery = "+(" + filterQuery + ")";
+               // no need to specify path here for all sites - IDs are exact matches
+               if (parsedArgs.nodeRef != "alfresco://sites/home")
+               {
+                  filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
+               }
             }
             else
             {
@@ -207,7 +209,6 @@ var Filters =
             {
                filterData = filterData.slice(0, -1);
             }
-            
             filterQuery = this.constructPathQuery(parsedArgs);
             filterParams.query = filterQuery + " +PATH:\"/cm:taggable/cm:" + search.ISO9075Encode(filterData) + "/member\"";
             break;
@@ -249,12 +250,7 @@ var Filters =
       var pathQuery = "";
       if (parsedArgs.nodeRef != "alfresco://company/home")
       {
-         pathQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath;
-         if (parsedArgs.nodeRef == "alfresco://sites/home")
-         {
-            pathQuery += "/*/cm:documentLibrary";
-         }
-         pathQuery += "//*\"";
+         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
       }
       return pathQuery;
    }

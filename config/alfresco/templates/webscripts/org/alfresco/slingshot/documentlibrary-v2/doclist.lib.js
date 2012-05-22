@@ -27,7 +27,16 @@ function doclist_main()
       {
          favourites: favourites
       }),
-      query = filterParams.query;
+      query = filterParams.query,
+      allSites = (parsedArgs.nodeRef == "alfresco://sites/home");
+   
+   if (logger.isLoggingEnabled())
+      logger.log("doclist.lib.js - NodeRef: " + parsedArgs.nodeRef + " Query: " + query);
+   
+   var totalItemCount = filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : -1;
+   // For all sites documentLibrary query we pull in all available results and post filter
+   if (totalItemCount === 0) totalItemCount = -1;
+   else if (allSites) totalItemCount = -1;
    
    if ((filter || "path") == "path")
    {
@@ -62,24 +71,37 @@ function doclist_main()
    }
    else
    {
-       // Query the nodes - passing in sort and result limit parameters
-       if (query !== "")
-       {
-          allNodes = search.query(
-          {
-             query: query,
-             language: filterParams.language,
-             page:
-             {
-                maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
-             },
-             sort: filterParams.sort,
-             templates: filterParams.templates,
-             namespace: (filterParams.namespace ? filterParams.namespace : null)
-          });
-
-          totalRecords = allNodes.length;
-       }
+      // Query the nodes - passing in sort and result limit parameters
+      if (query !== "")
+      {
+         allNodes = search.query(
+         {
+            query: query,
+            language: filterParams.language,
+            page:
+            {
+               maxItems: totalItemCount
+            },
+            sort: filterParams.sort,
+            templates: filterParams.templates,
+            namespace: (filterParams.namespace ? filterParams.namespace : null)
+         });
+         
+         totalRecords = allNodes.length;
+      }
+   }
+   if (logger.isLoggingEnabled())
+      logger.log("doclist.lib.js - query results: " + allNodes.length);
+   // Generate the qname path match regex required for all sites 'documentLibrary' results match
+   var pathRegex;
+   if (allSites)
+   {
+      // escape the forward slash characters in the qname path
+      // TODO: replace with java.lang.String regex match for performance
+      var pathMatch = new String(parsedArgs.rootNode.qnamePath).replace(/\//g, '\\/') + "\\/.*\\/cm:documentLibrary\\/.*";
+      pathRegex = new RegExp(pathMatch, "gi");
+      if (logger.isLoggingEnabled())
+         logger.log("doclist.lib.js - will match results using regex: " + pathMatch);
    }
    
    // Ensure folders and folderlinks appear at the top of the list
@@ -88,21 +110,28 @@ function doclist_main()
    
    for each (node in allNodes)
    {
-      try
+      if (totalItemCount !== 0)
       {
-         if (node.isContainer || node.isLinkToContainer)
+         try
          {
-            folderNodes.push(node);
+            if (!allSites || node.qnamePath.match(pathRegex))
+            {
+               totalItemCount--;
+               if (node.isContainer || node.isLinkToContainer)
+               {
+                  folderNodes.push(node);
+               }
+               else
+               {
+                  documentNodes.push(node);
+               }
+            }
          }
-         else
+         catch (e)
          {
-            documentNodes.push(node);
+            // Possibly an old indexed node - ignore it
          }
-      }
-      catch (e)
-      {
-         // Possibly an old indexed node - ignore it
-      }
+      } else break;
    }
    
    // Node type counts
@@ -120,6 +149,9 @@ function doclist_main()
       // TODO: Sorting with folders at end -- swap order of concat()
       nodes = folderNodes.concat(documentNodes);
    }
+   
+   if (logger.isLoggingEnabled())
+      logger.log("doclist.lib.js - totalRecords: " + totalRecords);
    
    // Pagination
    var pageSize = args.size || nodes.length,
@@ -160,6 +192,8 @@ function doclist_main()
          if (filterParams.variablePath || item.isLink)
          {
             locationNode = item.isLink ? item.linkedNode : item.node;
+            // Ensure we have Read permissions on the destination on the link object
+            if (!locationNode.hasPermission("Read")) break;
             location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
             // Parent node
             if (node.parent != null && node.parent.hasPermission("Read"))

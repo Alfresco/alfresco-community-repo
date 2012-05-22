@@ -86,4 +86,13 @@ public interface CapabilityService
      * @return
      */
     Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef, List<String> capabilityNames);
+    
+    /**
+     * Helper method to get the access state for a single capability.
+     * 
+     * @param nodeRef
+     * @param capabilityName
+     * @return
+     */
+    AccessStatus getCapabilityAccessState(NodeRef nodeRef, String capabilityName);
 }

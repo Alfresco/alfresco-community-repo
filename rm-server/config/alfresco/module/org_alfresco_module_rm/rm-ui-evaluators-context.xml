@@ -7,6 +7,7 @@
     	  class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent" 
     	  parent="baseJsonConversionComponent">       
         <property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="capabilityService" ref="CapabilityService"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.baseEvaluator" 

@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -40,6 +41,9 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     /** Records management service */
     private RecordsManagementService recordsManagementService;
     
+    /** Capability service */
+    private CapabilityService capabilityService;
+    
     /** Indicators */
     private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
     
@@ -53,6 +57,14 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     {
         this.recordsManagementService = recordsManagementService;
     }    
+    
+    /**
+     * @param capabilityService     capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
+    }
     
     /**
      * @param indicator  registered indicator
@@ -82,8 +94,8 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         
         // Get the node reference for convenience
         NodeRef nodeRef = nodeInfo.getNodeRef();
-        
-        if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS)) == true)
+                
+        if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef, RMPermissionModel.VIEW_RECORDS)) == true)
         {
             // Indicate whether the node is a RM object or not
             boolean isFilePlanComponent = recordsManagementService.isFilePlanComponent(nodeInfo.getNodeRef());

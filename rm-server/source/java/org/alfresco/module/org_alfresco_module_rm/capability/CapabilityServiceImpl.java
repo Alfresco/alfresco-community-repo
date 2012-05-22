@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -135,6 +136,23 @@ public class CapabilityServiceImpl implements CapabilityService
             }
         }
         return answer;        
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilityAccessState(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    @Override
+    public AccessStatus getCapabilityAccessState(NodeRef nodeRef, String capabilityName)
+    {
+        AccessStatus result = AccessStatus.UNDETERMINED;
+        Capability capability = getCapability(capabilityName);
+        if (capability != null)
+        {
+            List<String> list = Collections.singletonList(capabilityName);
+            Map<Capability, AccessStatus> map = getCapabilitiesAccessState(nodeRef, list);
+            result = map.get(capability);
+        }
+        return result;
     }
 
 }

@@ -48,6 +48,7 @@ import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.impl.RepositoryServiceImpl;
+import org.activiti.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.ReceiveTaskActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.bpmn.deployer.BpmnDeployer;
@@ -62,6 +63,7 @@ import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.ReadOnlyProcessDefinition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
@@ -617,14 +619,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         Collection<PvmActivity> taskActivities = findUserTasks(startEvent);
         for(PvmActivity act : taskActivities)
         {
-            String formKey = getFormKey(act);
+            String formKey = getFormKey(act, processDefinition);
             defs.add(typeConverter.getTaskDefinition(act, formKey, processDefinition.getId(), false));
         }
         
        return defs;
     }
 
-    private String getFormKey(PvmActivity act)
+    private String getFormKey(PvmActivity act, ReadOnlyProcessDefinition processDefinition)
     {
         if(act instanceof ActivityImpl) 
         {
@@ -632,16 +634,34 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             if (actImpl.getActivityBehavior() instanceof UserTaskActivityBehavior)        
             {
             	UserTaskActivityBehavior uta = (UserTaskActivityBehavior) actImpl.getActivityBehavior();
-                TaskFormHandler handler = uta.getTaskDefinition().getTaskFormHandler();
-                if(handler != null && handler instanceof DefaultTaskFormHandler)
-                {
-                    // We cast to DefaultTaskFormHandler since we do not configure our own
-                    return ((DefaultTaskFormHandler)handler).getFormKey();
-                }
-                
+                return getFormKey(uta.getTaskDefinition());
+            }
+            else if(actImpl.getActivityBehavior() instanceof MultiInstanceActivityBehavior) 
+            {
+            	// Get the task-definition from the process-definition
+            	if(processDefinition instanceof ProcessDefinitionEntity)
+            	{
+            		// Task definition id is the same the the activity id
+            		TaskDefinition taskDef = ((ProcessDefinitionEntity) processDefinition).getTaskDefinitions().get(act.getId());
+            		if(taskDef != null)
+            		{
+            			return getFormKey(taskDef);
+            		}
+            	}
             }
         }
         return null;
+    }
+    
+    private String getFormKey(TaskDefinition taskDefinition) 
+    {
+    	 TaskFormHandler handler = taskDefinition.getTaskFormHandler();
+         if(handler != null && handler instanceof DefaultTaskFormHandler)
+         {
+             // We cast to DefaultTaskFormHandler since we do not configure our own
+             return ((DefaultTaskFormHandler)handler).getFormKey();
+         }
+         return null;
     }
     
     private boolean isReceiveTask(PvmActivity act)

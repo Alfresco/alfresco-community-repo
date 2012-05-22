@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
@@ -132,6 +133,21 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
             assertEquals(props.get(WorkflowModel.PROP_PRIORITY),Integer.valueOf(priorDef.getDefaultValue()));        
         }
     }   
+    
+    public void testGetWorkflowTaskDefinitionsWithMultiInstanceTask()
+    {
+    	// Test added to validate fix for ALF-14224
+        WorkflowDefinition definition = deployDefinition(getParallelReviewDefinitionPath());
+        String workflowDefId = definition.getId();
+        List<WorkflowTaskDefinition> taskDefs = workflowService.getTaskDefinitions(workflowDefId);
+        assertEquals(4, taskDefs.size());
+        
+        // The first task is the start-task, the second one is a multi-instance UserTask. This should have the right form-key
+        WorkflowTaskDefinition taskDef = taskDefs.get(1);
+        assertEquals("wf:activitiReviewTask", taskDef.getId());
+    }
+    
+    
     @Override
     protected void checkTaskQueryStartTaskCompleted(String workflowInstanceId, WorkflowTask startTask) 
     {

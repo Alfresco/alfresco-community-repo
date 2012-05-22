@@ -452,7 +452,7 @@ public class HiddenAspect
      * 				   aspects if they are present
      * @return
      */
-    public void checkHidden(FileInfoImpl fileInfo, boolean both)
+    public HiddenFileInfo checkHidden(FileInfoImpl fileInfo, boolean both)
     {
         NodeRef nodeRef = fileInfo.getNodeRef();
         HiddenFileInfo hiddenFileInfo = checkHidden(nodeRef, both);
@@ -460,6 +460,7 @@ public class HiddenAspect
         {
             fileInfo.setHidden(true);
         }
+        return hiddenFileInfo;
     }
 
     /**

@@ -3,11 +3,13 @@ buildscript {
 	repositories {
 		flatDir {
 			dirs 'mmt'
-		}	
+		}
+		mavenCentral()		
 	}
 
 	dependencies {
-		classpath fileTree(dir: 'mmt', include: '*.jar')  
+		classpath fileTree(dir: 'mmt', include: '*.jar')
+	    classpath 'com.yahoo.platform.yui:yuicompressor:2.4.6'
 	}
 }
 
@@ -49,6 +51,7 @@ subprojects {
 	buildLibDir = 'build/libs'
 	sourceJavaDir = 'source/java'
 	sourceWebDir = 'source/web'
+	assembleDir = 'build/assemble'
 	testJavaDir = 'test/java'
 	testResourceDir = 'test/resources'
 	configDir = 'config'
@@ -186,38 +189,52 @@ subprojects {
 	
 	task amp(dependsOn: 'jar') << {
 	
-		def jarFileObj = file(jarFilePath)
-		def configDirObj = file(configDir)
-		def sourceWebObj = file(sourceWebDir)
+		delete assembleDir
+	
+		copy {
+			from "${configModuleDir}"
+			include "${moduleProperties}"
+			include "${fileMapping}"			
+			into assembleDir
+		}
+	
+		copy {
+			from jarFilePath
+			into "${assembleDir}/lib"
+		}
 		
-		// assemble the AMP file
-		ant.zip(destfile: "${buildDistDir}/${ampFile}", update: 'true') {			
+		copy {
+			from configDir
+			exclude "**/${moduleProperties}"
+			exclude "**/${fileMapping}"
+			into "${assembleDir}/config"		
+		}
 		
-			ant.zipfileset(file: "${configModuleDir}/${moduleProperties}")
-			ant.zipfileset(file: "${configModuleDir}/${fileMapping}")
-			
-			if (jarFileObj.exists()) {
-			
-				logger.info("Adding ${jarFilePath} to ${ampFile} in /lib")
-				ant.zipfileset(file: jarFilePath, prefix: 'lib')
-			} 
-
-			if (configDirObj.exists() == true) {
-			
-				logger.info("Adding ${configDir} to ${ampFile} in /config")
+		copy {
+			from sourceWebDir			
+			include '**/*.js'
+			into "${assembleDir}/web"
+		}
+		
+		tree = fileTree("${assembleDir}/web") {
+			include '**/*.js'
+			exclude '**/*-min.js'
+		}
+		
+		tree.each {File file ->
 				
-				ant.zipfileset(dir: configDir, prefix: 'config') {
-					ant.exclude(name: '**/' + moduleProperties)
-					ant.exclude(name: '**/' + fileMapping)
+			destinationFile = new File(file.getPath().replaceFirst('\\.', '-min.'))
+			
+			file.withReader{ reader -> 
+				compressor = new com.yahoo.platform.yui.compressor.JavaScriptCompressor(reader, null)
+				destinationFile.withWriter { writer ->
+					compressor.compress(writer, -1, false, false, false, false)
 				}
 			}
-			
-			if (sourceWebObj.exists() == true) {		
-				
-				logger.info("Adding ${sourceWebDir} to ${ampFile} in /web")
-			
-				ant.zipfileset(dir: sourceWebDir, prefix: 'web')
-			}
+		}
+		
+		ant.zip(destfile: "${buildDistDir}/${ampFile}", update: 'true') {
+			ant.zipfileset(dir: assembleDir)
 		}	
 	}
 	

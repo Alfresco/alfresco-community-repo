@@ -26,6 +26,7 @@ package org.alfresco.repo.bulkimport.impl;
 
 import java.io.File;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.bulkimport.BulkImportParameters;
 import org.alfresco.repo.bulkimport.ImportableItem;
@@ -61,6 +62,10 @@ public class StripingBulkFilesystemImporter extends MultiThreadedBulkFilesystemI
 		do
 		{
 			batchProcessor.process(worker, true);
+			if(batchProcessor.getLastError() != null)
+			{
+				throw new AlfrescoRuntimeException(batchProcessor.getLastError());
+			}
 		}
 		while(tracker.moreLevels());
     }

@@ -32,6 +32,7 @@ import org.alfresco.repo.bulkimport.BulkImportParameters;
 import org.alfresco.repo.bulkimport.FilesystemTracker;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.NodeImporter;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
@@ -106,6 +107,12 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
 
             public void process(final ImportableItem importableItem) throws Throwable
             {
+            	if(importStatus.getLastException() != null)
+            	{
+            		// bail out early if an exception occurs
+            		return;
+            	}
+
                 try
                 {
                     behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);

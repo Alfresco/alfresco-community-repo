@@ -29,6 +29,9 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.bulkimport.BulkImportStatus;
@@ -96,9 +99,16 @@ public class BulkImportStatusImpl implements BulkImportStatus
     private AtomicLong    numberOfContentVersionBytesWritten      = new AtomicLong();
     private AtomicLong    numberOfContentVersionPropertiesWritten = new AtomicLong();
 
+    private ReadLock readLock;
+    private WriteLock writeLock;
+
     public BulkImportStatusImpl()
     {
         inProgress.set(false);
+        
+        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        this.readLock = lock.readLock();
+        this.writeLock = lock.writeLock();
     }
     
     // General information
@@ -145,27 +155,43 @@ public class BulkImportStatusImpl implements BulkImportStatus
     
     public Throwable getLastException()
     {
-    	return(lastException);
+    	readLock.lock();
+    	try
+    	{
+    		return(lastException);
+    	}
+    	finally
+    	{
+    		readLock.unlock();
+    	}
     }
     
     public String getLastExceptionAsString()
     {
         String result = null;
-        
-        if (lastException != null)
+
+    	readLock.lock();
+        try
         {
-            StringWriter sw = new StringWriter();
-            PrintWriter  pw = new PrintWriter(sw, true);
-            
-            lastException.printStackTrace(pw);
-            
-            pw.flush();
-            sw.flush();
-            
-            result = sw.toString();
-        }
-        
-        return(result);
+	        if (lastException != null)
+	        {
+	            StringWriter sw = new StringWriter();
+	            PrintWriter  pw = new PrintWriter(sw, true);
+	            
+	            lastException.printStackTrace(pw);
+	            
+	            pw.flush();
+	            sw.flush();
+	            
+	            result = sw.toString();
+	        }
+	        
+	        return(result);
+    	}
+    	finally
+    	{
+    		readLock.unlock();
+    	}
     }
     
     public boolean inProgress()
@@ -249,7 +275,22 @@ public class BulkImportStatusImpl implements BulkImportStatus
     public void stopImport(final Throwable lastException)
     {
         stopImport();
-        this.lastException = lastException;
+        
+        writeLock.lock();
+        try
+        {
+        	this.lastException = lastException;
+        }
+        finally
+        {
+        	writeLock.unlock();
+        }
+    }
+    
+    public synchronized void reportException(final Throwable exception)
+    {
+        stopImport();
+        this.lastException = exception;
     }
     
     // Read-side information

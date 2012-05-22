@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.bulkimport.BulkFSImportEvent;
 import org.alfresco.repo.bulkimport.BulkFilesystemImporter;
 import org.alfresco.repo.bulkimport.BulkImportParameters;
@@ -406,9 +405,8 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
     		    }
     		    catch(Throwable e)
     		    {
-    		        logger.error("Bulk import from '" + getFileName(sourceFolder) + "' failed.", e);
     		        importStatus.stopImport(e);
-    		        throw new AlfrescoRuntimeException("Bulk filesystem import failed", e);
+    		        throw e;
     		    }
     		    finally
     		    {

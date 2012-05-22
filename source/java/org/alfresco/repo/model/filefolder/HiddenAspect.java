@@ -17,11 +17,12 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -117,7 +118,7 @@ public class HiddenAspect
     {
         for(HiddenFileFilter filter : filters)
         {
-            this.filters.add(new HiddenFileInfoImpl(filter.getFilter(), filter.getVisibility(), filter.getHiddenAttribute()));
+            this.filters.add(new HiddenFileInfoImpl(filter.getFilter(), filter.getVisibility(), filter.getHiddenAttribute(), filter.cascadeHiddenAspect(), filter.cascadeIndexControlAspect()));
         }
     }
     
@@ -139,29 +140,6 @@ public class HiddenAspect
         sp.setQuery("@" + LuceneQueryParser.escape(ContentModel.PROP_NAME.toString()) + ":\"" + name + "\"");
         sp.addLocale(new Locale("en"));
         return searchService.query(sp);
-    }
-
-    /**
-     * Searches for nodes in the given store that should be hidden (i.e. match the hidden pattern)
-     * and hides them if they are not already hidden.
-     * 
-     * @param storeRef
-     */
-    public void checkHidden(StoreRef storeRef)
-    {
-        for(HiddenFileInfo filter : filters)
-        {
-            String pattern = filter.getFilter();
-
-            ResultSet rs = searchForName(storeRef, pattern);
-            for(NodeRef nodeRef : rs.getNodeRefs())
-            {
-                if(!hasHiddenAspect(nodeRef))
-                {
-                    hideNode(nodeRef, filter.getVisibilityMask());
-                }
-            }
-        }
     }
 
     private Integer getClientIndex(Client client)
@@ -234,14 +212,14 @@ public class HiddenAspect
      * @param path
      * @return
      */
-    private HiddenFileInfo isHidden(String path)
+    private HiddenFileInfo isHidden(String name)
     {
         // check against all the filters
         HiddenFileInfo matched = null;
 
         for(HiddenFileInfo filter : filters)
         {
-            if(filter.isHidden(path))
+            if(filter.isHidden(name))
             {
                 matched = filter;
                 break;
@@ -254,6 +232,116 @@ public class HiddenAspect
     private boolean hasHiddenAspect(NodeRef nodeRef)
     {
         return nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN);
+    }
+    
+    private boolean hasIndexControlAspect(NodeRef nodeRef)
+    {
+        return nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INDEX_CONTROL);
+    }
+    
+    private void applyHidden(NodeRef nodeRef, HiddenFileInfo filter, int visibilityMask)
+    {
+    	if(!filter.cascadeHiddenAspect() && !filter.cascadeIndexControlAspect())
+    	{
+    		return;
+    	}
+
+        PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE, null);
+        PagingResults<FileInfo> results = fileFolderService.list(nodeRef, true, true, null, null, pagingRequest);
+        List<FileInfo> files = results.getPage();
+
+        // apply the hidden aspect to all folders and folders and then recursively to all sub-folders, unless the sub-folder
+        // already has the hidden aspect applied (it may have been applied for a different pattern).
+        for(FileInfo file : files)
+        {
+        	NodeRef childNodeRef = file.getNodeRef();
+            if(filter.cascadeHiddenAspect() && !hasHiddenAspect(childNodeRef))
+            {
+                addHiddenAspect(childNodeRef, visibilityMask);
+            }
+            
+            if(filter.cascadeIndexControlAspect() && !hasIndexControlAspect(childNodeRef))
+            {
+                addIndexControlAspect(childNodeRef);
+            }
+
+            if(file.isFolder())
+            {
+                applyHidden(file.getNodeRef(), filter, visibilityMask);
+            }
+        }
+    }
+    
+    private void removeHidden(NodeRef nodeRef)
+    {
+        PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE, null);
+        PagingResults<FileInfo> results = fileFolderService.list(nodeRef, true, true, null, null, pagingRequest);
+        List<FileInfo> files = results.getPage();
+
+        for(FileInfo file : files)
+        {
+            String name = (String)nodeService.getProperty(file.getNodeRef(), ContentModel.PROP_NAME);
+            // remove hidden aspect only if it doesn't match a hidden pattern
+            if(isHidden(name) == null)
+            {
+                removeHiddenAspect(file.getNodeRef());
+                removeIndexControlAspect(file.getNodeRef());
+
+                if(file.isFolder())
+                {
+                    removeHidden(file.getNodeRef());
+                }
+            }
+        }
+    }
+    
+    private HiddenFileInfo findMatch(NodeRef nodeRef)
+    {
+        HiddenFileInfo ret = null;
+        Path path = null;
+        String name = null;
+
+        OUTER: for(HiddenFileInfo filter : filters)
+        {
+        	if(filter.cascadeHiddenAspect() || filter.cascadeIndexControlAspect())
+        	{
+        		if(path == null)
+        		{
+        			path = nodeService.getPath(nodeRef);
+        		}
+
+                // TODO would be nice to check each part of the path in turn, bailing out if a match is found
+                Iterator<Element> it = path.iterator();
+                while(it.hasNext())
+                {
+                    Path.ChildAssocElement elem = (Path.ChildAssocElement)it.next();
+                    QName qname = elem.getRef().getQName();
+                    if(qname != null)
+                    {
+            			if(filter.isHidden(qname.getLocalName()))
+            			{
+            				ret = filter;
+                            break OUTER;
+                        }
+                    }
+        		}
+        	}
+        	else
+        	{
+        		if(name == null)
+        		{
+        			name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        		}
+
+	            if(filter.isHidden(name))
+	            {
+	            	ret = filter;
+	            	break;
+	            }
+        	}
+        }
+
+        return ret;
     }
 
     public int getClientVisibilityMask(Client client, Visibility visibility)
@@ -272,6 +360,7 @@ public class HiddenAspect
         HiddenFileInfo ret = null;
         // TODO would be nice to check each part of the path in turn, bailing out if a match is found
         Path path = nodeService.getPath(nodeRef);
+        nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
 
         Iterator<Element> it = path.iterator();
         while(it.hasNext())
@@ -304,6 +393,20 @@ public class HiddenAspect
         addIndexControlAspect(nodeRef);
     }
     
+    public void showNode(NodeRef nodeRef, boolean cascade)
+    {
+        removeHiddenAspect(nodeRef);
+        removeIndexControlAspect(nodeRef);
+        
+        if(cascade)
+        {
+	        for(ChildAssociationRef childRef : nodeService.getChildAssocs(nodeRef))
+	        {
+	        	showNode(childRef.getChildRef(), cascade);
+	        }
+        }
+    }
+    
     /**
      * Hides the node by applying the hidden and not indexed aspects. The node will be hidden from clients
      * according to the visibility mask.
@@ -319,15 +422,40 @@ public class HiddenAspect
     }
     
     /**
+     * Searches for nodes in the given store that should be hidden (i.e. match the hidden pattern)
+     * and hides them if they are not already hidden.
+     * 
+     * @param storeRef
+     */
+    public void checkHidden(StoreRef storeRef)
+    {
+        for(HiddenFileInfo filter : filters)
+        {
+            String pattern = filter.getFilter();
+
+            ResultSet rs = searchForName(storeRef, pattern);
+            for(NodeRef nodeRef : rs.getNodeRefs())
+            {
+                if(!hasHiddenAspect(nodeRef))
+                {
+                    hideNode(nodeRef, filter.getVisibilityMask());
+                }
+            }
+        }
+    }
+    
+    /**
      * Checks whether the file should be hidden and applies the hidden and not indexed aspects if so.
      * 
      * @param fileInfo
+     * @param both     if true, will check if the node should not be hidden and remove hidden and index control
+     * 				   aspects if they are present
      * @return
      */
-    public void checkHidden(FileInfoImpl fileInfo, boolean cascade)
+    public void checkHidden(FileInfoImpl fileInfo, boolean both)
     {
         NodeRef nodeRef = fileInfo.getNodeRef();
-        HiddenFileInfo hiddenFileInfo = checkHidden(nodeRef, cascade);
+        HiddenFileInfo hiddenFileInfo = checkHidden(nodeRef, both);
         if(hiddenFileInfo != null)
         {
             fileInfo.setHidden(true);
@@ -348,97 +476,49 @@ public class HiddenAspect
         fileInfo.setHidden(true);
     }
     
-    private void applyHidden(NodeRef nodeRef, int visibilityMask)
-    {
-        PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE, null);
-        PagingResults<FileInfo> results = fileFolderService.list(nodeRef, true, true, null, null, pagingRequest);
-        List<FileInfo> files = results.getPage();
-
-        // apply the hidden aspect to all folders and folders and then recursively to all sub-folders, unless the sub-folder
-        // already has the hidden aspect applied (it may have been applied for a different pattern).
-        for(FileInfo file : files)
-        {
-            if(!hasHiddenAspect(file.getNodeRef()))
-            {
-                hideNode(file.getNodeRef(), visibilityMask);
-            }
-
-            if(file.isFolder())
-            {
-                applyHidden(file.getNodeRef(), visibilityMask);
-            }
-        }
-    }
-    
-    private void removeHidden(NodeRef nodeRef)
-    {
-        PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE, null);
-        PagingResults<FileInfo> results = fileFolderService.list(nodeRef, true, true, null, null, pagingRequest);
-        List<FileInfo> files = results.getPage();
-
-        for(FileInfo file : files)
-        {
-            String name = (String)nodeService.getProperty(file.getNodeRef(), ContentModel.PROP_NAME);
-            // remove hidden aspect only if it doesn't match a hidden pattern
-            if(isHidden(name) == null)
-            {
-                removeHiddenAspect(file.getNodeRef());
-                removeIndexControlAspect(file.getNodeRef());
-
-                if(file.isFolder())
-                {
-                    removeHidden(file.getNodeRef());
-                }
-            }
-        }
-    }
-
     /**
      * Checks whether the file should be hidden and applies the hidden and not indexed aspects if so.
      * 
-     * @param fileInfo
+     * @param nodeRef
+     * @param both     if true, will check both if the node should not be hidden and remove hidden and index control
+     * 				   aspects if they are present, and if the node should be hidden and add hidden and index control
+     * 				   aspects if they are not present.
      * @return
      */
-    public HiddenFileInfo checkHidden(NodeRef nodeRef, boolean cascade)
+    public HiddenFileInfo checkHidden(NodeRef nodeRef, boolean both)
     {
-        HiddenFileInfo filter = onHiddenPath(nodeRef);
+        HiddenFileInfo filter = findMatch(nodeRef);
         if(filter != null)
         {
-            if(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+            int visibilityMask = filter.getVisibilityMask();
+
+            if(!hasHiddenAspect(nodeRef))
             {
-                int visibilityMask = filter.getVisibilityMask();
-    
                 // the file matches a pattern, apply the hidden and aspect control aspects
                 addHiddenAspect(nodeRef, visibilityMask);
-                
-                if(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INDEX_CONTROL))
-                {
-                    addIndexControlAspect(nodeRef);
-                }
-    
-                if(cascade)
-                {
-                    applyHidden(nodeRef, visibilityMask);
-                }
             }
+                
+            if(!hasIndexControlAspect(nodeRef))
+            {
+                addIndexControlAspect(nodeRef);
+            }
+
+            applyHidden(nodeRef, filter, visibilityMask);
         }
-        else
+        else if(both)
         {
             // the file does not match the pattern, ensure that the hidden and index control aspects are not present
-            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+            if(hasHiddenAspect(nodeRef))
             {
                 removeHiddenAspect(nodeRef);
             }
 
-            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INDEX_CONTROL))
+            if(hasIndexControlAspect(nodeRef))
             {
                 removeIndexControlAspect(nodeRef);
             }
 
-            if(cascade)
-            {
-                removeHidden(nodeRef);
-            }
+            removeHidden(nodeRef);
         }
 
         return filter;
@@ -501,10 +581,14 @@ public class HiddenAspect
         private Set<Client> clientVisibility = new HashSet<Client>(10);
         private Set<Client> hiddenAttribute = new HashSet<Client>(10);
         private int visibilityMask;
+        private boolean cascadeHiddenAspect;
+        private boolean cascadeIndexControlAspect;
 
-        public HiddenFileInfoImpl(String regexp, String visibility, String hiddenAttribute)
+        public HiddenFileInfoImpl(String regexp, String visibility, String hiddenAttribute, boolean cascadeHiddenAspect, boolean cascadeIndexControlAspect)
         {
             this.filter = Pattern.compile(regexp);
+            this.cascadeHiddenAspect = cascadeHiddenAspect;
+            this.cascadeIndexControlAspect = cascadeIndexControlAspect;
             setVisibility(visibility);
             setHiddenAttribute(hiddenAttribute);
             calculateVisibilityMask();
@@ -567,6 +651,16 @@ public class HiddenAspect
         public boolean isHidden(String path)
         {
             return filter.matcher(path).matches();
+        }
+        
+        public boolean cascadeHiddenAspect()
+        {
+        	return cascadeHiddenAspect;
+        }
+        
+        public boolean cascadeIndexControlAspect()
+        {
+        	return cascadeIndexControlAspect;
         }
     }
 }

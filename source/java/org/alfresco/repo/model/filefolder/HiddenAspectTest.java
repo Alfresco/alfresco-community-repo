@@ -256,7 +256,7 @@ public class HiddenAspectTest
             assertEquals("", 0, results.length());
             for(Client client : hiddenAspect.getClients())
             {
-                assertEquals(Visibility.NotVisible, hiddenAspect.getVisibility(client, node));
+                assertEquals("Client " + client.toString(), Visibility.NotVisible, hiddenAspect.getVisibility(client, node));
             }
         }
         finally

@@ -15,7 +15,7 @@ ALTER TABLE alf_acl_change_set
 --FOREACH alf_acl_change_set.id system.upgrade.alf_acl_change_set.batchsize
 UPDATE alf_acl_change_set
    SET
-      commit_time_ms = id
+      commit_time_ms = ${NOW}
    WHERE
       id >= ${LOWERBOUND} AND id <= ${UPPERBOUND}
 ;

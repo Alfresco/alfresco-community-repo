@@ -14,6 +14,8 @@ public class HiddenFileFilter implements InitializingBean
     private String filter;
     private String visibility;
     private String hiddenAttribute;
+    private boolean cascadeHiddenAspect = true;
+    private boolean cascadeIndexControlAspect = true;
 
     public HiddenFileFilter()
     {
@@ -48,8 +50,28 @@ public class HiddenFileFilter implements InitializingBean
     {
         this.hiddenAttribute = hiddenAttribute;
     }
+    
+    public void setCascadeHiddenAspect(boolean cascadeHiddenAspect)
+    {
+		this.cascadeHiddenAspect = cascadeHiddenAspect;
+	}
 
-    /*
+	public boolean cascadeHiddenAspect()
+    {
+		return cascadeHiddenAspect;
+	}
+
+    public void setCascadeIndexControlAspect(boolean cascadeIndexControlAspect)
+    {
+		this.cascadeIndexControlAspect = cascadeIndexControlAspect;
+	}
+
+	public boolean cascadeIndexControlAspect()
+    {
+		return cascadeIndexControlAspect;
+	}
+
+	/*
      * (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */

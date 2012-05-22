@@ -3175,4 +3175,15 @@
             </list>
         </property>
     </bean>
+
+    <bean id="patch.swsdpPatch" class="org.alfresco.repo.admin.patch.impl.SWSDPPatch" parent="basePatch" >
+        <property name="id"><value>patch.swsdpPatch</value></property>
+        <property name="description"><value>patch.swsdpPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6007</value></property>
+        <property name="targetSchema"><value>6008</value></property>
+        <property name="siteService" ref="siteService" />
+        <property name="hiddenAspect" ref="hiddenAspect" />
+    </bean>    
+
 </beans>

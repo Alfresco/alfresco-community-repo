@@ -35,9 +35,11 @@
                 <property name="visibility" value="webdav,nfs,ftp" />
                 <property name="hiddenAttribute" value="cifs" />
             </bean>
-            <!-- completely hidden i.e. to all clients  -->
+            <!-- completely hidden i.e. to all clients and does not apply to children -->
             <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
                 <property name="filter" value="surf-config" />
+                <property name="cascadeHiddenAspect" value="false" />
+                <property name="cascadeIndexControlAspect" value="false" />
             </bean>
          </list>
       </property>

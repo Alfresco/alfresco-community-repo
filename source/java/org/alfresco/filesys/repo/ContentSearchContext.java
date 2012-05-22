@@ -536,7 +536,9 @@ public class ContentSearchContext extends SearchContext
      * @return boolean
      */
     protected boolean returningPseudoFiles() {
-    	return donePseudoFiles ? true : false;
+    	if ( pseudoList == null)
+    		return false;
+    	return donePseudoFiles ? false : true;
     }
     
     /**

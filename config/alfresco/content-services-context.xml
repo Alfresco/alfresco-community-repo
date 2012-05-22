@@ -116,7 +116,7 @@
          <value>${content.transformer.failover}</value>
       </property>
       <property name="transformerDebug">
-         <ref bean="transformerDebug"></ref>
+         <ref bean="transformerDebug" />
       </property>
    </bean>
    
@@ -278,15 +278,23 @@
    <bean id="baseContentTransformer"
          class="org.alfresco.repo.content.transform.AbstractContentTransformer2"
          abstract="true"
+         init-method="register"
+         parent="unregisteredBaseContentTransformer">
+      <property name="registry">
+         <ref bean="contentTransformerRegistry" />
+      </property>
+   </bean>
+   
+   <!-- Abstract bean definition defining base definition for all transformer that are not registered -->
+   <bean id="unregisteredBaseContentTransformer"
+         class="org.alfresco.repo.content.transform.AbstractContentTransformer2"
+         abstract="true"
          init-method="register">
       <property name="mimetypeService">
          <ref bean="mimetypeService" />
       </property>
-      <property name="registry">
-         <ref bean="contentTransformerRegistry" />
-      </property>
       <property name="transformerDebug">
-         <ref bean="transformerDebug"></ref>
+         <ref bean="transformerDebug" />
       </property>
       <property name="timeoutMs"><value>${content.transformer.default.timeoutMs}</value></property>
       <property name="readLimitTimeMs"><value>${content.transformer.default.readLimitTimeMs}</value></property>
@@ -314,11 +322,11 @@
    <!-- For this reason they do not extend the baseContentTransformer bean and so will not be registered. -->
    <bean id="failover.transformer.PdfRenderer.PdfToImage"
          class="org.alfresco.repo.content.transform.PdfToImageContentTransformer"
-         parent="baseContentTransformer" />
+         parent="unregisteredBaseContentTransformer" />
          
    <bean id="failover.transformer.PdfBox.PdfToImage"
          class="org.alfresco.repo.content.transform.PdfBoxPdfToImageContentTransformer"
-         parent="baseContentTransformer" />
+         parent="unregisteredBaseContentTransformer" />
 
    <!-- Content Transformations -->
    <bean id="transformer.StringExtracter"

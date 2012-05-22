@@ -127,9 +127,9 @@ public class PdfToImageContentTransformer extends AbstractContentTransformer2
         {
            throw new AlfrescoRuntimeException("Unable to create image from pdf file.", e1);
         } 
-        catch (IOException e) 
+        catch (Exception e) 
         {
-           throw new AlfrescoRuntimeException("Unable to create image from pdf file.", e);
+           throw new AlfrescoRuntimeException("Unable to create image from pdf file. "+e.getMessage(), e);
         }
         finally
         {

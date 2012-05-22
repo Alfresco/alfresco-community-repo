@@ -1977,6 +1977,12 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 
 //                if ( fstate.hasAccessDateTime())
 //                    netFile.setAccessDate( fstate.getAccessDateTime());
+                
+                
+               // Set the live file size, if available
+                
+               if ( fstate.hasFileSize())
+            	   netFile.setFileSize( fstate.getFileSize());
             }
             
             // Debug

@@ -1139,6 +1139,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 varAssignments.put("TRUE", "1");
                 varAssignments.put("FALSE", "0");
             }
+            long now = System.currentTimeMillis();
+            varAssignments.put("now", new Long(now).toString());
+            varAssignments.put("NOW", new Long(now).toString());
             
             while(true)
             {

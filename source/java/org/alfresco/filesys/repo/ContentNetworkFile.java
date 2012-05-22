@@ -602,15 +602,19 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         // Set modification flag
         
         modified = true;
+        incrementWriteCount();
         
         // Set the new file size
         
         setFileSize( size);
         
-        // Update the modification date/time
+        // Update the modification date/time and file size
         
-        if ( getFileState() != null)
+        if ( getFileState() != null) {
         	getFileState().updateModifyDateTime();
+        	getFileState().setFileSize( size);
+        	getFileState().setAllocationSize( size);
+        }
         
         // DEBUG
         

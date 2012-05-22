@@ -47,6 +47,7 @@ alfresco.log = alfresco.constants.DEBUG ? log : Class.empty;
 // this script.
 ////////////////////////////////////////////////////////////////////////////////
 alfresco.xforms.constants.XFORMS_ERROR_DIV_ID = "alfresco-xforms-error";
+alfresco.xforms.constants.JSF_ERROR_DIV_ID = "wizard-errors-wrapper";
 
 alfresco.xforms.constants.EXPANDED_IMAGE = new Image();
 alfresco.xforms.constants.EXPANDED_IMAGE.src = 
@@ -924,22 +925,10 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
       alfresco.xforms.RichTextEditor.clickMask.id = 'xformsRichTextEditorHoverLayer';
       alfresco.xforms.RichTextEditor.clickMask.style.display='none';
 
-      alfresco.xforms.RichTextEditor.maskFocusHandler = new Element("a");
-      alfresco.xforms.RichTextEditor.maskFocusHandler.src = "#";
-      alfresco.xforms.RichTextEditor.maskFocusHandler.accessKey = "e";
-      alfresco.xforms.RichTextEditor.maskFocusHandler.style.width = "1px";
-      alfresco.xforms.RichTextEditor.maskFocusHandler.style.height = "1px";
-      alfresco.xforms.RichTextEditor.maskFocusHandler.style.position = "absolute";
-      alfresco.xforms.RichTextEditor.maskFocusHandler.style.border.width = 0;
-      alfresco.xforms.RichTextEditor.maskFocusHandler.style.padding = 0;
-      alfresco.xforms.RichTextEditor.maskFocusHandler.style.margin = 0;
-      alfresco.xforms.RichTextEditor.maskFocusHandler.tabIndex = 0;
-      alfresco.xforms.RichTextEditor.maskFocusHandler.innerHTML = '<div style="height: 1px; width: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden;">' + this.getLabel() + '</div>';
-
-      alfresco.xforms.RichTextEditor.maskFocusHandler.onfocus = function()
+      alfresco.xforms.RichTextEditor.maskFocusHandler =
       {
-        alfresco.xforms.RichTextEditor.clickMask.onclick();
-        return;
+        _focusHandlers: [],
+        _activatedRTE: null
       };
 
       document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);
@@ -961,6 +950,21 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     }
     tinyMCE.get(this.widget.id).hide();
     this._focused = false;
+
+    this._changeTinyMceHotKey((this.widget.id + "QKey"), "");
+    this._changeTinyMceHotKey((this.widget.id + "ZKey"), "");
+  },
+
+  _changeTinyMceHotKey: function(id, key)
+  {
+    if (null != id)
+    {
+      var keyLink = document.getElementById(id);
+      if (null != keyLink)
+      {
+        keyLink.accessKey = key;
+      }
+    }
   },
 
   _createTinyMCE:function()
@@ -1014,11 +1018,18 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
 
   render: function(attach_point)
   {
-    attach_point.appendChild(alfresco.xforms.RichTextEditor.maskFocusHandler);
-    alfresco.xforms.RichTextEditor.maskFocusHandler.style.top = this.domNode.style.top;
-    alfresco.xforms.RichTextEditor.maskFocusHandler.style.left = this.domNode.style.left;
-
+    this._focusLink = this._createFocusHandler();
+    this._focusLink._index = alfresco.xforms.RichTextEditor.maskFocusHandler._focusHandlers.length;
+    attach_point.appendChild(this._focusLink);
     attach_point.appendChild(this.domNode);
+
+    alfresco.xforms.RichTextEditor.maskFocusHandler._focusHandlers.push(this._focusLink);
+    if (!alfresco.xforms.RichTextEditor.maskFocusHandler._applied)
+    {
+      alfresco.xforms.RichTextEditor.maskFocusHandler._applied = true;
+      this._focusLink.accessKey = "e";
+    }
+
     this.domNode.addClass("xformsTextArea");
     if (this._params.height)
     {
@@ -1085,6 +1096,32 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     {
       this.domNode.onmouseover = this._div_mouseoverHandler.bindAsEventListener(this);
     }
+  },
+
+  _createFocusHandler: function()
+  {
+    var result = new Element("a");
+    result.src = "#";
+    result.style.width = "1px";
+    result.style.height = "1px";
+    result.style.border.width = 0;
+    result.style.padding = 0;
+    result.style.margin = 0;
+    result.tabIndex = 0;
+    result.innerHTML = '<div class="xformsAccessibilityInvisibleText">' + this.getLabel() + '</div>';
+
+    var t = this;
+    result.onfocus = function()
+    {
+      alfresco.xforms.RichTextEditor.currentInstance = t;		
+      alfresco.xforms.RichTextEditor.clickMask.onclick = t._hoverLayer_clickHandler.bindAsEventListener(t);
+      alfresco.xforms.RichTextEditor.clickMask.onmouseout = t._hoverLayer_mouseoutHandler.bindAsEventListener(t);
+
+      alfresco.xforms.RichTextEditor.clickMask.onclick();
+      return;
+    }
+
+    return result;
   },
 
   setValue: function(value, forceCommit)
@@ -1256,15 +1293,36 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
   {
     alfresco.xforms.RichTextEditor.clickMask.style.display='none'
 
-    alfresco.xforms.RichTextEditor.maskFocusHandler.tabIndex = -1;
-    alfresco.xforms.RichTextEditor.maskFocusHandler.style.display = "none";
-
     document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);
     if (alfresco.xforms.RichTextEditor.currentInstance && document.getElementById(alfresco.xforms.RichTextEditor.currentInstance.domNode.id)
         && alfresco.xforms.RichTextEditor.currentInstance != this)
     {
         alfresco.xforms.RichTextEditor.currentInstance._removeTinyMCE();
     }
+
+    var handler = alfresco.xforms.RichTextEditor.maskFocusHandler;
+
+    this._focusLink.accessKey = null;
+    this._focusLink.tabIndex = -1;
+
+    if (null != handler._activatedRTE)
+    {
+      if (null != tinyMCE.get(handler._activatedRTE.widget.id))
+      {
+        handler._activatedRTE._removeTinyMCE();
+      }
+
+      handler._activatedRTE._focusLink.tabIndex = 0;
+    }
+
+    handler._activatedRTE = this;
+
+    var index = (this._focusLink._index + 1) % handler._focusHandlers.length;
+    handler._focusHandlers[index].accessKey = "e";
+
+    this._changeTinyMceHotKey((this.widget.id + "QKey"), "q");
+    this._changeTinyMceHotKey((this.widget.id + "ZKey"), "z");
+
     if (this._created===false)
     {
       this._createTinyMCE();        
@@ -1276,6 +1334,12 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
     alfresco.xforms.RichTextEditor.currentInstance = this;
     alfresco.xforms.RichTextEditor.clickMask.style.display='none'
     document.body.appendChild(alfresco.xforms.RichTextEditor.clickMask);
+
+    var editor = tinyMCE.get(this.widget.id);
+    if (null != editor)
+    {
+      editor.focus();
+    }
   }
 });
 
@@ -5155,7 +5219,12 @@ function _hide_errors()
     errorDiv.empty();
     errorDiv.style.display = "none";
   }
-
+  var jsfErrorDiv = $(alfresco.xforms.constants.JSF_ERROR_DIV_ID);
+  if (jsfErrorDiv)
+  {
+     jsfErrorDiv.empty();
+     jsfErrorDiv.style.display = "none";
+  }
   var errorLink = $("errorLink-with-key-v");
   if (null != errorLink)
   {
@@ -5209,7 +5278,7 @@ function _show_error(msg, errorCount)
 
     errorMessage.style.width = "1px";
     errorMessage.style.height = "1px";
-    errorMessage.style.filter = "alpha(opacity=0.01)";
+    errorMessage.style.filter = "alpha(opacity=1)";
     errorMessage.style.color = "transparent";
     errorMessage.style.overflow = "hidden";
   }
@@ -5237,28 +5306,28 @@ function _getDateTimePickerLabels(parent)
            {
              "tagName": "div",
              "id": "increase-week-label",
-             "style": "width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden",
+             "cssClass": "xformsAccessibilityInvisibleText",
              "parent": parent,
              "text": alfresco.resources["increase_week_label"]
            },
            {
              "tagName": "div",
              "id": "increase-month-label",
-             "style": "width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden",
+             "cssClass": "xformsAccessibilityInvisibleText",
              "parent": parent,
              "text": alfresco.resources["increase_month_label"]
            },
            {
              "tagName": "div",
              "id": "decrease-week-label",
-             "style": "width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden",
+             "cssClass": "xformsAccessibilityInvisibleText",
              "parent": parent,
              "text": alfresco.resources["decrease_week_label"]
            },
            {
              "tagName": "div",
              "id": "decrease-month-label",
-             "style": "width: 1px; height: 1px; filter: alpha(opacity=0.01); color: transparent; overflow: hidden",
+             "cssClass": "xformsAccessibilityInvisibleText",
              "parent": parent,
              "text": alfresco.resources["decrease_month_label"]
            }
@@ -5279,8 +5348,7 @@ function _createExternalLabels(labelIds)
     {
       var label = new Element(el.tagName,
                               {
-                                "id": el.id,
-                                "style": el.style
+                                "id": el.id
                               });
 
       if (null != el.parent)
@@ -5293,6 +5361,11 @@ function _createExternalLabels(labelIds)
       }
 
       label.appendChild(document.createTextNode(el.text));
+
+      if (null != el.cssClass)
+      {
+        label.addClass(el.cssClass);
+      }
     }
   }
 }
@@ -5561,7 +5634,7 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
   height: -1,
   auto_resize: false,
   force_p_newlines: false,
-  forced_root_block: false,
+  // forced_root_block: false,
   encoding: "UTF-8",
   entity_encoding: "raw",
   add_unload_trigger: false,

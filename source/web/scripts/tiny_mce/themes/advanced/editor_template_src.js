@@ -658,7 +658,8 @@
 			if (!ed.getParam('accessibility_focus'))
 				h.push(DOM.createHTML('a', {href : '#', onfocus : 'tinyMCE.get(\'' + ed.id + '\').focus();'}, '<!-- IE -->'));
 
-			h.push(DOM.createHTML('a', {href : '#', accesskey : 'q', title : ed.getLang("advanced.toolbar_focus")}, '<!-- IE -->'));
+			var accessibilityLink = DOM.createHTML('a', {id: ed.id + "QKey", href : '#', accesskey : 'q', title : ed.getLang("advanced.toolbar_focus")}, '<!-- IE -->');
+			h.push(accessibilityLink);
 
 			// Create toolbar and add the controls
 			for (i=1; (v = s['theme_advanced_buttons' + i]); i++) {
@@ -678,7 +679,8 @@
 				o.deltaHeight -= s.theme_advanced_row_height;
 			}
 
-			h.push(DOM.createHTML('a', {href : '#', accesskey : 'z', title : ed.getLang("advanced.toolbar_focus"), onfocus : 'tinyMCE.getInstanceById(\'' + ed.id + '\').focus();'}, '<!-- IE -->'));
+			accessibilityLink = DOM.createHTML('a', {id: ed.id + "ZKey", href : '#', accesskey : 'z', title : ed.getLang("advanced.toolbar_focus"), onfocus : 'tinyMCE.getInstanceById(\'' + ed.id + '\').focus();'}, '<!-- IE -->');
+			h.push(accessibilityLink);
 			DOM.setHTML(n, h.join(''));
 		},
 

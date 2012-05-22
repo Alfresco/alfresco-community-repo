@@ -66,6 +66,7 @@ import org.alfresco.web.forms.FormsService;
 import org.alfresco.web.forms.RenderingEngineTemplate;
 import org.alfresco.web.forms.Rendition;
 import org.alfresco.util.XMLUtil;
+import org.alfresco.web.forms.xforms.XFormsBean;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIListItem;
 import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
@@ -85,6 +86,8 @@ public class CreateWebContentWizard extends CreateContentWizard
    private static final long serialVersionUID = -4090370304405270047L;
 
    private static final Log logger = LogFactory.getLog(CreateWebContentWizard.class);
+
+   private static final String MSG_ERROR_XFORMVALIDATION = "error_validate_xforms";
 
    transient private List<SelectItem> formChoices;
    protected String createdPath = null;
@@ -267,6 +270,22 @@ public class CreateWebContentWizard extends CreateContentWizard
          if (MimetypeMap.MIMETYPE_XML.equals(this.mimeType))
          {
             FacesContext context = FacesContext.getCurrentInstance();
+            // ALF-10162 : invoke XForm validation during forced browser submit
+            Map sessionMap = context.getExternalContext().getSessionMap();
+            if (sessionMap.containsKey("XFormsBean"))
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("XFormsBean found in session, trying to validate the XForm form");
+
+                XFormsBean xFormsBean = (XFormsBean) context.getExternalContext().getSessionMap().get("XFormsBean");
+                if (!xFormsBean.isXformValid())
+                {
+                    Application.getWizardManager().getState().setCurrentStep(Application.getWizardManager().getCurrentStep() - 1);
+                    Utils.addErrorMessage(Application.getMessage(context, MSG_ERROR_XFORMVALIDATION));
+                    return super.next();
+                }
+            }
+         
             RetryingTransactionHelper txnHelper = Repository.getRetryingTransactionHelper(context);
             RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
             {

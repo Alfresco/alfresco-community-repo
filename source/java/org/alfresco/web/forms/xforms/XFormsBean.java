@@ -545,6 +545,49 @@ public class XFormsBean implements Serializable
       }
    }
 
+   /**
+    * Introduced for ALF-10162 and ALF-10163
+    * This method is used in JSF context to be able to validate last inserted values.
+    * Note! This method clears event log. Do not use it for form validation during AJAX actions,
+    * because this method doesn't return response.
+    * 
+    * It is useful for Form validation, when Xform has been passed without AJAX "submit" action.
+    * @see CreateWebContentWizard
+    * @return
+    */
+   public boolean isXformValid()
+   {
+       ChibaBean chibaBean = getXformsSession().getChibaBean();
+       try
+       {
+           // throws XFormsException
+           chibaBean.dispatch("submit", DOMEventNames.ACTIVATE);
+           Node eventLogDoc = getEventLog();
+           Node eventsNode = eventLogDoc.getFirstChild();
+           if (eventsNode != null && "events".equals(eventsNode.getNodeName()))
+           {
+               NodeList childNodeList = eventsNode.getChildNodes();
+               for(int i = 0; i < childNodeList.getLength(); i++)
+               {
+                   Node childNode = childNodeList.item(i);
+                   if ("xforms-submit-error".equals(childNode.getNodeName()) &&
+                       childNode.getAttributes().getNamedItem("targetId") != null &&
+                       "submission-validate".equals(childNode.getAttributes().getNamedItem("targetId").getNodeValue()))
+                   {
+                       if (LOGGER.isDebugEnabled())
+                           LOGGER.debug("Found xforms-submit-error, it means that form wasn't validated, throwing error");
+                       return false;
+                   }
+               }
+           }
+           return true;
+       }
+       catch (XFormsException e)
+       {
+           return false;
+       }
+   }
+
    private void swapRepeatItems(final RepeatItem from,
                                 final RepeatItem to)
       throws XFormsException

@@ -307,3 +307,11 @@
    color: grey;
 }
 
+.xformsAccessibilityInvisibleText
+{
+   width: 1px;
+   height: 1px;
+   color: transparent;
+   overflow: hidden;
+   filter: alpha(opacity=1);
+}

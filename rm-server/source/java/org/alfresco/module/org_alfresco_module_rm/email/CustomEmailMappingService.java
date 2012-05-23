@@ -20,13 +20,31 @@ package org.alfresco.module.org_alfresco_module_rm.email;
 
 import java.util.Set;
 
+/**
+ * Custom EMail Mapping Service
+ */
 public interface CustomEmailMappingService
 {
+    /**
+     * Get the list of custom mappings
+     * 
+     * @return  {@link Set}<{@link CustomMapping}>
+     */
     public Set<CustomMapping> getCustomMappings();
 
+    /**
+     * Add custom mapping
+     * 
+     * @param from
+     * @param to
+     */
     public void addCustomMapping(String from, String to);
     
+    /**
+     * Delete custom mapping
+     * 
+     * @param from
+     * @param to
+     */
     public void deleteCustomMapping(String from, String to);
-    
-    public void init();
 }

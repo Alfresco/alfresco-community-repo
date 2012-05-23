@@ -82,7 +82,7 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
                         caveatConfigService.init();
                         
                         // initialise custom email mapping
-                        customEmailMappingService.init();
+                        //customEmailMappingService.init();
                         
                         // Initialise the custom model
                         adminService.initialiseCustomModel();

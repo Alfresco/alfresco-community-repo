@@ -169,16 +169,24 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
      */
     public void init()
     {
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnCreateNodePolicy.QNAME, 
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnCreateNodePolicy.QNAME, 
                 TYPE_FILE_PLAN, 
                 new JavaBehaviour(this, "onCreateRootNode", NotificationFrequency.TRANSACTION_COMMIT));
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnCreateNodePolicy.QNAME, 
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnDeleteNodePolicy.QNAME, 
+                TYPE_FILE_PLAN, 
+                new JavaBehaviour(this, "onDeleteRootNode", NotificationFrequency.TRANSACTION_COMMIT));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnCreateNodePolicy.QNAME, 
                 TYPE_RECORD_CATEGORY, 
                 new JavaBehaviour(this, "onCreateRMContainer", NotificationFrequency.TRANSACTION_COMMIT));
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnCreateNodePolicy.QNAME,  
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnCreateNodePolicy.QNAME,  
                 TYPE_RECORD_FOLDER, 
                 new JavaBehaviour(this, "onCreateRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));                
-        policyComponent.bindClassBehaviour(NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
                 ASPECT_FROZEN, 
                 new JavaBehaviour(this, "beforeDeleteFrozenNode", NotificationFrequency.TRANSACTION_COMMIT));
     }
@@ -220,9 +228,10 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                     // Set the permissions
                     permissionService.setInheritParentPermissions(rmRootNode, false);
                     permissionService.setPermission(rmRootNode, allRoles, RMPermissionModel.READ_RECORDS, true);
+                                        
                     return null;
                 }
-            }, AuthenticationUtil.getAdminUserName());
+            }, AuthenticationUtil.getSystemUserName());
                         
             // Bootstrap in the default set of roles for the newly created root node
             bootstrapDefaultRoles(rmRootNode);
@@ -234,9 +243,30 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
      * 
      * @param childAssocRef
      */
-    public void onDeleteRootNode(NodeRef rmRootNode)
+    public void onDeleteRootNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
         logger.debug("onDeleteRootNode called");
+        
+        // get the deleted node
+        final NodeRef rmRootNode = childAssocRef.getChildRef();
+        
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+            public Object doWork()
+            {
+                // cascade delete the 'all' roles group for the site
+                String allRolesGroup = authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode));                                   
+                Set<String> groups = authorityService.getContainedAuthorities(AuthorityType.GROUP, allRolesGroup, true);
+                for (String group : groups)
+                {
+                    authorityService.deleteAuthority(group);
+                }
+                
+                authorityService.deleteAuthority(allRolesGroup, false);
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());    
     }
     
     /**
@@ -292,7 +322,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 	
                     return null;
                 }
-            }, AuthenticationUtil.getAdminUserName());	
+            }, AuthenticationUtil.getSystemUserName());	
         }
     }
     
@@ -313,7 +343,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                                     
                     return null;
                 }
-            }, AuthenticationUtil.getAdminUserName());         
+            }, AuthenticationUtil.getSystemUserName());         
         }
     }
 
@@ -420,8 +450,9 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                         {
                             permissionService.setPermission(rmRootNode, role.getRoleGroupName(), RMPermissionModel.FILING, true);
                             
-                            // Add the owner of the root node into the admin group
-                            //authorityService.addAuthority(role.getRoleGroupName(), ownableService.getOwner(rmRootNode));
+                            // Add the creating user to the administration group
+                            String user = AuthenticationUtil.getFullyAuthenticatedUser();
+                            authorityService.addAuthority(role.getRoleGroupName(), user);
                         }
                     }
                 }
@@ -432,7 +463,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     public String convertStreamToString(InputStream is) throws IOException
@@ -486,7 +517,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return result;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -517,7 +548,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return result;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -577,7 +608,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return result;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     private Set<String> getCapabilitiesImpl(NodeRef rmRootNode, String roleAuthority)
@@ -616,7 +647,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 Set<String> roles = authorityService.getAllAuthoritiesInZone(zone, AuthorityType.GROUP);
                 return new Boolean(roles.contains(fullRoleName));
             }
-        }, AuthenticationUtil.getAdminUserName()).booleanValue();
+        }, AuthenticationUtil.getSystemUserName()).booleanValue();
     }
     
     /*
@@ -687,7 +718,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return new Role(role, roleDisplayLabel, capStrings, roleGroup);
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -723,7 +754,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return new Role(role, roleDisplayLabel, capStrings, roleAuthority);
                 
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**
@@ -740,7 +771,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return null;
                 
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -757,7 +788,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return null;
                 
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -794,7 +825,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -885,6 +916,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());        
+        }, AuthenticationUtil.getSystemUserName());        
     }
 }

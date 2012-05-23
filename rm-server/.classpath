@@ -272,7 +272,7 @@
 	<classpathentry kind="lib" path="libs/spring-webscripts-1.0.0-tests.jar"/>
 	<classpathentry kind="lib" path="libs/postgresql-9.0-801.jdbc4.jar"/>
 	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-core-4.0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-data-model-4.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-data-model-4.0.1.jar" sourcepath="C:/mywork/projects/v4/code/root/projects/data-model/source/java"/>
 	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-deployment-4.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-enterprise-remote-api-4.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="explodedDeps/lib/alfresco-enterprise-repo-4.0.1.jar"/>

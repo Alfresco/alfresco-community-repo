@@ -697,7 +697,12 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
             @Override
             public boolean handle(Pair<Long, NodeRef> nodePair)
             {
-                results.add(nodePair.getSecond());
+                NodeRef nodeRef = nodePair.getSecond();
+                if (StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.equals(nodeRef.getStoreRef()) == false)
+                {                
+                    results.add(nodeRef);
+                }
+                
                 return true;
             }
         });

@@ -31,6 +31,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.alfresco.config.JndiPropertiesFactoryBean;
+import org.alfresco.util.ResourceFinder;
 import org.alfresco.util.config.RepositoryPathConfigBean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -253,6 +254,12 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         }
 
         super.afterPropertiesSet();
+
+        // Validate that context files exist for this path
+        if (new ResourceFinder(getParent()).getResources(getContextResourcePatterns()).length == 0)
+        {
+            throw new IllegalStateException("Invalid type " + getTypeName() + " specified for "+ getCategory() + " subsystem. No context file found");
+        }        
     }
 
     /*
@@ -373,6 +380,23 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         }
     }
 
+    private String[] getContextResourcePatterns()
+    {
+        return new String[]
+        {
+            ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
+                    + ChildApplicationContextFactory.CONTEXT_SUFFIX,
+            ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX
+                    + getCategory()
+                    + '/'
+                    + getTypeName()
+                    + '/'
+                    + ChildApplicationContextFactory.this.getId().get(
+                            ChildApplicationContextFactory.this.getId().size() - 1)
+                    + ChildApplicationContextFactory.CONTEXT_SUFFIX
+        };
+    }
+
     /**
      * A specialized application context class with the power to propagate simple and composite property values into
      * beans before they are initialized.
@@ -398,18 +422,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         private ChildApplicationContext(Properties properties,
                 Map<String, Map<String, CompositeDataBean>> compositeProperties) throws BeansException
         {
-            super(new String[]
-            {
-                ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
-                        + ChildApplicationContextFactory.CONTEXT_SUFFIX,
-                ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX
-                        + getCategory()
-                        + '/'
-                        + getTypeName()
-                        + '/'
-                        + ChildApplicationContextFactory.this.getId().get(ChildApplicationContextFactory.this.getId().size() - 1) 
-                        + ChildApplicationContextFactory.CONTEXT_SUFFIX
-            }, false, ChildApplicationContextFactory.this.getParent());
+            super(getContextResourcePatterns(), false, ChildApplicationContextFactory.this.getParent());
 
             this.compositeProperties = compositeProperties;
 

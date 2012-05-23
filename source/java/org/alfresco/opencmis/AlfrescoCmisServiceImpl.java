@@ -1519,19 +1519,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 nodeRef = info.getCurrentNodeNodeRef();
             }
 
-            // remove not primary parent associations
-            List<ChildAssociationRef> childAssociations = connector.getNodeService().getParentAssocs(nodeRef);
-            if (childAssociations != null)
-            {
-                for (ChildAssociationRef childAssoc : childAssociations)
-                {
-                    if (!childAssoc.isPrimary())
-                    {
-                        connector.getNodeService().removeChildAssociation(childAssoc);
-                    }
-                }
-            }
-
             // attempt to delete the node
             if (allVersions)
             {

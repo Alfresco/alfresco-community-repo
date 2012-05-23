@@ -574,7 +574,7 @@ public class MultiTServiceImpl implements TenantService
     public String getUserDomain(String username)
     {
         // can be null (e.g. for System user / during app ctx init)
-        if (username != null) 
+        if ((username != null) && AuthenticationUtil.isMtEnabled())
         {
             int idx = username.lastIndexOf(SEPARATOR);
             if ((idx > 0) && (idx < (username.length()-1)))

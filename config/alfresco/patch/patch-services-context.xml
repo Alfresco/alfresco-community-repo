@@ -3176,6 +3176,17 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V4.0-AclChangeSet2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.0-AclChangeSet2" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="6008" />
+        <property name="targetSchema" value="6009" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.0/${db.script.dialect}/AclChangeSet-Tracking2.sql</value>
+        </property>
+    </bean>
+
     <bean id="patch.swsdpPatch" class="org.alfresco.repo.admin.patch.impl.SWSDPPatch" parent="basePatch" >
         <property name="id"><value>patch.swsdpPatch</value></property>
         <property name="description"><value>patch.swsdpPatch.description</value></property>

@@ -403,7 +403,7 @@ public class InviteHelper implements InitializingBean
             // Send
             Action emailAction = actionService.createAction("mail");
             emailAction.setParameterValue(MailActionExecuter.PARAM_TO, nodeService.getProperty(personService.getPerson(inviteeUserName), ContentModel.PROP_EMAIL));
-            emailAction.setParameterValue(MailActionExecuter.PARAM_FROM, reviewer);
+            emailAction.setParameterValue(MailActionExecuter.PARAM_FROM, nodeService.getProperty(personService.getPerson(reviewer), ContentModel.PROP_EMAIL));
             //TODO Localize this.
             emailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Rejected invitation to web site:" + resourceName);
             emailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, emailMsg);

@@ -165,6 +165,7 @@
              <ref bean="patch.db-V4.0-Node-Locale" />
              <ref bean="patch.db-V4.0-SubscriptionTables" />
              <ref bean="patch.db-V4.0-SolrTracking" />
+             <ref bean="patch.db-V4.0-AclChangeSet2" />
           </list>
        </property>
     </bean>

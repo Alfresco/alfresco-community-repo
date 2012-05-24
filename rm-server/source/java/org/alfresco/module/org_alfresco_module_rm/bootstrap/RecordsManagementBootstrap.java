@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -81,11 +82,12 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
                         // initialise caveat config
                         caveatConfigService.init();
                         
-                        // initialise custom email mapping
-                        //customEmailMappingService.init();
-                        
                         // Initialise the custom model
                         adminService.initialiseCustomModel();
+                        
+                        // Initialise the SplitEmailAction
+                        SplitEmailAction action = (SplitEmailAction)getApplicationContext().getBean("splitEmail");
+                        action.bootstrap();
                         
                         return null;
                     }

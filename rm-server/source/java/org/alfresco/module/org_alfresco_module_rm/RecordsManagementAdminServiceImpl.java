@@ -945,8 +945,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	 */
     public Map<QName, AssociationDefinition> getCustomReferenceDefinitions()
     {
-		QName relevantAspectQName = QName.createQName(RMC_CUSTOM_ASSOCS, namespaceService);
-        AspectDefinition aspectDefn = dictionaryService.getAspect(relevantAspectQName);
+        AspectDefinition aspectDefn = dictionaryService.getAspect(ASPECT_CUSTOM_ASSOCIATIONS);
         Map<QName, AssociationDefinition> assocDefns = aspectDefn.getAssociations();
         
         return assocDefns;

@@ -726,7 +726,7 @@
     </bean> 
     
     <!-- Split Email -->
-    <bean id="splitEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction" parent="rmAction" >
+    <bean id="splitEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction" parent="rmAction">
     </bean>  
     
     <bean id="splitEmail_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">

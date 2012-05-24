@@ -18,7 +18,7 @@
  */
 package org.alfresco.service.cmr.remoteconnector;
 
-import java.io.IOException;
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * An exception thrown when the remote server indicates that the
@@ -32,7 +32,7 @@ import java.io.IOException;
  * @author Nick Burch
  * @since 4.0.3
  */
-public class RemoteConnectorClientException extends IOException
+public class RemoteConnectorClientException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = -639209368873463536L;
     private final int statusCode;

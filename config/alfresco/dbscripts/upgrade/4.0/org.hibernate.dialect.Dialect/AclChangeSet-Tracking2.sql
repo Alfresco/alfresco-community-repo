@@ -11,7 +11,7 @@
 --FOREACH alf_acl_change_set.id system.upgrade.alf_acl_change_set.batchsize
 UPDATE alf_acl_change_set
    SET
-      commit_time_ms = (select min(t.commit_time_ms) from alf_transaction t) 
+      commit_time_ms = ((select min(t.commit_time_ms) from alf_transaction t) + id)
    WHERE
       id >= ${LOWERBOUND} AND id <= ${UPPERBOUND}
       AND  commit_time_ms < (select min(t.commit_time_ms) from alf_transaction t) 

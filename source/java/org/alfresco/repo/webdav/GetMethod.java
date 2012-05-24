@@ -430,8 +430,8 @@ public class GetMethod extends WebDAVMethod
                 writer.write("<td colspan='4' class='textData'><a href=\"");
 
                 // Strip the last folder from the path
-                String[] paths = getDAVHelper().splitPath(rootURL.substring(0, rootURL.length() - 1));
-                writer.write(paths[0]);
+                String parentFolderUrl = parentFolder(rootURL);
+                writer.write(parentFolderUrl);
 
                 writer.write("\">");
                 writer.write("[");
@@ -551,6 +551,29 @@ public class GetMethod extends WebDAVMethod
                 }
             }
         }
+    }
+
+    /**
+     * Given a path, will return the parent path. For example: /a/b/c
+     * will return /a/b and /a/b will return /a.
+     * 
+     * @param path The path to return the parent of - must be non-null.
+     * @return String - parent path.
+     */
+    private String parentFolder(String path)
+    {
+        if (path.endsWith(WebDAVHelper.PathSeperator))
+        {
+            // Strip trailing slash.
+            path = path.substring(0, path.length() - 1);
+        }
+        String[] paths = getDAVHelper().splitPath(path);
+        String parent = paths[0];
+        if (parent.equals(""))
+        {
+            parent = WebDAVHelper.PathSeperator;
+        }
+        return parent;
     }
 
     /**

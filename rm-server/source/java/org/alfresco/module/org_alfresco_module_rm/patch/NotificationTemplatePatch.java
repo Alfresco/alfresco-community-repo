@@ -27,6 +27,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -67,6 +68,9 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
     /** Version service */
     private VersionService versionService;
     
+    /** Audit service */
+    private AuditService auditService;
+    
     /** Bean name */
     private String name;
     
@@ -100,6 +104,14 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
     public void setVersionService(VersionService versionService)
     {
         this.versionService = versionService;
+    }
+    
+    /**
+     * @param auditService  audit service
+     */
+    public void setAuditService(AuditService auditService)
+    {
+        this.auditService = auditService;
     }
     
     /**
@@ -146,6 +158,8 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
         }
         else
         {
+            System.out.println(nodeService.getProperty(template, ContentModel.PROP_DESCRIPTION));
+            
             // Check to see if this template has already been updated
             String lastPatchUpdate = (String)nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
             if (lastPatchUpdate == null || name.equals(lastPatchUpdate) == false)
@@ -162,7 +176,7 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
                     
                     // Create version (before template is updated)
                     Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(2);
-                    versionProperties.put(Version.PROP_DESCRIPTION, "Initial version");
+                    versionProperties.put(Version.PROP_DESCRIPTION, "Initial version");                    
                     versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                     versionService.createVersion(template, versionProperties);
                 }               
@@ -171,9 +185,18 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
                 InputStream is = getClass().getClassLoader().getResourceAsStream(templateUpdate);
                 ContentWriter writer = contentService.getWriter(template, ContentModel.PROP_CONTENT, true);
                 writer.putContent(is);
-                
-                // Set the last patch update property
-                nodeService.setProperty(template, PROP_LAST_PATCH_UPDATE, name);                
+                                
+                boolean enabled = auditService.isAuditEnabled();
+                auditService.setAuditEnabled(false);
+                try
+                {
+                    // Set the last patch update property
+                    nodeService.setProperty(template, PROP_LAST_PATCH_UPDATE, name);
+                }
+                finally
+                {
+                    auditService.setAuditEnabled(enabled);
+                }
             }
             else
             {

@@ -164,6 +164,7 @@
 	                      <cm:title>record-superseded-email.ftl</cm:title>
 	                      <cm:name>record-superseded-email.ftl</cm:name>
                           <cm:lastPatchUpdate>org_alfresco_module_rm_notificationTemplatePatch</cm:lastPatchUpdate>
+                          
 	                   </view:properties>
 	               </cm:content>
                </cm:contains>

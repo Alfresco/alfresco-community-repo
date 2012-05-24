@@ -15,6 +15,7 @@
        <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
        <property name="contentService" ref="ContentService"/>
        <property name="versionService" ref="VersionService"/>
+       <property name="auditService" ref="AuditService"/>
    </bean>
    
    <bean id="org_alfresco_module_rm_RMv2ModelPatch" 

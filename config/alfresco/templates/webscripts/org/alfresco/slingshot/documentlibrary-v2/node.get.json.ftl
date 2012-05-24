@@ -5,7 +5,7 @@
    "metadata":
    {
       "repositoryId": "${server.id}",
-      <#if (doclist.parent.nodeJSON)??>"parent": <#noescape>${doclist.parent.nodeJSON},</#noescape></#if>
+      <#if doclist.parent?? && doclist.parent.nodeJSON??>"parent": <#noescape>${doclist.parent.nodeJSON},</#noescape></#if>
       <#if doclist.customJSON??>"custom": <#noescape>${doclist.customJSON},</#noescape></#if>
       "onlineEditing": ${doclist.onlineEditing?string},
       "workingCopyLabel": "${workingCopyLabel}"
@@ -15,7 +15,7 @@
    <#if doclist.item??>
       <#assign item = doclist.item>
       "node": <#noescape>${item.nodeJSON}</#noescape>,
-      <#if item.parent??>"parent": <#noescape>${item.parent.nodeJSON},</#noescape></#if>
+      <#if item.parent?? && item.parent.nodeJSON??>"parent": <#noescape>${item.parent.nodeJSON},</#noescape></#if>
       <@itemLib.itemJSON item=item />
    </#if>
    }

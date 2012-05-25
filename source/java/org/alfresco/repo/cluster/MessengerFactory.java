@@ -31,7 +31,7 @@ public interface MessengerFactory
     /** A catch-all for unknown application regions. */
     public static final String APP_REGION_DEFAULT = "DEFAULT";
     
-    /** The application region used by the EHCache heartbeat implementation over JGroups. */
+    /** The application region used by the EHCache heartbeat implementation. */
     public static final String APP_REGION_EHCACHE_HEARTBEAT = "EHCACHE_HEARTBEAT";
     
     <T extends Serializable> Messenger<T> createMessenger(String appRegion);
@@ -39,4 +39,6 @@ public interface MessengerFactory
     <T extends Serializable> Messenger<T> createMessenger(String appRegion, boolean acceptLocalMessages);
     
     boolean isClusterActive();
+    
+    void addMembershipListener(ClusterMembershipListener membershipListener);
 }

@@ -20,13 +20,13 @@
 package org.alfresco.repo.cluster;
 
 import java.io.Serializable;
+import java.util.Set;
 
-import org.springframework.util.StringUtils;
-
-import com.hazelcast.config.Config;
-import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
+import com.hazelcast.core.Member;
+import com.hazelcast.core.MembershipEvent;
+import com.hazelcast.core.MembershipListener;
 
 /**
  * Hazelcast-based implementation of the {@link MessengerFactory} interface.
@@ -37,8 +37,8 @@ import com.hazelcast.core.ITopic;
  */
 public class HazelcastMessengerFactory implements MessengerFactory
 {
-    private HazelcastInstance hazelcast;
-
+    private HazelcastInstanceFactory hazelcastInstanceFactory;
+    
     @Override
     public <T extends Serializable> Messenger<T> createMessenger(String appRegion)
     {
@@ -48,28 +48,70 @@ public class HazelcastMessengerFactory implements MessengerFactory
     @Override
     public <T extends Serializable> Messenger<T> createMessenger(String appRegion, boolean acceptLocalMessages)
     {
+        if (!isClusterActive())
+        {
+            return new NullMessenger<T>();
+        }
+        // Clustering is enabled, create a messenger.
+        HazelcastInstance hazelcast = hazelcastInstanceFactory.getInstance();
         ITopic<T> topic = hazelcast.getTopic(appRegion);
         String address = hazelcast.getCluster().getLocalMember().getInetSocketAddress().toString();
         return new HazelcastMessenger<T>(topic, address);
     }
     
     /**
-     * @param hazelcast the hazelcast to set
+     * Provide the messenger factory with a means to obtain a HazelcastInstance.
+     * 
+     * @param hazelcastInstanceFactory
      */
-    public void setHazelcast(HazelcastInstance hazelcast)
+    public void setHazelcastInstanceFactory(HazelcastInstanceFactory hazelcastInstanceFactory)
     {
-        this.hazelcast = hazelcast;
+        this.hazelcastInstanceFactory = hazelcastInstanceFactory;
     }
 
     @Override
     public boolean isClusterActive()
     {
-        Config config = hazelcast.getConfig();
-        if (config == null || config.getGroupConfig() == null)
+        return hazelcastInstanceFactory.isClusteringEnabled();
+    }
+
+    @Override
+    public void addMembershipListener(final ClusterMembershipListener listener)
+    {
+        if (isClusterActive())
         {
-            return false;
+            HazelcastInstance hazelcast = hazelcastInstanceFactory.getInstance();
+            hazelcast.getCluster().addMembershipListener(new MembershipListener()
+            {
+                @Override
+                public void memberRemoved(MembershipEvent e)
+                {
+                    listener.memberLeft(member(e), cluster(e));
+                }
+                
+                @Override
+                public void memberAdded(MembershipEvent e)
+                {
+                    listener.memberJoined(member(e), cluster(e));
+                }
+                
+                private String member(MembershipEvent e)
+                {
+                    return e.getMember().getInetSocketAddress().toString();
+                }
+                
+                private String[] cluster(MembershipEvent e)
+                {
+                    Set<Member> members = e.getCluster().getMembers();
+                    String[] cluster = new String[members.size()];
+                    int i = 0;
+                    for (Member m : members)
+                    {
+                        cluster[i++] = m.getInetSocketAddress().toString();
+                    }
+                    return cluster;
+                }
+            });
         }
-        GroupConfig groupConfig = config.getGroupConfig();
-        return StringUtils.hasText(groupConfig.getName());
     }
 }

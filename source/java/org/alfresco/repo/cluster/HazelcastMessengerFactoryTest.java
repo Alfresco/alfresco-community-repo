@@ -19,7 +19,7 @@
 
 package org.alfresco.repo.cluster;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.when;
 
@@ -31,8 +31,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.Cluster;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
@@ -48,19 +46,20 @@ import com.hazelcast.core.Member;
 public class HazelcastMessengerFactoryTest
 {
     private HazelcastMessengerFactory factory;
-    private GroupConfig groupConfig;
     private @Mock HazelcastInstance hazelcast;
     private @Mock Member member;
     private @Mock Cluster cluster;
     private @Mock ITopic<String> topic;
-    private @Mock Config config;
+    private @Mock HazelcastInstanceFactory hazelcastInstanceFactory;
     
     @Before
     public void setUp()
     {
         factory = new HazelcastMessengerFactory();
-        factory.setHazelcast(hazelcast);
-        groupConfig = new GroupConfig();
+        factory.setHazelcastInstanceFactory(hazelcastInstanceFactory);
+        
+        when(hazelcastInstanceFactory.isClusteringEnabled()).thenReturn(true);
+        when(hazelcastInstanceFactory.getInstance()).thenReturn(hazelcast);
     }
     
     @Test
@@ -80,13 +79,9 @@ public class HazelcastMessengerFactoryTest
     @Test
     public void canCheckClusterIsActive()
     {
-        when(hazelcast.getConfig()).thenReturn(config);
-        when(config.getGroupConfig()).thenReturn(groupConfig);
-        
-        groupConfig.setName("my-cluster-name");
         assertEquals(true, factory.isClusterActive());
         
-        groupConfig.setName("");
+        when(hazelcastInstanceFactory.isClusteringEnabled()).thenReturn(false);
         assertEquals(false, factory.isClusterActive());        
     }
 }

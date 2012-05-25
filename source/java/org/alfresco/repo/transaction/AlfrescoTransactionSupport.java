@@ -531,7 +531,6 @@ public abstract class AlfrescoTransactionSupport
         private final Set<LuceneIndexerAndSearcher> lucenes;
         private final LinkedHashSet<TransactionListener> listeners;
         private final Set<TransactionalCache<Serializable, Object>> transactionalCaches;
-//        private final Set<JGroupsEhCacheListener> jgroupsEhCacheListeners;
         private final Map<Object, Object> resources;
         
         /**
@@ -548,7 +547,6 @@ public abstract class AlfrescoTransactionSupport
             lucenes = new HashSet<LuceneIndexerAndSearcher>(3);
             listeners = new LinkedHashSet<TransactionListener>(5);
             transactionalCaches = new HashSet<TransactionalCache<Serializable, Object>>(3);
-//            jgroupsEhCacheListeners = new HashSet<JGroupsEhCacheListener>(3);
             resources = new HashMap<Object, Object>(17);
         }
         
@@ -602,10 +600,6 @@ public abstract class AlfrescoTransactionSupport
             {
                 return transactionalCaches.add((TransactionalCache<Serializable, Object>)listener);
             }
-//            else if (listener instanceof JGroupsEhCacheListener)
-//            {
-//                return jgroupsEhCacheListeners.add((JGroupsEhCacheListener)listener);
-//            }
             else
             {
                 return listeners.add(listener);
@@ -709,12 +703,6 @@ public abstract class AlfrescoTransactionSupport
             {
                 cache.beforeCommit(readOnly);
             }
-//            
-//            // Flush the JGroups listeners
-//            for (JGroupsEhCacheListener listener : jgroupsEhCacheListeners)
-//            {
-//                listener.beforeCommit(readOnly);
-//            }
         }
         
         /**

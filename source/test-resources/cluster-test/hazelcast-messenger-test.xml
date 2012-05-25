@@ -2,26 +2,21 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-
-    <!--
-        Unlike the JGroupsMessengerFactory, this messengerFactory bean doesn't require an explicit
-        dependency (through the depends-on attribute) as it specifies the dependency through the
-        reference to the hazelcastInstance bean.
-      -->
     <bean id="messengerFactory" class="org.alfresco.repo.cluster.HazelcastMessengerFactory">
-        <property name="hazelcast" ref="hazelcastInstance"/>
+        <property name="hazelcastInstanceFactory" ref="hazelcastInstanceFactory"/>
     </bean>
     
-    <bean id="hazelcastInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
-        <constructor-arg>
-            <bean class="com.hazelcast.config.Config">
-                <property name="groupConfig">
-                    <bean class="com.hazelcast.config.GroupConfig">
-                        <property name="name" value="testcluster"/>
-                        <property name="password" value="secret"/>
-                    </bean>
-                </property>
-            </bean>
-        </constructor-arg>
+    <bean id="hazelcastConfig" class="org.alfresco.repo.cluster.HazelcastConfigFactoryBean">
+        <property name="configFile" value="classpath:alfresco/hazelcast/hazelcast-udp.xml"/>
+        <property name="properties">
+            <props>
+                <prop key="alfresco.cluster.name">test_hazelcast_cluster</prop>
+                <prop key="alfresco.hazelcast.password">test_hazelcast_cluster_password</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="hazelcastInstanceFactory" class="org.alfresco.repo.cluster.HazelcastInstanceFactory">
+        <property name="config" ref="hazelcastConfig"/>
     </bean>
 </beans>

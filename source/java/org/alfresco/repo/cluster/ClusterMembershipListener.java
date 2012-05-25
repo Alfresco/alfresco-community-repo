@@ -16,28 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.repo.cluster;
 
-import java.io.Serializable;
-
 /**
- * Provides facilities for peer-to-peer messaging within a cluster. This interface
- * is intended to act as a facade, allowing the actual implementation (e.g. Hazelcast)
- * to be decoupled as much as possible from the Alfresco code base.
- * <p>
- * Instances of this class are parameterised with the type of message payload
- * to send and receive.
+ * Implementing classes can react to members joining or leaving the cluster.
  * 
  * @author Matt Ward
  */
-public interface Messenger<T extends Serializable>
+public interface ClusterMembershipListener
 {
-    void send(T message);
-    
-    void setReceiver(MessageReceiver<T> receiver);
-    
-    boolean isConnected();
-    
-    String getAddress();
+    void memberJoined(String member, String[] cluster);
+    void memberLeft(String member, String[] cluster);
 }

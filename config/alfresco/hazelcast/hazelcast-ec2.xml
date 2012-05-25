@@ -27,8 +27,8 @@
                 <tag-value>${alfresco.hazelcast.ec2.tagvalue}</tag-value>
             </aws>
         </join>
-        <interfaces enabled="false">
-            <interface>10.10.1.*</interface>
+        <interfaces enabled="${alfresco.hazelcast.specify.interface}">
+            <interface>${alfresco.hazelcast.bind.interface}</interface>
         </interfaces>
         <symmetric-encryption enabled="false">
             <!--

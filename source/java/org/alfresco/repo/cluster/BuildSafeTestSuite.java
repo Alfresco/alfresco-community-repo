@@ -36,8 +36,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
     org.alfresco.repo.cluster.HazelcastConfigFactoryBeanTest.class,
     org.alfresco.repo.cluster.HazelcastMessengerFactoryTest.class,
-    org.alfresco.repo.cluster.HazelcastMessengerTest.class,
-    org.alfresco.repo.cluster.JGroupsMessengerTest.class
+    org.alfresco.repo.cluster.HazelcastMessengerTest.class
 })
 public class BuildSafeTestSuite
 {

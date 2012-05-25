@@ -21,9 +21,9 @@ package org.alfresco.repo.cluster;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 import com.hazelcast.core.ITopic;
 import com.hazelcast.core.MessageListener;
@@ -40,6 +40,7 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
     private MessageReceiver<T> receiverDelegate;
     private String address;
     private final static Log logger = LogFactory.getLog(HazelcastMessenger.class);
+    
     /**
      * @param topic
      */
@@ -55,7 +56,8 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
     {
         if (logger.isTraceEnabled())
         {
-            logger.trace("Sending " + message);
+            String digest = StringUtils.abbreviate(message.toString(), 50);
+            logger.trace("Sending [source: " + address + "]: " + digest);
         }
         topic.publish(message);
     }
@@ -74,7 +76,8 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
     {
         if (logger.isTraceEnabled())
         {
-            logger.trace("Received (will be delegated to receiver): " + message);
+            String digest = StringUtils.abbreviate(message.toString(), 50);
+            logger.trace("Received [destination: " + address + "] (delegating to receiver): " + digest);
         }
         receiverDelegate.onReceive(message);
     }
@@ -95,5 +98,14 @@ public class HazelcastMessenger<T extends Serializable> implements Messenger<T>,
     public String getAddress()
     {
         return address;
-    } 
+    }
+
+
+    @Override
+    public String toString()
+    {
+        return "HazelcastMessenger[connected=" + isConnected() +
+                    ", topic=" + getTopic() +
+                    ", address=" + getAddress() + "]";
+    }
 }

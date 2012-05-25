@@ -46,7 +46,7 @@ public class AlfrescoCacheManagerPeerProviderFactory extends CacheManagerPeerPro
         try
         {
             @SuppressWarnings("unchecked")
-            Class clazz = Class.forName("org.alfresco.enterprise.repo.cache.jgroups.JGroupsRMICacheManagerPeerProvider$Factory");
+            Class clazz = Class.forName("org.alfresco.enterprise.repo.cache.cluster.RMICacheManagerPeerProvider$Factory");
             factory = (CacheManagerPeerProviderFactory) clazz.newInstance();
         }
         catch (ClassNotFoundException e)
@@ -55,7 +55,7 @@ public class AlfrescoCacheManagerPeerProviderFactory extends CacheManagerPeerPro
         }
         catch (Throwable e)
         {
-            logger.error("Failed to instantiate JGroupsRMICacheManagerPeerProvider factory.", e);
+            logger.error("Failed to instantiate RMICacheManagerPeerProvider factory.", e);
         }
         finally
         {

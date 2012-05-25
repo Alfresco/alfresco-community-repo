@@ -16,39 +16,53 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.repo.cluster;
 
 import java.io.Serializable;
 
-import org.alfresco.repo.jgroups.AlfrescoJGroupsChannelFactory;
-import org.alfresco.util.ParameterCheck;
-import org.jgroups.Channel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
- * JGroups implementation of the {@link MessengerFactory} interface.
+ * A do-nothing implementation of the {@link Messenger} interface.
  * 
  * @author Matt Ward
  */
-public class JGroupsMessengerFactory implements MessengerFactory
+public class NullMessenger<T extends Serializable> implements Messenger<T>
 {
+    private static final Log logger = LogFactory.getLog(NullMessenger.class);
+    
     @Override
-    public <T extends Serializable> Messenger<T> createMessenger(String appRegion)
+    public void send(T message)
     {
-        return createMessenger(appRegion, false);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Throwing away message: " + message);
+        }
     }
 
     @Override
-    public <T extends Serializable> Messenger<T> createMessenger(String appRegion, boolean acceptLocalMessages)
+    public void setReceiver(MessageReceiver<T> receiver)
     {
-        ParameterCheck.mandatory("appRegion", appRegion);
-        Channel channel = AlfrescoJGroupsChannelFactory.getChannel(appRegion, acceptLocalMessages);
-        return new JGroupsMessenger<T>(channel);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Throwing away receiver: " + receiver);
+        }
     }
 
     @Override
-    public boolean isClusterActive()
+    public boolean isConnected()
     {
-        return AlfrescoJGroupsChannelFactory.isClusterActive();
-    }    
+        return false;
+    }
+
+    @Override
+    public String getAddress()
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("getAddress() always returns loopback address: 127.0.0.1");
+        }
+        return "127.0.0.1";
+    }
 }

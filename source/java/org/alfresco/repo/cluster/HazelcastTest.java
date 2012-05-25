@@ -29,8 +29,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.config.GroupConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ITopic;
@@ -46,6 +44,8 @@ public class HazelcastTest implements MessageListener<String>
 {
     private static ApplicationContext ctx;
     private MessengerTestHelper helper;
+    private HazelcastInstanceFactory hiFactory;
+    private HazelcastInstance hi;
     
     @BeforeClass
     public static void setUpClass()
@@ -65,14 +65,14 @@ public class HazelcastTest implements MessageListener<String>
     public void setUp()
     {
         helper = new MessengerTestHelper();
+        hiFactory = ctx.getBean(HazelcastInstanceFactory.class);
+        hi = hiFactory.getInstance();
     }
  
     
     @Test
     public void canSendWithHazelcastMessengerFactory() throws InterruptedException
     {
-        Config config = createConfig();
-        HazelcastInstance hi = Hazelcast.newHazelcastInstance(config);
         ITopic<String> topic = hi.getTopic("testregion");
         
         topic.addMessageListener(this);
@@ -93,8 +93,6 @@ public class HazelcastTest implements MessageListener<String>
         TestMessageReceiver r1 = new TestMessageReceiver();
         m1.setReceiver(r1);
      
-        Config config = createConfig();
-        HazelcastInstance hi = Hazelcast.newHazelcastInstance(config);
         ITopic<String> topic2 = hi.getTopic("testregion");
         String address2 = hi.getCluster().getLocalMember().getInetSocketAddress().toString();
         Messenger<String> m2 = new HazelcastMessenger<String>(topic2, address2);
@@ -111,15 +109,5 @@ public class HazelcastTest implements MessageListener<String>
     public void onMessage(String message)
     {
         helper.setReceivedMsg(message);
-    }
-    
-    private Config createConfig()
-    {
-        Config config = new Config();
-        GroupConfig groupConfig = new GroupConfig();
-        groupConfig.setName("testcluster");
-        groupConfig.setPassword("secret");
-        config.setGroupConfig(groupConfig);
-        return config;
     }
 }

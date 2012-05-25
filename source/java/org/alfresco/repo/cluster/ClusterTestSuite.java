@@ -36,8 +36,7 @@ import org.junit.runners.Suite.SuiteClasses;
     org.alfresco.repo.cluster.BuildSafeTestSuite.class,
     
     // Additionally run these tests that cannot be run on the build servers.
-    org.alfresco.repo.cluster.HazelcastTest.class,
-    org.alfresco.repo.cluster.JGroupsTest.class
+    org.alfresco.repo.cluster.HazelcastTest.class
 })
 public class ClusterTestSuite
 {

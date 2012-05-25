@@ -3,7 +3,7 @@
       path="java.io.tmpdir"/>
 
     <!--
-       The 'heartbeatInterval' property is the only one used for the JGroups-enabled implementation
+       The 'heartbeatInterval' property is the only one used for the Hazelcast-enabled implementation
     -->
     <cacheManagerPeerProviderFactory
         class="org.alfresco.repo.cache.AlfrescoCacheManagerPeerProviderFactory"

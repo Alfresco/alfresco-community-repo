@@ -32,6 +32,8 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementSearchBehaviour;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,6 +56,13 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     
     public static final String NAME = "broadcastDispositionActionDefinitionUpdate";
     public static final String CHANGED_PROPERTIES = "changedProperties";
+    
+    private BehaviourFilter behaviourFilter;
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
@@ -75,11 +84,19 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         NodeRef rmContainer = nodeService.getPrimaryParent(dispositionScheduleNode).getParentRef();
         DispositionSchedule dispositionSchedule = dispositionService.getAssociatedDispositionSchedule(rmContainer);
         
-        List<NodeRef> disposableItems = dispositionService.getDisposableItems(dispositionSchedule);
-        for (NodeRef disposableItem : disposableItems)
+        behaviourFilter.disableBehaviour();
+        try
         {
-            updateDisposableItem(dispositionSchedule, disposableItem, actionedUponNodeRef, changedProps);
-        }        
+            List<NodeRef> disposableItems = dispositionService.getDisposableItems(dispositionSchedule);
+            for (NodeRef disposableItem : disposableItems)
+            {
+                updateDisposableItem(dispositionSchedule, disposableItem, actionedUponNodeRef, changedProps);
+            }
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour();
+        }
     }
     
     /**
@@ -249,6 +266,9 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
 	            }
 	        }
         }
+        
+        // NOTE: eventsList contains all the events that have been updated!
+        // TODO: manually update the search properties for the parent node!
         
         // finally since events may have changed re-calculate the events eligible flag
         boolean eligible = updateEventEligible(nextAction);

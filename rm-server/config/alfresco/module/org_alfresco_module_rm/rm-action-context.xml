@@ -577,8 +577,11 @@
         </property>
     </bean>
     
-    <bean id="broadcastDispositionActionDefinitionUpdate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction"
-                                            parent="rmAction" />
+    <bean id="broadcastDispositionActionDefinitionUpdate" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction"
+          parent="rmAction" >
+    	<property name="behaviourFilter" ref="policyBehaviourFilter"/>
+    </bean>
     
     
     <!-- complete event -->

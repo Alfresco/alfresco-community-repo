@@ -19,6 +19,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.job;
 
+import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -100,8 +101,27 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     markPublishInProgress(nodeRef);                        
                     try
                     {
+                        Date start = new Date();
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            logger.debug("Starting publish of updates ...");
+                            logger.debug("   - for " + nodeRef.toString());
+                            logger.debug("   - at " + start.toString());
+                        }
+                        
                         // Publish updates
                         publishUpdates(nodeRef);
+                        
+                        
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            Date end = new Date();
+                            long duration = end.getTime() - start.getTime();
+                            logger.debug("Completed publish of updates ...");
+                            logger.debug("   - for " + nodeRef.toString());
+                            logger.debug("   - at " + end.toString());
+                            logger.debug("   - duration " + Long.toString(duration));
+                        }
                     }
                     finally
                     {
@@ -143,10 +163,19 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     }
                     
                     // Execute query to find updates awaiting publishing
-                    ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                                                     SearchService.LANGUAGE_LUCENE, query);
-                    List<NodeRef> resultNodes = results.getNodeRefs();
-                    results.close();
+                    List<NodeRef> resultNodes = null;
+                    ResultSet results = searchService.query(
+                                                        StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+                                                        SearchService.LANGUAGE_LUCENE, 
+                                                        query);
+                    try
+                    {
+                        resultNodes = results.getNodeRefs();
+                    }
+                    finally
+                    {
+                        results.close();
+                    }
                     
                     if (logger.isDebugEnabled() == true)
                     {

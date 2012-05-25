@@ -136,14 +136,13 @@ public class RecordComponentIdentifierAspect
      */
     private void updateUniqueness(NodeRef nodeRef, String beforeId, String afterId)
     {
-        ChildAssociationRef childAssoc = nodeService.getPrimaryParent(nodeRef);
-        NodeRef contextNodeRef = childAssoc.getParentRef();
-        
         if (beforeId == null)
         {
             if (afterId != null)
             {
                 // Just create it
+                ChildAssociationRef childAssoc = nodeService.getPrimaryParent(nodeRef);
+                NodeRef contextNodeRef = childAssoc.getParentRef();
                 attributeService.createAttribute(null, CONTEXT_VALUE, contextNodeRef, afterId);
             }
             else
@@ -156,6 +155,8 @@ public class RecordComponentIdentifierAspect
             if (beforeId != null)
             {
                 // The before value was not null, so remove it
+                ChildAssociationRef childAssoc = nodeService.getPrimaryParent(nodeRef);
+                NodeRef contextNodeRef = childAssoc.getParentRef();
                 attributeService.removeAttribute(CONTEXT_VALUE, contextNodeRef, beforeId);
             }
             // Do a blanket removal in case this is a contextual nodes
@@ -164,6 +165,8 @@ public class RecordComponentIdentifierAspect
         else
         {
             // This is a full update
+            ChildAssociationRef childAssoc = nodeService.getPrimaryParent(nodeRef);
+            NodeRef contextNodeRef = childAssoc.getParentRef();
             attributeService.updateOrCreateAttribute(
                     CONTEXT_VALUE, contextNodeRef, beforeId,
                     CONTEXT_VALUE, contextNodeRef, afterId);

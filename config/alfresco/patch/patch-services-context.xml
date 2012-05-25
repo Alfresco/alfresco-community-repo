@@ -2134,7 +2134,7 @@
     </bean>
     <bean id="patch.migrateAttrDelete" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrDelete</value></property>
-        <property name="description"><value>patch.migrateAttrDelete.description</value></property>
+        <property name="description"><value>patch.noOpPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4106</value></property>
         <property name="targetSchema"><value>4107</value></property>

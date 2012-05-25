@@ -2689,7 +2689,10 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                     Map<String, Object> tokenVars = varMap.getVariablesLocally();
                     for (Map.Entry<String, Object> entry : tokenVars.entrySet())
                     {
-                        vars.put(entry.getKey(), entry.getValue());
+                        if (!vars.containsKey(entry.getKey()))
+                        {
+                            vars.put(entry.getKey(), entry.getValue());
+                        }
                     }
                 }
                 token = token.getParent();

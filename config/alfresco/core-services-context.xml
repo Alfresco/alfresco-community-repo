@@ -1058,6 +1058,13 @@
         <property name="autoStart">
             <value>false</value>
         </property>
+        <property name="compositePropertyTypes">
+            <map>
+                <entry key="solr.store.mappings">
+                    <value>org.alfresco.repo.search.impl.solr.SolrStoreMapping</value>
+                </entry>
+            </map>
+        </property>
         <property name="category">
             <value>Search</value>
         </property>

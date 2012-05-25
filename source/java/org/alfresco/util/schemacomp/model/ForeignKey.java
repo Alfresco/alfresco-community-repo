@@ -192,7 +192,8 @@ public class ForeignKey extends AbstractDbObject
             {
                 return false;
             }
-            if (!getTargetTable().equals(otherFK.getTargetTable()))
+            // ALF-14129 fix, make table names case insensitive 
+            if (!getTargetTable().equalsIgnoreCase(otherFK.getTargetTable()))
             {
                 return false;
             }

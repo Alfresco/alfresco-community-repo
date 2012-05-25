@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -62,12 +65,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author Andy
  */
-public class SolrQueryHTTPClient
+public class SolrQueryHTTPClient implements BeanFactoryAware
 {
     static Log s_logger = LogFactory.getLog(SolrQueryHTTPClient.class);
 
@@ -79,15 +85,15 @@ public class SolrQueryHTTPClient
 
     private Map<String, String> languageMappings;
 
-    private Map<String, String> storeMappings;
+    private List<SolrStoreMapping> storeMappings;
 
-    private String baseUrl;
-
-    private HttpClient httpClient;
+    private HashMap<StoreRef, HttpClient> httpClients = new HashMap<StoreRef, HttpClient>();
     
-	private HttpClientFactory httpClientFactory;
+    private HashMap<StoreRef, SolrStoreMapping> mappingLookup = new HashMap<StoreRef, SolrStoreMapping>();
 	
 	private RepositoryState repositoryState;
+
+    private BeanFactory beanFactory;
 	
     public SolrQueryHTTPClient()
     {
@@ -96,21 +102,23 @@ public class SolrQueryHTTPClient
     public void init()
     {
         PropertyCheck.mandatory(this, "NodeService", nodeService);
-        PropertyCheck.mandatory(this, "PermissionService", nodeService);
-        PropertyCheck.mandatory(this, "TenantService", nodeService);
-        PropertyCheck.mandatory(this, "LanguageMappings", nodeService);
-        PropertyCheck.mandatory(this, "StoreMappings", nodeService);
-        PropertyCheck.mandatory(this, "HttpClientFactory", nodeService);
-        PropertyCheck.mandatory(this, "RepositoryState", nodeService);
-        
-    	StringBuilder sb = new StringBuilder();
-    	sb.append("/solr");
-    	this.baseUrl = sb.toString();
+        PropertyCheck.mandatory(this, "PermissionService", permissionService);
+        PropertyCheck.mandatory(this, "TenantService", tenantService);
+        PropertyCheck.mandatory(this, "LanguageMappings", languageMappings);
+        PropertyCheck.mandatory(this, "StoreMappings", storeMappings);
+        PropertyCheck.mandatory(this, "RepositoryState", repositoryState);
 
-    	httpClient = httpClientFactory.getHttpClient();
-    	HttpClientParams params = httpClient.getParams();
-    	params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
-    	httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
+        for(SolrStoreMapping mapping : storeMappings)
+        {
+            mappingLookup.put(mapping.getStoreRef(), mapping);
+            
+            HttpClientFactory httpClientFactory = (HttpClientFactory)beanFactory.getBean(mapping.getHttpClientFactory());
+            HttpClient httpClient = httpClientFactory.getHttpClient();
+            HttpClientParams params = httpClient.getParams();
+            params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
+            httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
+            httpClients.put(mapping.getStoreRef(), httpClient);
+        }
     }
 
     /**
@@ -121,11 +129,6 @@ public class SolrQueryHTTPClient
         this.repositoryState = repositoryState;
     }
 
-    public void setHttpClientFactory(HttpClientFactory httpClientFactory)
-    {
-        this.httpClientFactory = httpClientFactory;
-    }
-    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -146,7 +149,7 @@ public class SolrQueryHTTPClient
         this.languageMappings = languageMappings;
     }
 
-    public void setStoreMappings(Map<String, String> storeMappings)
+    public void setStoreMappings(List storeMappings)
     {
         this.storeMappings = storeMappings;
     }
@@ -160,19 +163,24 @@ public class SolrQueryHTTPClient
 	    
         try
         {
-            URLCodec encoder = new URLCodec();
-            StringBuilder url = new StringBuilder();
-            url.append(baseUrl);
             if (searchParameters.getStores().size() == 0)
             {
                 throw new AlfrescoRuntimeException("No store for query");
             }
-            String storeUrlFragment = storeMappings.get(searchParameters.getStores().get(0).toString());
-            if (storeUrlFragment == null)
+            
+            StoreRef store = searchParameters.getStores().get(0);
+            
+            SolrStoreMapping mapping = mappingLookup.get(store);
+            
+            if (mapping == null)
             {
                 throw new AlfrescoRuntimeException("No solr query support for store " + searchParameters.getStores().get(0).toString());
             }
-            url.append("/").append(storeUrlFragment);
+            
+            URLCodec encoder = new URLCodec();
+            StringBuilder url = new StringBuilder();
+            url.append(mapping.getBaseUrl());
+         
             String languageUrlFragment = languageMappings.get(language);
             if (languageUrlFragment == null)
             {
@@ -341,6 +349,13 @@ public class SolrQueryHTTPClient
 
             try
             {
+                HttpClient httpClient = httpClients.get(store);
+                
+                if(httpClient == null)
+                {
+                    throw new AlfrescoRuntimeException("No http client for store " + searchParameters.getStores().get(0).toString());
+                }
+                
                 httpClient.executeMethod(post);
 
                 if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
@@ -393,6 +408,15 @@ public class SolrQueryHTTPClient
         {
             throw new LuceneQueryParserException("", e);
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
+     */
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException
+    {
+        this.beanFactory = beanFactory;
     }
 
 }

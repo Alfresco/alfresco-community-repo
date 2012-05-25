@@ -2636,6 +2636,16 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         catch (Throwable e)
         {
             controlDAO.rollbackToSavepoint(savepoint);
+            if (isDebugEnabled)
+            {
+                logger.debug(
+                        "Failed to insert node association: \n" +
+                        "   sourceNodeId:   " + sourceNodeId + "\n" +
+                        "   targetNodeId:   " + targetNodeId + "\n" +
+                        "   assocTypeQName: " + assocTypeQName + "\n" +
+                        "   assocIndex:     " + assocIndex,
+                        e);
+            }
             throw new AssociationExistsException(sourceNodeId, targetNodeId, assocTypeQName);
         }
     }

@@ -192,4 +192,21 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
         }
         return true;
     }    
+
+    /*
+     * ALF-14129 fix, checks whether the schema already contains object with provided name. 
+     * (this method is case insensitive to object's name)
+     */
+    public boolean containsByName(String name)
+    {
+        Iterator<DbObject> iterator = iterator();
+        while (iterator.hasNext())
+        {
+            if (iterator.next().getName().equalsIgnoreCase(name))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

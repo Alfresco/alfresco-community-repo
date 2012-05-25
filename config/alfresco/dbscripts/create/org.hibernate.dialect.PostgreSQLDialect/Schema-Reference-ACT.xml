@@ -377,6 +377,11 @@
             <columnname>proc_inst_id_</columnname>
           </columnnames>
         </index>
+        <index name="act_idx_hi_detail_task_id" unique="false">
+          <columnnames>
+            <columnname>task_id_</columnname>
+          </columnnames>
+        </index>
         <index name="act_idx_hi_detail_time" unique="false">
           <columnnames>
             <columnname>time_</columnname>
@@ -449,7 +454,7 @@
       </primarykey>
       <foreignkeys/>
       <indexes>
-        <index name="act_hi_procinst_proc_def_id__key" unique="true">
+        <index name="act_hi_procinst_proc_def_id__business_key__key" unique="true">
           <columnnames>
             <columnname>proc_def_id_</columnname>
             <columnname>business_key_</columnname>
@@ -898,7 +903,7 @@
         </foreignkey>
       </foreignkeys>
       <indexes>
-        <index name="act_ru_execution_proc_def_id__key" unique="true">
+        <index name="act_ru_execution_proc_def_id__business_key__key" unique="true">
           <columnnames>
             <columnname>proc_def_id_</columnname>
             <columnname>business_key_</columnname>
@@ -1309,6 +1314,11 @@
         <index name="act_idx_var_procinst" unique="false">
           <columnnames>
             <columnname>proc_inst_id_</columnname>
+          </columnnames>
+        </index>
+        <index name="act_idx_variable_task_id" unique="false">
+          <columnnames>
+            <columnname>task_id_</columnname>
           </columnnames>
         </index>
       </indexes>

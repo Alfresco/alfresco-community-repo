@@ -236,7 +236,8 @@ public class ExportDb
             }
             
             // Oracle hack: ignore tables in the recycle bin
-            if (tableName.startsWith("BIN$"))
+            // ALF-14129 fix, check whether schema already contains object with provided name
+            if (tableName.startsWith("BIN$") || schema.containsByName(tableName))
             {
                 continue;
             }

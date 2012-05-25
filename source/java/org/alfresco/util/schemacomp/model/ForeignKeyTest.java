@@ -118,5 +118,10 @@ public class ForeignKeyTest extends DbObjectTestBase<ForeignKey>
         thisFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col");
         thatFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col2");
         assertFalse("FKs have different target column.", thisFK.sameAs(thatFK));
+
+        // ALF-14129 fix test
+        thisFK = new ForeignKey(parent, "the_fk", "local_col", "target_table", "target_col");
+        thatFK = new ForeignKey(parent, "the_fk", "local_col", "TARGET_TABLE", "target_col");
+        assertTrue("FKs are case sensitive to targetTable's name.", thisFK.sameAs(thatFK));
     }
 }

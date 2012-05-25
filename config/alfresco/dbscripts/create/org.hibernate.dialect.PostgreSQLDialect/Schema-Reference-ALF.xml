@@ -2470,7 +2470,7 @@
           <autoincrement>false</autoincrement>
         </column>
         <column name="enabled" order="3">
-          <type>bit</type>
+          <type>bool</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -2490,9 +2490,9 @@
           <autoincrement>false</autoincrement>
         </column>
       </columns>
-      <primarykey name="PRIMARY">
+      <primarykey name="alf_tenant_pkey">
         <columnnames>
-          <columnname order="1">id</columnname>
+          <columnname order="1">tenant_domain</columnname>
         </columnnames>
       </primarykey>
       <foreignkeys/>

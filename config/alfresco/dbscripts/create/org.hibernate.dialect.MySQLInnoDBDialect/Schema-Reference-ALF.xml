@@ -2455,7 +2455,7 @@
       </columns>
       <primarykey name="PRIMARY">
         <columnnames>
-          <columnname order="1">id</columnname>
+          <columnname order="1">tenant_domain</columnname>
         </columnnames>
       </primarykey>
       <foreignkeys/>

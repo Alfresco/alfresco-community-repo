@@ -719,7 +719,7 @@
         </foreignkey>
       </foreignkeys>
       <indexes>
-        <index name="avm_version_roots_version_id_key" unique="true">
+        <index name="avm_version_roots_version_id_avm_store_id_key" unique="true">
           <columnnames>
             <columnname>version_id</columnname>
             <columnname>avm_store_id</columnname>

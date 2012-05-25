@@ -32,6 +32,7 @@ import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 
 /**
@@ -160,7 +161,7 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
             Cache ehCache = new Cache("RandomRoutingContentStore", 50, false, true, 0L, 0L);
             CacheManager cacheManager = new CacheManager();
             cacheManager.addCache(ehCache);
-            EhCacheAdapter<String, ContentStore> cache = new EhCacheAdapter<String, ContentStore>();
+            EhCacheAdapter<Pair<String,String>, ContentStore> cache = new EhCacheAdapter<Pair<String,String>, ContentStore>();
             cache.setCache(ehCache);
             super.setStoresCache(cache);
         }

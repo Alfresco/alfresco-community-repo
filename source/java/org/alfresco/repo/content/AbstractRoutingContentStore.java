@@ -29,6 +29,8 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,7 +47,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
 {
     private static Log logger = LogFactory.getLog(AbstractRoutingContentStore.class);
     
-    private SimpleCache<String, ContentStore> storesByContentUrl;
+    private String instanceKey = GUID.generate();
+    private SimpleCache<Pair<String, String>, ContentStore> storesByContentUrl;
     private ReadLock storesCacheReadLock;
     private WriteLock storesCacheWriteLock;
     
@@ -59,7 +62,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     /**
      * @param storesCache       cache of stores used to access URLs 
      */
-    public void setStoresCache(SimpleCache<String, ContentStore> storesCache)
+    public void setStoresCache(SimpleCache<Pair<String, String>, ContentStore> storesCache)
     {
         this.storesByContentUrl = storesCache;
     }
@@ -89,11 +92,12 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      */
     private ContentStore selectReadStore(String contentUrl)
     {
+        Pair<String, String> cacheKey = new Pair<String, String>(instanceKey, contentUrl);
         storesCacheReadLock.lock();
         try
         {
             // Check if the store is in the cache
-            ContentStore store = storesByContentUrl.get(contentUrl);
+            ContentStore store = storesByContentUrl.get(cacheKey);
             if (store != null)
             {
                 // We found a store that was previously used
@@ -127,7 +131,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         try
         {
             // Double check
-            ContentStore store = storesByContentUrl.get(contentUrl);
+            ContentStore store = storesByContentUrl.get(cacheKey);
             if (store != null && store.exists(contentUrl))
             {
                 // We found a store and can use it
@@ -169,7 +173,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                 // We found one
                 store = storeInList;
                 // Put the value in the cache
-                storesByContentUrl.put(contentUrl, store);
+                storesByContentUrl.put(cacheKey, store);
                 break;
             }
             // Check if the content URL was supported
@@ -326,6 +330,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     public ContentWriter getWriter(ContentContext context) throws ContentIOException
     {
         String contentUrl = context.getContentUrl();
+        Pair<String, String> cacheKey = new Pair<String, String>(instanceKey, contentUrl);
         if (contentUrl != null)
         {
             // Check to see if it is in the cache
@@ -333,7 +338,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             try
             {
                 // Check if the store is in the cache
-                ContentStore store = storesByContentUrl.get(contentUrl);
+                ContentStore store = storesByContentUrl.get(cacheKey);
                 if (store != null)
                 {
                     throw new ContentExistsException(this, contentUrl);
@@ -370,11 +375,12 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         }
         ContentWriter writer = store.getWriter(context);
         String newContentUrl = writer.getContentUrl();
+        Pair<String, String> newCacheKey = new Pair<String, String>(instanceKey, newContentUrl);
         // Cache the store against the URL
         storesCacheWriteLock.lock();
         try
         {
-            storesByContentUrl.put(newContentUrl, store);
+            storesByContentUrl.put(newCacheKey, store);
         }
         finally
         {

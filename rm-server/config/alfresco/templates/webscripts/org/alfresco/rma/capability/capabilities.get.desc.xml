@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Records Management Capabilities</shortname>
+  <description>Get the list of capabilities available to the current user on the given node.</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/capabilities?includeAll={includeAll?}</url>
+  <url>/api/capabilities?includeAll={includeAll?}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -225,6 +225,15 @@
        <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
     </bean>
     
+    <!--  Capability API -->
+    
+    <bean id="webscript.org.alfresco.rma.capability.capabilities.get" 
+          class="org.alfresco.module.org_alfresco_module_rm.script.capability.CapabilitiesGet" 
+          parent="webscript">
+       <property name="recordsManagementService" ref="RecordsManagementService"/>
+       <property name="capabilityService" ref="CapabilityService" />
+    </bean>
+    
     <!-- RM Event API-->
     
     <bean id="webscript.org.alfresco.rma.admin.rmevent.rmeventtypes.get" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventTypesGet" parent="webscript">

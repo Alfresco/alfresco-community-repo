@@ -28,12 +28,6 @@
           parent="rmBaseCapability"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability" />
     
-    <bean id="rmAccessAuditCapability" 
-          parent="declarativeCapability">
-   		<property name="name" value="AccessAudit"/>
-   		<property name="permission" value="AccessAudit"/>
-    </bean>
-    
     <bean id="rmAddModifyEventDatesCapability" 
     	  parent="declarativeCapability">
    		<property name="name" value="AddModifyEventDates"/>
@@ -148,18 +142,6 @@
    		</property>
     </bean>
     
-    <bean id="rmDeclareAuditAsRecordCapability" 
-		  parent="declarativeCapability">
-		<property name="name" value="DeclareAuditAsRecord" />
-		<property name="permission" value="DeclareAuditAsRecord" />
-	</bean>
-    
-    <bean id="rmDeleteAuditCapability" 
-		  parent="declarativeCapability">
-		<property name="name" value="DeleteAudit" />
-		<property name="permission" value="DeleteAudit" />
-	</bean>
-    
     <bean id="rmDeleteLinksCapability" 
           parent="rmBaseCapability" 
           class="org.alfresco.module.org_alfresco_module_rm.capability.impl.DeleteLinksCapability">
@@ -184,19 +166,7 @@
 		  parent="declarativeCapability">
 		<property name="name" value="EditSelectionLists" />
 		<property name="permission" value="EditSelectionLists" />
-	</bean>
-	
-    <bean id="rmEnableDisableAuditByTypesCapability" 
-		  parent="declarativeCapability">
-		<property name="name" value="EnableDisableAuditByTypes" />
-		<property name="permission" value="EnableDisableAuditByTypes" />
-	</bean>
-
-    <bean id="rmExportAuditCapability" 
-		  parent="declarativeCapability">
-		<property name="name" value="ExportAudit" />
-		<property name="permission" value="ExportAudit" />
-	</bean>    
+	</bean>	 
     
     <bean id="rmMakeOptionalPropertiesMandatoryCapability" 
 		  parent="declarativeCapability">
@@ -252,12 +222,6 @@
    			</map>
    		</property>
     </bean>
-    
-    <bean id="rmSelectAuditMetadataCapability" 
-		  parent="declarativeCapability">
-		<property name="name" value="SelectAuditMetadata" />
-		<property name="permission" value="SelectAuditMetadata" />
-	</bean>
     
     <bean id="rmTriggerAnEventCapability" 
     	  parent="declarativeCapability">
@@ -326,6 +290,9 @@
     
     <!-- Disposition capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-disposition-context.xml"/>
+    
+    <!-- Audit capabilities -->
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-audit-context.xml"/>
     
     <!-- Group capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-group-context.xml"/>  

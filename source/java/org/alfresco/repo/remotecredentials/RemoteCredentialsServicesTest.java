@@ -23,11 +23,13 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -38,7 +40,6 @@ import org.alfresco.service.cmr.remotecredentials.RemoteCredentialsService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -60,7 +61,8 @@ import org.springframework.context.ApplicationContext;
 /**
  * Test cases for {@link RemoteCredentialsServiceImpl} and friends.
  * 
- * Note - this test will zap any existing shared credentials!
+ * Note - this test will largely use a test shared credentials
+ *  container, but one test puts things into the real credentials folder
  * 
  * @author Nick Burch
  * @since Odin
@@ -95,6 +97,8 @@ public class RemoteCredentialsServicesTest
     private static DictionaryService            DICTIONARY_SERVICE;
     private static NodeService                  NODE_SERVICE;
     private static NodeService                  PUBLIC_NODE_SERVICE;
+    private static NamespaceService             NAMESPACE_SERVICE;
+    private static Repository                   REPOSITORY_HELPER;
     private static PersonService                PERSON_SERVICE;
     private static RetryingTransactionHelper    TRANSACTION_HELPER;
     private static TransactionService           TRANSACTION_SERVICE;
@@ -115,6 +119,8 @@ public class RemoteCredentialsServicesTest
         AUTHENTICATION_SERVICE = (MutableAuthenticationService)testContext.getBean("authenticationService");
         BEHAVIOUR_FILTER       = (BehaviourFilter)testContext.getBean("policyBehaviourFilter");
         DICTIONARY_SERVICE     = (DictionaryService)testContext.getBean("dictionaryService");
+        NAMESPACE_SERVICE      = (NamespaceService)testContext.getBean("namespaceService");
+        REPOSITORY_HELPER      = (Repository)testContext.getBean("repositoryHelper");
         NODE_SERVICE           = (NodeService)testContext.getBean("nodeService");
         PUBLIC_NODE_SERVICE    = (NodeService)testContext.getBean("NodeService");
         PERSON_SERVICE         = (PersonService)testContext.getBean("personService");
@@ -802,6 +808,70 @@ public class RemoteCredentialsServicesTest
         assertEquals(1, creds.getPage().size());
     }
     
+    /**
+     * Most of the shared credentials container tests work on the test one,
+     *  so that things are in a known and empty state.
+     * We have this one test that uses the real shared container, just to check
+     *  that it's correctly setup and available
+     */
+    @Test public void testRealSharedCredentialsContainer() throws Exception
+    {
+        // Create a new instance, using the real container
+        RemoteCredentialsServiceImpl realService = new RemoteCredentialsServiceImpl();
+        realService.setDictionaryService(DICTIONARY_SERVICE);
+        realService.setNamespaceService(NAMESPACE_SERVICE);
+        realService.setNodeService(PUBLIC_NODE_SERVICE);
+        realService.setRepositoryHelper(REPOSITORY_HELPER);
+
+        for (Entry<QName,RemoteCredentialsInfoFactory> e : ((RemoteCredentialsServiceImpl)PRIVATE_REMOTE_CREDENTIALS_SERVICE).getCredentialsFactories().entrySet() )
+        {
+            realService.registerCredentialsFactory(e.getKey(), e.getValue());
+        }
+
+        
+        // Run as a test user
+        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
+        
+        // Do a create / fetch / delete step
+        PasswordCredentialsInfoImpl pwCredI = new PasswordCredentialsInfoImpl();
+        pwCredI.setRemoteUsername(TEST_REMOTE_USERNAME_ONE);
+        pwCredI.setRemotePassword(TEST_USER_THREE);
+        BaseCredentialsInfo credentials = null;
+        
+        try
+        {
+            // Create
+            credentials = realService.createSharedCredentials(TEST_REMOTE_SYSTEM_ONE, pwCredI);
+            assertEquals(TEST_REMOTE_USERNAME_ONE, credentials.getRemoteUsername());
+
+            // Update
+            ((PasswordCredentialsInfoImpl)credentials).setRemoteUsername(TEST_REMOTE_USERNAME_TWO);
+            ((PasswordCredentialsInfoImpl)credentials).setRemotePassword(TEST_USER_ONE);
+            credentials = realService.updateCredentials(credentials);
+            assertEquals(TEST_REMOTE_USERNAME_TWO, credentials.getRemoteUsername());
+            
+            // Delete
+            realService.deleteCredentials(credentials);
+            
+            // Tidy, and zap the test parent
+            PUBLIC_NODE_SERVICE.deleteNode(credentials.getRemoteSystemContainerNodeRef());
+            credentials = null;
+        }
+        finally
+        {
+            // Tidy up if needed
+            if (credentials != null)
+            {
+                AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+                
+                // Zap the credentials themselves
+                PUBLIC_NODE_SERVICE.deleteNode(credentials.getNodeRef());
+                
+                // And their test parent
+                PUBLIC_NODE_SERVICE.deleteNode(credentials.getRemoteSystemContainerNodeRef());
+            }
+        }
+    }
     
     // --------------------------------------------------------------------------------
     

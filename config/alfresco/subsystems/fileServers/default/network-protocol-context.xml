@@ -203,12 +203,13 @@
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>   
                 <!--  Mac word 2011 with backup -->
+                <!-- Match Backup file dot/doc/dotm/docm/dotxm/dotx -->
                 <bean id="word2011WithBackup" class="org.alfresco.filesys.repo.rules.ScenarioDoubleRenameShuffle">
-                    <property name="pattern"><value>^Backup.*.doc[x]</value></property>
+                    <property name="pattern"><value>^Backup.*.do[ct]{1}[x]?[m]?</value></property>
                     <property name="timeout"><value>20000</value></property>
                     <property name="ranking"><value>MEDIUM</value></property>
                     <property name="deleteBackup"><value>true</value></property>
-                </bean>                
+                </bean>           
             </list>
         </property>
        

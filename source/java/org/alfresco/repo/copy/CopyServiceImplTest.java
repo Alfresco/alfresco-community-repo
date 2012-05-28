@@ -159,6 +159,10 @@ public class CopyServiceImplTest extends TestCase
     private static final String USER_1 = "User1";
     private static final String USER_2 = "User2";
     
+    private static final QName TYPE_CUSTOM_CMIS_DOCUMENT = QName.createQName("{http://www.alfresco.org/model/cmis/custom}document");
+    private static final QName PROP_CUSTOM_STRING = QName.createQName("{http://www.alfresco.org/model/cmis/custom}docprop_string");
+    
+    
     /**
      * Test content
      */
@@ -1336,5 +1340,28 @@ public class CopyServiceImplTest extends TestCase
                 }
             }    
         }
+    }
+
+    public void testCopyNullPropertyForAlf10712() throws Exception
+    {
+        nodeService.setType(sourceNodeRef, TYPE_CUSTOM_CMIS_DOCUMENT);
+        nodeService.setType(targetNodeRef, TYPE_CUSTOM_CMIS_DOCUMENT);
+
+        Map<QName, Serializable> customProperties = new HashMap<QName, Serializable>();
+
+        customProperties.put(PROP_CUSTOM_STRING, null);
+        nodeService.setProperties(sourceNodeRef, customProperties);
+        
+        Serializable customPropValue = nodeService.getProperty(sourceNodeRef, PROP_CUSTOM_STRING);
+        assertNull((PROP_CUSTOM_STRING.toString() + " property must be set to NULL on the source node!"), customPropValue);
+
+        customProperties.put(PROP_CUSTOM_STRING, TEST_VALUE_1);
+        nodeService.setProperties(targetNodeRef, customProperties);
+        Serializable customProp = nodeService.getProperty(targetNodeRef, PROP_CUSTOM_STRING);
+        assertEquals((PROP_CUSTOM_STRING.toString() + " must be set to '" + TEST_VALUE_1 + "' on the target node!"), TEST_VALUE_1, customProp );
+
+        copyService.copy(sourceNodeRef, targetNodeRef);
+        Serializable updatedCustomProp = nodeService.getProperty(targetNodeRef, PROP_CUSTOM_STRING);
+        assertNull((PROP_CUSTOM_STRING.toString() + " property must be set to NULL on the target node after copying!"), updatedCustomProp );
     }
 }

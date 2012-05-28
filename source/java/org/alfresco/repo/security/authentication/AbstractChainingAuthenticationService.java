@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,8 @@ import java.util.TreeSet;
 
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A base class for chaining authentication services. Where appropriate, methods will 'chain' across multiple
@@ -34,6 +36,8 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
  */
 public abstract class AbstractChainingAuthenticationService extends AbstractAuthenticationService implements MutableAuthenticationService
 {
+    private static final Log logger = LogFactory.getLog(AbstractChainingAuthenticationService.class);
+
     /**
      * Instantiates a new abstract chaining authentication service.
      */
@@ -173,20 +177,42 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
         preAuthenticationCheck(userName);
-        for (AuthenticationService authService : getUsableAuthenticationServices())
+        List<AuthenticationService> usableAuthenticationServices = getUsableAuthenticationServices();
+        int counter = usableAuthenticationServices.size();
+        for (AuthenticationService authService : usableAuthenticationServices)
         {
             try
             {
+                counter--;
                 authService.authenticate(userName, password);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("authenticate "+userName+" with "+getId(authService)+" SUCCEEDED");
+                }
                 return;
             }
             catch (AuthenticationException e)
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("authenticate "+userName+" with "+getId(authService)+(counter == 0 ? " FAILED (end of chain)" : " failed (try next in chain)"));
+                }
                 // Ignore and chain
             }
         }
         throw new AuthenticationException("Failed to authenticate");
 
+    }
+
+    /**
+     * Should be overridden to returns the ID of the authService for use in debug.
+     * @param authService in question.
+     * @return the ID of the authService. This implementation has no way to work 
+     *         this out so returns the simple class name.
+     */
+    protected String getId(AuthenticationService authService)
+    {
+        return authService.getClass().getSimpleName();
     }
 
     /**

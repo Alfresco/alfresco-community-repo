@@ -144,12 +144,20 @@ public class RemoteCredentialsServiceImpl implements RemoteCredentialsService
         credentialsFactories.put(credentialsType, factory);
     }
     
+    /**
+     * Provides a read only copy of the credentials factories, useful in unit tests
+     */
+    protected Map<QName,RemoteCredentialsInfoFactory> getCredentialsFactories()
+    {
+        return Collections.unmodifiableMap(credentialsFactories);
+    }
+    
     // --------------------------------------------------------
     
     private static QName SYSTEM_FOLDER_QNAME = 
         QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
     private static QName SHARED_CREDENTIALS_CONTAINER_QNAME = 
-        QName.createQName(RemoteCredentialsModel.REMOTE_CREDENTIALS_MODEL_URL, SHARED_CREDENTIALS_CONTAINER_NAME); 
+        QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, SHARED_CREDENTIALS_CONTAINER_NAME); 
     /**
      * Gets the NodeRef of the holder of shared credentials remote systems.
      * 

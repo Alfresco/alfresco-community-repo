@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -193,4 +193,24 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
         }
     }
 
+    @Override
+    protected String getId(AuthenticationService authService)
+    {
+        this.lock.readLock().lock();
+        try
+        {
+            for (String instance : this.instanceIds)
+            {
+                if (authService.equals(this.sourceBeans.get(instance)))
+                {
+                    return instance;
+                }
+            }
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
+        return super.getId(authService);
+    }
 }

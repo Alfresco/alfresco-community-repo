@@ -677,12 +677,11 @@ public class CopyServiceImpl implements CopyService
             scratchProperties.clear();
             for (QName propertyQName : propertyDefs.keySet())
             {
-                Serializable value = sourceNodeProperties.get(propertyQName);
-                if (value == null)
+                if (sourceNodeProperties.containsKey(propertyQName))
                 {
-                    continue;
+                    Serializable value = sourceNodeProperties.get(propertyQName);
+                    scratchProperties.put(propertyQName, value);
                 }
-                scratchProperties.put(propertyQName, value);
             }
             // What does the behaviour do with properties?
             Map<QName, Serializable> propsToCopy = callback.getCopyProperties(classQName, copyDetails, scratchProperties);

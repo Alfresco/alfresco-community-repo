@@ -1102,8 +1102,7 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
   {
     var result = new Element("a");
     result.src = "#";
-    result.style.width = "1px";
-    result.style.height = "1px";
+    result.addClass("xformsAccessibilityInvisibleText");
     result.style.border.width = 0;
     result.style.padding = 0;
     result.style.margin = 0;
@@ -5628,7 +5627,11 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
 {
   theme: "advanced",
   mode: "exact",
-  plugins: alfresco.constants.TINY_MCE_DEFAULT_PLUGINS,
+  plugins: ((alfresco.constants.TINY_MCE_DEFAULT_PLUGINS && (alfresco.constants.TINY_MCE_DEFAULT_PLUGINS.length > 0)) ? (alfresco.constants.TINY_MCE_DEFAULT_PLUGINS + ",xformstabfocus") : ("xformstabfocus")), // ALF-11956: Each RTE instance MUST BE configured with 'xformstabfocus' plugin to handle Shift + Tab keys
+  form_scope_id: "alfresco-xforms-ui", // ALF-11956: Id of a root container for all widgets. Scope of elements search
+  editor_condition: 'accesskey="z"', // ALF-11956: CSS class of element which handles events for RTE
+  forward_element_classes: "xformsAccessibilityInvisibleText", // ALF-11956
+  backward_element_classes: "mceButton mceButtonEnabled", // ALF-11956
   language: alfresco.constants.LANGUAGE,
   width: -1,
   height: -1,

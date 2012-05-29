@@ -13,7 +13,11 @@
         		<activiti:field name="script">
                      <activiti:string>
                        	execution.setVariable('wf_approveCount', 0);
-                       	execution.setVariable('wf_actualPercent', 0);
+                        execution.setVariable('wf_rejectCount', 0);
+                        
+                        execution.setVariable('wf_actualPercent', 0);
+                        execution.setVariable('wf_actualRejectPercent', 0);
+                        
                        	execution.setVariable('wf_reviewerCount', bpm_assignees.size());
                        	execution.setVariable('wf_requiredPercent', wf_requiredApprovePercent);
                      </activiti:string>
@@ -44,11 +48,17 @@
                   <activiti:field name="script">
                      <activiti:string>
                         if(task.getVariableLocal('wf_reviewOutcome') == 'Approve') {
-                             var newApprovedCount = wf_approveCount + 1;
+                            var newApprovedCount = wf_approveCount + 1;
 	                         var newApprovedPercentage = (newApprovedCount / wf_reviewerCount) * 100;
 	                         
 	                         execution.setVariable('wf_approveCount', newApprovedCount);
 	                         execution.setVariable('wf_actualPercent', newApprovedPercentage);
+                        } else {
+                            var newRejectCount = wf_rejectCount + 1;
+                            var newRejectPercentage = (newRejectCount / wf_reviewerCount) * 100;
+                            
+                            execution.setVariable('wf_rejectCount', newRejectCount);
+                            execution.setVariable('wf_actualRejectPercent', newRejectPercentage);
                         }
                      </activiti:string>
                   </activiti:field>
@@ -65,7 +75,7 @@
            <multiInstanceLoopCharacteristics isSequential="false">
            	  <loopDataInputRef>bpm_assignees</loopDataInputRef>
            	  <inputDataItem name="reviewAssignee" />
-           	  <completionCondition>${wf_actualPercent >= wf_requiredApprovePercent}</completionCondition>
+           	  <completionCondition>${wf_actualPercent >= wf_requiredApprovePercent || wf_requiredApprovePercent > (100 - wf_actualRejectPercent)}</completionCondition>
            </multiInstanceLoopCharacteristics>
         </userTask>
 

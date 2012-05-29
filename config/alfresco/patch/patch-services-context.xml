@@ -3196,5 +3196,27 @@
         <property name="siteService" ref="siteService" />
         <property name="hiddenAspect" ref="hiddenAspect" />
     </bean>    
+    
+    <bean id="patch.redeployParallelActivitiWorkflows" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="basePatch" >
+        <property name="id"><value>patch.redeployParallelActivitiWorkflows</value></property>
+        <property name="description"><value>patch.redeployParallelActivitiWorkflows.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6009</value></property>
+        <property name="targetSchema"><value>6010</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/parallel-review.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/parallel-review-group.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
 
 </beans>

@@ -796,11 +796,19 @@ public abstract class WebDAVMethod
     }
     
     /**
-     * @return Returns the path of the servlet
+     * @return Returns the path of the servlet, e.g. /webdav
      */
     protected final String getServletPath()
     {
         return m_request.getServletPath();
+    }
+    
+    /**
+     * @return Returns the context path of the servlet, e.g. /alfresco
+     */
+    protected final String getContextPath()
+    {
+        return m_request.getContextPath();
     }
     
     /**

@@ -691,7 +691,7 @@ public class WebDAVHelper
      * @param destURL The Destination header.
      * @return The path to move/copy the file to.
      */
-    public String getDestinationPath(String servletPath, String destURL)
+    public String getDestinationPath(String contextPath, String servletPath, String destURL)
     {
         if (destURL != null && destURL.length() > 0)
         {
@@ -715,10 +715,16 @@ public class WebDAVHelper
                 offset = destURL.indexOf(WebDAV.PathSeperator, offset);
                 if (offset != -1)
                 {
+                    // Strip the host from the beginning
                     String strPath = destURL.substring(offset);
-                    offset = strPath.indexOf(servletPath);
-                    if (offset != -1)
-                        strPath = strPath.substring(offset + servletPath.length());
+                    
+                    // If it starts with /contextPath/servletPath/ (e.g. /alfresco/webdav/path/to/file) - then
+                    // strip the servlet path from the start of the path.
+                    String pathPrefix = contextPath + servletPath + WebDAV.PathSeperator;
+                    if (strPath.startsWith(pathPrefix))
+                    {
+                        strPath = strPath.substring(pathPrefix.length());
+                    }
 
                     return WebDAV.decodeURL(strPath);
                 }

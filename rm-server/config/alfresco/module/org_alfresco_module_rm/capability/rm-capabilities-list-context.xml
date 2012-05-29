@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!--  Assignable Capabilities -->
+    
+    <bean id="rmCreateAndAssociateSelectionListsCapability" 
+    	  parent="declarativeCapability">
+    	<property name="name" value="CreateAndAssociateSelectionLists"/>
+   		<property name="permission" value="CreateAndAssociateSelectionLists"/>
+    </bean>
+                
+    <bean id="rmEditSelectionListsCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="EditSelectionLists" />
+		<property name="permission" value="EditSelectionLists" />
+	</bean>	 
+
+    <!--  Non-Assignable Capabilities -->
+    
+    <bean id="rmListAdmin" 
+    	  parent="compositeCapability">
+        <property name="name" value="ListAdmin"/>
+    	<property name="private" value="true"/>    	
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateAndAssociateSelectionListsCapability"/>
+    			<ref bean="rmEditSelectionListsCapability"/>    			   			
+    		</list>
+    	</property>
+    </bean>
+
+</beans>

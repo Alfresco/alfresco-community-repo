@@ -43,6 +43,9 @@ public class CompositeCapability extends DeclarativeCapability
         this.capabilities = capabilities;
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluateImpl(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public int evaluateImpl(NodeRef nodeRef)
     {   
@@ -66,6 +69,11 @@ public class CompositeCapability extends DeclarativeCapability
         return result;
     }
     
+    /**
+     * If a target capability is specified then we evaluate that.  Otherwise we combine the results of the provided capabilities.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public int evaluate(NodeRef source, NodeRef target)
     {

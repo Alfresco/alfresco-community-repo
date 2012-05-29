@@ -66,12 +66,6 @@
    		</property>
     </bean>
     
-    <bean id="rmCreateAndAssociateSelectionListsCapability" 
-    	  parent="declarativeCapability">
-    	<property name="name" value="CreateAndAssociateSelectionLists"/>
-   		<property name="permission" value="CreateAndAssociateSelectionLists"/>
-    </bean>
-    
     <bean id="rmCreateModifyDestroyClassificationGuidesCapability" 
           parent="declarativeCapability">
     	<property name="name" value="CreateModifyDestroyClassificationGuides"/>
@@ -161,12 +155,6 @@
 		<property name="name" value="DisplayRightsReport" />
 		<property name="permission" value="DisplayRightsReport" />
 	</bean>
-    
-    <bean id="rmEditSelectionListsCapability" 
-		  parent="declarativeCapability">
-		<property name="name" value="EditSelectionLists" />
-		<property name="permission" value="EditSelectionLists" />
-	</bean>	 
     
     <bean id="rmMakeOptionalPropertiesMandatoryCapability" 
 		  parent="declarativeCapability">
@@ -293,6 +281,9 @@
     
     <!-- Audit capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-audit-context.xml"/>
+    
+    <!-- List capabilities -->
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-list-context.xml"/>
     
     <!-- Group capabilities -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-group-context.xml"/>  

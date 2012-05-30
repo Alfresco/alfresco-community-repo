@@ -310,13 +310,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         TransformationOptions options = new TransformationOptions(
                 sourceNodeRef, ContentModel.PROP_NAME, destinationNodeRef, ContentModel.PROP_NAME);          
         
-        // try to pre-empt the lack of a transformer        
-        if (this.contentService.isTransformable(contentReader, contentWriter, options) == false)
-        {
-            throw new NoTransformerException(contentReader.getMimetype(), contentWriter.getMimetype());
-        }
-        
-        // transform
+        // transform - will throw NoTransformerException if there are no transformers
         this.contentService.transform(contentReader, contentWriter, options);
     }
     

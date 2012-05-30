@@ -69,10 +69,13 @@ public abstract class AbstractVersioningProperty extends AbstractProperty
         return getServiceRegistry().getCheckOutCheckInService().isWorkingCopy(nodeRef);
     }
     
+    public boolean isImmutable(NodeRef nodeRef)
+    {
+        return getServiceRegistry().getLockService().getLockType(nodeRef) == LockType.READ_ONLY_LOCK;
+    }
+
     public boolean hasWorkingCopy(NodeRef nodeRef)
     {
-        final ServiceRegistry serviceRegistry = getServiceRegistry();
-        return serviceRegistry.getLockService().getLockType(nodeRef) == LockType.READ_ONLY_LOCK
-                && serviceRegistry.getCheckOutCheckInService().getWorkingCopy(nodeRef) != null;
+        return isImmutable(nodeRef) && getServiceRegistry().getCheckOutCheckInService().getWorkingCopy(nodeRef) != null;
     }
 }

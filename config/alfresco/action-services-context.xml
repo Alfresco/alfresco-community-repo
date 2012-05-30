@@ -422,6 +422,9 @@
         <property name="imageMagickContentTransformer">
             <ref bean="transformer.ImageMagick" />
         </property>
+        <property name="transformerDebug">
+            <ref bean="transformerDebug" />
+        </property>
     </bean>
 
     <bean id="copy" class="org.alfresco.repo.action.executer.CopyActionExecuter" parent="action-executer">

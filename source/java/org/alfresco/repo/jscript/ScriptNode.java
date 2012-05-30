@@ -75,6 +75,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -2472,10 +2473,14 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                 TransformationOptions options = new TransformationOptions();
                 options.setSourceNodeRef(sourceNodeRef);
 
-                if (contentService.isTransformable(reader, writer, options))
+                try
                 {
                     contentService.transform(reader, writer, options);
                     transformedNode = newInstance(nodeRef, services, scope);
+                }
+                catch (NoTransformerException e)
+                {
+                    // ignore
                 }
                 return transformedNode;
             }

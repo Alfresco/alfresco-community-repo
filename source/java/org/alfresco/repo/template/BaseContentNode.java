@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
+import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -610,7 +611,7 @@ public abstract class BaseContentNode implements TemplateContent
                 options.setSourceNodeRef(nodeRef);
 
                 // try and transform the content
-                if (contentService.isTransformable(reader, writer, options))
+                try
                 {
                     contentService.transform(reader, writer, options);
                     
@@ -626,6 +627,10 @@ public abstract class BaseContentNode implements TemplateContent
                            result = resultReader.getContentString();
                        }
                     }
+                }
+                catch (NoTransformerException e)
+                {
+                    // ignore
                 }
             }
             return result;

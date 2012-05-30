@@ -53,7 +53,7 @@ public class IsImmutableProperty extends AbstractVersioningProperty
         }
         if (getVersionSeries(nodeRef).equals(nodeRef))
         {
-            return hasWorkingCopy(nodeRef);
+            return isImmutable(nodeRef);
         }
         return true;
     }

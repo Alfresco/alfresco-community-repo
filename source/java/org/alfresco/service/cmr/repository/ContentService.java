@@ -300,22 +300,7 @@ public interface ContentService
     public ContentTransformer getImageTransformer();
     
     /**
-     * Returns whether a transformer exists that can read the content from
-     * the reader and write the content back out to the writer.
-     * <p>
-     * Since no transformation options are specified, only the source and target
-     * mimetypes will be considered when making this decision.
-     * <p>
-     * The mimetypes used for the transformation must be set both on
-     * the {@link ContentAccessor#getMimetype() reader} and on the
-     * {@link ContentAccessor#getMimetype() writer}.
-     * 
-     * @param reader the source content location and mimetype
-     * @param writer the target content location and mimetype
-     * 
-     * @return true if a transformer exists, false otherwise
-     * 
-     * @see org.alfresco.service.cmr.repository.ContentService.isTransformable(ContentReader, ContentWriter, TransformationOptions)
+     * @deprecated use {@link #isTransformable(String, String, long, String, TransformationOptions).
      */
     @Auditable(parameters = {"reader", "writer"})
     public boolean isTransformable(ContentReader reader, ContentWriter writer);
@@ -325,6 +310,10 @@ public interface ContentService
      * the reader and write the content back out to the writer with the 
      * provided tranformation options.
      * <p>
+     * <b>If you are about to call {@link #transform(ContentReader, ContentWriter, TransformationOptions)}
+     * it is best NOT to call this method first as it must perform the same steps and will throw
+     * NoTransformerException if there are no transformers.</b><p>
+     * 
      * The mimetypes used for the transformation must be set both on
      * the {@link ContentAccessor#getMimetype() reader} and on the
      * {@link ContentAccessor#getMimetype() writer}.

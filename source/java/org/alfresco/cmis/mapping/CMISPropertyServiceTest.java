@@ -191,13 +191,13 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         properties = cmisService.getProperties(content);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_IMMUTABLE), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_VERSION), true);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_MAJOR_VERSION), false);
         assertEquals(properties.get(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION), false);
         assertNotNull(properties.get(CMISDictionaryModel.PROP_VERSION_LABEL));
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_ID), content.toString());
-        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), true);
-        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), authenticationComponent.getCurrentUserName());
+        assertEquals(properties.get(CMISDictionaryModel.PROP_IS_VERSION_SERIES_CHECKED_OUT), false);
+        assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_BY), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_VERSION_SERIES_CHECKED_OUT_ID), null);
         assertEquals(properties.get(CMISDictionaryModel.PROP_CHECKIN_COMMENT), null);
 

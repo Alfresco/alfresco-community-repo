@@ -963,9 +963,20 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new AlfrescoRuntimeException("The content writer mimetype must be set: " + writer);
         }
         
-        // look for a transformer
-        ContentTransformer transformer = transformerRegistry.getTransformer(sourceMimetype, reader.getSize(), targetMimetype, options);
-        return (transformer != null);
+        long sourceSize = reader.getSize();
+        try
+        {
+            // look for a transformer
+            transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, targetMimetype, options);
+            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
+            transformerDebug.availableTransformers(transformers, sourceSize, "ContentService.isTransformable(...)");
+            
+            return transformers.size() > 0; 
+        }
+        finally
+        {
+            transformerDebug.popAvailable();
+        }
     }
 
     /**

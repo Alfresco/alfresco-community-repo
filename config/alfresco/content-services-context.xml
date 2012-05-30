@@ -328,6 +328,14 @@
          class="org.alfresco.repo.content.transform.PdfBoxPdfToImageContentTransformer"
          parent="unregisteredBaseContentTransformer" />
 
+   <bean id="failover.transformer.ImageMagick"
+         class="org.alfresco.repo.content.transform.ProxyContentTransformer"
+         parent="unregisteredBaseContentTransformer" >
+      <property name="worker">
+         <ref bean="transformer.worker.ImageMagick" />
+      </property>
+   </bean>
+
    <!-- Content Transformations -->
    <bean id="transformer.StringExtracter"
          class="org.alfresco.repo.content.transform.StringExtractingContentTransformer"
@@ -390,11 +398,12 @@
    </bean>
    
    <bean id="transformer.PdfToImage"
-       class="org.alfresco.repo.content.transform.FailoverContentTransformer"
+       class="org.alfresco.repo.content.transform.FailoverPdfToImageContentTransformer"
        parent="baseContentTransformer" >      
      <property name="transformers">
         <list>
            <ref bean="failover.transformer.PdfRenderer.PdfToImage"/>
+           <ref bean="failover.transformer.ImageMagick"/>
            <ref bean="failover.transformer.PdfBox.PdfToImage"/>
         </list>
      </property>  

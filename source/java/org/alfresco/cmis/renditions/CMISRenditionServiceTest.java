@@ -34,6 +34,7 @@ import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
@@ -211,9 +212,13 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         TransformationOptions options = new TransformationOptions();
         options.setSourceNodeRef(textDocument);
 
-        if (contentService.isTransformable(contentReader, contentWriter, options))
+        try
         {
             contentService.transform(contentReader, contentWriter, options);
+        }
+        catch (NoTransformerException e)
+        {
+            // ignore
         }
 
         fileFolderService.delete(textDocument);

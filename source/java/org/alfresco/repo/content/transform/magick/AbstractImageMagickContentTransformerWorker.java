@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -180,6 +180,14 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         {
             return false;
         }
+        
+        // Add limited support (so lots of other transforms are not supported) for PDF to PNG. An ALF-14303 workaround.
+        // Will only be used as part of failover transformer.PdfToImage
+        if (sourceMimetype.equals(MimetypeMap.MIMETYPE_PDF) && targetMimetype.equals(MimetypeMap.MIMETYPE_IMAGE_PNG))
+        {
+            return true; // ALF-14303 workaround
+        }
+        
         if (!AbstractImageMagickContentTransformerWorker.isSupported(sourceMimetype) ||
                 !AbstractImageMagickContentTransformerWorker.isSupported(targetMimetype))
         {

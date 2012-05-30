@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.RFC822MetadataExtracter;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -57,7 +58,6 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean implements CustomEmailMappingService
 {
     /** Logger */
-    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(CustomEmailMappingServiceImpl.class);   
     
     /** Node reference's to configuration elements */
@@ -172,22 +172,20 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
                     }
                 }
                 
-                // TODO
                 // if we have an old config file
+                NodeRef oldConfigNode = getOldConfigNode();
+                if (oldConfigNode != null)
                 {
                     // load the contents of the old config file
+                    Set<CustomMapping> oldMappings = readOldConfig(oldConfigNode);
+                    customMappings.addAll(oldMappings);
                 }
-                //else
+                
+                // load the hard coded mappings
+                for(CustomMapping mapping : DEFAULT_MAPPINGS)
                 {
-                    // load the hard coded mappings
-                    for(CustomMapping mapping : DEFAULT_MAPPINGS)
-                    {
-                        if(!customMappings.contains(mapping))
-                        {
-                            customMappings.add(mapping);
-                        }
-                    }
-                }
+                    customMappings.add(mapping);                       
+                }                
                 
                 // create the config file
                 saveConfig(customMappings);
@@ -363,8 +361,25 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
                 {
                     public Void execute() throws Throwable
                     {
-                        // update the extractor with the custom mappings
-                        updateExtractor();                      
+                        try
+                        {
+                            // update the extractor with the custom mappings
+                            updateExtractor();
+                        }
+                        catch (Throwable e)
+                        {
+                            // log a warning
+                            if (logger.isWarnEnabled() == true)
+                            {
+                                logger.warn(e.getMessage());
+                            }
+                            
+                            // reset the mappings
+                            customMappings = null;
+                            
+                            // rethrow
+                            throw e;
+                        }
                         return null;
                     }
                 };
@@ -382,5 +397,57 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     protected void onShutdown(ApplicationEvent arg0)
     {
         // No implementation
+    }
+    
+    /**
+     * Helper method to get the old configuration node.  This is used during the migration
+     * from 1.0 to 2.0.
+     * <p>
+     * Returns null if it does not exist.
+     * 
+     * @return  {@link NodeRef} node reference of the old configuration node, null otherwise
+     */
+    private NodeRef getOldConfigNode()
+    {
+        NodeRef rootNode = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        return nodeService.getChildByName(rootNode, RecordsManagementModel.ASSOC_EMAIL_CONFIG, CONFIG_NAME);
+    }
+    
+    /**
+     * Reads the old configuration node.  This is used during the migration from 1.0 to 2.0.
+     * 
+     * @param nodeRef   the old configuration node reference
+     * @return {@link Set}<{@link CustomMapping}>   set of the custom mappings stored in the old configuration
+     */
+    private Set<CustomMapping> readOldConfig(NodeRef nodeRef)
+    {
+        Set<CustomMapping> newMappings = new HashSet<CustomMapping>();
+        
+        ContentReader cr = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+        if (cr != null)
+        {
+            String text = cr.getContentString();
+            
+            try
+            {  
+                JSONArray jsonArray = new JSONArray(new JSONTokener(text));
+                for(int i = 0 ; i < jsonArray.length(); i++)
+                {
+                    JSONObject obj = jsonArray.getJSONObject(i);
+                    CustomMapping mapping = new CustomMapping();
+                    mapping.setFrom(obj.getString("from"));
+                    mapping.setTo(obj.getString("to"));
+                    newMappings.add(mapping);
+                }
+                return newMappings;
+            }
+            catch (JSONException je)
+            {
+                logger.warn("unable to read custom email configuration", je);
+                return newMappings;
+            }
+            
+        }
+        return newMappings;
     } 
 }

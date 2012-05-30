@@ -248,7 +248,11 @@ var Filters =
    constructPathQuery: function constructPathQuery(parsedArgs)
    {
       var pathQuery = "";
-      if (parsedArgs.nodeRef != "alfresco://company/home")
+      if (parsedArgs.libraryRoot != companyhome)
+      {
+         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
+      }
+      else if (parsedArgs.nodeRef != "alfresco://company/home")
       {
          pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
       }

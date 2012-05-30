@@ -181,6 +181,27 @@ var Common =
    },
    
    /**
+    * Returns the number of nested levels at which two paths match. This is used when there are two 
+    * parents to a node and is used to determine the correct one.
+    * 
+    * @param count
+    * @param firstNode An array of Strings that are the elements in a path to a node.
+    * @param secondNode An array of Strings that are the elements in a path to a different node.
+    */
+   getDeepOfPath: function Common_getDeepOfPath(count, firstNode, secondNode)
+   {
+      var i = 0;
+      for (var i = 0; i < count; i++)
+      {
+         if (!firstNode[i].equals(secondNode[i]))
+         {
+            break;
+         }
+      }
+      return i;
+   }, 
+   
+   /**
     * Generates a location object literal for a given node.
     * Location is Site-relative unless a libraryRoot node is passed in.
     *
@@ -202,16 +223,27 @@ var Common =
 
       if (libraryRoot)
       {
+         var libraryRootDisplayPath = libraryRoot.displayPath.split("/");
+         var deepLibraryRoot = libraryRootDisplayPath.length;
+         var deepNode = displayPaths.length; 
+
+         var count = (deepNode > deepLibraryRoot) ? Common.getDeepOfPath(deepNode, displayPaths, libraryRootDisplayPath): Common.getDeepOfPath(deepLibraryRoot, libraryRootDisplayPath, displayPaths);
+
+         if (node.qnamePath.contains(libraryRoot.qnamePath))
+         {
+            count++;
+         }
+
          // Generate the path from the supplied library root
          location =
          {
             site: null,
             siteTitle: null,
             container: null,
-            path: "/" + displayPaths.slice(libraryRoot.displayPath.split("/").length + 1, displayPaths.length).join("/"),
+            path: "/" + displayPaths.slice(count, deepNode).join("/"),
             file: node.name
          };
-      }
+      } 
       else if ((qnamePaths.length > 4) && (qnamePaths[2] == TYPE_SITES))
       {
          var siteId = displayPaths[3],

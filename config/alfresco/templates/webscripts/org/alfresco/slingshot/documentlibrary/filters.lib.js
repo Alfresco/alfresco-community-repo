@@ -243,7 +243,7 @@ var Filters =
       var pathQuery = "";
       if (parsedArgs.nodeRef != "alfresco://company/home")
       {
-         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
+         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
       }
       return pathQuery;
    }

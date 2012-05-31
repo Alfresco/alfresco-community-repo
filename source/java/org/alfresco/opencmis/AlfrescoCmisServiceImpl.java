@@ -579,6 +579,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 {
                     // ignore invalid children
                 }
+                catch(CmisObjectNotFoundException e)
+                {
+                    // ignore objects that have not been found (perhaps because their type is unknown to CMIS)
+                }
             }
         }
 
@@ -707,6 +711,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             catch (InvalidNodeRefException e)
             {
                 // ignore invalid children
+            }
+            catch(CmisObjectNotFoundException e)
+            {
+                // ignore objects that have not been found (perhaps because their type is unknown to CMIS)
             }
         }
     }
@@ -972,6 +980,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 catch (InvalidNodeRefException e)
                 {
                     // ignore invalid objects
+                }
+                catch(CmisObjectNotFoundException e)
+                {
+                    // ignore objects that have not been found (perhaps because their type is unknown to CMIS)
                 }
             }
         }

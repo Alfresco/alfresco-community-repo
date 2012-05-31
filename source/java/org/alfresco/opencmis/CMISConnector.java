@@ -687,7 +687,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
         return isEnabled;
     }
-    
+
     public StoreRef getRootStoreRef()
     {
         return getRootNodeRef().getStoreRef();
@@ -1609,8 +1609,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 continue;
             }
 
-            result.add(createCMISObject(createNodeInfo(assocRef), null, false, IncludeRelationships.NONE,
-                    RENDITION_NONE, false, false));
+            try
+            {
+	            result.add(createCMISObject(createNodeInfo(assocRef), null, false, IncludeRelationships.NONE,
+	                    RENDITION_NONE, false, false));
+            }
+            catch(CmisObjectNotFoundException e)
+            {
+                // ignore objects that have not been found (perhaps because their type is unknown to CMIS)
+            }
         }
 
         return result;
@@ -1676,9 +1683,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 max--;
                 if (max > 0)
                 {
-                    result.getObjects().add(
-                            createCMISObject(createNodeInfo(assocRef), filter, includeAllowableActions,
-                                    IncludeRelationships.NONE, RENDITION_NONE, false, false));
+                	try
+                	{
+	                    result.getObjects().add(
+	                            createCMISObject(createNodeInfo(assocRef), filter, includeAllowableActions,
+	                                    IncludeRelationships.NONE, RENDITION_NONE, false, false));
+                    }
+                    catch(CmisObjectNotFoundException e)
+                    {
+                        // ignore objects that have not been found (perhaps because their type is unknown to CMIS)
+                    }
                 }
                 else
                 {

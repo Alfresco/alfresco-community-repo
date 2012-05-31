@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.alfresco.model.ImapModel;
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionScheduleImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -148,6 +149,15 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     protected void addCustomPropertyFieldsToGroup(Form form, NodeRef nodeRef)
     {
         Set<QName> customisables = rmAdminService.getCustomisable(nodeRef);
+        
+        // Compatibility support: don't show category properties if node of type series
+        QName type = nodeService.getType(nodeRef);
+        if (CompatibilityModel.TYPE_RECORD_SERIES.equals(type) == true)
+        {
+            // remove record category from the list of customisable types to apply to the form
+            customisables.remove(TYPE_RECORD_CATEGORY);
+        }
+        
         for (QName customisable : customisables)
         {
             addPropertyFieldsToGroup(form, rmAdminService.getCustomPropertyDefinitions(customisable), CUSTOM_RM_FIELD_GROUP_ID);
@@ -157,6 +167,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     protected void addRecordMetadataPropertyFieldsToGroup(Form form, NodeRef nodeRef)
     {
         Set<QName> aspects = rmService.getRecordMetaDataAspects();
+        
         for (QName aspect : aspects)
         {
             if (nodeService.hasAspect(nodeRef, aspect) == true)

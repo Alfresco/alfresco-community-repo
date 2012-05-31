@@ -1,0 +1,39 @@
+/*
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.alfresco.module.org_alfresco_module_rm.compatibility;
+
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.service.namespace.QName;
+
+/**
+ * RM 1.0 compatibility model
+ * 
+ * @author Roy Wetherall
+ */
+public interface CompatibilityModel extends DOD5015Model
+{    
+    // Record series DOD type
+    public static final QName TYPE_RECORD_SERIES = QName.createQName(DOD_URI, "recordSeries");
+    
+    // V1.0 custom property aspect names
+    public static final String NAME_CUSTOM_RECORD_PROPERTIES = "customRecordProperties";
+    public static final String NAME_CUSTOM_RECORD_FOLDER_PROPERTIES = "customRecordFolderProperties";
+    public static final String NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES = "customRecordCategoryProperties";
+    public static final String NAME_CUSTOM_RECORD_SERIES_PROPERTIES = "customRecordSeriesProperties";
+}

@@ -39,7 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCr
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRemoveReference;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -428,25 +428,25 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	    			if (prefixString == null)
 	    			{
 	    				// Backward compatibility from previous RM V1.0 custom models
-	    				if ("customRecordProperties".equals(name) == true)
+	    				if (CompatibilityModel.NAME_CUSTOM_RECORD_PROPERTIES.equals(name) == true)
 	    				{
 	    					type = RecordsManagementModel.ASPECT_RECORD;
 	    				}
-	    				else if ("customRecordFolderProperties".equals(name) == true)
+	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_FOLDER_PROPERTIES.equals(name) == true)
 	    				{
 	    					type = RecordsManagementModel.TYPE_RECORD_FOLDER;
 	    				}	    				
-	    				else if ("customRecordCategoryProperties".equals(name) == true)
+	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES.equals(name) == true)
 	    				{
 	    					type = RecordsManagementModel.TYPE_RECORD_CATEGORY;
 	    				}
-	    				else if ("customRecordSeriesProperties".equals(name) == true)
+	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_SERIES_PROPERTIES.equals(name) == true)
 	    				{
 	    				    // Only add the deprecated record series type as customisable if 
 	    				    // a v1.0 installation has added custom properties
 	    				    if (aspectDef.getProperties().size() != 0)
 	    				    {
-	    				        type = DOD5015Model.TYPE_RECORD_SERIES;
+	    				        type = CompatibilityModel.TYPE_RECORD_SERIES;
 	    				    }
 	    				}
 	    			}

@@ -59,7 +59,7 @@
 	<#-- draft vs internal published -->
 	"isDraft": ${item.isDraft?string},
 	<#if (! item.isDraft)>
-		"releasedOn": "${item.releasedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+		"releasedOn": "${item.releasedDate?c}",
 	</#if>
 	<#-- true if the post has been updated -->
 	"isUpdated": ${item.isUpdated?string},

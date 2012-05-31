@@ -76,7 +76,7 @@ public class BlogPostLibJs
         boolean isPublished = published != null;
         if (isPublished)
         {
-            data.put("releasedDate", published);
+           data.put("releasedDate", ((Date)published).getTime());
         }
        
         // draft

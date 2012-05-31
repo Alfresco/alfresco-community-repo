@@ -107,6 +107,12 @@
       </property>
    </bean>
    
+   <!-- Behaviours and policies for Ratings -->
+   <bean id="ratingAspect" class="org.alfresco.repo.rating.RateableAspect" init-method="init">
+       <property name="policyComponent" ref="policyComponent"/>
+       <property name="ratingNamingConventions" ref="rollupNamingConventions"/>
+       <property name="ratingSchemeRegistry" ref="ratingSchemeRegistry"/>
+   </bean>
 
    <!-- JavaScript API support -->
    <bean id="ratingServiceScript" parent="baseJavaScriptExtension"

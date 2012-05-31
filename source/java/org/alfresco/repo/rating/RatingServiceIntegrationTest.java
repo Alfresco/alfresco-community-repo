@@ -41,17 +41,19 @@ import org.alfresco.service.cmr.rating.RatingScheme;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
-import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule.RunAsUser;
+import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -89,6 +91,7 @@ public class RatingServiceIntegrationTest
     @Rule public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(TEST_USER1);
     
     // Various services
+    private static CopyService                 COPY_SERVICE;
     private static NodeService                 NODE_SERVICE;
     private static RatingService               RATING_SERVICE;
     private static RetryingTransactionHelper   TRANSACTION_HELPER;
@@ -98,8 +101,10 @@ public class RatingServiceIntegrationTest
     private static NodeRef COMPANY_HOME;
     
     // These NodeRefs are used by the test methods.
+    private static NodeRef COPY_DEST_FOLDER;
     private static NodeRef TEST_FOLDER;
     private NodeRef testDoc_Admin;
+    private NodeRef testDoc_Copy;
     private NodeRef testDoc_UserOne;
     private NodeRef testDoc_UserTwo;
     
@@ -109,6 +114,7 @@ public class RatingServiceIntegrationTest
     
     @BeforeClass public static void initStaticData() throws Exception
     {
+        COPY_SERVICE              = (CopyService)                 APP_CONTEXT_INIT.getApplicationContext().getBean("copyService");
         NODE_SERVICE              = (NodeService)                 APP_CONTEXT_INIT.getApplicationContext().getBean("nodeService");
         RATING_NAMING_CONVENTIONS = (RatingNamingConventionsUtil) APP_CONTEXT_INIT.getApplicationContext().getBean("rollupNamingConventions");
         RATING_SERVICE            = (RatingService)               APP_CONTEXT_INIT.getApplicationContext().getBean("ratingService");
@@ -120,6 +126,7 @@ public class RatingServiceIntegrationTest
         
         // Create some static test content
         TEST_FOLDER = STATIC_TEST_NODES.createNode(COMPANY_HOME, "testFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+        COPY_DEST_FOLDER = STATIC_TEST_NODES.createNode(COMPANY_HOME, "testCopyDestinationFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
 
     }
     
@@ -428,6 +435,54 @@ public class RatingServiceIntegrationTest
                 ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/rating/script/test_ratingService.js");
                 SCRIPT_SERVICE.executeScript(location, model);
                 
+                return null;
+            }
+        });
+    }
+    
+    @Test public void copyNodeNotRatings() 
+    {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Apply ratings to node
+                AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER1.getUsername());
+
+                RATING_SERVICE.applyRating(testDoc_UserTwo, 2.0f, FIVE_STAR_SCHEME_NAME);
+                
+                // A new score in a different rating scheme by the same user should not fail.
+                RATING_SERVICE.applyRating(testDoc_UserTwo, 1.0f, LIKES_SCHEME_NAME);
+                
+                // There should be two rating child nodes under the rated node.
+                assertEquals("Wrong number of child nodes", 2 , NODE_SERVICE.getChildAssocs(testDoc_UserTwo).size());
+                
+                List<Rating> ratings = RATING_SERVICE.getRatingsByCurrentUser(testDoc_UserTwo);
+                assertEquals(2, ratings.size());
+                assertEquals(FIVE_STAR_SCHEME_NAME, ratings.get(0).getScheme().getName());
+                assertEquals(LIKES_SCHEME_NAME, ratings.get(1).getScheme().getName());
+
+                // Copy the node
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+                
+                final QName childName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "userTwosDoc");;
+                final NodeRef testDocCopy = COPY_SERVICE.copy(testDoc_UserTwo, COPY_DEST_FOLDER, ContentModel.ASSOC_CONTAINS, childName, true);
+                
+                testNodes.addNodeRef(testDocCopy);
+
+                // Check that the user ratings aren't copied
+                AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER1.getUsername());
+
+                List<Rating> copiedRatings = RATING_SERVICE.getRatingsByCurrentUser(testDocCopy);
+                assertEquals(0, copiedRatings.size());
+
+                // Check that the roll ups aren't copied
+                final int likesRatingCount = RATING_SERVICE.getRatingsCount(testDocCopy, LIKES_SCHEME_NAME);
+                final int fiveStarRatingCount = RATING_SERVICE.getRatingsCount(testDocCopy, FIVE_STAR_SCHEME_NAME);
+
+                assertEquals(0, fiveStarRatingCount);
+                assertEquals(0, likesRatingCount);
+
                 return null;
             }
         });

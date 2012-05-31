@@ -546,7 +546,9 @@ public class DispositionServiceImpl implements DispositionService, RecordsManage
             
             if (result == false)
             {
-                // If all the events specified on the action have been completed the action is eligible
+                DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa);
+                boolean firstComplete = da.getDispositionActionDefinition().eligibleOnFirstCompleteEvent();
+                
                 List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa, ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
                 for (ChildAssociationRef assoc : assocs)
                 {
@@ -557,11 +559,22 @@ public class DispositionServiceImpl implements DispositionService, RecordsManage
                     {
                         isComplete = isCompleteValue.booleanValue();
                         
-                        // TODO this only works for the OR use case .. need to handle optional AND handling
+                        // implement AND and OR combination of event completions
                         if (isComplete == true)
                         {
                             result = true;
-                            break;
+                            if (firstComplete == true)
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            result = false;
+                            if (firstComplete == false)
+                            {
+                                break;
+                            }
                         }
                     }
                 }

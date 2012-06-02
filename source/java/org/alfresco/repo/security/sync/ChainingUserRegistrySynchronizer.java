@@ -760,6 +760,17 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         // Create a prefixed zone ID for use with the authority service
         final String zoneId = AuthorityService.ZONE_AUTH_EXT_PREFIX + zone;
 
+    	// Ensure that the zoneId exists before multiple threads start using it
+    	this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+		{
+			@Override
+			public Void execute() throws Throwable
+			{
+				authorityService.getOrCreateZone(zoneId);
+				return null;
+			}
+		}, false, splitTxns);
+        
         // The set of zones we associate with new objects (default plus registry specific)
         final Set<String> zoneSet = getZones(zoneId);
 
@@ -1856,7 +1867,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
      *            the zone id
      * @return the zone set
      */
-    private Set<String> getZones(String zoneId)
+    private Set<String> getZones(final String zoneId)
     {
         Set<String> zones = new HashSet<String>(5);
         zones.add(AuthorityService.ZONE_APP_DEFAULT);

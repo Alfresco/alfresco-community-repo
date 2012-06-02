@@ -21,9 +21,7 @@ package org.alfresco.repo.admin.patch.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
@@ -33,6 +31,7 @@ import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
+import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
@@ -45,27 +44,21 @@ public class ImapUnsubscribedAspectPatch extends AbstractPatch
 {
     private static final String MSG_NONSUBSCRIBED_ASPECT_REMOVED = "patch.imapUnsubscribedAspect.result.removed";
     private static final QName ASPECT_NON_SUBSCRIBED = QName.createQName("{http://www.alfresco.org/model/imap/1.0}nonSubscribed");
-    private static final String PROP_MIN_ID = "minNodeId";
 
     private NodeDAO nodeDAO;
+    private PatchDAO patchDAO;
     private PersonService personService;
 
-    private final Map<String, Long> properties = new HashMap<String, Long>();
+    private final int batchThreads = 3;
+    private final int batchSize = 40;
+    private final long count = batchThreads * batchSize;
+    private long minSearchNodeId = 1;
 
-    private int batchThreads = 3;
-    private int batchSize = 40;
-    private long count = batchThreads * batchSize;
-
-    @Override
-    public void init()
-    {
-        super.init();
-        properties.put(PROP_MIN_ID, 1L);
-    }
     @Override
     protected String applyInternal() throws Exception
     {
         final List<ChildAssociationRef> users = nodeService.getChildAssocs(personService.getPeopleContainer(), ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL);
+        final long maxNodeId = patchDAO.getMaxAdmNodeID();
 
         BatchProcessWorkProvider<NodeRef> workProvider = new BatchProcessWorkProvider<NodeRef>()
         {
@@ -79,17 +72,21 @@ public class ImapUnsubscribedAspectPatch extends AbstractPatch
             public Collection<NodeRef> getNextWork()
             {
                 result.clear();
-                nodeDAO.getNodesWithAspects(Collections.singleton(ASPECT_NON_SUBSCRIBED), properties.get(PROP_MIN_ID), count, new NodeRefQueryCallback()
+                while (result.isEmpty() && minSearchNodeId < maxNodeId)
                 {
+                    nodeDAO.getNodesWithAspects(Collections.singleton(ASPECT_NON_SUBSCRIBED), minSearchNodeId,
+                            minSearchNodeId + count, new NodeRefQueryCallback()
+                            {
 
-                    public boolean handle(Pair<Long, NodeRef> nodePair)
-                    {
-                        properties.put(PROP_MIN_ID, nodePair.getFirst());
-                        result.add(nodePair.getSecond());
-                        return true;
-                    }
+                                public boolean handle(Pair<Long, NodeRef> nodePair)
+                                {
+                                    result.add(nodePair.getSecond());
+                                    return true;
+                                }
 
-                });
+                            });
+                    minSearchNodeId = minSearchNodeId + count + 1;
+                }
 
                 return result;
             }
@@ -135,6 +132,11 @@ public class ImapUnsubscribedAspectPatch extends AbstractPatch
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
+    }
+
+    public void setPatchDAO(PatchDAO patchDAO)
+    {
+        this.patchDAO = patchDAO;
     }
 
     public void setPersonService(PersonService personService)

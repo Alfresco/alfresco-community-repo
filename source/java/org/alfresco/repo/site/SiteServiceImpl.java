@@ -922,7 +922,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Only search for "st:site" nodes.
         final Set<QName> searchTypeQNames = new HashSet<QName>(1);
         searchTypeQNames.add(SiteModel.TYPE_SITE);
-//        searchTypeQNames.addAll(dictionaryService.getSubTypes(SiteModel.TYPE_SITE, true));
+        // ... and all subtypes of st:site
+        searchTypeQNames.addAll(dictionaryService.getSubTypes(SiteModel.TYPE_SITE, true));
 
         // get canned query
         final String cQBeanName = "siteGetChildrenCannedQueryFactory";

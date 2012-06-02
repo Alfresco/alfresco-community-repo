@@ -3066,6 +3066,9 @@
         <property name="nodeDAO">
             <ref bean="nodeDAO"/>
         </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
         <property name="personService">
             <ref bean="personService" />
         </property>

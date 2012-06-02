@@ -940,6 +940,20 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             return nodePair.getSecond().getNodeStatus(); 
         }
     }
+    
+    public Status getNodeIdStatus(Long nodeId)
+    {
+        Pair<Long, Node> nodePair = nodesCache.getByKey(nodeId);
+        // The nodesCache gets both live and deleted nodes.
+        if (nodePair == null)
+        {
+            return null;
+        }
+        else
+        {
+            return nodePair.getSecond().getNodeStatus(); 
+        }
+    }
 
     public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef)
     {

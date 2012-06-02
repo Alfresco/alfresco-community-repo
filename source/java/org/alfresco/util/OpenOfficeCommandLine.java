@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.OpenOfficeURI;
 import org.alfresco.util.exec.RuntimeExec;
 import org.apache.commons.logging.Log;
@@ -40,30 +39,30 @@ import org.apache.commons.logging.LogFactory;
  */
 public class OpenOfficeCommandLine extends AbstractMap<String, List<String>>
 {
-    private static final String[] EXTENSIONS = new String[] {"", ".exe", ".com", ".bat", ".cmd"};
-
     private static final Log logger = LogFactory.getLog(OpenOfficeCommandLine.class);
-
-    private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
-
     private Map<String, List<String>> map = new HashMap<String, List<String>>();
-    
-    private boolean windows;
+    private OpenOfficeVariant variant = new OpenOfficeVariant();
     
     public OpenOfficeCommandLine(String exe, String port, String user) throws IOException
     {
-        windows = isWindows();
-        File executable = findExecutable(exe);
-        File officeHome = getOfficeHome(executable);
+        File executable = variant.findExecutable(exe);
+        File officeHome = variant.getOfficeHome(executable);
 
         List<String> command = new ArrayList<String>();
         String acceptValue = "socket,host=127.0.0.1,port="+port+";urp;StarOffice.ServiceManager";
         String userInstallation = new OpenOfficeURI(user).toString();
         command.add(executable == null ? exe : executable.getAbsolutePath());
-        if (isLibreOffice3Dot5(officeHome))
+        if (variant.isLibreOffice3Dot5(officeHome))
         {
             command.add("--accept=" + acceptValue);
-            command.add("-env:UserInstallation=" + userInstallation);
+            if (variant.isMac())
+            {
+                command.add("--env:UserInstallation=" + userInstallation);
+            }
+            else
+            {
+                command.add("-env:UserInstallation=" + userInstallation);
+            }
             command.add("--headless");
             command.add("--nocrashreport");
             //command.add("--nodefault"); included by JOD
@@ -71,7 +70,7 @@ public class OpenOfficeCommandLine extends AbstractMap<String, List<String>>
             //command.add("--nolockcheck"); included by JOD
             command.add("--nologo");
             command.add("--norestore");
-            logger.info("Using GNU based LibreOffice command: "+command);
+            logger.info("Using GNU based LibreOffice command"+(variant.isMac() ? " on Mac" : "")+": "+command);
         }
         else
         {
@@ -89,100 +88,6 @@ public class OpenOfficeCommandLine extends AbstractMap<String, List<String>>
         map.put(RuntimeExec.KEY_OS_DEFAULT, command);
     }
     
-    private File getOfficeHome(File executable)
-    {
-        // Get the grandparent
-        File officeHome = executable;
-        for (int i=1; officeHome != null && i <= 2; i++)
-        {
-            officeHome = officeHome.getParentFile();
-        }
-        
-        if (officeHome == null && executable != null)
-        {
-            throw new AlfrescoRuntimeException("Did not find OppenOffice home from executable "+executable.getAbsolutePath());
-        }
-
-        return officeHome;
-    }
-    
-    private File findExecutable(String executableName)
-    {
-        File file = new File(executableName);
-        if (file.isAbsolute())
-        {
-            file = canExecute(file);
-        }
-        else
-        {
-            file = findExecutableOnPath(executableName);
-        }
-        return file;
-    }
-
-    private File findExecutableOnPath(String executableName)  
-    {  
-        String systemPath = System.getenv("PATH");  
-        systemPath = systemPath == null ? System.getenv("path") : systemPath;
-        String[] pathDirs = systemPath.split(File.pathSeparator);  
-   
-        File fullyQualifiedExecutable = null;  
-        for (String pathDir : pathDirs)  
-        {
-            File file = canExecute(new File(pathDir, executableName));
-            if (file != null)
-            {
-                fullyQualifiedExecutable = file;
-                break;
-            }
-        }  
-        return fullyQualifiedExecutable;  
-    } 
-    
-    private File canExecute(File file)
-    {
-        File fullyQualifiedExecutable = null;
-        File dir = file.getParentFile();
-        String name = file.getName();
-        for (String ext: EXTENSIONS)
-        {
-            file = new File(dir, name+ext);
-            if (file.canExecute())  
-            {
-                fullyQualifiedExecutable = file;  
-                break;
-            }
-            if (!windows)
-            {
-                break;
-            }
-        }
-        return fullyQualifiedExecutable;
-    }
-
-    private boolean isLibreOffice3Dot5(File officeHome)
-    {
-        return
-            officeHome != null &&
-            !new File(officeHome, "basis-link").isFile() &&
-             new File(officeHome, "ure-link").isFile();
-    }
-
-    private static boolean isLinux()
-    {
-        return OS_NAME.startsWith("linux");
-    }
-
-    private static boolean isMac()
-    {
-        return OS_NAME.startsWith("mac");
-    }
-
-    private static boolean isWindows()
-    {
-        return OS_NAME.startsWith("windows");
-    }
-
     @Override
     public Set<java.util.Map.Entry<String, List<String>>> entrySet()
     {

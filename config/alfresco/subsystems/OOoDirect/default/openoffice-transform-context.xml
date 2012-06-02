@@ -36,6 +36,13 @@
       <property name="errorCodes">
          <value>2</value>
       </property>
+      <property name="processProperties">
+         <bean class="org.alfresco.util.OpenOfficeCommandEnv">
+            <constructor-arg>
+               <value>${ooo.exe}</value>
+            </constructor-arg>
+         </bean>
+      </property>
    </bean>
 
    <bean id="openOfficeConnection" class="net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection">

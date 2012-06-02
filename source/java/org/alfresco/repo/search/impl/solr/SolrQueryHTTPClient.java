@@ -188,11 +188,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             }
             url.append("/").append(languageUrlFragment);
 
-            // duplicate the query in the URL
-            url.append("?q=");
-
-            url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
-            url.append("&wt=").append(encoder.encode("json", "UTF-8"));
+            // Send the query in JSON only
+            // url.append("?q=");
+            // url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
+            url.append("?wt=").append(encoder.encode("json", "UTF-8"));
             url.append("&fl=").append(encoder.encode("DBID,score", "UTF-8"));
             
             if (searchParameters.getMaxItems() >= 0)

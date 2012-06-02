@@ -613,7 +613,7 @@ public class TransformerDebug
         }
         if (frame != null)
         {
-            sb.append(spaces(9-sb.length()+lengthOfFirstId)); // Try to pad to level 5
+            sb.append(spaces(11-sb.length()+lengthOfFirstId)); // Try to pad to level 7
         }
         return sb.toString();
     }

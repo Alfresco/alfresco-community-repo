@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.OwnableService;
@@ -381,9 +382,40 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         return false;
     }
     
-    private Collection<Pair<Path, QName>> getCategoryPaths(NodeRef nodeRef, Set<QName> aspects, Map<QName, Serializable> properties)
+    static class CategoryPaths
+    {
+        Collection<Pair<Path, QName>> paths;
+        List<ChildAssociationRef> categoryParents;
+        
+        CategoryPaths( Collection<Pair<Path, QName>> paths, List<ChildAssociationRef> categoryParents)
+        {
+            this.paths = paths;
+            this.categoryParents = categoryParents;
+        }
+
+        /**
+         * @return the paths
+         */
+        public Collection<Pair<Path, QName>> getPaths()
+        {
+            return paths;
+        }
+
+        /**
+         * @return the categoryParents
+         */
+        public List<ChildAssociationRef> getCategoryParents()
+        {
+            return categoryParents;
+        }
+        
+        
+    }
+    
+    private CategoryPaths getCategoryPaths(NodeRef nodeRef, Set<QName> aspects, Map<QName, Serializable> properties)
     {
         ArrayList<Pair<Path, QName>> categoryPaths = new ArrayList<Pair<Path, QName>>();
+        ArrayList<ChildAssociationRef> categoryParents = new ArrayList<ChildAssociationRef>();
 
         nodeDAO.setCheckNodeConsistency();
         for (QName classRef : aspects)
@@ -439,12 +471,15 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             {
                 Path.ChildAssocElement cae = (Path.ChildAssocElement) pair.getFirst().last();
                 ChildAssociationRef assocRef = cae.getRef();
-                pair.getFirst().append(new Path.ChildAssocElement(new ChildAssociationRef(assocRef.getTypeQName(), assocRef.getChildRef(), QName.createQName("member"), nodeRef)));
+                ChildAssociationRef categoryParentRef = new ChildAssociationRef(assocRef.getTypeQName(), assocRef.getChildRef(), QName.createQName("member"), nodeRef);
+                pair.getFirst().append(new Path.ChildAssocElement(categoryParentRef));
+                categoryParents.add(categoryParentRef);
             }
         }
 
-        return categoryPaths;
+        return new CategoryPaths(categoryPaths, categoryParents);
     }
+    
     
     private List<Long> preCacheNodes(NodeMetaDataParameters nodeMetaDataParameters)
     {
@@ -536,25 +571,32 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
         for(Long nodeId : nodeIds)
         {
-            Map<QName, Serializable> props = null;
-            Set<QName> aspects = null;
-            
-            if (!nodeDAO.exists(nodeId))
-            {
-                // Deleted nodes have no metadata
-                continue;
-            }
-
+            Status status = nodeDAO.getNodeIdStatus(nodeId);
+            NodeRef nodeRef = status.getNodeRef();
+          
             NodeMetaData nodeMetaData = new NodeMetaData();
             nodeMetaData.setNodeId(nodeId);
-
-            Pair<Long, NodeRef> pair = nodeDAO.getNodePair(nodeId);
-            nodeMetaData.setAclId(nodeDAO.getNodeAclId(nodeId));
-
+  
+            if(includeNodeRef)
+            {
+                nodeMetaData.setNodeRef(tenantService.getBaseName(nodeRef, true));
+            }
+            
             if(includeTxnId)
             {
-                nodeMetaData.setTxnId(nodeDAO.getNodeRefStatus(pair.getSecond()).getDbTxnId());
+                nodeMetaData.setTxnId(status.getDbTxnId());
             }
+            
+            if(status.isDeleted())
+            {
+                rowHandler.processResult(nodeMetaData);
+                continue;
+            }
+            
+            Map<QName, Serializable> props = null;
+            Set<QName> aspects = null;
+        
+            nodeMetaData.setAclId(nodeDAO.getNodeAclId(nodeId));
             
             if(includeType)
             {
@@ -572,7 +614,10 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
             if(includeProperties)
             {
-                props = getProperties(nodeId);
+                if(props == null)
+                {
+                    props = getProperties(nodeId);
+                }
                 nodeMetaData.setProperties(props);
             }
             else
@@ -580,7 +625,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 nodeMetaData.setProperties(Collections.<QName, Serializable>emptyMap());
             }
 
-            if(includeAspects)
+            if(includeAspects || includePaths || includeParentAssociations)
             {
                 aspects = new HashSet<QName>();
                 Set<QName> sourceAspects = nodeDAO.getNodeAspects(nodeId);
@@ -595,35 +640,38 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             }
             nodeMetaData.setAspects(aspects);
             
+            CategoryPaths categoryPaths = new CategoryPaths(new ArrayList<Pair<Path, QName>>(), new ArrayList<ChildAssociationRef>());
+            if(includePaths || includeParentAssociations)
+            {
+                if(props == null)
+                {
+                    props = getProperties(nodeId);
+                }
+                categoryPaths = getCategoryPaths(status.getNodeRef(), aspects, props);
+            }
+            
             if(includePaths)
             {
                 if(props == null)
                 {
                     props = getProperties(nodeId);
                 }
-                Collection<Pair<Path, QName>> categoryPaths = getCategoryPaths(pair.getSecond(), aspects, props);
-                List<Path> directPaths = nodeDAO.getPaths(pair, false);
                 
-                Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.size());
+                List<Path> directPaths = nodeDAO.getPaths(new Pair<Long, NodeRef>(nodeId, status.getNodeRef()), false);
+                
+                Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.getPaths().size());
                 for (Path path : directPaths)
                 {
                     paths.add(new Pair<Path, QName>(path.getBaseNamePath(tenantService), null));
                 }
-                for(Pair<Path, QName> catPair : categoryPaths)
+                for(Pair<Path, QName> catPair : categoryPaths.getPaths())
                 {
                     paths.add(new Pair<Path, QName>(catPair.getFirst().getBaseNamePath(tenantService),  catPair.getSecond()));
                 }
                          
                 nodeMetaData.setPaths(paths);
             }
-            
-            NodeRef nodeRef = pair.getSecond();
-            
-            if(includeNodeRef)
-            {
-                nodeMetaData.setNodeRef(tenantService.getBaseName(nodeRef, true));
-            }
-            
+         
             nodeMetaData.setTenantDomain(tenantService.getDomain(nodeRef.getStoreRef().getIdentifier()));
             
             if(includeChildAssociations)
@@ -722,6 +770,10 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     {
                     }
                 });
+                for(ChildAssociationRef ref : categoryPaths.getCategoryParents())
+                {
+                    parentAssocs.add(tenantService.getBaseName(ref, true));
+                }
                 
                 CRC32 crc = new CRC32();
                 for(ChildAssociationRef car : parentAssocs)
@@ -747,7 +799,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             if(includeOwner)
             {
                 // cached in OwnableService
-                nodeMetaData.setOwner(ownableService.getOwner(pair.getSecond()));
+                nodeMetaData.setOwner(ownableService.getOwner(status.getNodeRef()));
             }
  
             rowHandler.processResult(nodeMetaData);

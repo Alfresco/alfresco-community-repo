@@ -146,6 +146,16 @@ public interface NodeDAO extends NodeBulkLoader
      */
     public NodeRef.Status getNodeRefStatus(NodeRef nodeRef);
 
+    /**
+     * Get the current status of the node, including deleted nodes.
+     * 
+     * @param nodeId            the node id
+     * @return                  Returns the current status of the reference.
+     *                          This will only be <tt>null</tt> if the node never existed or has been
+     *                          purged following deletion.
+     */
+    public NodeRef.Status getNodeIdStatus(Long nodeId);
+    
     public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef);
     
     public Pair<Long, NodeRef> getNodePair(Long nodeId);

@@ -264,6 +264,8 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             // convert Paths to Strings
             List<String> paths = new ArrayList<String>();
             HashSet<String> ancestors = new HashSet<String>();
+            if(nodeMetaData.getPaths() != null)
+            {
             for(Pair<Path, QName> pair : nodeMetaData.getPaths())
             {
                 JSONObject o = new JSONObject();
@@ -275,6 +277,7 @@ public class NodesMetaDataGet extends DeclarativeWebScript
                 {
                     ancestors.add(ancestor.toString());
                 }
+            }
             }
             setAncestors(ancestors);
             setPaths(paths);

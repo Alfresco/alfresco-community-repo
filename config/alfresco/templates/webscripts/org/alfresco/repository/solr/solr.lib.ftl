@@ -50,7 +50,7 @@
 <#macro nodeMetaDataJSON nodeMetaData filter>
       {
          "id": ${nodeMetaData.nodeId?c}
-         , "tenantDomain": "${nodeMetaData.tenantDomain}"
+         <#if nodeMetaData.tenantDomain??>, "tenantDomain": "${nodeMetaData.tenantDomain}"</#if>
          <#if filter.includeNodeRef??><#if nodeMetaData.nodeRef??>, "nodeRef": "${nodeMetaData.nodeRef.toString()}"</#if></#if>
          <#if filter.includeType??><#if nodeMetaData.nodeType??>, "type": <@qNameJSON qName=nodeMetaData.nodeType/></#if></#if>
          <#if filter.includeAclId??><#if nodeMetaData.aclId??>, "aclId": ${nodeMetaData.aclId?c}</#if></#if>

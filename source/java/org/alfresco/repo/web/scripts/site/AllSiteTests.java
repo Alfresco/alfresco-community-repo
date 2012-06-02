@@ -19,6 +19,7 @@
 package org.alfresco.repo.web.scripts.site;
 
 import org.alfresco.repo.activities.SiteActivityTest;
+import org.alfresco.repo.site.SiteServiceImplMoreTest;
 import org.alfresco.repo.site.SiteServiceImplTest;
 import org.alfresco.service.cmr.site.SiteService;
 import org.junit.runner.RunWith;
@@ -35,6 +36,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     SiteServiceImplTest.class,
+    SiteServiceImplMoreTest.class,
     SiteServiceTest.class,
     SiteActivityTest.class
 })

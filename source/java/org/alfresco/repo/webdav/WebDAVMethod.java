@@ -90,6 +90,8 @@ public abstract class WebDAVMethod
 {
     // Log output
 
+    private static final String VERSION_NUM_PATTERN = "\\d+\\.\\d+(\\.\\d+)?";
+
     protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
 
     // Output formatted XML in the response
@@ -102,7 +104,11 @@ public abstract class WebDAVMethod
     private static final Map<String, Integer> accessDeniedStatusCodes = new LinkedHashMap<String, Integer>();
     static
     {
-        accessDeniedStatusCodes.put("(darwin)|(macintosh)", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        accessDeniedStatusCodes.put("^WebDAVLib/" + VERSION_NUM_PATTERN + "$",
+                                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        accessDeniedStatusCodes.put("^WebDAVFS/" + VERSION_NUM_PATTERN + " \\(\\d+\\)\\s+Darwin/" +
+                                    VERSION_NUM_PATTERN + "\\s+\\(.*\\)$",
+                                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         accessDeniedStatusCodes.put(".*", HttpServletResponse.SC_FORBIDDEN);
     }
 
@@ -1479,7 +1485,7 @@ public abstract class WebDAVMethod
     {
         if (m_request != null && m_request.getHeader(WebDAV.HEADER_USER_AGENT) != null)
         {
-            String userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT).toLowerCase();
+            String userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT);
 
             for (Entry<String, Integer> entry : accessDeniedStatusCodes.entrySet())
             {

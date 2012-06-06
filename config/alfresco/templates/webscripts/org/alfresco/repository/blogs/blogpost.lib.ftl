@@ -47,8 +47,8 @@
 		"username": "${item.node.properties.creator}"
 	},
 	</#if>
-	"createdOn": "${item.createdDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-	"modifiedOn": "${item.modifiedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+	"createdOn": "${xmldate(item.createdDate)}",
+	"modifiedOn": "${xmldate(item.modifiedDate)}",
 	"permissions":
 	{
 		"edit": ${item.node.hasPermission("Write")?string},
@@ -59,16 +59,16 @@
 	<#-- draft vs internal published -->
 	"isDraft": ${item.isDraft?string},
 	<#if (! item.isDraft)>
-		"releasedOn": "${item.releasedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+		"releasedOn": "${xmldate(item.releasedDate)}",
 	</#if>
 	<#-- true if the post has been updated -->
 	"isUpdated": ${item.isUpdated?string},
 	<#if (item.isUpdated)>
-		"updatedOn": "${item.updatedDate?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+		"updatedOn": "${xmldate(item.updatedDate)}",
 	</#if>
 	<#if (item.node.properties["blg:published"]?? && item.node.properties["blg:published"] == true)>
-	"publishedOn": "${item.node.properties["blg:posted"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-	"updatedOn": "${item.node.properties["blg:lastUpdate"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+	"publishedOn": "${xmldate(item.node.properties["blg:posted"])}",
+	"updatedOn": "${xmldate(item.node.properties["blg:lastUpdate"])}",
 	"postId": "${item.node.properties["blg:postId"]!''}",
 	"postLink": "${item.node.properties["blg:link"]!''}",
 	"outOfDate": ${item.outOfDate?string},

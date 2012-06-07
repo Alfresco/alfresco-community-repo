@@ -104,7 +104,7 @@ var Filters =
       switch (String(filter))
       {
          case "all":
-            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//cm:*\"";
             filterQuery += " +TYPE:\"cm:content\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
@@ -186,7 +186,7 @@ var Filters =
                // no need to specify path here for all sites - IDs are exact matches
                if (parsedArgs.nodeRef != "alfresco://sites/home")
                {
-                  filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
+                  filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
                }
             }
             else
@@ -250,11 +250,11 @@ var Filters =
       var pathQuery = "";
       if (parsedArgs.libraryRoot != companyhome)
       {
-         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
+         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
       }
       else if (parsedArgs.nodeRef != "alfresco://company/home")
       {
-         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
+         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
       }
       return pathQuery;
    }

@@ -19,12 +19,22 @@ function runAction(p_params)
 
    try
    {
-      // Checkin the asset
-      var originalDoc = p_params.destNode.cancelCheckout();
-      if (originalDoc === null)
+      // Initialise to the destNode (will be updated to the original if a working copy)...
+      var originalDoc = p_params.destNode;
+      if (p_params.destNode.hasAspect("cm:workingcopy"))
       {
-         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not cancel checkout: " + url.extension);
-         return;
+         // If the node is a working copy then cancel the checkout and set the original...
+         originalDoc = p_params.destNode.cancelCheckout();
+         if (originalDoc === null)
+         {
+            status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not cancel checkout: " + url.extension);
+            return;
+         }
+      }
+      else if (node.isLocked && !node.hasAspect("trx:transferred"))
+      {
+         // ...or, if the node is locked then just unlock it...
+         p_params.destNode.unlock();
       }
 
       var resultId = originalDoc.name,
@@ -42,7 +52,7 @@ function runAction(p_params)
    catch(e)
    {
       e.code = status.STATUS_INTERNAL_SERVER_ERROR;
-      e.message = e.toString();      
+      e.message = e.toString();
       throw e;
    }
 

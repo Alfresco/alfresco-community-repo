@@ -103,7 +103,7 @@ var Filters =
       switch (String(filter))
       {
          case "all":
-            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
+            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//cm:*\"";
             filterQuery += " +TYPE:\"cm:content\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
@@ -185,7 +185,7 @@ var Filters =
                // no need to specify path here for all sites - IDs are exact matches
                if (parsedArgs.nodeRef != "alfresco://sites/home")
                {
-                  filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
+                  filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
                }
             }
             else

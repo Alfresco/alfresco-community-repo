@@ -164,6 +164,17 @@ public class ACPImportPackageHandler
      */
     public void endImport()
     {
+        if (zipFile != null)
+        {
+            try
+            {
+                zipFile.close();
+            }
+            catch (IOException e)
+            {
+                throw new ImporterException("Failed to close zip package " + file.getAbsolutePath(), e);
+            }
+        }
     }
     
     /**

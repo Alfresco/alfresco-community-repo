@@ -206,7 +206,10 @@ public class DbObjectXMLTransformer
         simpleEndTag(XML.EL_COLUMNS);
         
         // Output primary key
-        output(table.getPrimaryKey());
+        if (table.hasPrimaryKey())
+        {
+            output(table.getPrimaryKey());
+        }
         
         // Output foreign keys
         simpleStartTag(XML.EL_FOREIGN_KEYS);

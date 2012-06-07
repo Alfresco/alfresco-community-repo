@@ -1275,14 +1275,14 @@
 
     <delete id="delete_Txns_Unused" parameterType="TransactionQuery">
         delete from
-        alf_transaction txn
+        alf_transaction
         where not exists
         (
             select 1
             from
                 alf_node node
             where
-                node.transaction_id = txn.id
+                node.transaction_id = alf_transaction.id
         )
         <![CDATA[and commit_time_ms >= #{minCommitTime}]]>
         <![CDATA[and commit_time_ms <= #{maxCommitTime}]]>

@@ -24,6 +24,7 @@ import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.fk;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.fkeys;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.indexes;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -264,6 +265,26 @@ public class DbObjectXMLTransformerTest
         assertEquals("</table>", reader.readLine());
     }
     
+    /**
+     * ALF-13979: empty table causes NPE during schema export.
+     * @throws IOException 
+     */
+    @Test
+    public void transformTableWithoutPrimaryKey() throws IOException
+    {
+        Table table = new Table("my_table");
+        assertFalse(table.hasPrimaryKey());
+        
+        transformer.output(table);
+        
+        BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
+        dumpOutput();
+        assertHasPreamble(reader);
+        skipUntilEnd("  {columns}", reader, true);
+        skipUntilEnd("  {foreignkeys}", reader, true);
+        skipUntilEnd("  {indexes}", reader, true);
+        assertEquals("</table>", reader.readLine());
+    }
     
     @Test
     public void transformObjectWithValidators() throws IOException
@@ -332,7 +353,7 @@ public class DbObjectXMLTransformerTest
         {
             textToFind = textToFind.trim().
                                 replace("{", "<").
-                                replace("}", "\\s+.*/>");            
+                                replace("}", ".*/>");            
         }
         else
         {

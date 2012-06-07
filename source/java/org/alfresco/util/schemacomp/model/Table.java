@@ -102,6 +102,13 @@ public class Table extends AbstractDbObject
         return this.primaryKey;
     }
 
+    /**
+     * @return Whether there is a primary key on this table.
+     */
+    public boolean hasPrimaryKey()
+    {
+        return (primaryKey != null);
+    }
 
     /**
      * @param primaryKey the primaryKey to set

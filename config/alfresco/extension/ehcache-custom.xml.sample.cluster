@@ -225,7 +225,7 @@
     </cache>
     
     <cache 
-        name="org.alfresco.cache.avm.versionRootEntityCache"
+        name="org.alfresco.cache.avm.avmVersionRootEntityCache"
         maxElementsInMemory="1000"
         eternal="true"
         overflowToDisk="false"
@@ -761,6 +761,24 @@
 
     </cache>
        
+    <!-- Tagscope Summary Properties -->
+    
+    <cache 
+        name="org.alfresco.cache.tagscopeSummaryCache"
+        maxElementsInMemory="1000"
+        eternal="true"
+        overflowToDisk="false"
+        statistics="false"
+        >
+             <cacheEventListenerFactory
+                     class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+                     properties="replicatePuts = false,
+                                 replicateUpdates = true,
+                                 replicateRemovals = true,
+                                 replicateUpdatesViaCopy = false,
+                                 replicateAsynchronously = false"/>
+    </cache> 
+
     <!-- Imap Messages -->
     
     <cache 

@@ -2022,20 +2022,22 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             return null;
         }
 
-        // Checkout the node if required
-        ScriptNode workingCopy = this;
-        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        ScriptNode originalNode = this;
+        //cancel editing if we want to revert 
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            workingCopy = checkout();
+            originalNode = cancelCheckout();
         }
         
-        // Checkin the node - to get the new version
-        workingCopy = workingCopy.checkin(history, majorVersion);
-        
         // Revert the new (current) version of the node
-        services.getVersionService().revert(workingCopy.nodeRef, version, deep);
+        services.getVersionService().revert(originalNode.getNodeRef(), version, deep);
         
-        return workingCopy;
+        // Checkout/Checkin the node - to store the new version in version history
+        ScriptNode workingCopy = originalNode.checkout();
+        originalNode = workingCopy.checkin(history, majorVersion);
+        
+        
+        return originalNode;
     }
     
     /**
@@ -2412,6 +2414,15 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         NodeRef original = this.services.getCheckOutCheckInService().checkin(this.nodeRef, props);
         this.versions = null;
         return newInstance(original, this.services, this.scope);
+    }
+    
+    /**
+      * Removes the lock on a node.
+      * 
+      */
+    public void unlock()
+    {
+         this.services.getLockService().unlock(this.nodeRef);
     }
     
     /**

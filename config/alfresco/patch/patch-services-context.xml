@@ -3222,4 +3222,15 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V3.4-remove-redundant-jbpm-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-remove-redundant-jbpm-indexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5035</value></property>
+        <property name="targetSchema"><value>5036</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/remove-redundant-jbpm-indexes.sql</value>
+        </property>
+    </bean>
+
 </beans>

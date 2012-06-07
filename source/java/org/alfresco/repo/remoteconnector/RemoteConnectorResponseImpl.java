@@ -67,9 +67,19 @@ public class RemoteConnectorResponseImpl implements RemoteConnectorResponse
     public RemoteConnectorResponseImpl(RemoteConnectorRequest request, String contentType, 
             String charset, int status, Header[] headers, byte[] response)
     {
-        this(request, contentType, charset, status, headers, new ByteArrayInputStream(response));
-        this.bodyBytes = response;
+        this(request, contentType, charset, status, headers, new ByteArrayInputStream(ensureBytes(response)));
+        this.bodyBytes = ensureBytes(response);
     }
+    /**
+     * HttpClient will return a null response body for things like 204 (No Content).
+     * We want to treat that as an empty byte array, to meet our contracts
+     */
+    private static byte[] ensureBytes(byte[] bytes)
+    {
+        if (bytes == null) return EMPTY_BYTE_ARRAY;
+        return bytes;
+    }
+    private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     
     @Override
     public int getStatus()

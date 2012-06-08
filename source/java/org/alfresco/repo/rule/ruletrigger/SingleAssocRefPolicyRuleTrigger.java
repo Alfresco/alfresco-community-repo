@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,45 +34,49 @@ public class SingleAssocRefPolicyRuleTrigger extends RuleTriggerAbstractBase
 {
     private static Log logger = LogFactory.getLog(OnPropertyUpdateRuleTrigger.class);
     
-	private String policyNamespace = NamespaceService.ALFRESCO_URI;
-	private String policyName;
-	
-	public void setPolicyNamespace(String policyNamespace)
-	{
-		this.policyNamespace = policyNamespace;
-	}
-	
-	public void setPolicyName(String policyName)
-	{
-		this.policyName = policyName;
-	}
-	
-	/**
-	 * @see org.alfresco.repo.rule.ruletrigger.RuleTrigger#registerRuleTrigger()
-	 */
-	public void registerRuleTrigger()
-	{
-	    PropertyCheck.mandatory(this, "policyNamespace", policyNamespace);
+    private String policyNamespace = NamespaceService.ALFRESCO_URI;
+    private String policyName;
+    
+    public void setPolicyNamespace(String policyNamespace)
+    {
+        this.policyNamespace = policyNamespace;
+    }
+    
+    public void setPolicyName(String policyName)
+    {
+        this.policyName = policyName;
+    }
+    
+    /**
+     * @see org.alfresco.repo.rule.ruletrigger.RuleTrigger#registerRuleTrigger()
+     */
+    public void registerRuleTrigger()
+    {
+        PropertyCheck.mandatory(this, "policyNamespace", policyNamespace);
         PropertyCheck.mandatory(this, "policyName", policyName);
-		
-		this.policyComponent.bindAssociationBehaviour(
-				QName.createQName(this.policyNamespace, this.policyName), 
-				this, 
-				new JavaBehaviour(this, "policyBehaviour"));		
-	}
-
-    public void policyBehaviour(AssociationRef assocRef) 
+        
+        this.policyComponent.bindAssociationBehaviour(
+                QName.createQName(this.policyNamespace, this.policyName),
+                this,
+                new JavaBehaviour(this, "policyBehaviour"));
+    }
+    
+    public void policyBehaviour(AssociationRef assocRef)
     {
         NodeRef nodeRef = assocRef.getSourceRef();
-        List<ChildAssociationRef> parentsAssocRefs = this.nodeService.getParentAssocs(nodeRef);
-        for (ChildAssociationRef parentAssocRef : parentsAssocRefs)
+        
+        if (nodeService.exists(nodeRef))
         {
-            triggerRules(parentAssocRef.getParentRef(), nodeRef);
-            if (logger.isDebugEnabled() == true)
+            List<ChildAssociationRef> parentsAssocRefs = this.nodeService.getParentAssocs(nodeRef);
+            for (ChildAssociationRef parentAssocRef : parentsAssocRefs)
             {
-                logger.debug(
-                        "OnUpdateAssoc rule triggered (parent); " +
-                        "nodeRef=" + parentAssocRef.getParentRef());
+                triggerRules(parentAssocRef.getParentRef(), nodeRef);
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug(
+                            "OnUpdateAssoc rule triggered (parent); " +
+                            "nodeRef=" + parentAssocRef.getParentRef());
+                }
             }
         }
     } 

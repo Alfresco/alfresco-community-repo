@@ -1671,9 +1671,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                                     + "'. This user will in future be assumed to originate from user registry '" + zone
                                     + "'.");
                         }
-                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(personName,
-                                zones);
-                        ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(personName, zoneSet);
+                        updateAuthorityZones(personName, zones, zoneSet);
                         ChainingUserRegistrySynchronizer.this.personService.setPersonProperties(personName,
                                 personProperties, false);
                     }
@@ -1875,6 +1873,33 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
         return zones;
     }
 
+    /**
+     * Modifies an authority's zone set from oldZones to newZones in the most efficient manner (avoiding unnecessary
+     * reindexing cost).
+     * 
+     * @param authorityName
+     * @param oldZones
+     * @param newZones
+     */
+    private void updateAuthorityZones(String authorityName, Set<String> oldZones, final Set<String> newZones)
+    {
+        Set<String> zonesToRemove = new HashSet<String>(oldZones);
+        zonesToRemove.removeAll(newZones);
+        // Let's keep the authority in the alfresco auth zone if it was already there. Otherwise we may have to
+        // regenerate all paths to this authority from site groups, which could be very expensive!
+        zonesToRemove.remove(AuthorityService.ZONE_AUTH_ALFRESCO);
+        if (!zonesToRemove.isEmpty())
+        {
+            this.authorityService.removeAuthorityFromZones(authorityName, zonesToRemove);
+        }
+        Set<String> zonesToAdd = new HashSet<String>(newZones);
+        zonesToAdd.removeAll(oldZones);
+        if (!zonesToAdd.isEmpty())
+        {
+            this.authorityService.addAuthorityToZones(authorityName, zonesToAdd);
+        }
+    }
+    
     /*
      * (non-Javadoc)
      * @seeorg.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.

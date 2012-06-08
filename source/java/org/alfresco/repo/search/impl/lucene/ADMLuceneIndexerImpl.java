@@ -947,7 +947,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     }
         
                     // Only process 'containers' - not leaves
-                    if (getCachedChildren(childAssociationsSinceFlush, nodeRef).isEmpty())
+                    if (getCachedChildren(childAssociationsSinceFlush, nodeRef, cascade).isEmpty())
                     {
                         continue;
                     }
@@ -987,7 +987,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             if (cascade)
             {
                 List<Path> childPaths = new LinkedList<Path>();
-                for (ChildAssociationRef childRef : getCachedChildren(childAssociationsSinceFlush, nodeRef))
+                for (ChildAssociationRef childRef : getCachedChildren(childAssociationsSinceFlush, nodeRef, cascade))
                 {
                     childPaths.add(new Path().append(path).append(new Path.ChildAssocElement(childRef)));
                 }
@@ -998,14 +998,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     }
 
     private List<ChildAssociationRef> getCachedChildren(
-            Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush, NodeRef nodeRef)
+            Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush, NodeRef nodeRef, boolean bulkLoad)
     {
         List <ChildAssociationRef> children = childAssociationsSinceFlush.get(nodeRef);
 
         // Cache the children in case there are many paths to the same node
         if (children == null)
         {
-            children = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+            children = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, bulkLoad);
             for (ChildAssociationRef childRef : children)
             {
                 // We don't want index numbers in generated paths

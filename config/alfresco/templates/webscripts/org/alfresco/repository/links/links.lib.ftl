@@ -27,10 +27,10 @@
    "name": "${item.name!''}",
    "title": "${item.title!''}",
    "internal": ${(item.internal!false)?string},
-   "createdOn": "${item.createdOn?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+   "createdOn": "${xmldate(item.createdOn)}",
    "createdOnDate": {
         "iso8601": "${xmldate(item.createdOn)}",
-        "legacyDate": "${item.createdOn?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}"
+        "legacyDate": "${xmldate(item.createdOn)}"
    },
    <#if item.creator??>
    <@renderPerson person=item.creator fieldName="author" />

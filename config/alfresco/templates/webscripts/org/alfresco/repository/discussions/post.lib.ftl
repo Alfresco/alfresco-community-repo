@@ -50,7 +50,7 @@
 		"name": "${postData.topic.name}",
 		"totalReplyCount": ${postData.totalReplyCount?c},
 		<#if postData.lastReply??>
-			"lastReplyOn": "${postData.lastReply.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+			"lastReplyOn": "${xmldate(postData.lastReply.properties.created)}",
 			<#if postData.lastReplyBy??>
 			<@renderPerson person=postData.lastReplyBy fieldName="lastReplyBy" />
          <#else>
@@ -72,11 +72,11 @@
 	
 	<#-- data coming from the post node -->
 	"title": "${(post.properties.title!"")}",
-	"createdOn": "${post.properties.created?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
-	"modifiedOn": "${post.properties.modified?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+	"createdOn": "${xmldate(post.properties.created)}",
+	"modifiedOn": "${xmldate(post.properties.modified)}",
 	<#if (post.properties["cm:updated"]??)>
 	"isUpdated": true,
-	"updatedOn": "${post.properties["cm:updated"]?string("MMM dd yyyy HH:mm:ss 'GMT'Z '('zzz')'")}",
+	"updatedOn": "${xmldate(post.properties["cm:updated"])}",
 	<#else>
 	"isUpdated": false,   
 	</#if>

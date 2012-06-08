@@ -68,6 +68,10 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
      */
     private static Log logger = LogFactory.getLog(LocalWebScriptConnectorServiceImpl.class);
     
+    public static final String LOCAL_BASE_URL = "http://localhost:8080/alfresco/";
+    private static final String SERVICE_URL = "/service/";
+    public static final String LOCAL_SERVICE_URL = LOCAL_BASE_URL + "service/";
+    
     private WebScriptHelper helper;
     private LocalAndRemoteAuthenticator auth;
     
@@ -83,18 +87,16 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
     public RemoteConnectorRequest buildRequest(String url, String method)
     {
         // Ensure we accept this URL
-        String local = "http://localhost:8080/alfresco/";
-        String service = "/service/";
-        if (url.startsWith(local))
+        if (url.startsWith(LOCAL_BASE_URL))
         {
             // Good, that's probably us, make it a relative url
-            url = url.substring(local.length()-1);
+            url = url.substring(LOCAL_BASE_URL.length()-1);
             
             // Make sure it's a service one
-            if (url.startsWith(service))
+            if (url.startsWith(SERVICE_URL))
             {
                 // Strip off and use
-                url = url.substring(service.length()-1);
+                url = url.substring(SERVICE_URL.length()-1);
             }
             else
             {

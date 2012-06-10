@@ -213,6 +213,59 @@ public class AuthorityMigrationPatch extends AbstractPatch
     }
 
     /**
+     * Truncates authority names so that they are within {@link QName#MAX_LENGTH} characters.
+     * 
+     * @param authoritiesToCreate
+     *            the original, untruncated authorities to create
+     * @param parentAssocs
+     *            the original parent associations to create
+     * @param targetAuthoritiesToCreate
+     *            the authorities to create with names shortened to QName.MAX_LENGTH
+     * @param targetParentAssocs
+     *            the parent associations modified to match targetAuthoritiesToCreate
+     */
+    private void truncateAuthorities(final Map<String, String> authoritiesToCreate,
+            Map<String, Set<String>> parentAssocs, Map<String, String> targetAuthoritiesToCreate,
+            Map<String, Set<String>> targetParentAssocs)
+    {
+        // Work through each authority, creating a unique truncated name where necessary and populating a map of old to
+        // new names
+        Map<String, String> targetLookup = new TreeMap<String, String>();        
+        for (Map.Entry<String, String> entry : authoritiesToCreate.entrySet())
+        {
+            String sourceName = entry.getKey();
+            int sourceLength = sourceName.length();
+            String targetName = sourceLength > QName.MAX_LENGTH ? sourceName.substring(0, QName.MAX_LENGTH) : sourceName;
+            int i=0;
+            while (targetAuthoritiesToCreate.containsKey(targetName))
+            {
+                String suffix = String.valueOf(++i);
+                int prefixLength = QName.MAX_LENGTH - suffix.length();
+                if (prefixLength < 0)
+                {
+                    break;
+                }
+                targetName = (sourceLength > prefixLength ? sourceName.substring(0, prefixLength) : sourceName) + suffix;
+            }
+            targetLookup.put(sourceName, targetName);
+            targetAuthoritiesToCreate.put(targetName, entry.getValue());
+        }
+        // Apply the name mapping to the parent associations
+        for (Map.Entry<String, Set<String>> entry: parentAssocs.entrySet())
+        {
+            Set<String> parents = new TreeSet<String>();
+            for (String parent : entry.getValue())
+            {
+                String targetParent = targetLookup.get(parent);
+                parents.add(targetParent == null ? parent : targetParent);
+            }
+            String sourceChild = entry.getKey();
+            String targetChild = targetLookup.get(sourceChild);
+            targetParentAssocs.put(targetChild == null ? sourceChild : targetChild, parents);
+        }
+    }
+    
+    /**
      * Migrates the authorities and their associations.
      * 
      * @param authoritiesToCreate
@@ -358,19 +411,24 @@ public class AuthorityMigrationPatch extends AbstractPatch
             Map<String, Set<String>> parentAssocs = new TreeMap<String, Set<String>>();
             assocs = retrieveAuthorities(null, authorityContainer, authoritiesToCreate, parentAssocs);
 
+            // Truncate names to an acceptable length
+            Map<String, String> targetAuthoritiesToCreate = new TreeMap<String, String>();
+            Map<String, Set<String>> targetParentAssocs = new TreeMap<String, Set<String>>();
+            truncateAuthorities(authoritiesToCreate, parentAssocs, targetAuthoritiesToCreate, targetParentAssocs);
+            
             // Sort the group associations in parent-first order (root groups first)
             Map<String, Set<String>> sortedParentAssocs = new LinkedHashMap<String, Set<String>>(
                     parentAssocs.size() * 2);
             List<String> authorityPath = new ArrayList<String>(5);
-            for (String authority : parentAssocs.keySet())
+            for (String authority : targetParentAssocs.keySet())
             {
                 authorityPath.add(authority);
-                visitGroupAssociations(authorityPath, parentAssocs, sortedParentAssocs);
+                visitGroupAssociations(authorityPath, targetParentAssocs, sortedParentAssocs);
                 authorityPath.clear();
             }
 
             // Recreate the authorities and their associations in parent-first order
-            migrateAuthorities(authoritiesToCreate, sortedParentAssocs);
+            migrateAuthorities(targetAuthoritiesToCreate, sortedParentAssocs);
             authorities = authoritiesToCreate.size();
         }
         // build the result message

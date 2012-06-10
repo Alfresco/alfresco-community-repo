@@ -20,6 +20,15 @@
 package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
@@ -51,6 +60,31 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
     // Authenticated user session object name
 
     private static final String PPT_EXTN = ".ppt";
+    
+    /** The password encodings to try in priority order **/
+    private static final String[] ENCODINGS = new String[] {
+        "UTF-8", 
+        System.getProperty("file.encoding"),
+        "ISO-8859-1"
+    };
+    
+    /** Corresponding array of CharsetDecoders with CodingErrorAction.REPORT. Duplicates removed. */
+    private static final CharsetDecoder[] DECODERS;
+    
+    static
+    {
+        Map<String, CharsetDecoder> decoders = new LinkedHashMap<String, CharsetDecoder>(ENCODINGS.length * 2);
+        for (String encoding : ENCODINGS)
+        {
+            if (!decoders.containsKey(encoding))
+            {
+                decoders.put(encoding, Charset.forName(encoding).newDecoder()
+                        .onMalformedInput(CodingErrorAction.REPORT));
+            }
+        }
+        DECODERS = new CharsetDecoder[decoders.size()];
+        decoders.values().toArray(DECODERS);
+    }
     
     // Various services required by NTLM authenticator
     
@@ -84,41 +118,58 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
             if ( authHdr != null && authHdr.length() > 5 && authHdr.substring(0,5).equalsIgnoreCase("BASIC"))
             {
                 // Basic authentication details present
-
-                String basicAuth = new String(Base64.decodeBase64(authHdr.substring(5).getBytes()));
+                byte[] encodedString = Base64.decodeBase64(authHdr.substring(5).getBytes());
                 
-                // Split the username and password
-                
-                String username = null;
-                String password = null;
-                
-                int pos = basicAuth.indexOf(":");
-                if ( pos != -1)
-                {
-                    username = basicAuth.substring(0, pos);
-                    password = basicAuth.substring(pos + 1);
-                }
-                else
-                {
-                    username = basicAuth;
-                    password = "";
-                }
-                
-                try
-                {
-                    // Authenticate the user
-
-                	authenticationService.authenticate(username, password.toCharArray());
-                	
-                	user = createUserEnvironment(httpReq.getSession(), authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), false);                    
-                }
-                catch ( AuthenticationException ex)
-                {
-                    // Do nothing, user object will be null
-                }
-                catch (NoSuchPersonException e)
-                {
-                    // Do nothing, user object will be null
+                // ALF-13621: Due to browser inconsistencies we have to try a fallback path of encodings
+                Set<String> attemptedAuths = new HashSet<String>(DECODERS.length * 2);
+                for (CharsetDecoder decoder : DECODERS)
+                {                  
+                    try
+                    {
+                        // Attempt to decode using this charset 
+                        String basicAuth = decoder.decode(ByteBuffer.wrap(encodedString)).toString();
+                        
+                        // It decoded OK but we may already have tried this string.
+                        if (!attemptedAuths.add(basicAuth))
+                        {
+                            // Already tried - no need to try again
+                            continue;
+                        }
+                        String username;
+                        String password;
+    
+                        // Split the username and password
+                        int pos = basicAuth.indexOf(":");
+                        if (pos != -1)
+                        {
+                            username = basicAuth.substring(0, pos);
+                            password = basicAuth.substring(pos + 1);
+                        }
+                        else
+                        {
+                            username = basicAuth;
+                            password = "";
+                        }
+    
+                        // Authenticate the user
+                        authenticationService.authenticate(username, password.toCharArray());
+                        user = createUserEnvironment(httpReq.getSession(), authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), false);
+                        
+                        // Success so break out
+                        break;
+                    }
+                    catch (CharacterCodingException e)
+                    {
+                        // Didn't decode using this charset. Try the next one or fail
+                    }
+                    catch (AuthenticationException ex)
+                    {
+                        // Do nothing, user object will be null
+                    }
+                    catch (NoSuchPersonException e)
+                    {
+                        // Do nothing, user object will be null
+                    }
                 }
             }
             else

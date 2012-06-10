@@ -418,6 +418,17 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                             return false;
                         }                        
                     }
+                    else
+                    {
+                        //  Unsupported mechanism, e.g. NegoEx
+                        
+                        if ( getLogger().isDebugEnabled())
+                            getLogger().debug( "Unsupported SPNEGO mechanism " + oidStr);
+    
+                        // Try again!
+                        
+                        restartLoginChallenge(context, req,  resp);
+                    }
                 }
                 catch ( IOException ex)
                 {

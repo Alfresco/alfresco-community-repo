@@ -69,6 +69,7 @@ import org.springframework.web.jsf.FacesContextUtils;
 public class Application
 {
    private static final String LOCALE = "locale";
+   private static final String USE_SESSION_LOCALE = "USE_SESSION_LOCALE";
    
    public static final String BEAN_CONFIG_SERVICE = "webClientConfigService";
    public static final String BEAN_DATA_DICTIONARY = "dataDictionary";
@@ -741,6 +742,7 @@ public class Application
       
       // clear the current message bundle - so it's reloaded with new locale
       context.getExternalContext().getSessionMap().remove(MESSAGE_BUNDLE);
+      context.getExternalContext().getSessionMap().put(USE_SESSION_LOCALE, Boolean.TRUE);
       
       // Set the current locale in the server thread
       I18NUtil.setLocale(locale);
@@ -759,6 +761,7 @@ public class Application
       
       session.setAttribute(LOCALE, locale);
       session.removeAttribute(MESSAGE_BUNDLE);
+      session.setAttribute(USE_SESSION_LOCALE, Boolean.TRUE);
       
       // Set the current locale in the server thread
       I18NUtil.setLocale(locale);
@@ -773,44 +776,59 @@ public class Application
     */
    public static Locale getLanguage(FacesContext fc)
    {
-      Locale locale = (Locale)fc.getExternalContext().getSessionMap().get(LOCALE);
+      Map sessionMap = fc.getExternalContext().getSessionMap();
+      Boolean useSessionLocale = (Boolean)sessionMap.get(USE_SESSION_LOCALE);
+      if (useSessionLocale == null)
+      {
+         useSessionLocale = Boolean.TRUE;
+         sessionMap.put(USE_SESSION_LOCALE, useSessionLocale);
+      }
+      Locale locale = (Locale)sessionMap.get(LOCALE);
       if (locale == null)
       {
-         // first check saved user preferences
-         String strLocale = null;
-         if (getCurrentUser(fc) != null)
+         if (useSessionLocale)
          {
-            strLocale = (String)PreferencesService.getPreferences(fc).getValue(
-                     UserPreferencesBean.PREF_INTERFACELANGUAGE);
-            if (strLocale != null)
+            // first check saved user preferences
+            String strLocale = null;
+            if (getCurrentUser(fc) != null)
             {
-               locale = I18NUtil.parseLocale(strLocale);
+               strLocale = (String)PreferencesService.getPreferences(fc).getValue(
+                        UserPreferencesBean.PREF_INTERFACELANGUAGE);
+               if (strLocale != null)
+               {
+                  locale = I18NUtil.parseLocale(strLocale);
+               }
+               else
+               {
+                  // failing that, use the server default locale
+                  locale = Locale.getDefault();
+               }
             }
             else
             {
-               // failing that, use the server default locale
-               locale = Locale.getDefault();
+               // else get from web-client config - the first item in the configured list of languages
+               Config config = Application.getConfigService(fc).getConfig("Languages");
+               LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
+                     LanguagesConfigElement.CONFIG_ELEMENT_ID);
+               List<String> languages = langConfig.getLanguages();
+               if (languages != null && languages.size() != 0)
+               {
+                  locale = I18NUtil.parseLocale(languages.get(0));
+               }
+               else
+               {
+                  // failing that, use the server default locale
+                  locale = Locale.getDefault();
+               }
             }
+            // save in user session
+            sessionMap.put(LOCALE, locale);
          }
          else
          {
-            // else get from web-client config - the first item in the configured list of languages
-            Config config = Application.getConfigService(fc).getConfig("Languages");
-            LanguagesConfigElement langConfig = (LanguagesConfigElement)config.getConfigElement(
-                  LanguagesConfigElement.CONFIG_ELEMENT_ID);
-            List<String> languages = langConfig.getLanguages();
-            if (languages != null && languages.size() != 0)
-            {
-               locale = I18NUtil.parseLocale(languages.get(0));
-            }
-            else
-            {
-               // failing that, use the server default locale
-               locale = Locale.getDefault();
-            }
+            // Get the request default, already decoded from the request headers
+            locale = I18NUtil.getLocale();            
          }
-         // save in user session
-         fc.getExternalContext().getSessionMap().put(LOCALE, locale);
       }
       return locale;
    }
@@ -826,10 +844,16 @@ public class Application
     */
    public static Locale getLanguage(HttpSession session, boolean useInterfaceLanguage)
    {
+      Boolean useSessionLocale = (Boolean)session.getAttribute(USE_SESSION_LOCALE);
+      if (useSessionLocale == null)
+      {
+         useSessionLocale = useInterfaceLanguage;
+         session.setAttribute(USE_SESSION_LOCALE, useSessionLocale);
+      }
       Locale locale = (Locale)session.getAttribute(LOCALE);
       if (locale == null)
       {
-         if (useInterfaceLanguage)
+         if (useSessionLocale)
          {
             // first check saved user preferences
             String strLocale = null;
@@ -852,15 +876,17 @@ public class Application
                // else get from web-client config - the first item in the configured list of languages
                locale = getLanguage(WebApplicationContextUtils.getRequiredWebApplicationContext(session
                      .getServletContext()));
+            
             }
+
+            // This is an interface session - the same locale will be used for the rest of the session
+            session.setAttribute(LOCALE, locale);
          }
          else
          {
             // Get the request default, already decoded from the request headers
             locale = I18NUtil.getLocale();
          }
-         // save in user session
-         session.setAttribute(LOCALE, locale);
       }
       return locale;
    }
@@ -932,11 +958,14 @@ public class Application
          Locale locale = (Locale)session.getAttribute(LOCALE);
          if (locale == null)
          {
-            locale = Locale.getDefault();
+            bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, I18NUtil.getLocale());
          }
-         bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);
-         
-         session.setAttribute(MESSAGE_BUNDLE, bundle);
+         else
+         {
+            // Only cache the bundle if/when we have a session locale
+            bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);
+            session.setAttribute(MESSAGE_BUNDLE, bundle);            
+         }         
       }
       
       return bundle;
@@ -963,11 +992,14 @@ public class Application
          Locale locale = (Locale)session.get(LOCALE);
          if (locale == null)
          {
-            locale = Locale.getDefault();
+            bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, I18NUtil.getLocale());            
          }
-         bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);
-         
-         session.put(MESSAGE_BUNDLE, bundle);
+         else
+         {
+            // Only cache the bundle if/when we have a session locale
+            bundle = ResourceBundleWrapper.getResourceBundle(MESSAGE_BUNDLE, locale);            
+            session.put(MESSAGE_BUNDLE, bundle);
+         }
       }
       
       return bundle;

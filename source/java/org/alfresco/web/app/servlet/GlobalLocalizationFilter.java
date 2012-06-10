@@ -52,7 +52,10 @@ public class GlobalLocalizationFilter implements Filter
      */
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException
     {
-        setLanguageFromRequestHeader((HttpServletRequest) request);
+        // Clear content locale from this thread (it may be set later)
+        I18NUtil.setContentLocale(null);
+
+        setLanguageFromRequestHeader((HttpServletRequest) request);        
 
         // continue filter chaining
         chain.doFilter(request, new HttpServletResponseWrapper((HttpServletResponse) response){

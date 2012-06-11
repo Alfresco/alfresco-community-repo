@@ -620,7 +620,7 @@ public class WorkflowModelBuilder
                 WorkflowTransition[] transitions = task.getDefinition().getNode().getTransitions();
                 for (WorkflowTransition transition : transitions)
                 {
-                    if (transition.getId().equals(outcomeId))
+                    if (transition.getId() != null && transition.getId().equals(outcomeId))
                     {
                         outcomeLabel = transition.getTitle();
                         break;

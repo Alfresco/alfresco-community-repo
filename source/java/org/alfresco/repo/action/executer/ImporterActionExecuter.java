@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
@@ -212,6 +213,17 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        if (tempFile != null)
                        {
                            tempFile.delete();
+                       }
+                       if (zipFile != null)
+                       {
+                           try
+                           {
+                               zipFile.close();
+                           }
+                           catch (IOException e)
+                           {
+                               throw new AlfrescoRuntimeException("Failed to close zip package.", e);
+                           }
                        }
                    }
                }

@@ -64,6 +64,9 @@
         <property name="hiddenAspect">
             <ref bean="hiddenAspect" />
         </property>
+        <property name="contentUsageImpl">
+            <ref bean="contentUsageImpl"/>
+        </property>
     </bean>
     
     

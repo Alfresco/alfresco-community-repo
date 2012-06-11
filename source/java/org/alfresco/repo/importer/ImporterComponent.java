@@ -36,6 +36,7 @@ import org.alfresco.repo.importer.view.NodeContext;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.usage.ContentUsageImpl;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -110,11 +111,13 @@ public class ImporterComponent
     private OwnableService ownableService;
     private VersionService versionService;
     private HiddenAspect hiddenAspect;
+    private ContentUsageImpl contentUsageImpl;
 
     /**
      * The db node service, used when updating the version store.
      */
     protected NodeService dbNodeService;
+
 
     // binding markers    
     private static final String START_BINDING_MARKER = "${";
@@ -241,6 +244,20 @@ public class ImporterComponent
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.hiddenAspect = hiddenAspect;
+    }
+
+    /**
+     * When all behaviour is disabled it is necessary to use {@link ContentUsageImpl}
+     * directly to update user usage. An instance of this class (with ID
+     * <code>importerComponentWithBehaviour</code>) that does not disable
+     * behaviours is also defined in the system - in that case it should not reference
+     * the {@link ContentUsageImpl} collaborator.
+     * 
+     * @param contentUsageImpl the contentUsageImpl to set
+     */
+    public void setContentUsageImpl(ContentUsageImpl contentUsageImpl)
+    {
+        this.contentUsageImpl = contentUsageImpl;
     }
 
     /* (non-Javadoc)
@@ -770,7 +787,23 @@ public class ImporterComponent
                     ContentWriter writer = contentService.getWriter(nodeRef, propertyName, true);
                     writer.setEncoding(contentData.getEncoding());
                     writer.setMimetype(contentData.getMimetype());
+                    
+                    Map<QName, Serializable> propsBefore = null;
+                    if (contentUsageImpl != null && contentUsageImpl.getEnabled())
+                    {
+                        propsBefore = nodeService.getProperties(nodeRef);
+                    }
+                    
                     writer.putContent(contentStream);
+                    
+                    if (contentUsageImpl != null && contentUsageImpl.getEnabled())
+                    {
+                        // Since behaviours for content nodes have all been disabled,
+                        // it is necessary to update the user's usage stats.
+                        Map<QName, Serializable> propsAfter = nodeService.getProperties(nodeRef);
+                        contentUsageImpl.onUpdateProperties(nodeRef, propsBefore, propsAfter);
+                    }
+                    
                     reportContentCreated(nodeRef, contentUrl);
                 }
             }

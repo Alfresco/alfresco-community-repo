@@ -223,7 +223,7 @@ subprojects {
 		
 		tree.each {File file ->
 				
-			destinationFile = new File(file.getPath().replaceFirst('\\.', '-min.'))
+			destinationFile = new File(file.getPath().replaceFirst('\\.js', '-min.js'))
 			
 			file.withReader{ reader -> 
 				compressor = new com.yahoo.platform.yui.compressor.JavaScriptCompressor(reader, null)

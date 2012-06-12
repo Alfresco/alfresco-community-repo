@@ -105,7 +105,7 @@ public class SOLRTrackingComponentTest extends TestCase
         dictionaryService = serviceRegistry.getDictionaryService();
         namespaceService = serviceRegistry.getNamespaceService();
         authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
-        
+
         dbNodeService = (DbNodeServiceImpl)ctx.getBean("dbNodeService");
         dbNodeService.setEnableTimestampPropagation(false);
 
@@ -118,7 +118,7 @@ public class SOLRTrackingComponentTest extends TestCase
     public void testAclChnageSetLimits()
     {
         List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, null, null, 50);
-        
+
         // First
         Long first = aclChangeSets.get(0).getId();
         Long firstTime = aclChangeSets.get(1).getId();
@@ -128,9 +128,9 @@ public class SOLRTrackingComponentTest extends TestCase
         assertEquals(0, testSets.size());
         testSets = solrTrackingComponent.getAclChangeSets(first, firstTime, first+1, firstTime+1, 50);
         assertEquals(0, testSets.size());
-        
+
     }
-    
+
     public void testGetAcls_Simple()
     {
         List<AclChangeSet> cs = solrTrackingComponent.getAclChangeSets(null, null, null, null, 50);
@@ -179,7 +179,7 @@ public class SOLRTrackingComponentTest extends TestCase
         nodeMetaDataParams.setNodeIds(st.getNodeIds());
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
-    
+
     /**
      * @param checkedTransactions
      * @return
@@ -202,7 +202,7 @@ public class SOLRTrackingComponentTest extends TestCase
         List<Long> createdTransactions = st.buildTransactions();
 
         // All
-        
+
         List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
 
         int[] updates = new int[] {1, 1};
@@ -213,41 +213,41 @@ public class SOLRTrackingComponentTest extends TestCase
         Long firstTime = checkedTransactions.get(0).getCommitTimeMs();
         Long last = checkedTransactions.get(1).getId();
         Long lastTime = checkedTransactions.get(1).getCommitTimeMs();
-        
+
         // First
-        
+
         txns = solrTrackingComponent.getTransactions(first, null, first, null, 50);
         assertEquals(0, txns.size());
-        
+
         txns = solrTrackingComponent.getTransactions(first, null, first+1, null, 50);
         updates = new int[] {1};
         deletes = new int[] {0};
         List<Long> createdTransactionFirst = new ArrayList<Long>(1);
         createdTransactionFirst.add(createdTransactions.get(0));
         checkTransactions(txns, createdTransactionFirst, updates, deletes);
-        
+
         txns = solrTrackingComponent.getTransactions(first, firstTime, first+1, firstTime+1, 50);
         checkTransactions(txns, createdTransactionFirst, updates, deletes);
-        
+
         txns = solrTrackingComponent.getTransactions(first, firstTime-1, first+1, firstTime, 50);
         assertEquals(0, txns.size());
-        
+
         // Last
-        
+
         txns = solrTrackingComponent.getTransactions(last, null, last, null, 50);
         assertEquals(0, txns.size());
-        
+
         txns = solrTrackingComponent.getTransactions(last, null, last+1, null, 50);
         updates = new int[] {1};
         deletes = new int[] {1};
         List<Long> createdTransactionLast = new ArrayList<Long>(1);
         createdTransactionLast.add(createdTransactions.get(1));
         checkTransactions(txns, createdTransactionLast, updates, deletes);
-        
-        
+
+
         txns = solrTrackingComponent.getTransactions(last, lastTime, last+1, lastTime+1, 50);
         checkTransactions(txns, createdTransactionLast, updates, deletes);
-        
+
         txns = solrTrackingComponent.getTransactions(last, lastTime-1, last+1, lastTime, 50);
         assertEquals(0, txns.size());
     }
@@ -656,7 +656,7 @@ public class SOLRTrackingComponentTest extends TestCase
                 }
             }
         }
-        
+
         assertEquals("Number of transactions is incorrect", createdTransaction.size(), matchedTransactions.size());
 
         int i = 0;
@@ -819,6 +819,10 @@ public class SOLRTrackingComponentTest extends TestCase
             {
                 expectedNumMetaDataNodes++;
             }
+            if(nodeStatus == NodeStatus.DELETED)
+            {
+                expectedNumMetaDataNodes++;
+            }
 
             if(doChecks)
             {
@@ -885,113 +889,117 @@ public class SOLRTrackingComponentTest extends TestCase
                 Long nodeId = nodeMetaData.getNodeId();
                 NodeRef nodeRef = nodeMetaData.getNodeRef();
 
-                Set<QName> aspects = nodeMetaData.getAspects();
-                Set<QName> actualAspects = nodeService.getAspects(nodeRef);
-                assertEquals("Aspects are incorrect", actualAspects, aspects);
-
-                Map<QName, Serializable> properties = nodeMetaData.getProperties();
-                // NodeService converts properties so use nodeDAO to get unadulterated property value
-                Map<QName, Serializable> actualProperties = filterResudualProperties(nodeDAO.getNodeProperties(nodeId));
-                //assertTrue("Properties are incorrect", compareProperties(actualProperties, properties));
-                assertEquals("Properties are incorrect", actualProperties, properties);
-
-                NodeAssertions assertions = getNodeAssertions(nodeRef);
-                //                NodeAssertions assertions = nodes.get(nodeRef);
-
-                Set<QName> expectedAspects = assertions.getAspects();
-                if(expectedAspects != null)
+                if(nodeService.exists(nodeRef))
                 {
-                    for(QName aspect : expectedAspects)
+
+                    Set<QName> aspects = nodeMetaData.getAspects();
+                    Set<QName> actualAspects = nodeService.getAspects(nodeRef);
+                    assertEquals("Aspects are incorrect", actualAspects, aspects);
+
+                    Map<QName, Serializable> properties = nodeMetaData.getProperties();
+                    // NodeService converts properties so use nodeDAO to get unadulterated property value
+                    Map<QName, Serializable> actualProperties = filterResudualProperties(nodeDAO.getNodeProperties(nodeId));
+                    //assertTrue("Properties are incorrect", compareProperties(actualProperties, properties));
+                    assertEquals("Properties are incorrect", actualProperties, properties);
+
+                    NodeAssertions assertions = getNodeAssertions(nodeRef);
+                    //                NodeAssertions assertions = nodes.get(nodeRef);
+
+                    Set<QName> expectedAspects = assertions.getAspects();
+                    if(expectedAspects != null)
                     {
-                        assertTrue("Expected aspect" + aspect, aspects.contains(aspect));
+                        for(QName aspect : expectedAspects)
+                        {
+                            assertTrue("Expected aspect" + aspect, aspects.contains(aspect));
+                        }
                     }
-                }
 
-                Map<QName, Serializable> expectedProperties = assertions.getProperties();
-                if(expectedProperties != null)
-                {
-                    for(QName propName : expectedProperties.keySet())
+                    Map<QName, Serializable> expectedProperties = assertions.getProperties();
+                    if(expectedProperties != null)
                     {
-                        Serializable expectedPropValue = expectedProperties.get(propName);
-                        Serializable actualPropValue = properties.get(propName);
-                        assertNotNull("Missing property " + propName, actualPropValue);
-                        assertEquals("Incorrect property value", expectedPropValue, actualPropValue);
+                        for(QName propName : expectedProperties.keySet())
+                        {
+                            Serializable expectedPropValue = expectedProperties.get(propName);
+                            Serializable actualPropValue = properties.get(propName);
+                            assertNotNull("Missing property " + propName, actualPropValue);
+                            assertEquals("Incorrect property value", expectedPropValue, actualPropValue);
+                        }
                     }
-                }
 
-                // TODO complete path tests
-                //                List<Path> actualPaths = nodeMetaData.getPaths();
-                //                List<Path> expectedPaths = nodeService.getPaths(nodeRef, false);
-                //                assertEquals("Paths are incorrect", expectedPaths, actualPaths);
+                    // TODO complete path tests
+                    //                List<Path> actualPaths = nodeMetaData.getPaths();
+                    //                List<Path> expectedPaths = nodeService.getPaths(nodeRef, false);
+                    //                assertEquals("Paths are incorrect", expectedPaths, actualPaths);
 
-                boolean expectAspects = assertions.isExpectAspects();
-                if(expectAspects && nodeMetaData.getAspects() == null)
-                {
-                    fail("Expecting aspects but got no aspects");
-                }
-                else if(!expectAspects && nodeMetaData.getAspects() != null)
-                {
-                    fail("Not expecting aspects but got aspects");
-                }
+                    boolean expectAspects = assertions.isExpectAspects();
+                    if(expectAspects && nodeMetaData.getAspects() == null)
+                    {
+                        fail("Expecting aspects but got no aspects");
+                    }
+                    else if(!expectAspects && nodeMetaData.getAspects() != null)
+                    {
+                        fail("Not expecting aspects but got aspects");
+                    }
 
-                boolean expectProperties = assertions.isExpectProperties();
-                if(expectProperties && nodeMetaData.getProperties() == null)
-                {
-                    fail("Expecting properties but got no properties");
-                }
-                else if(!expectProperties && nodeMetaData.getProperties() != null)
-                {
-                    fail("Not expecting properties but got properties");
-                }
+                    boolean expectProperties = assertions.isExpectProperties();
+                    if(expectProperties && nodeMetaData.getProperties() == null)
+                    {
+                        fail("Expecting properties but got no properties");
+                    }
+                    else if(!expectProperties && nodeMetaData.getProperties() != null)
+                    {
+                        fail("Not expecting properties but got properties");
+                    }
 
-                boolean expectType = assertions.isExpectType();
-                if(expectType && nodeMetaData.getNodeType() == null)
-                {
-                    fail("Expecting type but got no type");
-                }
-                else if(!expectType && nodeMetaData.getNodeType() != null)
-                {
-                    fail("Not expecting type but got type");
-                }
+                    boolean expectType = assertions.isExpectType();
+                    if(expectType && nodeMetaData.getNodeType() == null)
+                    {
+                        fail("Expecting type but got no type");
+                    }
+                    else if(!expectType && nodeMetaData.getNodeType() != null)
+                    {
+                        fail("Not expecting type but got type");
+                    }
 
-                boolean expectAclId = assertions.isExpectAclId();
-                if(expectAclId && nodeMetaData.getAclId() == null)
-                {
-                    fail("Expecting acl id but got no acl id");
-                }
-                else if(!expectAclId && nodeMetaData.getAclId() != null)
-                {
-                    fail("Not expecting acl id but got acl id");
-                }
+                    boolean expectAclId = assertions.isExpectAclId();
+                    if(expectAclId && nodeMetaData.getAclId() == null)
+                    {
+                        fail("Expecting acl id but got no acl id");
+                    }
+                    else if(!expectAclId && nodeMetaData.getAclId() != null)
+                    {
+                        fail("Not expecting acl id but got acl id");
+                    }
 
-                boolean expectPaths = assertions.isExpectPaths();
-                if(expectPaths && nodeMetaData.getPaths() == null)
-                {
-                    fail("Expecting paths but got no paths");
-                }
-                else if(!expectPaths && nodeMetaData.getPaths() != null)
-                {
-                    fail("Not expecting paths but got paths");
-                }
+                    boolean expectPaths = assertions.isExpectPaths();
+                    if(expectPaths && nodeMetaData.getPaths() == null)
+                    {
+                        fail("Expecting paths but got no paths");
+                    }
+                    else if(!expectPaths && nodeMetaData.getPaths() != null)
+                    {
+                        fail("Not expecting paths but got paths");
+                    }
 
-                boolean expectAssociations = assertions.isExpectAssociations();
-                if(expectAssociations && nodeMetaData.getChildAssocs() == null)
-                {
-                    fail("Expecting associations but got no associations");
-                }
-                else if(!expectAssociations && nodeMetaData.getChildAssocs() != null)
-                {
-                    fail("Not expecting associations but got associations");
-                }
+                    boolean expectAssociations = assertions.isExpectAssociations();
+                    if(expectAssociations && nodeMetaData.getChildAssocs() == null)
+                    {
+                        fail("Expecting associations but got no associations");
+                    }
+                    else if(!expectAssociations && nodeMetaData.getChildAssocs() != null)
+                    {
+                        fail("Not expecting associations but got associations");
+                    }
 
-                boolean expectOwner = assertions.isExpectOwner();
-                if(expectOwner && nodeMetaData.getOwner() == null)
-                {
-                    fail("Expecting owner but got no owner");
-                }
-                else if(!expectOwner && nodeMetaData.getOwner() != null)
-                {
-                    fail("Not expecting owner but got owner");
+                    boolean expectOwner = assertions.isExpectOwner();
+                    if(expectOwner && nodeMetaData.getOwner() == null)
+                    {
+                        fail("Expecting owner but got no owner");
+                    }
+                    else if(!expectOwner && nodeMetaData.getOwner() != null)
+                    {
+                        fail("Not expecting owner but got owner");
+                    }
                 }
             }
 

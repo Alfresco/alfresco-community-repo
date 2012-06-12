@@ -212,7 +212,7 @@ subprojects {
 		
 		copy {
 			from sourceWebDir			
-			include '**/*.js'
+			include '**/*'
 			into "${assembleDir}/web"
 		}
 		

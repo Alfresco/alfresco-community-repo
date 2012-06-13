@@ -66,7 +66,7 @@ function parsePermissions(p_permissions, p_settable)
 {
    var results = [],
       settable = {},
-      tokens, authority, authorityId, nameProperty, role, i, ii;
+      tokens, authority, authorityId, role, i, ii;
 
    // Settable array into object for "x in y" style operations
    for (i = 0, ii = p_settable.length; i < ii; i++)
@@ -90,7 +90,6 @@ function parsePermissions(p_permissions, p_settable)
          if (authorityId.indexOf("GROUP_") === 0)
          {
             authority = Common.getGroup(authorityId);
-            nameProperty = "shortName";
          }
          else if (authorityId.indexOf("ROLE_") === 0)
          {
@@ -104,7 +103,6 @@ function parsePermissions(p_permissions, p_settable)
          else
          {
             authority = Common.getPerson(authorityId);
-            nameProperty = "displayName";
          }
       
          if (authority != null)
@@ -115,7 +113,7 @@ function parsePermissions(p_permissions, p_settable)
                {
                   avatar: authority.avatar || null,
                   name: authorityId,
-                  displayName: authority[nameProperty]
+                  displayName: authority["displayName"]
                },
                role: role
             });

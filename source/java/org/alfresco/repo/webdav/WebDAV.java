@@ -19,7 +19,6 @@
 package org.alfresco.repo.webdav;
 
 import java.io.Serializable;
-import java.net.URLDecoder;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Locale;
@@ -368,7 +367,7 @@ public class WebDAV
         
         try 
         {
-            strPath = URLDecoder.decode( request.getRequestURI(), "UTF-8");
+            strPath = WebDAVHelper.decodeURL(request.getRequestURI());
         }
         catch (Exception ex) {}
 
@@ -503,7 +502,7 @@ public class WebDAV
 
         try
         {
-            strNormalized = URLDecoder.decode(strPath, "UTF-8");
+            strNormalized = WebDAVHelper.decodeURL(strPath);
         }
         catch (Exception ex)
         {

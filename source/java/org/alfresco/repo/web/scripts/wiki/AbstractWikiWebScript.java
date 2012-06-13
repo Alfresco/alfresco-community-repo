@@ -40,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -140,7 +141,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
           JSONWriter activity = new JSONWriter(activityJson);
           activity.startObject();
           activity.writeValue("title", wikiPage.getTitle());
-          activity.writeValue("page", page + "?title=" + wikiPage.getSystemName());
+          activity.writeValue("page", page + "?title=" + URLEncoder.encodeUriComponent(wikiPage.getSystemName()));
           activity.endObject();
           
           activityService.postActivity(

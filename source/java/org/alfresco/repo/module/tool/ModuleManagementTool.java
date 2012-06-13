@@ -78,6 +78,7 @@ public class ModuleManagementTool implements LogOutput
     private static final String OPTION_NOBACKUP = "-nobackup";
     private static final String OPTION_DIRECTORY = "-directory";
     private static final String OPTION_PURGE = "-purge";
+    private static final String OPTION_HELP = "-help";
     
     private static final int ERROR_EXIT_CODE = 1;
     private static final int SUCCESS_EXIT_CODE = 0;
@@ -197,7 +198,7 @@ public class ModuleManagementTool implements LogOutput
      * @param warFileLocation   the location of the WAR file into which the AMP file is to be installed.
      * @param preview           indicates whether this should be a preview install.  This means that the process of 
      *                          installation will be followed and reported, but the WAR file will not be modified.
-     * @param forceInstall      indicates whether the installed files will be replaces regardless of the currently installed 
+     * @param forceInstall      indicates whether the installed files will be replaced regardless of the currently installed 
      *                          version of the AMP.  Generally used during development of the AMP.
      * @param backupWAR         indicates whether we should backup the war we are modifying or not
      */
@@ -205,7 +206,7 @@ public class ModuleManagementTool implements LogOutput
     {
         try
         {   
-            outputMessage("Installing AMP '" + ampFileLocation + "' into WAR '" + warFileLocation + "'");
+            outputVerboseMessage("Installing AMP '" + ampFileLocation + "' into WAR '" + warFileLocation + "'");
             
             java.io.File theWar = new File(warFileLocation, DETECTOR_AMP_AND_WAR);
             if (!theWar.exists())
@@ -243,7 +244,7 @@ public class ModuleManagementTool implements LogOutput
             
             uninstallIfNecessary(warFileLocation, installedModuleDetails, preview, forceInstall, installingVersion);
             
-            outputMessage("Adding files relating to version '" + installingVersion + "' of module '" + installingId + "'");
+            outputVerboseMessage("Adding files relating to version '" + installingVersion + "' of module '" + installingId + "'");
             InstalledFiles installedFiles = new InstalledFiles(warFileLocation, installingId);
             
             Properties directoryChanges = calculateChanges(ampFileLocation, warFileLocation, preview, forceInstall, installedFiles);   
@@ -313,7 +314,7 @@ public class ModuleManagementTool implements LogOutput
             if (compareValue > 0)
             {
                 // Trying to install an earlier version of the extension
-                outputMessage("WARNING: A later version of this module is already installed in the WAR. Installation skipped.  "+
+                outputVerboseMessage("WARNING: A later version of this module is already installed in the WAR. Installation skipped.  "+
                 "You could force the installation by passing the -force option.",false);
                 return;
             }
@@ -321,20 +322,20 @@ public class ModuleManagementTool implements LogOutput
             if (forceInstall == true)
             {
                 // Warn of forced install
-                outputMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of exiting versions present.",false);
+                outputVerboseMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of exiting versions present.",false);
             }
             
             if (compareValue == 0)
             {
                 // Trying to install the same extension version again
-                outputMessage("WARNING: This version of this module is already installed in the WAR..upgrading.",false);
+                outputVerboseMessage("WARNING: This version of this module is already installed in the WAR..upgrading.",false);
             }
             
             if (forceInstall == true || compareValue <= 0)
             {
                 
                 // Trying to update the extension, old files need to cleaned before we proceed
-                outputMessage("Clearing out files relating to version '" + installedVersion + "' of module '" + installedId + "'",false);
+                outputVerboseMessage("Clearing out files relating to version '" + installedVersion + "' of module '" + installedId + "'",false);
                 uninstallModule(installedId, warFileLocation, preview, true);
             } 
         }
@@ -426,7 +427,7 @@ public class ModuleManagementTool implements LogOutput
                 throw new ModuleManagementToolException("An IO error was encountered when backing up the WAR", exception);
             }  
                   
-            outputMessage("WAR has been backed up to '" + backupLocation + "'");
+            outputVerboseMessage("WAR has been backed up to '" + backupLocation + "'");
         }
     }
     
@@ -496,7 +497,7 @@ public class ModuleManagementTool implements LogOutput
                 backup.delete();
             }
             
-            outputMessage("Recovering file '" + update.getKey() + "' from backup '" + update.getValue() + "'", true);
+            outputVerboseMessage("Recovering file '" + update.getKey() + "' from backup '" + update.getValue() + "'", true);
         }
         // Now remove the installed files list
         String installedFilesPathInWar = installedFiles.getFilePathInWar();
@@ -518,7 +519,7 @@ public class ModuleManagementTool implements LogOutput
         File removeFile = new File(warLocation + filePath, DETECTOR_AMP_AND_WAR);
         if (removeFile.exists() == true)
         {
-            outputMessage("Removing file '" + filePath + "' from war", true);
+            outputVerboseMessage("Removing file '" + filePath + "' from war", true);
             if (preview == false)
             {
                 removeFile.delete();
@@ -526,7 +527,7 @@ public class ModuleManagementTool implements LogOutput
         }
         else
         {
-            outputMessage("The file '" + filePath + "' was expected for removal but was not present in the war", true);
+            outputVerboseMessage("The file '" + filePath + "' was expected for removal but was not present in the war", true);
         }
     }
     
@@ -607,12 +608,12 @@ public class ModuleManagementTool implements LogOutput
                     if (createFile == true)
                     {
                         installedFiles.addAdd(destinationDir + "/" + sourceChild.getName());
-                        this.outputMessage("File '" + destinationDir + "/" + sourceChild.getName() + "' added to war from amp", true);
+                        this.outputVerboseMessage("File '" + destinationDir + "/" + sourceChild.getName() + "' added to war from amp", true);
                     }
                     else
                     {
                         installedFiles.addUpdate(destinationDir + "/" + sourceChild.getName(), backupLocation);
-                        this.outputMessage("WARNING: The file '" + destinationDir + "/" + sourceChild.getName() + "' is being updated by this module and has been backed-up to '" + backupLocation + "'", true);
+                        this.outputMessage("WARNING: The file '" + destinationDir + "/" + sourceChild.getName() + "' is being overwritten by this module. The original has been backed-up to '" + backupLocation + "'", true);
                     }
                 }
                 else
@@ -628,7 +629,7 @@ public class ModuleManagementTool implements LogOutput
                     if (mkdir == true)
                     {
                         installedFiles.addMkdir(destinationDir + "/" + sourceChild.getName());
-                        this.outputMessage("Directory '" + destinationDir + "/" + sourceChild.getName() + "' added to war", true);
+                        this.outputVerboseMessage("Directory '" + destinationDir + "/" + sourceChild.getName() + "' added to war", true);
                     }
                 }
             }
@@ -668,7 +669,7 @@ public class ModuleManagementTool implements LogOutput
             File moduleDir = new File(warLocation + WarHelper.MODULE_NAMESPACE_DIR, DETECTOR_AMP_AND_WAR);
             if (moduleDir.exists() == false)
             {
-                outputMessage("No modules are installed in this WAR file");
+                outputVerboseMessage("No modules are installed in this WAR file");
             }
             
             java.io.File[] dirs = moduleDir.listFiles();
@@ -692,22 +693,22 @@ public class ModuleManagementTool implements LogOutput
                                 throw new ModuleManagementToolException("Unable to open module properties file '" + moduleProperties.getPath() + "'", exception);
                             }
                             
-                            outputMessage("Module '" + moduleDetails.getId() + "' installed in '" + warLocation + "'");
-                            outputMessage("   Title:        " + moduleDetails.getTitle(), true);
-                            outputMessage("   Version:      " + moduleDetails.getVersion(), true);
-                            outputMessage("   Install Date: " + moduleDetails.getInstallDate(), true);                
-                            outputMessage("   Description:   " + moduleDetails.getDescription(), true); 
+                            outputVerboseMessage("Module '" + moduleDetails.getId() + "' installed in '" + warLocation + "'");
+                            outputVerboseMessage("   Title:        " + moduleDetails.getTitle(), true);
+                            outputVerboseMessage("   Version:      " + moduleDetails.getVersion(), true);
+                            outputVerboseMessage("   Install Date: " + moduleDetails.getInstallDate(), true);                
+                            outputVerboseMessage("   Description:   " + moduleDetails.getDescription(), true); 
                         }
                     }
                 }
             }
             else
             {
-                outputMessage("No modules are installed in this WAR file");
+                outputVerboseMessage("No modules are installed in this WAR file");
             }
             if (!moduleFound)
             {
-                outputMessage("No modules were found in this WAR file");                
+                outputVerboseMessage("No modules were found in this WAR file");                
             }
             
         }
@@ -722,9 +723,9 @@ public class ModuleManagementTool implements LogOutput
      * 
      * @param message   the message to output
      */
-    private void outputMessage(String message)
+    private void outputVerboseMessage(String message)
     {
-        outputMessage(message, false, false);
+        outputMessage(message, false, false, false);
     }
     
     /**
@@ -734,7 +735,7 @@ public class ModuleManagementTool implements LogOutput
      */
     private void outputErrorMessage(String message)
     {
-        outputMessage(message, false, true);
+        outputMessage(message, false, true, false);
     }
     
     /**
@@ -743,9 +744,20 @@ public class ModuleManagementTool implements LogOutput
      * @param message   the message to output
      * @param indent    indicates that the message should be formated with an indent
      */
+    private void outputVerboseMessage(String message, boolean indent)
+    {
+        outputMessage(message, indent, false, false);
+    }
+    
+    /**
+     * Outputs a message to the console regardless of the verbose setting.
+     * 
+     * @param message   the message to output
+     * @param indent    indicates that the message should be formated with an indent
+     */
     private void outputMessage(String message, boolean indent)
     {
-        outputMessage(message, indent, false);
+    	outputMessage(message, indent, false, true);
     }
     
     /**
@@ -754,8 +766,9 @@ public class ModuleManagementTool implements LogOutput
      * @param message   the message to output
      * @param indent    indicates that the message should be formated with an indent
      * @param error     indicates that the message is an error.
+     * @param stdout	indicates that the message should output to the console regardless of verbose setting
      */
-    private void outputMessage(String message, boolean indent, boolean error)
+    private void outputMessage(String message, boolean indent, boolean error, boolean stdout)
     {
         if (indent == true)
         {
@@ -765,7 +778,7 @@ public class ModuleManagementTool implements LogOutput
         {
             System.err.println(message);
         }
-        else if (this.verbose == true)
+        else if (this.verbose == true || stdout == true)
         {
             System.out.println(message);
         }
@@ -788,8 +801,17 @@ public class ModuleManagementTool implements LogOutput
         String operation = args[0];
         try
         {
-            if (operation.equals(OP_INSTALL) == true && args.length >= 3)
-            {            
+        	if (operation.equals(OPTION_HELP) == true)
+        	{
+        		outputUsage();
+        		System.exit(SUCCESS_EXIT_CODE);
+        	} 
+        	else if (operation.equals(OP_INSTALL) == true)
+            {
+            	if (args.length < 3) 
+            	{
+            		throw new UsageException(OP_INSTALL + " requires at least 3 arguments.");
+            	}
                 String aepFileLocation = args[1];
                 String warFileLocation = args[2];
                 boolean forceInstall = false;
@@ -826,28 +848,36 @@ public class ModuleManagementTool implements LogOutput
                     }
                 }
                
-                    if (directory == false)
-                    {
-                        // Install the module
-                        manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
-                    }
-                    else
-                    {
-                        // Install the modules from the directory
-                        manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
-                    }
-                    System.exit(SUCCESS_EXIT_CODE);
+                if (directory == false)
+                {
+                    // Install the module
+                    manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                }
+                else
+                {
+                    // Install the modules from the directory
+                    manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                }
+                System.exit(SUCCESS_EXIT_CODE);
 
             }
-            else if (OP_LIST.equals(operation) == true && args.length == 2)
+            else if (OP_LIST.equals(operation) == true)
             {
+            	if (args.length != 2) 
+            	{
+            		throw new UsageException(OP_LIST + " requires 2 arguments.");
+            	}
                 // List the installed modules
                 String warFileLocation = args[1];
                 manager.listModules(warFileLocation);                
                 System.exit(SUCCESS_EXIT_CODE);
             }
-            else if (OP_UNINSTALL.equals(operation) == true && args.length >= 3)
+            else if (OP_UNINSTALL.equals(operation) == true)
             {
+            	if (args.length < 3) 
+            	{
+            		throw new UsageException(OP_UNINSTALL + " requires at least 3 arguments.");
+            	}
                 String moduleId = args[1];
                 String warLocation = args[2];
                 boolean purge = false;
@@ -875,16 +905,20 @@ public class ModuleManagementTool implements LogOutput
             }
             else
             {
-                outputUsage();
-                System.exit(SUCCESS_EXIT_CODE);
+                throw new UsageException("Unknown operation " + operation + ".");
             }
         
+        }
+        catch (UsageException e) 
+        {
+        	manager.outputErrorMessage("Usage error: " + e.getMessage());
+        	outputUsage();
+        	System.exit(ERROR_EXIT_CODE);
         }
         catch (ModuleManagementToolException e)
         {
             // These are user-friendly
             manager.outputErrorMessage(e.getMessage());
-            outputUsage();
             System.exit(ERROR_EXIT_CODE);
         }
     }
@@ -956,6 +990,16 @@ public class ModuleManagementTool implements LogOutput
     @Override
     public void info(Object message)
     {
-        outputMessage(String.valueOf(message));
+        outputVerboseMessage(String.valueOf(message));
     }    
+
+    private static class UsageException extends Exception 
+    {
+		private static final long serialVersionUID = 1L;
+		
+		public UsageException(String message) {
+			super(message);
+		}
+    }
+ 
 }

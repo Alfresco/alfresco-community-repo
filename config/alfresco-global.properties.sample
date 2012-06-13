@@ -65,8 +65,8 @@
 #
 # DB2 connection
 #
-#db.driver=com.ibm.db2.jcc.DB2Driver 
-#db.url=jdbc:db2://host:50000/ALFRESCO 
+#db.driver=com.ibm.db2.jcc.DB2Driver
+#db.url=jdbc:db2://localhost:50000/alfresco:retrieveMessagesFromServerOnGetMessage=true;
 
 #
 # Index Recovery Mode

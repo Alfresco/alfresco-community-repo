@@ -1377,6 +1377,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 catch (Throwable e)
                 {
                     controlDAO.rollbackToSavepoint(savepoint);
+                    // DuplicateChildNodeNameException implements DoNotRetryException.
+                    // There are some cases - FK violations, specifically - where we DO actually want to retry.
+                    // Detecting this is done by looking for the related FK names, 'fk_alf_cass_*' in the error message
+                    String lowerMsg = e.getMessage().toLowerCase();
+                    if (lowerMsg.contains("fk_alf_cass_"))
+                    {
+                        throw new ConcurrencyFailureException("FK violation updating primary parent association for " + childNodeId, e); 
+                    }
                     // We assume that this is from the child cm:name constraint violation
                     throw new DuplicateChildNodeNameException(
                             newParentNode.getNodeRef(),
@@ -2869,21 +2877,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 catch (Throwable e)
                 {
                     controlDAO.rollbackToSavepoint(savepoint);
+                    // DuplicateChildNodeNameException implements DoNotRetryException.
                     
-                    // SQL Server retry
-                    if (e.getMessage().contains("Snapshot isolation transaction aborted"))
+                    // There are some cases - FK violations, specifically - where we DO actually want to retry.
+                    // Detecting this is done by looking for the related FK names, 'fk_alf_cass_*' in the error message
+                    String lowerMsg = e.getMessage().toLowerCase();
+                    if (lowerMsg.contains("fk_alf_cass_"))
                     {
-                        logger.warn("insertChildAssoc: SQL Server snapshot isolation retry: "+assoc);
-                        throw new ConcurrencyFailureException("SQL Server snapshot isolation retry...", e);
-                    }
-                    
-                    // FK conflict retry, eg.
-                    //     SQL Server - The INSERT statement conflicted with the FOREIGN KEY constraint
-                    //     MySQL      - Cannot add or update a child row: a foreign key constraint fails
-                    if (e.getMessage().toUpperCase().contains("FOREIGN KEY"))
-                    {
-                        logger.warn("insertChildAssoc: FK conflict retry: "+assoc);
-                        throw new ConcurrencyFailureException("FK conflict retry...", e); 
+                        throw new ConcurrencyFailureException("FK violation updating primary parent association:" + assoc, e); 
                     }
                     
                     // We assume that this is from the child cm:name constraint violation

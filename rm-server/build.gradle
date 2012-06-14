@@ -15,13 +15,46 @@ dependencies {
 	testRuntime group: 'org.alfresco.enterprise', name: 'alfresco', version: alfrescoBaseVersion, type: 'war'
 }
 
+task resetDatabase << {
+  // Loading the properties in all possible locations
+  ant.property(file: System.properties.getProperty('DB_PROPERTIES') )
+  ant.property(file: System.properties.getProperty('user.home')+'/alfresco/extension/repository.properties' )
+  ant.property(resource: 'alfresco/domain/transaction.properties', classpath: configurations.compile.asPath )
+  ant.property(resource: 'alfresco/version.properties', classpath: configurations.compile.asPath )
+  ant.property(resource: 'alfresco/repository.properties', classpath: configurations.compile.asPath )
+
+  // Set default values if nothing was found (remember Ant props are 'first set wins')
+  ant.property(name: "db.name", value: "alfresco")
+  ant.property(name: "db.url", value: "jdbc:postgresql:alfresco")
+  ant.property(name: "db.master.url", value: "jdbc:postgresql:template1")
+  ant.property(name: "db.username", value: "alfresco")
+  ant.property(name: "db.password", value: "alfresco")
+
+  println "Recreating database " + ant.getProperty("db.name") + " as user " + ant.getProperty("db.username")
+  ant.sql(driver: 'org.postgresql.Driver',
+		url: ant.getProperty("db.master.url"),
+		userid: ant.getProperty("db.username"),
+		password: ant.getProperty("db.password"),
+		print: 'true',
+		autocommit: 'true',
+		classpath: configurations.compile.asPath,
+		'drop database if exists ' + ant.getProperty("db.name") + '; create database ' + ant.getProperty("db.name") + ';')
+}
+
 test {
+  dependsOn resetDatabase
 
   include '**/DispositionServiceImplTest.class'
 
   testLogging.showStandardStreams = true
 
   jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'
+
+  // Put systemProperty definition in a doFirst closure, otherwise it's executed before resetDatabase task
+  doFirst {
+    ant.property(name: "dir.root", value: System.getProperty("user.dir") + "/build/test_alf_data")
+    systemProperties = ant.getProperties()
+  }
   
   beforeTest { descriptor ->
      logger.lifecycle("Running test: " + descriptor)

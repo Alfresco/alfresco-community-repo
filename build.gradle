@@ -40,6 +40,7 @@ task packageBuild (dependsOn: [':rm-server:amp', ':rm-share:amp']) << {
 subprojects {
 
 	apply plugin: 'java'	
+	apply plugin: 'eclipse'
 	
 	sourceCompatibility = 1.6
     targetCompatibility = 1.6

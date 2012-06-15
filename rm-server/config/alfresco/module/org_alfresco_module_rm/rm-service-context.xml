@@ -964,4 +964,17 @@
         </property>
     </bean>
     
+    <!--  Site service work around (see https://issues.alfresco.com/jira/browse/RM-387) -->
+     <bean name="siteGetChildrenCannedQueryFactory" class="org.alfresco.module.org_alfresco_module_rm.site.GetChildrenCannedQueryFactory">
+        <property name="registry" ref="siteCannedQueryRegistry"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="localeDAO" ref="localeDAO"/>
+        <property name="contentDataDAO" ref="contentDataDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <property name="methodSecurity" ref="SiteService_security_listSites"/>
+    </bean>
+    
 </beans>    

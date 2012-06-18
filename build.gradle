@@ -88,7 +88,7 @@ subprojects {
 		}
 		mavenCentral()
 		maven {
-			url "http://maven.alfresco.com/nexus/content/repositories/enterprise-releases/"
+			url "https://artifacts.alfresco.com/nexus/content/groups/internal"
 			credentials {
 				username 'bamboo'
 				password 'b@mb00'
@@ -176,9 +176,7 @@ subprojects {
 	}
 		
 	task cleanDeps << {
-		ant.delete(includeEmptyDirs: 'true') {
-			ant.fileset(dir: explodedDepsDir, includes: '**/*')
-		}
+		ant.delete(includeEmptyDirs: 'true', dir: explodedDepsDir)
 	}	
 	
 	/** --- AMP tasks --- */

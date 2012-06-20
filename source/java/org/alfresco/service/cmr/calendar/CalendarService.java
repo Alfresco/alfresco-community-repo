@@ -82,4 +82,11 @@ public interface CalendarService
     */
    @NotAuditable
    PagingResults<CalendarEntry> listCalendarEntries(String[] siteShortNames, Date from, Date to, PagingRequest paging);
+
+   /**
+    * Retrieves all Outlook based {@link CalendarEntry} instances in the repository
+    *  for the given site, optionally filtered by the Outlook Event UID.
+    */
+   @NotAuditable
+   PagingResults<CalendarEntry> listOutlookCalendarEntries(String siteShortName, String outlookUID, PagingRequest paging);
 }

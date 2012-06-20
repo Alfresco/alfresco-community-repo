@@ -12,6 +12,7 @@
             <list>
                 <value>getCalendarEntry</value>
                 <value>listCalendarEntries</value>
+                <value>listOutlookCalendarEntries</value>
             </list>
         </property>
     </bean>

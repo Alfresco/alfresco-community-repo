@@ -503,6 +503,41 @@ public class CalendarServiceImplTest
        results = CALENDAR_SERVICE.listCalendarEntries(CALENDAR_SITE.getShortName(), paging);
        assertEquals(1, results.getPage().size());
        assertEquals("TitleC", results.getPage().get(0).getTitle());
+       
+       
+       // Currently, none of the events are Outlook ones, so an outlook list should find none
+       paging = new PagingRequest(3);
+       results = CALENDAR_SERVICE.listOutlookCalendarEntries(CALENDAR_SITE.getShortName(), null, paging);
+       assertEquals(0, results.getPage().size());
+       
+       
+       // Make two of them be outlook ones, will both be found if no UID restriction is given
+       String uidB = "THIS_is_A_fake_UID_123";
+       String uidC = "THIS_is_A_fake_UID_4321";
+       ((CalendarEntryDTO)entryB).setOutlook(true);
+       ((CalendarEntryDTO)entryB).setOutlookUID(uidB);
+       ((CalendarEntryDTO)entryC).setOutlook(true);
+       ((CalendarEntryDTO)entryC).setOutlookUID(uidC);
+       CALENDAR_SERVICE.updateCalendarEntry(entryB);
+       CALENDAR_SERVICE.updateCalendarEntry(entryC);
+       
+       paging = new PagingRequest(3);
+       results = CALENDAR_SERVICE.listOutlookCalendarEntries(CALENDAR_SITE.getShortName(), null, paging);
+       assertEquals(2, results.getPage().size());
+       assertEquals("TitleB", results.getPage().get(0).getTitle());
+       assertEquals("TitleC", results.getPage().get(1).getTitle());
+
+       
+       // Restrict by UID
+       paging = new PagingRequest(3);
+       results = CALENDAR_SERVICE.listOutlookCalendarEntries(CALENDAR_SITE.getShortName(), uidB, paging);
+       assertEquals(1, results.getPage().size());
+       assertEquals("TitleB", results.getPage().get(0).getTitle());
+
+       paging = new PagingRequest(3);
+       results = CALENDAR_SERVICE.listOutlookCalendarEntries(CALENDAR_SITE.getShortName(), uidC, paging);
+       assertEquals(1, results.getPage().size());
+       assertEquals("TitleC", results.getPage().get(0).getTitle());
     }
 
     /**

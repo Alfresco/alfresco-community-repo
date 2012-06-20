@@ -1007,6 +1007,7 @@
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.calendar.CalendarService.listCalendarEntries=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.calendar.CalendarService.listOutlookCalendarEntries=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
             </value>
         </property>
     </bean>

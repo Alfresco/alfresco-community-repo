@@ -35,6 +35,10 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQuery;
 import org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQueryFactory;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.node.getchildren.FilterProp;
+import org.alfresco.repo.node.getchildren.FilterPropBoolean;
+import org.alfresco.repo.node.getchildren.FilterPropString;
+import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.site.SiteServiceImpl;
@@ -348,6 +352,54 @@ public class CalendarServiceImpl implements CalendarService
        return cq.execute();
     }
     
+    @Override
+    public PagingResults<CalendarEntry> listOutlookCalendarEntries(String siteShortName, String outlookUID,
+            PagingRequest paging)
+    {
+        NodeRef container = getSiteCalendarContainer(siteShortName, false);
+        if (container == null)
+        {
+           // No events
+           return new EmptyPagingResults<CalendarEntry>();
+        }
+        
+        // Build our sorting, by date
+        // There is a limit on the number of filter and sorts, so we can't
+        //  do all that much sorting
+        List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName, Boolean>>();
+        sort.add(new Pair<QName, Boolean>(CalendarModel.PROP_FROM_DATE, true)); 
+        sort.add(new Pair<QName, Boolean>(CalendarModel.PROP_TO_DATE, true));
+        
+        // We only want calendar entries
+        Set<QName> types = new HashSet<QName>();
+        types.add(CalendarModel.TYPE_EVENT);
+        
+        // Filtering is OR based, so we can't filder on both IS_OUTLOOK and OUTLOOK_UID
+        // Luckily, OUTLOOK_UID implies IS_OUTLOOK
+        List<FilterProp> filters = new ArrayList<FilterProp>();
+        if (outlookUID != null)
+        {
+            // Filter by the UID, will get only outlook ones implicitly
+            filters.add(new FilterPropString(
+                    CalendarModel.PROP_OUTLOOK_UID, outlookUID, FilterTypeString.EQUALS
+            ));
+        }
+        else
+        {
+            // Find all Outlook ones
+            filters.add(new FilterPropBoolean(CalendarModel.PROP_IS_OUTLOOK, Boolean.TRUE));
+        }
+        
+        // Run the canned query
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(
+              container, null, null, types, filters, sort, paging);
+        
+        // Execute the canned query
+        CannedQueryResults<NodeRef> results = cq.execute();
+        return wrap(results, container);
+    }
+
     /**
      * Our class to wrap up paged results of NodeRefs as
      *  CalendarEntry instances

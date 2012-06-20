@@ -317,7 +317,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         ParameterCheck.mandatory("nodeTypeQName", nodeTypeQName);
         if(assocQName.getLocalName().length() > QName.MAX_LENGTH)
         {
-            throw new IllegalArgumentException("Localname is too long");
+            throw new IllegalArgumentException("Localname is too long. Length of " + 
+                 assocQName.getLocalName().length() + " exceeds the maximum of " + QName.MAX_LENGTH);
         }
         
         // Get the parent node

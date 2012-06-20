@@ -107,6 +107,7 @@ subprojects {
 	compileJava.doFirst {
 		explodeDeps.execute()
 	}
+	compileJava.options.encoding = 'UTF-8'
 	
 	jar.archiveName = jarFile
 	

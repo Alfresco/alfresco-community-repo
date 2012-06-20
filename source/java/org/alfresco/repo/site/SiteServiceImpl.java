@@ -457,7 +457,14 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     	
     	// Check that the site name isn't too long
     	// Authorities are limited to 100 characters by the PermissionService
-    	int maximumPermisionGroupLength = 100;
+        int longestPermissionLength = 0;
+        for (String permission : permissionService.getSettablePermissions(siteType))
+        {
+            if (permission.length() > longestPermissionLength)
+                longestPermissionLength = permission.length();
+        }
+        int maximumPermisionGroupLength = 99 - longestPermissionLength;
+
     	if (getSiteGroup(shortName, true).length() > maximumPermisionGroupLength)
     	{
     	    throw new SiteServiceException(MSG_SITE_SHORT_NAME_TOO_LONG, new Object[] {

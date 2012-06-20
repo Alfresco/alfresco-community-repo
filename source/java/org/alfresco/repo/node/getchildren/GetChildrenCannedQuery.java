@@ -490,6 +490,14 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                     }
                 }
             }
+            
+            if ((filterProp instanceof FilterPropBoolean) && (propVal instanceof Boolean))
+            {
+                Boolean val = (Boolean)propVal;
+                Boolean filter = (Boolean)filterProp.getPropVal();
+                
+                return (val == filter);
+            }
         }
         
         return false;

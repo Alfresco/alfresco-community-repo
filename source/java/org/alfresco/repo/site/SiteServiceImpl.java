@@ -132,6 +132,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     
     /** Messages */
     private static final String MSG_UNABLE_TO_CREATE = "site_service.unable_to_create";
+    private static final String MSG_SITE_SHORT_NAME_TOO_LONG = "site_service.short_name_too_long";
     private static final String MSG_VISIBILITY_GROUP_MISSING = "site_service.visibility_group_missing";
     private static final String MSG_CAN_NOT_UPDATE = "site_service.can_not_update";
     private static final String MSG_CAN_NOT_DELETE = "site_service.can_not_delete";
@@ -452,6 +453,16 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     	{
     		// Throw an exception since we have a duplicate site name
     		throw new SiteServiceException(MSG_UNABLE_TO_CREATE, new Object[]{shortName});
+    	}
+    	
+    	// Check that the site name isn't too long
+    	// Authorities are limited to 100 characters by the PermissionService
+    	int maximumPermisionGroupLength = 100;
+    	if (getSiteGroup(shortName, true).length() > maximumPermisionGroupLength)
+    	{
+    	    throw new SiteServiceException(MSG_SITE_SHORT_NAME_TOO_LONG, new Object[] {
+    	         shortName, maximumPermisionGroupLength - getSiteGroup("", true).length()
+    	    });
     	}
 
         // Get the site parent node reference

@@ -689,24 +689,57 @@ function processMultiValue(propName, propValue, operand, pseudo)
    return formQuery;
 }
 
+/**
+ * Resolve a root node reference to use as the Repository root for a search.
+ * 
+ * NOTE: see ParseArgs.resolveNode()
+ * 
+ * @method resolveRootNode
+ * @param reference {string} "virtual" nodeRef, nodeRef or xpath expressions
+ * @return {ScriptNode|null} Node corresponding to supplied expression. Returns null if node cannot be resolved.
+ */
 function resolveRootNode(reference)
 {
-   var node;
-   if (reference == "alfresco://company/home")
+   var node = null;
+   try
+   {
+      if (reference == "alfresco://company/home")
+      {
+         node = null;
+      }
+      else if (reference == "alfresco://user/home")
+      {
+         node = userhome;
+      }
+      else if (reference == "alfresco://sites/home")
+      {
+         node = companyhome.childrenByXPath("st:sites")[0];
+      }
+      else if (reference.indexOf("://") > 0)
+      {
+         if (reference.indexOf(":") < reference.indexOf("://"))
+         {
+            var newRef = "/" + reference.replace("://", "/");
+            var newRefNodes = search.xpathSearch(newRef);
+            node = search.findNode(String(newRefNodes[0].nodeRef));
+         }
+         else
+         {
+            node = search.findNode(reference);
+         }
+      }
+      else if (reference.substring(0, 1) == "/")
+      {
+         node = search.xpathSearch(reference)[0];
+      }
+      if (node === null)
+      {
+         logger.log("Unable to resolve specified root node reference: " + reference);
+      }
+   }
+   catch (e)
    {
       node = null;
-   }
-   else if (reference == "alfresco://user/home")
-   {
-      node = userhome;
-   }
-   else if (reference == "alfresco://sites/home")
-   {
-      node = companyhome.childrenByXPath("st:sites")[0];
-   }
-   else if (reference.indexOf("://") > 0)
-   {
-      node = search.findNode(reference);
    }
    return node;
 }
@@ -913,7 +946,7 @@ function getSearchResults(params)
       }
       
       // root node - generally used for overridden Repository root in Share
-      if (rootNode !== null)
+      if (params.repo && rootNode !== null)
       {
          ftsQuery = 'PATH:"' + rootNode.qnamePath + '//*" AND (' + ftsQuery + ')';
       }

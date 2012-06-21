@@ -24,11 +24,7 @@ function getDoclist()
 
    var favourites = Common.getFavourites(),
       node = parsedArgs.pathNode,
-      parent =
-      {
-         node: node.parent,
-         userAccess: Evaluator.run(node.parent, true).actionPermissions
-      };
+      parent = null;
 
    var isThumbnailNameRegistered = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME),
       thumbnail = null,
@@ -47,8 +43,13 @@ function getDoclist()
    };
 
    item.location.parent = {};
-   if (node.parent != null && node.parent.hasPermission("Read"))
+   if (node.parent != null && node.parent.isContainer && node.parent.hasPermission("Read"))
    {
+      parent =
+      {
+         node: node.parent,
+         userAccess: Evaluator.run(node.parent, true).actionPermissions
+      };
       item.location.parent.nodeRef = String(node.parent.nodeRef.toString());  
    }
 

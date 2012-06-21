@@ -233,7 +233,7 @@ function getNodeRefInputParams()
          storeId = url.templateArgs.store_id,
          id = url.templateArgs.id;
 
-      var nodeRef = storeType + "://" + storeId + "/" + id,
+      var nodeRef = storeType + "://" + storeId + (id == null ? "" : ("/" + id)),
          rootNode = ParseArgs.resolveNode(nodeRef);
 
       if (rootNode === null)
@@ -241,12 +241,18 @@ function getNodeRefInputParams()
          return "'" + nodeRef  + "' is not a valid nodeRef.";
       }
 
+      var rootNodeRef = String(rootNode.nodeRef);
+      if (rootNodeRef != nodeRef)
+      {
+         nodeRef = rootNodeRef;
+      }
+
       // Populate the return object
       params =
       {
          nodeRef: nodeRef,
          rootNode: rootNode
-      }
+      };
    }
    catch(e)
    {

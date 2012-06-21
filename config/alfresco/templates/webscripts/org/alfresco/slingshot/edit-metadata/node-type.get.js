@@ -21,7 +21,7 @@ function main()
 
    model.node = node;
    
-   if (node.parent !== null)
+   if (node.parent !== null && node.parent.hasPermission("ReadProperties"))
    {
       model.parent = node.parent;
    }

@@ -346,7 +346,16 @@ var ParseArgs =
          }
          else if (reference.indexOf("://") > 0)
          {
-            node = search.findNode(reference);
+            if (reference.indexOf(":") < reference.indexOf("://"))
+            {
+               var newRef = "/" + reference.replace("://", "/");
+               var newRefNodes = search.xpathSearch(newRef);
+               node = search.findNode(String(newRefNodes[0].nodeRef));
+            }
+            else
+            {
+               node = search.findNode(reference);
+            }
          }
          else if (reference.substring(0, 1) == "/")
          {

@@ -181,7 +181,7 @@ public class SearchContext implements Serializable
                }
                
                // prepend AND operator if supplied
-               if (operatorAND)
+               else
                {
               	 processSearchTextAttribute(nameAttr, text, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, plBuf);
                }
@@ -240,7 +240,7 @@ public class SearchContext implements Serializable
                      }
                      
                      // prepend AND operator if supplied
-                     if (operatorAND)
+                     else
                      {
                     	 processSearchTextAttribute(nameAttr, term, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, plBuf);
                      }
@@ -515,7 +515,7 @@ public class SearchContext implements Serializable
        }
    
        // prepend AND operator if supplied
-       if (operatorAND)
+       else
        {
   	     processSearchAttribute(qname, value, plBuf);
        } 

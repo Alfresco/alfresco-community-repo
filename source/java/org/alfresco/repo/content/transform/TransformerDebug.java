@@ -356,6 +356,21 @@ public class TransformerDebug
                 (explicit == null ? "" : explicit ? " EXPLICIT" : " not explicit"));
     }
     
+    public void activeTransformer(String sourceMimetype, String targetMimetype, 
+            int transformerCount, ContentTransformer transformer, long maxSourceSizeKBytes,
+            Boolean explicit, boolean firstTransformer)
+    {
+        String mimetypes = firstTransformer
+                ? getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype)
+                : spaces(10);
+        char c = (char)('a'+transformerCount);
+        log(mimetypes+
+                "  "+c+") "+getName(transformer)+' '+ms(transformer.getTransformationTime())+
+                ' '+fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
+                (maxSourceSizeKBytes == 0 || (explicit != null && !explicit) ? " disabled" : "")+ 
+                (explicit == null ? "" : explicit ? " EXPLICIT" : " not explicit"));
+    }
+    
     private int getLongestTransformerNameLength(List<ContentTransformer> transformers,
             Frame frame)
     {

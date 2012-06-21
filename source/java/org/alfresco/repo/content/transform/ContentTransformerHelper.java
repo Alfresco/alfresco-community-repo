@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,6 +37,7 @@ public class ContentTransformerHelper
 
     private MimetypeService mimetypeService;
     private List<ExplictTransformationDetails> explicitTransformations;
+    private List<SupportedTransformation> supportedTransformations;
 
     /**
      * 
@@ -44,6 +45,7 @@ public class ContentTransformerHelper
     public ContentTransformerHelper()
     {
         setExplicitTransformations(Collections.<ExplictTransformationDetails> emptyList());
+        setSupportedTransformations(null);
     }
 
     /**
@@ -64,9 +66,26 @@ public class ContentTransformerHelper
         return mimetypeService;
     }
 
+    /**
+     * Specifies transformations that are considered to be 'exceptional' so 
+     * should be used in preference to other transformers that can perform
+     * the same transformation.
+     */
     public void setExplicitTransformations(List<ExplictTransformationDetails> explicitTransformations)
     {
         this.explicitTransformations = explicitTransformations;
+    }
+
+    /**
+     * Restricts the transformations that may be performed even though the transformer
+     * may perform other transformations. An null value applies no additional  restrictions.
+     * Even if a list is specified, the
+     * {@link ContentTransformer#isTransformableMimetype(String, String, TransformationOptions)}
+     * method will still be called.
+     */
+    public void setSupportedTransformations(List<SupportedTransformation> supportedTransformations)
+    {
+        this.supportedTransformations = supportedTransformations;
     }
 
     /**
@@ -110,4 +129,22 @@ public class ContentTransformerHelper
         return result;
     }
 
+    public boolean isSupportedTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options)
+    {
+        boolean result = true;
+        if (supportedTransformations != null)
+        {
+            result = false;
+            for (SupportedTransformation suportedTransformation : supportedTransformations)
+            {
+                if (sourceMimetype.equals(suportedTransformation.getSourceMimetype()) == true
+                        && targetMimetype.equals(suportedTransformation.getTargetMimetype()) == true)
+                {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 }

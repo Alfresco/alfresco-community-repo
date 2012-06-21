@@ -174,6 +174,11 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype,
             TransformationOptions options)
     {
+        if (!isSupportedTransformation(sourceMimetype, targetMimetype, options))
+        {
+            return false;
+        }
+
         // Don't allow transformer to be its own child.
         if (parentTransformers.get().contains(this))
         {

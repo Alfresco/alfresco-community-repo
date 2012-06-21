@@ -776,22 +776,22 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) &&
             "debugTransformers.txt".equals(transformerDebug.getFileName(transformOptions, true, 0)))
         {
-            debugActiveTransformers();
+            Map<String, Set<String>> explicitTransforms = debugExplicitTransforms();
+            debugActiveTransformersByTransformer(explicitTransforms);
+            debugActiveTransformersByMimetypes(explicitTransforms);
         }
     }
     
     /**
      * Creates TransformerDebug that lists all the supported mimetype transformation for each transformer.
      */
-    private void debugActiveTransformers()
+    private void debugActiveTransformersByTransformer(Map<String, Set<String>> explicitTransforms)
     {
         try
         {
             transformerDebug.pushMisc();
             transformerDebug.debug("Active and inactive transformers");
             TransformationOptions options = new TransformationOptions();
-
-            Map<String, Set<String>> explicitTransforms = debugExplicitTransforms();
 
             for (ContentTransformer transformer: transformerRegistry.getTransformers())
             {
@@ -834,6 +834,62 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 finally
                 {
                     transformerDebug.popMisc();
+                }
+            }
+        }
+        finally
+        {
+            transformerDebug.popMisc();
+        }
+    }
+
+    /**
+     * Creates TransformerDebug that lists all available transformers for each mimetype combination.
+     */
+    private void debugActiveTransformersByMimetypes(Map<String, Set<String>> explicitTransforms)
+    {
+        try
+        {
+            transformerDebug.pushMisc();
+            transformerDebug.debug("Transformers for each mimetype combination");
+            TransformationOptions options = new TransformationOptions();
+
+            for (String sourceMimetype : mimetypeService.getMimetypes())
+            {
+                for (String targetMimetype : mimetypeService.getMimetypes())
+                {
+                    try
+                    {
+                        transformerDebug.pushMisc();
+                        int transformerCount = 0;
+                        for (ContentTransformer transformer: transformerRegistry.getTransformers())
+                        {
+                            if (transformer.isTransformable(sourceMimetype, -1, targetMimetype, options))
+                            {
+                                long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
+                                        sourceMimetype, targetMimetype, options);
+                                
+                                // Is this an explicit transform, ignored because there are explicit transforms
+                                // or does not have explicit transforms.
+                                Boolean explicit = transformer.isExplicitTransformation(sourceMimetype,
+                                        targetMimetype, options);
+                                if (!explicit)
+                                {
+                                    Set<String> targetMimetypes = explicitTransforms.get(sourceMimetype);
+                                    explicit = (targetMimetypes == null || !targetMimetypes.contains(targetMimetype))
+                                        ? null
+                                        : Boolean.FALSE;
+                                }
+                                transformerDebug.activeTransformer(sourceMimetype, targetMimetype,
+                                        transformerCount, transformer, maxSourceSizeKBytes, explicit,
+                                        transformerCount++ == 0);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        transformerDebug.popMisc();
+                    }
                 }
             }
         }

@@ -3233,4 +3233,25 @@
         </property>
     </bean>
 
+     <bean id="patch.show.audit" class="org.alfresco.repo.admin.patch.impl.UpdateAuditTemplatePatch" parent="basePatch" >
+        <property name="id"><value>patch.show.audit</value></property>
+        <property name="description"><value>patch.show.audit.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6011</value></property>
+        <property name="targetSchema"><value>6012</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+        <property name="copyPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}/cm:show_audit.ftl</value>
+        </property>
+        <property name="fileName">
+            <value>alfresco/templates/content/examples/show_audit.ftl</value>
+        </property>
+    </bean>
+
 </beans>

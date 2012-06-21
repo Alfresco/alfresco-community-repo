@@ -88,9 +88,11 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
     @Override
     public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
-        return // isTransformableSize must check the mimetype anyway
-            ((sourceSize >= 0) && isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options)) ||
-            ((sourceSize < 0) && isTransformableMimetype(sourceMimetype,targetMimetype, options));
+        return
+            isSupportedTransformation(sourceMimetype, targetMimetype, options) &&
+            // isTransformableSize must check the mimetype anyway
+            (((sourceSize >= 0) && isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options)) ||
+             ((sourceSize < 0) && isTransformableMimetype(sourceMimetype,targetMimetype, options)));
     }
 
     @Override

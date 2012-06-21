@@ -103,6 +103,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
         // though they cannot transform the source to the target mimetype.
 
         return
+            isSupportedTransformation(sourceMimetype, targetMimetype, options) &&
             isTransformableMimetype(sourceMimetype, targetMimetype, options) &&
             isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options);
     }
@@ -112,7 +113,6 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      * to the target mimetype.
      */
     @Override
-    @SuppressWarnings("deprecation")
     public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         return isTransformable(sourceMimetype, targetMimetype, options);

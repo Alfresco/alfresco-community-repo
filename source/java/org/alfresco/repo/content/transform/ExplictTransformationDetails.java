@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,38 +18,20 @@
  */
 package org.alfresco.repo.content.transform;
 
-public class ExplictTransformationDetails
+/**
+ * Specifies transformations that are considered to be 'exceptional' so 
+ * should be used in preference to other transformers that can perform
+ * the same transformation.
+ */
+public class ExplictTransformationDetails extends SupportedTransformation
 {
-    private String sourceMimetype;
-    private String targetMimetype;
-    
     public ExplictTransformationDetails()
     {
+        super();
     }
     
     public ExplictTransformationDetails(String sourceMimetype, String targetMimetype)
     {
-        this.sourceMimetype = sourceMimetype;
-        this.targetMimetype = targetMimetype;
-    }
-    
-    public void setSourceMimetype(String sourceMimetype)
-    {
-        this.sourceMimetype = sourceMimetype;
-    }
-    
-    public String getSourceMimetype()
-    {
-        return sourceMimetype;
-    }
-    
-    public void setTargetMimetype(String targetMimetype)
-    {
-        this.targetMimetype = targetMimetype;
-    }
-    
-    public String getTargetMimetype()
-    {
-        return targetMimetype;
+        super(sourceMimetype, targetMimetype);
     }
 }

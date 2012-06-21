@@ -42,6 +42,7 @@ import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
 import org.alfresco.repo.security.permissions.PermissionCheckedValue.PermissionCheckedValueMixin;
 import org.alfresco.service.Auditable;
@@ -1304,7 +1305,7 @@ public class FileFolderServiceImpl implements FileFolderService
             {
                 // ignore everything down to the root
                 Path.ChildAssocElement assocElement = (Path.ChildAssocElement) element;
-                NodeRef childNodeRef = assocElement.getRef().getChildRef();
+                final NodeRef childNodeRef = assocElement.getRef().getChildRef();
                 if (childNodeRef.equals(rootNodeRef))
                 {
                     // just found the root - but we don't put in an entry for it
@@ -1317,7 +1318,14 @@ public class FileFolderServiceImpl implements FileFolderService
                     continue;
                 }
                 // we found the root and expect to be building the path up
-                FileInfo pathInfo = toFileInfo(childNodeRef, true);
+                //Run as system as the user could not have access to all folders in the path, see ALF-13816
+                FileInfo pathInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<FileInfo>()
+                {
+                  public FileInfo doWork() throws Exception
+                  {
+                    return toFileInfo(childNodeRef, true);
+                  }
+                }, AuthenticationUtil.getSystemUserName());
                 
                 // we can't append a path element to the results if there is already a (non-folder) file at the tail
                 // since this would result in a path anomoly - file's cannot contain other files.

@@ -34,6 +34,7 @@ import org.alfresco.query.EmptyCannedQueryResults;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.discussion.cannedqueries.GetDiscussionTopcisWithPostsCannedQuery;
 import org.alfresco.repo.discussion.cannedqueries.GetDiscussionTopcisWithPostsCannedQueryFactory;
 import org.alfresco.repo.discussion.cannedqueries.NodeWithChildrenEntity;
@@ -389,8 +390,9 @@ public class DiscussionServiceImpl implements DiscussionService
        // Store the content
        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
        writer.setEncoding("UTF-8");
+       writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
        writer.putContent(contents);
-             
+       
        // Generate the wrapping object for it
        // Build it that way, so creator and created date come through
        return buildPost(nodeRef, topic, name, contents);

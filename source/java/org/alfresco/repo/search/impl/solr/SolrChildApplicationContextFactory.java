@@ -104,21 +104,21 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
                 Date now = new Date();
 
                 JSONObject alfresco = summary.getJSONObject("alfresco");
-                String alfrescoLag = alfresco.getString("Lag");
+                String alfrescoLag = alfresco.getString("TX Lag");
                 String alfrescoActive = alfresco.getString("Active");
-                String alfrescoDuration = alfresco.getString("Duration");
+                String alfrescoDuration = alfresco.getString("TX Duration");
                 String alfrescoLastIndexedTxn = alfresco.getString("Id for last TX in index");
                 String alfrescoApproxTxnsReminaing = alfresco.getString("Approx transactions remaining");
-                String alfrescoApproxIndexingTimeReminaing = alfresco.getString("Approx indexing time remaining");
+                String alfrescoApproxIndexingTimeReminaing = alfresco.getString("Approx transaction indexing time remaining");
                
 
                 JSONObject archive = summary.getJSONObject("archive");
-                String archiveLag = archive.getString("Lag");
+                String archiveLag = archive.getString("TX Lag");
                 String archiveActive = archive.getString("Active");
-                String archiveDuration = archive.getString("Duration");
+                String archiveDuration = archive.getString("TX Duration");
                 String archiveLastIndexedTxn = archive.getString("Id for last TX in index");
                 String archiveApproxTxnsReminaing = archive.getString("Approx transactions remaining");
-                String archiveApproxIndexingTimeReminaing = archive.getString("Approx indexing time remaining");
+                String archiveApproxIndexingTimeReminaing = archive.getString("Approx transaction indexing time remaining");
 
                 if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE))
                 {

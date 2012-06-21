@@ -793,6 +793,9 @@ public class Search extends BaseScopableProcessorExtension
     {   
         Collection<ScriptNode> set = null;
         
+        if (logger.isDebugEnabled())
+           logger.debug("query=" + sp.getQuery() + " limit=" + sp.getLimit());
+        
         // perform the search against the repo
         ResultSet results = null;
         try

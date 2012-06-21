@@ -51,7 +51,8 @@ import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
 import org.alfresco.repo.search.QueryParameterDefImpl;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tagging.script.TagScope;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
@@ -484,21 +485,37 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             // The current node is a folder e.g. Company Home and standard child folders.
             // optimized code path for cm:folder and sub-types supporting getChildrenByName() method
             NodeRef result = null;
-            StringTokenizer t = new StringTokenizer(path, "/");
+            final StringTokenizer t = new StringTokenizer(path, "/");
             if (t.hasMoreTokens())
             {
                 result = this.nodeRef;
                 while (t.hasMoreTokens() && result != null)
                 {
-                    String name = t.nextToken();
-                    try
+                    final String name = t.nextToken();
+                    final NodeRef lastName = result;
+                    result = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
                     {
-                        result = this.nodeService.getChildByName(result, ContentModel.ASSOC_CONTAINS, name);
-                    }
-                    catch (AccessDeniedException ade)
-                    {
-                        result = null;
-                    }
+                        @Override
+                        public NodeRef doWork() throws Exception
+                        {
+                            NodeRef child = null;
+                            if (t.hasMoreTokens())
+                            {
+                                // allow traversal of a cm:name based path even if user cannot retrieve the node directly
+                                child = nodeService.getChildByName(lastName, ContentModel.ASSOC_CONTAINS, name);
+                            }
+                            else
+                            {
+                                // final node must be accessible to the user via the usual ACL permission checks
+                                child = nodeService.getChildByName(lastName, ContentModel.ASSOC_CONTAINS, name);
+                                if (child != null && AccessStatus.ALLOWED != services.getPermissionService().hasPermission(child, PermissionService.READ_PROPERTIES))
+                                {
+                                    child = null;
+                                }
+                            }
+                            return child;
+                        }
+                    });
                 }
             }
             

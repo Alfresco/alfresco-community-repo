@@ -70,7 +70,17 @@ public class LoginPost extends AbstractLoginBean
                 throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Password not specified");
             }
 
-            return login(username, password);
+            try
+            {
+                return login(username, password);
+            }
+            catch(WebScriptException e)
+            {
+                status.setCode(e.getStatus());
+                status.setMessage(e.getMessage());
+                status.setRedirect(true);
+                return null;
+            }
         } 
         catch (JSONException jErr)
         {

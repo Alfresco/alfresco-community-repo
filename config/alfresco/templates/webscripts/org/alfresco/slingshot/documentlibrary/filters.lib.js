@@ -152,18 +152,16 @@ var Filters =
             break;
 
          case "editingMe":
-            filterQuery = this.constructPathQuery(parsedArgs);
-            filterQuery += " +((+ASPECT:\"workingcopy\"";
-            filterQuery += " +@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
+            filterQuery = this.constructPathQuery(parsedArgs, true);
+            filterQuery += " +((+@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
             filterQuery += " OR (+@cm\\:lockOwner:\"" + person.properties.userName + '"';
             filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
             filterParams.query = filterQuery;
             break;
 
          case "editingOthers":
-            filterQuery = this.constructPathQuery(parsedArgs);
-            filterQuery += " +((+ASPECT:\"workingcopy\"";
-            filterQuery += " -@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
+            filterQuery = this.constructPathQuery(parsedArgs, true);
+            filterQuery += " +((-@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
             filterQuery += " OR (-@cm\\:lockOwner:\"" + person.properties.userName + '"';
             filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
             filterParams.query = filterQuery;
@@ -238,12 +236,12 @@ var Filters =
       return filterParams;
    },
    
-   constructPathQuery: function constructPathQuery(parsedArgs)
+   constructPathQuery: function constructPathQuery(parsedArgs, cmonly)
    {
       var pathQuery = "";
       if (parsedArgs.nodeRef != "alfresco://company/home")
       {
-         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
+         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//' + (cmonly ? 'cm:' : '') + '*"';
       }
       return pathQuery;
    }

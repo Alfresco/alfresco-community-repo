@@ -36,12 +36,17 @@ function tagQuery()
    }
    
    /* Query for tagged node(s) */
-   var query = "PATH:\"" + node.qnamePath;
-   if (node.isContainer)
+   var query = "";
+   if (node !== companyhome)
    {
-      query += "//*";
+      query = "PATH:\"" + node.qnamePath;
+      if (node.isContainer)
+      {
+         query += "//*";
+      }
+      query += "\" AND ";
    }
-   query += "\" AND ASPECT:\"{http://www.alfresco.org/model/content/1.0}taggable\"";
+   query += "ASPECT:\"{http://www.alfresco.org/model/content/1.0}taggable\"";
    
    var taggedNodes = search.luceneSearch(query);
 

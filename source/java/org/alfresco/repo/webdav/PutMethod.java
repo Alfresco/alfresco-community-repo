@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.webdav.WebDavService;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.URLDecoder;
 
 /**
  * Implements the WebDAV PUT method
@@ -110,7 +111,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                         FileInfo contentNodeInfo = null;
                         try
                         {
-                            contentNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
+                            contentNodeInfo = getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
                             checkNode(contentNodeInfo);
                             final NodeRef nodeRef = contentNodeInfo.getNodeRef();
                             if (getNodeService().hasAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
@@ -155,7 +156,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         // Get the status for the request path
         try
         {
-            contentNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
+            contentNodeInfo = getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
             // make sure that we are not trying to use a folder
             if (contentNodeInfo.isFolder())
             {
@@ -171,7 +172,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             String[] paths = getDAVHelper().splitPath(getPath());
             try
             {
-                FileInfo parentNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), paths[0], getServletPath());
+                FileInfo parentNodeInfo = getNodeForPath(getRootNodeRef(), paths[0], getServletPath());
                 // create file
                 contentNodeInfo = fileFolderService.create(parentNodeInfo.getNodeRef(), paths[1], ContentModel.TYPE_CONTENT);
                 created = true;
@@ -334,7 +335,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
      * 
      * @throws WebDAVServerException 
      */
-    private void postActivity() throws WebDAVServerException
+    protected void postActivity() throws WebDAVServerException
     {
         WebDavService davService = getDAVHelper().getServiceRegistry().getWebDavService();
         if (!davService.activitiesEnabled())
@@ -356,7 +357,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         FileInfo contentNodeInfo = null;
         try
         {
-            contentNodeInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), path, getServletPath());
+            contentNodeInfo = getNodeForPath(getRootNodeRef(), path, getServletPath());
             NodeRef nodeRef = contentNodeInfo.getNodeRef();
             // Don't post activity data for hidden files, resource forks etc.
             if (!getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))

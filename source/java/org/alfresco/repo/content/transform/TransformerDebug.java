@@ -687,14 +687,14 @@ public class TransformerDebug
         if (mimetypeService == null)
         {
             sb.append(mimetype);
-            sb.append(' ');
         }
         else
         {
             String mimetypeExt = mimetypeService.getExtension(mimetype);
             sb.append(mimetypeExt);
-            sb.append(spaces(5-mimetypeExt.length()));   // Pad to normal max ext (4) plus 1
+            sb.append(spaces(4-mimetypeExt.length()));   // Pad to normal max ext (4)
         }
+        sb.append(' ');
         return sb.toString();
     }
     

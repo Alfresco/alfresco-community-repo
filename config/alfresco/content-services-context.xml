@@ -379,6 +379,22 @@
       </property>
    </bean>
    
+   <bean  id="transformer.double.ImageMagick"
+      class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+      parent="unregisteredBaseContentTransformer">
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.ImageMagick" />
+            <ref bean="transformer.ImageMagick" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>image/png</value>
+         </list>
+      </property>
+   </bean>
+
    <!-- Supports the same transformations as the previous version by using either a single
         ImageMagick transformation to png or two ImageMagick transformation via png. -->
    <bean id="transformer.complex.PDF.Image"
@@ -389,7 +405,7 @@
             <!-- Requires a single ImageMagick transformation.
                  Not used unless called as part of another transformer as
                  the ImageMagick transformation declares this as EXPLICIT
-                 so take priority. -->
+                 so takes priority. -->
             <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
                 <property name="sourceMimetype"><value>application/pdf</value></property>
                 <property name="targetMimetype"><value>image/png</value></property>
@@ -402,6 +418,14 @@
             <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
                 <property name="sourceMimetype"><value>application/pdf</value></property>
                 <property name="targetMimetype"><value>image/jp2</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/pdf</value></property>
+                <property name="targetMimetype"><value>image/vnd.adobe.photoshop</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/pdf</value></property>
+                <property name="targetMimetype"><value>image/vnd.adobe.premiere</value></property>
             </bean>
             <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
                 <property name="sourceMimetype"><value>application/pdf</value></property>
@@ -484,28 +508,110 @@
      <property name="transformers">
         <list>
            <ref bean="transformer.ImageMagick"/>
-           
-           <bean class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-                parent="unregisteredBaseContentTransformer" >
-              <property name="transformers">
-                 <list>
-                    <ref bean="transformer.ImageMagick" />
-                    <ref bean="transformer.ImageMagick" />
-                 </list>
-              </property>
-              <property name="intermediateMimetypes">
-                 <list>
-                    <value>image/png</value>
-                 </list>
-              </property>
-           </bean>
+           <ref bean="transformer.double.ImageMagick"/>
         </list>
      </property>  
    </bean>
    
-   <!-- Recent Adobe Illustrator files are, in fact, PDF files -->
-   <bean id="transformer.complex.AdobeIllustrator.Image" class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-         parent="baseContentTransformer">
+   <!-- Adobe Illustrator files are, in fact, PDF files -->
+   <!-- Supports the same transformations as the previous version by using either a single
+        ImageMagick transformation to png or two ImageMagick transformation via png. -->
+   <bean id="transformer.complex.AdobeIllustrator.Image"
+        class="org.alfresco.repo.content.transform.FailoverContentTransformer"
+        parent="baseContentTransformer" >
+      <property name="supportedTransformations">
+         <list>
+            <!-- Requires a single ImageMagick transformation.
+                 Not used unless called as part of another transformer as
+                 the ImageMagick transformation declares this as EXPLICIT
+                 so takes priority. -->
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/png</value></property>
+            </bean>
+            <!-- Requires a double ImageMagick transformation via png -->
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>application/eps</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/jp2</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/vnd.adobe.photoshop</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/vnd.adobe.premiere</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/cgm</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/gif</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/ief</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/bmp</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/jpeg</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-portable-bitmap</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-portable-graymap</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-portable-anymap</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-portable-pixmap</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-cmu-raster</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/tiff</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-xbitmap</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-xpixmap</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-xwindowdump</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-dwg</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
+                <property name="targetMimetype"><value>image/x-dwt</value></property>
+            </bean>
+         </list>
+      </property>
       <property name="explicitTransformations">
          <list>
             <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
@@ -514,27 +620,18 @@
             </bean>
             <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
                 <property name="sourceMimetype"><value>application/illustrator</value></property>
-                <property name="targetMimetype"><value>image/png</value></property>
-            </bean>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
-                <property name="sourceMimetype"><value>application/illustrator</value></property>
                 <property name="targetMimetype"><value>image/gif</value></property>
             </bean>
          </list>
       </property>  
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.PdfToImage" />
-            <ref bean="transformer.ImageMagick" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>image/png</value>
-         </list>
-      </property>
+     <property name="transformers">
+        <list>
+           <ref bean="transformer.ImageMagick"/>
+           <ref bean="transformer.double.ImageMagick"/>
+        </list>
+     </property>  
    </bean>
-   
+
    <bean id="transformer.complex.iWorks.Image"
          class="org.alfresco.repo.content.transform.ComplexContentTransformer"
          parent="baseContentTransformer">
@@ -877,6 +974,10 @@
          <list>
             <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
                 <property name="sourceMimetype"><value>application/pdf</value></property>
+                <property name="targetMimetype"><value>image/png</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>application/illustrator</value></property>
                 <property name="targetMimetype"><value>image/png</value></property>
             </bean>
          </list>

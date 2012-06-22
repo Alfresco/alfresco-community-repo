@@ -182,8 +182,10 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         }
         
         // Add limited support (so lots of other transforms are not supported) for PDF to PNG. An ALF-14303 workaround.
-        // Will only be used as part of failover transformer.PdfToImage
-        if (sourceMimetype.equals(MimetypeMap.MIMETYPE_PDF) && targetMimetype.equals(MimetypeMap.MIMETYPE_IMAGE_PNG))
+        // Will only be used as part of failover transformer.PdfToImage. Note .ai is the same format as .pdf
+        if ( (MimetypeMap.MIMETYPE_PDF.equals(sourceMimetype) ||
+              MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR.equals(sourceMimetype)) &&
+              MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype))
         {
             return true; // ALF-14303 workaround
         }

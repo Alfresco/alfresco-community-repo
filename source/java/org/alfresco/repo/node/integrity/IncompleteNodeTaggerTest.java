@@ -25,7 +25,6 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.util.HrefBearingRequestPathNameMatcher;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;

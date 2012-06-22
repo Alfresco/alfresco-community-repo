@@ -104,7 +104,7 @@ var Filters =
       switch (String(filter))
       {
          case "all":
-            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//cm:*\"";
+            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
             filterQuery += " +TYPE:\"cm:content\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;
@@ -154,8 +154,7 @@ var Filters =
 
          case "editingMe":
             filterQuery = this.constructPathQuery(parsedArgs);
-            filterQuery += " +((+ASPECT:\"workingcopy\"";
-            filterQuery += " +@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
+            filterQuery += " +((+@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
             filterQuery += " OR (+@cm\\:lockOwner:\"" + person.properties.userName + '"';
             filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
             filterParams.query = filterQuery;
@@ -163,8 +162,7 @@ var Filters =
 
          case "editingOthers":
             filterQuery = this.constructPathQuery(parsedArgs);
-            filterQuery += " +((+ASPECT:\"workingcopy\"";
-            filterQuery += " -@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
+            filterQuery += " +((-@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
             filterQuery += " OR (-@cm\\:lockOwner:\"" + person.properties.userName + '"';
             filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
             filterParams.query = filterQuery;

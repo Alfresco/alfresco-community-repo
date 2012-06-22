@@ -19,14 +19,15 @@ function main()
       return;
    }
    
-   // Use the "all" filter and an "images" type
-   parsedArgs.type = "images";
+   // Build the query specific to image/* mimetypes
    filterParams = Filters.getFilterParams("all", parsedArgs);
+   query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" " +
+           "+TYPE:\"cm:content\" +@cm\\:content.mimetype:image/*";
    
    // Sort the list before trimming to page chunks 
    assets = search.query(
    {
-      query: filterParams.query,
+      query: query,
       page:
       {
          maxItems: (filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : 0)
@@ -36,7 +37,7 @@ function main()
    
    return (
    {
-      luceneQuery: filterParams.query,
+      luceneQuery: query,
       items: assets
    });
 }

@@ -103,7 +103,7 @@ var Filters =
       switch (String(filter))
       {
          case "all":
-            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//cm:*\"";
+            filterQuery = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\"";
             filterQuery += " +TYPE:\"cm:content\"";
             filterParams.query = filterQuery + filterQueryDefaults;
             break;

@@ -31,7 +31,7 @@ function runAction(p_params)
             return;
          }
       }
-      else if (node.isLocked && !node.hasAspect("trx:transferred"))
+      else if (p_params.destNode.isLocked && !p_params.destNode.hasAspect("trx:transferred"))
       {
          // ...or, if the node is locked then just unlock it...
          p_params.destNode.unlock();

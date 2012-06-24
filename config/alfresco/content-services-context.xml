@@ -973,6 +973,10 @@
       <property name="explicitTransformations">
          <list>
             <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>image/png</value></property>
+                <property name="targetMimetype"><value>image/png</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
                 <property name="sourceMimetype"><value>application/pdf</value></property>
                 <property name="targetMimetype"><value>image/png</value></property>
             </bean>

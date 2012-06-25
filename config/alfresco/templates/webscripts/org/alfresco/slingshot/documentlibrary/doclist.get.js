@@ -217,7 +217,7 @@ function getDoclist()
             };
          }
          location.parent = {};
-         if (node.parent != null && node.parent.hasPermission("Read"))
+         if (node.parent != null && node.parent.isContainer && node.parent.hasPermission("Read"))
          {
             location.parent.nodeRef = String(node.parent.nodeRef.toString());  
          }

@@ -182,7 +182,7 @@ var Filters =
             {
                filterQuery = "+(" + filterQuery + ")";
                // no need to specify path here for all sites - IDs are exact matches
-               if (parsedArgs.nodeRef != "alfresco://sites/home")
+               if (parsedArgs.nodeRef != "alfresco://sites/home" && parsedArgs.nodeRef != "alfresco://company/home")
                {
                   filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
                }

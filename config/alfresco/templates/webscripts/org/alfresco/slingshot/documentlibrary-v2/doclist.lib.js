@@ -196,7 +196,7 @@ function doclist_main()
             if (!locationNode.hasPermission("Read")) break;
             location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
             // Parent node
-            if (node.parent != null && node.parent.hasPermission("Read"))
+            if (node.parent != null && node.parent.isContainer && node.parent.hasPermission("Read"))
             {
                item.parent = Evaluator.run(node.parent, true);
             }

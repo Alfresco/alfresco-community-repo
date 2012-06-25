@@ -873,9 +873,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
                                     + "'. This group will in future be assumed to originate from user registry '"
                                     + zone + "'.");
                         }
-                        ChainingUserRegistrySynchronizer.this.authorityService.removeAuthorityFromZones(groupName,
-                                groupZones);
-                        ChainingUserRegistrySynchronizer.this.authorityService.addAuthorityToZones(groupName, zoneSet);
+                        updateAuthorityZones(groupName, groupZones, zoneSet);
 
                         // The group now exists in this zone: update the group
                         updateGroup(group, true);

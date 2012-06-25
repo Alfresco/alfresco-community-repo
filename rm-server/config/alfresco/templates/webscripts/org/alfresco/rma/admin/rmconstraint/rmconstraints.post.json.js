@@ -19,7 +19,7 @@ function main()
       {
          for (var x = 0; x < values.length(); x++)
          {  
-            allowedValues[i++] = values.get(x);            
+            allowedValues[i++] = values.get(x);
          }
       }
    }
@@ -38,10 +38,33 @@ function main()
       title = name;
    }
    
-   var constraint = caveatConfig.createConstraint(name, title, allowedValues);
+
+   var constraints = caveatConfig.allConstraints;
    
-   // Pass the constraint detail to the template
-   model.constraint = constraint;
+   // Check for existing constraint...
+   var alreadyExists = false;
+   for (var i=0; i<constraints.length; i++)
+   {
+      var currTitle = constraints[i].title;
+      if (currTitle + "" == title)
+      {
+         alreadyExists = true;
+         break;
+      }
+   }
+   
+   var existingConstraint = caveatConfig.getConstraint(title);
+   if (!alreadyExists)
+   {
+      var constraint = caveatConfig.createConstraint(name, title, allowedValues);
+      model.constraint = constraint;
+   }
+   else
+   {
+      status.code = 400;
+      model.errorMessage = "rm.admin.list-already-exists";
+      model.title = title;
+   }
 }
 
 main();

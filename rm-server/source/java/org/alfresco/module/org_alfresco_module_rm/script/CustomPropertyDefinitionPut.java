@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.CustomMetadataException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -49,6 +50,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
     private static final String PARAM_CONSTRAINT_REF = "constraintRef";
     private static final String PROP_ID = "propId";
     private static final String URL = "url";
+    private static final String MESSAGE = "errorMessage";
 
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
@@ -63,8 +65,16 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         try
         {
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
-            ftlModel = handlePropertyDefinitionUpdate(req, json);
+            try
+            {
+                ftlModel = handlePropertyDefinitionUpdate(req, json);
+            }
+            catch (CustomMetadataException e)
+            {
+                status.setCode(Status.STATUS_BAD_REQUEST);
+                ftlModel = new HashMap<String, Object>();
+                ftlModel.put(MESSAGE, e.getMessage());
+            }
         }
         catch (IOException iox)
         {
@@ -82,9 +92,10 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
 
     /**
      * Applies custom properties.
+     * @throws CustomMetadataException 
      */
     protected Map<String, Object> handlePropertyDefinitionUpdate(WebScriptRequest req, JSONObject json)
-            throws JSONException
+            throws JSONException, CustomMetadataException
     {
         Map<String, Object> result = new HashMap<String, Object>();
         
@@ -109,8 +120,9 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
      * 
      * @param params
      * @return
+     * @throws CustomMetadataException 
      */
-    protected QName updatePropertyDefinition(Map<String, Serializable> params)
+    protected QName updatePropertyDefinition(Map<String, Serializable> params) throws CustomMetadataException
     {
         QName result = null;
         
@@ -127,7 +139,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         if (params.containsKey(PARAM_LABEL))
         {
             String label = (String)params.get(PARAM_LABEL);
-            result = rmAdminService.setCustomPropertyDefinitionLabel(propQName, label);
+            result = rmAdminService.updateCustomPropertyDefinitionName(propQName, label);
         }
 
         if (params.containsKey(PARAM_CONSTRAINT_REF))

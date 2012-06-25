@@ -679,6 +679,7 @@
 				org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.existsCustomProperty=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomPropertyDefinitions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.addCustomPropertyDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.updateCustomPropertyDefinitionName=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.setCustomPropertyDefinitionLabel=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.setCustomPropertyDefinitionConstraint=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.removeCustomPropertyDefinitionConstraints=RM_ALLOW

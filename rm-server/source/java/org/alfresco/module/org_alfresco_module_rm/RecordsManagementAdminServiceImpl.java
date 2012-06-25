@@ -750,6 +750,47 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     }
 
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#updateCustomPropertyDefinitionName(org.alfresco.service.namespace.QName, java.lang.String)
+     */
+    public QName updateCustomPropertyDefinitionName(QName propQName, String newName) throws CustomMetadataException
+    {
+        ParameterCheck.mandatory("propQName", propQName);
+        
+        PropertyDefinition propDefn = dictionaryService.getProperty(propQName);
+        if (propDefn == null)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PROP_EXIST, propQName));
+        }
+        
+        if (newName == null) return propQName;
+        
+        QName newPropQName = getQNameForClientId(newName);
+        propDefn = dictionaryService.getProperty(newPropQName);
+        if (propDefn != null)
+        {
+            // The requested QName is already in use
+            String propIdAsString = newPropQName.toPrefixString(namespaceService);
+            throw new PropertyAlreadyExistsMetadataException(propIdAsString);
+        }
+        
+        NodeRef modelRef = getCustomModelRef(propQName.getNamespaceURI());
+        M2Model deserializedModel = readCustomContentModel(modelRef);
+        
+        M2Property targetProperty = findProperty(propQName, deserializedModel);
+        targetProperty.setName(newName);
+        targetProperty.setTitle(newName);
+        writeCustomContentModel(modelRef, deserializedModel);
+        
+        if (logger.isInfoEnabled())
+        {
+            logger.info("setCustomPropertyDefinitionLabel: "+propQName+
+                    "=" + newName);
+        }
+        
+        return propQName;
+    }
+    
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#setCustomPropertyDefinitionLabel(org.alfresco.service.namespace.QName, java.lang.String)
      */
     public QName setCustomPropertyDefinitionLabel(QName propQName, String newLabel)
@@ -763,7 +804,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         }
         
         if (newLabel == null) return propQName;
-        
+
         NodeRef modelRef = getCustomModelRef(propQName.getNamespaceURI());
         M2Model deserializedModel = readCustomContentModel(modelRef);
         

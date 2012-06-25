@@ -185,8 +185,17 @@ public interface RecordsManagementAdminService
      * @param newLabel the new value for the label.
      * @return the propId.
      */
-    public QName setCustomPropertyDefinitionLabel(QName propQName, String newLabel);
+    public QName setCustomPropertyDefinitionLabel(QName propQName, String newLabel) throws PropertyAlreadyExistsMetadataException;
 
+    /**
+     * Update the name and label of the custom property definition.
+     * @param propQName The qname of the existing property definition
+     * @param newName THe new name for both the custom property and its label.
+     * @return
+     * @throws CustomMetadataException
+     */
+    public QName updateCustomPropertyDefinitionName(QName propQName, String newName) throws CustomMetadataException;
+    
     /**
      * Sets a new list of values constraint on the custom property definition.
      * 

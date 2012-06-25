@@ -317,8 +317,11 @@
                 org.alfresco.service.cmr.repository.NodeService.getPaths=ACL_NODE.0.sys:base.ReadProperties,RM.Read.0
                 org.alfresco.service.cmr.repository.NodeService.getStoreArchiveNode=ACL_NODE.0.sys:base.Read,RM_ABSTAIN 
                 org.alfresco.service.cmr.repository.NodeService.restoreNode=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren,RM_ABSTAIN
-                org.alfresco.service.cmr.repository.NodeService.getChildAssocsWithoutParentAssocsOfType=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_NODE.sys:base.ReadProperties,RM_ABSTAIN 
-                org.alfresco.service.cmr.repository.NodeService.*=ACL_DENY,RM_DENY 
+                org.alfresco.service.cmr.repository.NodeService.getChildAssocsWithoutParentAssocsOfType=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_NODE.sys:base.ReadProperties,RM_ABSTAIN
+                org.alfresco.service.cmr.repository.NodeService.getNodeRef=AFTER_ACL_NODE.sys:base.ReadProperties,RM.Read.0
+                org.alfresco.service.cmr.repository.NodeService.getChildAssocsByPropertyValue=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties,RM.Read.0,AFTER_RM.FilterNode 
+                org.alfresco.service.cmr.repository.NodeService.countChildAssocs=ACL_NODE.0.sys:base.ReadChildren,RM.Read.0
+                org.alfresco.service.cmr.repository.NodeService.*=ACL_DENY,RM_DENY                                
                 ]]>
             </value>
         </property>

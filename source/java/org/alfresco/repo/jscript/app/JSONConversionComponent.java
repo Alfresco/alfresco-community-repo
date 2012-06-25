@@ -5,6 +5,7 @@ package org.alfresco.repo.jscript.app;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -262,6 +263,57 @@ public class JSONConversionComponent
     }
     
     /**
+     * Handles the work of converting values to JSON.
+     * 
+     * @param nodeRef
+     * @param propertyName
+     * @param key
+     * @param value
+     * @return the JSON value
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected Object propertyToJSON(NodeRef nodeRef, QName propertyName, String key, Serializable value)
+    {
+    	if (value != null)
+        {
+            // Has a decorator has been registered for this property?
+            if (propertyDecorators.containsKey(propertyName) == true)
+            {
+                JSONAware jsonAware = propertyDecorators.get(propertyName).decorate(propertyName, nodeRef, value);
+                if (jsonAware != null)
+                {
+                	return jsonAware;
+                }
+            }
+            else
+            {
+                // Built-in data type processing
+                if (value instanceof Date)
+                {
+                    JSONObject dateObj = new JSONObject();
+                    dateObj.put("value", JSONObject.escape(value.toString()));
+                    dateObj.put("iso8601", JSONObject.escape(ISO8601DateFormat.format((Date)value)));
+                    return dateObj;
+                }
+                else if (value instanceof List)
+                {
+                	// Convert the List to a JSON list by recursively calling propertyToJSON
+                	List jsonList = new ArrayList(((List) value).size());
+                	for (Object listItem : (List) value) {
+						jsonList.add(propertyToJSON(nodeRef, propertyName, key, (Serializable) listItem));
+					}
+                	return jsonList;
+                }
+                else
+                {
+                	return value.toString();
+                }
+            }
+        }
+    	return null;
+    }
+    
+    /**
      * 
      * @param nodeRef
      * @param useShortQNames
@@ -280,42 +332,8 @@ public class JSONConversionComponent
             {
                 String key = nameToString(propertyName, useShortQNames);
                 Serializable value = properties.get(propertyName);
-
-                if (value != null)
-                {
-                    // Has a decorator has been registered for this property?
-                    if (propertyDecorators.containsKey(propertyName) == true)
-                    {
-                        JSONAware jsonAware = propertyDecorators.get(propertyName).decorate(propertyName, nodeRef, value);
-                        if (jsonAware != null)
-                        {
-                            propertiesJSON.put(key, jsonAware);
-                        }
-                    }
-                    else
-                    {
-                        // Built-in data type processing
-                        if (value instanceof Date)
-                        {
-                            JSONObject dateObj = new JSONObject();
-                            dateObj.put("value", JSONObject.escape(value.toString()));
-                            dateObj.put("iso8601", JSONObject.escape(ISO8601DateFormat.format((Date)value)));
-                            propertiesJSON.put(key, dateObj);
-                        }
-                        else if (value instanceof List)
-                        {
-                            propertiesJSON.put(key, value);
-                        }
-                        else
-                        {
-                            propertiesJSON.put(key, value.toString());
-                        }
-                    }
-                }
-                else
-                {
-                    propertiesJSON.put(key, null);
-                }
+                
+                propertiesJSON.put(key, propertyToJSON(nodeRef, propertyName, key, value));
             }
             catch (NamespaceException ne)
             {

@@ -250,6 +250,34 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
         boolean result = true;
         String currentSourceMimetype = sourceMimetype;
         Iterator<ContentTransformer> transformerIterator = transformers.iterator();
+
+        // When using a wild card (null) intermediate transformer, don't
+        // say we support a transformation that one of the none null intermediate
+        // transformers can do on its own, to avoid double transformations.
+        // Not done when there are no wild card transformers, as there are cases
+        // where it makes sense to go via an intermediate format (quality/speed).
+        while (transformerIterator.hasNext())
+        {
+            ContentTransformer transformer = transformerIterator.next();
+            if (transformer == null)
+            {
+                transformerIterator = transformers.iterator();
+                while (transformerIterator.hasNext())
+                {
+                    transformer = transformerIterator.next();
+                    if (transformer != null)
+                    {
+                        if (transformer.isTransformableMimetype(sourceMimetype, targetMimetype, options))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        
+        transformerIterator = transformers.iterator();
         Iterator<String> intermediateMimetypeIterator = intermediateMimetypes.iterator();
         while (transformerIterator.hasNext())
         {

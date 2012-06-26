@@ -45,10 +45,11 @@ public interface DispositionService
     void registerDispositionProperty(DispositionProperty dispositionProperty);
         
     /**
-     * Returns the list of disposition period properties
+     * Returns the list of disposition period properties that apply given the context provided.
      * 
-     * @return list of disposition period properties
+     * @return filtered list of disposition period properties
      */
+    Collection<DispositionProperty> getDispositionProperties(boolean isRecordLevel, String dispositionAction);
     Collection<DispositionProperty> getDispositionProperties();
     
     

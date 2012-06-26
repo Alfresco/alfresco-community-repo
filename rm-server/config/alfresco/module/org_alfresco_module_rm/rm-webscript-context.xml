@@ -111,6 +111,12 @@
         <property name="namespaceService" ref="NamespaceService"/>
     </bean>
     
+    <!--  REST impl for GET disposition properties -->
+    <bean id="webscript.org.alfresco.rma.dispositionproperties.get" class="org.alfresco.module.org_alfresco_module_rm.script.DispositionPropertiesGet" parent="webscript">
+        <property name="dispositionService" ref="DispositionService"/>
+        <property name="namespaceService" ref="NamespaceService"/>
+    </bean>
+    
     <!--  REST impl for GET Records MetaData aspects -->
     <bean id="webscript.org.alfresco.rma.recordmetadataaspects.get" class="org.alfresco.module.org_alfresco_module_rm.script.RecordMetaDataAspectsGet" parent="webscript">
         <property name="recordsManagementService" ref="RecordsManagementService"/>

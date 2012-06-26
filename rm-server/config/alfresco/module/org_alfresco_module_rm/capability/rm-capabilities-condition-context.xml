@@ -114,5 +114,11 @@
        <property name="aspectName" value="rma:transferring"/>
        <property name="namespaceService" ref="NamespaceService"/>
     </bean>
+    
+    <bean id="capabilityCondition.hasDispositionAsOfDate" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasDispositionDateCapabilityCondition">
+       <property name="dispositionService" ref="DispositionService"/>
+    </bean>
 
 </beans>

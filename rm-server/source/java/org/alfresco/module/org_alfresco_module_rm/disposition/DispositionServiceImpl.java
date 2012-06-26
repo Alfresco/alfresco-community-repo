@@ -166,8 +166,24 @@ public class DispositionServiceImpl implements DispositionService, RecordsManage
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionProperties()
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionProperties(boolean, java.lang.String)
      */
+    @Override
+    public Collection<DispositionProperty> getDispositionProperties(boolean isRecordLevel, String dispositionAction)
+    {
+        Collection<DispositionProperty> values = dispositionProperties.values();        
+        List<DispositionProperty> result = new ArrayList<DispositionProperty>(values.size());
+        for (DispositionProperty dispositionProperty : values)
+        {
+            boolean test = dispositionProperty.applies(isRecordLevel, dispositionAction);
+            if (test == true)
+            {
+                result.add(dispositionProperty);
+            }
+        }
+        return result;
+    }
+    
     @Override
     public Collection<DispositionProperty> getDispositionProperties()
     {

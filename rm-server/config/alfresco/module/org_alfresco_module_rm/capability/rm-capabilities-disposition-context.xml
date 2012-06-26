@@ -105,6 +105,7 @@
    			<map>
    				<entry key="capabilityCondition.filling" value="true"/> 
    				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   	
+   				<entry key="capabilityCondition.hasDispositionAsOfDate" value="true"/>
    			</map>
    		</property>
     </bean>

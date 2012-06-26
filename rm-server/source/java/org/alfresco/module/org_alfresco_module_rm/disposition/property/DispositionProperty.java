@@ -6,6 +6,7 @@ package org.alfresco.module.org_alfresco_module_rm.disposition.property;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
@@ -35,6 +36,7 @@ public class DispositionProperty implements NodeServicePolicies.OnUpdateProperti
     /** Property QName */
     private QName propertyName;
     
+    /** Behaviour */
     private JavaBehaviour behaviour;
     
     /** Namespace service */
@@ -51,6 +53,15 @@ public class DispositionProperty implements NodeServicePolicies.OnUpdateProperti
     
     /** Node service */
     private NodeService nodeService;
+    
+    /** Indicates whether this disposition property applies to a folder level disposition */
+    private boolean appliesToFolderLevel = true;
+
+    /** Indicates whether this disposition property applies to a record level disposition */
+    private boolean appliesToRecordLevel = true;
+    
+    /** Set of disposition actions this property does not apply to */
+    private Set<String> excludedDispositionActions;
     
     /**
      * @param namespaceService  namespace service
@@ -117,6 +128,30 @@ public class DispositionProperty implements NodeServicePolicies.OnUpdateProperti
     }
     
     /**
+     * @param excludedDispositionActions    list of excluded disposition actions
+     */
+    public void setExcludedDispositionActions(Set<String> excludedDispositionActions)
+    {
+        this.excludedDispositionActions = excludedDispositionActions;
+    }
+    
+    /**
+     * @param appliesToFolderLevel
+     */
+    public void setAppliesToFolderLevel(boolean appliesToFolderLevel)
+    {
+        this.appliesToFolderLevel = appliesToFolderLevel;
+    }
+    
+    /**
+     * @param appliesToRecordLevel
+     */
+    public void setAppliesToRecordLevel(boolean appliesToRecordLevel)
+    {
+        this.appliesToRecordLevel = appliesToRecordLevel;
+    }
+    
+    /**
      * Bean initialisation method
      */
     public void init()
@@ -131,7 +166,40 @@ public class DispositionProperty implements NodeServicePolicies.OnUpdateProperti
                 ASPECT_DISPOSITION_LIFECYCLE, 
                 behaviour);        
     }
+    
+    /**
+     * Indicates whether the disposition property applies given the context.
+     * 
+     * @param isRecordLevel      true if record level disposition schedule, false otherwise
+     * @param dispositionAction  disposition action name
+     * @return boolean           true if applies, false otherwise
+     */
+    public boolean applies(boolean isRecordLevel, String dispositionAction)
+    {
+        boolean result = false;
+        
+        if ((isRecordLevel == true && appliesToRecordLevel == true) ||
+            (isRecordLevel == false && appliesToFolderLevel == true))
+        {
+            if (excludedDispositionActions != null && excludedDispositionActions.size() != 0)
+            {
+                if (excludedDispositionActions.contains(dispositionAction) == false)
+                {
+                    result = true;
+                }
+            }
+            else
+            {
+                result = true;
+            }
+        }
+        
+        return result;
+    }
 
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+     */
     @Override
     public void onUpdateProperties(
             final NodeRef nodeRef, 
@@ -197,6 +265,13 @@ public class DispositionProperty implements NodeServicePolicies.OnUpdateProperti
         }
     }
     
+    /**
+     * Indicates whether the property has been updated or not.
+     * 
+     * @param before
+     * @param after
+     * @return
+     */
     private boolean isPropertyUpdated(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         boolean result = false;

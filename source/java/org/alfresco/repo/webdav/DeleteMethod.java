@@ -127,7 +127,7 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
      * @param deletedFile The FileInfo for the deleted file.
      * @throws WebDAVServerException 
      */
-    private void postActivity(FileInfo parent, FileInfo deletedFile, String siteId) throws WebDAVServerException
+    protected void postActivity(FileInfo parent, FileInfo deletedFile, String siteId) throws WebDAVServerException
     {
         WebDavService davService = getDAVHelper().getServiceRegistry().getWebDavService();
         if (!davService.activitiesEnabled())

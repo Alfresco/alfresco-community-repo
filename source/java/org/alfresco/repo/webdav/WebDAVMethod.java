@@ -1048,11 +1048,11 @@ public abstract class WebDAVMethod
                             // OK to write - lock is owned by current user.
                             return nodeLockInfo;
                         }
-                    }
-                    else
-                    {
-                        // Exclusive lock, owned by someone else
-                        throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+                        else
+                        {
+                            // Exclusive lock, owned by someone else
+                            throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+                        }
                     }
                 }
             }

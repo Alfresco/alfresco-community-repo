@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.CustomMetadataException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeCreateReference;
@@ -49,10 +50,12 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
+import org.antlr.grammar.v3.ANTLRv3Parser.throwsSpec_return;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -332,15 +335,15 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
         )
         {
             @Override
-            public void run()
+            public void run() throws Exception
             {
-            	adminService.addCustomPropertyDefinition(
-            			QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"), 
-            			ASPECT_RECORD, 
-            			"Label1", 
-            			DataTypeDefinition.TEXT, 
-            			"Title", 
-            			"Description");
+                adminService.addCustomPropertyDefinition(
+                		QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"), 
+                		ASPECT_RECORD, 
+                		"Label1", 
+                		DataTypeDefinition.TEXT, 
+                		"Title", 
+                		"Description");
             }
         }); 
     	
@@ -351,7 +354,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
         )
         {
             @Override
-            public void run()
+            public void run() throws Exception
             {
             	adminService.addCustomPropertyDefinition(
             			QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myContentProp"), 

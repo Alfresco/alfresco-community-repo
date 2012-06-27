@@ -66,7 +66,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 Collection<DispositionProperty> properties = dispositionService.getDispositionProperties();
                 
                 assertNotNull(properties);
-                assertEquals(4, properties.size());
+                assertEquals(5, properties.size());
                 
                 for (DispositionProperty property : properties)
                 {

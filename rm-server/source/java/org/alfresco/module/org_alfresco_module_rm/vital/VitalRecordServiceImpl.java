@@ -48,6 +48,8 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                                                NodeServicePolicies.OnUpdatePropertiesPolicy,
                                                NodeServicePolicies.OnAddAspectPolicy
 {
+    private static final Period PERIOD_NONE = new Period("none|0");
+    
     /** Services */
     private NodeService nodeService;
     private PolicyComponent policyComponent;
@@ -138,25 +140,31 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                 {
                     public Void doWork() throws Exception 
                     {
-                        // get the immediate parent
-                        NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-                        
-                        // is the parent a record category
-                        if (parentRef != null && 
-                            FilePlanComponentKind.RECORD_CATEGORY.equals(rmService.getFilePlanComponentKind(parentRef)) == true)
-                        {
-                            // is the child a record category or folder
-                            FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
-                            if (kind.equals(FilePlanComponentKind.RECORD_CATEGORY) == true ||
-                                kind.equals(FilePlanComponentKind.RECORD_FOLDER) == true)
+                        // get the current review period value
+                        Period currentReviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
+                        if (currentReviewPeriod == null ||
+                            PERIOD_NONE.equals(currentReviewPeriod) == true)
+                        {                        
+                            // get the immediate parent
+                            NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                            
+                            // is the parent a record category
+                            if (parentRef != null && 
+                                FilePlanComponentKind.RECORD_CATEGORY.equals(rmService.getFilePlanComponentKind(parentRef)) == true)
                             {
-                                // set the vital record definition values to match that of the parent
-                                nodeService.setProperty(nodeRef, 
-                                                        PROP_VITAL_RECORD_INDICATOR, 
-                                                        nodeService.getProperty(parentRef, PROP_VITAL_RECORD_INDICATOR));
-                                nodeService.setProperty(nodeRef, 
-                                                        PROP_REVIEW_PERIOD, 
-                                                        nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
+                                // is the child a record category or folder
+                                FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
+                                if (kind.equals(FilePlanComponentKind.RECORD_CATEGORY) == true ||
+                                    kind.equals(FilePlanComponentKind.RECORD_FOLDER) == true)
+                                {
+                                    // set the vital record definition values to match that of the parent
+                                    nodeService.setProperty(nodeRef, 
+                                                            PROP_VITAL_RECORD_INDICATOR, 
+                                                            nodeService.getProperty(parentRef, PROP_VITAL_RECORD_INDICATOR));
+                                    nodeService.setProperty(nodeRef, 
+                                                            PROP_REVIEW_PERIOD, 
+                                                            nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
+                                }
                             }
                         }
                         

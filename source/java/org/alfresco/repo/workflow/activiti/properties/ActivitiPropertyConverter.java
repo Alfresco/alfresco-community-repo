@@ -912,6 +912,13 @@ public class ActivitiPropertyConverter
             description = factory.getTaskDescription(startTaskType, wfDefKey, wfDescription, startEventName);
             defaultProperties.put(WorkflowModel.PROP_DESCRIPTION, description);
         }
+        
+        //Special case for workflowDueDate. 
+        if(!defaultProperties.containsKey(WorkflowModel.PROP_WORKFLOW_DUE_DATE) && taskProperties.containsKey(WorkflowModel.PROP_WORKFLOW_DUE_DATE))
+        {
+            defaultProperties.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, null);
+        }
+        
         return handlerRegistry.handleVariablesToSet(defaultProperties, startTaskType, null, Void.class);
     }
     

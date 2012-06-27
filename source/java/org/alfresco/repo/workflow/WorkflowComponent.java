@@ -27,6 +27,7 @@ import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
@@ -184,6 +185,14 @@ public interface WorkflowComponent
      * @return  the list of "in-flight" workflow instances
      */
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId);
+    
+    /**
+     * Gets all "in-flight" workflow instances according to the specified workflowInstanceQuery parameter
+     * 
+     * @param workflowInstanceQuery
+     * @return the list of "in-flight" workflow instances
+     */
+    public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery);
     
     /**
      * Gets all "in-flight" active workflow instances.

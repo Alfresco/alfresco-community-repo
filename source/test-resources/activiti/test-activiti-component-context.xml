@@ -2,6 +2,19 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
+
+	<bean id="common-placeholder-configurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" abstract="true">
+           <property name="valueSeparator">
+            <null/>
+        </property>
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>        
+    </bean>
+    
     <bean id="ServiceRegistry" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.service.ServiceRegistry" />
     </bean>

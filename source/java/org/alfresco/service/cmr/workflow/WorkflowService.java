@@ -236,6 +236,14 @@ public interface WorkflowService
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId);
     
     /**
+     * Gets all "in-flight" workflow instances according to the specified workflowInstanceQuery parameter
+     * 
+     * @param workflowInstanceQuery
+     * @return
+     */
+    public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery);
+    
+    /**
      * Gets all active workflow instances.
      * 
      * @return  the list of "in-flight" workflow instances

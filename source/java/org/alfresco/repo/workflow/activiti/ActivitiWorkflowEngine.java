@@ -69,7 +69,6 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.Job;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.alfresco.model.ContentModel;
@@ -84,6 +83,8 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowNodeConverter;
 import org.alfresco.repo.workflow.WorkflowObjectFactory;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -95,6 +96,8 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery;
+import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery.DatePosition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
@@ -186,6 +189,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private FormService formService;
     private ActivitiUtil activitiUtil;
     
+    private DictionaryService dictionaryService;
     private NodeService nodeService;
     private SearchService unprotectedSearchService;
     private PersonService personService;
@@ -366,7 +370,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try
         {
-            return getWorkflowInstances(null, true);
+            return getWorkflows(new WorkflowInstanceQuery(true));
         }
         catch(ActivitiException ae) 
         {
@@ -383,7 +387,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try
         {
-            return getWorkflowInstances(null, false);
+            return getWorkflows(new WorkflowInstanceQuery(false));
         }
         catch(ActivitiException ae) 
         {
@@ -400,7 +404,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try
         {
-            return getWorkflowInstances(null, null);
+            return getWorkflows(new WorkflowInstanceQuery());
         }
         catch(ActivitiException ae) 
         {
@@ -416,7 +420,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try
         {
-            return getWorkflowInstances(workflowDefinitionId, true);
+            return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId, true));
         }
         catch(ActivitiException ae) 
         {
@@ -469,7 +473,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try
         {
-            return getWorkflowInstances(workflowDefinitionId, false);
+            return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId, false));
         }
         catch(ActivitiException ae) 
         {
@@ -936,7 +940,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try
         {
-            return getWorkflowInstances(workflowDefinitionId, null);
+            return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId));
         }
         catch(ActivitiException ae) 
         {
@@ -1284,6 +1288,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         this.propertyConverter = propertyConverter;
     }
     
+    /**
+     * Sets the Dictionary Service
+     * @param dictionaryService
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
     /**
      * Sets the Node Service
      * 
@@ -2190,33 +2203,134 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
     }
     
-    private List<WorkflowInstance> getWorkflowInstances(String workflowDefinitionId, Boolean isActive)
+    @Override
+    public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery)
     {
-        String processDefId = workflowDefinitionId==null ? null : createLocalId(workflowDefinitionId);
         LinkedList<WorkflowInstance> results = new LinkedList<WorkflowInstance>();
-        if(Boolean.FALSE.equals(isActive)==false)
+        if (Boolean.FALSE.equals(workflowInstanceQuery.getActive()) == false)
         {
-            ProcessInstanceQuery query = runtimeService.createProcessInstanceQuery();
-            if(processDefId!=null)
-            {
-                query = query.processDefinitionId(processDefId);
-            }
-            List<ProcessInstance> activeInstances = query.list();
-            List<WorkflowInstance> activeResults = typeConverter.convert(activeInstances);
-            results.addAll(activeResults);
+            //Add active. 
+            results.addAll(getWorkflowsInternal(workflowInstanceQuery, true));
         }
-        if(Boolean.TRUE.equals(isActive)==false)
+        if (Boolean.TRUE.equals(workflowInstanceQuery.getActive()) == false)
         {
-            HistoricProcessInstanceQuery query = historyService.createHistoricProcessInstanceQuery()
-                .finished();
-            if(processDefId!=null)
+            //Add complete
+            results.addAll(getWorkflowsInternal(workflowInstanceQuery, false));
+        }
+        
+        return results;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private List<WorkflowInstance> getWorkflowsInternal(WorkflowInstanceQuery workflowInstanceQuery, boolean isActive)
+    {
+        String processDefId = workflowInstanceQuery.getWorkflowDefinitionId() == null ? null : createLocalId(workflowInstanceQuery.getWorkflowDefinitionId());
+        LinkedList<WorkflowInstance> results = new LinkedList<WorkflowInstance>();
+
+        HistoricProcessInstanceQuery query;
+        if (isActive)
+        {
+            // Don't use ProcessInstanceQuery here because in any case they will be converted to WorkflowInstance thro HistoricProcessInstance.
+            query = historyService.createHistoricProcessInstanceQuery().unfinished();
+        }
+        else
+        {
+            query = historyService.createHistoricProcessInstanceQuery().finished();
+        }
+        
+        if(processDefId!=null)
+        {
+            query = query.processDefinitionId(processDefId);
+        }
+
+        if(workflowInstanceQuery.getExcludedDefinitions() != null)
+        {
+	        List<String> exDefIds = new ArrayList<String>();
+	        for (String excludedDef : workflowInstanceQuery.getExcludedDefinitions())
+	        {
+	            String exDef = createLocalId(excludedDef);
+	            exDef = exDef.replaceAll("\\*", "%");
+	            exDefIds.add(exDef);
+	        }
+	
+	        if(exDefIds.size() > 0)
+	        {
+	        	query.processDefinitionKeyNotIn(exDefIds);
+	        }
+        }
+
+        // Check start range
+        if (workflowInstanceQuery.getStartBefore() != null)
+        {
+            query.startedBefore(workflowInstanceQuery.getStartBefore());
+
+        }
+        if (workflowInstanceQuery.getStartAfter() != null)
+        {
+            query.startedAfter(workflowInstanceQuery.getStartAfter());
+        }
+
+        // check end range
+        if (workflowInstanceQuery.getEndBefore() != null)
+        {
+            query.finishedBefore(workflowInstanceQuery.getEndBefore());
+        }
+        if (workflowInstanceQuery.getEndAfter() != null)
+        {
+            query.finishedAfter(workflowInstanceQuery.getEndAfter());
+        }
+
+        if (workflowInstanceQuery.getCustomProps() != null)
+        {
+            for (Map.Entry<QName, Object> prop : workflowInstanceQuery.getCustomProps().entrySet())
             {
-                query = query.processDefinitionId(processDefId);
+                String propertyName = factory.mapQNameToName(prop.getKey());
+                if (prop.getValue() == null)
+                {
+                    query.variableValueEquals(propertyName, null);
+                }
+                else
+                {
+                    PropertyDefinition propertyDefinition = dictionaryService.getProperty(prop.getKey());
+                    if (propertyDefinition == null)
+                    {
+                        Object converted = propertyConverter.convertPropertyToValue(prop.getValue());
+                        query.variableValueEquals(propertyName, converted);
+                    }
+                    else
+                    {
+                        String propertyType = propertyDefinition.getDataType().getJavaClassName();
+                        if (propertyType.equals("java.util.Date"))
+                        {
+                            Map<DatePosition, Date> dateProps = (Map<DatePosition, Date>) prop.getValue();
+                            for (Map.Entry<DatePosition, Date> dateProp : dateProps.entrySet())
+                            {
+                                if (dateProp.getValue() != null)
+                                {
+                                    if (dateProp.getKey() == DatePosition.BEFORE)
+                                    {
+                                        query.variableValueLessThanOrEqual(propertyName, dateProp.getValue());
+                                    }
+                                    if (dateProp.getKey() == DatePosition.AFTER)
+                                    {
+                                        query.variableValueGreaterThanOrEqual(propertyName, dateProp.getValue());
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Object convertedValue = DefaultTypeConverter.INSTANCE.convert(propertyDefinition.getDataType(), prop.getValue());
+                            query.variableValueEquals(propertyName, convertedValue);
+                        }
+                    }
+                }
             }
+        }
+
             List<HistoricProcessInstance> completedInstances = query.list();
             List<WorkflowInstance> completedResults = typeConverter.convert(completedInstances);
             results.addAll(completedResults);
-        }
         return results;
     }
 

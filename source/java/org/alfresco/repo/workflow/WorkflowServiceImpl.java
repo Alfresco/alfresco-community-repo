@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -424,13 +425,7 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId)
     {
-        if(workflowDefinitionId==null)
-        {
-            return getActiveWorkflows();
-        }
-        String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
-        WorkflowComponent component = getWorkflowComponent(engineId);
-        return component.getActiveWorkflows(workflowDefinitionId);
+        return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId, true));
     }
 
     /**
@@ -438,14 +433,7 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public List<WorkflowInstance> getCompletedWorkflows(String workflowDefinitionId)
     {   
-        if(workflowDefinitionId==null)
-        {
-            return getCompletedWorkflows();
-        }
-
-        String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
-        WorkflowComponent component = getWorkflowComponent(engineId);        
-        return component.getCompletedWorkflows(workflowDefinitionId);
+        return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId, false));
     }
     
     /**
@@ -453,19 +441,13 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId)
     {
-        if(workflowDefinitionId==null)
-        {
-            return getWorkflows();
-        }
-        String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
-        WorkflowComponent component = getWorkflowComponent(engineId);
-        return component.getWorkflows(workflowDefinitionId);
+        return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId));
     }
 
-    /**
-    * {@inheritDoc}
-    */
-    public List<WorkflowInstance> getActiveWorkflows()
+    @Override
+    public List<WorkflowInstance> getWorkflows(final WorkflowInstanceQuery workflowInstanceQuery)
+    {
+        if(workflowInstanceQuery.getWorkflowDefinitionId() == null)
     {
         List<String> ids = Arrays.asList(registry.getWorkflowComponents());
         return CollectionUtils.transformFlat(ids, new Function<String, Collection<WorkflowInstance>>()
@@ -473,9 +455,22 @@ public class WorkflowServiceImpl implements WorkflowService
             public List<WorkflowInstance> apply(String id)
             {
                 WorkflowComponent component = registry.getWorkflowComponent(id);
-                return component.getActiveWorkflows();
+                return component.getWorkflows(workflowInstanceQuery);
             }
         });
+    }
+
+        String engineId = BPMEngineRegistry.getEngineId(workflowInstanceQuery.getWorkflowDefinitionId());
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        return component.getWorkflows(workflowInstanceQuery);
+    }    
+
+    /**
+    * {@inheritDoc}
+    */
+    public List<WorkflowInstance> getActiveWorkflows()
+    {
+        return getWorkflows(new WorkflowInstanceQuery(true));
     }
 
     /**
@@ -483,15 +478,7 @@ public class WorkflowServiceImpl implements WorkflowService
     */
     public List<WorkflowInstance> getCompletedWorkflows()
     {
-        List<String> ids = Arrays.asList(registry.getWorkflowComponents());
-        return CollectionUtils.transformFlat(ids, new Function<String, Collection<WorkflowInstance>>()
-        {
-            public List<WorkflowInstance> apply(String id)
-            {
-                WorkflowComponent component = registry.getWorkflowComponent(id);
-                return component.getCompletedWorkflows();
-            }
-        });
+        return getWorkflows(new WorkflowInstanceQuery(false));
     }
 
     /**
@@ -499,15 +486,7 @@ public class WorkflowServiceImpl implements WorkflowService
     */
     public List<WorkflowInstance> getWorkflows()
     {
-        List<String> ids = Arrays.asList(registry.getWorkflowComponents());
-        return CollectionUtils.transformFlat(ids, new Function<String, Collection<WorkflowInstance>>()
-        {
-            public List<WorkflowInstance> apply(String id)
-            {
-                WorkflowComponent component = registry.getWorkflowComponent(id);
-                return component.getWorkflows();
-            }
-        });
+        return getWorkflows(new WorkflowInstanceQuery());
     }
     
     /**

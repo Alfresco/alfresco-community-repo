@@ -109,6 +109,7 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         workflowEngine.setMessageService(messageService);
         workflowEngine.setNamespaceService(namespaceService);
         workflowEngine.setNodeConverter(nodeConverter);
+        workflowEngine.setDictionaryService(dictionaryService);
         workflowEngine.setNodeService(nodeService);
         workflowEngine.setPersonService(personService);
         workflowEngine.setPropertyConverter(propertyConverter);

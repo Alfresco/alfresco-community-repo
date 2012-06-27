@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -31,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.zip.ZipInputStream;
@@ -40,6 +42,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.workflow.AlfrescoBpmEngine;
+import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.repo.workflow.WorkflowEngine;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -60,6 +63,7 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -68,11 +72,13 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
+import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery.DatePosition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CacheMode;
@@ -93,6 +99,10 @@ import org.jbpm.context.exe.ContextInstance;
 import org.jbpm.context.exe.TokenVariableMap;
 import org.jbpm.context.exe.VariableInstance;
 import org.jbpm.context.exe.converter.BooleanToStringConverter;
+import org.jbpm.context.exe.variableinstance.DateInstance;
+import org.jbpm.context.exe.variableinstance.LongInstance;
+import org.jbpm.context.exe.variableinstance.NullInstance;
+import org.jbpm.context.exe.variableinstance.StringInstance;
 import org.jbpm.db.GraphSession;
 import org.jbpm.db.TaskMgmtSession;
 import org.jbpm.file.def.FileDefinition;
@@ -812,7 +822,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     */
     public List<WorkflowInstance> getActiveWorkflows()
     {
-        return getWorkflowsInternal(null, true);
+        return getWorkflows(new WorkflowInstanceQuery(true));
     }
     
     /**
@@ -821,7 +831,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     @Override
     public List<WorkflowInstance> getCompletedWorkflows()
     {
-        return getWorkflowsInternal(null, false);
+        return getWorkflows(new WorkflowInstanceQuery(false));
     }
     
     /**
@@ -830,7 +840,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     @Override
     public List<WorkflowInstance> getWorkflows()
     {
-        return getWorkflowsInternal(null, null);
+        return getWorkflows(new WorkflowInstanceQuery());
     }
     
     /**
@@ -838,7 +848,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      */
     public List<WorkflowInstance> getActiveWorkflows(final String workflowDefinitionId)
     {
-        return getWorkflowsInternal(workflowDefinitionId, true);
+        return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId, true));
     }
     
     /**
@@ -846,7 +856,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
       */
     public List<WorkflowInstance> getCompletedWorkflows(final String workflowDefinitionId)
     {
-        return getWorkflowsInternal(workflowDefinitionId, false);
+        return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId, false));
     }
     
     /**
@@ -854,51 +864,214 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      */
     public List<WorkflowInstance> getWorkflows(final String workflowDefinitionId)
     {
-        return getWorkflowsInternal(workflowDefinitionId, null);
+        return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId));
     }
     
-    private List<WorkflowInstance> getWorkflowsInternal(String workflowDefinitionId, Boolean active)
+    @Override
+    public List<WorkflowInstance> getWorkflows(final WorkflowInstanceQuery query)
     {
         try
         {
-            final Long processDefId = workflowDefinitionId == null ? null : getJbpmId(workflowDefinitionId);
-            List<ProcessInstance> instances = getProcessInstances(processDefId, active);
+            List<ProcessInstance> instances = getProcessInstances(query);
             return convertWorkflows(instances);
+
         }
         catch(JbpmException e)
         {
-            String msg = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, workflowDefinitionId);
+            String msg = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, query.getWorkflowDefinitionId());
             throw new WorkflowException(msg, e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private List<ProcessInstance> getProcessInstances(final Long processDefId, final Boolean active)
+    private List<ProcessInstance> getProcessInstances(final WorkflowInstanceQuery query)
     {
         return (List<ProcessInstance>) jbpmTemplate.execute(new JbpmCallback()
         {
             public Object doInJbpm(JbpmContext context)
             {
                 Session session = context.getSession();
-                Criteria criteria = session.createCriteria(ProcessInstance.class);
+
+                StringBuilder processSelect = new StringBuilder(1024)
+                        .append("select process from org.jbpm.graph.exe.ProcessInstance as process");
+                StringBuilder processWhere = new StringBuilder(1024);
+                Map<String, Object> processMap = new TreeMap<String, Object>();
+
+                Long processDefId = query.getWorkflowDefinitionId() == null ? null : getJbpmId(query
+                        .getWorkflowDefinitionId());
                 if(processDefId!=null)
                 {
-                    Criteria definitionCriteria = criteria.createCriteria("processDefinition");
-                    definitionCriteria.add(Restrictions.eq("id", processDefId));
+                    processSelect.append(" join process.processDefinition as definition");
+                    processWhere.append(" and definition.id = :processDefId");
+                    processMap.put("processDefId", processDefId);
                 }
-                if(Boolean.TRUE.equals(active))
+
+                List<String> exludedDefs = query.getExcludedDefinitions();
+                if (exludedDefs != null && exludedDefs.size() > 0)
                 {
-                    criteria.add(Restrictions.isNull("end"));
+                    if (processDefId == null)
+                    {
+                        processSelect.append(" join process.processDefinition as definition");
+                    }
+                    for (String exDef : exludedDefs)
+                    {
+                        exDef = BPMEngineRegistry.getLocalId(exDef);
+                        exDef = exDef.replaceAll("\\*", "%");
+                        processWhere.append(" and definition.name not like '").append(exDef).append("'");
+                    }
                 }
-                else if(Boolean.FALSE.equals(active))
+
+                if (Boolean.TRUE.equals(query.getActive()))
                 {
-                    criteria.add(Restrictions.isNotNull("end"));
+                    processWhere.append(" and process.end is null");
                 }
-                return criteria.list();
+                else if (Boolean.FALSE.equals(query.getActive()))
+                {
+                    processWhere.append(" and process.end is not null");
+                }
+
+                // Check start range
+                if (query.getStartBefore() != null)
+                {
+                    processWhere.append(" and process.start <= :processStartBefore");
+                    processMap.put("processStartBefore", query.getStartBefore());
+                }
+                if (query.getStartAfter() != null)
+                {
+                    processWhere.append(" and process.start >= :processStartAfter");
+                    processMap.put("processStartAfter", query.getStartAfter());
+                }
+
+                // check end range
+                if (query.getEndBefore() != null)
+                {
+                    processWhere.append(" and process.end <= :processEndBefore");
+                    processMap.put("processEndBefore", query.getEndBefore());
+                }
+                if (query.getEndAfter() != null)
+                {
+                    processWhere.append(" and process.end >= :processEndAfter");
+                    processMap.put("processEndAfter", query.getEndAfter());
+                }
+
+                if (query.getCustomProps() != null)
+                {
+                    processSelect.append(" join process.instances as contextInstance").append(
+                            " join contextInstance.tokenVariableMaps as tokenVariableMap");
+
+                    processWhere.append(" and contextInstance.class = org.jbpm.context.exe.ContextInstance").append(
+                            " and tokenVariableMap.token = process.rootToken");
+
+                    int i = 0;
+                    for (Map.Entry<QName, Object> prop : query.getCustomProps().entrySet())
+                    {
+                        i++;
+                        String variable = "var" + i;
+                        processMap.put(variable + "name", factory.mapQNameToName(prop.getKey()));
+                        if (prop.getValue() == null)
+                        {
+                            processSelect.append(", ").append(NullInstance.class.getName()).append(" as ").append(
+                                    variable);
+                            processWhere.append(" and ").append(variable)
+                                    .append(".tokenVariableMap = tokenVariableMap").append(" and ").append(variable)
+                                    .append(".name = :").append(variable).append("name");
+                        }
+                        else
+                        {
+                            PropertyDefinition propertyDefinition = dictionaryService.getProperty(prop.getKey());
+                            if (propertyDefinition == null)
+                            {
+                                processSelect.append(", ").append(StringInstance.class.getName()).append(" as ")
+                                        .append(variable);
+                                processWhere.append(" and ").append(variable).append(
+                                        ".tokenVariableMap = tokenVariableMap").append(" and ").append(variable)
+                                        .append(".name = :").append(variable).append("name").append(" and ").append(
+                                                variable).append(".value = :").append(variable).append("value");
+                                processMap.put(variable + "value", prop.getValue().toString());
+                            }
+                            else
+                            {
+                                String propertyType = propertyDefinition.getDataType().getJavaClassName();
+                                if (propertyType.equals("java.lang.String"))
+                                {
+                                    processSelect.append(", ").append(StringInstance.class.getName()).append(" as ")
+                                            .append(variable);
+                                    processWhere.append(" and ").append(variable).append(
+                                            ".tokenVariableMap = tokenVariableMap").append(" and ").append(variable)
+                                            .append(".name = :").append(variable).append("name").append(" and ")
+                                            .append(variable).append(".value = :").append(variable).append("value");
+                                    processMap.put(variable + "value", prop.getValue().toString());
+                                }
+                                else if (propertyType.equals("java.lang.Long")
+                                        || propertyType.equals("java.lang.Integer"))
+                                {
+                                    processSelect.append(", ").append(LongInstance.class.getName()).append(" as ")
+                                            .append(variable);
+                                    processWhere.append(" and ").append(variable).append(
+                                            ".tokenVariableMap = tokenVariableMap").append(" and ").append(variable)
+                                            .append(".name = :").append(variable).append("name").append(" and ")
+                                            .append(variable).append(".value = :").append(variable).append("value");
+                                    processMap.put(variable + "value", new Long(prop.getValue().toString()));
+                                }
+                                else if (propertyType.equals("java.util.Date"))
+                                {
+                                    processSelect.append(", ").append(DateInstance.class.getName()).append(
+                                    " as ").append(variable);
+                                    Map<DatePosition, Date> dateProps = (Map<DatePosition, Date>) prop.getValue();
+                                    int datePropNum = 0;
+                                    for (Map.Entry<DatePosition, Date> dateProp : dateProps.entrySet())
+                                    {
+                                        datePropNum++;
+                                        if (dateProp.getValue() != null)
+                                        {
+                                            processWhere.append(" and ").append(variable).append(
+                                                    ".tokenVariableMap = tokenVariableMap").append(" and ").append(
+                                                    variable).append(".name = :").append(variable).append("name");
+                                            
+                                            if (dateProp.getKey() == DatePosition.BEFORE)
+                                            {
+                                                processMap.put(variable + "value" + datePropNum, calculateBeforeMidnight(dateProp.getValue()));
+                                                processWhere.append(" and ").append(variable).append(".value <= :")
+                                                        .append(variable).append("value").append(datePropNum);
+                                            }
+                                            if (dateProp.getKey() == DatePosition.AFTER)
+                                            {
+                                                processMap.put(variable + "value" + datePropNum, calculateMidnight(dateProp.getValue()));
+                                                processWhere.append(" and ").append(variable).append(".value >= :")
+                                                        .append(variable).append("value").append(datePropNum);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (processWhere.length() > 4)
+                {
+                    processSelect.append(" where");
+                    processSelect.append(processWhere, 4, processWhere.length());
+                }
+                processSelect.append(" order by process.id");
+                return session.createQuery(processSelect.toString()).setProperties(processMap).list();
             }
         });
     }
     
+    private Date calculateBeforeMidnight(Date date)
+    {
+        Date calc = DateUtils.truncate(date, Calendar.DATE);
+        calc = DateUtils.addDays(calc, 1);
+
+        return DateUtils.addSeconds(calc, -1);
+    }
+
+    private Date calculateMidnight(Date date)
+    {
+        return DateUtils.truncate(date, Calendar.DATE);
+    }
+
+
     /**
     * {@inheritDoc}
      */

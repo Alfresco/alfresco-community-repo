@@ -856,6 +856,7 @@
         <property name="namespaceService" ref="namespaceService"/>
         <property name="searchService" ref="searchService"/>
         <property name="siteService" ref="SiteService" />
+        <property name="authorityService" ref="authorityService" />
     	<property name="notificationRole" value="${rm.notification.role}"/>
     </bean>    
     

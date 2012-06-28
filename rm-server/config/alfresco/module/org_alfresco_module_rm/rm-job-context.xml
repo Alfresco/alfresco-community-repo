@@ -29,6 +29,7 @@
       <property name="nodeService" ref="nodeService" />
       <property name="searchService" ref="searchService" />
       <property name="recordsManagementNotificationHelper" ref="recordsManagementNotificationHelper" />
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
    
    <bean id="scheduledNotifyOfRecordsDueForReviewJobTrigger" class="org.alfresco.util.CronTriggerBean">
@@ -78,7 +79,7 @@
       </property>
       <property name="cronExpression">
          <!-- <value>0 30 3 * * ?</value> -->
-         <value>0 0/15 * * * ?</value>         
+         <value>0 0/15 * * * ?</value>    
       </property>
    </bean>
    

@@ -22,7 +22,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.Role;
@@ -35,10 +37,14 @@ import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -49,6 +55,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RecordsManagementNotificationHelper
 {
+    private static Log logger = LogFactory.getLog(RecordsManagementNotificationHelper.class);
+    
     /** I18n */
     private static final String MSG_SUBJECT_RECORDS_DUE_FOR_REVIEW = "notification.dueforreview.subject";
     private static final String MSG_SUBJECT_RECORD_SUPERCEDED = "notification.superseded.subject";
@@ -64,6 +72,7 @@ public class RecordsManagementNotificationHelper
     private SearchService searchService;
     private NamespaceService namespaceService;
     private SiteService siteService;
+    private AuthorityService authorityService;
     
     /** Notification role */
     private String notificationRole;
@@ -138,6 +147,14 @@ public class RecordsManagementNotificationHelper
     }
     
     /**
+     * @param authorityService  authority service
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+    
+    /**
      * @return  superseded email template
      */
     public NodeRef getSupersededTemplate()
@@ -177,22 +194,34 @@ public class RecordsManagementNotificationHelper
         if (records.isEmpty() == false)
         {
             NodeRef root = getRMRoot(records.get(0));
+            String groupName = getGroupName(root); 
             
-            NotificationContext notificationContext = new NotificationContext();
-            notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORDS_DUE_FOR_REVIEW));
-            notificationContext.setAsyncNotification(false);
-            notificationContext.setIgnoreNotificationFailure(true);
-            
-            notificationContext.setBodyTemplate(getDueForReviewTemplate());
-            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-            args.put("records", (Serializable)records); 
-            args.put("site", getSiteName(root));
-            notificationContext.setTemplateArgs(args);
-            
-            String groupName = getGroupName(root);
-            notificationContext.addTo(groupName);        
-            
-            notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
+            if (doesGroupContainUsers(groupName) == true)
+            {            
+                NotificationContext notificationContext = new NotificationContext();
+                notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORDS_DUE_FOR_REVIEW));
+                notificationContext.setAsyncNotification(false);
+                notificationContext.setIgnoreNotificationFailure(true);
+                
+                notificationContext.setBodyTemplate(getDueForReviewTemplate());
+                Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+                args.put("records", (Serializable)records); 
+                args.put("site", getSiteName(root));
+                notificationContext.setTemplateArgs(args);
+                           
+                notificationContext.addTo(groupName);        
+                
+                notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
+            }
+            else
+            {
+                if (logger.isWarnEnabled() == true)
+                {
+                    logger.warn("Unable to send record due for review email notification, because notification group was empty.");
+                }
+                
+                throw new AlfrescoRuntimeException("Unable to send record due for review email notification, because notification group was empty.");
+            }
         }
     }    
     
@@ -206,22 +235,34 @@ public class RecordsManagementNotificationHelper
         ParameterCheck.mandatory("record", record);  
         
         NodeRef root = getRMRoot(record);
-        
-        NotificationContext notificationContext = new NotificationContext();
-        notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORD_SUPERCEDED));
-        notificationContext.setAsyncNotification(false);
-        notificationContext.setIgnoreNotificationFailure(true);
-        
-        notificationContext.setBodyTemplate(supersededTemplate);
-        Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-        args.put("record", record);  
-        args.put("site", getSiteName(root));
-        notificationContext.setTemplateArgs(args);
-        
         String groupName = getGroupName(root);
-        notificationContext.addTo(groupName);        
         
-        notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
+        if (doesGroupContainUsers(groupName) == true)
+        { 
+            NotificationContext notificationContext = new NotificationContext();
+            notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORD_SUPERCEDED));
+            notificationContext.setAsyncNotification(false);
+            notificationContext.setIgnoreNotificationFailure(true);
+            
+            notificationContext.setBodyTemplate(supersededTemplate);
+            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+            args.put("record", record);  
+            args.put("site", getSiteName(root));
+            notificationContext.setTemplateArgs(args);
+            
+            notificationContext.addTo(groupName);        
+            
+            notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
+        }
+        else
+        {
+            if (logger.isWarnEnabled() == true)
+            {
+                logger.warn("Unable to send record superseded email notification, because notification group was empty.");
+            }
+            
+            throw new AlfrescoRuntimeException("Unable to send record superseded email notification, because notification group was empty.");
+        }
     }
     
     /**
@@ -259,7 +300,20 @@ public class RecordsManagementNotificationHelper
             {
                 // Find the authority for the given role
                 Role role = securityService.getRole(root, notificationRole);
-                return role.getRoleGroupName();
+                return role.getRoleGroupName();                
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    private boolean doesGroupContainUsers(final String groupName)
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+        {
+            @Override
+            public Boolean doWork() throws Exception
+            {
+                Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, groupName, true);
+                return !users.isEmpty();
             }
         }, AuthenticationUtil.getSystemUserName());
     }

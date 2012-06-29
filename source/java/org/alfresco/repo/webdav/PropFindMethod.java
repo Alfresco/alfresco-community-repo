@@ -316,22 +316,15 @@ public class PropFindMethod extends WebDAVMethod
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_MULTI_STATUS, WebDAV.XML_NS_MULTI_STATUS);
 
         // Send remaining data
-        xml.flush();
+        flushXML(xml);
     }
 
     @Override
-    protected XMLWriter createXMLWriter() throws IOException
+    protected OutputFormat getXMLOutputFormat()
     {
         String userAgent = m_request.getHeader("User-Agent");
-        if ((null != userAgent) && userAgent.toLowerCase().startsWith("microsoft-webdav-miniredir/5.1."))
-        {
-		    // ALF-9952: XP requires compact XML for this response
-            return new XMLWriter(m_response.getOutputStream(), OutputFormat.createCompactFormat());
-        }
-        else
-        {
-            return super.createXMLWriter();
-        }
+        return ((null != userAgent) && userAgent.toLowerCase().startsWith("microsoft-webdav-miniredir/5.1.")) ? OutputFormat.createCompactFormat() : super.getXMLOutputFormat();
+
     }
 
     /**

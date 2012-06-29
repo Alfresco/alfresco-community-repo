@@ -511,6 +511,8 @@ public class LockMethod extends WebDAVMethod
         // Close off the XML
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_PROP, WebDAV.XML_NS_PROP);
 
+        // Send remaining data
+        flushXML(xml);
        
     }
         

@@ -19,6 +19,7 @@
 package org.alfresco.repo.webdav;
 
 import java.io.BufferedReader;
+import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -118,6 +119,7 @@ public abstract class WebDAVMethod
     protected HttpServletResponse m_response;
     private File m_requestBody;
     private ServletInputStream m_inputStream;
+    private CharArrayWriter m_xmlWriter;
     private BufferedReader m_reader;
 
     // WebDAV helper
@@ -838,29 +840,25 @@ public abstract class WebDAVMethod
     }
 
     /**
+     * Returns the format required for an XML response. This may vary per method.
+     */
+    protected OutputFormat getXMLOutputFormat()
+    {
+        // Check if debug output or XML pretty printing is enabled
+        return (XMLPrettyPrint || logger.isDebugEnabled()) ? OutputFormat.createPrettyPrint() : OutputFormat.createCompactFormat();
+    }    
+
+    /**
      * Create an XML writer for the response
      * 
      * @return XMLWriter
      * @exception IOException
      */
-    protected XMLWriter createXMLWriter() throws IOException
+    protected final XMLWriter createXMLWriter() throws IOException
     {
-        // Check if debug output or XML pretty printing is enabled
-
-        XMLWriter writer = null;
-        
-        if (XMLPrettyPrint == true || logger.isDebugEnabled())
-        {
-            writer = new XMLWriter(m_response.getWriter(), OutputFormat.createPrettyPrint());
-        }
-        else
-        {
-            writer = new XMLWriter(m_response.getWriter(), OutputFormat.createCompactFormat());
-        }
-        
-        // Return the writer
-        
-        return writer;
+        // Buffer the XML response, in case we have to reset mid-transaction
+        m_xmlWriter = new CharArrayWriter(1024);
+        return new XMLWriter(m_xmlWriter, getXMLOutputFormat());
     }
 
     /**
@@ -1446,13 +1444,29 @@ public abstract class WebDAVMethod
     }
 
     /**
-     * Flushs a XML Writer.
+     * Determines whether the XMLWriter should be flushed when XML is flushed. For some reason this is method specific.
+     * @return <code>true</code> if the XMLWriter should be flushed when XML is flushed
+     */
+    protected boolean shouldFlushXMLWriter()
+    {
+        return true;
+    }
+    
+    /**
+     * Flushes all XML written so far to the response
      * 
      * @param xml XMLWriter that should be flushed
      */
-    protected void flushXML(XMLWriter xml) throws IOException
+    protected final void flushXML(XMLWriter writer) throws IOException
     {
-        xml.flush();
+        if (shouldFlushXMLWriter())
+        {
+            writer.flush();
+        }
+        
+        m_response.getWriter().write(m_xmlWriter.toCharArray());
+        
+        m_xmlWriter.reset();
     }
 
     /**

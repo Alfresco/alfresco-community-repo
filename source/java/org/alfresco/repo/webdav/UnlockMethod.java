@@ -78,17 +78,16 @@ public class UnlockMethod extends WebDAVMethod
                 strLockTokenHeader = "<" + strLockTokenHeader + ">";
             }
             if (strLockTokenHeader.startsWith("<" + WebDAV.OPAQUE_LOCK_TOKEN) && strLockTokenHeader.endsWith(">"))
-        {
-            try
             {
-                m_strLockToken = strLockTokenHeader.substring(
-                        WebDAV.OPAQUE_LOCK_TOKEN.length() + 1,
-                        strLockTokenHeader.length() - 1);
-            }
-            catch (IndexOutOfBoundsException e)
-            {
-                logger.warn("Failed to parse If header: " + strLockTokenHeader);
+                try
+                {
+                    m_strLockToken = strLockTokenHeader.substring(
+                            WebDAV.OPAQUE_LOCK_TOKEN.length() + 1,
+                            strLockTokenHeader.length() - 1);
                 }
+                catch (IndexOutOfBoundsException e)
+                {
+                    logger.warn("Failed to parse If header: " + strLockTokenHeader);
 	            }
 	        }
 	        // ALF-11817 If the header Lock-Token is incorrect (without < and >). 

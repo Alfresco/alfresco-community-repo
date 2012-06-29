@@ -105,10 +105,6 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     {
         if (this.rmActions.containsKey(rmAction.getName()) == false)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Registering rmAction " + rmAction);
-            }
             this.rmActions.put(rmAction.getName(), rmAction);
             
             if (rmAction.isDispositionAction() == true)

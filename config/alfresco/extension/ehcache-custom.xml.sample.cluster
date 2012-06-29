@@ -151,14 +151,8 @@
         overflowToDisk="false"
         statistics="false"
         >
-
-            <cacheEventListenerFactory
-                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                    properties="replicatePuts = false,
-                                replicateUpdates = true,
-                                replicateRemovals = true,
-                                replicateUpdatesViaCopy = false,
-                                replicateAsynchronously = false"/>
+        
+        <!-- We are intentionally not replicating this secondary cache and validating in the code --> 
     </cache>
 
     <cache
@@ -171,13 +165,7 @@
         statistics="false"
         >
 
-            <cacheEventListenerFactory
-                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                    properties="replicatePuts = false,
-                                replicateUpdates = true,
-                                replicateRemovals = true,
-                                replicateUpdatesViaCopy = false,
-                                replicateAsynchronously = false"/>
+        <!-- We are intentionally not replicating this secondary cache and validating in the code --> 
     </cache>
 
     <cache
@@ -188,13 +176,7 @@
         statistics="false"
         >
 
-            <cacheEventListenerFactory
-                    class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                    properties="replicatePuts = false,
-                                replicateUpdates = true,
-                                replicateRemovals = true,
-                                replicateUpdatesViaCopy = false,
-                                replicateAsynchronously = false"/>
+        <!-- We are intentionally not replicating this secondary cache and validating in the code --> 
     </cache>
 
     <cache

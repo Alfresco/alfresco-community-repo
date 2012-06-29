@@ -81,6 +81,13 @@
         </column>
       </columns>
       <primarykey name="avm_child_entries_pkey">
+        <validators>
+          <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
+            <properties>
+              <property name="pattern">.*</property>
+            </properties>
+          </validator>
+        </validators>
         <columnnames>
           <columnname order="1">parent_id</columnname>
           <columnname order="2">lc_name</columnname>

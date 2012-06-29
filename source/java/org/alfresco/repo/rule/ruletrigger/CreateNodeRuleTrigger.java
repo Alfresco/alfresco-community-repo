@@ -25,6 +25,8 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -119,6 +121,18 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
             return;
         }
         NodeRef nodeRef = childAssocRef.getChildRef();
+
+        // If the node has a single-valued content property, don't fire the trigger, as it will be handled by
+        // on-content-create-trigger, according to its settings for empty content
+        for (QName propertyQName : nodeService.getProperties(nodeRef).keySet())
+        {
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+            if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)
+                    && !propertyDef.isMultiValued())
+            {
+                return;
+            }
+        }
 
         // Keep track of new nodes to prevent firing of updates in the same transaction
         Set<NodeRef> newNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NEW_NODES);

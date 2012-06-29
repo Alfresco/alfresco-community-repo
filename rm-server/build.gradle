@@ -48,7 +48,11 @@ test {
   include '**/CompositeCapabilityTest.class'
   include '**/DeclarativeCapabilityTest.class'
   
+  include '**/JSONConversionComponentTest.class'
+  
+  include '**/CustomEMailMappingServiceServiceImplTest.class'
   include '**/DispositionServiceImplTest.class'
+  include '**/RecordsManagementActionServiceImplTest.class'
   
   testLogging.showStandardStreams = true
 

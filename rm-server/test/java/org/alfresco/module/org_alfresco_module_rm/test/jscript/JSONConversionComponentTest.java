@@ -72,22 +72,14 @@ public class JSONConversionComponentTest extends BaseRMTestCase
         (
            rmFolder,
            new String[]{"isRmNode", "true", "boolean"},
-           new String[]{"rmNode.kind", "RECORD_FOLDER"},
-           new String[]{"rmNode.closed", "false", "boolean"},
-           new String[]{"rmNode.declared", "false", "boolean"},
-           new String[]{"rmNode.frozen", "false", "boolean"},
-           new String[]{"rmNode.metatdata-stub", "false", "boolean"}
-           //containsFrozen
+           new String[]{"rmNode.kind", "RECORD_FOLDER"}
         ){});   
         
         doTestInTransaction(new JSONTest
         (
            record,
            new String[]{"isRmNode", "true", "boolean"},
-           new String[]{"rmNode.kind", "RECORD"},
-           new String[]{"rmNode.declared", "false", "boolean"},
-           new String[]{"rmNode.frozen", "false", "boolean"},
-           new String[]{"rmNode.metatdata-stub", "false", "boolean"}
+           new String[]{"rmNode.kind", "RECORD"}
         ){});  
     }
     

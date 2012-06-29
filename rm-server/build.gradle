@@ -44,8 +44,12 @@ task resetDatabase << {
 test {
   dependsOn resetDatabase
 
+  include '**/CapabilitiesTest.class'
+  include '**/CompositeCapabilityTest.class'
+  include '**/DeclarativeCapabilityTest.class'
+  
   include '**/DispositionServiceImplTest.class'
-
+  
   testLogging.showStandardStreams = true
 
   jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'

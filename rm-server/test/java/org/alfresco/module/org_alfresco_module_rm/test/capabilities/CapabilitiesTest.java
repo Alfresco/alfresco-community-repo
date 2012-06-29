@@ -814,7 +814,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_EVENTS,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_METADATA,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,
@@ -2200,7 +2200,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, MANAGE_ACCESS_RIGHTS,
                                 AccessStatus.ALLOWED);
                         check(access, MANUALLY_CHANGE_DISPOSITION_DATES,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, MAP_CLASSIFICATION_GUIDE_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, MAP_EMAIL_METADATA, AccessStatus.ALLOWED);
@@ -2324,7 +2324,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, MANAGE_ACCESS_RIGHTS,
                                 AccessStatus.ALLOWED);
                         check(access, MANUALLY_CHANGE_DISPOSITION_DATES,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, MAP_CLASSIFICATION_GUIDE_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, MAP_EMAIL_METADATA, AccessStatus.ALLOWED);
@@ -2447,7 +2447,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, MANAGE_ACCESS_RIGHTS,
                                 AccessStatus.ALLOWED);
                         check(access, MANUALLY_CHANGE_DISPOSITION_DATES,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, MAP_CLASSIFICATION_GUIDE_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, MAP_EMAIL_METADATA, AccessStatus.ALLOWED);
@@ -2568,7 +2568,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, MANAGE_ACCESS_RIGHTS,
                                 AccessStatus.ALLOWED);
                         check(access, MANUALLY_CHANGE_DISPOSITION_DATES,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, MAP_CLASSIFICATION_GUIDE_METADATA,
                                 AccessStatus.ALLOWED);
                         check(access, MAP_EMAIL_METADATA, AccessStatus.ALLOWED);

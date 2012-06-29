@@ -30,6 +30,7 @@ import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition;
+import org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
 import org.alfresco.module.org_alfresco_module_rm.security.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -145,6 +146,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         for (Capability capability : capabilities)
         {
             if (capability instanceof DeclarativeCapability && 
+                capability instanceof CompositeCapability == false &&
                 capability.isPrivate() == false &&
                 capability.getName().equals("MoveRecords") == false &&
                 capability.getName().equals("DeleteLinks") == false &&

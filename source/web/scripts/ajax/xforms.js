@@ -977,38 +977,67 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
       }
     }
 
-    for (var i in this._params)
+    // ALF-11956: Each RTE instance MUST BE configured with 'xformstabfocus' plugin to handle Shift + Tab keys
+    if (!this._params["plugins"] || (0 == this._params["plugins"].length))
     {
-      if (i in tinyMCE.settings)
-      {
-        alfresco.log("setting tinyMCE.settings[" + i + "] = " + this._params[i]);
-        tinyMCE.settings[i] = this._params[i];
-      }
-    }
-    
-    tinyMCE.settings.height = (this._params["height"]>0) ? parseInt(this._params["height"]) : this.widget.style.height;
-    tinyMCE.settings.width = (this._params["width"]>0) ? parseInt(this._params["width"]) : this.widget.style.width;  
-    
-    // ALF-9089
-    if (this._params["convert_fonts_to_spans"]=="false") tinyMCE.settings.convert_fonts_to_spans = false;
-    
-    tinyMCE.settings.auto_focus = this.widget.id;
-    tinyMCE.execCommand("mceAddControl", false, this.widget.id)
-    var editorDocument = tinyMCE.get(this.widget.id).getDoc();
-    editorDocument.widget = this;
-    
-    if (navigator.userAgent.contains('Safari'))
-    {
-      // ETHREEOH-2568 bug fixing
-      this.domNode.onmouseout = this._tinyMCE_blurHandler.bindAsEventListener(this);
+      this._params["plugins"] = "xformstabfocus";
     }
     else
     {
-      tinymce.dom.Event.add(editorDocument,window.ie ? "mouseout" : "blur", 
-            this._tinyMCE_blurHandler);
+      if (-1 == this._params["plugins"].indexOf("xformstabfocus"))
+      {
+        this._params["plugins"] += ",xformstabfocus"
+      }
     }
-    
-    tinymce.dom.Event.add(editorDocument, "focus", this._tinyMCE_focusHandler);
+
+    this._params["height"] = (this._params["height"] > 0) ? parseInt(this._params["height"]) : this.widget.style.height;
+    this._params["width"] = (this._params["width"] > 0) ? parseInt(this._params["width"]) : this.widget.style.width;
+
+    var t = this;
+    this._params["setup"] = function(ed)
+    {
+      ed.onLoadContent.add(function(ed)
+      {
+        var editorDocument = ed.getDoc();
+        if (null == editorDocument.widget)
+        {
+          editorDocument.widget = t;
+
+          if ("false" == t._params["convert_fonts_to_spans"])
+          {
+            ed.settings.convert_fonts_to_spans = false;
+          }
+
+          ed.settings.auto_focus = t.widget.id;
+
+          if (navigator.userAgent.contains("Safari"))
+          {
+            // ETHREEOH-2568 bug fixing
+            t.domNode.onmouseout = t._tinyMCE_blurHandler.bindAsEventListener(t);
+          }
+          else
+          {
+            tinymce.dom.Event.add(editorDocument, window.ie ? "mouseout" : "blur", t._tinyMCE_blurHandler);
+          }
+
+          tinymce.dom.Event.add(editorDocument, "focus", t._tinyMCE_focusHandler);
+        }
+      });
+
+      // Fix for issue in browsers where content is not saved after fullscreen mode is toggled off
+      ed.onSetContent.add(function(ed, o)
+      {
+        //if fullscreen plugin is available and o has these values, then we're coming out of fullscreen mode only
+        if (o.set && (undefined === o.initial) && ("raw" === o.format) && (-1 != ed.settings.plugins.indexOf('fullscreen')))
+        {
+          alfresco.xforms.RichTextEditor.currentInstance._commitValueChange(alfresco.xforms.RichTextEditor.currentInstance.getValue());                 
+        }
+      });
+    }
+
+    tinyMCE.init(this._params);
+    tinyMCE.execCommand("mceAddControl", false, this.widget.id);
+
     this._created = true;
   },
 
@@ -5627,17 +5656,16 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
 {
   theme: "advanced",
   mode: "exact",
-  plugins: ((alfresco.constants.TINY_MCE_DEFAULT_PLUGINS && (alfresco.constants.TINY_MCE_DEFAULT_PLUGINS.length > 0)) ? (alfresco.constants.TINY_MCE_DEFAULT_PLUGINS + ",xformstabfocus") : ("xformstabfocus")), // ALF-11956: Each RTE instance MUST BE configured with 'xformstabfocus' plugin to handle Shift + Tab keys
+  plugins: alfresco.constants.TINY_MCE_DEFAULT_PLUGINS,
   form_scope_id: "alfresco-xforms-ui", // ALF-11956: Id of a root container for all widgets. Scope of elements search
-  editor_condition: 'accesskey="z"', // ALF-11956: CSS class of element which handles events for RTE
-  forward_element_classes: "xformsAccessibilityInvisibleText", // ALF-11956
-  backward_element_classes: "mceButton mceButtonEnabled", // ALF-11956
+  editor_condition: 'accesskey="z"', // ALF-11956: CSS select condition for an element which should be interpreted as the "central" element of the RTE. Focusable element searching will be started from this element
+  forward_element_classes: "xformsAccessibilityInvisibleText", // ALF-11956: These CSS classes MUST BE applied to an element which should be interpreted as focusable during forward navigation
+  backward_element_classes: "mceButton mceButtonEnabled", // ALF-11956: These CSS classes MUST BE applied to an element which should be interpreted as focusable during backward navigation
   language: alfresco.constants.LANGUAGE,
   width: -1,
   height: -1,
   auto_resize: false,
   force_p_newlines: false,
-  // forced_root_block: false,
   encoding: "UTF-8",
   entity_encoding: "raw",
   add_unload_trigger: false,
@@ -5649,21 +5677,7 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
   theme_advanced_buttons3: "",
   urlconverter_callback: "alfresco_TinyMCE_urlconverter_callback",
   file_browser_callback: "alfresco_TinyMCE_file_browser_callback",
-  setup : function(ed)
-     {
-        // Fix for issue in browsers where content is not saved after fullscreen mode is toggled off
-        ed.onSetContent.add(function(ed, o) {
-              //if fullscreen plugin is available and o has these values, then we're coming out of fullscreen mode only
-              if ((ed.settings.plugins.indexOf('fullscreen')!=-1) && o.set && o.format==='raw' && o.initial===undefined)
-              {
-                 alfresco.xforms.RichTextEditor.currentInstance._commitValueChange(alfresco.xforms.RichTextEditor.currentInstance.getValue());                 
-              }
-         });
-         
-     }
 };
-
-tinyMCE.init($extend({}, alfresco.constants.TINY_MCE_DEFAULT_SETTINGS));
 
 window.addEvent("domready", 
                 function() 

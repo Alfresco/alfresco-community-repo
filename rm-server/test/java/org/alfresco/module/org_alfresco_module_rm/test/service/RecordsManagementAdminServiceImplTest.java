@@ -50,12 +50,10 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
-import org.antlr.grammar.v3.ANTLRv3Parser.throwsSpec_return;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -331,7 +329,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
     	// Failure: Add a property with the same name twice
     	doTestInTransaction(new FailureTest
         (
-        	"Can not create a property with the same id twice"
+        	"Can not create a property with the same id twice",
+        	CustomMetadataException.class
         )
         {
             @Override
@@ -350,7 +349,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
     	// Failure: Try and add a property to a type that isn't customisable
     	doTestInTransaction(new FailureTest
         (
-        	"Can not add a custom property to a type that isn't registered as customisable"
+        	"Can not add a custom property to a type that isn't registered as customisable",
+            CustomMetadataException.class
         )
         {
             @Override
@@ -364,26 +364,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
             			"Title", 
             			"Description");
             }
-        }); 
-    	
-    	// Failure: Add a property with the label twice (but no id specified) 
-//    	doTestInTransaction(new FailureTest
-//        (
-//        	"Can not create a property with the same label twice if no id is specified."
-//        )
-//        {
-//            @Override
-//            public void run()
-//            {
-//            	adminService.addCustomPropertyDefinition(
-//            			null, 
-//            			ASPECT_RECORD, 
-//            			"Label1", 
-//            			DataTypeDefinition.TEXT, 
-//            			"Title", 
-//            			"Description");
-//            }
-//        }); 
+        });     	
     }
     
     /**

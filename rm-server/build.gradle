@@ -53,6 +53,7 @@ test {
   include '**/CustomEMailMappingServiceServiceImplTest.class'
   include '**/DispositionServiceImplTest.class'
   include '**/RecordsManagementActionServiceImplTest.class'
+  include '**/RecordsManagementAdminServiceImplTest.class'
   
   testLogging.showStandardStreams = true
 

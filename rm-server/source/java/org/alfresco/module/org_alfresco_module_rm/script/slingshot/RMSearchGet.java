@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetailsCompatibility;
@@ -319,9 +318,8 @@ public class RMSearchGet extends DeclarativeWebScript
             for (Map.Entry<QName, Serializable> entry : nodeProperties.entrySet())
             {
                 QName qName = entry.getKey().getPrefixedQName(namespaceService);
-                if (RecordsManagementModel.RM_URI.equals(qName.getNamespaceURI()) == true ||
-                    RecordsManagementModel.RM_CUSTOM_URI.equals(qName.getNamespaceURI()) == true)
-                {
+                if (NamespaceService.SYSTEM_MODEL_1_0_URI.equals(qName.getNamespaceURI()) == false)
+                {   
                     String prefixName = qName.getPrefixString().replace(":", "_");
                     Serializable value = entry.getValue();
                     if (value instanceof NodeRef)

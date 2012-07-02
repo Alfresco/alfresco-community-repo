@@ -90,33 +90,6 @@ public class UnlockMethod extends WebDAVMethod
                     logger.warn("Failed to parse If header: " + strLockTokenHeader);
 	            }
 	        }
-	        // ALF-11817 If the header Lock-Token is incorrect (without < and >). 
-            else 
-            { 
-                // Build the lock token. 
-                FileInfo lockNodeInfo = null; 
-                String userName = null; 
-                try 
-                { 
-                    userName = getDAVHelper().getAuthenticationService().getCurrentUserName(); 
-                    lockNodeInfo = getNodeForPath(getRootNodeRef(), getPath(), getServletPath()); 
-                } 
-                catch (AuthenticationException ex) 
-                { 
-                    throw new WebDAVServerException(HttpServletResponse.SC_UNAUTHORIZED); 
-                } 
-                catch (FileNotFoundException e) 
-                { 
-                    throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND); 
-                } 
-                String buildLockToken = WebDAV.makeLockToken(lockNodeInfo.getNodeRef(), userName); 
-                // End build. 
-
-                if (strLockTokenHeader.equalsIgnoreCase(buildLockToken)) 
-                { 
-                    m_strLockToken = strLockTokenHeader; 
-                } 
-            } 
         }
         // If there is no token this is a bad request so send an error back
         if (m_strLockToken == null)

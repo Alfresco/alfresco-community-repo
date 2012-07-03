@@ -184,6 +184,11 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
                 ContentModel.ASSOC_CONTAINS,
                 new JavaBehaviour(this, "onFileContent", NotificationFrequency.TRANSACTION_COMMIT));
         
+        this.policyComponent.bindAssociationBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
+                TYPE_FILE_PLAN, 
+                ContentModel.ASSOC_CONTAINS, 
+                new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT)); 
        this.policyComponent.bindAssociationBehaviour(
                   QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                   TYPE_RECORD_CATEGORY, 

@@ -324,7 +324,7 @@ public class WebDAVServlet extends HttpServlet
         activityPoster = new ActivityPosterImpl(activityService, nodeService, personService);
         
         // Create the WebDAV helper
-        m_davHelper = new WebDAVHelper(serviceRegistry, authService, tenantService);
+        m_davHelper = (WebDAVHelper) context.getBean("webDAVHelper");
         
         // Initialize the root node
         initializeRootNode(storeValue, rootPath, context, nodeService, searchService, namespaceService, tenantService, transactionService);

@@ -28,4 +28,10 @@
     <bean id="webdavLockStoreFactory" class="org.alfresco.repo.webdav.LockStoreFactoryImpl">
         <property name="hazelcastInstanceFactory" ref="hazelcastInstanceFactory"/>
     </bean>
+    
+    <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper">
+        <constructor-arg ref="ServiceRegistry"/>
+        <constructor-arg ref="authenticationService"/>
+        <constructor-arg ref="tenantService"/>
+    </bean>
 </beans>

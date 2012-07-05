@@ -50,10 +50,12 @@ test {
   
   include '**/JSONConversionComponentTest.class'
   
+  include '**/RecordsManagementServiceImplTest.class'
   include '**/CustomEMailMappingServiceServiceImplTest.class'
   include '**/DispositionServiceImplTest.class'
   include '**/RecordsManagementActionServiceImplTest.class'
   include '**/RecordsManagementAdminServiceImplTest.class'
+  include '**/RecordsManagementSearchServiceImplTest.class'
   
   testLogging.showStandardStreams = true
 

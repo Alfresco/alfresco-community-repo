@@ -103,6 +103,13 @@
     	<property name="dispositionAction" value="accession"/>
     </bean>
     
+    <bean id="capabilityCondition.cutoffIsScheduled" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsScheduledCapabilityCondition">
+    	<property name="dispositionService" ref="DispositionService"/>
+    	<property name="dispositionAction" value="cutoff"/>
+    </bean>
+    
     <bean id="capabilityCondition.isTransferAccession" 
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsTransferAccessionCapabilityCondition">
@@ -119,6 +126,13 @@
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasDispositionDateCapabilityCondition">
        <property name="dispositionService" ref="DispositionService"/>
+    </bean>
+    
+    <bean id="capabilityCondition.lastDispositionActionCutoff" 
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.LastDispositionActionCondition">
+       <property name="dispositionService" ref="DispositionService"/>
+       <property name="dispositionActionName" value="cutoff"/>
     </bean>
 
 </beans>

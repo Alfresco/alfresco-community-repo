@@ -362,7 +362,7 @@
 				<value>RECORD</value>
 			</set>
 		</property>	
-		<property name="capability" value ="ApproveRecordsScheduledForCutoff"/>
+		<property name="capability" value ="CutOff"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.destroyAction"
@@ -412,7 +412,7 @@
 				<value>RECORD</value>
 			</set>
 		</property>	
-		<property name="capability" value ="ApproveRecordsScheduledForCutoff"/>
+		<property name="capability" value ="UndoCutOff"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.editDispositionAsOfDateAction"

@@ -105,7 +105,8 @@
    			<map>
    				<entry key="capabilityCondition.filling" value="true"/> 
    				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   	
-   				<entry key="capabilityCondition.hasDispositionAsOfDate" value="true"/>
+   				<entry key="capabilityCondition.hasDispositionAsOfDate" value="true"/> 
+   				<entry key="capabilityCondition.isTransferring" value="false" />
    			</map>
    		</property>
     </bean>
@@ -172,6 +173,53 @@
    				<entry key="capabilityCondition.isTransferAccession" value="true"/>
    			</map>
    		</property>	  		
+    </bean>
+    
+    <bean id="rmCutOffCapability" 
+    	  parent="compositeCapability">
+        <property name="name" value="CutOff"/> 		
+        <property name="private" value="true"/>	
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property> 	
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmApproveRecordsScheduledForCutoffCapability"/>        			    		
+    		</list>
+    	</property>		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.cutoff" value="false"/>
+   				<entry key="capabilityCondition.cutoffIsScheduled" value="true" />
+   			</map>
+   		</property>	
+    </bean>
+    
+    <bean id="rmUndoCutOffCapability" 
+    	  parent="compositeCapability">
+        <property name="name" value="UndoCutOff"/>
+        <property name="private" value="true"/>	  		
+		<property name="kinds">
+			<list>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</list>
+		</property>	
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmApproveRecordsScheduledForCutoffCapability"/>        			    		
+    		</list>
+    	</property>		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.cutoff" value="true"/>
+   				<entry key="capabilityCondition.isTransferring" value="false" />
+   				<entry key="capabilityCondition.lastDispositionActionCutoff" value="true"/>
+   			</map>
+   		</property>	
     </bean>
 
 </beans>

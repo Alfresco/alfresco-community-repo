@@ -128,7 +128,8 @@
    		<property name="conditions">
    			<map>
    				<entry key="capabilityCondition.filling" value="true"/>
-   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   				
+   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>  
+   				<entry key="capabilityCondition.isTransferring" value="false" /> 				
    				<entry key="capabilityCondition.transferred" value="false"/>
    				<entry key="capabilityCondition.destroyed" value="false"/>
    				<entry key="capabilityCondition.vitalRecordOrFolder" value="true"/>

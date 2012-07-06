@@ -124,27 +124,28 @@
                     <property name="failureHandlingOptions" ref="standardFailureOptions"/>
                 </bean>
             
-                 <!-- Image preview thumbnail options -->
-                 <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+                <!-- Image preview thumbnail options -->
+                <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
                     <property name="name" value="imgpreview" />
                     <property name="mimetype" value="image/png"/>
                     <property name="transformationOptions">
-                       <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-                          <property name="resizeOptions">
-                             <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-                                <property name="width" value="480"/>
-                                <property name="height" value="480"/>
-                                <property name="maintainAspectRatio" value="true"/>
-                                <property name="resizeToThumbnail" value="true" />
-                                <property name="allowEnlargement" value="false" />
-                             </bean>
-                          </property>
-                       </bean>
+                        <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
+                            <property name="resizeOptions">
+                                <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
+                                    <property name="width" value="960"/>
+                                    <property name="height" value="960"/>
+                                    <property name="maintainAspectRatio" value="true"/>
+                                    <property name="resizeToThumbnail" value="true" />
+                                    <property name="allowEnlargement" value="false" />
+                                </bean>
+                            </property>
+                        </bean>
                     </property>
                     <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_imgpreview.png" />
                     <property name="runAs" value="System"/>
                     <property name="failureHandlingOptions" ref="standardFailureOptions"/>
                 </bean>
+                
 
                 <!-- User avatar 64x64 image thumbnail options -->
                 <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">

@@ -359,6 +359,15 @@
     	<property name="contentService" ref="ContentService"/>
     </bean>
     
+    <bean id="webscript.org.alfresco.slingshot.rmsearch.rmsearchproperties.get" 
+          class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSearchPropertiesGet" 
+          parent="webscript">
+    	<property name="namespaceService" ref="namespaceService"/>
+    	<property name="dictionaryService" ref="DictionaryService"/>
+    	<property name="adminService" ref="RecordsManagementAdminService"/>
+    	<property name="recordsManagementService" ref="RecordsManagementService" />
+    </bean>
+    
     <bean id="webscript.org.alfresco.slingshot.forms.metadata.get" 
           class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.forms.RMMetaDataGet" 
           parent="webscript">

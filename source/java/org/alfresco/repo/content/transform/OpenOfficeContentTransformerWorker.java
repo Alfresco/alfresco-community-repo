@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.SocketOpenOfficeConnection;
 import org.alfresco.util.TempFileProvider;
 import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -97,38 +98,46 @@ public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHel
 
     public boolean isAvailable()
     {
-        return this.connection.isConnected();
+        return connection.isConnected();
     }
 
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory("OpenOfficeContentTransformerWorker", "connection", this.connection);
+        PropertyCheck.mandatory("OpenOfficeContentTransformerWorker", "connection", connection);
 
         // load the document conversion configuration
-        if (this.documentFormatsConfiguration != null)
+        if (documentFormatsConfiguration != null)
         {
             DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
             try
             {
-                InputStream is = resourceLoader.getResource(this.documentFormatsConfiguration).getInputStream();
-                this.formatRegistry = new XmlDocumentFormatRegistry(is);
+                InputStream is = resourceLoader.getResource(documentFormatsConfiguration).getInputStream();
+                formatRegistry = new XmlDocumentFormatRegistry(is);
             }
             catch (IOException e)
             {
-                throw new AlfrescoRuntimeException("Unable to load document formats configuration file: "
-                        + this.documentFormatsConfiguration);
+                throw new AlfrescoRuntimeException(
+                        "Unable to load document formats configuration file: " +
+                        documentFormatsConfiguration);
             }
         }
         else
         {
-            this.formatRegistry = new XmlDocumentFormatRegistry();
+            formatRegistry = new XmlDocumentFormatRegistry();
         }
 
         // set up the converter
-        if (this.converter == null)
+        if (converter == null)
         {
-            this.converter = new OpenOfficeDocumentConverter(this.connection);
+            converter = getDefaultConverter(connection);
         }
+    }
+
+    protected AbstractOpenOfficeDocumentConverter getDefaultConverter(OpenOfficeConnection connection)
+    {
+        return (connection instanceof SocketOpenOfficeConnection)
+           ? ((SocketOpenOfficeConnection)connection).getDefaultConverter()
+           : new OpenOfficeDocumentConverter(connection);
     }
 
     /**
@@ -157,14 +166,14 @@ public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHel
         String sourceExtension = mimetypeService.getExtension(sourceMimetype);
         String targetExtension = mimetypeService.getExtension(targetMimetype);
         // query the registry for the source format
-        DocumentFormat sourceFormat = this.formatRegistry.getFormatByFileExtension(sourceExtension);
+        DocumentFormat sourceFormat = formatRegistry.getFormatByFileExtension(sourceExtension);
         if (sourceFormat == null)
         {
             // no document format
             return false;
         }
         // query the registry for the target format
-        DocumentFormat targetFormat = this.formatRegistry.getFormatByFileExtension(targetExtension);
+        DocumentFormat targetFormat = formatRegistry.getFormatByFileExtension(targetExtension);
         if (targetFormat == null)
         {
             // no document format
@@ -185,7 +194,10 @@ public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHel
         }
     }
 
-    public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception
+    public void transform(
+            ContentReader reader,
+            ContentWriter writer,
+            TransformationOptions options) throws Exception
     {
         String sourceMimetype = getMimetype(reader);
         String targetMimetype = getMimetype(writer);
@@ -194,14 +206,14 @@ public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHel
         String sourceExtension = mimetypeService.getExtension(sourceMimetype);
         String targetExtension = mimetypeService.getExtension(targetMimetype);
         // query the registry for the source format
-        DocumentFormat sourceFormat = this.formatRegistry.getFormatByFileExtension(sourceExtension);
+        DocumentFormat sourceFormat = formatRegistry.getFormatByFileExtension(sourceExtension);
         if (sourceFormat == null)
         {
             // source format is not recognised
             throw new ContentIOException("No OpenOffice document format for source extension: " + sourceExtension);
         }
         // query the registry for the target format
-        DocumentFormat targetFormat = this.formatRegistry.getFormatByFileExtension(targetExtension);
+        DocumentFormat targetFormat = formatRegistry.getFormatByFileExtension(targetExtension);
         if (targetFormat == null)
         {
             // target format is not recognised
@@ -212,15 +224,19 @@ public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHel
         // does the format support the conversion
         if (!targetFormat.isExportableFrom(sourceFamily))
         {
-            throw new ContentIOException("OpenOffice conversion not supported: \n" + "   reader: " + reader + "\n"
-                    + "   writer: " + writer);
+            throw new ContentIOException(
+                    "OpenOffice conversion not supported: \n" +
+                    "   reader: " + reader + "\n" +
+                    "   writer: " + writer);
         }
 
         // create temporary files to convert from and to
-        File tempFromFile = TempFileProvider.createTempFile("OpenOfficeContentTransformer-source-", "."
-                + sourceExtension);
-        File tempToFile = TempFileProvider
-                .createTempFile("OpenOfficeContentTransformer-target-", "." + targetExtension);
+        File tempFromFile = TempFileProvider.createTempFile(
+                "OpenOfficeContentTransformer-source-",
+                "." + sourceExtension);
+        File tempToFile = TempFileProvider.createTempFile(
+                "OpenOfficeContentTransformer-target-",
+                "." + targetExtension);
 
         
         final long documentSize = reader.getSize();
@@ -247,14 +263,17 @@ public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHel
         	// it is preferred over PDFBox.
         	try
         	{
-        		this.converter.convert(tempFromFile, sourceFormat, tempToFile, targetFormat);
+        		converter.convert(tempFromFile, sourceFormat, tempToFile, targetFormat);
         		// conversion success
         	}
         	catch (OpenOfficeException e)
         	{
-        		throw new ContentIOException("OpenOffice server conversion failed: \n" + "   reader: " + reader + "\n"
-        				+ "   writer: " + writer + "\n" + "   from file: " + tempFromFile + "\n" + "   to file: "
-        				+ tempToFile, e);
+        		throw new ContentIOException("OpenOffice server conversion failed: \n" +
+                        "   reader: " + reader + "\n" +
+                        "   writer: " + writer + "\n" +
+                        "   from file: " + tempFromFile + "\n" +
+                        "   to file: " + tempToFile,
+                        e);
         	}
         }
         
@@ -267,57 +286,61 @@ public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHel
      * This method produces an empty PDF file at the specified File location.
      * Apache's PDFBox is used to create the PDF file.
      */
-	private void produceEmptyPdfFile(File tempToFile)
-	{
-	    // If improvement PDFBOX-914 is incorporated, we can do this with a straight call to 
-	    // org.apache.pdfbox.TextToPdf.createPDFFromText(new StringReader(""));
-	    // https://issues.apache.org/jira/browse/PDFBOX-914
-	    
+    private void produceEmptyPdfFile(File tempToFile)
+    {
+        // If improvement PDFBOX-914 is incorporated, we can do this with a straight call to
+        // org.apache.pdfbox.TextToPdf.createPDFFromText(new StringReader(""));
+        // https://issues.apache.org/jira/browse/PDFBOX-914
+
         PDDocument pdfDoc = null;
         PDPageContentStream contentStream = null;
         try
         {
             pdfDoc = new PDDocument();
             PDPage pdfPage = new PDPage();
-			// Even though, we want an empty PDF, some libs (e.g. PDFRenderer) object to PDFs
-			// that have literally nothing in them. So we'll put a content stream in it.
+            // Even though, we want an empty PDF, some libs (e.g. PDFRenderer) object to PDFs
+            // that have literally nothing in them. So we'll put a content stream in it.
             contentStream = new PDPageContentStream(pdfDoc, pdfPage);
             pdfDoc.addPage(pdfPage);
-            
-			// Now write the in-memory PDF document into the temporary file.
+
+            // Now write the in-memory PDF document into the temporary file.
             pdfDoc.save(tempToFile.getAbsolutePath());
 
         }
         catch (COSVisitorException cvx)
         {
-        	throw new ContentIOException("Error creating empty PDF file", cvx);
+            throw new ContentIOException("Error creating empty PDF file", cvx);
         }
         catch (IOException iox)
         {
-        	throw new ContentIOException("Error creating empty PDF file", iox);
+            throw new ContentIOException("Error creating empty PDF file", iox);
         }
         finally
         {
-        	if (contentStream != null)
-        	{
-        		try
-        		{
-					contentStream.close();
-				} catch (IOException ignored) {
-					// Intentionally empty
-				}
-        	}
-        	if (pdfDoc != null)
-        	{
-        		try
-        		{
-					pdfDoc.close();
-				} catch (IOException ignored) {
-					// Intentionally empty.
-				}
-        	}
+            if (contentStream != null)
+            {
+                try
+                {
+                    contentStream.close();
+                }
+                catch (IOException ignored)
+                {
+                    // Intentionally empty
+                }
+            }
+            if (pdfDoc != null)
+            {
+                try
+                {
+                    pdfDoc.close();
+                }
+                catch (IOException ignored)
+                {
+                    // Intentionally empty.
+                }
+            }
         }
-	}
+    }
 
     /*
      * (non-Javadoc)

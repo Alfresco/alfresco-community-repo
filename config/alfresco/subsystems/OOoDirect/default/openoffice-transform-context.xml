@@ -45,7 +45,8 @@
       </property>
    </bean>
 
-   <bean id="openOfficeConnection" class="net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection">
+   <bean id="openOfficeConnection" class="org.alfresco.util.SocketOpenOfficeConnection">
+      <constructor-arg value="${ooo.host}"/>
       <constructor-arg value="${ooo.port}"/>
    </bean>
 

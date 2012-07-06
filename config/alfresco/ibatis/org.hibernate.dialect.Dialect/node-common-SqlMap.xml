@@ -1127,6 +1127,7 @@
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>
         where
             parentNode.id = #{parentNode.id}
+            and assoc.type_qname_id = #{typeQNameId}
             and assoc.child_node_name = #{childNodeName}
             and assoc.child_node_name_crc = #{childNodeNameCrc}
     </select>

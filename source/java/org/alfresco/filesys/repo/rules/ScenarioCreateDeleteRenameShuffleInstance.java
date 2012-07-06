@@ -180,7 +180,7 @@ public class ScenarioCreateDeleteRenameShuffleInstance implements ScenarioInstan
                 {
                     int i = deleteName.lastIndexOf('.');
                     
-                    if(i > 0 && deleteName.substring(0, i).equalsIgnoreCase(createName.substring(0,i)))
+                    if((i > 0) && (i < createName.length()) && deleteName.substring(0, i).equalsIgnoreCase(createName.substring(0,i))) 
                     {
                         logger.debug("check filenames - does match");
                     }

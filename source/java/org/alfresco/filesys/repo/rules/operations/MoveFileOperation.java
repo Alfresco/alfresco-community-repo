@@ -89,7 +89,7 @@ public class MoveFileOperation implements Operation
     {
         if(o instanceof MoveFileOperation)
         {
-            RenameFileOperation r = (RenameFileOperation)o;
+            MoveFileOperation r = (MoveFileOperation)o;
             if(fromPath.equals(r.getFromPath()) && toPath.equals(r.getToPath()))
             {
                 return true;

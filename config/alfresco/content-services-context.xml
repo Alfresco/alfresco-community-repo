@@ -246,6 +246,7 @@
          <list>
             <value>EEE, d MMM yyyy HH:mm:ss Z</value>
             <value>EEE, d MMM yy HH:mm:ss Z</value>
+            <value>d MMM yyyy HH:mm:ss Z</value>
          </list>
       </property>
    </bean>

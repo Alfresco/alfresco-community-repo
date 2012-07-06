@@ -29,9 +29,5 @@
         <property name="hazelcastInstanceFactory" ref="hazelcastInstanceFactory"/>
     </bean>
     
-    <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper">
-        <constructor-arg ref="ServiceRegistry"/>
-        <constructor-arg ref="authenticationService"/>
-        <constructor-arg ref="tenantService"/>
-    </bean>
+    <!-- Configure remote-api source related beans in remote-api-context.xml to ensure no dependency problems -->
 </beans>

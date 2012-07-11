@@ -53,6 +53,8 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.Pair;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
@@ -853,22 +855,36 @@ public class WebDAVHelper
     }
     
 
+    public void setUrlPathPrefix(String urlPathPrefix)
+    {
+        m_urlPathPrefix = urlPathPrefix;
+    }
+    
     public String getUrlPathPrefix(HttpServletRequest request)
     {
+        StringBuilder urlStr = null;
         if (StringUtils.hasText(m_urlPathPrefix))
         {
-            return m_urlPathPrefix;
+            // A specific prefix has been configured in, so use it.
+            urlStr = new StringBuilder(m_urlPathPrefix);
         }
-        
-        StringBuilder urlStr = new StringBuilder(request.getRequestURI());
-        String servletPath = request.getServletPath();
-        
-        int rootPos = urlStr.indexOf(servletPath);
-        if (rootPos != -1)
+        else
         {
-            urlStr.setLength(rootPos + servletPath.length());
+            // Extract the path prefix from the request, using the servlet path as a guide.
+            // e.g. "/preamble/servlet-mapping/folder/file.txt"
+            // with a servlet path of "/servlet-mapping"
+            // would result in a path prefix of "/preamble/servlet-mapping" being discovered.
+            urlStr = new StringBuilder(request.getRequestURI());
+            String servletPath = request.getServletPath();
+            
+            int rootPos = urlStr.indexOf(servletPath);
+            if (rootPos != -1)
+            {
+                urlStr.setLength(rootPos + servletPath.length());
+            }
         }
         
+        // Ensure the prefix ends in the path separator.
         if (urlStr.charAt(urlStr.length() - 1) != PathSeperatorChar)
         {
             urlStr.append(PathSeperator);

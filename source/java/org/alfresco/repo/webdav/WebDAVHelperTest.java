@@ -18,17 +18,17 @@
  */
 package org.alfresco.repo.webdav;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * Tests for the WebDAVHelper class.
@@ -49,6 +49,28 @@ public class WebDAVHelperTest
         davHelper = new WebDAVHelper("", serviceRegistry, authService, tenantService);
     }
 
+    @Test
+    public void canGetUrlPathPrefixWhenExplicitlySet()
+    {
+        // Path prefix explicitly set on helper.
+        davHelper = new WebDAVHelper("/my/prefix", serviceRegistry, authService, tenantService);
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/my/prefix/folder/filename.txt");
+        String prefix = davHelper.getUrlPathPrefix(request);
+        assertEquals("/my/prefix/", prefix);
+    }
+
+    @Test
+    public void canGetUrlPathPrefixFromServletPath()
+    {
+        // Path prefix not explicitly set on helper.
+        davHelper = new WebDAVHelper("", serviceRegistry, authService, tenantService);
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/before/the-servlet/folder/filename.txt");
+        // Servlet path will be used to determine path prefix.
+        request.setServletPath("/the-servlet");
+        String prefix = davHelper.getUrlPathPrefix(request);
+        assertEquals("/before/the-servlet/", prefix);
+    }
+    
     @Test
     public void canGetDestinationPathWhenNoServletName()
     {

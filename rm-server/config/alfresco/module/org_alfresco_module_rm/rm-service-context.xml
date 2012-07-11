@@ -350,7 +350,8 @@
                 		{
                 			"records" : true,
                 			"recordfolders" : true,
-                			"frozen" : true
+                			"frozen" : true,
+                			"undeclaredrecords" : true
                 		}
                 	}
                 ]

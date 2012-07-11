@@ -185,19 +185,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 NodeServicePolicies.OnCreateNodePolicy.QNAME,  
                 TYPE_RECORD_FOLDER, 
                 new JavaBehaviour(this, "onCreateRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));                
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
-                ASPECT_FROZEN, 
-                new JavaBehaviour(this, "beforeDeleteFrozenNode", NotificationFrequency.TRANSACTION_COMMIT));
-    }
-    
-    public void beforeDeleteFrozenNode(NodeRef nodeRef)
-    {
-        if (nodeService.exists(nodeRef) && recordsManagementService.isFrozen(nodeRef) == true)
-        {
-            // Never allowed to delete a frozen node 
-            throw new AccessDeniedException("Frozen nodes can not be deleted");
-        }
     }
     
     /**

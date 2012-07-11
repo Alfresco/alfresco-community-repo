@@ -708,6 +708,14 @@
         </property>
     </bean>
     
+    <!--  Freeze Service  -->
+    
+    <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl" init-method="init">
+    	<property name="policyComponent" ref="policyComponent" />
+        <property name="recordsManagementService" ref="RecordsManagementService" />
+        <property name="nodeService" ref="nodeService" />
+    </bean>
+    
     <!-- Records Management Audit Service -->
     
     <bean id="recordsManagementAuditService" class="org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl" init-method="init">

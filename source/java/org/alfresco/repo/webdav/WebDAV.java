@@ -446,6 +446,10 @@ public class WebDAV
      */
     public static String getURLForPath(HttpServletRequest request, String urlPathPrefix, String path, boolean isCollection, String userAgent)
     {
+        if (!urlPathPrefix.endsWith(WebDAV.PathSeperator))
+        {
+            urlPathPrefix = urlPathPrefix + WebDAV.PathSeperator;
+        }
         StringBuilder urlStr = new StringBuilder(urlPathPrefix);
         
         if (path.equals(RootPath) == false)

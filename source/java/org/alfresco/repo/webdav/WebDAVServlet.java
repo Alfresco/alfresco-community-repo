@@ -347,8 +347,12 @@ public class WebDAVServlet extends HttpServlet
         m_davMethods.put(WebDAV.METHOD_PUT, PutMethod.class);
         m_davMethods.put(WebDAV.METHOD_UNLOCK, UnlockMethod.class);
     }
+        
+    protected WebDAVHelper getDAVHelper()
+    {
+        return m_davHelper;
+    }
     
-	
     /**
      * @param storeValue
      * @param rootPath
@@ -437,6 +441,8 @@ public class WebDAVServlet extends HttpServlet
         private boolean enabled = false;
         private String storeName;
         private String rootPath;
+        private String urlPathPrefix;
+        
         public boolean getEnabled()
         {
             return enabled;
@@ -476,6 +482,40 @@ public class WebDAVServlet extends HttpServlet
         public void setRootPath(String rootPath)
         {
             this.rootPath = rootPath;
+        }
+        
+        /**
+         * Get the path prefix that generated URLs should exhibit, e.g.
+         * <pre>
+         *   http://server.name&lt;prefix&gt;/path/to/file.txt
+         * </pre>
+         * In the default set up this would be of the form /context-path/servlet-name e.g. /alfresco/webdav:
+         * <pre>
+         *   http://server.name/alfresco/webdav/path/to/file.txt
+         * </pre>
+         * however if using URL rewriting rules or a reverse proxy in front of the webdav server
+         * you may choose to use, for example / for shorter URLs.
+         * <pre>
+         *   http://server.name/path/to/file.txt
+         * </pre>
+         * <p>
+         * Leaving this property blank will cause the prefix used to be /context-path/servlet-name
+         * 
+         * @return the urlPathPrefix
+         */
+        public String getUrlPathPrefix()
+        {
+            return urlPathPrefix;
+        }
+        
+        /**
+         * See {@link #getUrlPathPrefix()}
+         * 
+         * @param urlPathPrefix
+         */
+        public void setUrlPathPrefix(String urlPathPrefix)
+        {
+            this.urlPathPrefix = urlPathPrefix;
         }
     }
 }

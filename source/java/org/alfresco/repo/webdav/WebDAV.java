@@ -424,39 +424,29 @@ public class WebDAV
      * Returns a URL that could be used to access the given path.
      * 
      * @param request HttpServletRequest
+     * @param urlPathPrefix
      * @param path String
      * @param isCollection boolean
      * @return String
      */
-    public static String getURLForPath(HttpServletRequest request, String path, boolean isCollection)
+    public static String getURLForPath(HttpServletRequest request, String urlPathPrefix, String path, boolean isCollection)
     {
-        return getURLForPath(request, path, isCollection, null);
+        return getURLForPath(request, urlPathPrefix, path, isCollection, null);
     }
     
     /**
      * Returns a URL that could be used to access the given path.
      * 
      * @param request HttpServletRequest
+     * @param urlPathPrefix
      * @param path String
      * @param isCollection boolean
      * @param userAgent String
      * @return String
      */
-    public static String getURLForPath(HttpServletRequest request, String path, boolean isCollection, String userAgent)
+    public static String getURLForPath(HttpServletRequest request, String urlPathPrefix, String path, boolean isCollection, String userAgent)
     {
-        StringBuilder urlStr = new StringBuilder(request.getRequestURI());
-        String servletPath = request.getServletPath();
-        
-        int rootPos = urlStr.indexOf(servletPath);
-        if (rootPos != -1)
-        {
-            urlStr.setLength(rootPos + servletPath.length());
-        }
-        
-        if (urlStr.charAt(urlStr.length() - 1) != PathSeperatorChar)
-        {
-            urlStr.append(PathSeperator);
-        }
+        StringBuilder urlStr = new StringBuilder(urlPathPrefix);
         
         if (path.equals(RootPath) == false)
         {
@@ -476,6 +466,8 @@ public class WebDAV
         {
             urlStr.append( PathSeperator);
         }
+        
+        logger.debug("getURLForPath() path:" + path + " => url:" + urlStr);
         
         // Return the URL string
         return urlStr.toString();

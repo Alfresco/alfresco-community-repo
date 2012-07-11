@@ -1440,7 +1440,7 @@ public abstract class WebDAVMethod
      */
     protected String getURLForPath(HttpServletRequest request, String path, boolean isFolder)
     {
-        return WebDAV.getURLForPath(request, path, isFolder, m_userAgent);
+        return getDAVHelper().getURLForPath(request, path, isFolder, m_userAgent);
     }
 
     /**

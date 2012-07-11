@@ -57,6 +57,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.surf.util.URLEncoder;
+import org.springframework.util.StringUtils;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -99,11 +100,12 @@ public class WebDAVHelper
     //  Empty XML attribute list
     
     private AttributesImpl m_nullAttribs = new AttributesImpl();
+    private String m_urlPathPrefix;
     
     /**
      * Class constructor
      */
-    protected WebDAVHelper(ServiceRegistry serviceRegistry, AuthenticationService authService, TenantService tenantService)
+    protected WebDAVHelper(String urlPathPrefix, ServiceRegistry serviceRegistry, AuthenticationService authService, TenantService tenantService)
     {
         m_serviceRegistry = serviceRegistry;
         
@@ -118,6 +120,7 @@ public class WebDAVHelper
         m_permissionService = m_serviceRegistry.getPermissionService();
         m_tenantService     = tenantService;
         m_authService       = authService;
+        m_urlPathPrefix     = urlPathPrefix;
     }
     
     /**
@@ -278,6 +281,11 @@ public class WebDAVHelper
         }
         return results;
     }
+
+    protected String getURLForPath(HttpServletRequest request, String path, boolean isFolder, String userAgent)
+    {
+        return WebDAV.getURLForPath(request, getUrlPathPrefix(request), path, isFolder, userAgent);
+    }    
 
     /**
      * Get the file info for the given paths
@@ -817,7 +825,7 @@ public class WebDAVHelper
                     logger.debug("  URL host=" + url.getHost() + ", ServerName=" + request.getServerName() + ", localAddr=" + request.getLocalAddr());
                 }
             }
-            else if (url.getPath().indexOf(request.getServletPath()) == -1)
+            else if (!url.getPath().startsWith(getUrlPathPrefix(request)))
             {
                 // Debug
 
@@ -842,5 +850,30 @@ public class WebDAVHelper
 
             throw new WebDAVServerException(HttpServletResponse.SC_BAD_GATEWAY);
         }
+    }
+    
+
+    public String getUrlPathPrefix(HttpServletRequest request)
+    {
+        if (StringUtils.hasText(m_urlPathPrefix))
+        {
+            return m_urlPathPrefix;
+        }
+        
+        StringBuilder urlStr = new StringBuilder(request.getRequestURI());
+        String servletPath = request.getServletPath();
+        
+        int rootPos = urlStr.indexOf(servletPath);
+        if (rootPos != -1)
+        {
+            urlStr.setLength(rootPos + servletPath.length());
+        }
+        
+        if (urlStr.charAt(urlStr.length() - 1) != PathSeperatorChar)
+        {
+            urlStr.append(PathSeperator);
+        }
+        
+        return urlStr.toString();
     }
 }

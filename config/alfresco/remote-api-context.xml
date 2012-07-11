@@ -10,6 +10,7 @@
     </bean>
 
     <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper">
+        <constructor-arg value="${system.webdav.url.path.prefix}"/>
         <constructor-arg ref="ServiceRegistry"/>
         <constructor-arg ref="authenticationService"/>
         <constructor-arg ref="tenantService"/>

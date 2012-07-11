@@ -46,7 +46,7 @@ public class WebDAVHelperTest
     @Before
     public void setUp() throws Exception
     {
-        davHelper = new WebDAVHelper(serviceRegistry, authService, tenantService);
+        davHelper = new WebDAVHelper("", serviceRegistry, authService, tenantService);
     }
 
     @Test

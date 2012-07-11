@@ -347,7 +347,7 @@ public class WebDAVServlet extends HttpServlet
         m_davMethods.put(WebDAV.METHOD_PUT, PutMethod.class);
         m_davMethods.put(WebDAV.METHOD_UNLOCK, UnlockMethod.class);
     }
-        
+
     protected WebDAVHelper getDAVHelper()
     {
         return m_davHelper;

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.bean;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -30,6 +31,12 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
@@ -56,12 +63,16 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.axis.utils.ByteArrayOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * ADM Remote Store service.
@@ -328,50 +339,7 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         try
         {
-            // do not support filenames directly at the root - all objectypes must exist in a named child folder
-            final String encpath = encodePath(path);
-            final int off = encpath.lastIndexOf('/');
-            if (off != -1)
-            {
-                // check we actually are the user we are creating a user specific path for
-                String runAsUser = AuthenticationUtil.getFullyAuthenticatedUser();
-                String userId = null;
-                Matcher matcher;
-                if ((matcher = USER_PATTERN_1.matcher(path)).matches())
-                {
-                    userId = matcher.group(1);
-                }
-                else if ((matcher = USER_PATTERN_2.matcher(path)).matches())
-                {
-                    userId = matcher.group(1);
-                }
-                if (userId != null && userId.equals(runAsUser))
-                {
-                    runAsUser = AuthenticationUtil.getSystemUserName();
-                }
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    @SuppressWarnings("synthetic-access")
-                    public Void doWork() throws Exception
-                    {
-                        final FileInfo parentFolder = resolveNodePath(encpath, true, false);
-                        if (parentFolder == null)
-                        {
-                            throw new IllegalStateException("Unable to aquire parent folder reference for path: " + path);
-                        }
-                        FileInfo fileInfo = fileFolderService.create(
-                                parentFolder.getNodeRef(), encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
-
-                        ContentWriter writer = contentService.getWriter(
-                                fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-                        writer.guessMimetype(fileInfo.getName());
-                        writer.putContent(content);
-                        if (logger.isDebugEnabled())
-                            logger.debug("createDocument: " + fileInfo.toString());
-                        return null;
-                    }
-                }, runAsUser);
-            }
+            writeDocument(path, content);
         }
         catch (AccessDeniedException ae)
         {
@@ -389,9 +357,103 @@ public class ADMRemoteStore extends BaseRemoteStore
      * @param content       XML document containing multiple document contents to write
      */
     @Override
-    protected void createDocuments(WebScriptResponse res, String store, InputStream content)
+    protected void createDocuments(WebScriptResponse res, String store, InputStream in)
     {
-        // no implementation currently
+        try
+        {
+            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
+            Document document;
+            document = documentBuilder.parse(in);
+            Element docEl = document.getDocumentElement();
+            Transformer transformer = ADMRemoteStore.this.transformer.get();
+            for (Node n = docEl.getFirstChild(); n != null; n = n.getNextSibling())
+            {
+                if (!(n instanceof Element))
+                {
+                    continue;
+                }
+                final String path = ((Element) n).getAttribute("path");
+                
+                // Turn the first element child into a document
+                Document doc = documentBuilder.newDocument();
+                Node child;
+                for (child = n.getFirstChild(); child != null ; child=child.getNextSibling())
+                {
+                   if (child instanceof Element)
+                   {
+                       doc.appendChild(doc.importNode(child, true));
+                       break;
+                   }
+                }
+                ByteArrayOutputStream out = new ByteArrayOutputStream(512);
+                transformer.transform(new DOMSource(doc), new StreamResult(out));
+                out.close();
+                
+                writeDocument(path, new ByteArrayInputStream(out.toByteArray()));
+            }
+        }
+        catch (AccessDeniedException ae)
+        {
+            res.setStatus(Status.STATUS_UNAUTHORIZED);
+        }
+        catch (FileExistsException feeErr)
+        {
+            res.setStatus(Status.STATUS_CONFLICT);
+        }
+        catch (Exception e)
+        {
+            // various annoying checked SAX/IO exceptions related to XML processing can be thrown
+            // none of them should occur if the XML document is well formed
+            logger.error(e);
+            res.setStatus(Status.STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    private void writeDocument(final String path, final InputStream content)
+    {
+        final String encpath = encodePath(path);
+        final int off = encpath.lastIndexOf('/');
+        if (off != -1)
+        {
+            // check we actually are the user we are creating a user specific path for
+            String runAsUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            String userId = null;
+            Matcher matcher;
+            if ((matcher = USER_PATTERN_1.matcher(path)).matches())
+            {
+                userId = matcher.group(1);
+            }
+            else if ((matcher = USER_PATTERN_2.matcher(path)).matches())
+            {
+                userId = matcher.group(1);
+            }
+            if (userId != null && userId.equals(runAsUser))
+            {
+                runAsUser = AuthenticationUtil.getSystemUserName();
+            }
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
+            {
+                @SuppressWarnings("synthetic-access")
+                public Void doWork() throws Exception
+                {
+                    final FileInfo parentFolder = resolveNodePath(encpath, true, false);
+                    if (parentFolder == null)
+                    {
+                        throw new IllegalStateException("Unable to aquire parent folder reference for path: " + path);
+                    }
+                    FileInfo fileInfo = fileFolderService.create(
+                            parentFolder.getNodeRef(), encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
+                    
+                    ContentWriter writer = contentService.getWriter(
+                            fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                    writer.guessMimetype(fileInfo.getName());
+                    writer.putContent(content);
+                    if (logger.isDebugEnabled())
+                        logger.debug("createDocument: " + fileInfo.toString());
+                    return null;
+                }
+            }, runAsUser);
+        }
     }
 
     /**

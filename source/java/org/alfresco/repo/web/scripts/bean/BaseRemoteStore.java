@@ -25,17 +25,19 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
 
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Remote Store service.
@@ -101,6 +103,23 @@ public abstract class BaseRemoteStore extends AbstractWebScript
     
     protected String defaultStore;
     protected MimetypeService mimetypeService;
+    
+    protected static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
+    protected static ThreadLocal<Transformer> transformer = new ThreadLocal<Transformer>()
+    {
+        @Override
+        protected Transformer initialValue()
+        {
+            try
+            {
+                return TRANSFORMER_FACTORY.newTransformer();
+            }
+            catch (TransformerConfigurationException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }        
+    };
     
     
     /**

@@ -31,8 +31,6 @@ import java.util.StringTokenizer;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -70,22 +68,6 @@ import org.w3c.dom.Node;
 public class AVMRemoteStore extends BaseRemoteStore
 {
     private static final Log logger = LogFactory.getLog(AVMRemoteStore.class);
-    private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
-    private static ThreadLocal<Transformer> transformer = new ThreadLocal<Transformer>()
-    {
-        @Override
-        protected Transformer initialValue()
-        {
-            try
-            {
-                return TRANSFORMER_FACTORY.newTransformer();
-            }
-            catch (TransformerConfigurationException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }        
-    };
     private String rootPath = "/"; 
     private AVMService avmService;
     private SearchService searchService;
@@ -305,7 +287,7 @@ public class AVMRemoteStore extends BaseRemoteStore
             {
                 try
                 {
-                    Set<String> checkedPaths = new HashSet<String>(19);
+                    Set<String> checkedPaths = new HashSet<String>(16);
                     DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
                     Document document = documentBuilder.parse(in);
                     Element docEl = document.getDocumentElement();

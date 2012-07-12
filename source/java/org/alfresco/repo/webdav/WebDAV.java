@@ -131,7 +131,6 @@ public class WebDAV
     
     public static final String ASTERISK = "*";
     public static final String DEFAULT_NAMESPACE_URI = "DAV:";
-    public static final String DIR_SEPARATOR = "/";
     public static final String FAKE_TOKEN = "faketoken";
     public static final String HTTP1_1 = "HTTP/1.1";
     public static final String INFINITE = "Infinite";

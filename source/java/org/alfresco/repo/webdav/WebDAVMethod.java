@@ -279,7 +279,7 @@ public abstract class WebDAVMethod
         this.m_davHelper = davHelper;
         this.m_rootNodeRef = rootNode;
 
-        this.m_strPath = WebDAV.getRepositoryPath(req);
+        this.m_strPath = m_davHelper.getRepositoryPath(m_request);
     }
 
     private File getRequestBodyAsFile(HttpServletRequest req) throws IOException

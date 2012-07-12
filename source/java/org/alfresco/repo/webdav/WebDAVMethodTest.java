@@ -21,6 +21,9 @@ package org.alfresco.repo.webdav;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -29,11 +32,13 @@ import org.springframework.mock.web.MockHttpServletResponse;
  * 
  * @author Matt Ward
  */
+@RunWith(MockitoJUnitRunner.class)
 public class WebDAVMethodTest
 {
     private WebDAVMethod method;
     private MockHttpServletRequest req;
     private MockHttpServletResponse resp;
+    private @Mock WebDAVHelper davHelper;
     
     @Test
     public void canGetStatusForAccessDeniedException()
@@ -68,7 +73,7 @@ public class WebDAVMethodTest
         // Fresh objects needed for each status code test.
         createRequestObjects();
         req.addHeader("User-Agent", userAgent);
-        method.setDetails(req, resp, null, null);
+        method.setDetails(req, resp, davHelper, null);
         
         int statusCode = method.getStatusForAccessDeniedException();
         

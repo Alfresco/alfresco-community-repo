@@ -489,34 +489,6 @@ public class WebDAVHelper
     }
     
     /**
-     * Replace one string instance with another within the specified string
-     * 
-     * @return              Returns the replaced string
-     */
-    public static String replace(String str, String repl, String with)
-    {
-        int lastindex = 0;
-        int pos = str.indexOf(repl);
-        
-        // If no replacement needed, return the original string
-        // and save StringBuffer allocation/char copying
-        if (pos < 0)
-        {
-            return str;
-        }
-        
-        int len = repl.length();
-        int lendiff = with.length() - repl.length();
-        StringBuilder out = new StringBuilder((lendiff <= 0) ? str.length() : (str.length() + (lendiff << 3)));
-        for (; pos >= 0; pos = str.indexOf(repl, lastindex = pos + len))
-        {
-            out.append(str.substring(lastindex, pos)).append(with);
-        }
-        
-        return out.append(str.substring(lastindex, str.length())).toString();
-    }
-    
-    /**
      * Encodes the given string to valid HTML format
      * 
      * @param string        the String to convert

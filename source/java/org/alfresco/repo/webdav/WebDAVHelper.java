@@ -897,7 +897,7 @@ public class WebDAVHelper
         if (strPath == null || strPath.length() == 0)
         {
             // If we still have not got a path then default to the root directory
-            strPath = RootPath;
+            strPath = WebDAV.RootPath;
         }
         else if (strPath.startsWith(request.getServletPath()))
         {
@@ -910,13 +910,13 @@ public class WebDAVHelper
             }
             else
             {
-                strPath = RootPath;
+                strPath = WebDAV.RootPath;
             }
         }
 
         // Make sure there are no trailing slashes
         
-        if (strPath.length() > 1 && strPath.endsWith(DIR_SEPARATOR))
+        if (strPath.length() > 1 && strPath.endsWith(WebDAV.PathSeperator))
         {
             strPath = strPath.substring(0, strPath.length() - 1);
         }

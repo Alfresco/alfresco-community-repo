@@ -238,7 +238,7 @@ public class WebDAV
     
     // Root path
     
-    private static final String RootPath = PathSeperator;
+    public static final String RootPath = PathSeperator;
     
     // Map WebDAV property names to Alfresco property names
     

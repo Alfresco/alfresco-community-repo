@@ -2579,6 +2579,10 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                         return null;
                     }
                     Task startTask = processInstance.getProcessDefinition().getTaskMgmtDefinition().getStartTask();
+                    if(startTask == null)
+                    {
+                       return null;
+                    }
                     
                     // retrieve task
                     Session session = context.getSession();
@@ -2587,6 +2591,10 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                     Criteria process = taskCriteria.createCriteria("processInstance");
                     process.add(Restrictions.eq("id", processInstance.getId()));
                     TaskInstance taskInstance = (TaskInstance) taskCriteria.uniqueResult();
+                    if(taskInstance == null)
+                    {
+                       return null;
+                    }
                     return createWorkflowTask(taskInstance);
                 }
             });

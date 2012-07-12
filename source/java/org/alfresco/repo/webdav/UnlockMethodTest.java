@@ -4,23 +4,34 @@ import static org.junit.Assert.*;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
+@RunWith(MockitoJUnitRunner.class)
 public class UnlockMethodTest
 {
     private UnlockMethod unlockMethod;
     private MockHttpServletRequest request;
+    private MockHttpServletResponse response;
+    private @Mock WebDAVHelper davHelper;
     
     @Before
     public void setUp() throws Exception
     {
         request = new MockHttpServletRequest();
-        
+        response = new MockHttpServletResponse();
         unlockMethod = new UnlockMethod();
-        unlockMethod.setDetails(request, null, null, null);
+        unlockMethod.setDetails(request, response, davHelper, null);
     }
 
     @Test

@@ -350,63 +350,6 @@ public class WebDAV
         }
         return value;
     }
-    
-    /**
-     * Returns a URL that could be used to access the given path.
-     * 
-     * @param request HttpServletRequest
-     * @param urlPathPrefix
-     * @param path String
-     * @param isCollection boolean
-     * @return String
-     */
-    public static String getURLForPath(HttpServletRequest request, String urlPathPrefix, String path, boolean isCollection)
-    {
-        return getURLForPath(request, urlPathPrefix, path, isCollection, null);
-    }
-    
-    /**
-     * Returns a URL that could be used to access the given path.
-     * 
-     * @param request HttpServletRequest
-     * @param urlPathPrefix
-     * @param path String
-     * @param isCollection boolean
-     * @param userAgent String
-     * @return String
-     */
-    public static String getURLForPath(HttpServletRequest request, String urlPathPrefix, String path, boolean isCollection, String userAgent)
-    {
-        if (!urlPathPrefix.endsWith(WebDAV.PathSeperator))
-        {
-            urlPathPrefix = urlPathPrefix + WebDAV.PathSeperator;
-        }
-        StringBuilder urlStr = new StringBuilder(urlPathPrefix);
-        
-        if (path.equals(RootPath) == false)
-        {
-            // split the path and URL encode each path element
-            for (StringTokenizer t = new StringTokenizer(path, PathSeperator); t.hasMoreTokens(); /**/)
-            {
-                urlStr.append( WebDAVHelper.encodeURL(t.nextToken(), userAgent) );
-                if (t.hasMoreTokens())
-                {
-                    urlStr.append(PathSeperator);
-                }
-            }
-        }
-        
-        // If the URL is to a collection add a trailing slash
-        if (isCollection && urlStr.charAt( urlStr.length() - 1) != PathSeperatorChar)
-        {
-            urlStr.append( PathSeperator);
-        }
-        
-        logger.debug("getURLForPath() path:" + path + " => url:" + urlStr);
-        
-        // Return the URL string
-        return urlStr.toString();
-    }
 
     /**
      * Returns a context-relative path, beginning with a "/", that represents the canonical version

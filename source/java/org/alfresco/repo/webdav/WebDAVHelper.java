@@ -284,9 +284,39 @@ public class WebDAVHelper
         return results;
     }
 
-    protected String getURLForPath(HttpServletRequest request, String path, boolean isFolder, String userAgent)
+    public String getURLForPath(HttpServletRequest request, String path, boolean isCollection)
     {
-        return WebDAV.getURLForPath(request, getUrlPathPrefix(request), path, isFolder, userAgent);
+        return getURLForPath(request, path, isCollection, null);
+    }
+    
+    public String getURLForPath(HttpServletRequest request, String path, boolean isCollection, String userAgent)
+    {
+        String urlPathPrefix = getUrlPathPrefix(request);
+        StringBuilder urlStr = new StringBuilder(urlPathPrefix);
+        
+        if (path.equals(WebDAV.RootPath) == false)
+        {
+            // split the path and URL encode each path element
+            for (StringTokenizer t = new StringTokenizer(path, PathSeperator); t.hasMoreTokens(); /**/)
+            {
+                urlStr.append( WebDAVHelper.encodeURL(t.nextToken(), userAgent) );
+                if (t.hasMoreTokens())
+                {
+                    urlStr.append(PathSeperator);
+                }
+            }
+        }
+        
+        // If the URL is to a collection add a trailing slash
+        if (isCollection && urlStr.charAt( urlStr.length() - 1) != PathSeperatorChar)
+        {
+            urlStr.append( PathSeperator);
+        }
+        
+        logger.debug("getURLForPath() path:" + path + " => url:" + urlStr);
+        
+        // Return the URL string
+        return urlStr.toString();
     }    
 
     /**

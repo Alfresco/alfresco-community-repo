@@ -892,4 +892,9 @@ public class WebDAVHelper
         
         return urlStr.toString();
     }
+    
+    public String getRepositoryPath(HttpServletRequest request)
+    {
+        return WebDAV.getRepositoryPath(request);
+    }
 }

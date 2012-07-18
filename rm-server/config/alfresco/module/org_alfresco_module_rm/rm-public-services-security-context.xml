@@ -609,7 +609,7 @@
     <!-- the associated permission, as does cancel check out. See the permission model   -->
     <!-- for how these permissions are granted.                                          -->
     
-    <bean id="CheckoutCheckinService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+    <bean id="CheckOutCheckInService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
         </property>
@@ -622,10 +622,14 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[ 
-                org.alfresco.service.cmr.coci.CheckOutCheckInService.checkout=ACL_NODE.0.cm:lockable.CheckOut,RM_ABSTAIN 
-                org.alfresco.service.cmr.coci.CheckOutCheckInService.checkin=ACL_NODE.0.cm:lockable.CheckIn,RM_ABSTAIN 
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.checkout=ACL_NODE.0.cm:lockable.CheckOut,RM_ABSTAIN
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.checkin=ACL_NODE.0.cm:lockable.CheckIn,RM_ABSTAIN
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.cancelCheckout=ACL_NODE.0.cm:lockable.CancelCheckOut,RM_ABSTAIN
-                org.alfresco.service.cmr.coci.CheckOutCheckInService.getWorkingCopy=ACL_NODE.0.sys:base.Read,RM_ABSTAIN 
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.getWorkingCopy=ACL_NODE.0.sys:base.Read,RM.Read.0 
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.getCheckedOut=ACL_NODE.0.sys:base.Read,RM.Read.0 
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.isWorkingCopy=ACL_NODE.0.sys:base.Read,RM.Read.0 
+                org.alfresco.service.cmr.coci.CheckOutCheckInService.isCheckedOut=ACL_NODE.0.sys:base.Read,RM.Read.0 
+                
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.*=ACL_DENY,RM_DENY 
                 ]]>
             </value>

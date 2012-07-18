@@ -260,8 +260,6 @@ public class RecordsManagementNotificationHelper
             {
                 logger.warn("Unable to send record superseded email notification, because notification group was empty.");
             }
-            
-            throw new AlfrescoRuntimeException("Unable to send record superseded email notification, because notification group was empty.");
         }
     }
     

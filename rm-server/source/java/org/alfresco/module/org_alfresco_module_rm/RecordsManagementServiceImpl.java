@@ -179,24 +179,24 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     public void init()
     {        
         // Register the association behaviours
-        this.policyComponent.bindAssociationBehaviour(
+        policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                 TYPE_RECORD_FOLDER, 
                 ContentModel.ASSOC_CONTAINS,
                 new JavaBehaviour(this, "onFileContent", NotificationFrequency.TRANSACTION_COMMIT));
         
-        this.policyComponent.bindAssociationBehaviour(
+        policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                 TYPE_FILE_PLAN, 
                 ContentModel.ASSOC_CONTAINS, 
                 new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT)); 
-       this.policyComponent.bindAssociationBehaviour(
+        policyComponent.bindAssociationBehaviour(
                   QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                   TYPE_RECORD_CATEGORY, 
                   ContentModel.ASSOC_CONTAINS, 
                   new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT));
        
-       policyComponent.bindAssociationBehaviour(
+        policyComponent.bindAssociationBehaviour(
                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                ASPECT_RECORD,
                RenditionModel.ASSOC_RENDITION,
@@ -204,7 +204,7 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
                );
         
         // Register script execution behaviour on RM property update.
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ASPECT_FILE_PLAN_COMPONENT,
                 new JavaBehaviour(this, "onChangeToAnyRmProperty", NotificationFrequency.TRANSACTION_COMMIT));
         
@@ -266,14 +266,10 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
      */
     public void onAddContentToContainer(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        if (childAssocRef.getTypeQName().equals(ContentModel.ASSOC_CONTAINS))
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
         {
-            QName childType = nodeService.getType(childAssocRef.getChildRef());
-            
-            if(childType.equals(ContentModel.TYPE_CONTENT))
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));   
-            }
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));   
         }
     }
     

@@ -42,7 +42,7 @@ import org.alfresco.util.Deleter;
 import org.alfresco.util.NameMatcher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * End to end test of deployment to a file system receiver (FSR).
@@ -82,8 +82,8 @@ public class DeploymentServiceImplFSTest extends AVMServiceTestBase
     	 * Start the FSR
     	 */
         @SuppressWarnings("unused")
-        FileSystemXmlApplicationContext receiverContext =
-            new FileSystemXmlApplicationContext("../deployment/config/application-context.xml");
+        ClassPathXmlApplicationContext receiverContext =
+            new ClassPathXmlApplicationContext("application-context.xml"); // Fetch application context from deployment
         
         service = (DeploymentService)fContext.getBean("DeploymentService");    
     }

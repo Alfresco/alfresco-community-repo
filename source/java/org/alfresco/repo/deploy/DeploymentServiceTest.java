@@ -60,7 +60,7 @@ import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.wcm.webproject.WebProjectInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Test of deployment to a Test Server.   
@@ -116,8 +116,8 @@ public class DeploymentServiceTest extends AbstractWCMServiceImplTest
          * Start the FSR
          */
         @SuppressWarnings("unused")
-        FileSystemXmlApplicationContext receiverContext =
-            new FileSystemXmlApplicationContext("../deployment/config/application-context.xml");
+        ClassPathXmlApplicationContext receiverContext =
+            new ClassPathXmlApplicationContext("application-context.xml"); // Fetch application context from deployment
  
         
     }

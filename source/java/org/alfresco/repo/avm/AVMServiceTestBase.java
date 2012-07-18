@@ -572,4 +572,9 @@ public class AVMServiceTestBase extends TestCase
         int latest = fService.getNextVersionID(repName);
         history.put(latest - 1, recursiveList(repName, -1, false));
     }
+
+    protected String getSourceFolder()
+    {
+        return System.getProperty("alfresco.java.sources.dir", "source/java");
+    }
 }

@@ -38,7 +38,7 @@ public class AVMCrawlTestP extends AVMServiceTestBase
     public void xtestCrawlA()
     {
         testCrawl(1,
-                  "source/java/org/alfresco/repo/avm/actions", // relative from .../repository
+                  getSourceFolder() + "/org/alfresco/repo/avm/actions", // relative from .../repository
                   1,
                   30000); // 30 secs
     }
@@ -47,7 +47,7 @@ public class AVMCrawlTestP extends AVMServiceTestBase
     public void testCrawlB()
     {
         testCrawl(2,
-                  "source/java/org/alfresco/repo/avm/actions", // relative from .../repository
+                  getSourceFolder() + "/org/alfresco/repo/avm/actions", // relative from .../repository
                   2,
                   30000); // 30 secs
     }
@@ -56,7 +56,7 @@ public class AVMCrawlTestP extends AVMServiceTestBase
     public void xtestCrawlC()
     {
         testCrawl(10,
-                  "source/java/org/alfresco/repo/avm", // relative from .../repository
+                  getSourceFolder() + "/org/alfresco/repo/avm", // relative from .../repository
                   2,
                   60000); // 1 min
     }

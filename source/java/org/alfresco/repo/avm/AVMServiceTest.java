@@ -540,7 +540,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             
             assertEquals(1, fService.getStoreVersions("main").size());
             
-            loader.recursiveLoad("source/java/org/alfresco/repo/avm/actions", "main:/");
+            loader.recursiveLoad(getSourceFolder()+"/org/alfresco/repo/avm/actions", "main:/");
             
             long time = System.currentTimeMillis();
             times.add(time);
@@ -548,7 +548,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             
             assertEquals(1, fService.createSnapshot("main", null, null).get("main").intValue());
             
-            loader.recursiveLoad("source/java/org/alfresco/repo/avm/ibatis", "main:/");
+            loader.recursiveLoad(getSourceFolder()+"/org/alfresco/repo/avm/ibatis", "main:/");
             
             time = System.currentTimeMillis();
             times.add(time);
@@ -556,7 +556,7 @@ public class AVMServiceTest extends AVMServiceTestBase
             
             assertEquals(2, fService.createSnapshot("main", null, null).get("main").intValue());
             
-            loader.recursiveLoad("source/java/org/alfresco/repo/avm/locking", "main:/");
+            loader.recursiveLoad(getSourceFolder()+"/org/alfresco/repo/avm/locking", "main:/");
             
             time = System.currentTimeMillis();
             times.add(time);
@@ -990,7 +990,7 @@ public class AVMServiceTest extends AVMServiceTestBase
                 {
                     BulkLoader loader = new BulkLoader();
                     loader.setAvmService(fService);
-                    loader.recursiveLoad("source/java/org/alfresco/repo/avm", "source:/");
+                    loader.recursiveLoad(getSourceFolder()+"/org/alfresco/repo/avm", "source:/");
                     return null;
                 }
             };
@@ -2744,8 +2744,8 @@ public class AVMServiceTest extends AVMServiceTestBase
         //String LOAD_DIR1 = "config/alfresco/bootstrap";
         //String LOAD_DIR2 = "config/alfresco/extension";
         
-        String LOAD_DIR1 = "source/java/org/alfresco/repo/avm/actions";
-        String LOAD_DIR2 = "source/java/org/alfresco/repo/avm/ibatis";
+        String LOAD_DIR1 = getSourceFolder()+"/org/alfresco/repo/avm/actions";
+        String LOAD_DIR2 = getSourceFolder()+"/org/alfresco/repo/avm/ibatis";
         
         String[] split1 = LOAD_DIR1.split("/");
         String DIR1 = split1[split1.length-1];

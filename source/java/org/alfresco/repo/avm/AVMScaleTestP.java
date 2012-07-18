@@ -31,14 +31,14 @@ public class AVMScaleTestP extends AVMServiceTestBase
     public void testScaleA()
     {
         testScaling(1,
-                    "source/java/org/alfresco/repo/avm/actions", // relative from .../repository
+                    getSourceFolder() + "/org/alfresco/repo/avm/actions", // relative from .../repository
                     1);
     }
     
     public void testScaleB()
     {
         testScaling(2,
-                    "source/java/org/alfresco/repo/avm", // relative from .../repository
+                    getSourceFolder() + "/org/alfresco/repo/avm", // relative from .../repository
                     2);
     }
 

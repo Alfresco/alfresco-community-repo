@@ -86,7 +86,7 @@ public class PurgeTestP extends AVMServiceTestBase
             
             
             //loader.recursiveLoad("source/web", "main:/");
-            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+            loader.recursiveLoad(getSourceFolder() + "/org/alfresco/repo/avm", "main:/");
             
             
             logger.info("Load time: " + (System.currentTimeMillis() - start) + "ms");
@@ -119,7 +119,7 @@ public class PurgeTestP extends AVMServiceTestBase
             
             
             //loader.recursiveLoad("source", "main:/");
-            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+            loader.recursiveLoad(getSourceFolder() + "/org/alfresco/repo/avm", "main:/");
             
             
             logger.info("Load time: " + (System.currentTimeMillis() - start) + "ms");
@@ -160,7 +160,7 @@ public class PurgeTestP extends AVMServiceTestBase
             
             
             //loader.recursiveLoad("source", "main:/");
-            loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main:/");
+            loader.recursiveLoad(getSourceFolder() + "/org/alfresco/repo/avm", "main:/");
             
             
             logger.info("Load time: " + (System.currentTimeMillis() - start) + "ms");

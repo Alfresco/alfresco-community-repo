@@ -1043,7 +1043,8 @@ public class AVMServiceLocalTest extends TestCase
     public void testBulkUpdateLD() throws Exception
     {
         //String LOAD_DIR = "config/alfresco/bootstrap";
-        String LOAD_DIR = "source/java/org/alfresco/repo/avm/actions";
+        String LOAD_DIR = System.getProperty("alfresco.java.sources.dir", "source/java") +
+            "/org/alfresco/repo/avm/actions";
         
         String[] split = LOAD_DIR.split("/");
         String DIR = split[split.length-1];

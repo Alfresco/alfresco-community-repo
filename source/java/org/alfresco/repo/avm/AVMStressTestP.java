@@ -33,7 +33,7 @@ public class AVMStressTestP extends AVMServiceTestBase
     public void xtestStressA() throws Throwable
     {
         testNThreads(   1,  // nThreads
-                        "source/java/org/alfresco/repo/avm/actions", // relative dir to load from (.../repository)
+                        getSourceFolder() + "/org/alfresco/repo/avm/actions", // relative dir to load from (.../repository)
                         1,  // nCopies
                         1,  // create file
                         1,  // create dir
@@ -51,7 +51,7 @@ public class AVMStressTestP extends AVMServiceTestBase
     public void testStressB() throws Throwable
     {
         testNThreads(   2,  // nThreads
-                        "source/java/org/alfresco/repo/avm/actions", // relative dir to load from (.../repository)
+                        getSourceFolder() + "/org/alfresco/repo/avm/actions", // relative dir to load from (.../repository)
                         1,  // nCopies
                         10,  // create file
                         2,  // create dir

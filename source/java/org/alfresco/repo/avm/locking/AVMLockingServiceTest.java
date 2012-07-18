@@ -316,7 +316,9 @@ public class AVMLockingServiceTest extends TestCase
                 {
                     BulkLoader loader = new BulkLoader();
                     loader.setAvmService(avmService);
-                    loader.recursiveLoad("source/java/org/alfresco/repo/avm", "main--admin:/");
+                    loader.recursiveLoad(
+                        System.getProperty("alfresco.java.sources.dir", "source/java") + "/org/alfresco/repo/avm",
+                        "main--admin:/");
                     return null;
                 }
             };

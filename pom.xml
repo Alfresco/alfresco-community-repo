@@ -10,7 +10,7 @@
         <artifactId>alfresco-parent</artifactId>
         <groupId>org.alfresco</groupId>
         <version>4.2-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../../pom-experimental.xml</relativePath>
     </parent>
 
     <dependencies>
@@ -631,29 +631,34 @@
                         <exclude>**/org/alfresco/repo/model/filefolder/HiddenAspectTest.*</exclude>
                         <exclude>**/org/alfresco/repo/publishing/PublishEventActionTest.*</exclude>
                         <exclude>**/org/alfresco/repo/rule/BaseRuleTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/workflow/activiti/AbstractActivitiComponentTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSmokeTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSpringTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiTaskComponentTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiWorkflowComponentTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/workflow/jbpm/JbpmTimerTest.*</exclude>
 
                         <!-- TODO tests which pass with Ant, but not here. To investigate -->
                         <exclude>**/org/alfresco/RepositoryStartStopTest.*</exclude>
                         <exclude>**/org/alfresco/cmis/changelog/CMISChangeLogServiceTest.*</exclude>
                         <exclude>**/org/alfresco/cmis/renditions/CMISRenditionServiceTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/avm/AVMCrawlTestP.*</exclude>
-                        <exclude>**/org/alfresco/repo/avm/AVMScaleTestP.*</exclude>
-                        <exclude>**/org/alfresco/repo/avm/AVMStressTestP.*</exclude>
-                        <exclude>**/org/alfresco/repo/avm/PurgeTestP.*</exclude>
-                        <exclude>**/org/alfresco/repo/avm/AVMServiceLocalTest.*</exclude>
                         <exclude>**/org/alfresco/repo/avm/AVMServiceTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/avm/locking/AVMLockingServiceTest.*</exclude>
                         <exclude>**/org/alfresco/repo/blog/BlogServiceImplTest.*</exclude>
                         <exclude>**/org/alfresco/repo/deploy/DeploymentServiceImplFSTest.*</exclude>
                         <exclude>**/org/alfresco/repo/deploy/DeploymentServiceTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/node/NodeServiceTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/node/NodeServiceTest.*</exclude> <!-- Never ending -->
                         <exclude>**/org/alfresco/repo/rendition/MultiUserRenditionTest.*</exclude>
                         <exclude>**/org/alfresco/repo/rendition/RenditionServiceIntegrationTest.*</exclude>
                         <exclude>**/org/alfresco/repo/rendition/RenditionServicePermissionsTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/transfer/RepoTransferReceiverImplTest.*</exclude> <!-- Never ending -->
+                        <exclude>**/org/alfresco/repo/transfer/TransferServiceImplTest.*</exclude> <!-- Never ending -->
+                        <exclude>**/org/alfresco/repo/version/NodeServiceImplTest.*</exclude>
+                        <exclude>**/org/alfresco/wcm/**</exclude>
 
                         <!-- Test failing because we run on a EC2 machine... To be unleashed soon -->
                         <exclude>**/org/alfresco/filesys/FTPServerTest.*</exclude>
                         <exclude>**/org/alfresco/repo/content/AbstractContentReaderLimitTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/node/PerformanceNodeServiceTest.*</exclude>
                     </excludes>
                 </configuration>
             </plugin>

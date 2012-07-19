@@ -9,7 +9,7 @@
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-parent</artifactId>
         <version>4.2-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../../pom-experimental.xml</relativePath>
     </parent>
     <artifactId>alfresco</artifactId>
     <packaging>war</packaging>

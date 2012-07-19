@@ -355,6 +355,26 @@
             <artifactId>tagsoup</artifactId>
             <version>1.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf</groupId>
+            <artifactId>bliki</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ws.commons.schema</groupId>
+            <artifactId>XmlSchema</artifactId>
+            <version>1.4.5</version>
+        </dependency>
 
         <!-- Apache POI -->
         <dependency>
@@ -420,26 +440,6 @@
             <groupId>org.springframework.social</groupId>
             <artifactId>spring-social-twitter</artifactId>
             <version>1.0.0.RC1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-            <version>1.4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>net.sf</groupId>
-            <artifactId>bliki</artifactId>
-            <version>3.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>wsdl4j</groupId>
-            <artifactId>wsdl4j</artifactId>
-            <version>1.6.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.ws.commons.schema</groupId>
-            <artifactId>XmlSchema</artifactId>
-            <version>1.4.5</version>
         </dependency>
 
         <!-- Chemistry -->
@@ -623,6 +623,7 @@
                         <exclude>**/org/alfresco/repo/action/evaluator/HasChildEvaluatorTest.*</exclude>
                         <exclude>**/org/alfresco/repo/action/scheduled/ScheduledPersistedActionServiceTest.*</exclude>
                         <exclude>**/org/alfresco/repo/avm/AVMServiceRemoteSystemTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/blog/BlogIntegrationServiceSystemTest.*</exclude>
                         <exclude>**/org/alfresco/repo/content/transform/OOXMLThumbnailContentTransformerTest.*</exclude>
                         <exclude>**/org/alfresco/repo/domain/avm/AVMStoreDAOTest.*</exclude>
                         <exclude>**/org/alfresco/repo/content/transform/FailoverContentTransformerTest.*</exclude>
@@ -630,7 +631,11 @@
                         <exclude>**/org/alfresco/repo/googledocs/GoogleDocumentServiceSystemTest.*</exclude>
                         <exclude>**/org/alfresco/repo/model/filefolder/HiddenAspectTest.*</exclude>
                         <exclude>**/org/alfresco/repo/publishing/PublishEventActionTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/rendition/executer/AbstractRenderingEngineTest.*</exclude>
                         <exclude>**/org/alfresco/repo/rule/BaseRuleTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/security/authority/script/ScriptAuthorityServiceTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractPermissionTest.*</exclude>
+                        <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractReadPermissionTest.*</exclude>
                         <exclude>**/org/alfresco/repo/workflow/activiti/AbstractActivitiComponentTest.*</exclude>
                         <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSmokeTest.*</exclude>
                         <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSpringTest.*</exclude>
@@ -639,26 +644,18 @@
                         <exclude>**/org/alfresco/repo/workflow/jbpm/JbpmTimerTest.*</exclude>
 
                         <!-- TODO tests which pass with Ant, but not here. To investigate -->
-                        <exclude>**/org/alfresco/RepositoryStartStopTest.*</exclude>
                         <exclude>**/org/alfresco/cmis/changelog/CMISChangeLogServiceTest.*</exclude>
                         <exclude>**/org/alfresco/cmis/renditions/CMISRenditionServiceTest.*</exclude>
+                        <exclude>**/org/alfresco/filesys/FTPServerTest.*</exclude>
                         <exclude>**/org/alfresco/repo/avm/AVMServiceTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/blog/BlogServiceImplTest.*</exclude>
                         <exclude>**/org/alfresco/repo/deploy/DeploymentServiceImplFSTest.*</exclude>
                         <exclude>**/org/alfresco/repo/deploy/DeploymentServiceTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/node/NodeServiceTest.*</exclude> <!-- Never ending -->
                         <exclude>**/org/alfresco/repo/rendition/MultiUserRenditionTest.*</exclude>
                         <exclude>**/org/alfresco/repo/rendition/RenditionServiceIntegrationTest.*</exclude>
                         <exclude>**/org/alfresco/repo/rendition/RenditionServicePermissionsTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/transfer/RepoTransferReceiverImplTest.*</exclude> <!-- Never ending -->
-                        <exclude>**/org/alfresco/repo/transfer/TransferServiceImplTest.*</exclude> <!-- Never ending -->
+                        <exclude>**/org/alfresco/repo/thumbnail/ThumbnailServiceImplTest.*</exclude>
                         <exclude>**/org/alfresco/repo/version/NodeServiceImplTest.*</exclude>
                         <exclude>**/org/alfresco/wcm/**</exclude>
-
-                        <!-- Test failing because we run on a EC2 machine... To be unleashed soon -->
-                        <exclude>**/org/alfresco/filesys/FTPServerTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/content/AbstractContentReaderLimitTest.*</exclude>
-                        <exclude>**/org/alfresco/repo/node/PerformanceNodeServiceTest.*</exclude>
                     </excludes>
                 </configuration>
             </plugin>

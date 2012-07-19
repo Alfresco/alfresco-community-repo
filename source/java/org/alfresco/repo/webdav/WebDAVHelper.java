@@ -431,7 +431,12 @@ public class WebDAVHelper
         }
         return sb.toString();
     }
-    
+
+    public List<FileInfo> getChildren(FileInfo fileInfo) throws WebDAVServerException
+    {
+        return m_fileFolderService.list(fileInfo.getNodeRef());
+    }
+
     /**
      * Make an ETag value for a node using the GUID and modify date/time
      */

@@ -18,8 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.security;
 
+import java.net.URL;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Tests method level security of core alfresco services.

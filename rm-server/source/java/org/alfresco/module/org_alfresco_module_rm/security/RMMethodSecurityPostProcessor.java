@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,8 +45,9 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
 {
     private static Log logger = LogFactory.getLog(RMMethodSecurityPostProcessor.class);
     
-    public static final String RM_BEAN_NAME_PREFIX = "RM_";
     public static final String PROP_OBJECT_DEFINITION_SOURCE = "objectDefinitionSource";
+    public static final String PROPERTY_PREFIX = "rm.methodsecurity.";
+    public static final String SECURITY_BEAN_POSTFIX = "_security";
     
     /** Security bean names */
     private Set<String> securityBeanNames;    
@@ -85,7 +86,10 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
         {            
             if (beanFactory.containsBeanDefinition(bean) == true) 
             {
-                System.out.println("For security bean defintion: " + bean);
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Adding RM method security definitions for " + bean);
+                }
                 
                 BeanDefinition beanDef = beanFactory.getBeanDefinition(bean);                        
                 PropertyValue beanValue = beanDef.getPropertyValues().getPropertyValue(PROP_OBJECT_DEFINITION_SOURCE);                                     
@@ -96,6 +100,12 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
         }
     }
     
+    /**
+     * Get all the security bean names by looking at the property values set.
+     * 
+     * @param beanFactory
+     * @return
+     */
     private Set<String> getSecurityBeanNames(ConfigurableListableBeanFactory beanFactory)
     {
         if (securityBeanNameCache == null)
@@ -110,9 +120,14 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
             {        
                 String[] split = ((String)key).split("\\.");
                 int index = split.length - 2;
-                String securityBeanName = split[index] + "_security";
+                String securityBeanName = split[index] + SECURITY_BEAN_POSTFIX;
                 if (securityBeanNameCache.contains(securityBeanName) == false && beanFactory.containsBean(securityBeanName) == true)
                 {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Adding " + securityBeanName + " to list from properties.");
+                    }
+                    
                     securityBeanNameCache.add(securityBeanName);
                 }            
             }
@@ -133,7 +148,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
         for (Map.Entry<String, String> entry : map.entrySet())
         {
             String key = entry.getKey();
-            String propKey = "rm.methodsecurity." + key;
+            String propKey = PROPERTY_PREFIX + key;
             if (properties.containsKey(propKey) == true)
             {
                 map.put(key, entry.getValue() + "," + properties.getProperty(propKey));
@@ -144,7 +159,6 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
                 {                 
                     logger.warn("Missing RM security definition for method " + key);                    
                 }
-                System.out.println("Missing RM security definition for method " + key);
             }
         }
         

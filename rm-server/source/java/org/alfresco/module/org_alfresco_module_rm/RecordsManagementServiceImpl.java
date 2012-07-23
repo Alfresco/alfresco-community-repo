@@ -266,10 +266,15 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
      */
     public void onAddContentToContainer(ChildAssociationRef childAssocRef, boolean bNew)
     {
+        NodeRef parent = childAssocRef.getParentRef();
         NodeRef nodeRef = childAssocRef.getChildRef();
         if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));   
+        }
+        if (isFilePlan(parent) == true && isRecordFolder(nodeRef) == true)
+        {
+            throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the root of the file plan.");
         }
     }
     

@@ -73,6 +73,7 @@
     
     <!-- Import fixed permission definitions for RM -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-public-services-security-context.xml"/>
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/security/rm-method-security-context.xml"/>
     
     <!-- Import the RM service's -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-service-context.xml"/>

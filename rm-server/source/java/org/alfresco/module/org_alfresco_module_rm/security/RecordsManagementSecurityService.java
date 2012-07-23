@@ -18,12 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.security;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 
 /**

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -30,6 +31,8 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
+import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -70,6 +73,7 @@ public class TemporarySitesTest
     
     // These SiteInfos are used by the test methods.
     private SiteInfo testSite1, testSite2;
+    private TestSiteAndMemberInfo testSiteWithMembers;
     
     @BeforeClass public static void initStaticData() throws Exception
     {
@@ -84,6 +88,8 @@ public class TemporarySitesTest
         testSite1 = testSites.createSite("sitePreset", "testSite1", "t", "d", SiteVisibility.PUBLIC, AuthenticationUtil.getAdminUserName());
         final QName subSiteType = QName.createQName("testsite", "testSubsite", NAMESPACE_SERVICE);
         testSite2 = testSites.createSite("sitePreset", "testSite2", "T", "D", SiteVisibility.PUBLIC, subSiteType, AuthenticationUtil.getAdminUserName());
+        
+        testSiteWithMembers = testSites.createTestSiteWithUserPerRole(GUID.generate(), "sitePreset", SiteVisibility.PUBLIC, AuthenticationUtil.getAdminUserName());
     }
     
     @Test public void ensureTestSitesWereCreatedOk() throws Exception
@@ -103,6 +109,27 @@ public class TemporarySitesTest
                 assertEquals("preset was wrong", "sitePreset", recoveredSite1.getSitePreset());
                 
                 assertEquals("site visibility was wrong", SiteVisibility.PUBLIC, recoveredSite1.getVisibility());
+                
+                return null;
+            }
+        });
+    }
+    
+    @Test public void ensureUsersWithShareRolesArePresentAndCorrect() throws Exception
+    {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                final String shortName = testSiteWithMembers.siteInfo.getShortName();
+                final SiteInfo recoveredSite = SITE_SERVICE.getSite(shortName);
+                
+                assertNotNull("Test site does not exist", recoveredSite);
+                
+                assertEquals(SiteModel.SITE_MANAGER,      SITE_SERVICE.getMembersRole(shortName, testSiteWithMembers.siteManager));
+                assertEquals(SiteModel.SITE_COLLABORATOR, SITE_SERVICE.getMembersRole(shortName, testSiteWithMembers.siteCollaborator));
+                assertEquals(SiteModel.SITE_CONTRIBUTOR,  SITE_SERVICE.getMembersRole(shortName, testSiteWithMembers.siteContributor));
+                assertEquals(SiteModel.SITE_CONSUMER,     SITE_SERVICE.getMembersRole(shortName, testSiteWithMembers.siteConsumer));
                 
                 return null;
             }

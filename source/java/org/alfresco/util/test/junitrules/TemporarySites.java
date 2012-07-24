@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.rules.ExternalResource;
+import org.springframework.extensions.webscripts.GUID;
 
 /**
  * A JUnit rule designed to help with the automatic cleanup of temporary st:site nodes.
@@ -41,12 +41,12 @@ import org.junit.rules.ExternalResource;
  * @author Neil Mc Erlean
  * @since 4.0.3
  */
-public class TemporarySites extends ExternalResource
+public class TemporarySites extends AbstractPersonRule
 {
     private static final Log log = LogFactory.getLog(TemporarySites.class);
     
-    private final ApplicationContextInit appContextRule;
     private List<SiteInfo> temporarySites = new ArrayList<SiteInfo>();
+    private List<String> temporarySiteUsers = new ArrayList<String>();
     
     /**
      * Constructs the rule with a reference to a {@link ApplicationContextInit rule} which can be used to retrieve the ApplicationContext.
@@ -55,7 +55,7 @@ public class TemporarySites extends ExternalResource
      */
     public TemporarySites(ApplicationContextInit appContextRule)
     {
-        this.appContextRule = appContextRule;
+        super(appContextRule);
     }
     
     
@@ -86,6 +86,12 @@ public class TemporarySites extends ExternalResource
                                 log.debug("Deleting temporary site " + shortName);
                                 siteService.deleteSite(shortName);
                             }
+                        }
+                        
+                        for (String username : temporarySiteUsers)
+                        {
+                            log.debug("Deleting temporary site user " + username);
+                            deletePerson(username);
                         }
                         
                         return null;
@@ -161,5 +167,83 @@ public class TemporarySites extends ExternalResource
         
         this.temporarySites.add(newSite);
         return newSite;
+    }
+    
+    /**
+     * This method creates a test site (of Alfresco type <code>st:site</code>) and one user for each of the Share Site Roles.
+     * This method will be run in its own transaction and will be run with the specified user as the fully authenticated user,
+     * thus ensuring the named user is the creator of the new site.
+     * The site and its users will be deleted automatically by the rule.
+     * 
+     * @param sitePreset the site preset.
+     * @param visibility the Site visibility.
+     * @param siteCreator the username of a user who will be used to create the site (user must exist of course).
+     * @return the {@link SiteInfo} object for the newly created site.
+     */
+    public TestSiteAndMemberInfo createTestSiteWithUserPerRole(final String siteShortName, String sitePreset, SiteVisibility visibility, String siteCreator)
+    {
+        // create the site
+        SiteInfo result = this.createSite(sitePreset, siteShortName, null, null, visibility, siteCreator);
+        
+        // create the users
+        final RetryingTransactionHelper transactionHelper = appContextRule.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        final SiteService siteService = appContextRule.getApplicationContext().getBean("siteService", SiteService.class);
+        
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(siteCreator);
+        
+        List<String> userNames = transactionHelper.doInTransaction(new RetryingTransactionCallback<List<String>>()
+        {
+            public List<String> execute() throws Throwable
+            {
+                List<String> users = new ArrayList<String>(4);
+                
+                for (String shareRole : SiteModel.STANDARD_PERMISSIONS)
+                {
+                    final String userName = siteShortName + "_" + shareRole + "_" + GUID.generate();
+                    
+                    log.debug("Creating temporary site user " + userName);
+                    
+                    createPerson(userName);
+                    siteService.setMembership(siteShortName, userName, shareRole);
+                    users.add(userName);
+                    
+                    temporarySiteUsers.add(userName);
+                }
+                
+                return users;
+            }
+        });
+        
+        AuthenticationUtil.popAuthentication();
+         
+        
+        return new TestSiteAndMemberInfo(result, userNames.get(0),
+                                                 userNames.get(1),
+                                                 userNames.get(2),
+                                                 userNames.get(3));
+    }
+    
+    /**
+     * A simple POJO class to store the {@link SiteInfo} for this site and its initial, automatically created members' usernames.
+     * 
+     * @author Neil Mc Erlean
+     */
+    public static class TestSiteAndMemberInfo
+    {
+        public final SiteInfo siteInfo;
+        public final String siteManager;
+        public final String siteCollaborator;
+        public final String siteContributor;
+        public final String siteConsumer;
+        
+        public TestSiteAndMemberInfo(SiteInfo siteInfo, String siteManager, String siteCollaborator, String siteContributor, String siteConsumer)
+        {
+            this.siteInfo = siteInfo;
+            this.siteManager = siteManager;
+            this.siteCollaborator = siteCollaborator;
+            this.siteContributor = siteContributor;
+            this.siteConsumer = siteConsumer;
+        }
     }
 }

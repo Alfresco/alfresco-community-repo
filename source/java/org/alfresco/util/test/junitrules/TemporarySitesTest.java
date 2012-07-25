@@ -21,11 +21,13 @@ package org.alfresco.util.test.junitrules;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -68,6 +70,7 @@ public class TemporarySitesTest
     
     // Various services
     private static NamespaceService            NAMESPACE_SERVICE;
+    private static NodeService                 NODE_SERVICE;
     private static SiteService                 SITE_SERVICE;
     private static RetryingTransactionHelper   TRANSACTION_HELPER;
     
@@ -78,6 +81,7 @@ public class TemporarySitesTest
     @BeforeClass public static void initStaticData() throws Exception
     {
         NAMESPACE_SERVICE  = APP_CONTEXT_INIT.getApplicationContext().getBean("namespaceService", NamespaceService.class);
+        NODE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("nodeService", NodeService.class);
         SITE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("siteService", SiteService.class);
         TRANSACTION_HELPER = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
     }
@@ -130,6 +134,11 @@ public class TemporarySitesTest
                 assertEquals(SiteModel.SITE_COLLABORATOR, SITE_SERVICE.getMembersRole(shortName, testSiteWithMembers.siteCollaborator));
                 assertEquals(SiteModel.SITE_CONTRIBUTOR,  SITE_SERVICE.getMembersRole(shortName, testSiteWithMembers.siteContributor));
                 assertEquals(SiteModel.SITE_CONSUMER,     SITE_SERVICE.getMembersRole(shortName, testSiteWithMembers.siteConsumer));
+                
+                assertNotNull(testSiteWithMembers.doclib);
+                assertTrue("Site doclib was not pre-created.", NODE_SERVICE.exists(testSiteWithMembers.doclib));
+                assertEquals("Site doclib was in wrong place.", testSiteWithMembers.siteInfo.getNodeRef(),
+                                                                NODE_SERVICE.getPrimaryParent(testSiteWithMembers.doclib).getParentRef());
                 
                 return null;
             }

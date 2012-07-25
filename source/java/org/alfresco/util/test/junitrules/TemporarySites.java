@@ -22,11 +22,13 @@ package org.alfresco.util.test.junitrules;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -192,6 +194,23 @@ public class TemporarySites extends AbstractPersonRule
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(siteCreator);
         
+        // ensure that the Document Library folder is pre-created so that test code can start creating content straight away.
+        // At the time of writing HEAD does not create this folder automatically, but Thor does.
+        // So to be safe, I'll pre-check if the node is there.
+        NodeRef doclibFolder = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override public NodeRef execute() throws Throwable
+            {
+                NodeRef result = siteService.getContainer(siteShortName, SiteService.DOCUMENT_LIBRARY);
+                if (result == null)
+                {
+                    result = siteService.createContainer(siteShortName, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+                }
+                return result;
+            }
+        });
+        
+        // Create users for this test site that cover the various roles.
         List<String> userNames = transactionHelper.doInTransaction(new RetryingTransactionCallback<List<String>>()
         {
             public List<String> execute() throws Throwable
@@ -218,10 +237,10 @@ public class TemporarySites extends AbstractPersonRule
         AuthenticationUtil.popAuthentication();
          
         
-        return new TestSiteAndMemberInfo(result, userNames.get(0),
-                                                 userNames.get(1),
-                                                 userNames.get(2),
-                                                 userNames.get(3));
+        return new TestSiteAndMemberInfo(result, doclibFolder, userNames.get(0),
+                                                               userNames.get(1),
+                                                               userNames.get(2),
+                                                               userNames.get(3));
     }
     
     /**
@@ -232,14 +251,16 @@ public class TemporarySites extends AbstractPersonRule
     public static class TestSiteAndMemberInfo
     {
         public final SiteInfo siteInfo;
+        public final NodeRef doclib;
         public final String siteManager;
         public final String siteCollaborator;
         public final String siteContributor;
         public final String siteConsumer;
         
-        public TestSiteAndMemberInfo(SiteInfo siteInfo, String siteManager, String siteCollaborator, String siteContributor, String siteConsumer)
+        public TestSiteAndMemberInfo(SiteInfo siteInfo, NodeRef siteDocLib, String siteManager, String siteCollaborator, String siteContributor, String siteConsumer)
         {
             this.siteInfo = siteInfo;
+            this.doclib = siteDocLib;
             this.siteManager = siteManager;
             this.siteCollaborator = siteCollaborator;
             this.siteContributor = siteContributor;

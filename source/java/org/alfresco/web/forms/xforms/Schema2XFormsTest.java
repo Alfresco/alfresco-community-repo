@@ -627,9 +627,9 @@ public class Schema2XFormsTest
       throws Exception
    {
       final ChibaBean chibaBean = new ChibaBean();
-      chibaBean.setConfig(this.getResourcesDir() + File.separator +
-                          ".." + File.separator + 
-                          "web" + File.separator + 
+      String webResourceDir = System.getProperty("alfresco.web.resources.dir",
+              this.getResourcesDir() + File.separator + ".." + File.separator + "web");
+      chibaBean.setConfig(webResourceDir + File.separator + 
                           "WEB-INF" + File.separator + "chiba.xml");
       chibaBean.setXMLContainer(xformsDocument);
       chibaBean.init();

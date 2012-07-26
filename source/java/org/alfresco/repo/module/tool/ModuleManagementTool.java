@@ -392,16 +392,17 @@ public class ModuleManagementTool implements LogOutput
                 mappingTarget = mappingTarget.trim(); //trim whitespace
                 
                 // Run throught the files one by one figuring out what we are going to do during the copy
-            calculateCopyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview, forceInstall);
+                calculateCopyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview, forceInstall);
             
-            // Get a reference to the source folder (if it isn't present don't do anything)
-            TFile source = new TFile(ampFileLocation + "/" + mappingSource);
-            if (source != null && source.list() != null)
-            {
-                // Add to the list of directory changes so we can implement the changes later.
-                String sourceDir = ampFileLocation + mappingSource;
-                String destinationDir = warFileLocation + mappingTarget;
-                dirChanges.put(sourceDir, destinationDir);
+                // Get a reference to the source folder (if it isn't present don't do anything)
+                TFile source = new TFile(ampFileLocation + "/" + mappingSource);
+                if (source != null && source.list() != null)
+                {
+                    // Add to the list of directory changes so we can implement the changes later.
+                    String sourceDir = ampFileLocation + mappingSource;
+                    String destinationDir = warFileLocation + mappingTarget;
+                    dirChanges.put(sourceDir, destinationDir);
+                }
             }
             
         }

@@ -19,11 +19,8 @@
 package org.alfresco.repo.module.tool;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,12 +32,13 @@ import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.alfresco.util.VersionNumber;
 import org.safehaus.uuid.UUIDGenerator;
 
-import de.schlichtherle.io.DefaultRaesZipDetector;
-import de.schlichtherle.io.File;
-import de.schlichtherle.io.FileInputStream;
-import de.schlichtherle.io.ZipControllerException;
-import de.schlichtherle.io.ZipDetector;
-import de.schlichtherle.io.ZipWarningException;
+import de.schlichtherle.truezip.file.TArchiveDetector;
+import de.schlichtherle.truezip.file.TConfig;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TVFS;
+import de.schlichtherle.truezip.fs.archive.zip.ZipDriver;
+import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 
 /**
  * Module management tool.
@@ -83,9 +81,6 @@ public class ModuleManagementTool implements LogOutput
     private static final int ERROR_EXIT_CODE = 1;
     private static final int SUCCESS_EXIT_CODE = 0;
     
-    /** Default zip detector */
-    public static final ZipDetector DETECTOR_AMP_AND_WAR = new DefaultRaesZipDetector("amp|war");
-    
     /** File mapping properties */
     private Properties defaultFileMappingProperties;
     
@@ -99,6 +94,9 @@ public class ModuleManagementTool implements LogOutput
      */
     public ModuleManagementTool()
     {
+        TConfig config = TConfig.get();
+        config.setArchiveDetector(new TArchiveDetector("war|amp", new ZipDriver(IOPoolLocator.SINGLETON)));
+
         // Load the default file mapping properties
         this.defaultFileMappingProperties = new Properties();
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(DEFAULT_FILE_MAPPING_PROPERTIES);
@@ -134,21 +132,22 @@ public class ModuleManagementTool implements LogOutput
 
     /**
      * Installs all modules within a folder into the given WAR file.
+     * @throws IOException 
      * 
      * @see #installModule(String, String, boolean, boolean, boolean)
      */
-    public void installModules(String directory, String warFileLocation)
+    public void installModules(String directory, String warFileLocation) throws IOException
     {
         installModules(directory, warFileLocation, false, false, true);
     }
     
-    public void installModules(String directoryLocation, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR)
+    public void installModules(String directoryLocation, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR) throws IOException
     {
         java.io.File dir = new java.io.File(directoryLocation);
         if (dir.exists() == true)
         {
             if (backupWAR) {
-                backupWar(warFileLocation,true);
+                backupWar(new TFile(warFileLocation),true);
                 backupWAR = false; //Set it to false so a backup doesn't occur again.
             }
             installModules(dir, warFileLocation, preview, forceInstall,backupWAR);
@@ -207,21 +206,20 @@ public class ModuleManagementTool implements LogOutput
         try
         {   
             outputVerboseMessage("Installing AMP '" + ampFileLocation + "' into WAR '" + warFileLocation + "'");
-            
-            java.io.File theWar = new File(warFileLocation, DETECTOR_AMP_AND_WAR);
-            if (!theWar.exists())
+            TFile warFile = new TFile(warFileLocation);
+            if (!warFile.exists())
             {
-                throw new ModuleManagementToolException("The war file '" + warFileLocation + "' does not exist.");     
+                throw new ModuleManagementToolException("The war file '" + warFile + "' does not exist.");     
             }
             if (preview == false)
             {
                 // Make sure the module and backup directory exisits in the WAR file
-                File moduleDir = new File(warFileLocation + WarHelper.MODULE_NAMESPACE_DIR, DETECTOR_AMP_AND_WAR);
+                TFile moduleDir = new TFile(warFileLocation + WarHelper.MODULE_NAMESPACE_DIR);
                 if (moduleDir.exists() == false)
                 {
                     moduleDir.mkdir();
                 }
-                backupWar(warFileLocation, backupWAR);
+                backupWar(warFile, backupWAR);
             }
             
             // Get the details of the installing module
@@ -235,12 +233,12 @@ public class ModuleManagementTool implements LogOutput
             VersionNumber installingVersion = installingModuleDetails.getVersion();
             
             //A series of checks
-            warHelper.checkCompatibleVersion(theWar, installingModuleDetails);
-            warHelper.checkCompatibleEdition(theWar, installingModuleDetails);
-            warHelper.checkModuleDependencies(theWar, installingModuleDetails);
+            warHelper.checkCompatibleVersion(warFile, installingModuleDetails);
+            warHelper.checkCompatibleEdition(warFile, installingModuleDetails);
+            warHelper.checkModuleDependencies(warFile, installingModuleDetails);
             
             // Try to find an installed module by the ID
-            ModuleDetails installedModuleDetails = warHelper.getModuleDetailsOrAlias(theWar, installingModuleDetails);
+            ModuleDetails installedModuleDetails = warHelper.getModuleDetailsOrAlias(warFile, installingModuleDetails);
             
             uninstallIfNecessary(warFileLocation, installedModuleDetails, preview, forceInstall, installingVersion);
             
@@ -256,12 +254,9 @@ public class ModuleManagementTool implements LogOutput
                 {
                     for (Entry<Object, Object> entry : directoryChanges.entrySet())
                     {
-                        
-                        File destination = new File((String) entry.getValue(), DETECTOR_AMP_AND_WAR);
-                        File source = new File((String) entry.getKey(), DETECTOR_AMP_AND_WAR);
-                        //Do the bulk copy since this is quicker than copying files one by one
-                        //The changes aren't actuall "committed" until the File.update() is called (below)
-                        destination.copyAllFrom(source);
+                        TFile source = new TFile((String) entry.getKey());
+                        TFile destination = new TFile((String) entry.getValue());
+                        source.cp_rp(destination);
                     }
                 }
                 
@@ -273,36 +268,24 @@ public class ModuleManagementTool implements LogOutput
                 installingModuleDetails.setInstallDate(new Date());
                 ModuleDetailsHelper.saveModuleDetails(warFileLocation, installingModuleDetails);
 
-                // Update the zip files
-                File.update(); 
-                
                 // Set the modified date
-                java.io.File warFile = new java.io.File(warFileLocation);
                 if (warFile.exists())
                 {
                     warFile.setLastModified(System.currentTimeMillis());
                 }
+                
+                // Update the zip filessync
+                TVFS.umount();
             }               
-        }
-        catch (ZipWarningException ignore) 
-        {
-            // Only instances of the class ZipWarningException exist in the chain of
-            // exceptions. We choose to ignore this.
-        }
-        catch (ZipControllerException exception) 
-        {
-            // At least one exception occured which is not just a ZipWarningException.
-            // This is a severe situation that needs to be handled.
-            throw new ModuleManagementToolException("A Zip error was encountered during deployment of the AEP into the WAR", exception);
         }
         catch (IOException exception)
         {
-            throw new ModuleManagementToolException("An IO error was encountered during deployment of the AEP into the WAR", exception);
-        }       
+            throw new ModuleManagementToolException("An IO error was encountered during deployment of the AMP into the WAR", exception);
+        }
     }
 
     private void uninstallIfNecessary(String warFileLocation, ModuleDetails installedModuleDetails, boolean preview,
-                boolean forceInstall, VersionNumber installingVersion)
+                boolean forceInstall, VersionNumber installingVersion) throws IOException
     {
         // Now clean up the old instance
         if (installedModuleDetails != null)
@@ -393,6 +376,28 @@ public class ModuleManagementTool implements LogOutput
             File source = new File(ampFileLocation + "/" + mappingSource, DETECTOR_AMP_AND_WAR);
             if (source != null && source.list() != null)
             {
+                // The file mappings are expected to start with "/"
+                String mappingSource = (String) entry.getKey();
+                if (mappingSource.length() == 0 || !mappingSource.startsWith("/"))
+                {
+                    throw new AlfrescoRuntimeException("File mapping sources must start with '/', but was: " + mappingSource);
+                }
+                String mappingTarget = (String) entry.getValue();
+                if (mappingTarget.length() == 0 || !mappingTarget.startsWith("/"))
+                {
+                    throw new AlfrescoRuntimeException("File mapping targets must start with '/' but was '" + mappingTarget + "'");
+                }
+                
+                mappingSource = mappingSource.trim(); //trim whitespace
+                mappingTarget = mappingTarget.trim(); //trim whitespace
+                
+                // Run throught the files one by one figuring out what we are going to do during the copy
+            calculateCopyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview, forceInstall);
+            
+            // Get a reference to the source folder (if it isn't present don't do anything)
+            TFile source = new TFile(ampFileLocation + "/" + mappingSource);
+            if (source != null && source.list() != null)
+            {
                 // Add to the list of directory changes so we can implement the changes later.
                 String sourceDir = ampFileLocation + mappingSource;
                 String destinationDir = warFileLocation + mappingTarget;
@@ -404,30 +409,30 @@ public class ModuleManagementTool implements LogOutput
         return dirChanges;
     }
 
-    private void backupWar(String warFileLocation, boolean backupWAR)
+    private void backupWar(TFile warFile, boolean backupWAR) throws IOException
     {
 
         // Make a backup of the war we are going to modify
         if (backupWAR == true)
         {
-            File backUpDir = new File(warFileLocation + BACKUP_DIR, DETECTOR_AMP_AND_WAR);
-            if (backUpDir.exists() == false)
-            {
-                backUpDir.mkdir();
-            }
-            java.io.File warFile = new java.io.File(warFileLocation);
-            String backupLocation = warFileLocation + "-" + System.currentTimeMillis() + ".bak";
-            java.io.File backup = new java.io.File(backupLocation);
-            try
-            {
-                copyFile(warFile, backup);
-            }
-            catch (IOException exception)
-            {
-                throw new ModuleManagementToolException("An IO error was encountered when backing up the WAR", exception);
-            }  
-                  
-            outputVerboseMessage("WAR has been backed up to '" + backupLocation + "'");
+
+                String backupLocation = warFile.getAbsolutePath()+"-" + System.currentTimeMillis() + ".bak";
+                
+                if (warFile.isArchive())
+                {
+                    outputVerboseMessage("Backing up WAR file...");
+                    TFile source = new TFile(warFile.getAbsolutePath(), TArchiveDetector.NULL);
+                    TFile backup = new TFile(backupLocation, TArchiveDetector.NULL);
+                    source.cp_rp(backup);   //Just copy the file
+                }
+                else
+                {
+                    outputVerboseMessage("Backing up war DIRECTORY...");
+                    TFile backup = new TFile(backupLocation);
+                    warFile.cp_rp(backup);   //Copy the directory
+                }        
+                outputVerboseMessage("WAR has been backed up to '" + backupLocation + "'");
+
         }
     }
     
@@ -436,7 +441,7 @@ public class ModuleManagementTool implements LogOutput
      */
     private Properties getCustomFileMappings(String ampFileLocation)
     {
-        File file = new File(ampFileLocation + "/" + FILE_MAPPING_PROPERTIES, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
+        TFile file = new TFile(ampFileLocation + "/" + FILE_MAPPING_PROPERTIES);
         if (!file.exists())
         {
             // Nothing there
@@ -446,7 +451,7 @@ public class ModuleManagementTool implements LogOutput
         InputStream is = null;
         try
         {
-            is = new BufferedInputStream(new FileInputStream(file));
+            is = new BufferedInputStream(new TFileInputStream(file));
             mappingProperties.load(is);
         }
         catch (IOException exception)
@@ -470,8 +475,9 @@ public class ModuleManagementTool implements LogOutput
      * @param moduleId          the module id
      * @param preview           indicates whether this is a preview installation
      * @param purge             Fully delete all files (including those marked "PRESERVED")
+     * @throws IOException 
      */
-    public void uninstallModule(String moduleId,String warFileLocation, boolean preview, boolean purge)
+    public void uninstallModule(String moduleId,String warFileLocation, boolean preview, boolean purge) throws IOException
     {
         InstalledFiles installedFiles = new InstalledFiles(warFileLocation, moduleId);
         installedFiles.load();
@@ -491,10 +497,10 @@ public class ModuleManagementTool implements LogOutput
             if (preview == false)
             {
                 // Recover updated file and delete backups
-                File modified = new File(warFileLocation + update.getKey(), DETECTOR_AMP_AND_WAR);
-                File backup = new File(warFileLocation + update.getValue(), DETECTOR_AMP_AND_WAR);
-                modified.copyFrom(backup);
-                backup.delete();
+               TFile modified = new TFile(warFileLocation + update.getKey());
+               TFile backup = new TFile(warFileLocation + update.getValue());
+               backup.cp_rp(modified);
+               backup.deleteOnExit();
             }
             
             outputVerboseMessage("Recovering file '" + update.getKey() + "' from backup '" + update.getValue() + "'", true);
@@ -516,7 +522,7 @@ public class ModuleManagementTool implements LogOutput
      */
     private void removeFile(String warLocation, String filePath, boolean preview)
     {
-        File removeFile = new File(warLocation + filePath, DETECTOR_AMP_AND_WAR);
+        TFile removeFile = new TFile(warLocation + filePath);
         if (removeFile.exists() == true)
         {
             outputVerboseMessage("Removing file '" + filePath + "' from war", true);
@@ -567,7 +573,7 @@ public class ModuleManagementTool implements LogOutput
         }
         
         String sourceLocation = ampFileLocation + sourceDir;               
-        File ampConfig = new File(sourceLocation, DETECTOR_AMP_AND_WAR);
+        TFile ampConfig = new TFile(sourceLocation);
         
         java.io.File[] files = ampConfig.listFiles();  
         if (files != null)
@@ -575,7 +581,7 @@ public class ModuleManagementTool implements LogOutput
             for (java.io.File sourceChild : files)
             {
                 String destinationFileLocation = warFileLocation + destinationDir + "/" + sourceChild.getName();
-                File destinationChild = new File(destinationFileLocation, DETECTOR_AMP_AND_WAR);
+                TFile destinationChild = new TFile(destinationFileLocation);
                 if (sourceChild.isFile() == true)
                 {
                     String backupLocation = null;
@@ -592,8 +598,8 @@ public class ModuleManagementTool implements LogOutput
                             backupLocation = BACKUP_DIR + "/" + generateGuid() + ".bin";
                             if (preview == false)
                             {
-                                File backupFile = new File(warFileLocation + backupLocation, DETECTOR_AMP_AND_WAR);
-                                backupFile.copyFrom(destinationChild);
+                                TFile backupFile = new TFile(warFileLocation + backupLocation);
+                                destinationChild.cp_rp(backupFile);
                             }
                         } else {
                             //Not a forced install, there is an existing file in the war, lets rollback the transaction, 
@@ -666,7 +672,7 @@ public class ModuleManagementTool implements LogOutput
         
         try
         {
-            File moduleDir = new File(warLocation + WarHelper.MODULE_NAMESPACE_DIR, DETECTOR_AMP_AND_WAR);
+            TFile moduleDir = new TFile(warLocation + WarHelper.MODULE_NAMESPACE_DIR);
             if (moduleDir.exists() == false)
             {
                 outputVerboseMessage("No modules are installed in this WAR file");
@@ -679,20 +685,27 @@ public class ModuleManagementTool implements LogOutput
                 {
                     if (dir.isDirectory() == true)
                     {
-                        File moduleProperties = new File(dir.getPath() + WarHelper.MODULE_CONFIG_IN_WAR, DETECTOR_AMP_AND_WAR);
+                        TFile moduleProperties = new TFile(dir.getPath() + WarHelper.MODULE_CONFIG_IN_WAR);
                         if (moduleProperties.exists() == true)
                         {
+                            InputStream is = null;
                             try
                             {
                                 moduleFound = true;
-                                InputStream is = new FileInputStream(moduleProperties);
+                                is = new TFileInputStream(moduleProperties);
                                 moduleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertiesStream(is);
                             }
                             catch (IOException exception)
                             {
                                 throw new ModuleManagementToolException("Unable to open module properties file '" + moduleProperties.getPath() + "'", exception);
                             }
-                            
+                            finally
+                            {
+                                if (is != null)
+                                {
+                                    try { is.close(); } catch (Throwable e ) {}
+                                }
+                            }
                             outputVerboseMessage("Module '" + moduleDetails.getId() + "' installed in '" + warLocation + "'");
                             outputVerboseMessage("   Title:        " + moduleDetails.getTitle(), true);
                             outputVerboseMessage("   Version:      " + moduleDetails.getVersion(), true);
@@ -848,15 +861,22 @@ public class ModuleManagementTool implements LogOutput
                     }
                 }
                
-                if (directory == false)
+                try
                 {
-                    // Install the module
-                    manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                    if (directory == false)
+                    {
+                        // Install the module
+                        manager.installModule(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                    }
+                    else
+                    {
+                        // Install the modules from the directory
+                        manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                    }
                 }
-                else
+                catch (IOException error)
                 {
-                    // Install the modules from the directory
-                    manager.installModules(aepFileLocation, warFileLocation, previewInstall, forceInstall, backup);
+                    throw new ModuleManagementToolException(error.getMessage());    
                 }
                 System.exit(SUCCESS_EXIT_CODE);
 
@@ -921,6 +941,11 @@ public class ModuleManagementTool implements LogOutput
             manager.outputErrorMessage(e.getMessage());
             System.exit(ERROR_EXIT_CODE);
         }
+        catch (IOException error)
+        {
+            manager.outputErrorMessage(error.getMessage());
+            System.exit(ERROR_EXIT_CODE);
+        }
     }
 
     /**
@@ -930,38 +955,7 @@ public class ModuleManagementTool implements LogOutput
     {
         return UUIDGenerator.getInstance().generateTimeBasedUUID().toString();
     }
-    
-    /**
-     * Code borrowed directly from the Springframework FileCopyUtils.
-     */
-    private static void copyFile(java.io.File in, java.io.File out) throws IOException
-    {
-        InputStream is = new BufferedInputStream(new FileInputStream(in));
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(out));
-        try
-        {
-            int byteCount = 0;
-            byte[] buffer = new byte[4096];
-            int bytesRead = -1;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                os.write(buffer, 0, bytesRead);
-                byteCount += bytesRead;
-            }
-            os.flush();
-        }
-        finally
-        {
-            if (is != null)
-            {
-                try { is.close(); } catch (Throwable e) { e.printStackTrace(); }
-            }
-            if (os != null)
-            {
-                try { os.close(); } catch (Throwable e) { e.printStackTrace(); }
-            }
-        }
-    }
-    
+
     /**
      * Outputs the module management tool usage
      */

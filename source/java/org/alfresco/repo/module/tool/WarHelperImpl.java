@@ -1,6 +1,5 @@
 package org.alfresco.repo.module.tool;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -12,7 +11,9 @@ import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.util.VersionNumber;
 
-import de.schlichtherle.io.FileInputStream;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+
 
 /**
  * Performs logic for the Module Management Tool.
@@ -33,10 +34,10 @@ public class WarHelperImpl implements WarHelper
     }
 
     @Override
-    public void checkCompatibleVersion(File war, ModuleDetails installingModuleDetails)
+    public void checkCompatibleVersion(TFile war, ModuleDetails installingModuleDetails)
     {
         //Version check
-        File propsFile = getFile(war, VERSION_PROPERTIES);
+        TFile propsFile = new TFile(war+VERSION_PROPERTIES);
         if (propsFile != null && propsFile.exists())
         {
             Properties warVers = loadProperties(propsFile);
@@ -55,14 +56,14 @@ public class WarHelperImpl implements WarHelper
     }
 
     @Override
-    public void checkCompatibleEdition(File war, ModuleDetails installingModuleDetails)
+    public void checkCompatibleEdition(TFile war, ModuleDetails installingModuleDetails)
     {
 
         List<String> installableEditions = installingModuleDetails.getEditions();
 
         if (installableEditions != null && installableEditions.size() > 0) {
             
-            File propsFile = getFile(war, VERSION_PROPERTIES);
+            TFile propsFile = new TFile(war+VERSION_PROPERTIES);
             if (propsFile != null && propsFile.exists())
             {
                 Properties warVers = loadProperties(propsFile);
@@ -84,7 +85,7 @@ public class WarHelperImpl implements WarHelper
     }
 
     @Override
-    public void checkModuleDependencies(File war, ModuleDetails installingModuleDetails)
+    public void checkModuleDependencies(TFile war, ModuleDetails installingModuleDetails)
     {
         // Check that the target war has the necessary dependencies for this install
         List<ModuleDependency> installingModuleDependencies = installingModuleDetails.getDependencies();
@@ -107,7 +108,7 @@ public class WarHelperImpl implements WarHelper
     }
     
     @Override
-    public ModuleDetails getModuleDetailsOrAlias(File war, ModuleDetails installingModuleDetails)
+    public ModuleDetails getModuleDetailsOrAlias(TFile war, ModuleDetails installingModuleDetails)
     {
         ModuleDetails installedModuleDetails = getModuleDetails(war, installingModuleDetails.getId());
         if (installedModuleDetails == null)
@@ -137,10 +138,10 @@ public class WarHelperImpl implements WarHelper
      * @param moduleId
      * @return
      */
-    protected ModuleDetails getModuleDetails(File war, String moduleId)
+    protected ModuleDetails getModuleDetails(TFile war, String moduleId)
     {
         ModuleDetails moduleDets = null;
-        File theFile = getModuleDetailsFile(war, moduleId);
+        TFile theFile = getModuleDetailsFile(war, moduleId);
         if (theFile != null && theFile.exists())
         {
             moduleDets =  new ModuleDetailsImpl(loadProperties(theFile));
@@ -153,14 +154,15 @@ public class WarHelperImpl implements WarHelper
      * @param propertiesPath Path to the properties file (including .properties)
      * @return Properties object or null
      */
-    private Properties loadProperties(File propertiesFile)
+    private Properties loadProperties(TFile propertiesFile)
     {
         Properties result = null;
+        InputStream is = null;
         try
         {
             if (propertiesFile.exists())
             {
-                InputStream is = new FileInputStream(propertiesFile);
+                is = new TFileInputStream(propertiesFile);
                 result = new Properties();
                 result.load(is);
             }
@@ -169,21 +171,21 @@ public class WarHelperImpl implements WarHelper
         {
             throw new ModuleManagementToolException("Unable to load properties from the war file; "+propertiesFile.getPath(), exception);
         }
+        finally
+        {
+            if (is != null)
+            {
+                try { is.close(); } catch (Throwable e ) {}
+            }
+        }
         return result;
        
     }
     
-    private File getModuleDetailsFile(File war, String moduleId)
+    private TFile getModuleDetailsFile(TFile war, String moduleId)
     {
-        return getFile(war,MODULE_NAMESPACE_DIR+ "/" + moduleId+MODULE_CONFIG_IN_WAR);
+        return new TFile(war.getAbsolutePath()+MODULE_NAMESPACE_DIR+ "/" + moduleId+MODULE_CONFIG_IN_WAR);
     }
     
-    private File getFile(File war, String pathToFileIncludingExtension)
-    {
-        return new de.schlichtherle.io.File(war,pathToFileIncludingExtension, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
-    }
-
-
-
 
 }

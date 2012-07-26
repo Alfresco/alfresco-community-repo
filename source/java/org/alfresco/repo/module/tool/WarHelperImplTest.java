@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,11 +15,10 @@ import org.alfresco.repo.module.ModuleDetailsImpl;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VersionNumber;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.FileCopyUtils;
 
-import de.schlichtherle.io.FileOutputStream;
+import de.schlichtherle.truezip.file.TFile;
 
 /**
  * Tests the war helper. 
@@ -43,7 +43,7 @@ public class WarHelperImplTest extends WarHelperImpl
     @Test
     public void testCheckCompatibleVersion()
     {
-        File theWar = getFile(".war", "module/test.war");   //Version 4.1.0
+        TFile theWar = getFile(".war", "module/test.war");   //Version 4.1.0
 
         ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
         installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
@@ -104,7 +104,7 @@ public class WarHelperImplTest extends WarHelperImpl
         props.setProperty(ModuleDetails.PROP_TITLE, "Test for Compatiblity");
         props.setProperty(ModuleDetails.PROP_DESCRIPTION, "Test for Compatible Editions");
         ModuleDetails installingModuleDetails = new ModuleDetailsImpl(props);
-        File theWar = getFile(".war", "module/test.war");   //Community Edition
+        TFile theWar = getFile(".war", "module/test.war");   //Community Edition
         
         //Test for no edition specified
         this.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception 
@@ -139,7 +139,7 @@ public class WarHelperImplTest extends WarHelperImpl
     @Test
     public void testNoVersionProperties()
     {
-        File theWar = getFile(".war", "module/empty.war");  
+        TFile theWar = getFile(".war", "module/empty.war");  
 
         ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
         installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
@@ -147,7 +147,7 @@ public class WarHelperImplTest extends WarHelperImpl
         this.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception 
         
     }
-    private File getFile(String extension, String location) 
+    private TFile getFile(String extension, String location) 
     {
         File file = TempFileProvider.createTempFile("moduleManagementToolTest-", extension);        
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(location);
@@ -162,6 +162,6 @@ public class WarHelperImplTest extends WarHelperImpl
         {
             error.printStackTrace();
         }        
-        return file;
+        return new TFile(file);
 }
 }

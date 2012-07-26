@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.module.tool;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,9 +27,9 @@ import java.util.Properties;
 import org.alfresco.repo.module.ModuleDetailsImpl;
 import org.alfresco.service.cmr.module.ModuleDetails;
 
-import de.schlichtherle.io.File;
-import de.schlichtherle.io.FileInputStream;
-import de.schlichtherle.io.FileOutputStream;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TFileOutputStream;
 
 /**
  * Module details helper used by the module mangement tool
@@ -62,23 +63,35 @@ public class ModuleDetailsHelper
      * 
      * @param location  file location
      * @return          Returns the module details or null if the location points to nothing
+     * @throws IOException 
      */
-    public static ModuleDetails createModuleDetailsFromPropertyLocation(String location)
+    public static ModuleDetails createModuleDetailsFromPropertyLocation(String location) throws IOException
     {
         ModuleDetails result = null;
+        TFileInputStream is;
         try
         {
-            File file = new File(location, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
-            if (file.exists())
-            {
-                InputStream is = new FileInputStream(file);
-                result = createModuleDetailsFromPropertiesStream(is);
-            }
+            is = new TFileInputStream(location);
+        }
+        catch (FileNotFoundException error)
+        {
+            throw new ModuleManagementToolException("Unable to load module details from property file.", error);
+        }
+
+        try
+        {
+            result = createModuleDetailsFromPropertiesStream(is);
         }
         catch (IOException exception)
         {
-            throw new ModuleManagementToolException("Unable to load module details from property file.", exception);
+            throw new ModuleManagementToolException(
+                        "Unable to load module details from property file.", exception);
         }
+        finally
+        {
+            is.close(); // ALWAYS close the stream!
+        }
+
         return result;
     }
     
@@ -89,8 +102,9 @@ public class ModuleDetailsHelper
      * @param moduleId      the module id
      * @return              Returns the module details for the given module ID as it occurs in the WAR, or <tt>null</tt>
      *                      if there are no module details available.
+     * @throws IOException 
      */
-    public static ModuleDetails createModuleDetailsFromWarAndId(String warLocation, String moduleId)
+    public static ModuleDetails createModuleDetailsFromWarAndId(String warLocation, String moduleId) throws IOException
     {
         String modulePropertiesFileLocation = ModuleDetailsHelper.getModulePropertiesFileLocation(warLocation, moduleId);
         return ModuleDetailsHelper.createModuleDetailsFromPropertyLocation(modulePropertiesFileLocation);
@@ -102,10 +116,10 @@ public class ModuleDetailsHelper
      * @return              Returns a file handle to the module properties file within the given WAR.
      *                      The file may or may not exist.
      */
-    public static File getModuleDetailsFileFromWarAndId(String warLocation, String moduleId)
+    public static TFile getModuleDetailsFileFromWarAndId(String warLocation, String moduleId)
     {
         String location = ModuleDetailsHelper.getModulePropertiesFileLocation(warLocation, moduleId);
-        File file = new File(location, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
+        TFile file = new TFile(location);
         return file;
     }
     
@@ -143,7 +157,7 @@ public class ModuleDetailsHelper
         try
         {
             String modulePropertiesFileLocation = getModulePropertiesFileLocation(warLocation, moduleId);
-            File file = new File(modulePropertiesFileLocation, ModuleManagementTool.DETECTOR_AMP_AND_WAR);
+            TFile file = new TFile(modulePropertiesFileLocation);
             if (file.exists() == false)
             {
                 file.createNewFile();
@@ -151,7 +165,7 @@ public class ModuleDetailsHelper
             
             // Get all the module properties
             Properties moduleProperties = moduleDetails.getProperties();
-            OutputStream os = new FileOutputStream(file);
+            OutputStream os = new TFileOutputStream(file);
             try
             {
                 moduleProperties.store(os, null);

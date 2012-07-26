@@ -20,23 +20,22 @@ package org.alfresco.repo.module.tool;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import junit.framework.TestCase;
 
 import org.alfresco.util.TempFileProvider;
 import org.springframework.util.FileCopyUtils;
 
-import de.schlichtherle.io.DefaultRaesZipDetector;
-import de.schlichtherle.io.FileInputStream;
-import de.schlichtherle.io.FileOutputStream;
-import de.schlichtherle.io.ZipDetector;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TVFS;
 
 /**
  * @see org.alfresco.repo.module.tool.ModuleManagementTool
@@ -47,8 +46,7 @@ import de.schlichtherle.io.ZipDetector;
 public class ModuleManagementToolTest extends TestCase
 {
     private ModuleManagementTool manager = new ModuleManagementTool();
-
-    ZipDetector defaultDetector = new DefaultRaesZipDetector("amp|war");
+    static final int BUFFER = 2048;
     
     public void testBasicInstall()
         throws Exception
@@ -59,6 +57,11 @@ public class ModuleManagementToolTest extends TestCase
         String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
         String ampV2Location = getFileLocation(".amp", "module/test_v2.amp");
         
+        installerSharedTests(warLocation, ampLocation, ampV2Location);        
+    }
+
+    private void installerSharedTests(String warLocation, String ampLocation, String ampV2Location)
+    {
         // Initial install of module
         this.manager.installModule(ampLocation, warLocation);
         
@@ -145,7 +148,21 @@ public class ModuleManagementToolTest extends TestCase
         catch(ModuleManagementToolException exception)
         {
             // Pass
-        }        
+        }
+    }
+    
+    public void testBasicFolderInstall() throws Exception
+    {
+        manager.setVerbose(true);
+
+        String warDirectory = extractToDir(".war", "module/test.war");
+        String ampDirectory = extractToDir(".amp", "module/test_v1.amp");
+        String ampV2Directory = getFileLocation(".amp", "module/test_v2.amp");
+        assertNotNull(warDirectory);
+        assertNotNull(ampDirectory);  
+        assertNotNull(ampV2Directory);         
+        installerSharedTests(warDirectory, ampDirectory, ampV2Directory);
+
     }
     
     public void testDependencySuccess() throws Exception
@@ -323,6 +340,22 @@ public class ModuleManagementToolTest extends TestCase
         return file.getPath();
     }
     
+    private String extractToDir(String extension, String location)
+    {
+       File tmpDir = TempFileProvider.getTempDir();
+
+       try {
+           TFile zipFile = new TFile(this.getClass().getClassLoader().getResource(location).getPath());
+           TFile outDir = new TFile(tmpDir.getAbsolutePath()+"/moduleManagementToolTestDir"+System.currentTimeMillis());
+           outDir.mkdir();
+           zipFile.cp_rp(outDir);
+           TVFS.umount(zipFile);
+           return outDir.getPath();
+       } catch (Exception e) {
+               e.printStackTrace();
+       }
+       return null;
+    }
     public void testNoWar() throws Exception 
     {
         String noWar = "noWar";
@@ -349,7 +382,7 @@ public class ModuleManagementToolTest extends TestCase
     {
         for (String file : files)
         {
-            File file0 = new de.schlichtherle.io.File(warLocation + file, this.defaultDetector);
+            File file0 = new TFile(warLocation + file);
             assertTrue("The file/dir " + file + " does not exist in the WAR.", file0.exists());
         }    
     }
@@ -358,7 +391,7 @@ public class ModuleManagementToolTest extends TestCase
     {
         for (String file : files)
         {
-            File file0 = new de.schlichtherle.io.File(warLocation + file, this.defaultDetector);
+            File file0 = new TFile(warLocation + file);
             assertFalse("The file/dir " + file + " does exist in the WAR.", file0.exists());
         }    
     }
@@ -366,11 +399,22 @@ public class ModuleManagementToolTest extends TestCase
     private void checkContentsOfFile(String location, String expectedContents)
         throws IOException
     {
-        File file = new de.schlichtherle.io.File(location, this.defaultDetector);
-        assertTrue(file.exists());        
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-        String line = reader.readLine();
-        assertNotNull(line);
-        assertEquals(expectedContents, line.trim());
+        File file = new TFile(location);
+        assertTrue(file.exists());  
+        BufferedReader reader = null;
+        try
+        {
+            reader = new BufferedReader(new InputStreamReader(new TFileInputStream(file)));
+            String line = reader.readLine();
+            assertNotNull(line);
+            assertEquals(expectedContents, line.trim());
+        }
+        finally
+        {
+            if (reader != null)
+            {
+                try { reader.close(); } catch (Throwable e ) {}
+            }
+        }
     }
 }

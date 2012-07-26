@@ -21,15 +21,14 @@ package org.alfresco.repo.module.tool;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.schlichtherle.io.File;
-import de.schlichtherle.io.FileInputStream;
-import de.schlichtherle.io.FileOutputStream;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileOutputStream;
+import de.schlichtherle.truezip.file.TFileReader;
 
 /**
  * Details of the files installed during a module installation into a WAR
@@ -74,12 +73,12 @@ public class InstalledFiles
      */
     public void load()
     {
-        File file = new File(getFileLocation(), ModuleManagementTool.DETECTOR_AMP_AND_WAR);        
+        TFile file = new TFile(getFileLocation());
         if (file.exists() == true)
         {
             try
             {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                BufferedReader reader = new BufferedReader(new TFileReader(file));
                 try
                 {
                     String line = reader.readLine();
@@ -130,12 +129,12 @@ public class InstalledFiles
     {
         try
         {
-            File file = new File(getFileLocation(), ModuleManagementTool.DETECTOR_AMP_AND_WAR);
+            TFile file = new TFile(getFileLocation());
             if (file.exists() == false)
             {
                 file.createNewFile();               
             } 
-            FileOutputStream os = new FileOutputStream(file);
+            TFileOutputStream os = new TFileOutputStream(file);
             try
             {
                 for (String add : this.adds)

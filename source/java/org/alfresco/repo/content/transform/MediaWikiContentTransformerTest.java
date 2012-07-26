@@ -20,6 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 
 import org.alfresco.repo.content.MimetypeMap;
@@ -29,8 +30,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
-
-import de.schlichtherle.io.FileOutputStream;
 
 /**
  * @see org.alfresco.repo.content.transform.MediaWikiContentTransformer

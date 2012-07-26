@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,7 +48,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.XMLUtil;
 import org.apache.bsf.BSFManager;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xml.utils.Constants;
@@ -136,7 +134,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         Document xslTemplate;
         try
         {
-            xslTemplate = XMLUtil.secureParseXSL(templateSource.getReader(defaultEncoding));
+            xslTemplate = XMLUtil.parse(templateSource.getReader(defaultEncoding));
         }
         catch (IOException ex)
         {
@@ -202,7 +200,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
                         throw new TransformerException("unable to resolve href " + href);
                     }
 
-                    Document d = XMLUtil.secureParseXSL(in);
+                    Document d = XMLUtil.parse(in);
                     if (log.isDebugEnabled())
                     {
                         log.debug("loaded " + XMLUtil.toString(d));
@@ -241,12 +239,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
                 final StringBuilder msg = new StringBuilder("errors encountered creating tranformer ... \n");
                 for (TransformerException te : errors)
                 {
-                    msg.append("message: " + te.getMessageAndLocation()).append("\n");
-                    String cause = ExceptionUtils.getRootCauseMessage(te);
-                	if (cause != null) 
-                	{
-                		msg.append(" caused by: " + cause);
-                	}
+                    msg.append(te.getMessageAndLocation()).append("\n");
                 }
                 throw new TemplateException(msg.toString());
             }
@@ -290,11 +283,6 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
             for (TransformerException te : errors)
             {
                 msg.append(te.getMessageAndLocation()).append("\n");
-                String cause = ExceptionUtils.getRootCauseMessage(te);
-            	if (cause != null) 
-            	{
-            		msg.append(" caused by: " + cause);
-            	}
             }
             throw new TemplateException(msg.toString());
         }
@@ -326,17 +314,18 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         final Element docEl = xslTemplate.getDocumentElement();
         final String XALAN_NS = Constants.S_BUILTIN_EXTENSIONS_URL;
         final String XALAN_NS_PREFIX = "xalan";
+        docEl.setAttribute("xmlns:" + XALAN_NS_PREFIX, XALAN_NS);
 
         final Set<String> excludePrefixes = new HashSet<String>();
         if (docEl.hasAttribute("exclude-result-prefixes"))
         {
             excludePrefixes.addAll(Arrays.asList(docEl.getAttribute("exclude-result-prefixes").split(" ")));
         }
+        excludePrefixes.add(XALAN_NS_PREFIX);
 
         final List<String> result = new LinkedList<String>();
         for (QName ns : methods.keySet())
         {
-
             final String prefix = ns.getLocalName();
             docEl.setAttribute("xmlns:" + prefix, ns.getNamespaceURI());
             excludePrefixes.add(prefix);
@@ -376,11 +365,6 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         }
         docEl.setAttribute("exclude-result-prefixes", StringUtils.join(excludePrefixes
                 .toArray(new String[excludePrefixes.size()]), " "));
-        if (log.isDebugEnabled()) {
-            StringWriter writer = new StringWriter();
-            XMLUtil.print(xslTemplate, writer);
-            log.debug(writer);
-        }        
         return result;
     }
 

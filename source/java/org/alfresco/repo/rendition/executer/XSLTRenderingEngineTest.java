@@ -35,7 +35,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -45,7 +44,6 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 
 /**
  * @author Brian
@@ -83,62 +81,6 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
         ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
                 "/app:company_home");
         this.companyHome = rs.getNodeRef(0);
-    }
-    
-    public void testSecurityFilter() throws Exception
-    {
-    	try
-        {
-            FileInfo file = createXmlFile(companyHome);
-            FileInfo xslFile = createXmlFile(companyHome, insecureVerySimpleXSLT);
-
-            RenditionDefinition def = renditionService.createRenditionDefinition(QName.createQName("Test"), XSLTRenderingEngine.NAME);
-            def.setParameterValue(XSLTRenderingEngine.PARAM_TEMPLATE_NODE, xslFile.getNodeRef());
-
-            ChildAssociationRef rendition = renditionService.render(file.getNodeRef(), def);
-            log.error("This insecure template should not process!");
-            fail();
-          
-        }
-    	catch (TemplateException e) 
-    	{
-    		//pass!
-    	}
-        catch (Exception ex)
-        {
-
-        	log.error("Error!", ex);
-        	fail();
-        }
-    }
-    
-    public void testIncludeSecurityFilter() throws Exception 
-    {
-    	try
-    	{
-            FileInfo file = createXmlFile(companyHome);
-            FileInfo insecureXSLFile = createXmlFile(companyHome, insecureVerySimpleXSLT);
-
-            String includeInsecureXSLFile = String.format(insecureIncludeVerySimpleXSLT, insecureXSLFile.getName());
-            FileInfo xslFile = createXmlFile(companyHome, includeInsecureXSLFile);
-            
-            RenditionDefinition def = renditionService.createRenditionDefinition(QName.createQName("Test"), XSLTRenderingEngine.NAME);
-            def.setParameterValue(XSLTRenderingEngine.PARAM_TEMPLATE_NODE, xslFile.getNodeRef());
-
-            ChildAssociationRef rendition = renditionService.render(file.getNodeRef(), def);
-            log.error("This insecure include template should not process!");
-    		fail();
-    	}
-    	catch (TemplateException e) 
-    	{
-    		//pass!
-    	}
-        catch (Exception ex)
-        {
-
-        	log.error("Error!", ex);
-        	fail();
-        }
     }
 
     public void testSimplestStringTemplate() throws Exception
@@ -376,23 +318,6 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
     "<xsl:template match=\"/\">" + "<xsl:for-each select=\"/nutrition/food\">"
     + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
 
-    private String insecureVerySimpleXSLT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<xsl:stylesheet version=\"1.0\"  "
-    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
-    + "xmlns:rt=\"http://xml.apache.org/xalan/java/java.lang.Runtime\"> "
-    + "xmlns:fn=\"http://www.w3.org/2005/02/xpath-functions\"> " + "<xsl:output method=\"text\" />" +
-
-    "<xsl:preserve-space elements=\"*\"/>" +
-
-    "<xsl:template match=\"/\">" + "<xsl:for-each select=\"/nutrition/food\">"
-    + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
-
-    private String insecureIncludeVerySimpleXSLT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<xsl:stylesheet version=\"1.0\"  "
-    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" >"
-    + "<xsl:template match=\"/\">"		
-	+ "</xsl:template>"
-    + "<xsl:include href=\"%1$s\"/>"
-    + "</xsl:stylesheet>";
-    
     private String callParseXmlDocument = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<xsl:stylesheet version=\"1.0\"  "
     + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
     + "xmlns:fn=\"http://www.w3.org/2005/02/xpath-functions\"> " + "<xsl:output method=\"text\" />" +

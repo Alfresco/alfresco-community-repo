@@ -40,9 +40,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.XMLUtil;
 import org.apache.bsf.BSFManager;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
@@ -54,8 +54,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.SAXException;
-
-import org.alfresco.util.XMLUtil;
 
 /**
  * A rendering engine which uses xsl templates to render renditions of
@@ -261,12 +259,14 @@ public class XSLTRenderingEngine
       final Element docEl = xslTemplate.getDocumentElement();
       final String XALAN_NS = Constants.S_BUILTIN_EXTENSIONS_URL;
       final String XALAN_NS_PREFIX = "xalan";
+      docEl.setAttribute("xmlns:" + XALAN_NS_PREFIX, XALAN_NS);
 
       final Set<String> excludePrefixes = new HashSet<String>();
       if (docEl.hasAttribute("exclude-result-prefixes"))
       {
          excludePrefixes.addAll(Arrays.asList(docEl.getAttribute("exclude-result-prefixes").split(" ")));
       }
+      excludePrefixes.add(XALAN_NS_PREFIX);
 
       final List<String> result = new LinkedList<String>();
       for (QName ns : methods.keySet())
@@ -385,7 +385,7 @@ public class XSLTRenderingEngine
       Document xslTemplate = null;
       try
       {
-         xslTemplate = XMLUtil.secureParseXSL(ret.getInputStream());
+         xslTemplate = XMLUtil.parse(ret.getInputStream());
       }
       catch (final SAXException sax)
       {
@@ -448,7 +448,7 @@ public class XSLTRenderingEngine
 
             try
             {
-               final Document d = XMLUtil.secureParseXSL(in);
+               final Document d = XMLUtil.parse(in);
                if (LOGGER.isDebugEnabled())
                   LOGGER.debug("loaded " + XMLUtil.toString(d));
                return new DOMSource(d);
@@ -481,12 +481,7 @@ public class XSLTRenderingEngine
             final StringBuilder msg = new StringBuilder("errors encountered creating tranformer ... \n");
             for (TransformerException te : errors)
             {
-            	msg.append(te.getMessageAndLocation()).append("\n");
-            	String cause = ExceptionUtils.getRootCauseMessage(te);
-            	if (cause != null) 
-            	{
-            		msg.append(" caused by: " + cause);
-            	}
+               msg.append(te.getMessageAndLocation()).append("\n"); 
             }
             throw new RenderingEngine.RenderingException(msg.toString());
          }
@@ -521,12 +516,7 @@ public class XSLTRenderingEngine
          final StringBuilder msg = new StringBuilder("errors encountered during transformation ... \n");
          for (TransformerException te : errors)
          {
-            msg.append(te.getMessageAndLocation()).append("\n");
-            String cause = ExceptionUtils.getRootCauseMessage(te);
-        	if (cause != null) 
-        	{
-        		msg.append(" caused by: " + cause);
-        	}
+            msg.append(te.getMessageAndLocation()).append("\n"); 
          }
          throw new RenderingEngine.RenderingException(msg.toString());
       }

@@ -27,6 +27,7 @@ import java.util.Map;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -34,9 +35,11 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
 import org.alfresco.util.test.junitrules.TemporarySites;
+import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
 import org.alfresco.util.test.junitrules.TemporarySitesTest;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -64,10 +67,16 @@ public class SiteServiceImplMoreTest
     public static TemporarySites STATIC_TEST_SITES = new TemporarySites(APP_CONTEXT_INIT);
     
     // Tie them together in a static Rule Chain
-    @ClassRule public static RuleChain ruleChain = RuleChain.outerRule(APP_CONTEXT_INIT)
+    @ClassRule public static RuleChain staticRuleChain = RuleChain.outerRule(APP_CONTEXT_INIT)
                                                             .around(STATIC_TEST_SITES);
     
-    @Rule public RunAsFullyAuthenticatedRule runAllTestsAsAdmin = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getAdminUserName());
+    public RunAsFullyAuthenticatedRule runAllTestsAsAdmin = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getAdminUserName());
+    public AlfrescoPerson testUser = new AlfrescoPerson(APP_CONTEXT_INIT);
+    
+    // Need to ensure the rules are in the correct order so that we're authenticated as admin before trying to create the person.
+    @Rule public RuleChain ruleChain = RuleChain.outerRule(runAllTestsAsAdmin)
+                                                .around(testUser);
+    
     
     // Various services
     private static NamespaceService            NAMESPACE_SERVICE;
@@ -75,6 +84,7 @@ public class SiteServiceImplMoreTest
     private static RetryingTransactionHelper   TRANSACTION_HELPER;
     
     private static String TEST_SITE_NAME, TEST_SUB_SITE_NAME;
+    private static TestSiteAndMemberInfo TEST_SITE_WITH_MEMBERS;
     
     @BeforeClass public static void initStaticData() throws Exception
     {
@@ -92,6 +102,8 @@ public class SiteServiceImplMoreTest
         
         STATIC_TEST_SITES.createSite("sitePreset", TEST_SITE_NAME, "siteTitle", "siteDescription", SiteVisibility.PUBLIC, admin);
         STATIC_TEST_SITES.createSite("sitePreset", TEST_SUB_SITE_NAME, "siteTitle", "siteDescription", SiteVisibility.PUBLIC, subSiteType, admin);
+        
+        TEST_SITE_WITH_MEMBERS = STATIC_TEST_SITES.createTestSiteWithUserPerRole(SiteServiceImplMoreTest.class.getSimpleName(), "sitePreset", SiteVisibility.PUBLIC, admin);
     }
     
     /**
@@ -113,6 +125,34 @@ public class SiteServiceImplMoreTest
                 
                 assertNotNull("st:site missing.", sitesByName.get(TEST_SITE_NAME));
                 assertNotNull("subtype of st:site missing.", sitesByName.get(TEST_SUB_SITE_NAME));
+                
+                return null;
+            }
+        });
+    }
+    
+    /**
+     * This method ensures that sites can be deleted by any SiteManager, not just the Site Creator (ALF-15257).
+     */
+    @Test public void anySiteManagerShouldBeAbleToDeleteASite() throws Exception
+    {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // We already have a site with 4 users created by the TestSiteAndMemberInfo rule above.
+                // We'll use the testUser from the rule above - oh how I wish JUnit supported @Test-level rules, so I didn't have to create that user for all tests.
+                SITE_SERVICE.setMembership(TEST_SITE_WITH_MEMBERS.siteInfo.getShortName(), testUser.getUsername(), SiteModel.SITE_MANAGER);
+                
+                // Now switch to run as that user and try to delete the site.
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    @Override public Void doWork() throws Exception
+                    {
+                        SITE_SERVICE.deleteSite(TEST_SITE_WITH_MEMBERS.siteInfo.getShortName());
+                        return null;
+                    }
+                }, testUser.getUsername());
                 
                 return null;
             }

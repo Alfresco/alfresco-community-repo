@@ -1405,6 +1405,23 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Collection for recording the group memberships present on the site 
         final Map<String, Set<String>> groupsMemberships = new HashMap<String, Set<String>>();
         
+        // Save the group memberships so we can use them later
+        this.nodeService.setProperty(siteNodeRef, QName.createQName(null, "memberships"), (Serializable)groupsMemberships);
+        
+        // The default behaviour is that sites cannot be deleted. But we disable that behaviour here
+        // in order to allow site deletion only via this service. Share calls this service for deletion.
+        //
+        // See ALF-7888 for some background on this issue
+        this.behaviourFilter.disableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+        try
+        {
+            this.nodeService.deleteNode(siteNodeRef);
+        }
+        finally
+        {
+            this.behaviourFilter.enableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+        }
+        
         // Delete the associated groups
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -1434,23 +1451,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
-        // Save the group memberships so we can use them later
-        this.nodeService.setProperty(siteNodeRef, QName.createQName(null, "memberships"), (Serializable)groupsMemberships);
-        
-        // The default behaviour is that sites cannot be deleted. But we disable that behaviour here
-        // in order to allow site deletion only via this service. Share calls this service for deletion.
-        //
-        // See ALF-7888 for some background on this issue
-        this.behaviourFilter.disableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
-        try
-        {
-            this.nodeService.deleteNode(siteNodeRef);
-        }
-        finally
-        {
-            this.behaviourFilter.enableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
-        }
         
         logger.debug("site deleted :" + shortName);
     }

@@ -369,40 +369,17 @@ public class ModuleManagementTool implements LogOutput
             mappingSource = mappingSource.trim(); //trim whitespace
             mappingTarget = mappingTarget.trim(); //trim whitespace
             
-            // Run throught the files one by one figuring out what we are going to do during the copy
+            // Run through the files one by one figuring out what we are going to do during the copy
             calculateCopyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview, forceInstall);
             
             // Get a reference to the source folder (if it isn't present don't do anything)
-            File source = new File(ampFileLocation + "/" + mappingSource, DETECTOR_AMP_AND_WAR);
+            TFile source = new TFile(ampFileLocation + "/" + mappingSource);
             if (source != null && source.list() != null)
             {
-                // The file mappings are expected to start with "/"
-                String mappingSource = (String) entry.getKey();
-                if (mappingSource.length() == 0 || !mappingSource.startsWith("/"))
-                {
-                    throw new AlfrescoRuntimeException("File mapping sources must start with '/', but was: " + mappingSource);
-                }
-                String mappingTarget = (String) entry.getValue();
-                if (mappingTarget.length() == 0 || !mappingTarget.startsWith("/"))
-                {
-                    throw new AlfrescoRuntimeException("File mapping targets must start with '/' but was '" + mappingTarget + "'");
-                }
-                
-                mappingSource = mappingSource.trim(); //trim whitespace
-                mappingTarget = mappingTarget.trim(); //trim whitespace
-                
-                // Run throught the files one by one figuring out what we are going to do during the copy
-                calculateCopyToWar(ampFileLocation, warFileLocation, mappingSource, mappingTarget, installedFiles, preview, forceInstall);
-            
-                // Get a reference to the source folder (if it isn't present don't do anything)
-                TFile source = new TFile(ampFileLocation + "/" + mappingSource);
-                if (source != null && source.list() != null)
-                {
-                    // Add to the list of directory changes so we can implement the changes later.
-                    String sourceDir = ampFileLocation + mappingSource;
-                    String destinationDir = warFileLocation + mappingTarget;
-                    dirChanges.put(sourceDir, destinationDir);
-                }
+                // Add to the list of directory changes so we can implement the changes later.
+                String sourceDir = ampFileLocation + mappingSource;
+                String destinationDir = warFileLocation + mappingTarget;
+                dirChanges.put(sourceDir, destinationDir);
             }
             
         }

@@ -162,6 +162,7 @@ var Filters =
 
          case "editingOthers":
             filterQuery = this.constructPathQuery(parsedArgs);
+            filterQuery += " +ASPECT:\"workingcopy\"";
             filterQuery += " +((-@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
             filterQuery += " OR (-@cm\\:lockOwner:\"" + person.properties.userName + '"';
             filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
@@ -184,7 +185,7 @@ var Filters =
                // no need to specify path here for all sites - IDs are exact matches
                if (parsedArgs.nodeRef != "alfresco://sites/home" && parsedArgs.nodeRef != "alfresco://company/home")
                {
-                  filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
+                  filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
                }
             }
             else
@@ -246,13 +247,18 @@ var Filters =
    constructPathQuery: function constructPathQuery(parsedArgs)
    {
       var pathQuery = "";
-      if (parsedArgs.libraryRoot != companyhome)
+      if (parsedArgs.libraryRoot != companyhome || parsedArgs.nodeRef != "alfresco://company/home")
       {
-         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
-      }
-      else if (parsedArgs.nodeRef != "alfresco://company/home")
-      {
-         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
+         if (parsedArgs.nodeRef == "alfresco://sites/home")
+         {
+            // all sites query - better with //cm:*
+            pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
+         }
+         else
+         {
+            // site specific query - better with //*
+            pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
+         }
       }
       return pathQuery;
    }

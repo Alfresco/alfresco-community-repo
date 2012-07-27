@@ -288,8 +288,7 @@ var Evaluator =
             activeWorkflows: activeWorkflows,
             custom: jsonUtils.toJSONString(custom),
             customObj: custom,
-            actionLabels: actionLabels,
-            
+            actionLabels: actionLabels
          });
       }
       else

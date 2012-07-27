@@ -271,7 +271,7 @@ function getDoclist()
    */
    for each (item in items)
    {
-      if (item.customObj.isWorkingCopy)
+      if (item.customObj && item.customObj.isWorkingCopy)
       {
          var workingCopyOriginal = String(item.customObj.workingCopyOriginal);
          for (var i = 0, ii = items.length; i < ii; i++)

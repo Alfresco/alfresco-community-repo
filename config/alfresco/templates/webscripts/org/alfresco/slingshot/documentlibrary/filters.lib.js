@@ -152,7 +152,7 @@ var Filters =
             break;
 
          case "editingMe":
-            filterQuery = this.constructPathQuery(parsedArgs, true);
+            filterQuery = this.constructPathQuery(parsedArgs);
             filterQuery += " +((+@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
             filterQuery += " OR (+@cm\\:lockOwner:\"" + person.properties.userName + '"';
             filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
@@ -160,7 +160,8 @@ var Filters =
             break;
 
          case "editingOthers":
-            filterQuery = this.constructPathQuery(parsedArgs, true);
+            filterQuery = this.constructPathQuery(parsedArgs);
+            filterQuery += " +ASPECT:\"workingcopy\"";
             filterQuery += " +((-@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
             filterQuery += " OR (-@cm\\:lockOwner:\"" + person.properties.userName + '"';
             filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
@@ -183,7 +184,7 @@ var Filters =
                // no need to specify path here for all sites - IDs are exact matches
                if (parsedArgs.nodeRef != "alfresco://sites/home" && parsedArgs.nodeRef != "alfresco://company/home")
                {
-                  filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
+                  filterQuery += ' +PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
                }
             }
             else
@@ -236,12 +237,21 @@ var Filters =
       return filterParams;
    },
    
-   constructPathQuery: function constructPathQuery(parsedArgs, cmonly)
+   constructPathQuery: function constructPathQuery(parsedArgs)
    {
       var pathQuery = "";
       if (parsedArgs.nodeRef != "alfresco://company/home")
       {
-         pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//' + (cmonly ? 'cm:' : '') + '*"';
+         if (parsedArgs.nodeRef == "alfresco://sites/home")
+         {
+            // all sites query - better with //cm:*
+            pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//cm:*"';
+         }
+         else
+         {
+            // site specific query - better with //*
+            pathQuery = '+PATH:"' + parsedArgs.rootNode.qnamePath + '//*"';
+         }
       }
       return pathQuery;
    }

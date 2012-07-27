@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,8 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Status;
@@ -44,8 +46,8 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TooBusyException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TooBusyException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -63,6 +65,11 @@ import org.springframework.extensions.webscripts.AbstractRuntimeContainer;
 import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Description;
+import org.springframework.extensions.webscripts.Description.FormatStyle;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.Description.RequiredTransaction;
+import org.springframework.extensions.webscripts.Description.RequiredTransactionParameters;
+import org.springframework.extensions.webscripts.Description.TransactionCapability;
 import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.Registry;
 import org.springframework.extensions.webscripts.Runtime;
@@ -73,11 +80,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
-import org.springframework.extensions.webscripts.Description.FormatStyle;
-import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
-import org.springframework.extensions.webscripts.Description.RequiredTransaction;
-import org.springframework.extensions.webscripts.Description.RequiredTransactionParameters;
-import org.springframework.extensions.webscripts.Description.TransactionCapability;
 import org.springframework.util.FileCopyUtils;
 
 
@@ -101,6 +103,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     private TenantAdminService tenantAdminService;
     private ObjectFactory registryFactory;
     private SimpleCache<String, Registry> webScriptsRegistryCache;
+    private ReadWriteLock webScriptsRegistryLock = new ReentrantReadWriteLock();
     private boolean initialized;
 
     /**
@@ -534,16 +537,40 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     public Registry getRegistry()
     {
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        Registry registry = webScriptsRegistryCache.get(tenantDomain);
+        Registry registry;
+        webScriptsRegistryLock.readLock().lock();
+        try
+        {
+            registry = webScriptsRegistryCache.get(tenantDomain);
+        }
+        finally
+        {
+            webScriptsRegistryLock.readLock().unlock();
+        }
         if (registry == null)
         {
-            registry = (Registry)registryFactory.getObject();
-            // We only need to reset the registry if the superclass thinks its already initialized
-            if (initialized)
+            webScriptsRegistryLock.writeLock().lock();
+            try
             {
-                registry.reset();
+                // Double check now we have write lock
+                registry = webScriptsRegistryCache.get(tenantDomain);
+                
+                // Initialize / reinitialize the registry in this thread only
+                if (registry == null)
+                {
+                    registry = (Registry) registryFactory.getObject();
+                    // We only need to reset the registry if the superclass thinks its already initialized
+                    if (initialized)
+                    {
+                        registry.reset();
+                    }
+                    webScriptsRegistryCache.put(tenantDomain, registry);
+                }
             }
-            webScriptsRegistryCache.put(tenantDomain, registry);
+            finally
+            {
+                webScriptsRegistryLock.writeLock().unlock();
+            }
         }
         return registry;
     }

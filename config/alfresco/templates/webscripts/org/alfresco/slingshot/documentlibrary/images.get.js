@@ -21,8 +21,15 @@ function main()
    
    // Build the query specific to image/* mimetypes
    filterParams = Filters.getFilterParams("all", parsedArgs);
-   query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" " +
-           "+TYPE:\"cm:content\" +@cm\\:content.mimetype:image/*";
+   if (parsedArgs.pathNode === null)
+   {
+      query = "+PATH:\"" + parsedArgs.rootNode.qnamePath + "//*\" ";
+   }
+   else
+   {
+      query = "+PATH:\"" + parsedArgs.pathNode.qnamePath + "//*\" ";
+   }
+   query += "+TYPE:\"cm:content\" +@cm\\:content.mimetype:image/*";
    
    // Sort the list before trimming to page chunks 
    assets = search.query(

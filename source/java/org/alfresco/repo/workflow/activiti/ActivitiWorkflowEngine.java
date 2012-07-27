@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -682,9 +683,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         // Use a linked hashmap to get the task defs in the right order
         Map<String, PvmActivity> userTasks = new LinkedHashMap<String, PvmActivity>();
-
+        Set<String> processedActivities = new HashSet<String>();
+        
         // Start finding activities recursively
-        findUserTasks(startEvent, userTasks);
+        findUserTasks(startEvent, userTasks, processedActivities);
         
         return userTasks.values();
     }
@@ -701,11 +703,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         return false;
     }
 
-    private void findUserTasks(PvmActivity currentActivity, Map<String, PvmActivity> userTasks)
+    private void findUserTasks(PvmActivity currentActivity, Map<String, PvmActivity> userTasks, Set<String> processedActivities)
     {
-        // Only process activity if not already present to prevent endless loops
-        if(!userTasks.containsKey(currentActivity.getId()))
+        // Only process activity if not already processed, to prevent endless loops
+        if(!processedActivities.contains(currentActivity.getId()))
         {
+            processedActivities.add(currentActivity.getId());
             if(isUserTask(currentActivity)) 
             {
                 userTasks.put(currentActivity.getId(), currentActivity);
@@ -718,7 +721,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 {
                     if(transition.getDestination() != null)
                     {
-                        findUserTasks(transition.getDestination(), userTasks);
+                        findUserTasks(transition.getDestination(), userTasks, processedActivities);
                     }
                 }
             }

@@ -43,6 +43,9 @@ public class CompositeCapability extends DeclarativeCapability
         this.capabilities = capabilities;
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluateImpl(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public int evaluateImpl(NodeRef nodeRef)
     {   
@@ -52,14 +55,52 @@ public class CompositeCapability extends DeclarativeCapability
         for (Capability capability : capabilities)
         {
             int capabilityResult = capability.evaluate(nodeRef);
-            if (capabilityResult == AccessDecisionVoter.ACCESS_GRANTED) 
+            if (capabilityResult != AccessDecisionVoter.ACCESS_DENIED) 
             {
-                result = AccessDecisionVoter.ACCESS_GRANTED;
+                result = AccessDecisionVoter.ACCESS_ABSTAIN;
+                if (isUndetermined() == false && capabilityResult == AccessDecisionVoter.ACCESS_GRANTED)
+                {
+                    result = AccessDecisionVoter.ACCESS_GRANTED;
+                }
                 break;
             }
         }
         
         return result;
     }
-
+    
+    /**
+     * If a target capability is specified then we evaluate that.  Otherwise we combine the results of the provided capabilities.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public int evaluate(NodeRef source, NodeRef target)
+    {
+        int result = AccessDecisionVoter.ACCESS_ABSTAIN;
+        
+        if (targetCapability != null)
+        {
+            result = super.evaluate(source, target);
+        }
+        else
+        {
+         // Check each capability using 'OR' logic
+            for (Capability capability : capabilities)
+            {
+                int capabilityResult = capability.evaluate(source, target);
+                if (capabilityResult != AccessDecisionVoter.ACCESS_DENIED) 
+                {
+                    result = AccessDecisionVoter.ACCESS_ABSTAIN;
+                    if (isUndetermined() == false && capabilityResult == AccessDecisionVoter.ACCESS_GRANTED)
+                    {
+                        result = AccessDecisionVoter.ACCESS_GRANTED;
+                    }
+                    break;
+                }
+            }
+        }
+        
+        return result;
+    }
 }

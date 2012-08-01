@@ -18,7 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.namespace.QName;
 
@@ -53,7 +53,7 @@ public class BaseCustomPropertyWebScript extends AbstractRmWebScript
         }
         else if ("recordSeries".equalsIgnoreCase(elementName) == true)
         {
-            return DOD5015Model.TYPE_RECORD_SERIES;
+            return CompatibilityModel.TYPE_RECORD_SERIES;
         }
         else
         {

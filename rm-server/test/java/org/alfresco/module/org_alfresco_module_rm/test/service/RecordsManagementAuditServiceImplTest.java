@@ -22,296 +22,283 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.audit.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditEntry;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditQueryParameters;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
-import org.alfresco.module.org_alfresco_module_rm.test.util.TestUtilities;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.context.ApplicationContext;
+import org.alfresco.util.Pair;
 
 /**
  * @see RecordsManagementAuditService
  * 
  * @author Derek Hulley
+ * @author Roy Wetherall
+ * 
  * @since 3.2
  */
-public class RecordsManagementAuditServiceImplTest extends TestCase 
+public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase implements RMPermissionModel
 {
-    private ApplicationContext ctx;
+    /** Records management audit service */
+    private RecordsManagementAuditService auditService;
     
-    private ServiceRegistry serviceRegistry;
-    private NodeService nodeService;
-    private TransactionService transactionService;
-    private RetryingTransactionHelper txnHelper;
-    private RecordsManagementAuditService rmAuditService;
+    /** Test record */
+    private NodeRef record;
 
-
+    /** Test start time */
     private Date testStartTime;
-    private NodeRef filePlan;
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setUp()
+     */
     @Override
     protected void setUp() throws Exception 
     {
+        super.setUp();
+        
+        // test start time recorded
         testStartTime = new Date();
         
-        // We require that records management auditing is enabled
-        // This gets done by the AMP, but as we're not running from 
-        //  and AMP, we need to do it ourselves!
-        System.setProperty("audit.rm.enabled", "true");
-        
-        // Now we can fetch the context
-        ctx = ApplicationContextHelper.getApplicationContext();
-
-        this.serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        this.transactionService = serviceRegistry.getTransactionService();
-        this.txnHelper = transactionService.getRetryingTransactionHelper();
- 
-        this.rmAuditService = (RecordsManagementAuditService) ctx.getBean("RecordsManagementAuditService");
-
-        this.nodeService = serviceRegistry.getNodeService();
-
-
-        // Set the current security context as admin
-        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
-        
         // Stop and clear the log
-        rmAuditService.stop();
-        rmAuditService.clear();
-        rmAuditService.start();
+        auditService.stop();
+        auditService.clear();
+        auditService.start();
 
-        RetryingTransactionCallback<Void> setUpCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                if (filePlan == null)
-                {
-                    filePlan = TestUtilities.loadFilePlanData(ctx);
-                }
-                updateFilePlan();
-                return null;
-            }
-        };
-        txnHelper.doInTransaction(setUpCallback);
+        // check that audit service is started
+        assertTrue(auditService.isEnabled());
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
+     */
     @Override
-    protected void tearDown()
+    protected void initServices()
     {
-        AuthenticationUtil.clearCurrentSecurityContext();
-        try
-        {
-            rmAuditService.start();
-        }
-        catch (Throwable e)
-        {
-            // Not too important
-        }
+        super.initServices();
+        
+        // get the audit service
+        auditService = (RecordsManagementAuditService)applicationContext.getBean("RecordsManagementAuditService");
     }
     
     /**
-     * Perform a full query audit for RM
-     * @return              Returns all the results
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#tearDown()
      */
-    private List<RecordsManagementAuditEntry> queryAll()
+    @Override
+    protected void tearDown() throws Exception
     {
-        RetryingTransactionCallback<List<RecordsManagementAuditEntry>> testCallback =
-            new RetryingTransactionCallback<List<RecordsManagementAuditEntry>>()
-        {
-            public List<RecordsManagementAuditEntry> execute() throws Throwable
-            {
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                List<RecordsManagementAuditEntry> entries = rmAuditService.getAuditTrail(params);
-                return entries;
-            }
-        };
-        return txnHelper.doInTransaction(testCallback);
+        super.tearDown();
+        
+        // ensure the audit is restarted
+        auditService.start();       
     }
     
     /**
-     * Create a new fileplan
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest()
      */
-    private void updateFilePlan()
+    @Override
+    protected boolean isUserTest()
     {
-        RetryingTransactionCallback<Void> updateCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                // Do some stuff
-                nodeService.setProperty(filePlan, ContentModel.PROP_TITLE, "File Plan - " + System.currentTimeMillis());
-
-                return null;
-            }
-        };
-        txnHelper.doInTransaction(updateCallback);
+        return true;
     }
     
-    public void testSetUp()
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupTestDataImpl()
+     */
+    @Override
+    protected void setupTestDataImpl()
     {
-        // Just to get get the fileplan set up
+        super.setupTestDataImpl();
+        
+        record = utils.createRecord(rmFolder, "AuditTest.txt");
+    }   
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupTestUsersImpl(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    protected void setupTestUsersImpl(NodeRef filePlan)
+    {
+        super.setupTestUsersImpl(filePlan);
+        
+        // Give all the users file permission objects
+        for (String user : testUsers)
+        {
+            securityService.setPermission(filePlan, user, FILING);
+            securityService.setPermission(rmContainer, user, FILING);
+        }                
     }
     
-    public void testQuery_All()
+    public void testGetAuditEvents()
     {
-        queryAll();
-    }
-    
-    public void testQuery_UserLimited()
-    {
-        // Make sure that something has been done
-        updateFilePlan();
-        
-        final int limit = 1;
-        final String user = AuthenticationUtil.getSystemUserName();        // The user being tested
-        
-        RetryingTransactionCallback<List<RecordsManagementAuditEntry>> testCallback =
-            new RetryingTransactionCallback<List<RecordsManagementAuditEntry>>()
-        {
-            public List<RecordsManagementAuditEntry> execute() throws Throwable
-            {
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                params.setUser(user);
-                params.setMaxEntries(limit);
-                List<RecordsManagementAuditEntry> entries = rmAuditService.getAuditTrail(params);
-                return entries;
-            }
-        };
-        List<RecordsManagementAuditEntry> entries = txnHelper.doInTransaction(testCallback);
-        assertNotNull(entries);
-        assertEquals("Expected results to be limited", limit, entries.size());
-    }
-    
-    public void testQuery_Node() throws InterruptedException
-    {
-        RetryingTransactionCallback<List<RecordsManagementAuditEntry>> allResultsCallback =
-            new RetryingTransactionCallback<List<RecordsManagementAuditEntry>>()
-        {
-            public List<RecordsManagementAuditEntry> execute() throws Throwable
-            {
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                params.setDateFrom(testStartTime);
-                List<RecordsManagementAuditEntry> entries = rmAuditService.getAuditTrail(params);
-                return entries;
-            }
-        };
-        List<RecordsManagementAuditEntry> entries = txnHelper.doInTransaction(allResultsCallback);
-        assertNotNull("Expect a list of results for the query", entries);
-        
-        // Find all results for a given node
-        NodeRef chosenNodeRef = null;
-        int count = 0;
-        for (RecordsManagementAuditEntry entry : entries)
-        {
-            NodeRef nodeRef = entry.getNodeRef();
-            assertNotNull("Found entry with null nodeRef: " + entry, nodeRef);
-            if (chosenNodeRef == null)
-            {
-                chosenNodeRef = nodeRef;
-                count++;
-            }
-            else if (nodeRef.equals(chosenNodeRef))
-            {
-                count++;
-            }
-        }
-        
-        final NodeRef chosenNodeRefFinal = chosenNodeRef;
-        // Now search again, but for the chosen node
-        RetryingTransactionCallback<List<RecordsManagementAuditEntry>> nodeResultsCallback =
-            new RetryingTransactionCallback<List<RecordsManagementAuditEntry>>()
-        {
-            public List<RecordsManagementAuditEntry> execute() throws Throwable
-            {
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                params.setDateFrom(testStartTime);
-                params.setNodeRef(chosenNodeRefFinal);
-                List<RecordsManagementAuditEntry> entries = rmAuditService.getAuditTrail(params);
-                return entries;
-            }
-        };
-        entries = txnHelper.doInTransaction(nodeResultsCallback);
-        assertNotNull("Expect a list of results for the query", entries);
-        assertTrue("No results were found for node: " + chosenNodeRefFinal, entries.size() > 0);
-        // We can't check the size because we need entries for the node and any children as well
-        
-        Thread.sleep(5000);
-
-        // Clear the log
-        rmAuditService.clear();
-        
-        entries = txnHelper.doInTransaction(nodeResultsCallback);
-        assertTrue("Should have cleared all audit entries", entries.isEmpty());
-        
-        // Delete the node
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        doTestInTransaction(new Test<Void>()
         {
             @Override
-            public Void execute() throws Throwable
-            {
-                return AuthenticationUtil.runAs(new RunAsWork<Void>()
+            public Void run() throws Exception
+            { 
+                List<AuditEvent> events = auditService.getAuditEvents();
+                
+                System.out.println("Found audit events:");
+                for (AuditEvent event : events)
                 {
-                    @Override
-                    public Void doWork() throws Exception
-                    {
-                        nodeService.deleteNode(chosenNodeRefFinal);
-                        return null;
-                    }
-                }, AuthenticationUtil.getSystemUserName());
+                    System.out.println("  - " + event.getName() + " (" + event.getLabel() + ")");
+                }
+                
+                return null;
             }
-        });
-        
-        Thread.sleep(5000);
-
-        entries = txnHelper.doInTransaction(nodeResultsCallback);
-        assertFalse("Should have recorded node deletion", entries.isEmpty());
+        }, rmAdminName);        
     }
     
-    public void testStartStopDelete() throws InterruptedException
+    /**
+     * Test getAuditTrail method and parameter filters.
+     */
+    public void testGetAuditTrail()
+    {
+        // show the audit is empty
+        getAuditTrail(0, rmAdminName);
+        
+        // make a change         
+        final String updatedProperty = updateTitle(filePlan, rmAdminName);
+        
+        // show the audit has been updated
+        List<RecordsManagementAuditEntry> entries = getAuditTrail(1, rmAdminName);
+        final RecordsManagementAuditEntry entry = entries.get(0);
+        assertNotNull(entry);
+        
+        // investigate the contents of the audit entry
+        doTestInTransaction(new Test<Void>()
+        {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Void run() throws Exception
+            {                                
+                assertEquals(filePlan, entry.getNodeRef());
+                
+                String id = (String)nodeService.getProperty(filePlan, PROP_IDENTIFIER);
+                assertEquals(id, entry.getIdentifier());                
+                
+                Map<QName, Serializable> after = entry.getAfterProperties();
+                Map<QName, Pair<Serializable, Serializable>> changed = entry.getChangedProperties();
+                
+                assertTrue(after.containsKey(PROP_TITLE));
+                assertTrue(changed.containsKey(PROP_TITLE));
+                
+                Serializable value = ((Map<Locale, Serializable>)after.get(PROP_TITLE)).get(Locale.ENGLISH);
+                assertEquals(updatedProperty, value);
+                value = ((Map<Locale, Serializable>)changed.get(PROP_TITLE).getSecond()).get(Locale.ENGLISH);
+                assertEquals(updatedProperty, value);
+                
+                return null;
+            }
+        }, rmAdminName);
+        
+        // add some more title updates
+        updateTitle(rmContainer, rmAdminName);
+        updateTitle(rmFolder, rmAdminName);
+        updateTitle(record, rmAdminName);
+        
+        // show the audit has been updated
+        getAuditTrail(4, rmAdminName);
+        
+        // snap shot date
+        Date snapShot = new Date();
+        
+        // show the audit results can be limited
+        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+        params.setMaxEntries(2);
+        getAuditTrail(params, 2, rmAdminName);
+        
+        // test filter by user
+        updateTitle(rmContainer, recordsManagerName);
+        updateTitle(rmFolder, recordsManagerName);
+        updateTitle(record, recordsManagerName);
+        
+        params = new RecordsManagementAuditQueryParameters();
+        params.setUser(recordsManagerName);
+        getAuditTrail(params, 3, rmAdminName);
+        
+        // test filter by date
+        params = new RecordsManagementAuditQueryParameters();
+        params.setDateFrom(snapShot);
+        getAuditTrail(params, 3, rmAdminName);        
+        params = new RecordsManagementAuditQueryParameters();
+        params.setDateTo(snapShot);
+        getAuditTrail(params, 4, rmAdminName);
+        params.setDateFrom(testStartTime);
+        getAuditTrail(params, 4, rmAdminName);        
+        
+        // test filter by object
+        updateTitle(record, rmAdminName);
+        updateTitle(record, rmAdminName);
+        updateTitle(record, rmAdminName);
+        params = new RecordsManagementAuditQueryParameters();
+        params.setNodeRef(record);
+        getAuditTrail(params, 5, rmAdminName);  
+        
+        // test filter by event
+        params = new RecordsManagementAuditQueryParameters();
+     //   params.setEvent("cutoff");
+     //   getAuditTrail(params, 0, rmAdminName);  
+        params.setEvent("Update RM Object");
+        getAuditTrail(params, 10, rmAdminName); 
+        
+        // test filter by property
+        params = new RecordsManagementAuditQueryParameters();
+        //params.setProperty(PROP_ADDRESSEES);
+        //getAuditTrail(params, 0, rmAdminName); 
+        params.setProperty(PROP_TITLE);
+        getAuditTrail(params, 10, rmAdminName);         
+    }
+    
+    /**
+     * Tests the following methods:
+     *   - start()
+     *   - stop()
+     *   - clear()
+     *   - isEnabled()
+     *   - getDateLastStopped()
+     *   - getDateLastStarted()
+     *   
+     * @throws InterruptedException
+     */
+    public void testAdminMethods() throws InterruptedException
     {
         // Stop the audit
-        rmAuditService.stop();
+        auditService.stop();
         
         Thread.sleep(5000);
         
-        List<RecordsManagementAuditEntry> result1 = queryAll();
+        List<RecordsManagementAuditEntry> result1 = getAuditTrail(rmAdminName);
         assertNotNull(result1);
 
         // Update the fileplan
-        updateFilePlan();
+        updateTitle(filePlan, rmAdminName);
         
         Thread.sleep(5000);
         
         // There should be no new audit entries
-        List<RecordsManagementAuditEntry> result2 = queryAll();
+        List<RecordsManagementAuditEntry> result2 = getAuditTrail(rmAdminName);
         assertNotNull(result2);
         assertEquals(
                 "Audit results should not have changed after auditing was disabled",
                 result1.size(), result2.size());
         
         // repeat with a start
-        rmAuditService.start();
-        updateFilePlan();
+        auditService.start();
+        updateTitle(filePlan, rmAdminName);
         
         Thread.sleep(5000);
 
-        List<RecordsManagementAuditEntry> result3 = queryAll();
+        List<RecordsManagementAuditEntry> result3 = getAuditTrail(rmAdminName);
         assertNotNull(result3);
         assertTrue(
                 "Expected more results after enabling audit",
@@ -320,25 +307,31 @@ public class RecordsManagementAuditServiceImplTest extends TestCase
         Thread.sleep(5000);
 
         // Stop and delete all entries
-        rmAuditService.stop();
-        rmAuditService.clear();
+        auditService.stop();
+        auditService.clear();
 
         // There should be no entries
-        List<RecordsManagementAuditEntry> result4 = queryAll();
+        List<RecordsManagementAuditEntry> result4 = getAuditTrail(rmAdminName);
         assertNotNull(result4);
         assertEquals(
                 "Audit entries should have been cleared",
                 0, result4.size());
     }
+
+    // TODO testAuditRMAction
+    
+    // TODO testGetAuditTrailFile
+    
+    // TODO testFileAuditTrailAsRecord
     
     public void xtestAuditAuthentication()
     {
-        rmAuditService.stop();
-        rmAuditService.clear();
-        rmAuditService.start();
+        auditService.stop();
+        auditService.clear();
+        auditService.start();
 
-        MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
-        PersonService personService = serviceRegistry.getPersonService();
+        //MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
+        //PersonService personService = serviceRegistry.getPersonService();
         
         try
         {
@@ -365,8 +358,8 @@ public class RecordsManagementAuditServiceImplTest extends TestCase
         {
             AuthenticationUtil.popAuthentication();
         }
-        rmAuditService.stop();
-        List<RecordsManagementAuditEntry> result1 = queryAll();
+        auditService.stop();
+        List<RecordsManagementAuditEntry> result1 = getAuditTrail(rmAdminName);
         // Check that the username is reflected correctly in the results
         assertFalse("No audit results were generated for the failed login.", result1.isEmpty());
         boolean found = false;
@@ -398,8 +391,8 @@ public class RecordsManagementAuditServiceImplTest extends TestCase
         personProperties.put(ContentModel.PROP_LASTNAME, "Dickons");
         personService.createPerson(personProperties);
         
-        rmAuditService.clear();
-        rmAuditService.start();
+        auditService.clear();
+        auditService.start();
         try
         {
             AuthenticationUtil.pushAuthentication();
@@ -409,8 +402,8 @@ public class RecordsManagementAuditServiceImplTest extends TestCase
         {
             AuthenticationUtil.popAuthentication();
         }
-        rmAuditService.stop();
-        List<RecordsManagementAuditEntry> result2 = queryAll();
+        auditService.stop();
+        List<RecordsManagementAuditEntry> result2 = getAuditTrail(rmAdminName);
         found = false;
         for (RecordsManagementAuditEntry entry : result2)
         {
@@ -423,5 +416,53 @@ public class RecordsManagementAuditServiceImplTest extends TestCase
             }
         }
         assertTrue("Expected to hit successful login attempt for Charles Dickons (cdickons)", found);
+    }
+    
+    /** === Helper methods === */
+    
+    private List<RecordsManagementAuditEntry> getAuditTrail(String asUser)
+    {
+        return getAuditTrail(-1, asUser);
+    }
+    
+    private List<RecordsManagementAuditEntry> getAuditTrail(final int expectedCount, String asUser)
+    {
+        return getAuditTrail(new RecordsManagementAuditQueryParameters(), expectedCount, asUser);
+    }
+    
+    private List<RecordsManagementAuditEntry> getAuditTrail(final RecordsManagementAuditQueryParameters params, final int expectedCount, final String asUser)
+    {
+        return doTestInTransaction(new Test<List<RecordsManagementAuditEntry>>()
+        {
+            @Override
+            public List<RecordsManagementAuditEntry> run() throws Exception
+            {
+                return auditService.getAuditTrail(params);
+            }
+            
+            @Override
+            public void test(List<RecordsManagementAuditEntry> result) throws Exception
+            {
+                assertNotNull(result);
+                if (expectedCount != -1)
+                {    
+                    assertEquals(expectedCount, result.size());
+                }
+            }
+        }, asUser);       
+    }
+    
+    private String updateTitle(final NodeRef nodeRef, final String asUser)
+    {
+        return doTestInTransaction(new Test<String>()
+        {
+            @Override
+            public String run() throws Exception
+            {
+                String updatedProperty = "Updated - " + System.currentTimeMillis();
+                nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, updatedProperty);
+                return updatedProperty;
+            }
+        }, asUser);
     }
 }

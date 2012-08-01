@@ -1048,7 +1048,7 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         assertEquals("application/json", rsp.getContentType());
         jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
         
-        checkAuditStatus(false);
+        checkAuditStatus(true);
         
         // start the RM audit log
         JSONObject jsonPostData = new JSONObject();

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.CustomMetadataException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeCreateReference;
@@ -328,30 +329,32 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
     	// Failure: Add a property with the same name twice
     	doTestInTransaction(new FailureTest
         (
-        	"Can not create a property with the same id twice"
+        	"Can not create a property with the same id twice",
+        	CustomMetadataException.class
         )
         {
             @Override
-            public void run()
+            public void run() throws Exception
             {
-            	adminService.addCustomPropertyDefinition(
-            			QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"), 
-            			ASPECT_RECORD, 
-            			"Label1", 
-            			DataTypeDefinition.TEXT, 
-            			"Title", 
-            			"Description");
+                adminService.addCustomPropertyDefinition(
+                		QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myRecordProp1"), 
+                		ASPECT_RECORD, 
+                		"Label1", 
+                		DataTypeDefinition.TEXT, 
+                		"Title", 
+                		"Description");
             }
         }); 
     	
     	// Failure: Try and add a property to a type that isn't customisable
     	doTestInTransaction(new FailureTest
         (
-        	"Can not add a custom property to a type that isn't registered as customisable"
+        	"Can not add a custom property to a type that isn't registered as customisable",
+            CustomMetadataException.class
         )
         {
             @Override
-            public void run()
+            public void run() throws Exception
             {
             	adminService.addCustomPropertyDefinition(
             			QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "myContentProp"), 
@@ -361,26 +364,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
             			"Title", 
             			"Description");
             }
-        }); 
-    	
-    	// Failure: Add a property with the label twice (but no id specified) 
-//    	doTestInTransaction(new FailureTest
-//        (
-//        	"Can not create a property with the same label twice if no id is specified."
-//        )
-//        {
-//            @Override
-//            public void run()
-//            {
-//            	adminService.addCustomPropertyDefinition(
-//            			null, 
-//            			ASPECT_RECORD, 
-//            			"Label1", 
-//            			DataTypeDefinition.TEXT, 
-//            			"Title", 
-//            			"Description");
-//            }
-//        }); 
+        });     	
     }
     
     /**

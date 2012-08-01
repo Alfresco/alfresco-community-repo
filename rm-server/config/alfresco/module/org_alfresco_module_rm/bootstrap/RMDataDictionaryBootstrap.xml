@@ -61,7 +61,7 @@
                   <cm:content>contentUrl=classpath:alfresco/module/org_alfresco_module_rm/bootstrap/content/recordsCustomModel.xml|mimetype=text/plain|encoding=UTF-8</cm:content>
                   <cm:title>recordsCustomModel.xml</cm:title>
                   <cm:name>recordsCustomModel.xml</cm:name>
-	              <cm:modelName>{http://www.alfresco.org/model/rmcustom/1.0}rmc</cm:modelName>
+	              <cm:modelName>{http://www.alfresco.org/model/rmcustom/1.0}rmcustom</cm:modelName>
 	              <cm:modelDescription>Records Management Custom Model</cm:modelDescription>
 	              <cm:modelAuthor>Alfresco</cm:modelAuthor>
 	              <cm:modelVersion>1.0</cm:modelVersion>
@@ -164,6 +164,7 @@
 	                      <cm:title>record-superseded-email.ftl</cm:title>
 	                      <cm:name>record-superseded-email.ftl</cm:name>
                           <cm:lastPatchUpdate>org_alfresco_module_rm_notificationTemplatePatch</cm:lastPatchUpdate>
+                          
 	                   </view:properties>
 	               </cm:content>
                </cm:contains>

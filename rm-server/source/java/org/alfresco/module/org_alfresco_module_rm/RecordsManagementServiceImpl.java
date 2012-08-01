@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -178,20 +179,32 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     public void init()
     {        
         // Register the association behaviours
-        this.policyComponent.bindAssociationBehaviour(
+        policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                 TYPE_RECORD_FOLDER, 
                 ContentModel.ASSOC_CONTAINS,
                 new JavaBehaviour(this, "onFileContent", NotificationFrequency.TRANSACTION_COMMIT));
         
-       this.policyComponent.bindAssociationBehaviour(
+        policyComponent.bindAssociationBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
+                TYPE_FILE_PLAN, 
+                ContentModel.ASSOC_CONTAINS, 
+                new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT)); 
+        policyComponent.bindAssociationBehaviour(
                   QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                   TYPE_RECORD_CATEGORY, 
                   ContentModel.ASSOC_CONTAINS, 
                   new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT));
+       
+        policyComponent.bindAssociationBehaviour(
+               QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
+               ASPECT_RECORD,
+               RenditionModel.ASSOC_RENDITION,
+               new JavaBehaviour(this, "onAddRecordThumbnail", NotificationFrequency.TRANSACTION_COMMIT)
+               );
         
         // Register script execution behaviour on RM property update.
-        this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+        policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ASPECT_FILE_PLAN_COMPONENT,
                 new JavaBehaviour(this, "onChangeToAnyRmProperty", NotificationFrequency.TRANSACTION_COMMIT));
         
@@ -223,8 +236,23 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
      */
     public void onFileContent(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        // File the document
-        rmActionService.executeRecordsManagementAction(childAssocRef.getChildRef(), "file");
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        if (nodeService.exists(nodeRef) == true)
+        {
+            // Ensure that the filed item is cm:content
+            QName type = nodeService.getType(nodeRef);
+            if (ContentModel.TYPE_CONTENT.equals(type) == true ||
+                dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) == true)
+            {
+                // File the document
+                rmActionService.executeRecordsManagementAction(childAssocRef.getChildRef(), "file");
+            }
+            else
+            {
+                // Raise an exception since we should only be filling content into a record folder
+                throw new AlfrescoRuntimeException("Unable to complete operation, because only content can be filed within a record folder.");
+            }        
+        }
     }
     
     /**
@@ -238,14 +266,31 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
      */
     public void onAddContentToContainer(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        if (childAssocRef.getTypeQName().equals(ContentModel.ASSOC_CONTAINS))
+        NodeRef parent = childAssocRef.getParentRef();
+        NodeRef nodeRef = childAssocRef.getChildRef();
+        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
         {
-            QName childType = nodeService.getType(childAssocRef.getChildRef());
-            
-            if(childType.equals(ContentModel.TYPE_CONTENT))
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));   
-            }
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));   
+        }
+        if (isFilePlan(parent) == true && isRecordFolder(nodeRef) == true)
+        {
+            throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the root of the file plan.");
+        }
+    }
+    
+    /**
+     * Make sure the thumbnails of records are marked as file plan components as are therefore subject to the same
+     * permission restrictions.
+     * 
+     * @param childAssocRef
+     * @param bNew
+     */
+    public void onAddRecordThumbnail(ChildAssociationRef childAssocRef, boolean bNew)
+    {
+        NodeRef thumbnail = childAssocRef.getChildRef();
+        if (nodeService.exists(thumbnail) == true)
+        {
+            nodeService.addAspect(thumbnail, ASPECT_FILE_PLAN_COMPONENT, null);
         }
     }
     
@@ -473,6 +518,51 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     }
     
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getFilePlanComponentKindFromType(org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public FilePlanComponentKind getFilePlanComponentKindFromType(QName type)
+    {
+        FilePlanComponentKind result = null;
+        
+        if (ASPECT_FILE_PLAN_COMPONENT.equals(type) == true)
+        {
+            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
+        }
+        else if (dictionaryService.isSubClass(type, ASPECT_RECORD) == true)
+        {
+            result = FilePlanComponentKind.RECORD;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_FILE_PLAN) == true)
+        {
+            result = FilePlanComponentKind.FILE_PLAN;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY) == true)
+        {
+            result = FilePlanComponentKind.RECORD_CATEGORY;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER) == true)
+        {
+            result = FilePlanComponentKind.RECORD_FOLDER;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_HOLD) == true)
+        {
+            result = FilePlanComponentKind.HOLD;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_TRANSFER) == true)
+        {
+            result = FilePlanComponentKind.TRANSFER;
+        }
+        else if (dictionaryService.isSubClass(type, TYPE_DISPOSITION_SCHEDULE) == true || 
+                 dictionaryService.isSubClass(type, TYPE_DISPOSITION_ACTION_DEFINITION) == true)
+        {
+            result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
+        }
+        
+        return result;
+    }
+    
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecordCategory(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isRecordCategory(NodeRef nodeRef)
@@ -652,7 +742,12 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
             @Override
             public boolean handle(Pair<Long, NodeRef> nodePair)
             {
-                results.add(nodePair.getSecond());
+                NodeRef nodeRef = nodePair.getSecond();
+                if (StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.equals(nodeRef.getStoreRef()) == false)
+                {                
+                    results.add(nodeRef);
+                }
+                
                 return true;
             }
         });

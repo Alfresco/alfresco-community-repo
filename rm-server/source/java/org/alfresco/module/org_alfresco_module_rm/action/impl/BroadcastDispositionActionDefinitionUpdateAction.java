@@ -29,9 +29,11 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,6 +56,13 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     
     public static final String NAME = "broadcastDispositionActionDefinitionUpdate";
     public static final String CHANGED_PROPERTIES = "changedProperties";
+    
+    private BehaviourFilter behaviourFilter;
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
@@ -75,11 +84,19 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         NodeRef rmContainer = nodeService.getPrimaryParent(dispositionScheduleNode).getParentRef();
         DispositionSchedule dispositionSchedule = dispositionService.getAssociatedDispositionSchedule(rmContainer);
         
-        List<NodeRef> disposableItems = dispositionService.getDisposableItems(dispositionSchedule);
-        for (NodeRef disposableItem : disposableItems)
+        behaviourFilter.disableBehaviour();
+        try
         {
-            updateDisposableItem(dispositionSchedule, disposableItem, actionedUponNodeRef, changedProps);
-        }        
+            List<NodeRef> disposableItems = dispositionService.getDisposableItems(dispositionSchedule);
+            for (NodeRef disposableItem : disposableItems)
+            {
+                updateDisposableItem(dispositionSchedule, disposableItem, actionedUponNodeRef, changedProps);
+            }
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour();
+        }
     }
     
     /**
@@ -107,6 +124,50 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
                 // disposition lifecycle does not exist on the node so setup disposition
                 updateNextDispositionAction(disposableItem);
             }
+            
+            // update rolled up search information
+            rollupSearchProperties(disposableItem);
+        }
+    }
+    
+    /**
+     * Manually update the rolled up search properties
+     * 
+     * @param disposableItem    disposable item
+     */
+    private void rollupSearchProperties(NodeRef disposableItem)
+    {
+        DispositionAction da = dispositionService.getNextDispositionAction(disposableItem);
+        if (da != null)
+        {        
+            Map<QName, Serializable> props = nodeService.getProperties(disposableItem);
+            
+            props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName()); 
+            props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate()); 
+            props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, this.nodeService.getProperty(da.getNodeRef(), PROP_DISPOSITION_EVENTS_ELIGIBLE));
+            
+            DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();        
+            Period period = daDefinition.getPeriod();
+            if (period != null)
+            {
+                props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
+                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());            
+            }
+            else
+            {
+                props.put(PROP_RS_DISPOSITION_PERIOD, null);
+                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
+            }
+            
+            List<EventCompletionDetails> events = da.getEventCompletionDetails();
+            List<String> list = new ArrayList<String>(events.size());
+            for (EventCompletionDetails event : events)
+            {
+                list.add(event.getEventName());
+            }
+            props.put(PROP_RS_DISPOSITION_EVENTS, (Serializable)list);
+            
+            nodeService.setProperties(disposableItem, props);
         }
     }
 
@@ -249,6 +310,9 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
 	            }
 	        }
         }
+        
+        // NOTE: eventsList contains all the events that have been updated!
+        // TODO: manually update the search properties for the parent node!
         
         // finally since events may have changed re-calculate the events eligible flag
         boolean eligible = updateEventEligible(nextAction);

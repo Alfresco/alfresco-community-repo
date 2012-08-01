@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.springframework.beans.BeansException;
@@ -38,19 +40,26 @@ import org.springframework.context.ApplicationContextAware;
  * 
  * @author Roy Wetherall
  */
-public class DeclarativeCapability extends AbstractCapability implements ApplicationContextAware
+public class DeclarativeCapability extends AbstractCapability 
+                                   implements ApplicationContextAware
 {
     /** Application Context */
     protected ApplicationContext applicationContext;
     
     /** Required permissions */
-    private List<String> permissions;
+    protected List<String> permissions;
     
     /** Map of conditions and expected evaluation result */
-    private Map<String, Boolean> conditions;
+    protected Map<String, Boolean> conditions;
     
     /** List of file plan component kinds one of which must be satisfied */
-    private List<String> kinds;
+    protected List<String> kinds;
+    
+    /** Capability to be evaluated against the target node reference */
+    protected Capability targetCapability;
+    
+    /** Indicates whether to return an undetermined result */
+    protected boolean isUndetermined = false;
     
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
@@ -83,7 +92,7 @@ public class DeclarativeCapability extends AbstractCapability implements Applica
     }
     
     /**
-     * @param kinds     list of file plan component kinds that the  
+     * @param kinds     list of file plan component kinds  
      */
     public void setKinds(List<String> kinds)
     {
@@ -99,6 +108,32 @@ public class DeclarativeCapability extends AbstractCapability implements Applica
     }
     
     /**
+     * Helper method to set a single kind.
+     * 
+     * @param kind  file plan component kind
+     */
+    public void setKind(String kind)
+    {
+        this.kinds = Collections.singletonList(kind);
+    }
+    
+    /**
+     * Sets whether the capability will return an undetermined result when evaluating permissions
+     * for a single node reference or not.  The default is to return grant.
+     * 
+     * @param isUndetermined    true if undetermined result, false otherwise
+     */
+    public void setUndetermined(boolean isUndetermined)
+    {
+        this.isUndetermined = isUndetermined;
+    }
+    
+    public boolean isUndetermined()
+    {
+        return isUndetermined;
+    }
+    
+    /**
      * Helper @see #setPermissions(List)
      * 
      * @param permission    permission
@@ -108,6 +143,14 @@ public class DeclarativeCapability extends AbstractCapability implements Applica
         List<String> permissions = new ArrayList<String>(1);
         permissions.add(permission);
         this.permissions = permissions;
+    }
+    
+    /**
+     * @param targetCapability  target capability
+     */
+    public void setTargetCapability(Capability targetCapability)
+    {
+        this.targetCapability = targetCapability;
     }
     
     /**
@@ -261,6 +304,21 @@ public class DeclarativeCapability extends AbstractCapability implements Applica
         return result;
     }
     
+    @Override
+    public int evaluate(NodeRef source, NodeRef target)
+    {
+        int result = AccessDecisionVoter.ACCESS_ABSTAIN;
+        if (targetCapability != null)
+        {
+            result = evaluate(source);
+            if (result != AccessDecisionVoter.ACCESS_DENIED)
+            {
+                result = targetCapability.evaluate(target);
+            }
+        }
+        return result;
+    }
+    
     /**
      * Default implementation.  Given extending classes a hook point for further checks.
      * 
@@ -269,7 +327,12 @@ public class DeclarativeCapability extends AbstractCapability implements Applica
      */
     protected int evaluateImpl(NodeRef nodeRef)
     {
-        return AccessDecisionVoter.ACCESS_GRANTED;
+        int result = AccessDecisionVoter.ACCESS_GRANTED;
+        if (isUndetermined == true)
+        {    
+            result = AccessDecisionVoter.ACCESS_ABSTAIN;
+        }
+        return result;
     }
     
     /**

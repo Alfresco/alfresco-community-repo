@@ -20,14 +20,16 @@ package org.alfresco.module.org_alfresco_module_rm.disposition;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
+import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -74,6 +76,9 @@ public class DispositionServiceImpl implements DispositionService, RecordsManage
     
     /** Application context */
     private ApplicationContext applicationContext;
+    
+    /** Disposition properties */
+    private Map<QName, DispositionProperty> dispositionProperties = new HashMap<QName, DispositionProperty>(4);
     
     /**
      * Set node service
@@ -147,6 +152,42 @@ public class DispositionServiceImpl implements DispositionService, RecordsManage
     public void setDispositionSelectionStrategy(DispositionSelectionStrategy dispositionSelectionStrategy)
     {
         this.dispositionSelectionStrategy = dispositionSelectionStrategy;
+    }
+    
+    /** ========= Disposition Property Methods ========= */
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#registerDispositionProperty(org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty)
+     */
+    @Override
+    public void registerDispositionProperty(DispositionProperty dispositionProperty)
+    {
+        dispositionProperties.put(dispositionProperty.getQName(), dispositionProperty);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionProperties(boolean, java.lang.String)
+     */
+    @Override
+    public Collection<DispositionProperty> getDispositionProperties(boolean isRecordLevel, String dispositionAction)
+    {
+        Collection<DispositionProperty> values = dispositionProperties.values();        
+        List<DispositionProperty> result = new ArrayList<DispositionProperty>(values.size());
+        for (DispositionProperty dispositionProperty : values)
+        {
+            boolean test = dispositionProperty.applies(isRecordLevel, dispositionAction);
+            if (test == true)
+            {
+                result.add(dispositionProperty);
+            }
+        }
+        return result;
+    }
+    
+    @Override
+    public Collection<DispositionProperty> getDispositionProperties()
+    {
+        return dispositionProperties.values();
     }
     
     /** ========= Disposition Schedule Methods ========= */
@@ -521,7 +562,9 @@ public class DispositionServiceImpl implements DispositionService, RecordsManage
             
             if (result == false)
             {
-                // If all the events specified on the action have been completed the action is eligible
+                DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa);
+                boolean firstComplete = da.getDispositionActionDefinition().eligibleOnFirstCompleteEvent();
+                
                 List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa, ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
                 for (ChildAssociationRef assoc : assocs)
                 {
@@ -532,11 +575,22 @@ public class DispositionServiceImpl implements DispositionService, RecordsManage
                     {
                         isComplete = isCompleteValue.booleanValue();
                         
-                        // TODO this only works for the OR use case .. need to handle optional AND handling
+                        // implement AND and OR combination of event completions
                         if (isComplete == true)
                         {
                             result = true;
-                            break;
+                            if (firstComplete == true)
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            result = false;
+                            if (firstComplete == false)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
@@ -606,21 +660,5 @@ public class DispositionServiceImpl implements DispositionService, RecordsManage
        }       
        return result;
     }
-    
-
-    public List<QName> getDispositionPeriodProperties()
-    {
-        DispositionPeriodProperties dpp = (DispositionPeriodProperties)applicationContext.getBean(DispositionPeriodProperties.BEAN_NAME);
-
-        if (dpp == null)
-        {
-            return Collections.emptyList();
-        }
-        else
-        {
-            return dpp.getPeriodProperties();
-        }
-    }
-
 
 }

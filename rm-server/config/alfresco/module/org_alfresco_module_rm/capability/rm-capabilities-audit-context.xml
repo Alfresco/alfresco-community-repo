@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!--  Assignable Capabilities -->
+            
+    <bean id="rmAccessAuditCapability" 
+          parent="declarativeCapability">
+   		<property name="name" value="AccessAudit"/>
+   		<property name="permission" value="AccessAudit"/>
+    </bean>
+        
+    <bean id="rmDeclareAuditAsRecordCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="DeclareAuditAsRecord" />
+		<property name="permission" value="DeclareAuditAsRecord" />
+	</bean>
+    
+    <bean id="rmDeleteAuditCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="DeleteAudit" />
+		<property name="permission" value="DeleteAudit" />
+	</bean>	
+	
+    <bean id="rmEnableDisableAuditByTypesCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="EnableDisableAuditByTypes" />
+		<property name="permission" value="EnableDisableAuditByTypes" />
+	</bean>
+
+    <bean id="rmExportAuditCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="ExportAudit" />
+		<property name="permission" value="ExportAudit" />
+	</bean>  
+	
+    <bean id="rmSelectAuditMetadataCapability" 
+		  parent="declarativeCapability">
+		<property name="name" value="SelectAuditMetadata" />
+		<property name="permission" value="SelectAuditMetadata" />
+	</bean>
+
+    <!--  Non-Assignable Capabilities -->
+    
+    <bean id="rmAuditAdmin" 
+    	  parent="compositeCapability">
+        <property name="name" value="AuditAdmin"/>
+    	<property name="private" value="true"/>    	
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmAccessAuditCapability"/>
+    			<ref bean="rmDeclareAuditAsRecordCapability"/>
+    			<ref bean="rmDeleteAuditCapability"/>
+    			<ref bean="rmEnableDisableAuditByTypesCapability"/>
+    			<ref bean="rmExportAuditCapability"/>
+    			<ref bean="rmSelectAuditMetadataCapability"/>    			   			
+    		</list>
+    	</property>
+    </bean>
+
+</beans>

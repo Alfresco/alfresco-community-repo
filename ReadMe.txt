@@ -12,8 +12,7 @@ Initial Setup
 
  - Checkout Records Management code from https://svn.alfresco.com/repos/alfresco-enterprise/modules/recordsmanagement/HEAD
    Note:  the RM branch structure reflects the main repository branch structure, so HEAD is the current development branch and BRACHES contains the release branches.
- - Place the alfresco.war in the root of the rm-server directory and place the share.war in the root of the rm-share directory.
-   Note:  building BRACHES/V4.0 will provide compatiable wars, alternatively a compatible build can be retrieved from bamboo.alfresco.com
+ - Run "gradlew fetchWarFile".  This will use Maven to download the dependant Alfresco War's, currently version 4.0.1
  - Run "gradlew amp" in root directory.  This will unpack the dependancies, build the RM source and finally assemble the RM amps.
    Note:  the first execution of this task may take serveral minutes, because it will unpack the required build dependancies from the alfresco and share WAR.  It will also pull any external dependancies from Maven or 
  - You will not find rm-server\build\dist\alfresco-rm-2.0.amp and rm-share\build\dist\alfresco-rm-share-2.0.amp ahve been built.  
@@ -51,3 +50,4 @@ Summary Of Available Gradle Tasks
   - installAmp		: installs the AMP into a copy of the projects dependant WAR using the MMT.
 					  NOTE: the installed WAR can be found in build/dist.
   - deployAmp       : depolys the project AMP to the configured Tomcat instance.
+  - fetchWarFile    : fetches the dependant Alfresco WAR files

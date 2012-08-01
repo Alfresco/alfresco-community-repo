@@ -7,6 +7,7 @@
     	  class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent" 
     	  parent="baseJsonConversionComponent">       
         <property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="capabilityService" ref="CapabilityService"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.baseEvaluator" 
@@ -216,6 +217,75 @@
 		<property name="capability" value ="UpdateProperties"/>
 	</bean>
 	
+	
+	<bean id="jsonConversionComponent.CopyAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="copy"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value="Copy"/>
+	</bean>
+	
+	<bean id="jsonConversionComponent.moveRecordAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="moveRecord"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>	
+		<property name="capability" value="MoveRecords"/>     
+	</bean>
+	
+	<bean id="jsonConversionComponent.moveRecordFolderAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="moveRecordFolder"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>	
+		<property name="capability" value="MoveRecordFolder"/>     
+	</bean>
+	
+	<bean id="jsonConversionComponent.moveRecordCategoryAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="moveRecordCategory"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_CATEGORY</value>
+			</set>
+		</property>	
+		<property name="capability" value="MoveRecordCategory"/> 
+	</bean>
+	
+	<bean id="jsonConversionComponent.fileToAction"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="fileTo"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD</value>
+			</set>
+		</property>
+		<property name="capability" value="FileToRecords" />
+	</bean>
+	
+	<bean id="jsonConversionComponent.file"
+	      parent="jsonConversionComponent.baseAction">
+		<property name="name" value="file"/>
+		<property name="kinds">
+			<set>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>
+		<property name="capability" value ="FileRecords"/>
+	</bean>
+	
 	<bean id="jsonConversionComponent.deleteAction"
 	      parent="jsonConversionComponent.baseAction">
 		<property name="name" value="delete"/>
@@ -245,13 +315,6 @@
 	<bean id="jsonConversionComponent.viewAuditLogAction"
 	      parent="jsonConversionComponent.baseAction">
 		<property name="name" value="viewAuditLog"/>
-		<property name="kinds">
-			<set>
-				<value>RECORD_CATEGORY</value>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</set>
-		</property>	
 		<property name="capability" value ="AccessAudit"/>
 	</bean>
 	
@@ -299,7 +362,7 @@
 				<value>RECORD</value>
 			</set>
 		</property>	
-		<property name="capability" value ="ApproveRecordsScheduledForCutoff"/>
+		<property name="capability" value ="CutOff"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.destroyAction"
@@ -349,7 +412,7 @@
 				<value>RECORD</value>
 			</set>
 		</property>	
-		<property name="capability" value ="ApproveRecordsScheduledForCutoff"/>
+		<property name="capability" value ="UndoCutOff"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.editDispositionAsOfDateAction"
@@ -386,28 +449,6 @@
 			</set>
 		</property>	
 		<property name="capability" value ="Unfreeze"/>
-	</bean>
-	
-	<bean id="jsonConversionComponent.fileToAction"
-	      parent="jsonConversionComponent.baseAction">
-		<property name="name" value="fileTo"/>
-		<property name="kinds">
-			<set>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</set>
-		</property>
-	</bean>
-	
-	<bean id="jsonConversionComponent.file"
-	      parent="jsonConversionComponent.baseAction">
-		<property name="name" value="file"/>
-		<property name="kinds">
-			<set>
-				<value>RECORD_FOLDER</value>
-			</set>
-		</property>
-		<property name="capability" value ="FileRecords"/>
 	</bean>
 	
 	<bean id="jsonConversionComponent.reviewedAction"

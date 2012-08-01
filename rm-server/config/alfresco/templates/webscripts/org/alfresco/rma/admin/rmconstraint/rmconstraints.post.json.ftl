@@ -2,6 +2,10 @@
 
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-	"data": <@rmconstraintLib.constraintJSON constraint=constraint />       
+   <#if !errorMessage??>
+	   "data": <@rmconstraintLib.constraintJSON constraint=constraint />
+	<#else>
+	   "message" : "${msg(errorMessage, title)}"
+	</#if>
 }
 </#escape>

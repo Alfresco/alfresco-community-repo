@@ -62,22 +62,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 {
-    private static Log logger = LogFactory.getLog(RecordsManagementSearchBehaviour.class);
-    
-    /** Search specific elements of the RM model */
-    public static final QName ASPECT_RM_SEARCH = QName.createQName(RM_URI, "recordSearch");
-    public static final QName PROP_RS_DISPOSITION_ACTION_NAME = QName.createQName(RM_URI, "recordSearchDispositionActionName");
-    public static final QName PROP_RS_DISPOSITION_ACTION_AS_OF = QName.createQName(RM_URI, "recordSearchDispositionActionAsOf");
-    public static final QName PROP_RS_DISPOSITION_EVENTS_ELIGIBLE = QName.createQName(RM_URI, "recordSearchDispositionEventsEligible");
-    public static final QName PROP_RS_DISPOSITION_EVENTS = QName.createQName(RM_URI, "recordSearchDispositionEvents");
-    public static final QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriod");
-    public static final QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriodExpression");
-    public static final QName PROP_RS_DISPOSITION_PERIOD = QName.createQName(RM_URI, "recordSearchDispositionPeriod");
-    public static final QName PROP_RS_DISPOSITION_PERIOD_EXPRESSION = QName.createQName(RM_URI, "recordSearchDispositionPeriodExpression");
-    public static final QName PROP_RS_HAS_DISPOITION_SCHEDULE = QName.createQName(RM_URI, "recordSearchHasDispositionSchedule");
-    public static final QName PROP_RS_DISPOITION_INSTRUCTIONS = QName.createQName(RM_URI, "recordSearchDispositionInstructions");
-    public static final QName PROP_RS_DISPOITION_AUTHORITY = QName.createQName(RM_URI, "recordSearchDispositionAuthority");
-    public static final QName PROP_RS_HOLD_REASON = QName.createQName(RM_URI, "recordSearchHoldReason");
+    private static Log logger = LogFactory.getLog(RecordsManagementSearchBehaviour.class);    
     
     /** Policy component */
     private PolicyComponent policyComponent;
@@ -146,7 +131,22 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     }
     
     /** Java behaviour */
-    private JavaBehaviour onAddSearchAspect = new JavaBehaviour(this, "rmSearchAspectAdd", NotificationFrequency.TRANSACTION_COMMIT);
+    private JavaBehaviour onAddSearchAspect = new JavaBehaviour(this, "rmSearchAspectAdd", NotificationFrequency.TRANSACTION_COMMIT);    
+    private JavaBehaviour jbDispositionActionCreate = new JavaBehaviour(this, "dispositionActionCreate", NotificationFrequency.TRANSACTION_COMMIT);
+    private JavaBehaviour jbDispositionActionPropertiesUpdate = new JavaBehaviour(this, "dispositionActionPropertiesUpdate", NotificationFrequency.TRANSACTION_COMMIT);
+    private JavaBehaviour jbDispositionSchedulePropertiesUpdate = new JavaBehaviour(this, "dispositionSchedulePropertiesUpdate", NotificationFrequency.TRANSACTION_COMMIT);
+    private JavaBehaviour jbEventExecutionUpdate = new JavaBehaviour(this, "eventExecutionUpdate", NotificationFrequency.TRANSACTION_COMMIT);
+    private JavaBehaviour jbEventExecutionDelete = new JavaBehaviour(this, "eventExecutionDelete", NotificationFrequency.TRANSACTION_COMMIT);
+    
+    /** Array of behaviours related to disposition schedule artifacts */
+    private JavaBehaviour[] jbDispositionBehaviours = 
+    {
+            jbDispositionActionCreate,
+            jbDispositionActionPropertiesUpdate,
+            jbDispositionSchedulePropertiesUpdate,
+            jbEventExecutionUpdate,
+            jbEventExecutionDelete
+    };
     
     /**
      * Initialisation method
@@ -156,28 +156,28 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"), 
                 TYPE_DISPOSITION_ACTION, 
-                new JavaBehaviour(this, "dispositionActionCreate", NotificationFrequency.TRANSACTION_COMMIT));
+                jbDispositionActionCreate);
         
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
                 TYPE_DISPOSITION_ACTION, 
-                new JavaBehaviour(this, "dispositionActionPropertiesUpdate", NotificationFrequency.TRANSACTION_COMMIT));
+                jbDispositionActionPropertiesUpdate);
 
         this.policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
                     TYPE_DISPOSITION_SCHEDULE, 
-                    new JavaBehaviour(this, "dispositionSchedulePropertiesUpdate", NotificationFrequency.TRANSACTION_COMMIT));
+                    jbDispositionSchedulePropertiesUpdate);
         
         this.policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                 TYPE_DISPOSITION_ACTION, 
                 ASSOC_EVENT_EXECUTIONS,
-                new JavaBehaviour(this, "eventExecutionUpdate", NotificationFrequency.TRANSACTION_COMMIT));
+                jbEventExecutionUpdate);
 
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"), 
                 TYPE_EVENT_EXECUTION, 
-                new JavaBehaviour(this, "eventExecutionDelete", NotificationFrequency.TRANSACTION_COMMIT));
+                jbEventExecutionDelete);
         
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), 
@@ -216,6 +216,22 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                     new JavaBehaviour(this, "frozenAspectUpdateProperties", NotificationFrequency.TRANSACTION_COMMIT));
     }
 
+    public void disableDispositionScheduleBehaviour()
+    {
+        for (JavaBehaviour jb : jbDispositionBehaviours)
+        {
+            jb.disable();
+        }
+    }
+    
+    public void enableDispositionScheduleBehaviour()
+    {
+        for (JavaBehaviour jb : jbDispositionBehaviours)
+        {
+            jb.enable();
+        }
+    }
+    
     /**
      * Ensures the search aspect for the given node is present, complete and correct.
      * 

@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.script;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.audit.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -247,11 +249,12 @@ public class ListOfValuesGet extends DeclarativeWebScript
     protected Map<String, Object> createPeriodPropertiesModel(String baseUrl)
     {
         // iterate over all period properties and get the label from their type definition
-        List<QName> periodProperties = dispositionService.getDispositionPeriodProperties();
-        List<Map<String, String>> items = new ArrayList<Map<String, String>>(periodProperties.size());
-        for (QName periodProperty : periodProperties)
+        Collection<DispositionProperty> dispositionProperties = dispositionService.getDispositionProperties();
+        List<Map<String, String>> items = new ArrayList<Map<String, String>>(dispositionProperties.size());
+        for (DispositionProperty dispositionProperty : dispositionProperties)
         {
-            PropertyDefinition propDef = this.ddService.getProperty(periodProperty);
+            PropertyDefinition propDef = dispositionProperty.getPropertyDefinition();
+            QName propName = dispositionProperty.getQName();
             
             if (propDef != null)
             {
@@ -259,10 +262,10 @@ public class ListOfValuesGet extends DeclarativeWebScript
                 String propTitle = propDef.getTitle();
                 if (propTitle == null || propTitle.length() == 0)
                 {
-                    propTitle = StringUtils.capitalize(periodProperty.getLocalName());
+                    propTitle = StringUtils.capitalize(propName.getLocalName());
                 }
                 item.put("label", propTitle);
-                item.put("value", periodProperty.toPrefixString(this.namespaceService));
+                item.put("value", propName.toPrefixString(this.namespaceService));
                 items.add(item);
             }
         }

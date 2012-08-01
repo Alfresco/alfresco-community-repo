@@ -32,9 +32,6 @@ public interface DOD5015Model
 	public static final String DOD_URI = "http://www.alfresco.org/model/dod5015/1.0";
 	public static final String DOD_PREFIX = "dod";
 	
-	// Record series DOD type
-	public static final QName TYPE_RECORD_SERIES = QName.createQName(DOD_URI, "recordSeries");
-	
     // DOD 5015 Custom Type aspects and their properties
     // Scanned Record
     public static final QName ASPECT_SCANNED_RECORD = QName.createQName(DOD_URI, "scannedRecord");

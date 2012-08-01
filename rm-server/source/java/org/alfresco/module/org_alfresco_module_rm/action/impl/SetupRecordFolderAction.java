@@ -19,17 +19,14 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
-import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordDefinition;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Action to close the records folder
@@ -46,16 +43,6 @@ public class SetupRecordFolderAction extends RMActionExecuterAbstractBase
     {
         if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
         {
-            // Inherit the vital record details
-            VitalRecordDefinition vrDef = vitalRecordService.getVitalRecordDefinition(actionedUponNodeRef);
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
-            if (vrDef != null)
-            {
-                props.put(PROP_VITAL_RECORD_INDICATOR, vrDef.isEnabled());
-                props.put(PROP_REVIEW_PERIOD, vrDef.getReviewPeriod());
-            }
-            this.nodeService.addAspect(actionedUponNodeRef, ASPECT_VITAL_RECORD_DEFINITION, props);
-                
             // Set up the disposition schedule if the dispositions are being managed at the folder level
             DispositionSchedule di = this.dispositionService.getDispositionSchedule(actionedUponNodeRef);
             if (di != null && di.isRecordLevelDisposition() == false)

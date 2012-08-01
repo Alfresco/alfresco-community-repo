@@ -216,7 +216,7 @@ public final class RecordsManagementAuditEntry
      */
     public Map<QName, Serializable> getAfterProperties()
     {
-        return this.beforeProperties;
+        return this.afterProperties;
     }
 
     /**

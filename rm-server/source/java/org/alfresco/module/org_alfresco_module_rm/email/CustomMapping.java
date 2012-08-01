@@ -18,17 +18,26 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.email;
 
-
+/**
+ * Custom EMail Mapping 
+ */
 public class CustomMapping
 {
     private String from;
     private String to;
     
+    /**
+     * Default constructor.
+     */
     public CustomMapping() 
-    {
-        
+    {       
     }
     
+    /**
+     * Default constructor.
+     * @param from
+     * @param to
+     */
     public CustomMapping(String from, String to) 
     {
         this.from = from;

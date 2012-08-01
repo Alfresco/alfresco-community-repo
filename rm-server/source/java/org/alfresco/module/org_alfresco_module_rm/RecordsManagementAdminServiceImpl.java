@@ -39,7 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCr
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRemoveReference;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -54,10 +54,10 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Namespace;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -100,10 +100,6 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     
     /** I18N messages*/
     private static final String MSG_SERVICE_NOT_INIT = "rm.admin.service-not-init";
-    private static final String MSG_NOT_CUSTOMISABLE = "rm.admin.not-customisable";
-    private static final String MSG_INVALID_CUSTOM_ASPECT = "rm.admin.invalid-custom-aspect";
-    private static final String MSG_PROPERTY_ALREADY_EXISTS = "rm.admin.property-already-exists";
-    private static final String MSG_CANNOT_APPLY_CONSTRAINT = "rm.admin.cannot-apply-constraint";
     private static final String MSG_PROP_EXIST = "rm.admin.prop-exist";
     private static final String MSG_CUSTOM_PROP_EXIST = "rm.admin.custom-prop-exist";
     private static final String MSG_UNKNOWN_ASPECT = "rm.admin.unknown-aspect";
@@ -428,25 +424,25 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	    			if (prefixString == null)
 	    			{
 	    				// Backward compatibility from previous RM V1.0 custom models
-	    				if ("customRecordProperties".equals(name) == true)
+	    				if (CompatibilityModel.NAME_CUSTOM_RECORD_PROPERTIES.equals(name) == true)
 	    				{
 	    					type = RecordsManagementModel.ASPECT_RECORD;
 	    				}
-	    				else if ("customRecordFolderProperties".equals(name) == true)
+	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_FOLDER_PROPERTIES.equals(name) == true)
 	    				{
 	    					type = RecordsManagementModel.TYPE_RECORD_FOLDER;
 	    				}	    				
-	    				else if ("customRecordCategoryProperties".equals(name) == true)
+	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES.equals(name) == true)
 	    				{
 	    					type = RecordsManagementModel.TYPE_RECORD_CATEGORY;
 	    				}
-	    				else if ("customRecordSeriesProperties".equals(name) == true)
+	    				else if (CompatibilityModel.NAME_CUSTOM_RECORD_SERIES_PROPERTIES.equals(name) == true)
 	    				{
 	    				    // Only add the deprecated record series type as customisable if 
 	    				    // a v1.0 installation has added custom properties
 	    				    if (aspectDef.getProperties().size() != 0)
 	    				    {
-	    				        type = DOD5015Model.TYPE_RECORD_SERIES;
+	    				        type = CompatibilityModel.TYPE_RECORD_SERIES;
 	    				    }
 	    				}
 	    			}
@@ -656,9 +652,10 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     }
     
     /**
+     * @throws CustomMetadataException 
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#addCustomPropertyDefinition(org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName, java.lang.String, org.alfresco.service.namespace.QName, java.lang.String, java.lang.String)
      */
-    public QName addCustomPropertyDefinition(QName propId, QName aspectName, String label, QName dataType, String title, String description)
+    public QName addCustomPropertyDefinition(QName propId, QName aspectName, String label, QName dataType, String title, String description) throws CustomMetadataException
     {
         return addCustomPropertyDefinition(propId, aspectName, label, dataType, title, description, null, false, false, false, null);
     }
@@ -666,13 +663,23 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#addCustomPropertyDefinition(org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName, java.lang.String, org.alfresco.service.namespace.QName, java.lang.String, java.lang.String, java.lang.String, boolean, boolean, boolean, org.alfresco.service.namespace.QName)
      */
-    public QName addCustomPropertyDefinition(QName propId, QName aspectName, String label, QName dataType, String title, String description, String defaultValue, boolean multiValued, boolean mandatory, boolean isProtected, QName lovConstraint)
+    public QName addCustomPropertyDefinition(QName propId,
+                                             QName aspectName, 
+                                             String label, 
+                                             QName dataType, 
+                                             String title, 
+                                             String description, 
+                                             String defaultValue, 
+                                             boolean multiValued, 
+                                             boolean mandatory, 
+                                             boolean isProtected, 
+                                             QName lovConstraint) throws CustomMetadataException
     {
-    	if (isCustomisable(aspectName) == false)
-    	{
-    		throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_CUSTOMISABLE, aspectName.toPrefixString(namespaceService)));
-    	}
-    	
+        if (isCustomisable(aspectName) == false)
+        {
+            throw new NotCustomisableMetadataException(aspectName.toPrefixString(namespaceService));
+        }
+        
         // title parameter is currently ignored. Intentionally.
         if (propId == null)
         {
@@ -692,14 +699,14 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         
         if (customPropsAspect == null)
         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_INVALID_CUSTOM_ASPECT, customAspect, aspectName.toPrefixString(namespaceService)));
+            throw new InvalidCustomAspectMetadataException(customAspect, aspectName.toPrefixString(namespaceService));
         }
         
         String propIdAsString = propId.toPrefixString(namespaceService);
         M2Property customProp = customPropsAspect.getProperty(propIdAsString);
         if (customProp != null)
         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PROPERTY_ALREADY_EXISTS, propIdAsString));
+            throw new PropertyAlreadyExistsMetadataException(propIdAsString);
         }
         
         M2Property newProp = customPropsAspect.createProperty(propIdAsString);
@@ -724,7 +731,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         {
             if (! dataType.equals(DataTypeDefinition.TEXT))
             {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CANNOT_APPLY_CONSTRAINT, lovConstraint, propIdAsString, dataType));
+                throw new CannotApplyConstraintMetadataException(lovConstraint, propIdAsString, dataType);
             }
             
             String lovConstraintQNameAsString = lovConstraint.toPrefixString(namespaceService);
@@ -743,6 +750,47 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     }
 
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#updateCustomPropertyDefinitionName(org.alfresco.service.namespace.QName, java.lang.String)
+     */
+    public QName updateCustomPropertyDefinitionName(QName propQName, String newName) throws CustomMetadataException
+    {
+        ParameterCheck.mandatory("propQName", propQName);
+        
+        PropertyDefinition propDefn = dictionaryService.getProperty(propQName);
+        if (propDefn == null)
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PROP_EXIST, propQName));
+        }
+        
+        if (newName == null) return propQName;
+        
+        QName newPropQName = getQNameForClientId(newName);
+        propDefn = dictionaryService.getProperty(newPropQName);
+        if (propDefn != null)
+        {
+            // The requested QName is already in use
+            String propIdAsString = newPropQName.toPrefixString(namespaceService);
+            throw new PropertyAlreadyExistsMetadataException(propIdAsString);
+        }
+        
+        NodeRef modelRef = getCustomModelRef(propQName.getNamespaceURI());
+        M2Model deserializedModel = readCustomContentModel(modelRef);
+        
+        M2Property targetProperty = findProperty(propQName, deserializedModel);
+        targetProperty.setName(newName);
+        targetProperty.setTitle(newName);
+        writeCustomContentModel(modelRef, deserializedModel);
+        
+        if (logger.isInfoEnabled())
+        {
+            logger.info("setCustomPropertyDefinitionLabel: "+propQName+
+                    "=" + newName);
+        }
+        
+        return propQName;
+    }
+    
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#setCustomPropertyDefinitionLabel(org.alfresco.service.namespace.QName, java.lang.String)
      */
     public QName setCustomPropertyDefinitionLabel(QName propQName, String newLabel)
@@ -756,7 +804,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         }
         
         if (newLabel == null) return propQName;
-        
+
         NodeRef modelRef = getCustomModelRef(propQName.getNamespaceURI());
         M2Model deserializedModel = readCustomContentModel(modelRef);
         
@@ -796,7 +844,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         if (! dataType.equals(DataTypeDefinition.TEXT.toPrefixString(namespaceService)))
         {
 
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CANNOT_APPLY_CONSTRAINT, newLovConstraint, targetProp.getName(), dataType));
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(CannotApplyConstraintMetadataException.MSG_CANNOT_APPLY_CONSTRAINT, newLovConstraint, targetProp.getName(), dataType));
         }
         String lovConstraintQNameAsString = newLovConstraint.toPrefixString(namespaceService);
         
@@ -945,8 +993,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	 */
     public Map<QName, AssociationDefinition> getCustomReferenceDefinitions()
     {
-		QName relevantAspectQName = QName.createQName(RMC_CUSTOM_ASSOCS, namespaceService);
-        AspectDefinition aspectDefn = dictionaryService.getAspect(relevantAspectQName);
+        AspectDefinition aspectDefn = dictionaryService.getAspect(ASPECT_CUSTOM_ASSOCIATIONS);
         Map<QName, AssociationDefinition> assocDefns = aspectDefn.getAssociations();
         
         return assocDefns;

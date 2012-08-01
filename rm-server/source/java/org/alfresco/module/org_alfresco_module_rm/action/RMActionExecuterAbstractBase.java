@@ -492,25 +492,28 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
                 Period period = nextDispositionActionDefinition.getPeriod();
                 if (period != null)
                 {
-                    // Use NOW as the default context date
-                    Date contextDate = new Date();
+                    Date contextDate = null;
                     
                     // Get the period properties value
                     QName periodProperty = nextDispositionActionDefinition.getPeriodProperty();
                     if (periodProperty != null)
                     {
-                        contextDate = (Date)this.nodeService.getProperty(nodeRef, periodProperty);
-                        
-                        if (contextDate == null)
-                        {
-                            // TODO For now we will use NOW to resolve MOB-1184
-                            //throw new AlfrescoRuntimeException("Date used to calculate disposition action asOf date is not set for property " + periodProperty.toString());
-                            contextDate = new Date();
-                        }
+                        // doesn't matter if the period property isn't set ... the asOfDate will get updated later
+                        // when the value of the period property is set
+                        contextDate = (Date)this.nodeService.getProperty(nodeRef, periodProperty);                     
+                    }
+                    else
+                    {
+                        // for now use 'NOW' as the default context date 
+                        // TODO set the default period property ... cut off date or last disposition date depending on context
+                        contextDate = new Date();
                     }
                     
                     // Calculate the as of date
-                    asOfDate = period.getNextDate(contextDate);
+                    if (contextDate != null)
+                    {
+                        asOfDate = period.getNextDate(contextDate);
+                    }
                 }            
                 
                 // Set the property values

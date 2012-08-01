@@ -138,7 +138,7 @@ public interface RecordsManagementAdminService
      * @return the propId, whether supplied as a parameter or generated.
      * @see CustomisableRmElement#getCorrespondingAspect()
      */
-    public QName addCustomPropertyDefinition(QName propId, QName typeName, String label, QName dataType, String title, String description);
+    public QName addCustomPropertyDefinition(QName propId, QName typeName, String label, QName dataType, String title, String description) throws CustomMetadataException;
     
     /**
      * Add custom property definition with one optional constraint reference
@@ -166,7 +166,17 @@ public interface RecordsManagementAdminService
     // TODO propId string (not QName) ?
     // TODO remove title (since it is ignored) (or remove label to title)
     
-    public QName addCustomPropertyDefinition(QName propId, QName typeName, String label, QName dataType, String title, String description, String defaultValue, boolean multiValued, boolean mandatory, boolean isProtected, QName lovConstraintQName);
+    public QName addCustomPropertyDefinition(QName propId, 
+                                             QName typeName, 
+                                             String label, 
+                                             QName dataType, 
+                                             String title, 
+                                             String description, 
+                                             String defaultValue, 
+                                             boolean multiValued, 
+                                             boolean mandatory, 
+                                             boolean isProtected, 
+                                             QName lovConstraintQName) throws CustomMetadataException;
     
     /**
      * Update the custom property definition's label (title).
@@ -175,8 +185,17 @@ public interface RecordsManagementAdminService
      * @param newLabel the new value for the label.
      * @return the propId.
      */
-    public QName setCustomPropertyDefinitionLabel(QName propQName, String newLabel);
+    public QName setCustomPropertyDefinitionLabel(QName propQName, String newLabel) throws PropertyAlreadyExistsMetadataException;
 
+    /**
+     * Update the name and label of the custom property definition.
+     * @param propQName The qname of the existing property definition
+     * @param newName THe new name for both the custom property and its label.
+     * @return
+     * @throws CustomMetadataException
+     */
+    public QName updateCustomPropertyDefinitionName(QName propQName, String newName) throws CustomMetadataException;
+    
     /**
      * Sets a new list of values constraint on the custom property definition.
      * 

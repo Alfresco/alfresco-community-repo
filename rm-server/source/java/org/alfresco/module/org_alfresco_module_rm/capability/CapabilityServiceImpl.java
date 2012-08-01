@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,7 +61,33 @@ public class CapabilityServiceImpl implements CapabilityService
     @Override
     public Set<Capability> getCapabilities()
     {
-        return new HashSet<Capability>(capabilities.values());
+        return getCapabilities(true);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilities(boolean)
+     */
+    @Override
+    public Set<Capability> getCapabilities(boolean includePrivate)
+    {
+        Set<Capability> result = null;
+        if (includePrivate == true)
+        {
+            result = new HashSet<Capability>(capabilities.values());
+        }
+        else
+        {
+            result = new HashSet<Capability>(capabilities.size());
+            for (Capability capability : capabilities.values())
+            {
+                if (capability.isPrivate() == false)
+                {
+                    result.add(capability);
+                }
+            }
+        }
+        
+        return result;
     }
 
     /**
@@ -68,8 +95,18 @@ public class CapabilityServiceImpl implements CapabilityService
      */
     public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef)
     {        
+        return getCapabilitiesAccessState(nodeRef, false);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesAccessState(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef, boolean includePrivate)
+    {
+        Set<Capability> listOfCapabilites = getCapabilities(includePrivate);
         HashMap<Capability, AccessStatus> answer = new HashMap<Capability, AccessStatus>();
-        for (Capability capability : capabilities.values())
+        for (Capability capability : listOfCapabilites)
         {
             AccessStatus status = capability.hasPermission(nodeRef);
             if (answer.put(capability, status) != null)
@@ -99,6 +136,23 @@ public class CapabilityServiceImpl implements CapabilityService
             }
         }
         return answer;        
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilityAccessState(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    @Override
+    public AccessStatus getCapabilityAccessState(NodeRef nodeRef, String capabilityName)
+    {
+        AccessStatus result = AccessStatus.UNDETERMINED;
+        Capability capability = getCapability(capabilityName);
+        if (capability != null)
+        {
+            List<String> list = Collections.singletonList(capabilityName);
+            Map<Capability, AccessStatus> map = getCapabilitiesAccessState(nodeRef, list);
+            result = map.get(capability);
+        }
+        return result;
     }
 
 }

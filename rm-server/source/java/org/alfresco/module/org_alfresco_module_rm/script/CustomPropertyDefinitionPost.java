@@ -25,10 +25,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.CustomMetadataException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,6 +59,7 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
     private static final String PARAM_ELEMENT = "element";
     private static final String PARAM_LABEL = "label";
     private static final String PROP_ID = "propId";
+    private static final String MESSAGE = "errorMessage";
     private static final String URL = "url";
 
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
@@ -74,8 +75,16 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
         try
         {
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
-            ftlModel = createPropertyDefinition(req, json);
+            try
+            {
+                ftlModel = createPropertyDefinition(req, json);
+            }
+            catch (CustomMetadataException e)
+            {
+                status.setCode(Status.STATUS_BAD_REQUEST);
+                ftlModel = new HashMap<String, Object>();
+                ftlModel.put(MESSAGE, e.getMessage());
+            }
         }
         catch (IOException iox)
         {
@@ -87,15 +96,15 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                         "Could not parse JSON from req.", je);
         }
-        
         return ftlModel;
     }
 
     /**
      * Applies custom properties.
+     * @throws CustomMetadataException 
      */
     protected Map<String, Object> createPropertyDefinition(WebScriptRequest req, JSONObject json)
-            throws JSONException
+            throws JSONException, CustomMetadataException
     {
         Map<String, Object> result = new HashMap<String, Object>();
         Map<String, Serializable> params = getParamsFromUrlAndJson(req, json);
@@ -135,11 +144,12 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
      * 
      * @param params parameter values
      * @return {@link QName} qname of the newly created custom property
+     * @throws CustomMetadataException 
      */
-    protected QName createNewPropertyDefinition(Map<String, Serializable> params)
+    protected QName createNewPropertyDefinition(Map<String, Serializable> params) throws CustomMetadataException
     {
     	// Get the customisable type name        
-        String customisableElement = (String)params.get(PARAM_ELEMENT);        
+        String customisableElement = (String)params.get(PARAM_ELEMENT);
         QName customisableType = mapToTypeQName(customisableElement);
         
         String label = (String)params.get(PARAM_LABEL);

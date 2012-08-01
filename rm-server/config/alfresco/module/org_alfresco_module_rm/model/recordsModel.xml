@@ -922,7 +922,7 @@
       
       <!--  Indicates that an object is being transferred -->
       <aspect name="rma:transferring">
-         <title>TransferringS</title>	
+         <title>Transferring</title>	
       </aspect>
 
       <!-- Transfered marker aspect -->

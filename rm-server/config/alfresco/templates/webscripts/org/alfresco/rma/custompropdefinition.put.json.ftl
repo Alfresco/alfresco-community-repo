@@ -1,6 +1,7 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-    "propId": "${propId}",
-    "url": "${url}"
+    "propId": "${propId!""}",
+    "url": "${url!""}",
+    "message": "${errorMessage!""}"
 }
 </#escape>

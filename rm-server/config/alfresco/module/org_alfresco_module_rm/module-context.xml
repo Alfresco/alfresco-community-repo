@@ -4,16 +4,15 @@
 <beans>
    
     <!-- Bootstrap records management data -->
-    
     <bean id="org_alfresco_module_rm_bootstrapData" 
-          class="org.alfresco.repo.module.ImporterModuleComponent" 
+          class="org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponent" 
           parent="module.baseComponent">
+        <property name="nodeService" ref="nodeService" />
         <property name="moduleId" value="org_alfresco_module_rm"/>
         <property name="name" value="org_alfresco_module_rm_bootstrapData"/>
         <property name="description" value="Bootstrap records management data"/>
         <property name="sinceVersion" value="1.0"/>
         <property name="appliesFromVersion" value="1.0"/>
-        <!-- Data properties -->
         <property name="importer" ref="spacesBootstrap"/>
         <property name="bootstrapViews">
             <list>
@@ -74,6 +73,7 @@
     
     <!-- Import fixed permission definitions for RM -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-public-services-security-context.xml"/>
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/security/rm-method-security-context.xml"/>
     
     <!-- Import the RM service's -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-service-context.xml"/>
@@ -95,6 +95,9 @@
     
     <!-- Import RM UI evaluators -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-ui-evaluators-context.xml"/>
+    
+    <!--  Import disposition properties -->
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-disposition-properties-context.xml"/>
     
     <!-- RM Script API -->
     
@@ -152,7 +155,8 @@
     <!--  Job context -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-job-context.xml"/>
     
-    <bean id="RecordsManagementBootstrap" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementBootstrap">
+    <!--  Bootstrap bean -->
+    <bean id="RecordsManagementBootstrap" class="org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordsManagementBootstrap">
         <property name="transactionService" ref="transactionService"/>
         
         <!-- init caveatConfig behaviours  -->

@@ -27,23 +27,24 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * 
+ * RM Roles Post implementation
  * 
  * @author Roy Wetherall
  */
@@ -54,6 +55,7 @@ public class RmRolesPost extends DeclarativeWebScript
     
     private RecordsManagementService rmService;
     private RecordsManagementSecurityService rmSecurityService;
+    private CapabilityService capabilityService;
     
     public void setRecordsManagementSecurityService(RecordsManagementSecurityService rmSecurityService)
     {
@@ -63,6 +65,11 @@ public class RmRolesPost extends DeclarativeWebScript
     public void setRecordsManagementService(RecordsManagementService rmService)
     {
         this.rmService = rmService;
+    }
+    
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
     }
 
     @Override
@@ -82,7 +89,7 @@ public class RmRolesPost extends DeclarativeWebScript
             Set<Capability> capabilites = new HashSet<Capability>(capabilitiesArray.length());
             for (int i = 0; i < capabilitiesArray.length(); i++)
             {
-                Capability capability = rmSecurityService.getCapability(capabilitiesArray.getString(i));                
+                Capability capability = capabilityService.getCapability(capabilitiesArray.getString(i));                
                 capabilites.add(capability);
             }
             
@@ -91,7 +98,7 @@ public class RmRolesPost extends DeclarativeWebScript
             
             Role role = rmSecurityService.createRole(root, name, displayString, capabilites);            
             
-            Set<Role> roles = rmSecurityService.getRoles(root);
+            //Set<Role> roles = rmSecurityService.getRoles(root);
             model.put("role", role);
             
         }

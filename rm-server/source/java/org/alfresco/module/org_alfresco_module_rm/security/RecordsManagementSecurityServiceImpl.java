@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,11 +22,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -42,7 +39,6 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -51,7 +47,6 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -83,9 +78,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     /** Policy component */
     private PolicyComponent policyComponent;
     
-    /** Owner service */
-    private OwnableService ownableService;
-    
     /** Records management service */
     private RecordsManagementService recordsManagementService;
     
@@ -94,12 +86,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     
     /** RM Entry voter */
     private RMEntryVoter voter;
-    
-    /** 
-     * Capability sets.  Allow sub-sets of capabilities to be defined enhancing performance when 
-     * only a sub-set need be evaluated.
-     */
-    private Map<String, List<String>> capabilitySets;
     
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
@@ -148,16 +134,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     }
     
     /**
-     * Set the ownable service
-     * 
-     * @param ownableService	ownable service
-     */
-    public void setOwnableService(OwnableService ownableService) 
-    {
-		this.ownableService = ownableService;
-	}
-    
-    /**
      * Set records management service
      * 
      * @param recordsManagementService  records management service
@@ -178,15 +154,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     }
     
     /**
-     * Set the capability sets
-     * @param capabilitySets    map of capability sets (configured in Spring)
-     */
-    public void setCapabilitySets(Map<String, List<String>> capabilitySets)
-    {
-        this.capabilitySets = capabilitySets;
-    }
-    
-    /**
      * Set the RM voter
      * 
      * @param voter
@@ -201,23 +168,22 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
      */
     public void init()
     {
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnCreateNodePolicy.QNAME, 
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnCreateNodePolicy.QNAME, 
                 TYPE_FILE_PLAN, 
                 new JavaBehaviour(this, "onCreateRootNode", NotificationFrequency.TRANSACTION_COMMIT));
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnCreateNodePolicy.QNAME, 
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnDeleteNodePolicy.QNAME, 
+                TYPE_FILE_PLAN, 
+                new JavaBehaviour(this, "onDeleteRootNode", NotificationFrequency.TRANSACTION_COMMIT));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnCreateNodePolicy.QNAME, 
                 TYPE_RECORD_CATEGORY, 
                 new JavaBehaviour(this, "onCreateRMContainer", NotificationFrequency.TRANSACTION_COMMIT));
-        policyComponent.bindClassBehaviour(NodeServicePolicies.OnCreateNodePolicy.QNAME,  
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnCreateNodePolicy.QNAME,  
                 TYPE_RECORD_FOLDER, 
                 new JavaBehaviour(this, "onCreateRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));                
-        policyComponent.bindClassBehaviour(NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
-                ASPECT_FROZEN, 
-                new JavaBehaviour(this, "beforeDeleteFrozenNode", NotificationFrequency.TRANSACTION_COMMIT));
-    }
-    
-    public void beforeDeleteFrozenNode(NodeRef nodeRef)
-    {
-        throw new AccessDeniedException("Frozen nodes can not be deleted");
     }
     
     /**
@@ -248,9 +214,10 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                     // Set the permissions
                     permissionService.setInheritParentPermissions(rmRootNode, false);
                     permissionService.setPermission(rmRootNode, allRoles, RMPermissionModel.READ_RECORDS, true);
+                                        
                     return null;
                 }
-            }, AuthenticationUtil.getAdminUserName());
+            }, AuthenticationUtil.getSystemUserName());
                         
             // Bootstrap in the default set of roles for the newly created root node
             bootstrapDefaultRoles(rmRootNode);
@@ -262,9 +229,30 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
      * 
      * @param childAssocRef
      */
-    public void onDeleteRootNode(NodeRef rmRootNode)
+    public void onDeleteRootNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
         logger.debug("onDeleteRootNode called");
+        
+        // get the deleted node
+        final NodeRef rmRootNode = childAssocRef.getChildRef();
+        
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+            public Object doWork()
+            {
+                // cascade delete the 'all' roles group for the site
+                String allRolesGroup = authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode));                                   
+                Set<String> groups = authorityService.getContainedAuthorities(AuthorityType.GROUP, allRolesGroup, true);
+                for (String group : groups)
+                {
+                    authorityService.deleteAuthority(group);
+                }
+                
+                authorityService.deleteAuthority(allRolesGroup, false);
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());    
     }
     
     /**
@@ -320,7 +308,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 	
                     return null;
                 }
-            }, AuthenticationUtil.getAdminUserName());	
+            }, AuthenticationUtil.getSystemUserName());	
         }
     }
     
@@ -341,65 +329,8 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                                     
                     return null;
                 }
-            }, AuthenticationUtil.getAdminUserName());         
+            }, AuthenticationUtil.getSystemUserName());         
         }
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getCapabilities()
-     */
-    public Set<Capability> getCapabilities()
-    {
-        Collection<Capability> caps = capabilityService.getCapabilities();
-        Set<Capability> result = new HashSet<Capability>(caps.size());
-        for (Capability cap : caps)
-        {
-            if (cap.isPrivate() == false)
-            {
-                result.add(cap);
-            }
-        }
-        return result;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getCapabilities(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public Map<Capability, AccessStatus> getCapabilities(NodeRef nodeRef)
-    {
-        return capabilityService.getCapabilitiesAccessState(nodeRef);
-    }        
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getCapabilities(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    public Map<Capability, AccessStatus> getCapabilities(NodeRef nodeRef, String capabilitySet)
-    {
-        List<String> capabilities = capabilitySets.get(capabilitySet);
-        if (capabilities == null)
-        {
-            if (getCapability(capabilitySet) != null)
-            {
-                // If the capability set is the name of a capability assume we just want that single
-                // capability
-                capabilities = new ArrayList<String>(1);
-                capabilities.add(capabilitySet);
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("Unable to find the capability set '" + capabilitySet + "'");
-            }
-        }
-        
-        return capabilityService.getCapabilitiesAccessState(nodeRef, capabilities);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getCapability(java.lang.String)
-     */
-    public Capability getCapability(String name)
-    {
-        return capabilityService.getCapability(name);
     }
 
     /**
@@ -488,7 +419,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                             for (int index = 0; index < arrCaps.length(); index++)
                             {
                                 String capName = arrCaps.getString(index);
-                                Capability capability = getCapability(capName);
+                                Capability capability = capabilityService.getCapability(capName);
                                 if (capability == null)
                                 {
                                     throw new AlfrescoRuntimeException("The capability '" + capName + "' configured for the deafult boostrap role '" + name + "' is invalid.");
@@ -505,8 +436,9 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                         {
                             permissionService.setPermission(rmRootNode, role.getRoleGroupName(), RMPermissionModel.FILING, true);
                             
-                            // Add the owner of the root node into the admin group
-                            //authorityService.addAuthority(role.getRoleGroupName(), ownableService.getOwner(rmRootNode));
+                            // Add the creating user to the administration group
+                            String user = AuthenticationUtil.getFullyAuthenticatedUser();
+                            authorityService.addAuthority(role.getRoleGroupName(), user);
                         }
                     }
                 }
@@ -517,7 +449,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     public String convertStreamToString(InputStream is) throws IOException
@@ -571,7 +503,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return result;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -602,7 +534,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return result;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -662,7 +594,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return result;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     private Set<String> getCapabilitiesImpl(NodeRef rmRootNode, String roleAuthority)
@@ -675,7 +607,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
             if (permission.getAuthority().equals(roleAuthority) == true)
             {
                 String capabilityName = permission.getPermission();
-                if (getCapability(capabilityName) != null)
+                if (capabilityService.getCapability(capabilityName) != null)
                 {
                     capabilities.add(permission.getPermission());
                 }
@@ -701,7 +633,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 Set<String> roles = authorityService.getAllAuthoritiesInZone(zone, AuthorityType.GROUP);
                 return new Boolean(roles.contains(fullRoleName));
             }
-        }, AuthenticationUtil.getAdminUserName()).booleanValue();
+        }, AuthenticationUtil.getSystemUserName()).booleanValue();
     }
     
     /*
@@ -772,7 +704,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return new Role(role, roleDisplayLabel, capStrings, roleGroup);
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -808,7 +740,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return new Role(role, roleDisplayLabel, capStrings, roleAuthority);
                 
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**
@@ -825,7 +757,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return null;
                 
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -842,7 +774,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return null;
                 
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -879,7 +811,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -970,6 +902,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());        
+        }, AuthenticationUtil.getSystemUserName());        
     }
 }

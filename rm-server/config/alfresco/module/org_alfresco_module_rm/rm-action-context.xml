@@ -577,8 +577,11 @@
         </property>
     </bean>
     
-    <bean id="broadcastDispositionActionDefinitionUpdate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction"
-                                            parent="rmAction" />
+    <bean id="broadcastDispositionActionDefinitionUpdate" 
+    	  class="org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction"
+          parent="rmAction" >
+    	<property name="behaviourFilter" ref="policyBehaviourFilter"/>
+    </bean>
     
     
     <!-- complete event -->
@@ -714,13 +717,11 @@
         <property name="target">
             <ref bean="accessionComplete"/>
         </property>
-        <!--
         <property name="interceptorNames">
             <list>
-                <idref bean="accesion_security"/>
+                <idref bean="accession_security"/>
             </list>
         </property>
-        -->
     </bean>
     
     <bean id="accessionComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction" depends-on="rmAuthorizeNominatedTransfersCapability">
@@ -728,7 +729,7 @@
     </bean> 
     
     <!-- Split Email -->
-    <bean id="splitEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction" parent="rmAction" >
+    <bean id="splitEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction" parent="rmAction">
     </bean>  
     
     <bean id="splitEmail_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
@@ -763,49 +764,5 @@
     <bean id="createDispositionSchedule" 
           class="org.alfresco.module.org_alfresco_module_rm.action.impl.CreateDispositionScheduleAction" 
           parent="rmAction" />
-    
-    <!-- Actions to create DOD 5015 custom types -->
-    <!--
-     <bean id="applyScannedRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
-        <property name="target">
-            <ref bean="applyScannedRecord"/>
-        </property>
-    </bean>
-    
-    <bean id="applyScannedRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.ApplyCustomTypeAction" parent="rmAction">
-        <property name="customTypeAspect" value="dod:scannedRecord" />
-    </bean>
-    
-    
-    <bean id="applyPdfRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
-        <property name="target">
-            <ref bean="applyPdfRecord"/>
-        </property>
-    </bean>
-    
-    <bean id="applyPdfRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.ApplyCustomTypeAction" parent="rmAction">
-        <property name="customTypeAspect" value="dod:pdfRecord" />
-    </bean>
-    
-    <bean id="applyDigitalPhotographRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
-        <property name="target">
-            <ref bean="applyDigitalPhotographRecord"/>
-        </property>
-    </bean>
-    
-    <bean id="applyDigitalPhotographRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.ApplyCustomTypeAction" parent="rmAction">
-        <property name="customTypeAspect" value="dod:digitalPhotographRecord" />
-    </bean>
-    
-    <bean id="applyWebRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
-        <property name="target">
-            <ref bean="applyWebRecord"/>
-        </property>
-    </bean>
-    
-    <bean id="applyWebRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.ApplyCustomTypeAction" parent="rmAction">
-        <property name="customTypeAspect" value="dod:webRecord" />
-    </bean>
-    -->
     
 </beans>    

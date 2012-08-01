@@ -33,14 +33,13 @@ import javax.mail.Part;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
-import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -68,10 +67,35 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     private static final String MSG_NO_READ_MIME_MESSAGE = "rm.action.no-read-mime-message";
     private static final String MSG_EMAIL_DECLARED = "rm.action.email-declared";
     private static final String MSG_EMAIL_NOT_RECORD = "rm.action.email-not-record";
-    private static final String MSG_EMAIL_CREATE_CHILD_ASSOC = "rm.action.email-create-child-assoc";
+    
+    /** Relationship Labels */
+    private static final String REL_FROM = "Message";
+    private static final String REL_TO = "Attachment";
     
     /** Logger */
     private static Log logger = LogFactory.getLog(SplitEmailAction.class);
+
+    private QName relationshipQName;
+    
+    public void bootstrap()
+    {
+        String compoundId = recordsManagementAdminService.getCompoundIdFor(REL_FROM, REL_TO);   
+        
+        Map<QName, AssociationDefinition> map = recordsManagementAdminService.getCustomReferenceDefinitions();
+        for (Map.Entry<QName, AssociationDefinition> entry : map.entrySet())
+        {
+            if (compoundId.equals(entry.getValue().getTitle()) == true)
+            {
+                relationshipQName = entry.getKey();
+                break;
+            }
+        }
+        
+        if (relationshipQName == null)
+        {
+            relationshipQName = recordsManagementAdminService.addCustomChildAssocDefinition(REL_FROM, REL_TO);
+        }
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
@@ -242,85 +266,27 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         
     }
     
-    QName assocDef = null;
-    
     /**
      * Create a link from the message to the attachment
      */       
-    private void createRMReference(NodeRef parentRef, NodeRef childRef)
+    private void createRMReference(final NodeRef parentRef, final NodeRef childRef)
     {
-        String sourceId = "message";
-        String targetId = "attachment";
-        
-        String compoundId = recordsManagementAdminService.getCompoundIdFor(sourceId, targetId);
-        
-        Map<QName, AssociationDefinition> refs = recordsManagementAdminService.getCustomReferenceDefinitions();
-        for(QName name : refs.keySet())
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            // TODO how to find assocDef?    
-            // Refs seems to be null
-        }  
-        
-        if(assocDef == null)
-        {
-           assocDef = createReference();
-        }
-
-        recordsManagementAdminService.addCustomReference(parentRef, childRef, assocDef);      
-
-        // add the IMAP attachment aspect
-        nodeService.createAssociation(
-                parentRef,
-                childRef,
-                ImapModel.ASSOC_IMAP_ATTACHMENT);
-    }
-    
-    /**
-     * Create the custom reference - need to jump through hoops with the transaction handling here 
-     * since the association is created in the post commit phase, so it can't be used within the 
-     * current transaction.
-     *
-     * @return
-     */
-    private QName createReference()
-    {
-        UserTransaction txn = null;
-        
-        try
-        {
-            txn = transactionService.getNonPropagatingUserTransaction();
-            txn.begin();
-            RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
-            RetryingTransactionCallback<QName> addCustomChildAssocDefinitionCallback = new RetryingTransactionCallback<QName>()
+            @Override
+            public Void doWork() throws Exception
             {
-                public QName execute() throws Throwable
-                {
-                    String sourceId = "message";
-                    String targetId = "attachment";
-                    QName assocDef = recordsManagementAdminService.addCustomChildAssocDefinition(sourceId, targetId);
-                    return assocDef;
-                }
-            };
-            QName ret = helper.doInTransaction(addCustomChildAssocDefinitionCallback);
- 
-            txn.commit();
-            return ret;
-        }
-        catch (Exception e)
-        {
-            if(txn != null)
-            {
-                try 
-                {
-                    txn.rollback();
-                }
-                catch (Exception se)
-                {
-                    logger.error("error during creation of custom child association", se);
-                    // we can do nothing with this rollback exception.
-                }
-            }
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EMAIL_CREATE_CHILD_ASSOC), e);
-        }
-    }
+                // add the relationship
+                recordsManagementAdminService.addCustomReference(parentRef, childRef, relationshipQName);      
+       
+                // add the IMAP attachment aspect
+                nodeService.createAssociation(
+                        parentRef,
+                        childRef,
+                        ImapModel.ASSOC_IMAP_ATTACHMENT);
+                
+                return null;
+            }            
+        });
+    }    
 }

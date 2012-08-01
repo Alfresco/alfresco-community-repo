@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    
+    <!--  Assignable Capabilities -->
+        
+    <bean id="rmCreateModifyDestroyFileplanMetadataCapability" 
+    	  parent="compositeCapability">
+   		<property name="name" value="CreateModifyDestroyFileplanMetadata"/>
+   		<property name="permission" value="CreateModifyDestroyFileplanMetadata"/>   		
+        <property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateRootRecordCategoryCapability"/>   
+    			<ref bean="rmCreateModifyDestroyRecordCategoryCapability"/>     	    			
+    		</list>
+    	</property>
+    </bean>
+
+    <!--  Unassignable Capabilities -->    
+    
+
+    <bean id="rmCreateRootRecordCategoryCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="CreateRootRecordCategory"/>	   		
+   		<property name="permission" value="CreateModifyDestroyFileplanMetadata"/>   
+    	<property name="private" value="true"/>    	
+		<property name="kinds">
+			<list>
+			    <value>FILE_PLAN</value>
+			</list>
+		</property>	
+    </bean>
+    
+    <bean id="rmCreateModifyDestroyRecordCategoryCapability" 
+    	  parent="declarativeCapability">
+   		<property name="name" value="CreateModifyDestroyRecordCategory"/>
+   		<property name="permission" value="CreateModifyDestroyFileplanMetadata"/>  
+    	<property name="private" value="true"/>    		
+		<property name="kinds">
+			<list>
+				<value>RECORD_CATEGORY</value>
+				<value>DISPOSITION_SCHEDULE</value>
+			</list>
+		</property>		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   			</map>
+   		</property>
+    </bean>
+    
+    <bean id="rmMoveRecordCategoryCapability"  
+    	  parent="compositeCapability">
+        <property name="name" value="MoveRecordCategory"/>
+    	<property name="private" value="true"/>   
+    	<property name="undetermined" value="true"/> 	
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    	    			
+    		</list>
+    	</property>
+    	<property name="targetCapability" ref="rmCreateModifyDestroyFileplanMetadataCapability"/>
+    </bean>
+
+</beans>

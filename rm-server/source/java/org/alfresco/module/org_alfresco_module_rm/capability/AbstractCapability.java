@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Abstract capability implementation.
@@ -51,6 +52,10 @@ public abstract class AbstractCapability extends RMSecurityCommon
     
     /** Capability name */
     protected String name;
+    
+    /** Capability title and description */
+    protected String title;
+    protected String description;
     
     /** Indicates whether this is a private capability or not */
     protected boolean isPrivate = false;
@@ -113,6 +118,56 @@ public abstract class AbstractCapability extends RMSecurityCommon
     public String getName()
     {
         return name;
+    }
+    
+    /**
+     * @param   title   capability title
+     */
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    /**
+     * @param titleId   message id
+     */
+    public void setTitleId(String titleId)
+    {
+        this.title = I18NUtil.getMessage(titleId);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#getTitle()
+     */
+    @Override
+    public String getTitle()
+    {
+        return title;
+    }
+    
+    /**
+     * @param description   capability description
+     */
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+    
+    /**
+     * @param descriptionId     message id
+     */
+    public void setDescriptionId(String descriptionId)
+    {
+        this.description = I18NUtil.getMessage(descriptionId);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#getDescription()
+     */
+    @Override
+    public String getDescription()
+    {
+        return description;
     }
 
     /**
@@ -183,11 +238,22 @@ public abstract class AbstractCapability extends RMSecurityCommon
         }
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#hasPermission(org.alfresco.service.cmr.repository.NodeRef)
+     */
     public AccessStatus hasPermission(NodeRef nodeRef)
     {
         return translate(hasPermissionRaw(nodeRef));
     }
     
+    /**
+     * Determines whether the current user has permission on this capability.
+     * <p>
+     * Returns the raw permission value.
+     * 
+     * @param   nodeRef node reference
+     * @return  raw permission value
+     */
     public int hasPermissionRaw(NodeRef nodeRef)
     {
         String prefix = "hasPermissionRaw" + getName();
@@ -232,16 +298,25 @@ public abstract class AbstractCapability extends RMSecurityCommon
         return AccessDecisionVoter.ACCESS_ABSTAIN;
     }    
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#getActionNames()
+     */
     public List<String> getActionNames()
     {
         return actionNames;
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#getActions()
+     */
     public List<RecordsManagementAction> getActions()
     {
         return actions;
     }
 
+    /**
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode()
     {
@@ -251,6 +326,9 @@ public abstract class AbstractCapability extends RMSecurityCommon
         return result;
     }
 
+    /**
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj)
     {

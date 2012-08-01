@@ -66,6 +66,7 @@
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isFilePlanComponent=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlanComponentKind=ACL_NODE.0.sys:base.ReadProperties, RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlanComponentKindFromType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isFilePlan=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordCategory=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordFolder=RM.Read.0
@@ -204,6 +205,8 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.registerDispositionProperty=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionProperties=RM_ALLOW 
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedRecordsManagementContainer=RM_ALLOW
@@ -217,8 +220,7 @@
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isNextDispositionActionEligible=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getNextDispositionAction=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getCompletedDispositionActions=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0                 
-                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionPeriodProperties=RM.Read.0               
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0                                               
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.*=RM_DENY
                 ]]>
             </value>
@@ -227,10 +229,9 @@
     
     <!--  Capability Service -->
     
-    <bean id="CapabilityService" class="org.alfresco.module.org_alfresco_module_rm.capability.CapabilityServiceImpl">        
+    <bean id="capabilityService" class="org.alfresco.module.org_alfresco_module_rm.capability.CapabilityServiceImpl">        
     </bean>
     
-    <!-- 
     <bean id="CapabilityService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService</value>
@@ -242,7 +243,7 @@
             <list>
                 <idref local="CapabilityService_transaction"/>
                 <idref bean="exceptionTranslator"/>
-                <idref local="CapabilityService_security"/>
+                <!-- <idref local="CapabilityService_security"/>  -->
             </list>
         </property>
     </bean>
@@ -271,15 +272,11 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.registerCapability=RM_ALLOW               
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.getCapability=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.getCapabilities=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.getCapabilitiesAccessState=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.*=RM_DENY
+                org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.*=RM_ALLOW
                 ]]>
             </value>
         </property>
-    </bean> -->
+    </bean>
     
     <!--  Records Management Search Service -->
     
@@ -353,7 +350,8 @@
                 		{
                 			"records" : true,
                 			"recordfolders" : true,
-                			"frozen" : true
+                			"frozen" : true,
+                			"undeclaredrecords" : true
                 		}
                 	}
                 ]
@@ -426,37 +424,7 @@
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="ownableService" ref="OwnableService"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
-        <property name="capabilitySets">
-        	<map>
-        		<entry key="doclibBrowse">
-        			<list>
-        				 <value>Create</value>
-						 <value>UpdateProperties</value>
-						 <value>ManageAccessRights</value>
-						 <value>Delete</value>
-						 <value>AccessAudit</value>
-						 <value>CycleVitalRecords</value>
-						 <value>ApproveRecordsScheduledForCutoff</value>
-						 <value>DestroyRecordsCapability</value>
-						 <value>DestroyRecordsScheduledForDestruction</value>
-						 <value>AuthorizeAllTransfers</value>
-						 <value>AuthorizeNominatedTransfers</value>
-						 <value>CreateModifyRecordsInCutoffFolders</value>
-						 <value>ManuallyChangeDispositionDates</value>
-						 <value>PlanningReviewCycles</value>
-						 <value>UndeclareRecords</value>
-						 <value>Declare</value>			
-						 <value>Unfreeze</value>
-						 <value>ViewUpdateReasonsForFreeze</value>
-						 <value>CloseFolders</value>
-						 <value>ReOpenFolders</value>
-						 <value>ExtendRetentionPeriodOrFreeze</value>
-        			</list>
-        		</entry>
-        	</map>
-        </property>
+        <property name="recordsManagementService" ref="RecordsManagementService"/>        
     </bean>
     
     <bean id="RecordsManagementSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -501,8 +469,6 @@
                 <![CDATA[  
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getProtectedAspects=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getProtectedProperties=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getCapabilities=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getCapability=RM_ALLOW                  
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.setPermission=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deletePermission=RM_ALLOW                            
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.bootstrapDefaultRoles=RM_ALLOW
@@ -714,6 +680,7 @@
 				org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.existsCustomProperty=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomPropertyDefinitions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.addCustomPropertyDefinition=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.updateCustomPropertyDefinitionName=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.setCustomPropertyDefinitionLabel=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.setCustomPropertyDefinitionConstraint=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.removeCustomPropertyDefinitionConstraints=RM_ALLOW
@@ -740,6 +707,14 @@
                 ]]>
             </value>
         </property>
+    </bean>
+    
+    <!--  Freeze Service  -->
+    
+    <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl" init-method="init">
+    	<property name="policyComponent" ref="policyComponent" />
+        <property name="recordsManagementService" ref="RecordsManagementService" />
+        <property name="nodeService" ref="nodeService" />
     </bean>
     
     <!-- Records Management Audit Service -->
@@ -890,6 +865,7 @@
         <property name="namespaceService" ref="namespaceService"/>
         <property name="searchService" ref="searchService"/>
         <property name="siteService" ref="SiteService" />
+        <property name="authorityService" ref="authorityService" />
     	<property name="notificationRole" value="${rm.notification.role}"/>
     </bean>    
     
@@ -999,17 +975,17 @@
         </property>
     </bean>
     
-    <!-- Period Properties -->
-    
-    <bean id="DispositionPeriodProperties" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionPeriodProperties">
-        <property name="propertyList">
-            <list>
-                <value>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</value>
-                <value>{http://www.alfresco.org/model/recordsmanagement/1.0}dispositionAsOf</value>
-                <value>{http://www.alfresco.org/model/recordsmanagement/1.0}dateFiled</value>
-                <value>{http://www.alfresco.org/model/recordsmanagement/1.0}publicationDate</value>
-            </list>
-        </property>
+    <!--  Site service work around (see https://issues.alfresco.com/jira/browse/RM-387) -->
+     <bean name="siteGetChildrenCannedQueryFactory" class="org.alfresco.module.org_alfresco_module_rm.site.GetChildrenCannedQueryFactory">
+        <property name="registry" ref="siteCannedQueryRegistry"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="localeDAO" ref="localeDAO"/>
+        <property name="contentDataDAO" ref="contentDataDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <property name="methodSecurity" ref="SiteService_security_listSites"/>
     </bean>
     
 </beans>    

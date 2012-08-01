@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Update properties capability
+ * Update properties capability.
  * 
  * @author andyh
  */

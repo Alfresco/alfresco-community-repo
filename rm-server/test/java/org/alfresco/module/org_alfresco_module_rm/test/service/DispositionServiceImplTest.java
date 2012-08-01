@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -32,7 +33,9 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
+import org.alfresco.module.org_alfresco_module_rm.job.PublishUpdatesJobExecuter;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutor;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorRegistry;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -52,6 +55,28 @@ public class DispositionServiceImplTest extends BaseRMTestCase
     protected boolean isMultiHierarchyTest()
     {
         return true;
+    }
+    
+    public void testGetDispositionProperties() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            public Void run()
+            {
+                Collection<DispositionProperty> properties = dispositionService.getDispositionProperties();
+                
+                assertNotNull(properties);
+                assertEquals(5, properties.size());
+                
+                for (DispositionProperty property : properties)
+                {
+                    assertNotNull(property.getQName());
+                    assertNotNull(property.getPropertyDefinition());
+                }
+                
+                return null;
+            }
+        });
     }
     
     /**
@@ -797,5 +822,195 @@ public class DispositionServiceImplTest extends BaseRMTestCase
     // TODO DispositionAction getLastCompletedDispostionAction(NodeRef nodeRef);
     
     // TODO List<QName> getDispositionPeriodProperties();
+    
+    /* === Issues === */
+    
+    private NodeRef testRM263RecordCategory;
+    private DispositionSchedule testRM263DispositionSchedule;
+    private NodeRef testRM263Record;
+    
+    /**
+     * https://issues.alfresco.com/jira/browse/RM-263
+     */
+    public void testRM_263() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                testRM263RecordCategory = rmService.createRecordCategory(rmContainer, "rm263");
+                testRM263DispositionSchedule = utils.createBasicDispositionSchedule(
+                        testRM263RecordCategory, 
+                        "test", 
+                        "test", 
+                        true, 
+                        false);
+                
+                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                adParams.put(PROP_DISPOSITION_ACTION_NAME, "cutoff");
+                adParams.put(PROP_DISPOSITION_DESCRIPTION, "test");
+                adParams.put(PROP_DISPOSITION_PERIOD, "week|1");
+                adParams.put(PROP_DISPOSITION_PERIOD_PROPERTY, PROP_PUBLICATION_DATE.toString());
+                
+                dispositionService.addDispositionActionDefinition(testRM263DispositionSchedule, adParams);
+                
+                NodeRef recordFolder = rmService.createRecordFolder(testRM263RecordCategory, "testRM263RecordFolder");
+                testRM263Record = utils.createRecord(recordFolder, "testRM263Record", "testRM263Record");
+              
+                return null;
+            }
+        });
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            private final QName PROP_SEARCH_ASOF = QName.createQName(RM_URI, "recordSearchDispositionActionAsOf");
+            
+            @Override
+            public Void run() throws Exception
+            {
+                Date pubDate = (Date)nodeService.getProperty(testRM263Record, PROP_PUBLICATION_DATE);
+                assertNull(pubDate);
+                Date asOfDate = (Date)nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
+                assertNull(asOfDate);
+                
+                DispositionAction da = dispositionService.getNextDispositionAction(testRM263Record);
+                assertNotNull(da);
+                assertNull(da.getAsOfDate());
+              
+                //rma:recordSearchDispositionActionAsOf"
+                nodeService.setProperty(testRM263Record, PROP_PUBLICATION_DATE, new Date());
+                
+                return null;
+            }
+            
+            @Override
+            public void test(Void result) throws Exception
+            {
+                Date pubDate = (Date)nodeService.getProperty(testRM263Record, PROP_PUBLICATION_DATE);
+                assertNotNull(pubDate);
+                Date asOfDate = (Date)nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
+                assertNotNull(asOfDate);
+                
+                DispositionAction da = dispositionService.getNextDispositionAction(testRM263Record);
+                assertNotNull(da);
+                assertNotNull(da.getAsOfDate());
+            }
+        });
+    }
 
+    private NodeRef testRM386RecordCategory;
+    private DispositionSchedule testRM386DispositionSchedule;
+    private NodeRef testRM386Record;
+    
+    /**
+     * Test to make sure all the search rollups are correct after schedule is updated
+     * @throws Exception
+     */
+    public void testRM386() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                testRM386RecordCategory = rmService.createRecordCategory(rmContainer, "RM386");
+                testRM386DispositionSchedule = utils.createBasicDispositionSchedule(
+                        testRM386RecordCategory, 
+                        "disposition instructions", 
+                        "disposition authority", 
+                        true,   // record level
+                        true);  // set the default actions
+                
+                NodeRef recordFolder = rmService.createRecordFolder(testRM386RecordCategory, "testRM386RecordFolder");
+                testRM386Record = utils.createRecord(recordFolder, "testRM386Record", "testRM386Record");
+              
+                return null;
+            }
+            
+            @SuppressWarnings("unchecked")
+            @Override
+            public void test(Void result) throws Exception
+            {
+                // Test the rollups for the record
+                Map<QName, Serializable> properties = nodeService.getProperties(testRM386Record);
+                
+                assertEquals(Boolean.TRUE, properties.get(PROP_RS_HAS_DISPOITION_SCHEDULE));
+                assertEquals(CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, properties.get(PROP_RS_DISPOITION_AUTHORITY));
+                assertEquals(CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS, properties.get(PROP_RS_DISPOITION_INSTRUCTIONS));
+                
+                assertEquals("none", properties.get(PROP_RS_DISPOSITION_PERIOD));
+                assertEquals("0", properties.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
+                
+                List<String> events = (List<String>)properties.get(PROP_RS_DISPOSITION_EVENTS);
+                assertNotNull(events);
+                assertEquals(1, events.size());
+                assertEquals(CommonRMTestUtils.DEFAULT_EVENT_NAME, events.get(0));                
+                assertEquals(Boolean.FALSE, properties.get(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE));
+                
+                assertEquals("cutoff", properties.get(PROP_RS_DISPOSITION_ACTION_NAME));
+                assertNull(properties.get(PROP_RS_DISPOSITION_ACTION_AS_OF));
+            }            
+        });
+        
+        doTestInTransaction(new Test<DispositionActionDefinition>()
+        {
+            @Override
+            public DispositionActionDefinition run() throws Exception
+            {
+                DispositionActionDefinition actionDefinition = testRM386DispositionSchedule.getDispositionActionDefinitionByName("cutoff");
+                assertNotNull(actionDefinition);
+                
+                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                
+                List<String> events = new ArrayList<String>(1);
+                events.add(CommonRMTestUtils.DEFAULT_EVENT_NAME);
+                events.add("obsolete");
+                adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
+                adParams.put(PROP_DISPOSITION_PERIOD, "week|1"); 
+                                
+                dispositionService.updateDispositionActionDefinition(
+                        actionDefinition, 
+                        adParams );                
+                
+                return actionDefinition;
+            }
+            
+            @SuppressWarnings("unchecked")
+            @Override
+            public void test(DispositionActionDefinition result) throws Exception
+            {                
+                // Publish the updates
+                PublishUpdatesJobExecuter updater = (PublishUpdatesJobExecuter)applicationContext.getBean("publishUpdatesJobExecuter");
+                updater.execute();
+
+                // Check the record has been updated 
+                DispositionAction dispositionAction = dispositionService.getNextDispositionAction(testRM386Record);
+                assertNotNull(dispositionAction);
+                assertEquals("cutoff", dispositionAction.getName());
+                assertNotNull(dispositionAction.getAsOfDate());
+                assertEquals(2, dispositionAction.getEventCompletionDetails().size());
+                
+                // Test the rollups for the record
+                Map<QName, Serializable> properties = nodeService.getProperties(testRM386Record);
+                
+                assertEquals(Boolean.TRUE, properties.get(PROP_RS_HAS_DISPOITION_SCHEDULE));
+                assertEquals(CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, properties.get(PROP_RS_DISPOITION_AUTHORITY));
+                assertEquals(CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS, properties.get(PROP_RS_DISPOITION_INSTRUCTIONS));
+                
+                assertEquals("week", properties.get(PROP_RS_DISPOSITION_PERIOD));
+                assertEquals("1", properties.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
+                
+                List<String> events = (List<String>)properties.get(PROP_RS_DISPOSITION_EVENTS);
+                assertNotNull(events);
+                assertEquals(2, events.size());        
+                assertEquals(Boolean.FALSE, properties.get(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE));
+                
+                assertEquals("cutoff", properties.get(PROP_RS_DISPOSITION_ACTION_NAME));
+                assertNotNull(properties.get(PROP_RS_DISPOSITION_ACTION_AS_OF));
+            }
+        });
+        
+    }
+    
 }

@@ -38,7 +38,6 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability;
-import org.alfresco.module.org_alfresco_module_rm.capability.impl.MoveRecordsCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdateCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdatePropertiesCapability;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
@@ -880,7 +879,7 @@ public class RMEntryVoter extends RMSecurityCommon
 
             if ((movee != null) && (destination != null))
             {
-                return ((MoveRecordsCapability)capabilityService.getCapability(RMPermissionModel.MOVE_RECORDS)).evaluate(movee, destination);
+                return capabilityService.getCapability("Move").evaluate(movee, destination);
             }
             else
             {

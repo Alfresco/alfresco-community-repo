@@ -35,7 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * 
+ * Get information about record management roles
  * 
  * @author Roy Wetherall
  */

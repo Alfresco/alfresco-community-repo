@@ -3,14 +3,16 @@ buildscript {
 	repositories {
 		flatDir {
 			dirs 'mmt'
-		}	
+		}
+		mavenCentral()		
 	}
 
 	dependencies {
-		classpath fileTree(dir: 'mmt', include: '*.jar')  
+		classpath fileTree(dir: 'mmt', include: '*.jar')
+	    classpath 'com.yahoo.platform.yui:yuicompressor:2.4.6'
 	}
 }
-
+ 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.0-milestone-8'
 }
@@ -38,6 +40,7 @@ task packageBuild (dependsOn: [':rm-server:amp', ':rm-share:amp']) << {
 subprojects {
 
 	apply plugin: 'java'	
+	apply plugin: 'eclipse'
 	
 	sourceCompatibility = 1.6
     targetCompatibility = 1.6
@@ -49,8 +52,9 @@ subprojects {
 	buildLibDir = 'build/libs'
 	sourceJavaDir = 'source/java'
 	sourceWebDir = 'source/web'
+	assembleDir = 'build/assemble'
 	testJavaDir = 'test/java'
-	testResourceDir = 'test/resource'
+	testResourceDir = 'test/resources'
 	configDir = 'config'
 	configModuleDir = "config/alfresco/module/${moduleid}"
 	moduleProperties = 'module.properties'
@@ -84,7 +88,7 @@ subprojects {
 		}
 		mavenCentral()
 		maven {
-			url "http://maven.alfresco.com/nexus/content/repositories/enterprise-releases/"
+			url "https://artifacts.alfresco.com/nexus/content/groups/internal"
 			credentials {
 				username 'bamboo'
 				password 'b@mb00'
@@ -99,21 +103,23 @@ subprojects {
 	
 	/** --- Compile tasks --- */
 
-	task fetchWarFile(type:Copy) {
-		from configurations.testRuntime
-		into '.'
-		include '*.war'
-		rename { String filename -> warFile }
-	}
-		
 	// make sure that the dependancies have been unpacked before compiling the Java
 	compileJava.doFirst {
 		explodeDeps.execute()
 	}
+	compileJava.options.encoding = 'UTF-8'
+	compileTestJava.options.encoding = 'UTF-8'
 	
 	jar.archiveName = jarFile
 	
-	/** --- Dependancy tasks --- */
+	/** --- Dependancy tasks --- */	
+
+	task fetchWarFile(type:Copy) {
+        from configurations.testRuntime
+        into '.'
+        include '*.war'
+        rename { String filename -> warFile }
+	}
 
 	task explodeDeps << {
 	
@@ -122,6 +128,7 @@ subprojects {
 		explodedConfigDir = file("${explodedDepsDir}/config")
 		warFileObj = file(warFile)
 	
+		// if the WAR file still isn't there raise an error
 		if (warFileObj.exists() == true) {
 			
 			logger.lifecycle "${warFile} was found.  Checking dependancies ..."
@@ -171,9 +178,7 @@ subprojects {
 	}
 		
 	task cleanDeps << {
-		ant.delete(includeEmptyDirs: 'true') {
-			ant.fileset(dir: explodedDepsDir, includes: '**/*')
-		}
+		ant.delete(includeEmptyDirs: 'true', dir: explodedDepsDir)
 	}	
 	
 	/** --- AMP tasks --- */
@@ -185,38 +190,52 @@ subprojects {
 	
 	task amp(dependsOn: 'jar') << {
 	
-		def jarFileObj = file(jarFilePath)
-		def configDirObj = file(configDir)
-		def sourceWebObj = file(sourceWebDir)
+		delete assembleDir
+	
+		copy {
+			from "${configModuleDir}"
+			include "${moduleProperties}"
+			include "${fileMapping}"			
+			into assembleDir
+		}
+	
+		copy {
+			from jarFilePath
+			into "${assembleDir}/lib"
+		}
 		
-		// assemble the AMP file
-		ant.zip(destfile: "${buildDistDir}/${ampFile}", update: 'true') {			
+		copy {
+			from configDir
+			exclude "**/${moduleProperties}"
+			exclude "**/${fileMapping}"
+			into "${assembleDir}/config"		
+		}
 		
-			ant.zipfileset(file: "${configModuleDir}/${moduleProperties}")
-			ant.zipfileset(file: "${configModuleDir}/${fileMapping}")
-			
-			if (jarFileObj.exists()) {
-			
-				logger.info("Adding ${jarFilePath} to ${ampFile} in /lib")
-				ant.zipfileset(file: jarFilePath, prefix: 'lib')
-			} 
-
-			if (configDirObj.exists() == true) {
-			
-				logger.info("Adding ${configDir} to ${ampFile} in /config")
+		copy {
+			from sourceWebDir			
+			include '**/*'
+			into "${assembleDir}/web"
+		}
+		
+		tree = fileTree("${assembleDir}/web") {
+			include '**/*.js'
+			exclude '**/*-min.js'
+		}
+		
+		tree.each {File file ->
 				
-				ant.zipfileset(dir: configDir, prefix: 'config') {
-					ant.exclude(name: '**/' + moduleProperties)
-					ant.exclude(name: '**/' + fileMapping)
+			destinationFile = new File(file.getPath().replaceFirst('\\.js', '-min.js'))
+			
+			file.withReader{ reader -> 
+				compressor = new com.yahoo.platform.yui.compressor.JavaScriptCompressor(reader, null)
+				destinationFile.withWriter { writer ->
+					compressor.compress(writer, -1, false, false, false, false)
 				}
 			}
-			
-			if (sourceWebObj.exists() == true) {		
-				
-				logger.info("Adding ${sourceWebDir} to ${ampFile} in /web")
-			
-				ant.zipfileset(dir: sourceWebDir, prefix: 'web')
-			}
+		}
+		
+		ant.zip(destfile: "${buildDistDir}/${ampFile}", update: 'true') {
+			ant.zipfileset(dir: assembleDir)
 		}	
 	}
 	

@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+	
+	<bean 
+	    id="disposition.properties.base"
+		abstract="true" 
+		class="org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty" 
+		init-method="init">
+	   <property name="namespaceService" ref="NamespaceService" />
+	   <property name="dictionaryService" ref="DictionaryService" />
+	   <property name="nodeService" ref="NodeService" />
+	   <property name="policyComponent" ref="policyComponent" />
+	   <property name="dispositionService" ref="dispositionService" />
+	</bean>
+	
+	<bean id="disposition.properties.cutoffdate" parent="disposition.properties.base">
+	   <property name="name" value="rma:cutOffDate" />
+	   <property name="excludedDispositionActions">
+	      <set>
+	         <value>cutoff</value>
+	      </set>
+	   </property>
+	</bean>
+	
+	<bean id="disposition.properties.dispositionasof" parent="disposition.properties.base">
+	   <property name="name" value="rma:dispositionAsOf" />
+	</bean>
+	
+	<bean id="disposition.properties.datefiled" parent="disposition.properties.base">
+	   <property name="name" value="rma:dateFiled" />	   
+	   <property name="appliesToFolderLevel" value="false"/>
+	</bean>
+	
+	<bean id="disposition.properties.publicationdate" parent="disposition.properties.base">
+	   <property name="name" value="rma:publicationDate" />
+	   <property name="appliesToFolderLevel" value="false"/>
+	</bean>
+	
+	<bean id="disposition.properties.created" parent="disposition.properties.base">
+	   <property name="name" value="cm:created" />
+	   <property name="appliesToRecordLevel" value="false"/>
+	</bean>
+	    
+</beans>

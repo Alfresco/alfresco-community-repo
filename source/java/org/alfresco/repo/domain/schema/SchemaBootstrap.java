@@ -784,7 +784,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         String dialectStr = dialect.getClass().getSimpleName();
 
         // Initialise Activiti DB, using an unclosable connection.
-        initialiseActivitiDBSchema(new UnclosableConnection(connection));
+        initialiseActivitiDBSchema(new UnclosableConnection(connection), cfg);
         
         if (create)
         {
@@ -877,7 +877,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * 
      * @param connection Connection to use the initialise DB schema
      */
-    private void initialiseActivitiDBSchema(Connection connection)
+    private void initialiseActivitiDBSchema(Connection connection, Configuration cfg)
     {
         // create instance of activiti engine to initialise schema
         ProcessEngine engine = null;
@@ -893,7 +893,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 buildProcessEngine();
         
             // create or upgrade the DB schema
-            engine.getManagementService().databaseSchemaUpgrade(connection, null, null);
+            engine.getManagementService().databaseSchemaUpgrade(connection, null, cfg.getProperty("hibernate.default_schema"));
         }
         finally
         {

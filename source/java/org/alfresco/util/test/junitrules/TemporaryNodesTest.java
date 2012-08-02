@@ -22,8 +22,11 @@ package org.alfresco.util.test.junitrules;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -31,6 +34,7 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,8 +50,8 @@ import org.junit.rules.RuleChain;
 /**
  * Test class for {@link TemporaryNodes}.
  * 
- * @author Neil McErlean
- * @since Odin
+ * @author Neil Mc Erlean
+ * @since 4.1
  */
 public class TemporaryNodesTest
 {
@@ -74,6 +78,7 @@ public class TemporaryNodesTest
     @Rule public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getAdminUserName());
     
     // Various services
+    private static CheckOutCheckInService      COCI_SERVICE;
     private static ContentService              CONTENT_SERVICE;
     private static NodeService                 NODE_SERVICE;
     private static RetryingTransactionHelper   TRANSACTION_HELPER;
@@ -85,6 +90,7 @@ public class TemporaryNodesTest
     
     @BeforeClass public static void initStaticData() throws Exception
     {
+        COCI_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("checkOutCheckInService", CheckOutCheckInService.class);
         CONTENT_SERVICE    = APP_CONTEXT_INIT.getApplicationContext().getBean("contentService", ContentService.class);
         NODE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("nodeService", NodeService.class);
         TRANSACTION_HELPER = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
@@ -127,6 +133,59 @@ public class TemporaryNodesTest
                 reader = CONTENT_SERVICE.getReader(testNode2, ContentModel.PROP_CONTENT);
                 assertEquals("Content was wrong", "Hello world", reader.getContentString("Hello world".length()));
                 
+                return null;
+            }
+        });
+    }
+    
+    @Test public void ensureCheckedOutNodesAreCleanedUp() throws Throwable
+    {
+        // Note that because we need to test that the Rule's 'after' behaviour has worked correctly, we cannot
+        // use the Rule that has been declared in the normal way - otherwise nothing would be cleaned up until
+        // after our test method.
+        // Therefore we have to manually poke the Rule to get it to cleanup during test execution.
+        // NOTE! This is *not* how a JUnit Rule would normally be used.
+        TemporaryNodes myTemporaryNodes = new TemporaryNodes(APP_CONTEXT_INIT);
+        
+        // Currently this is a no-op, but just in case that changes.
+        myTemporaryNodes.before();
+        
+        
+        // Create some test nodes.
+        final List<NodeRef> nodesThatShouldBeDeletedByRule = new ArrayList<NodeRef>();
+        
+        nodesThatShouldBeDeletedByRule.add(myTemporaryNodes.createNode(COMPANY_HOME, "normal node", ContentModel.TYPE_CONTENT, TEST_USER1.getUsername()));
+        final NodeRef checkedoutNode = myTemporaryNodes.createNode(COMPANY_HOME, "checkedout node", ContentModel.TYPE_CONTENT, TEST_USER1.getUsername());
+        nodesThatShouldBeDeletedByRule.add(checkedoutNode);
+        
+        // and check one of them out.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                NodeRef workingCopy = COCI_SERVICE.checkout(checkedoutNode);
+                
+                // Ensure that the working copy is cleaned up too.
+                nodesThatShouldBeDeletedByRule.add(workingCopy);
+                return null;
+            }
+        });
+        
+        // Now trigger the Rule's cleanup behaviour.
+        myTemporaryNodes.after();
+        
+        // and ensure that the nodes are all gone.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                for (NodeRef node : nodesThatShouldBeDeletedByRule)
+                {
+                    if (NODE_SERVICE.exists(node))
+                    {
+                        fail("Node '" + NODE_SERVICE.getProperty(node, ContentModel.PROP_NAME) + "' still exists.");
+                    }
+                }
                 return null;
             }
         });

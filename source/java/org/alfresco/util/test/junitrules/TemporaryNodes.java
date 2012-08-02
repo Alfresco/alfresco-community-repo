@@ -31,6 +31,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -41,12 +42,13 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.rules.ExternalResource;
+import org.springframework.context.ApplicationContext;
 
 /**
  * A JUnit rule designed to help with the automatic cleanup of temporary test nodes.
  * 
  * @author Neil Mc Erlean
- * @since Odin
+ * @since 4.1
  */
 public class TemporaryNodes extends ExternalResource
 {
@@ -73,8 +75,11 @@ public class TemporaryNodes extends ExternalResource
     
     @Override protected void after()
     {
-        final RetryingTransactionHelper transactionHelper = (RetryingTransactionHelper) appContextRule.getApplicationContext().getBean("retryingTransactionHelper");
-        final NodeService nodeService = (NodeService) appContextRule.getApplicationContext().getBean("nodeService");
+        final ApplicationContext springContext = appContextRule.getApplicationContext();
+        
+        final RetryingTransactionHelper transactionHelper = springContext.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        final CheckOutCheckInService cociService          = springContext.getBean("CheckOutCheckInService", CheckOutCheckInService.class);
+        final NodeService nodeService                     = springContext.getBean("NodeService", NodeService.class);
         
         // Run as admin to ensure all non-system nodes can be deleted irrespecive of which user created them.
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -88,8 +93,16 @@ public class TemporaryNodes extends ExternalResource
                         // Although we loop through all nodes, this is a cascade-delete and so we may only need to delete the first node.
                         for (NodeRef node : temporaryNodeRefs)
                         {
+                            // If it's already been deleted, don't worry about it.
                             if (nodeService.exists(node))
                             {
+                                // If it has been checked out, cancel the checkout before deletion.
+                                if (cociService.isCheckedOut(node))
+                                {
+                                    log.debug("Cancelling checkout of temporary node " + nodeService.getProperty(node, ContentModel.PROP_NAME));
+                                    NodeRef workingCopy = cociService.getWorkingCopy(node);
+                                    cociService.cancelCheckout(workingCopy);
+                                }
                                 log.debug("Deleting temporary node " + nodeService.getProperty(node, ContentModel.PROP_NAME));
                                 nodeService.deleteNode(node);
                             }
@@ -100,7 +113,7 @@ public class TemporaryNodes extends ExternalResource
                 });
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**

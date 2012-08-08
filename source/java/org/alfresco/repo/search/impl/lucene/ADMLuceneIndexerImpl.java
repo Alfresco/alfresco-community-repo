@@ -58,6 +58,7 @@ import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -737,13 +738,10 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         final NodeRef nodeRef = new NodeRef(stringNodeRef);
         final NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);
         final List<Document> docs = new LinkedList<Document>();
-        if (nodeStatus == null)
+
+        if (nodeStatus == null || nodeStatus.isDeleted())
         {
-            throw new InvalidNodeRefException("Node does not exist: " + nodeRef, nodeRef);            
-        }
-        else if (nodeStatus.isDeleted())
-        {
-            // If we are being called in non FTS mode on a deleted node, we must still create a new FTS marker
+            // If we are being called in non FTS mode on a deleted or purged node, we must still create a new FTS marker
             // document, in case FTS is currently in progress and about to restore our node!
             addFtsStatusDoc(docs, ftsStatus, nodeRef, nodeStatus);
             return docs;
@@ -1027,9 +1025,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         Document doc = new Document();
         doc.add(new Field("ID", GUID.generate(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
         doc.add(new Field("FTSREF", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
-        doc
-                .add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.NO_NORMS,
-                        Field.TermVector.NO));
+        doc.add(new Field("TX", nodeStatus == null ? AlfrescoTransactionSupport.getTransactionId() : nodeStatus
+                .getChangeTxnId(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
         doc.add(new Field("FTSSTATUS", ftsStatus.name(), Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
         docs.add(doc);
     }

@@ -1,7 +1,7 @@
 <#macro itemJSON item>
-   <#assign node = item.node>
-   <#assign version = "1.0">
-   <#if node.hasAspect("cm:versionable") && node.versionHistory?size != 0><#assign version = node.versionHistory[0].versionLabel></#if>
+   <#local node = item.node>
+   <#local version = "1.0">
+   <#if node.hasAspect("cm:versionable")><#local version = node.properties["cm:versionLabel"]></#if>
    <#escape x as jsonUtils.encodeJSONString(x)>
    "version": "${version}",
    "webdavUrl": "${node.webdavUrl}",

@@ -62,9 +62,9 @@ var Evaluator =
                   var wcNode = node.assocs["cm:original"][0];
                   workingCopy["isWorkingCopy"] = true;
                   workingCopy["sourceNodeRef"] = wcNode.nodeRef;
-                  if (wcNode.hasAspect("cm:versionable") && wcNode.versionHistory !== null && wcNode.versionHistory.length > 0)
+                  if (wcNode.hasAspect("cm:versionable"))
                   {
-                     workingCopy["workingCopyVersion"] = wcNode.versionHistory[0].label;
+                     workingCopy["workingCopyVersion"] = wcNode.properties["cm:versionLabel"];
                   }
 
                   // Google Doc?

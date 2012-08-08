@@ -169,9 +169,9 @@ var Evaluator =
                var wcNode = node.assocs["cm:original"][0];
                custom["isWorkingCopy"] = true;
                custom["workingCopyOriginal"] = wcNode.nodeRef;
-               if (wcNode.hasAspect("cm:versionable") && wcNode.versionHistory !== null && wcNode.versionHistory.length > 0)
+               if (wcNode.hasAspect("cm:versionable"))
                {
-                  custom["workingCopyVersion"] = wcNode.versionHistory[0].label;
+                  custom["workingCopyVersion"] = wcNode.properties["cm:versionLabel"];
                }
                permissions["view-original"] = true;
 

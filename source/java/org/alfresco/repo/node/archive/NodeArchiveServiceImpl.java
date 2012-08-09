@@ -37,6 +37,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -269,6 +270,12 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
                 // some other invalid node was detected
                 report.setStatus(RestoreStatus.FAILURE_OTHER);
             }
+        }
+        catch (DuplicateChildNodeNameException e)
+        {
+            report.setCause(e);
+            report.setStatus(RestoreStatus.FAILURE_DUPLICATE_CHILD_NODE_NAME);
+            logger.error(e);
         }
         catch (AccessDeniedException e)
         {

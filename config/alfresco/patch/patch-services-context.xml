@@ -3254,4 +3254,14 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V4.1-increase-column-size-activiti" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.1-increase-column-size-activiti" />
+        <property name="description" value="patch.increaseColumnSizeActiviti.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="6012" />
+        <property name="targetSchema" value="6013" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/increase-column-size-activiti.sql</value>
+        </property>
+    </bean>
 </beans>

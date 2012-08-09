@@ -704,11 +704,16 @@
    <bean id="transformer.PdfBox.TextToPdf"
          class="org.alfresco.repo.content.transform.TextToPdfContentTransformer"
          parent="baseContentTransformer" >
-      <property name="explicitTransformations">
+      <property name="supportedTransformations">
          <list>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
-                <constructor-arg><value>text/plain</value></constructor-arg>
-                <constructor-arg><value>application/pdf</value></constructor-arg>
+            <!--  Using OpenOffice/JOD for text to PDF (slower but better and supports non western fonts) -->
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>text/csv</value></property>
+                <property name="targetMimetype"><value>application/pdf</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>text/xml</value></property>
+                <property name="targetMimetype"><value>application/pdf</value></property>
             </bean>
          </list>
       </property>
@@ -720,13 +725,26 @@
         parent="baseComplexContentTransformer" >
       <property name="transformers">
          <list>
-            <ref bean="transformer.PdfBox.TextToPdf" />
+            <null />
             <ref bean="transformer.complex.PDF.Image" />
          </list>
       </property>
       <property name="intermediateMimetypes">
          <list>
             <value>application/pdf</value>
+         </list>
+      </property>
+      <property name="supportedTransformations">
+         <list>
+            <!--  Using OpenOffice/JOD for text to Image (slower but better and supports non western fonts) -->
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>text/csv</value></property>
+                <!-- targetMimetype any -->
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>text/xml</value></property>
+                <!-- targetMimetype any -->
+            </bean>
          </list>
       </property>
    </bean>

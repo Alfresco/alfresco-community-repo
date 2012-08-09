@@ -52,6 +52,7 @@
    <bean id="transformer.complex.OpenOffice.Pdf2swf.mimetypeLimits" class="org.alfresco.service.cmr.repository.TransformationOptionLimitsMap">
       <constructor-arg>
          <value>
+            txt  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.txt.swf.maxSourceSizeKBytes}  ;
             doc  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.doc.swf.maxSourceSizeKBytes}  ;
             docx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.docx.swf.maxSourceSizeKBytes} ;
             docm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.docm.swf.maxSourceSizeKBytes} ;
@@ -103,7 +104,7 @@
         parent="baseComplexContentTransformer" >
       <property name="transformers">
          <list>
-            <ref bean="transformer.PdfBox.TextToPdf" />
+            <null />
             <ref bean="transformer.Pdf2swf" />
          </list>
       </property>
@@ -112,11 +113,22 @@
             <value>application/pdf</value>
          </list>
       </property>
-      <!-- Note: there are maxSourceSizeKBytes limits on transformer.PdfBox.TextToPdf for txt->pdf
-           which may cause this transformer not to be selected because it is too slow and another
-           maxSourceSizeKBytes limit on transformer.Pdf2swf, but what is the point of doing the
-           first one only to give up on the second when we can guess the pdf size is just a bit 
-           more than the text. -->
+      <property name="supportedTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>text/txt</value></property>
+                <property name="targetMimetype"><value>application/x-shockwave-flash</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>text/csv</value></property>
+                <property name="targetMimetype"><value>application/x-shockwave-flash</value></property>
+            </bean>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>text/xml</value></property>
+                <property name="targetMimetype"><value>application/x-shockwave-flash</value></property>
+            </bean>
+         </list>
+      </property>
       <property name="maxSourceSizeKBytes"><value>${content.transformer.complex.Text.Pdf2swf.maxSourceSizeKBytes}</value></property>
    </bean>
 
@@ -127,7 +139,7 @@
       <property name="transformers">
          <list>
             <ref bean="transformer.Archive" />
-            <ref bean="transformer.PdfBox.TextToPdf" />
+            <null />
             <ref bean="transformer.Pdf2swf" />
          </list>
       </property>

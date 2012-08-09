@@ -137,8 +137,10 @@ public class ContentTransformerHelper
             result = false;
             for (SupportedTransformation suportedTransformation : supportedTransformations)
             {
-                if (sourceMimetype.equals(suportedTransformation.getSourceMimetype()) == true
-                        && targetMimetype.equals(suportedTransformation.getTargetMimetype()) == true)
+                String supportedSourceMimetype = suportedTransformation.getSourceMimetype();
+                String supportedTargetMimetype = suportedTransformation.getTargetMimetype();
+                if ((supportedSourceMimetype == null || sourceMimetype.equals(supportedSourceMimetype)) &&
+                    (supportedTargetMimetype == null || targetMimetype.equals(supportedTargetMimetype)))
                 {
                     result = true;
                     break;

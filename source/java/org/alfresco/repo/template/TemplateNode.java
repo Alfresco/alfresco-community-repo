@@ -94,6 +94,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
     protected NodeRef nodeRef;
     private String name;
     private QName type;
+    private QName parentType;
     private String path;
     private String id;
     private QNameMap<String, Serializable> properties;
@@ -198,6 +199,18 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         }
         
         return type;
+    }
+
+    /**
+     * @return Returns the type of the parent
+     */
+    public String getParentTypeShort()
+    {
+        if (this.parentType == null)
+        {
+            this.parentType = this.services.getDictionaryService().getType(getType()).getParentName();
+        }
+        return parentType.toPrefixString(this.services.getNamespaceService());
     }
 
     /**

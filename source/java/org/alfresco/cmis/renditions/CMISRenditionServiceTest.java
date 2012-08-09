@@ -18,18 +18,26 @@
  */
 package org.alfresco.cmis.renditions;
 
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.cmis.CMISRendition;
 import org.alfresco.cmis.mapping.BaseCMISTest;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -37,6 +45,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author Stas Sokolovsky
@@ -56,7 +66,7 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         super.setUp();
 
         String documentName = "TestDocument" + System.currentTimeMillis();
-        document = createDocument(documentName, "Test Content", MimetypeMap.MIMETYPE_PDF);
+        document = createPdfDocument(documentName);
 
         documentRenditions = new ArrayList<CMISRendition>();
         for (int i = 0; i < THUMBNAIL_NAMES.length; ++i)
@@ -192,39 +202,42 @@ public class CMISRenditionServiceTest extends BaseCMISTest
         return rendition;
     }
 
-    private NodeRef createDocument(String documentName, String documentContent, String mimetype)
+    private NodeRef createPdfDocument(final String nodeName)
     {
-        NodeRef textDocument = fileFolderService.create(rootNodeRef, "TEXT" + documentName, ContentModel.TYPE_CONTENT).getNodeRef();
-        ContentWriter contentWriter = fileFolderService.getWriter(textDocument);
-        contentWriter.setEncoding("UTF-8");
-        contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        contentWriter.setLocale(Locale.ENGLISH);
-        contentWriter.putContent(documentContent);
-        ContentReader contentReader = fileFolderService.getReader(textDocument);
-        // contentReader will not be null as an exception will have been thrown if there was a problem
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, nodeName);
+        NodeRef result = nodeService.createNode(rootNodeRef, 
+                                                ContentModel.ASSOC_CONTAINS, 
+                                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeName), 
+                                                ContentModel.TYPE_CONTENT,
+                                                props).getChildRef();
+        
+        File file = loadQuickPdfFile();
 
-        NodeRef document = fileFolderService.create(rootNodeRef, documentName, ContentModel.TYPE_CONTENT).getNodeRef();
-        contentWriter = fileFolderService.getWriter(document);
-        contentWriter.setEncoding("UTF-8");
-        contentWriter.setMimetype(mimetype);
-        contentWriter.setLocale(Locale.ENGLISH);
-
-        TransformationOptions options = new TransformationOptions();
-        options.setSourceNodeRef(textDocument);
-
-        try
-        {
-            contentService.transform(contentReader, contentWriter, options);
-        }
-        catch (NoTransformerException e)
-        {
-            // ignore
-        }
-
-        fileFolderService.delete(textDocument);
-
-        return document;
+        // Set the content
+        ContentWriter writer = contentService.getWriter(result, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+        writer.setEncoding("UTF-8");
+        
+        writer.putContent(file);
+        
+        return result;
     }
+
+    private File loadQuickPdfFile()
+    {
+        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource("quick/quick.pdf");
+        if (url == null)
+        {
+            fail("Could not load pdf file");
+        }
+        File file = new File(url.getFile());
+        if (!file.exists())
+        {
+            fail("Could not load pdf file");
+        }
+        return file;
+    }          
 
     private void assertRendiions(List<CMISRendition> receivedRenditions, List<CMISRendition> expectedRenditions)
     {

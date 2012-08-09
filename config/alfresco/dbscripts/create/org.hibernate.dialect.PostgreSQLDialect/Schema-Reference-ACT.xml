@@ -121,7 +121,7 @@
           <autoincrement>false</autoincrement>
         </column>
         <column name="assignee_" order="8">
-          <type>varchar(64)</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -520,12 +520,12 @@
           <autoincrement>false</autoincrement>
         </column>
         <column name="owner_" order="9">
-          <type>varchar(64)</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
         <column name="assignee_" order="10">
-          <type>varchar(64)</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -944,7 +944,7 @@
           <autoincrement>false</autoincrement>
         </column>
         <column name="group_id_" order="3">
-          <type>varchar(64)</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -954,7 +954,7 @@
           <autoincrement>false</autoincrement>
         </column>
         <column name="user_id_" order="5">
-          <type>varchar(64)</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -1140,12 +1140,12 @@
           <autoincrement>false</autoincrement>
         </column>
         <column name="owner_" order="10">
-          <type>varchar(64)</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
         <column name="assignee_" order="11">
-          <type>varchar(64)</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>

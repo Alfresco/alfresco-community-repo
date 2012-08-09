@@ -62,6 +62,10 @@ public class RestoreNodeReport implements Serializable
         FAILURE_INTEGRITY
         {
         },
+        /** duplicate child name not allowed **/
+        FAILURE_DUPLICATE_CHILD_NODE_NAME
+        {
+        },
         /** the problem was not well-recognized */
         FAILURE_OTHER
         {

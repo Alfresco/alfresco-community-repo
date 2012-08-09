@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -304,8 +304,8 @@ public class ActionFormProcessorTest
                     // This is the actionedUponNodeRef. A special parameter with no prop_ prefix
                     form.addData(AbstractFormProcessor.DESTINATION, testNode.toString());
                     
-                    // transform the node (which is text/plain to pdf in the same folder)
-                    form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_PDF);
+                    // transform the node (which is text/plain to xml in the same folder)
+                    form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_XML);
                     form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_DESTINATION_FOLDER, REPOSITORY_HELPER.getCompanyHome().toString());
                     form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CONTAINS.toPrefixString(NAMESPACE_SERVICE));
                     form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_ASSOC_QNAME, ContentModel.ASSOC_CONTAINS.toPrefixString(NAMESPACE_SERVICE));
@@ -318,7 +318,7 @@ public class ActionFormProcessorTest
                     }
                     
                     Serializable cmName = NODE_SERVICE.getProperty(testNode, ContentModel.PROP_NAME);
-                    String transformedNodeName = ((String)cmName).replace(".txt", ".pdf");
+                    String transformedNodeName = ((String)cmName).replace(".txt", ".xml");
                     
                     NodeRef expectedTransformedNode = NODE_SERVICE.getChildByName(REPOSITORY_HELPER.getCompanyHome(), ContentModel.ASSOC_CONTAINS, transformedNodeName);
                     assertNotNull("transformed node was missing", expectedTransformedNode);

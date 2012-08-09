@@ -76,6 +76,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    
    private static final String MSG_DELETED_ITEMS_FOR = "deleted_items_for";
    private static final String MSG_DELETED_ITEMS = "deleted_items";
+   private static final String MSG_RECOVERED_ITEM_DUPLICATE_S = "recovered_item_duplicate_short";
    private static final String MSG_RECOVERED_ITEM_INTEGRITY_S = "recovered_item_integrity_short";
    private static final String MSG_RECOVERED_ITEM_PERMISSION_S = "recovered_item_permission_short";
    private static final String MSG_RECOVERED_ITEM_PARENT_S = "recovered_item_parent_short";
@@ -86,6 +87,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    private final static String MSG_CLOSE = "close";
    
    private static final String PROP_RECOVERSTATUS = "recoverstatus";
+   private static final String PROP_RECOVERERRORMESSAGE = "recovererrormessage";
    
    private static final String FILTER_DATE_ALL    = "all";
    private static final String FILTER_DATE_TODAY  = "today";
@@ -105,6 +107,9 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    private final static String SEARCH_NAME_QUOTED = "PARENT:\"%s\" AND ASPECT:\"%s\" AND @" + NAME_ATTR + ":\"%s\"";
    private final static String SEARCH_TEXT_QUOTED = "PARENT:\"%s\" AND ASPECT:\"%s\" AND TEXT:\"%s\"";
    private final static String SEARCH_USERPREFIX  = "@" + USER_ATTR + ":%s AND ";
+   
+   /** maximum number of failed items to report to the user */
+   private static final int MAX_FAILURE_REPORTS = 25;
    
    /** The PermissionService reference */
    transient protected PermissionService permissionService;
@@ -697,6 +702,7 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
    protected void saveReportDetail(List<RestoreNodeReport> reports)
    {
       // store the results ready for the next dialog page
+      int failureItemsCount = 0;
       property.setSuccessItems(new ArrayList<Node>(reports.size()));
       property.setFailureItems(new ArrayList<Node>(reports.size()));
       for (RestoreNodeReport report : reports)
@@ -709,9 +715,14 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
          }
          else
          {
-            Node node = new Node(report.getArchivedNodeRef());
-            node.getProperties().put(PROP_RECOVERSTATUS, report.getStatus());
-            property.getFailureItems().add(node);
+            if (failureItemsCount < MAX_FAILURE_REPORTS)
+            {
+               Node node = new Node(report.getArchivedNodeRef());
+               node.getProperties().put(PROP_RECOVERSTATUS, report.getStatus());
+               node.getProperties().put(PROP_RECOVERERRORMESSAGE, report.getCause().getMessage());
+               property.getFailureItems().add(node);
+               failureItemsCount++;
+            }
          }
       }
    }
@@ -780,7 +791,9 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
          {
             buf.append("<td>");
             String msg;
-            switch ((RestoreStatus)node.getProperties().get(PROP_RECOVERSTATUS))
+            RestoreStatus status = (RestoreStatus) node.getProperties().get(PROP_RECOVERSTATUS);
+            String message = (String) node.getProperties().get(PROP_RECOVERERRORMESSAGE);
+            switch (status)
             {
                case FAILURE_INVALID_PARENT:
                   msg = MSG_RECOVERED_ITEM_PARENT_S;
@@ -794,11 +807,17 @@ public class TrashcanDialog extends BaseDialogBean implements IContextListener
                   msg = MSG_RECOVERED_ITEM_INTEGRITY_S;
                   break;
                
+               case FAILURE_DUPLICATE_CHILD_NODE_NAME:
+                  msg = MSG_RECOVERED_ITEM_DUPLICATE_S;
+                  break;
+
                default:
                   msg = MSG_RECOVERED_ITEM_FAILURE_S;
                   break;
             }
             buf.append(Application.getMessage(fc, msg));
+            buf.append(": ");
+            buf.append(message);
             buf.append("</td>");
          }
          else

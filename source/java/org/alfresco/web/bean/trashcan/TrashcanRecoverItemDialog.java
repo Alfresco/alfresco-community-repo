@@ -35,6 +35,7 @@ public class TrashcanRecoverItemDialog extends TrashcanDialog
     private static final String RICHLIST_ID = "trashcan-list";
     private static final String RICHLIST_MSG_ID = "trashcan" + ':' + RICHLIST_ID;
     private static final String MSG_RECOVERED_ITEM_SUCCESS = "recovered_item_success";
+    private static final String MSG_RECOVERED_ITEM_DUPLICATE = "recovered_item_duplicate";
     private static final String MSG_RECOVERED_ITEM_INTEGRITY = "recovered_item_integrity";
     private static final String MSG_RECOVERED_ITEM_PERMISSION = "recovered_item_permission";
     private static final String MSG_RECOVERED_ITEM_PARENT = "recovered_item_parent";
@@ -89,6 +90,11 @@ public class TrashcanRecoverItemDialog extends TrashcanDialog
 
                 case FAILURE_INTEGRITY:
                     msg = MessageFormat.format(Application.getMessage(fc, MSG_RECOVERED_ITEM_INTEGRITY), item.getName());
+                    errorfacesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
+                    break;
+
+                case FAILURE_DUPLICATE_CHILD_NODE_NAME:
+                    msg = MessageFormat.format(Application.getMessage(fc, MSG_RECOVERED_ITEM_DUPLICATE), item.getName());
                     errorfacesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);
                     break;
 

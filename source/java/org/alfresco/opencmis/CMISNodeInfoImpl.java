@@ -264,6 +264,11 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         {
             objecVariant = CMISObjectVariant.PERMISSION_DENIED;
         }
+        // TODO: Somewhere this has not been wrapped correctly
+        catch (net.sf.acegisecurity.AccessDeniedException e)
+        {
+            objecVariant = CMISObjectVariant.PERMISSION_DENIED;
+        }
     }
 
     protected void analyseNodeRef()

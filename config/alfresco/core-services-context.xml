@@ -814,6 +814,7 @@
         <property name="nodeService" ref="NodeService" />
         <property name="lockService" ref="LockService" />
         <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
+		<property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
     </bean>
 
     <bean id="checkedOutAspect" class="org.alfresco.repo.coci.CheckedOutAspect" init-method="init">

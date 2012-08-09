@@ -155,7 +155,7 @@ public class SolrBackupClient implements InitializingBean
         }
         catch(SolrServerException e)
         {
-            throw new AlfrescoRuntimeException("Bakup for core "+core+ " feailed .... ", e);
+            throw new AlfrescoRuntimeException("Backup for core "+core+ " failed .... ", e);
         }
 
     }

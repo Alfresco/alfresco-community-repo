@@ -79,8 +79,8 @@
          </list>
       </property>
    </bean>
-   
-   <bean name="fileFolderGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
+
+   <bean name="fileFolderGetChildrenCannedQueryFactory" class="org.alfresco.repo.model.filefolder.GetChildrenCannedQueryFactory">
       <property name="registry" ref="fileFolderCannedQueryRegistry"/>
       <property name="dictionaryService" ref="dictionaryService"/>
       <property name="tenantService" ref="tenantService"/>
@@ -90,6 +90,7 @@
       <property name="contentDataDAO" ref="contentDataDAO"/>
       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
       <property name="methodSecurity" ref="FileFolderService_security_list"/>
+      <property name="hiddenAspect" ref="hiddenAspect"/>
    </bean>
 
    <bean id="mlTranslationInterceptor" class="org.alfresco.repo.model.filefolder.MLTranslationInterceptor" >

@@ -70,7 +70,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -1368,5 +1371,50 @@ public class FileFolderServiceImplTest extends TestCase
         assertNotNull(pagingResults);
         assertNotNull(pagingResults.getPage());
         assertEquals(1, pagingResults.getPage().size());
+    }
+    
+    public void testListHiddenFiles()
+    {
+    	// Test that hidden files are not returned for clients that should not be able to see them,
+    	// and that the total result count is correct.
+
+    	Client saveClient = FileFilterMode.setClient(Client.webdav);
+    	try
+    	{
+    		// create some hidden files
+	    	NodeRef nodeRef = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+	    	NodeRef nodeRef1 = fileFolderService.create(nodeRef, "parent", ContentModel.TYPE_CONTENT).getNodeRef();
+	    	for(int i = 0; i < 10; i++)
+	    	{
+	    		fileFolderService.create(nodeRef1, ".child" + i, ContentModel.TYPE_CONTENT).getNodeRef();
+	    	}
+	    	
+	    	// and some visible files
+	    	for(int i = 0; i < 10; i++)
+	    	{
+	    		fileFolderService.create(nodeRef1, "visiblechild" + i, ContentModel.TYPE_CONTENT).getNodeRef();
+	    	}
+
+	    	// switch to a client that should not see the hidden files
+	    	saveClient = FileFilterMode.setClient(Client.cmis);
+    		PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE);
+    		pagingRequest.setRequestTotalCountMax(10000); // need this so that total count is set
+
+    		PagingResults<FileInfo> results = fileFolderService.list(nodeRef1, true, true, null, null, pagingRequest);
+    		Pair<Integer, Integer> totalResultCount = results.getTotalResultCount();
+    		assertNotNull(totalResultCount.getFirst());
+    		assertEquals("Total result lower count should be 10", 10, totalResultCount.getFirst().intValue());
+    		assertNotNull(totalResultCount.getSecond());
+    		assertEquals("Total result upper count should be 10", 10, totalResultCount.getSecond().intValue());
+    		for(FileInfo fileInfo : results.getPage())
+    		{
+    			assertTrue(fileInfo.getName().startsWith("visiblechild"));
+    		}
+    		assertEquals("Expected only 10 results", 10, results.getPage().size());
+    	}
+    	finally
+    	{
+    		FileFilterMode.setClient(saveClient);
+    	}
     }
 }

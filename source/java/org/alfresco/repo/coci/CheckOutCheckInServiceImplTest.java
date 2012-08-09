@@ -20,6 +20,7 @@ package org.alfresco.repo.coci;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -462,6 +463,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
      */
     public void testAutoCancelCheckOut()
     {
+    	Date modifiedDateBeforeCheckOut = (Date) this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_MODIFIED);
         NodeRef workingCopy = checkout();
         assertNotNull(workingCopy);
         
@@ -475,8 +477,14 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
             // Good the original is locked
         }
         
+        try {Thread.sleep(2000); } catch (InterruptedException e) {}
+        
         // Delete the working copy
         nodeService.deleteNode(workingCopy);
+        
+        //Make sure that modidied date wasn't changed
+        Date modifiedDateAfterCheckOut = (Date) this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_MODIFIED);
+        assertEquals(modifiedDateBeforeCheckOut, modifiedDateAfterCheckOut);
         
         // The original should no longer be locked
         this.lockService.checkForLock(this.nodeRef);

@@ -29,6 +29,7 @@ import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -44,6 +45,8 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
     private NodeService nodeService;
     private LockService lockService;
     private CheckOutCheckInService checkOutCheckInService;
+    private BehaviourFilter policyBehaviourFilter;
+    
     
     /**
      * The working copy aspect copy behaviour callback.
@@ -83,6 +86,14 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
     }
 
     /**
+     * @param policyBehaviourFilter
+     */
+    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
+    {
+        this.policyBehaviourFilter = policyBehaviourFilter;
+    }
+    
+    /**
      * Initialise method
      */
     public void init()
@@ -119,8 +130,16 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
         NodeRef checkedOutNodeRef = checkOutCheckInService.getCheckedOut(nodeRef);
         if (checkedOutNodeRef != null)
         {
-            lockService.unlock(checkedOutNodeRef);
-            nodeService.removeAspect(checkedOutNodeRef, ContentModel.ASPECT_CHECKED_OUT);
+            policyBehaviourFilter.disableBehaviour(checkedOutNodeRef, ContentModel.ASPECT_AUDITABLE);
+            try
+            {
+                lockService.unlock(checkedOutNodeRef);
+                nodeService.removeAspect(checkedOutNodeRef, ContentModel.ASPECT_CHECKED_OUT);
+            }
+            finally
+            {
+                policyBehaviourFilter.enableBehaviour(checkedOutNodeRef, ContentModel.ASPECT_AUDITABLE);
+            }
         }
     }
     

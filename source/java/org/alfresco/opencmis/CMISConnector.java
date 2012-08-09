@@ -61,6 +61,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
@@ -1611,12 +1612,21 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
             try
             {
-	            result.add(createCMISObject(createNodeInfo(assocRef), null, false, IncludeRelationships.NONE,
-	                    RENDITION_NONE, false, false));
+                result.add(createCMISObject(createNodeInfo(assocRef), null, false, IncludeRelationships.NONE,
+                    RENDITION_NONE, false, false));
             }
             catch(CmisObjectNotFoundException e)
             {
                 // ignore objects that have not been found (perhaps because their type is unknown to CMIS)
+            }
+            catch (AccessDeniedException e)
+            {
+                // skip
+            }
+            // TODO: Somewhere this has not been wrapped correctly
+            catch (net.sf.acegisecurity.AccessDeniedException e)
+            {
+                // skip
             }
         }
 

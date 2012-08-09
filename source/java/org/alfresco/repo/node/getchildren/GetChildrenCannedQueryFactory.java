@@ -52,15 +52,15 @@ import org.alfresco.util.PropertyCheck;
  */
 public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<NodeRef>
 {
-    private DictionaryService dictionaryService;
-    private NodeDAO nodeDAO;
-    private QNameDAO qnameDAO;
-    private LocaleDAO localeDAO;
-    private ContentDataDAO contentDataDAO;
-    private CannedQueryDAO cannedQueryDAO;
-    private TenantService tenantService;
+	protected DictionaryService dictionaryService;
+    protected NodeDAO nodeDAO;
+    protected QNameDAO qnameDAO;
+    protected LocaleDAO localeDAO;
+    protected ContentDataDAO contentDataDAO;
+    protected CannedQueryDAO cannedQueryDAO;
+    protected TenantService tenantService;
     
-    private MethodSecurityBean<NodeRef> methodSecurity;
+    protected MethodSecurityBean<NodeRef> methodSecurity;
     
     public void setDictionaryService(DictionaryService dictionaryService)
     {

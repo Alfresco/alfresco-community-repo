@@ -240,15 +240,10 @@ public class FileFolderServiceImpl implements FileFolderService
     private List<FileInfo> toFileInfo(List<NodeRef> nodeRefs) throws InvalidTypeException
     {
         List<FileInfo> results = new ArrayList<FileInfo>(nodeRefs.size());
-        Client client = FileFilterMode.getClient();
         for (NodeRef nodeRef : nodeRefs)
         {
             try
             {
-                if(hiddenAspect.getVisibility(client, nodeRef) == Visibility.NotVisible)
-                {
-                    continue;
-                }
                 FileInfo fileInfo = toFileInfo(nodeRef, true);
                 results.add(fileInfo);
             }
@@ -396,14 +391,8 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         
         final List<FileInfo> nodeInfos = new ArrayList<FileInfo>(nodeRefs.size());
-        final Client client = FileFilterMode.getClient();
         for (NodeRef nodeRef : nodeRefs)
         {
-            if(hiddenAspect.getVisibility(client, nodeRef) == Visibility.NotVisible)
-            {
-                continue;
-            }
-
             nodeInfos.add(toFileInfo(nodeRef, true));
         }
         PermissionCheckedCollectionMixin.create(nodeInfos, nodeRefs);

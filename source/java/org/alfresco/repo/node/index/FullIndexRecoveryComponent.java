@@ -176,12 +176,10 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         }
         
         // put the server into read-only mode for the duration
-        boolean allowWrite = !transactionService.isReadOnly();
         try
         {
             if (lockServer)
             {
-                
                 // set the server into read-only mode
                 transactionService.setAllowWrite(false, vetoName);
             }
@@ -224,7 +222,6 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
             // restore read-only state
             transactionService.setAllowWrite(true, vetoName);
         }
-        
     }
     
     /**

@@ -125,6 +125,18 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
     }
     
+    protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps)
+    {
+        FilterSortChildQueryCallback callback = new DefaultFilterSortChildQueryCallback(children, filterProps);
+        return callback;
+    }
+    
+    protected UnsortedChildQueryCallback getUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount)
+    {
+        UnsortedChildQueryCallback callback = new DefaultUnsortedChildQueryCallback(rawResult, requestedCount);
+        return callback;
+    }
+
     @Override
     protected List<NodeRef> queryAndFilter(CannedQueryParameters parameters)
     {
@@ -228,25 +240,8 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         {
             // filtered and/or sorted - note: permissions will be applied post query
             final List<FilterSortNode> children = new ArrayList<FilterSortNode>(100);
-            
-            final boolean applyFilter = (filterProps.size() > 0);
-            
-            FilterSortChildQueryCallback callback = new FilterSortChildQueryCallback()
-            {
-                public boolean handle(FilterSortNode node)
-                {
-                    // filter, if needed
-                    if ((! applyFilter) || includeFilter(node.getPropVals(), filterProps))
-                    {
-                        children.add(node);
-                    }
-                    
-                    // More results
-                    return true;
-                }
-            };
-            
-            FilterSortResultHandler resultHandler = new FilterSortResultHandler(callback);
+            final FilterSortChildQueryCallback c = getFilterSortChildQuery(children, filterProps);
+            FilterSortResultHandler resultHandler = new FilterSortResultHandler(c);
             cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
             resultHandler.done();
             
@@ -269,17 +264,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             final int requestedCount = parameters.getResultsRequired();
             
             final List<NodeRef> rawResult = new ArrayList<NodeRef>(Math.min(1000, requestedCount));
-            UnsortedChildQueryCallback callback = new UnsortedChildQueryCallback()
-            {
-                public boolean handle(NodeRef nodeRef)
-                {
-                    rawResult.add(tenantService.getBaseName(nodeRef));
-                    
-                    // More results ?
-                    return (rawResult.size() < requestedCount);
-                }
-            };
-            
+            UnsortedChildQueryCallback callback = getUnsortedChildQueryCallback(rawResult, requestedCount);
             UnsortedResultHandler resultHandler = new UnsortedResultHandler(callback);
             cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITHOUT_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
             resultHandler.done();
@@ -544,18 +529,79 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             logger.trace("Pre-load: "+nodeRefs.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
         }
     }
-    
-    private interface FilterSortChildQueryCallback
+
+    protected interface FilterSortChildQueryCallback
     {
         boolean handle(FilterSortNode node);
     }
     
-    private interface UnsortedChildQueryCallback
+    protected class DefaultFilterSortChildQueryCallback implements FilterSortChildQueryCallback
+    {
+    	private List<FilterSortNode> children;
+    	private List<FilterProp> filterProps;
+    	private boolean applyFilter;
+
+    	public DefaultFilterSortChildQueryCallback(final List<FilterSortNode> children, final List<FilterProp> filterProps)
+    	{
+    		this.children = children;
+    		this.filterProps = filterProps;
+            this.applyFilter = (filterProps.size() > 0);
+		}
+
+		@Override
+		public boolean handle(FilterSortNode node)
+		{
+			if(include(node))
+			{
+                children.add(node);
+			}
+
+            // More results
+            return true;
+		}
+		
+		protected boolean include(FilterSortNode node)
+		{
+            // filter, if needed
+        	return(!applyFilter || includeFilter(node.getPropVals(), filterProps));
+		}
+    }
+    
+    protected class DefaultUnsortedChildQueryCallback implements UnsortedChildQueryCallback
+    {
+    	private List<NodeRef> rawResult;
+    	private int requestedCount;
+
+    	public DefaultUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount)
+    	{
+    		this.rawResult = rawResult;
+    		this.requestedCount = requestedCount;
+    	}
+
+		@Override
+		public boolean handle(NodeRef nodeRef)
+		{
+			if(include(nodeRef))
+			{
+	        	rawResult.add(tenantService.getBaseName(nodeRef));
+			}
+
+            // More results ?
+            return (rawResult.size() < requestedCount);
+		}
+
+		protected boolean include(NodeRef nodeRef)
+        {
+        	return true;
+        }
+    }
+    
+    protected interface UnsortedChildQueryCallback
     {
         boolean handle(NodeRef nodeRef);
     }
     
-    private class FilterSortResultHandler implements CannedQueryDAO.ResultHandler<FilterSortNodeEntity>
+    protected class FilterSortResultHandler implements CannedQueryDAO.ResultHandler<FilterSortNodeEntity>
     {
         private final FilterSortChildQueryCallback resultsCallback;
         private boolean more = true;
@@ -656,7 +702,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
     }
     
-    private class FilterSortNode
+    protected class FilterSortNode
     {
         private NodeRef nodeRef;
         private Map<QName, Serializable> propVals; // subset of nodes properties - used for filtering and/or sorting

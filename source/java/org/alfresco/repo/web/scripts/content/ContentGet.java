@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -162,12 +162,29 @@ public class ContentGet extends StreamContent implements ServletContextAware
                     propertyQName = QName.createQName(propertyName, namespaceService);
                 }
             }
-            
+
             // Stream the content
+            streamContentLocal(req, res, nodeRef, attach, propertyQName);
+        }
+    }
+
+    private void streamContentLocal(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, boolean attach, QName propertyQName) throws IOException
+    {
+        String userAgent = req.getHeader("User-Agent");
+
+        boolean rfc5987Supported = (null != userAgent) && (userAgent.contains("MSIE") || userAgent.contains(" Chrome/") || userAgent.contains(" FireFox/"));
+
+        if (attach && rfc5987Supported)
+        {
+            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            streamContent(req, res, nodeRef, propertyQName, attach, name);
+        }
+        else
+        {
             streamContent(req, res, nodeRef, propertyQName, attach);
         }
     }
-    
+
     /**
      * Stream content rendition
      * 
@@ -206,7 +223,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
             }
             else
             {
-                streamContent(req, res, rendition.getNodeRef(), ContentModel.PROP_CONTENT, attach);
+                streamContentLocal(req, res, reference.getNodeRef(), attach, ContentModel.PROP_CONTENT);
             }
         }
         catch(CMISFilterNotValidException e)

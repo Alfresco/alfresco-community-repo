@@ -63,6 +63,9 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
 {
     public static final String CALENDAR_SERVICE_ACTIVITY_APP_NAME = "calendar";
     
+    protected static final String MSG_EVENT_NOT_FOUND = "calendar.err.event.not.found";
+    protected static final String MSG_INVALID_JSON = "calendar.err.invalid.json";
+    
     protected static final String PARAM_TIMEZONE = "timeZone";
     protected static final String PARAM_START_AT = "startAt";
     protected static final String PARAM_END_AT   = "endAt";

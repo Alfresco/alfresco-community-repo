@@ -44,6 +44,7 @@ public class WikiPageMovePost extends AbstractWikiWebScript
 {
    private static final String MSG_MOVED = "page-moved";
    private static final String MSG_MOVED_HERE = "page-moved-here";
+   private static final String MSG_NOT_FOUND= "page-not-found";
    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
@@ -61,7 +62,7 @@ public class WikiPageMovePost extends AbstractWikiWebScript
          status.setMessage(message);
          
          // Wrap and bail
-         model.put("error", message);
+         model.put("error", rb.getString(MSG_NOT_FOUND));
          Map<String, Object> result = new HashMap<String, Object>();
          result.put("result", model);
          return result;

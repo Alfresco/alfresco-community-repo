@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts.links;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.links.LinkInfo;
@@ -38,10 +39,13 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class LinksPost extends AbstractLinksWebScript
 {
+   private static final String MSG_ACCESS_DENIED= "links.err.access.denied";
+    
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
+      final ResourceBundle rb = getResources();
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Get the new link details from the JSON
@@ -75,7 +79,7 @@ public class LinksPost extends AbstractLinksWebScript
          
          status.setCode(Status.STATUS_FORBIDDEN);
          status.setMessage(message);
-         model.put(PARAM_MESSAGE, message);
+         model.put(PARAM_MESSAGE, rb.getString(MSG_ACCESS_DENIED));
          return model;
       }
       

@@ -18,8 +18,10 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
@@ -43,6 +45,7 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
+      final ResourceBundle rb = getResources();
       CalendarEntry entry = new CalendarEntryDTO();
       
       // TODO Handle All Day events properly, including timezones
@@ -71,7 +74,8 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
       }
       catch (JSONException je)
       {
-         return buildError("Invalid JSON: " + je.getMessage());
+         String message = rb.getString(MSG_INVALID_JSON);
+         return buildError(MessageFormat.format(message, je.getMessage()));
       }
       
       // Have it added

@@ -18,8 +18,10 @@
  */
 package org.alfresco.repo.web.scripts.blogs.post;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
 import org.alfresco.service.cmr.blog.BlogPostInfo;
@@ -39,10 +41,14 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class BlogPostDelete extends AbstractBlogWebScript
 {
+    protected static final String MSG_BLOG_DELETED = "blog-post.msg.deleted";
+    
     @Override
     protected Map<String, Object> executeImpl(SiteInfo site, NodeRef nodeRef,
          BlogPostInfo blog, WebScriptRequest req, JSONObject json, Status status, Cache cache) 
     {
+        final ResourceBundle rb = getResources();
+        
         if (blog == null)
         {
            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Blog Post Not Found");
@@ -62,7 +68,8 @@ public class BlogPostDelete extends AbstractBlogWebScript
 
         // Report it as deleted
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put("message", "Blog " + blog.getNodeRef() + " deleted");
+        String message = rb.getString(MSG_BLOG_DELETED);
+        model.put("message",MessageFormat.format(message, blog.getNodeRef()));
         return model;
     }
 }

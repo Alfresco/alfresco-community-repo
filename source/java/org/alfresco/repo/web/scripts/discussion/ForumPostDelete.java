@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.web.scripts.discussion;
 
+import java.text.MessageFormat;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.alfresco.service.cmr.discussion.PostInfo;
 import org.alfresco.service.cmr.discussion.TopicInfo;
@@ -38,6 +40,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class ForumPostDelete extends AbstractDiscussionWebScript
 {
+   private static final String MSG_NODE_MARKED_REMOVED = "forum-post.msg.marked.removed";
+   private static final String MSG_NODE_DELETED = "forum-post.msg.deleted";
    private static final String DELETED_POST_TEXT = "[[deleted]]";
    
    @Override
@@ -45,6 +49,8 @@ public class ForumPostDelete extends AbstractDiscussionWebScript
          TopicInfo topic, PostInfo post, WebScriptRequest req, JSONObject json,
          Status status, Cache cache) 
    {
+      final ResourceBundle rb = getResources();
+      
       // Build the common model parts
       Map<String, Object> model = buildCommonModel(site, topic, post, req);
       
@@ -53,11 +59,11 @@ public class ForumPostDelete extends AbstractDiscussionWebScript
       String message = null;
       if (post != null)
       {
-         message = doDeletePost(topic, post);
+         message = doDeletePost(topic, post, rb);
       }
       else if (topic != null)
       {
-         message = doDeleteTopic(topic, site, req, json);
+         message = doDeleteTopic(topic, site, req, json, rb);
       }
       else
       {
@@ -72,7 +78,7 @@ public class ForumPostDelete extends AbstractDiscussionWebScript
    }
    
    private String doDeleteTopic(TopicInfo topic, SiteInfo site, 
-         WebScriptRequest req, JSONObject json)
+         WebScriptRequest req, JSONObject json, ResourceBundle rb)
    {
       // Delete the topic, which removes all its posts too
       discussionService.deleteTopic(topic);
@@ -84,7 +90,9 @@ public class ForumPostDelete extends AbstractDiscussionWebScript
       }
       
       // All done
-      return "Node " + topic.getNodeRef() + " deleted";
+      String message = rb.getString(MSG_NODE_DELETED);
+      
+      return MessageFormat.format(message, topic.getNodeRef());
    }
    
    /**
@@ -94,7 +102,7 @@ public class ForumPostDelete extends AbstractDiscussionWebScript
     *  text contents.
     * TODO If a post has no replies, then delete it fully
     */
-   private String doDeletePost(TopicInfo topic, PostInfo post)
+   private String doDeletePost(TopicInfo topic, PostInfo post, ResourceBundle rb)
    {
       // Set the marker text and save
       post.setTitle(DELETED_POST_TEXT);
@@ -104,6 +112,7 @@ public class ForumPostDelete extends AbstractDiscussionWebScript
       // Note - we don't add activity feed entries for deleted posts
       //        Only deleted whole topic qualify for that at the moment
       
-      return "Node " + post.getNodeRef() + " marked as removed";
+      String message = rb.getString(MSG_NODE_MARKED_REMOVED);
+      return MessageFormat.format(message, post.getNodeRef());
    }
 }

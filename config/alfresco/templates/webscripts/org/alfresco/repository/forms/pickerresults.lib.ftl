@@ -31,6 +31,7 @@
 		<#list results as row>
 			{
 				"type": "${row.item.typeShort}",
+				"parentType": "${row.item.parentTypeShort}",
 				"isContainer": ${row.item.isContainer?string},
 				"name": "${row.item.properties.name!""}",
 				"title": "${row.item.properties.title!""}",

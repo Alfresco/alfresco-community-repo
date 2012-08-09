@@ -18,8 +18,10 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
@@ -43,12 +45,15 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
    protected Map<String, Object> executeImpl(SiteInfo site, String eventName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
+      final ResourceBundle rb = getResources();
+       
       CalendarEntry entry = calendarService.getCalendarEntry(
             site.getShortName(), eventName);
       
       if (entry == null)
       {
-         return buildError("Could not find event: " + eventName);
+         String message = rb.getString(MSG_EVENT_NOT_FOUND);
+         return buildError(MessageFormat.format(message, eventName));
       }
       
       // TODO Handle All Day events properly, including timezones
@@ -137,7 +142,8 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
       }
       catch (JSONException je)
       {
-         return buildError("Invalid JSON: " + je.getMessage());
+         String message = rb.getString(MSG_INVALID_JSON);
+         return buildError(MessageFormat.format(message, je.getMessage()));
       }
       
       // Have it edited

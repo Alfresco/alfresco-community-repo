@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,6 +45,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class WikiPageGet extends AbstractWikiWebScript
 {
+   private static final String MSG_NOT_FOUND= "page-not-found";
+    
    // For matching links. Not the best pattern ever...
    private static final Pattern LINK_PATTERN = Pattern.compile("\\[\\[([^\\|\\]]+)");
    
@@ -51,6 +54,7 @@ public class WikiPageGet extends AbstractWikiWebScript
    protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
+      final ResourceBundle rb = getResources();
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Try to find the page
@@ -74,7 +78,7 @@ public class WikiPageGet extends AbstractWikiWebScript
          
          // Record these
          model.put("container", container);
-         model.put("error", message);
+         model.put("error", rb.getString(MSG_NOT_FOUND));
          
          // Bail out
          return model;

@@ -18,10 +18,12 @@
  */
 package org.alfresco.repo.web.scripts.links;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.links.LinkInfo;
@@ -40,6 +42,10 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class LinksDeletePost extends AbstractLinksWebScript
 {
+   private static final String MSG_NAME_NOT_FOUND= "links-delete.err.not.found";
+   private static final String MSG_ACCESS_DENIED= "links-delete.access.denied";
+   private static final String MSG_DELETED= "links-delete.msg.deleted";
+    
    protected static final int RECENT_SEARCH_PERIOD_DAYS = 7;
    protected static final long ONE_DAY_MS = 24*60*60*1000;
    
@@ -47,6 +53,7 @@ public class LinksDeletePost extends AbstractLinksWebScript
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
+      final ResourceBundle rb = getResources();
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Get the requested nodes from the JSON
@@ -74,7 +81,7 @@ public class LinksDeletePost extends AbstractLinksWebScript
          
          status.setCode(Status.STATUS_NOT_FOUND);
          status.setMessage(message);
-         model.put(PARAM_MESSAGE, message);
+         model.put(PARAM_MESSAGE, rb.getString(MSG_NAME_NOT_FOUND));
          return model;
       }
       
@@ -93,7 +100,9 @@ public class LinksDeletePost extends AbstractLinksWebScript
             
             status.setCode(Status.STATUS_FORBIDDEN);
             status.setMessage(message);
-            model.put(PARAM_MESSAGE, message);
+            
+            message = rb.getString(MSG_ACCESS_DENIED);
+            model.put(PARAM_MESSAGE, MessageFormat.format(message, link.getSystemName()));
             return model;
          }
          
@@ -101,7 +110,8 @@ public class LinksDeletePost extends AbstractLinksWebScript
          addActivityEntry("deleted", link, site, req, json);
          
          // Record a message (only the last one is used though!)
-         model.put(PARAM_MESSAGE, "Node " + link.getNodeRef() + " deleted");
+         String message = rb.getString(MSG_DELETED);
+         model.put(PARAM_MESSAGE, MessageFormat.format(message, link.getNodeRef()));
       }
 
       

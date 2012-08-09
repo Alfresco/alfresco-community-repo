@@ -19,7 +19,7 @@ function main()
    var site = siteService.getSite(shortName);
    if (site != null)
    {
-      status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "error.duplicateShortName");
+      status.setCode(status.STATUS_BAD_REQUEST, "error.duplicateShortName");
       return;
    }
    

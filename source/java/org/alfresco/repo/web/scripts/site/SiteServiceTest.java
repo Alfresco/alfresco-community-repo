@@ -166,7 +166,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         assertTrue(result.getBoolean("isPublic"));
         
         // Check for duplicate names
-        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 500); 
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 400); 
     }
     
     private JSONObject createSite(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, int expectedStatus)

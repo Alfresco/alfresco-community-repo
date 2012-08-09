@@ -18,6 +18,8 @@
  */
 package org.alfresco.util;
 
+import org.alfresco.util.bean.BooleanBean;
+
 import net.sf.jooreports.openoffice.converter.AbstractOpenOfficeDocumentConverter;
 import net.sf.jooreports.openoffice.converter.OpenOfficeDocumentConverter;
 import net.sf.jooreports.openoffice.converter.StreamOpenOfficeDocumentConverter;
@@ -25,6 +27,7 @@ import net.sf.jooreports.openoffice.converter.StreamOpenOfficeDocumentConverter;
 public class SocketOpenOfficeConnection extends net.sf.jooreports.openoffice.connection.SocketOpenOfficeConnection
 {
     private boolean defaultHost = true;
+    private boolean enabled = true;
     
     public SocketOpenOfficeConnection() {
         super();
@@ -44,5 +47,18 @@ public class SocketOpenOfficeConnection extends net.sf.jooreports.openoffice.con
         return defaultHost
             ? new OpenOfficeDocumentConverter(this)
             : new StreamOpenOfficeDocumentConverter(this);
+    }
+
+    public void setEnabledFromBean(BooleanBean enabled)
+    {
+        this.enabled = enabled.isTrue();
+    }
+
+    public boolean isConnected() {
+        return enabled && super.isConnected();
+    }
+    
+    public boolean isEnabled() {
+        return enabled;
     }
 }

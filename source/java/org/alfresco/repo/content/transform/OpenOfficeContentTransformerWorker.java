@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.SocketOpenOfficeConnection;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.bean.BooleanBean;
 import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -95,7 +96,7 @@ public class OpenOfficeContentTransformerWorker extends OOoContentTransformerHel
     {
         this.documentFormatsConfiguration = path;
     }
-
+    
     public boolean isAvailable()
     {
         return connection.isConnected();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -93,8 +93,11 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        checkConnection();
-        ((ApplicationContext) event.getSource()).publishEvent(new OpenOfficeConnectionEvent(this.openOfficeMetadata));
+        if (connection instanceof SocketOpenOfficeConnection && ((SocketOpenOfficeConnection)connection).isEnabled())
+        {
+            checkConnection();
+            ((ApplicationContext) event.getSource()).publishEvent(new OpenOfficeConnectionEvent(this.openOfficeMetadata));
+        }
     }
 
     /**

@@ -11,8 +11,39 @@
       <property name="failOnError">
          <value>false</value>
       </property>
-      <property name="enabled">
+      <property name="enabledFromBean">
+         <bean class="org.alfresco.util.JodCoordinationBoolean">
+            <property name="jodCoordination">
+               <ref bean="jodCoordination" />
+            </property>
+            <property name="returnValue">
+               <value>startOpenOffice</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+
+   <bean id="startListener" class="org.alfresco.util.JodCoordinationBoolean">
+      <property name="jodCoordination">
+         <ref bean="jodCoordination" />
+      </property>
+      <property name="returnValue">
+         <value>startListener</value>
+      </property>
+   </bean>
+
+   <bean id="jodCoordination" class="org.alfresco.util.JodCoordination">
+      <property name="oooEnabled">
          <value>${ooo.enabled}</value>
+      </property>
+      <property name="oooHost">
+         <value>${ooo.host}</value>
+      </property>
+      <property name="oooPort">
+         <value>${ooo.port}</value>
+      </property>
+      <property name="jodConfig">
+         <ref bean="jodConfig" />
       </property>
    </bean>
    
@@ -48,6 +79,9 @@
    <bean id="openOfficeConnection" class="org.alfresco.util.SocketOpenOfficeConnection">
       <constructor-arg value="${ooo.host}"/>
       <constructor-arg value="${ooo.port}"/>
+      <property name="enabledFromBean">
+         <ref bean="startListener" />
+      </property>
    </bean>
 
    <bean id="openOfficeConnectionTester" class="org.alfresco.util.OpenOfficeConnectionTester">
@@ -81,6 +115,9 @@
       </property>
       <property name="cronExpression">
          <value>${openOffice.test.cronExpression}</value>
+      </property>
+      <property name="enabledFromBean">
+         <ref bean="startListener" />
       </property>
    </bean>
 

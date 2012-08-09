@@ -213,6 +213,29 @@
       </property>
    </bean>
    
+   <!-- For coordination between OOoDirect and OOoJodconverter subsystems -->
+   <bean id="jodConfig"
+        class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactoryName">
+         <value>OOoJodconverter</value>
+      </property>
+      <property name="sourceBeanName">
+         <value>jodConfig</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.util.JodConfig</value>
+         </list>
+      </property>
+      <property name="defaultBean">
+         <bean class="org.alfresco.util.JodConfigImpl">
+            <property name="enabled">
+               <value>false</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
    <!-- Import the OpenOffice extractor worker from the OOoDirect subsystem -->
    <bean id="extracter.worker.OpenOffice" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">

@@ -98,7 +98,7 @@
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
-            <version>1.1</version>
+            <version>1.1.1</version>
         </dependency>
         <dependency>
             <groupId>rhino</groupId>
@@ -318,17 +318,17 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>1.6.0-alfresco-patched</version>
+            <version>1.7.0-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>fontbox</artifactId>
-            <version>1.6.0</version>
+            <version>1.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>jempbox</artifactId>
-            <version>1.6.0</version>
+            <version>1.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -339,11 +339,6 @@
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
             <version>1.0-RC-1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>ooxml-schemas</artifactId>
-            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>com.drewnoakes</groupId>
@@ -380,7 +375,7 @@
         <dependency>
             <groupId>com.artofsolving</groupId>
             <artifactId>jodconverter</artifactId>
-            <version>2.1.0</version>
+            <version>2.1.0-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.openoffice</groupId>
@@ -408,6 +403,11 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-scratchpad</artifactId>
             <version>3.9-beta1-20120329</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>ooxml-schemas</artifactId>
+            <version>1.1</version>
         </dependency>
 
         <!-- Spring Surf -->

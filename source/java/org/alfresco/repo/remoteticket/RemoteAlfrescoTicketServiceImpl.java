@@ -326,7 +326,16 @@ public class RemoteAlfrescoTicketServiceImpl implements RemoteAlfrescoTicketServ
         // Turn this into a remote request
         RemoteConnectorRequest request = remoteConnectorService.buildRequest(url, "POST");
         request.setRequestBody(json.toJSONString());
-
+        
+        Map<String,String> reqHeaders = remoteSystemsReqHeaders.get(remoteSystemId);
+        if (reqHeaders != null)
+        {
+            for (Map.Entry<String, String> reqHeader : reqHeaders.entrySet())
+            {
+                request.addRequestHeader(reqHeader.getKey(), reqHeader.getValue());
+            }
+        }
+        
         // Work out what key we'll use to cache on
         String cacheKey = toCacheKey(remoteSystemId, credentials);
         

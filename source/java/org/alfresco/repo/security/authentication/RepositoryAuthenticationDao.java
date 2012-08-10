@@ -709,7 +709,10 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     public void onUpdateUserProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         String uidBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(ContentModel.PROP_USER_USERNAME));
-        authenticationCache.remove(uidBefore);
+        if (uidBefore != null)
+        {
+            authenticationCache.remove(uidBefore);
+        }
     }
 
     @Override

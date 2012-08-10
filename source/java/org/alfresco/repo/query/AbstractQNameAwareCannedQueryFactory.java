@@ -140,7 +140,7 @@ public abstract class AbstractQNameAwareCannedQueryFactory<R> extends AbstractCa
             {
                 logger.trace("QName does not exist: " + qname); // possible ... eg. blg:blogPost if a blog has never been posted externally
             }
-            return null;
+            return -1L;
         }
         return qnamePair.getFirst();
     }

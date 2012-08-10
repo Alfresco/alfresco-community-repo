@@ -114,10 +114,5 @@ public interface DescriptorService
      * @return          Returns a message telling the user what happened
      */
     public String loadLicense();
-    
-    /**
-     * Register a callback that gets called when a license changes.
-     */
-    public void registerOnLicenseChange(LicenseChangeHandler callback);
- 
+   
 }

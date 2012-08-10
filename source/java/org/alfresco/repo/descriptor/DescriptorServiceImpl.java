@@ -242,10 +242,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         // Load heart-beat special service (even if disabled at the moment)
         heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
         
-        for(LicenseChangeHandler handler : deferredHandlers)
-        {
-            licenseService.registerOnLicenseChange(handler);
-        }
         // Now listen for future license changes
         licenseService.registerOnLicenseChange(this);
         
@@ -675,21 +671,6 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
                     serverDescriptor,
                     LicenseMode.UNKNOWN);
-        }
-    }
-    
-
-    Set<LicenseChangeHandler> deferredHandlers = new HashSet<LicenseChangeHandler>();
-    @Override
-    public void registerOnLicenseChange(LicenseChangeHandler callback)
-    {
-        if(licenseService != null)
-        {
-            licenseService.registerOnLicenseChange(callback);
-        }
-        else
-        {
-            deferredHandlers.add(callback);
         }
     }
 }

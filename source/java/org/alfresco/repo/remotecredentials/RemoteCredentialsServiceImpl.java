@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.ListBackedPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.node.SystemNodeUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -73,6 +74,7 @@ public class RemoteCredentialsServiceImpl implements RemoteCredentialsService
     private Repository repositoryHelper;
     private NodeService nodeService;
     private NamespaceService namespaceService;
+    private PermissionService permissionService;
     private DictionaryService dictionaryService;
     
     /**
@@ -91,6 +93,11 @@ public class RemoteCredentialsServiceImpl implements RemoteCredentialsService
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -154,8 +161,6 @@ public class RemoteCredentialsServiceImpl implements RemoteCredentialsService
     
     // --------------------------------------------------------
     
-    private static QName SYSTEM_FOLDER_QNAME = 
-        QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
     private static QName SHARED_CREDENTIALS_CONTAINER_QNAME = 
         QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, SHARED_CREDENTIALS_CONTAINER_NAME); 
     /**
@@ -167,43 +172,60 @@ public class RemoteCredentialsServiceImpl implements RemoteCredentialsService
      */
     protected NodeRef getSharedContainerNodeRef(boolean required)
     {
-        // Grab the root of the repository, for the current tennant
-        final NodeRef root = repositoryHelper.getRootHome();
+        // Get the container, if available
+        NodeRef container = SystemNodeUtils.getSystemChildContainer(SHARED_CREDENTIALS_CONTAINER_QNAME, nodeService, repositoryHelper);
         
-        // Locate the system folder, in the root 
-        List<ChildAssociationRef> sysRefs = nodeService.getChildAssocs(
-                root, ContentModel.ASSOC_CHILDREN, SYSTEM_FOLDER_QNAME);
-        if (sysRefs.size() != 1)
+        // If it's needed, have it created
+        if (container == null && required)
         {
-            throw new IllegalStateException("System folder missing / duplicated! Found " + sysRefs);
-        }
-        final NodeRef system = sysRefs.get(0).getChildRef();
-        
-        // Find the shared credentials container, under system
-        List<ChildAssociationRef> containerRefs = nodeService.getChildAssocs(
-                system, ContentModel.ASSOC_CHILDREN, SHARED_CREDENTIALS_CONTAINER_QNAME);
-        
-        if (containerRefs.size() > 0)
-        {
-            if (containerRefs.size() > 1)
-                logger.warn("Duplicate Shared Credentials Containers found: " + containerRefs);
+            // Lock and create
+            Pair<NodeRef,Boolean> details = null;
+            synchronized (this)
+            {
+                details = SystemNodeUtils.getOrCreateSystemChildContainer(SHARED_CREDENTIALS_CONTAINER_QNAME, nodeService, repositoryHelper);
+            }
+            container = details.getFirst();
             
-            NodeRef container = containerRefs.get(0).getChildRef();
-            return container;
+            // If created, set permissions
+            // Note - these must be kept in sync with the bootstrap file
+            if (details.getSecond())
+            {
+                final NodeRef containerF = container;
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        // Add the aspect
+                        nodeService.addAspect(containerF, RemoteCredentialsModel.ASPECT_REMOTE_CREDENTIALS_SYSTEM_CONTAINER, null);
+
+                        // Set up the default permissions on the container
+                        // By default, anyone can add children, and read, but not edit other's credentials
+                        // (These can be changed later if needed by an administrator)
+                        permissionService.setInheritParentPermissions(containerF, false);
+                        permissionService.setPermission(
+                                containerF, PermissionService.ALL_AUTHORITIES,
+                                PermissionService.ADD_CHILDREN, true);
+                        permissionService.setPermission(
+                                containerF, PermissionService.ALL_AUTHORITIES,
+                                PermissionService.READ, true);
+
+                        permissionService.setPermission(
+                                containerF, PermissionService.OWNER_AUTHORITY,
+                                PermissionService.FULL_CONTROL, true);
+                        
+                        return null;
+                    }
+                });
+            }
         }
-        else
+
+        if (container == null)
         {
-            if (required)
-            {
-                throw new IllegalStateException("Required System Folder " + SHARED_CREDENTIALS_CONTAINER_QNAME + " is missing!");
-            }
-            else
-            {
-                if (logger.isInfoEnabled())
-                    logger.info("Required System Folder " + SHARED_CREDENTIALS_CONTAINER_QNAME + " missing, needed for writes");
-                return null;
-            }
+            if (logger.isInfoEnabled())
+                logger.info("Required System Folder " + SHARED_CREDENTIALS_CONTAINER_QNAME + " not yet created, will be lazy created on write");
+            return null;
         }
+        return container;
     }
     
     /**

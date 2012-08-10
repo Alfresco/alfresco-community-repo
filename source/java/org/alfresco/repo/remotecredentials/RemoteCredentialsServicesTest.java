@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -43,7 +44,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
@@ -51,6 +51,7 @@ import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.WellKnownNodes;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -130,16 +131,6 @@ public class RemoteCredentialsServicesTest
 
         // Switch to a test shared system container
         RemoteCredentialsServiceImpl.setSharedCredentialsSystemContainerName(SHARED_SYSTEM_CONTAINER_NAME);
-        
-        // Have the test shared system container created
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.SYSTEM_USER_NAME);
-        NodeRef system = knownNodes.getSystemRoot();
-        NodeRef container = PUBLIC_NODE_SERVICE.createNode(system, ContentModel.ASSOC_CHILDREN,
-                RemoteCredentialsServiceImpl.getSharedCredentialsSystemContainerQName(),
-                ContentModel.TYPE_CONTAINER
-        ).getChildRef();
-        PERMISSION_SERVICE.setPermission(container, PermissionService.ALL_AUTHORITIES, PermissionService.FULL_CONTROL, true);
-        classTestNodes.addNodeRef(container);
     }
     
     @Before public void setupUsers() throws Exception
@@ -154,7 +145,6 @@ public class RemoteCredentialsServicesTest
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
     }
 
-    
     /**
      * Tests that read only methods don't create the shared credentials
      *  container, but that write ones will do.
@@ -165,18 +155,16 @@ public class RemoteCredentialsServicesTest
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
         
         
-        // To start with, the container is there, but empty
+        // To start with, the container shouldn't be there
         NodeRef container = ((RemoteCredentialsServiceImpl)PRIVATE_REMOTE_CREDENTIALS_SERVICE).getSharedContainerNodeRef(false);
-        assertNotNull(container);
-        assertEquals(0, PUBLIC_NODE_SERVICE.getChildAssocs(container).size());
+        assertEquals(null, container);
         
         // Ask for the list of shared remote systems
         REMOTE_CREDENTIALS_SERVICE.listSharedRemoteSystems(new PagingRequest(10));
         
-        // Won't have been affected by a read
+        // Won't have been created by a read
         container = ((RemoteCredentialsServiceImpl)PRIVATE_REMOTE_CREDENTIALS_SERVICE).getSharedContainerNodeRef(false);
-        assertNotNull(container);
-        assertEquals(0, PUBLIC_NODE_SERVICE.getChildAssocs(container).size());
+        assertEquals(null, container);
         
         
         // Try to store some credentials
@@ -187,10 +175,11 @@ public class RemoteCredentialsServicesTest
         container = ((RemoteCredentialsServiceImpl)PRIVATE_REMOTE_CREDENTIALS_SERVICE).getSharedContainerNodeRef(false);
         assertNotNull(container);
         
-        // Should have a marker aspect
+        // Should have a marker aspect, and the specified name
         Set<QName> cAspects = PUBLIC_NODE_SERVICE.getAspects(container);
         assertEquals("Aspect missing, found " + cAspects, true, 
                 cAspects.contains(RemoteCredentialsModel.ASPECT_REMOTE_CREDENTIALS_SYSTEM_CONTAINER));
+        assertEquals(SHARED_SYSTEM_CONTAINER_NAME, PUBLIC_NODE_SERVICE.getProperty(container, ContentModel.PROP_NAME));
         
         // Should have single node in it
         assertEquals(1, PUBLIC_NODE_SERVICE.getChildAssocs(container).size());
@@ -903,6 +892,16 @@ public class RemoteCredentialsServicesTest
         deleteUser(TEST_USER_ONE);
         deleteUser(TEST_USER_TWO);
         deleteUser(TEST_USER_THREE);
+    }
+    
+    @AfterClass public static void remoteTestSharedCredentialsContainer() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+        NodeRef container = ((RemoteCredentialsServiceImpl)PRIVATE_REMOTE_CREDENTIALS_SERVICE).getSharedContainerNodeRef(false);
+        if (container != null)
+        {
+            performDeletionOfNodes(Collections.singletonList(container));
+        }
     }
     
     /**

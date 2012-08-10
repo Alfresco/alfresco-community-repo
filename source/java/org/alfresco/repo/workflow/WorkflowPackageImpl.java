@@ -26,6 +26,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.importer.ImporterBootstrap;
+import org.alfresco.repo.node.SystemNodeUtils;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -234,6 +235,8 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
 
     /**
      * Gets the system workflow container for storing workflow related items
+     * 
+     * TODO Replace this with calls to {@link SystemNodeUtils}
      * 
      * @return the system workflow container
      */

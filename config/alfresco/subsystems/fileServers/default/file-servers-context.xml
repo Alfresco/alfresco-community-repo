@@ -489,6 +489,8 @@
             
             <!-- AVM virtualization view of all stores/versions for WCM -->
             <!-- virtual view stores filter can be any of the following: normal, site, staging, author, preview -->
+            
+            <!-- AVM context deprecated - uncomment to add back
             <bean class="org.alfresco.filesys.avm.AVMContext">
                <property name="deviceName">
                   <value>${filesystem.avm.name}</value>
@@ -500,6 +502,7 @@
                   <value>${filesystem.avm.stores}</value>
                </property>
             </bean>
+            -->
          </list>
       </property>
    </bean>

@@ -246,8 +246,8 @@ public class FTPServerTest extends TestCase
             assertTrue(FTPReply.isPositiveCompletion(reply));
 
             // expect /Alfresco directory
-            //        /AVM directory
-            assertTrue(files.length == 2);
+            //        /AVM directory - avm removed
+            assertTrue(files.length == 1);
             
             boolean foundAVM=false;
             boolean foundAlfresco=false;
@@ -265,7 +265,8 @@ public class FTPServerTest extends TestCase
                     foundAlfresco=true;
                 }
             }
-            assertTrue(foundAVM);
+            // AVM mount point removed
+            //assertTrue(foundAVM);
             assertTrue(foundAlfresco);
             
             // Change to Alfresco Dir that we know exists

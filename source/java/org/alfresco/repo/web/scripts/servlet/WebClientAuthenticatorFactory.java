@@ -148,11 +148,20 @@ public class WebClientAuthenticatorFactory implements ServletAuthenticatorFactor
                 //
                 if (status == null || status == AuthenticationStatus.Failure)
                 {
-                    // authentication failed - now need to display the login page to the user, if asked to
-                    if (logger.isDebugEnabled())
-                        logger.debug("Redirecting to Alfresco Login");
+                    // ALF-13194: The client has asserted itself as guest, but guest authentication is forbidden. Signal
+                    // with a 401 response rather than the login page!
+                    if (isGuest && RequiredAuthentication.guest == required)
+                    {
+                        res.setStatus(401);
+                    }
+                    else
+                    {
+                        // authentication failed - now need to display the login page to the user, if asked to
+                        if (logger.isDebugEnabled())
+                            logger.debug("Redirecting to Alfresco Login");
         
-                    BaseServlet.redirectToLoginPage(req, res, context);
+                        BaseServlet.redirectToLoginPage(req, res, context);
+                    }
                 }
             }
             catch(IOException e)

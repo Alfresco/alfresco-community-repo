@@ -681,7 +681,22 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
      */
     public void destroy()
     {
-        webScriptsRegistryCache.remove(tenantAdminService.getCurrentUserDomain());
+        try
+        {
+            webScriptsRegistryLock.writeLock().lock();
+            webScriptsRegistryCache.remove(tenantAdminService.getCurrentUserDomain());
+            
+            if (logger.isTraceEnabled())
+            {
+                Exception e = new Exception("RepositoryContainer destroy called.");
+                e.fillInStackTrace();
+                logger.trace("", e);
+            }
+        }
+        finally
+        {
+            webScriptsRegistryLock.writeLock().unlock();
+        }
 
         initialized = false;
     }

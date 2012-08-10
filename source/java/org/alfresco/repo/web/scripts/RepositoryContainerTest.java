@@ -23,8 +23,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Unit test to test runas function
@@ -37,8 +35,6 @@ public class RepositoryContainerTest extends BaseWebScriptTest
     private PersonService personService;
 
     private static final String USER_ONE = "RunAsOne";
-
-    private static final String URL_RUNAS = "/test/runas";
 
     @Override
     protected void setUp() throws Exception
@@ -79,11 +75,9 @@ public class RepositoryContainerTest extends BaseWebScriptTest
         super.tearDown();
     }
 
-    public void testRunAs() throws Exception
+    public void testReset() throws Exception
     {
-        // TODO: this test needs refactoring after SpringSurf changes
-        //Response response = sendRequest(new GetRequest(URL_RUNAS), 200, AuthenticationUtil.getAdminUserName());
-        //assertEquals(USER_ONE, response.getContentAsString());
-        assertTrue(true);
+        RepositoryContainer repoContainer = (RepositoryContainer) getServer().getApplicationContext().getBean("webscripts.container");
+        repoContainer.reset();
     }
 }

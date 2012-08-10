@@ -334,8 +334,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                         req.getRemoteAddr() + ":" + req.getRemotePort() + ")");
             
             // Send back a request for SPNEGO authentication
-            
-            restartLoginChallenge(context, req, resp);
+            logonStartAgain(context, req, resp);
             return false;
         }
         else
@@ -588,9 +587,20 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         {
             session.invalidate();
         }
+        logonStartAgain(context, req, resp);
+    }
+    
 
+    /**
+     * The logon to start again
+     * 
+     * @param resp HttpServletResponse
+     * @param httpSess HttpSession
+     * @throws IOException
+     */
+    public void logonStartAgain(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException
+	{
         // Force the logon to start again
-
         resp.setHeader("WWW-Authenticate", "Negotiate");
         resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         writeLoginPageLink(req, resp);

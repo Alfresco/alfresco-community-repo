@@ -27,10 +27,13 @@ import javax.transaction.UserTransaction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 
 /**
  * AVM concurrency and search
@@ -174,6 +177,37 @@ public class AVMServiceConcurrentTest extends AVMServiceTestBase
         results.close();
         
         testTX.commit();
+    }
+    
+    public synchronized void test_ALF_14979() throws Exception
+    {
+        String name = "test" + System.currentTimeMillis();
+        
+        fService.createDirectory("main:/", name);
+        
+        // Now create many, many orphans
+        int peerCount = 1000;
+        for (int i = 0; i < peerCount; i++)
+        {
+            fService.createDirectory("main:/", name + "-" + i);
+        }
+        
+        StoreRef storeRef = AVMNodeConverter.ToStoreRef("main");
+        NodeService fNodeService = (NodeService) fContext.getBean("NodeService");
+        NodeRef rootNodeRef = fNodeService.getRootNode(storeRef);
+           
+        SearchService fSearchService = (SearchService) fContext.getBean("SearchService");
+        NamespaceService fNamespaceService = (NamespaceService) fContext.getBean("NamespaceService");
+        
+        // Now look it up
+        long before = System.nanoTime();
+        List<NodeRef> nodeRefs = fSearchService.selectNodes(
+                rootNodeRef,
+                "/cm:" + name,
+                null, fNamespaceService, false);
+        assertEquals("Expected to find a result", 1, nodeRefs.size());
+        long after = System.nanoTime();
+        System.out.println("Took " + (after-before)/1E6 + "ms to find entry out of " + peerCount);
     }
     
     public void test_ALF_786() throws Exception

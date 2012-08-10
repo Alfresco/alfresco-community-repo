@@ -116,7 +116,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String DELETE_CHILD_ASSOC_BY_ID = "alfresco.node.delete_ChildAssocById";
     private static final String UPDATE_CHILD_ASSOCS_INDEX = "alfresco.node.update_ChildAssocsIndex";
     private static final String UPDATE_CHILD_ASSOCS_UNIQUE_NAME = "alfresco.node.update_ChildAssocsUniqueName";
-    private static final String DELETE_CHILD_ASSOCS_TO_AND_FROM = "alfresco.node.delete_ChildAssocsToAndFrom";
+    private static final String DELETE_PARENT_ASSOCS_TO = "alfresco.node.delete_ParentAssocsTo";
     private static final String SELECT_CHILD_ASSOC_BY_ID = "alfresco.node.select_ChildAssocById";
     private static final String COUNT_CHILD_ASSOC_BY_PARENT_ID = "alfresco.node.count_ChildAssocByParentId";
     private static final String SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE = "alfresco.node.select_ChildAssocsByPropertyValue";
@@ -889,19 +889,16 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected int deleteChildAssocsToAndFrom(Long nodeId)
+    protected int deleteParentAssocsTo(Long nodeId)
     {
         ChildAssocEntity assoc = new ChildAssocEntity();
-        // Parent
-        NodeEntity parentNode = new NodeEntity();
-        parentNode.setId(nodeId);
-        assoc.setParentNode(parentNode);
+
         // Child
         NodeEntity childNode = new NodeEntity();
         childNode.setId(nodeId);
         assoc.setChildNode(childNode);
         
-        return template.delete(DELETE_CHILD_ASSOCS_TO_AND_FROM, assoc);
+        return template.delete(DELETE_PARENT_ASSOCS_TO, assoc);
     }
 
     @Override

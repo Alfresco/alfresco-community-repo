@@ -1636,6 +1636,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 if(networkFile != null && !networkFile.isReadOnly())
                 {
                     networkFile.setModifyDate(info.getModifyDateTime());
+                    if(networkFile instanceof TempNetworkFile)
+                    {
+                        TempNetworkFile tnf = (TempNetworkFile)networkFile;
+                        tnf.setModificationDateSetDirectly(true);
+                    }
                 }
                 
                 if ( logger.isDebugEnabled())
@@ -2810,7 +2815,16 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                      */
                     getPolicyFilter().disableBehaviour(target, ContentModel.ASPECT_AUDITABLE);
                     nodeService.setProperty(target, ContentModel.PROP_MODIFIER, authService.getCurrentUserName());
-                    nodeService.setProperty(target, ContentModel.PROP_MODIFIED, new Date(tempFile.getModifyDate()));               
+                    if(tempFile.isModificationDateSetDirectly())
+                    {
+                        logger.debug("modification date set directly");
+                        nodeService.setProperty(target, ContentModel.PROP_MODIFIED, new Date(tempFile.getModifyDate()));
+                    }
+                    else
+                    {
+                        logger.debug("modification date not set directly");
+                        nodeService.setProperty(target, ContentModel.PROP_MODIFIED, new Date());
+                    }
             
                     // Take an initial guess at the mimetype (if it has not been set by something already)
                     String mimetype = mimetypeService.guessMimetype(tempFile.getFullName(), new FileContentReader(tempFile.getFile()));

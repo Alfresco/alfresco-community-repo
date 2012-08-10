@@ -48,6 +48,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
+import org.alfresco.repo.security.authentication.RepositoryAuthenticationDao.CacheEntry;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -101,7 +102,7 @@ public class AuthenticationTest extends TestCase
 
     private PolicyComponent policyComponent;
 
-    private SimpleCache<String, NodeRef> authenticationCache;
+    private SimpleCache<String, CacheEntry> authenticationCache;    
     private SimpleCache<String, NodeRef> immutableSingletonCache;
 
     public AuthenticationTest()
@@ -137,7 +138,7 @@ public class AuthenticationTest extends TestCase
         pubPersonService =  (PersonService) ctx.getBean("PersonService");
         personService =  (PersonService) ctx.getBean("personService");
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
-        authenticationCache = (SimpleCache<String, NodeRef>) ctx.getBean("authenticationCache");
+        authenticationCache = (SimpleCache<String, CacheEntry>) ctx.getBean("authenticationCache");
         immutableSingletonCache = (SimpleCache<String, NodeRef>) ctx.getBean("immutableSingletonCache");
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");

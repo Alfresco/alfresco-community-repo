@@ -158,6 +158,15 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     }
     
     /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */    
+    public void postActivity(String activityType, String siteId, String appTool, String activityData, String userId)
+    {
+        // delegate
+        activityPostService.postActivity(activityType, siteId, appTool, activityData, userId);
+    }
+    
+    /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
     public void postActivity(String activityType, String siteId, String appTool, NodeRef nodeRef)

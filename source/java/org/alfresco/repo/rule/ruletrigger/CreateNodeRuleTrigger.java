@@ -21,12 +21,15 @@ package org.alfresco.repo.rule.ruletrigger;
 import java.util.Set;
 
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -110,6 +113,26 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
                 new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
 	}
     
+    
+    /**
+     * Return true if provided classDef has property that has propertyType type
+     */
+    private boolean hasPropertyOfType(ClassDefinition classDef, QName propertyType)
+    {
+        if (classDef != null)
+        {
+            for (PropertyDefinition propertyDef : classDef.getProperties().values())
+            {
+                if (propertyDef.getDataType().getName().equals(propertyType) && !propertyDef.isMultiValued())
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -121,22 +144,31 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
             return;
         }
         NodeRef nodeRef = childAssocRef.getChildRef();
+        
+        // Keep track of new nodes to prevent firing of updates in the same transaction
+        Set<NodeRef> newNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NEW_NODES);
+        newNodeRefSet.add(nodeRef);
+        
+        // If the node's type or aspects have a single-valued content property, don't fire the trigger, as it would be
+        // handled by on-content-create-trigger, according to its settings for empty content
 
-        // If the node has a single-valued content property, don't fire the trigger, as it will be handled by
-        // on-content-create-trigger, according to its settings for empty content
-        for (QName propertyQName : nodeService.getProperties(nodeRef).keySet())
+        // Check node type's properties
+        QName nodeType = nodeService.getType(nodeRef);
+        TypeDefinition typeDefinition = dictionaryService.getType(nodeType);
+        if (hasPropertyOfType(typeDefinition, DataTypeDefinition.CONTENT))
         {
-            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
-            if (propertyDef != null && propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)
-                    && !propertyDef.isMultiValued())
+            return;
+        }
+
+        // Check node aspects' properties
+        for (QName aspectQName : nodeService.getAspects(nodeRef))
+        {
+            AspectDefinition aspectDefinition = dictionaryService.getAspect(aspectQName);
+            if (hasPropertyOfType(aspectDefinition, DataTypeDefinition.CONTENT))
             {
                 return;
             }
         }
-
-        // Keep track of new nodes to prevent firing of updates in the same transaction
-        Set<NodeRef> newNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NEW_NODES);
-        newNodeRefSet.add(nodeRef);
         
         if (nodeRef != null && 
             nodeService.exists(nodeRef) == true &&

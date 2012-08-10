@@ -187,7 +187,14 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
               MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR.equals(sourceMimetype)) &&
               MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype))
         {
-            return true; // ALF-14303 workaround
+            return true;
+        }
+        
+        // Add extra support for tiff to pdf to allow multiple page preview (ALF-7278)
+        if (MimetypeMap.MIMETYPE_IMAGE_TIFF.equals(sourceMimetype) &&
+            MimetypeMap.MIMETYPE_PDF.equals(targetMimetype))
+        {
+            return true;
         }
         
         if (!AbstractImageMagickContentTransformerWorker.isSupported(sourceMimetype) ||

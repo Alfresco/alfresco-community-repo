@@ -930,12 +930,13 @@ public class RuleServiceCoverageTest extends TestCase
         mailService.setTestMode(true);
         mailService.clearLastTestMessage();
                 
-        this.nodeService.createNode(
+        NodeRef contentNodeRef = this.nodeService.createNode(
                 this.nodeRef,
                 ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_CONTENT,
                 getContentProperties()).getChildRef();        
+        addContentToNode(contentNodeRef);   
         
         // An email should appear in the recipients email
         // System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));
@@ -1663,7 +1664,7 @@ public class RuleServiceCoverageTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_CONTENT).getChildRef();        
-        assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));        
+        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));        
         addContentToNode(contentNodeRef);            
         assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
         

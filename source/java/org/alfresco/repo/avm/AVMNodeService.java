@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.service.cmr.avm.AVMNotFoundException;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
+import org.alfresco.service.cmr.avm.AVMWrongTypeException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -373,6 +374,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      * 
      * @see org.alfresco.service.cmr.dictionary.DictionaryService
      */
+    @SuppressWarnings("deprecation")
     public ChildAssociationRef createNode(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -1656,16 +1658,58 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
         {
             return result;
         }
-        List<ChildAssociationRef> all = getChildAssocs(nodeRef);
-        for (ChildAssociationRef child : all)
+        // First check if we are matching on all
+        if (qnamePattern == null || !(qnamePattern instanceof QName))
         {
-            if (!qnamePattern.isMatch(child.getQName()))
+            // Either null (always match) or we have to match on each, individually
+            List<ChildAssociationRef> all = getChildAssocs(nodeRef);
+            for (ChildAssociationRef child : all)
             {
-                continue;
+                if (qnamePattern == null || !qnamePattern.isMatch(child.getQName()))
+                {
+                    continue;
+                }
+                result.add(child);
             }
-            result.add(child);
+            return result;
         }
-        return result;
+        else
+        {
+            // We have a specific QName and therefore an exact path
+            QName qname = (QName) qnamePattern;
+            String name = qname.getLocalName();
+            
+            // Resolve the container
+            Pair<Integer, String> containerVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
+            int containerVersion = containerVersionPath.getFirst();
+            String containerPath = containerVersionPath.getSecond();
+            try
+            {
+                // Get the descriptor for the container
+                AVMNodeDescriptor containerDescriptor = fAVMService.lookup(containerVersion, containerPath);
+                @SuppressWarnings("unused")  // Might succeed or fail
+                AVMNodeDescriptor childDescriptor = fAVMService.lookup(containerDescriptor, name);
+                result.add(
+                        new ChildAssociationRef(
+                                ContentModel.ASSOC_CONTAINS,
+                                nodeRef,
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                                AVMNodeConverter.ToNodeRef(
+                                        containerVersion,
+                                        AVMNodeConverter.ExtendAVMPath(containerPath, name)),
+                        true,
+                        -1));
+            }
+            catch (AVMNotFoundException e)
+            {
+                return result;
+            }
+            catch (AVMWrongTypeException e)
+            {
+                return result;
+            }
+            return result;
+        }
     }
     
     @Override

@@ -658,6 +658,117 @@ public class FTPServerTest extends TestCase
     }
     
     /**
+     * Test Setting the modification time FTP server
+     *
+     * @throws Exception
+     */
+    public void testModificationTime() throws Exception
+    {
+        final String PATH1 = "FTPServerTest";
+        final String PATH2 = "ModificationTime";
+        
+        logger.debug("Start testModificationTime");
+        
+        FTPClient ftp = connectClient();
+
+        try
+        {
+            int reply = ftp.getReplyCode();
+
+            if (!FTPReply.isPositiveCompletion(reply))
+            {
+                fail("FTP server refused connection.");
+            }
+        
+            boolean login = ftp.login(USER_ADMIN, PASSWORD_ADMIN);
+            assertTrue("admin login successful", login);
+                          
+            reply = ftp.cwd("/Alfresco/User Homes");
+            assertTrue(FTPReply.isPositiveCompletion(reply));
+            
+            // Delete the root directory in case it was left over from a previous test run
+            try
+            {
+                ftp.removeDirectory(PATH1);
+            }
+            catch (IOException e)
+            {
+                // ignore this error
+            }
+            
+            // make root directory
+            ftp.makeDirectory(PATH1);
+            ftp.cwd(PATH1);
+            
+            // make sub-directory in new directory
+            ftp.makeDirectory(PATH2);
+            ftp.cwd(PATH2);
+            
+            // List the files in the new directory
+            FTPFile[] files = ftp.listFiles();
+            assertTrue("files not empty", files.length == 0);
+            
+            // Create a file
+            String FILE1_CONTENT_1="test file 1 content";
+            String FILE1_NAME = "testFile1.txt";
+            ftp.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_1.getBytes("UTF-8")));
+            
+            
+            String pathname = "/Alfresco/User Homes" + "/" + PATH1 + "/" + PATH2 + "/" + FILE1_NAME;
+            
+            logger.debug("set modification time");
+            // YYYYMMDDhhmmss Time set to 2012 August 30 12:39:05
+            String olympicTime = "20120830123905";
+            ftp.setModificationTime(pathname, olympicTime);
+            
+            String extractedTime = ftp.getModificationTime(pathname);
+            // Feature of the commons ftp library ExtractedTime has a "status code" first and is followed by newline chars
+            
+            assertTrue("time not set correctly by explicit set time", extractedTime.contains(olympicTime));
+            
+            // Get the new file
+            FTPFile[] files2 = ftp.listFiles();
+            assertTrue("files not one", files2.length == 1);
+            
+            InputStream is = ftp.retrieveFileStream(FILE1_NAME);
+            
+            String content = inputStreamToString(is);
+            assertEquals("Content is not as expected", content, FILE1_CONTENT_1);
+            ftp.completePendingCommand();
+            
+            // Update the file contents without setting time directly
+            String FILE1_CONTENT_2="That's how it is says Pooh!";
+            ftp.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
+            
+            InputStream is2 = ftp.retrieveFileStream(FILE1_NAME);
+            
+            String content2 = inputStreamToString(is2);
+            assertEquals("Content is not as expected", FILE1_CONTENT_2, content2);
+            ftp.completePendingCommand();
+            
+            extractedTime = ftp.getModificationTime(pathname);
+            
+            assertFalse("time not moved on if time not explicitly set", extractedTime.contains(olympicTime));
+            
+            // now delete the file we have been using.
+            assertTrue (ftp.deleteFile(FILE1_NAME));
+            
+            // negative test - file should have gone now.
+            assertFalse (ftp.deleteFile(FILE1_NAME));
+            
+        } 
+        finally
+        {
+            // clean up tree if left over from previous run
+
+            ftp.disconnect();
+        }    
+    }  // test set time
+    
+    
+    
+    
+    /**
      * Create a user with a small quota.
      * 
      * Upload a file less than the quota.

@@ -39,6 +39,8 @@ import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -48,7 +50,10 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 
@@ -61,19 +66,24 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
 {
     private static final StoreRef STOREREF_USERS = new StoreRef("user", "alfrescoUserStore");
 
+    private static final Log logger = LogFactory.getLog(RepositoryAuthenticationDao.class);
+
     private AuthorityService authorityService;
+
     private NodeService nodeService;
     private TenantService tenantService;
     private NamespacePrefixResolver namespacePrefixResolver;
     private PasswordEncoder passwordEncoder;
     private PolicyComponent policyComponent;
     
+    private TransactionService transactionService;
+
     // note: caches are tenant-aware (if using EhCacheAdapter shared cache)
     
     private SimpleCache<String, NodeRef> singletonCache; // eg. for user folder nodeRef
     private final String KEY_USERFOLDER_NODEREF = "key.userfolder.noderef";
     
-    private SimpleCache<String, NodeRef> authenticationCache;
+    private SimpleCache<String, CacheEntry> authenticationCache;
     
     public RepositoryAuthenticationDao()
     {
@@ -115,9 +125,14 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         this.policyComponent = policyComponent;
     }
     
-    public void setAuthenticationCache(SimpleCache<String, NodeRef> authenticationCache)
+    public void setAuthenticationCache(SimpleCache<String, CacheEntry> authenticationCache)
     {
         this.authenticationCache = authenticationCache;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     public void afterPropertiesSet() throws Exception
@@ -130,52 +145,94 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                 BeforeDeleteNodePolicy.QNAME,
                 ContentModel.TYPE_USER,
                 new JavaBehaviour(this, "beforeDeleteNode"));
+        this.policyComponent.bindClassBehaviour(
+        		OnUpdatePropertiesPolicy.QNAME,
+                ContentModel.TYPE_USER,
+                new JavaBehaviour(this, "onUpdateUserProperties"));
     }
 
     @Override
     public UserDetails loadUserByUsername(String incomingUserName) throws UsernameNotFoundException, DataAccessException
     {
-        NodeRef userRef = getUserOrNull(incomingUserName);
-        if (userRef == null)
+        CacheEntry userEntry = getUserEntryOrNull(incomingUserName);
+        if (userEntry == null)
         {
             throw new UsernameNotFoundException("Could not find user by userName: " + incomingUserName);
         }
-
-        Map<QName, Serializable> properties = nodeService.getProperties(userRef);
-        String password = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_PASSWORD));
-
-        // Report back the user name as stored on the user
-        String userName = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_USER_USERNAME));
-
-        GrantedAuthority[] gas = new GrantedAuthority[1];
-        gas[0] = new GrantedAuthorityImpl("ROLE_AUTHENTICATED");
-
-        UserDetails ud = new User(
-                userName,
-                password,
-                getEnabled(userName, properties),
-                !getHasExpired(userName, properties),
-                !getCredentialsHaveExpired(userName, properties),
-                !getLocked(userName, properties),
-                gas);
-        return ud;
+        UserDetails userDetails = userEntry.userDetails;
+        if (userEntry.credentialExpiryDate == null || userEntry.credentialExpiryDate.compareTo(new Date()) >= 0)
+        {
+            return userDetails;
+        }
+        // If the credentials have expired, we must return a copy with the flag set
+        return new User(userDetails.getUsername(), userDetails.getPassword(), userDetails.isEnabled(),
+                userDetails.isAccountNonExpired(), false,
+                userDetails.isAccountNonLocked(), userDetails.getAuthorities());
     }
+
 
     public NodeRef getUserOrNull(String searchUserName)
     {
+        CacheEntry userEntry = getUserEntryOrNull(searchUserName);
+        return userEntry == null ? null: userEntry.nodeRef;
+    }
+
+    private CacheEntry getUserEntryOrNull(final String searchUserName)
+    {
+        class SearchUserNameCallback implements RetryingTransactionCallback<CacheEntry>
+        {
+            @Override
+            public CacheEntry execute() throws Throwable
+            {
+                List<ChildAssociationRef> results = nodeService.getChildAssocs(getUserFolderLocation(searchUserName),
+                        ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, searchUserName));
+                if (!results.isEmpty())
+                {
+                    NodeRef userRef = tenantService.getName(results.get(0).getChildRef());
+                    Map<QName, Serializable> properties = nodeService.getProperties(userRef);
+                    String password = DefaultTypeConverter.INSTANCE.convert(String.class,
+                            properties.get(ContentModel.PROP_PASSWORD));
+
+                    // Report back the user name as stored on the user
+                    String userName = DefaultTypeConverter.INSTANCE.convert(String.class,
+                            properties.get(ContentModel.PROP_USER_USERNAME));
+
+                    GrantedAuthority[] gas = new GrantedAuthority[1];
+                    gas[0] = new GrantedAuthorityImpl("ROLE_AUTHENTICATED");
+
+                    return new CacheEntry(userRef, new User(userName, password, getEnabled(userName, properties),
+                            !getHasExpired(userName, properties), true, !getLocked(userName, properties), gas),
+                            getCredentialsExpiryDate(userName, properties));
+                }
+                return null;
+            }
+        }
+
         if (searchUserName == null || searchUserName.length() == 0)
         {
             return null;
         }
         
-        NodeRef result = authenticationCache.get(searchUserName);
+        CacheEntry result = authenticationCache.get(searchUserName);
         if (result == null)
         {
-            List<ChildAssociationRef> results = nodeService.getChildAssocs(getUserFolderLocation(searchUserName),
-                    ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, searchUserName));
-            if (!results.isEmpty())
+            if (AlfrescoTransactionSupport.getTransactionId() == null)
             {
-                result = tenantService.getName(results.get(0).getChildRef());
+                result = transactionService.getRetryingTransactionHelper().doInTransaction(new SearchUserNameCallback());
+            }
+            else
+            {
+                try
+                {
+                    result = new SearchUserNameCallback().execute();
+                }
+                catch (Throwable e)
+                {
+                    logger.error(e);
+                }
+            }
+            if (result != null)
+            {
                 authenticationCache.put(searchUserName, result);
             }
         }
@@ -475,19 +532,19 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     @Override
     public boolean getCredentialsHaveExpired(String userName)
     {
-        return getCredentialsHaveExpired(userName, null);
+        return !loadUserByUsername(userName).isCredentialsNonExpired();
     }
 
     /**
      * @param userName              the username (never <tt>null</tt>
      * @param properties            the properties associated with the user or <tt>null</tt> to get them
-     * @return                      <tt>true</tt> if the user account has expired
+     * @return                      Date on which the credentials expire or <tt>null</tt> if they never expire
      */
-    private boolean getCredentialsHaveExpired(String userName, Map<QName, Serializable> properties)
+    private Date getCredentialsExpiryDate(String userName, Map<QName, Serializable> properties)
     {
         if (authorityService.isAdminAuthority(userName))
         {
-            return false;            // Admin never expires
+            return null;            // Admin never expires
         }
         if (properties == null)
         {
@@ -495,23 +552,15 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         }
         if (properties == null)
         {
-            return false;
+            return null;
         }
         if (DefaultTypeConverter.INSTANCE.booleanValue(properties.get(ContentModel.PROP_CREDENTIALS_EXPIRE)))
         {
-            Date date = DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_CREDENTIALS_EXPIRY_DATE));
-            if (date == null)
-            {
-                return false;
+            return DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_CREDENTIALS_EXPIRY_DATE));
             }
             else
             {
-                return (date.compareTo(new Date()) < 1);
-            }
-        }
-        else
-        {
-            return false;
+            return null;
         }
     }
 
@@ -641,7 +690,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     @Override
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        String uidBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(ContentModel.PROP_USERNAME));
+    	String uidBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(ContentModel.PROP_USERNAME));
         String uidAfter = DefaultTypeConverter.INSTANCE.convert(String.class, after.get(ContentModel.PROP_USERNAME));
         if (uidBefore != null && !EqualsHelper.nullSafeEquals(uidBefore, uidAfter))
         {
@@ -654,6 +703,13 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                 authenticationCache.remove(uidBefore);
             }
         }
+        authenticationCache.remove(uidAfter);
+    }
+    
+    public void onUpdateUserProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        String uidBefore = DefaultTypeConverter.INSTANCE.convert(String.class, before.get(ContentModel.PROP_USER_USERNAME));
+        authenticationCache.remove(uidBefore);
     }
 
     @Override
@@ -665,4 +721,18 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             authenticationCache.remove(userName);
         }
     }        
+    
+    static class CacheEntry
+    {
+        public NodeRef nodeRef;
+        public UserDetails userDetails;
+        public Date credentialExpiryDate;
+
+        public CacheEntry(NodeRef nodeRef, UserDetails userDetails, Date credentialExpiryDate)
+        {
+            this.nodeRef = nodeRef;
+            this.userDetails = userDetails;
+            this.credentialExpiryDate = credentialExpiryDate;
+        }        
+    }
 }

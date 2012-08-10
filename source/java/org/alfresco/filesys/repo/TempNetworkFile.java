@@ -17,6 +17,7 @@ import org.alfresco.jlan.smb.server.disk.JavaNetworkFile;
 public class TempNetworkFile extends JavaNetworkFile implements NetworkFileStateInterface
 {
     private boolean changed = false;
+    boolean modificationDateSetDirectly = false;
     
     /**
      * Create a new temporary file with no existing content.
@@ -156,6 +157,16 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     public boolean isChanged()
     {
         return changed;
+    }
+    
+    public boolean isModificationDateSetDirectly()
+    {
+        return modificationDateSetDirectly;
+    }
+    
+    public void setModificationDateSetDirectly(boolean  modificationDateSetDirectly)
+    {
+        this.modificationDateSetDirectly =  modificationDateSetDirectly;
     }
 
 

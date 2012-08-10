@@ -29,10 +29,12 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.MLText;
@@ -81,6 +83,92 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         endTransaction();
         NodeCleanupRegistry cleanupRegistry = (NodeCleanupRegistry) applicationContext.getBean("nodeCleanupRegistry");
         cleanupRegistry.doClean();
+    }
+    
+    /**
+     * <a href="https://issues.alfresco.com/jira/browse/ALF-14929">ALF-14929</a>
+     */
+    public synchronized void testTxnCommitTime() throws Exception
+    {
+        /*
+         * This test is subject to intermittent - but correct - failures if bug ALF-14929 is present
+         */
+        
+        String currentTxn = AlfrescoTransactionSupport.getTransactionId();
+        assertNotNull("Must have a txn change UUID for all transactions.");
+        
+        long start = System.currentTimeMillis();
+        this.wait(10L);
+        
+        // The listener
+        final TestTxnCommitTimeTxnListener listener = new TestTxnCommitTimeTxnListener();
+        AlfrescoTransactionSupport.bindListener(listener);
+        
+        // First see what the latest transaction is
+        long currentTxnCommitTime = listener.getTxnCommitTime(currentTxn, start);
+        assertEquals("Should not have found a written txn", 0L, currentTxnCommitTime);
+        
+        // Now commit
+        setComplete();
+        endTransaction();
+
+        // Now check again.  The transaction time must be greater than the last time that
+        // the listener wrote through.
+        long recordedCommitTimeMs = listener.getTxnCommitTime(currentTxn, start);
+        assertTrue(
+                "DAO txn write time must be greater than last listener write time",
+                recordedCommitTimeMs > listener.lastWriteTime);
+    }
+    
+    /**
+     * @see DbNodeServiceImplTest#testTxnCommitTime()
+     */
+    private class TestTxnCommitTimeTxnListener extends TransactionListenerAdapter
+    {
+        /*
+         * Note: equals hides this instance when listeners are processed
+         */
+        private String txnIdStr;
+        private long lastWriteTime = 0L;
+        
+        @Override
+        public boolean equals(Object obj)
+        {
+            return false;
+        }
+        @Override
+        public synchronized void beforeCommit(boolean readOnly)
+        {
+            if (txnIdStr == null)
+            {
+                txnIdStr = AlfrescoTransactionSupport.getTransactionId();
+                // Make a change
+                nodeService.setProperty(rootNodeRef, ContentModel.PROP_COUNTER, new Integer(5));
+                // Reschedule for removal
+                AlfrescoTransactionSupport.bindListener(this);
+            }
+            else
+            {
+                nodeService.removeProperty(rootNodeRef, ContentModel.PROP_COUNTER);
+            }
+            lastWriteTime = System.currentTimeMillis();
+            // We wait a bit so that the time differences are significant
+            try { this.wait(20L); } catch (InterruptedException e) {}
+        }
+        public long getTxnCommitTime(String txnId, long fromTime)
+        {
+            List<Transaction> startTxns = nodeDAO.getTxnsByCommitTimeAscending(fromTime, null, Integer.MAX_VALUE, null, false);
+            long time = 0L;
+            for (Transaction txn : startTxns)
+            {
+                if (txnId.equals(txn.getChangeTxnId()))
+                {
+                    // Found our transaction
+                    time = txn.getCommitTimeMs();
+                }
+            }
+            return time;
+        }
     }
 
     /**

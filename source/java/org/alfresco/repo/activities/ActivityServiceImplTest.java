@@ -25,6 +25,7 @@ import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -81,7 +82,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
     {
         try
         {
-            this.activityService.postActivity("", "", "", null, "");
+            this.activityService.postActivity("", "", "",(NodeRef) null, "");
             fail("invalid post activity");
         }
         catch (IllegalArgumentException iae)

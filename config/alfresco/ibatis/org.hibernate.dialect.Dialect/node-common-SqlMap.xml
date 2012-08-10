@@ -599,10 +599,10 @@
             id = #{id}
     </delete>
     
-    <delete id="delete_ChildAssocsToAndFrom" parameterType="ChildAssoc">
+    <delete id="delete_ParentAssocsTo" parameterType="ChildAssoc">
         delete from alf_child_assoc
         where
-            (parent_node_id = #{parentNode.id} or child_node_id = #{childNode.id})
+            child_node_id = #{childNode.id}
             <if test="typeQNameIds != null">
                 and type_qname_id in
                 <foreach item="item" index="index" collection="typeQNameIds" open="(" separator="," close=")">

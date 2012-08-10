@@ -695,7 +695,7 @@ public abstract class AlfrescoTransactionSupport
             // Flush the DAOs
             for (TransactionalDao dao : daoServices)
             {
-                dao.beforeCommit();
+                dao.beforeCommit(readOnly);
             }
             
             // Flush the transactional caches

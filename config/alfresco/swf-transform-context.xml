@@ -175,4 +175,28 @@
       </property> 
    </bean> 
 
+      <bean id="transformer.complex.image.Pdf2swf"
+        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
+        parent="baseComplexContentTransformer" >
+      <property name="transformers">
+         <list>
+            <null />
+            <ref bean="transformer.Pdf2swf" />
+         </list>
+      </property>
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/pdf</value>
+         </list>
+      </property>
+      <property name="supportedTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>image/tiff</value></property>
+                <property name="targetMimetype"><value>application/x-shockwave-flash</value></property>
+            </bean>
+         </list>
+      </property>
+   </bean>
+
 </beans>

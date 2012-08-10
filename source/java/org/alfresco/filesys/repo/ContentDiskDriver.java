@@ -60,7 +60,6 @@ import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
-import org.alfresco.jlan.server.filesys.cache.FileStateLockManager;
 import org.alfresco.jlan.server.filesys.pseudo.MemoryNetworkFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
@@ -99,6 +98,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -1075,7 +1075,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             throw new AccessDeniedException("Get file information " + path);
         }
-        catch (AlfrescoRuntimeException ex)
+        catch (RuntimeException ex)
         {
             // Debug
             
@@ -1380,7 +1380,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             throw new FileNotFoundException("Start search " + searchPath);
         }
-        catch (AlfrescoRuntimeException ex)
+        catch (RuntimeException ex)
         {
             // Debug
             
@@ -1891,7 +1891,12 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 String srvName = null;
                 SMBServer cifsServer = (SMBServer) sess.getServer().getConfiguration().findServer( "CIFS");
                 
-                if ( cifsServer != null)
+                if(sess instanceof SMBSrvSession)
+                {
+                    SMBSrvSession smbSess = (SMBSrvSession)sess;
+                    srvName = smbSess.getShareHostName();
+                }
+                else if ( cifsServer != null)
                 {
                     // Use the CIFS server name in the URL
                 
@@ -2005,7 +2010,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             throw new AccessDeniedException("Open file " + params.getFullPath());
         }
-        catch (AlfrescoRuntimeException ex)
+        catch (RuntimeException ex)
         {
             // Debug
             
@@ -2191,7 +2196,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             throw new DiskFullException("Create file " + params.getFullPath());
         }
-        catch (AlfrescoRuntimeException ex)
+        catch (RuntimeException ex)
         {
             // Debug
             
@@ -2322,7 +2327,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             throw new AccessDeniedException("Create directory " + params.getFullPath());
         }
-        catch (AlfrescoRuntimeException ex)
+        catch (RuntimeException ex)
         {
             // Debug
             
@@ -2423,7 +2428,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             throw new AccessDeniedException("Delete directory " + dir);
         }
-        catch (AlfrescoRuntimeException ex)
+        catch (RuntimeException ex)
         {
             // Debug
             
@@ -2551,7 +2556,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 if (file instanceof NodeRefNetworkFile)
                 {
                     NodeRef nodeRef = ((NodeRefNetworkFile) file).getNodeRef();
-                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
+                    if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
                     {
                         logger.debug("No content - delete");
                         fileFolderService.delete(nodeRef);
@@ -3444,7 +3449,18 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
             throw new AccessDeniedException("Node locked " + oldName);
         }
-        catch (AlfrescoRuntimeException ex)
+        catch (InvalidNodeRefException ex)
+        {
+            // Debug
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                logger.debug("Rename file - file doesn't exist, " + oldName, ex);
+
+            // Convert to a filesystem access denied status
+
+            throw new FileNotFoundException("File doesn't exist " + oldName);	
+        }
+        catch (RuntimeException ex)
         {
             // Unexpected Exception being consumed here - hence the error logging.
             logger.error("Unable to rename file" + oldName, ex);
@@ -3617,7 +3633,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             throw new AccessDeniedException("Set file information " + name);
         }
-        catch (AlfrescoRuntimeException ex)
+        catch (RuntimeException ex)
         {
             // Debug
             

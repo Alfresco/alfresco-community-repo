@@ -1061,7 +1061,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             invokeBeforeDeleteNode(nodeRef);
 
             // Cascade delecte as required
-            deletePrimaryChildrenNotArchived(nodePair);
+            deleteChildrenNotArchived(nodePair);
             // perform a normal deletion
             nodeDAO.deleteNode(nodeId);
             
@@ -1085,17 +1085,57 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     }
     
     /**
-     * delete primary children - private method for deleteNode.
+     * delete children - private method for deleteNode.
      * 
-     * recurses through children when deleting a node.   Does not archive.
+     * recurses through primary children when deleting a node.   Does not archive.
      */
-    private void deletePrimaryChildrenNotArchived(Pair<Long, NodeRef> nodePair)
+    private void deleteChildrenNotArchived(Pair<Long, NodeRef> nodePair)
     {
         Long nodeId = nodePair.getFirst();
-        // Get the node's primary children
-        final List<Pair<Long, NodeRef>> childNodePairs = new ArrayList<Pair<Long, NodeRef>>(5);
+        // Get the node's children
+        final List<Pair<Long, ChildAssociationRef>> primaryChildAssocs = new ArrayList<Pair<Long,ChildAssociationRef>>(5);
 
-        final Map<Long, ChildAssociationRef> childAssocRefsByChildId = new HashMap<Long, ChildAssociationRef>(5);
+        // Get all the QNames to remove and prune affected secondary associations
+        removeSecondaryAssociationsCascade(nodeId, primaryChildAssocs);
+
+        // Each primary child must be deleted
+        for (Pair<Long, ChildAssociationRef> childAssoc : primaryChildAssocs)
+        {
+            // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
+            Long childNodeId = childAssoc.getFirst();
+            ChildAssociationRef childParentAssocRef = childAssoc.getSecond();
+            NodeRef childNodeRef = childParentAssocRef.getChildRef();
+            QName childNodeType = nodeDAO.getNodeType(childNodeId);
+            Set<QName> childNodeQNames = nodeDAO.getNodeAspects(childNodeId);
+        
+            // remove the deleted node from the list of new nodes
+            untrackNewNodeRef(childNodeRef);
+
+            // track the deletion of this node - so we can prevent new associations to it.
+            trackDeletedNodeRef(childNodeRef);
+            
+            invokeBeforeDeleteNode(childNodeRef);
+            
+            // Delete the child and its parent associations
+            nodeDAO.deleteNode(childNodeId);
+
+            // Propagate timestamps
+            propagateTimeStamps(childParentAssocRef);
+            invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, false);
+            
+            // Index
+            nodeIndexer.indexDeleteNode(childParentAssocRef);
+                        
+            // lose interest in tracking this node ref
+            untrackNewNodeRef(childNodeRef);
+        }
+    }
+
+    private void removeSecondaryAssociationsCascade(Long nodeId, List<Pair<Long, ChildAssociationRef>> primaryChildAssocs)
+    {
+        // Get the node's children
+        final List<Pair<Long, Pair<Long, ChildAssociationRef>>> childAssocs = new ArrayList<Pair<Long,Pair<Long, ChildAssociationRef>>>(5);
+
         NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
         {
             public boolean preLoadNodes()
@@ -1116,8 +1156,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     )
             {
                 // Add it
-                childNodePairs.add(childNodePair);
-                childAssocRefsByChildId.put(childNodePair.getFirst(), childAssocPair.getSecond());
+                childAssocs.add(new Pair<Long, Pair<Long, ChildAssociationRef>>(childNodePair.getFirst(), childAssocPair));
                 // More results
                 return true;
             }
@@ -1128,41 +1167,32 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
        };
 
        // Get all the QNames to remove
-       nodeDAO.getChildAssocs(nodeId, null, null, null, Boolean.TRUE, null, callback);
-       // Each child must be deleted
-       for (Pair<Long, NodeRef> childNodePair : childNodePairs)
+       nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, callback);
+       // Each child association must be visited, recursively
+       for (Pair<Long, Pair<Long, ChildAssociationRef>> childAssoc: childAssocs)
        {
-            // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
-            Long childNodeId = childNodePair.getFirst();
-            NodeRef childNodeRef = childNodePair.getSecond();
-            QName childNodeType = nodeDAO.getNodeType(childNodeId);
-            Set<QName> childNodeQNames = nodeDAO.getNodeAspects(childNodeId);
-            ChildAssociationRef childParentAssocRef = childAssocRefsByChildId.get(childNodeId);
-            
-            // remove the deleted node from the list of new nodes
-            untrackNewNodeRef(childNodeRef);
-
-            // track the deletion of this node - so we can prevent new associations to it.
-            trackDeletedNodeRef(childNodeRef);
-            
-            invokeBeforeDeleteNode(childNodeRef);
-            
-            // Cascade first
-            // This ensures that the beforeDelete policy is fired for all nodes in the hierarchy before
-            // the actual delete starts.
-            deletePrimaryChildrenNotArchived(childNodePair);
-            // Delete the child
-            nodeDAO.deleteNode(childNodeId);
-
-            // Propagate timestamps
-            propagateTimeStamps(childParentAssocRef);
-            invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, false);
-            
-            // Index
-            nodeIndexer.indexDeleteNode(childParentAssocRef);
-                        
-            // lose interest in tracking this node ref
-            untrackNewNodeRef(childNodeRef);
+            Long childNodeId = childAssoc.getFirst();
+            ChildAssociationRef childParentAssocRef = childAssoc.getSecond().getSecond();
+            // Recurse on primary associations
+            if (childParentAssocRef.isPrimary())
+            {
+                // Cascade first
+                // This ensures that the beforeDelete policy is fired for all nodes in the hierarchy before
+                // the actual delete starts.
+                removeSecondaryAssociationsCascade(childNodeId, primaryChildAssocs);
+                primaryChildAssocs.add(new Pair<Long, ChildAssociationRef>(childNodeId, childParentAssocRef));
+            }
+            // Remove secondary associations
+            else
+            {
+                // Secondary association - we must fire the appropriate event to touch the node, update the caches and
+                // fire the index event
+                invokeBeforeDeleteChildAssociation(childParentAssocRef);
+                nodeDAO.deleteChildAssoc(childAssoc.getSecond().getFirst());
+                invokeOnDeleteChildAssociation(childParentAssocRef);
+                // Index
+                nodeIndexer.indexDeleteChildAssociation(childParentAssocRef);
+            }
         }
     }
 

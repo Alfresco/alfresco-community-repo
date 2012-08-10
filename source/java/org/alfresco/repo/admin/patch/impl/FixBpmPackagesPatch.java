@@ -126,8 +126,12 @@ public class FixBpmPackagesPatch extends AbstractPatch
             String name = (String) nodeService.getProperty(packageRef, ContentModel.PROP_NAME);
             if (logger.isDebugEnabled())
                 logger.debug("Package " + name + " type " + typeQname);
-            // New type of the package is bpm:package
-            nodeService.setType(packageRef, WorkflowModel.TYPE_PACKAGE);
+            
+            if (!nodeService.getType(packageRef).equals(WorkflowModel.TYPE_PACKAGE))
+            {
+                // New type of the package is bpm:package
+                nodeService.setType(packageRef, WorkflowModel.TYPE_PACKAGE);
+            }
             // Get all package items
             List<ChildAssociationRef> packageItemsAssocs = nodeService.getChildAssocs(packageRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
 
@@ -143,6 +147,12 @@ public class FixBpmPackagesPatch extends AbstractPatch
                     logger.error("Association between package: " + name + " and item: " + itemName + " is primary association, so removing this assiciation will result in child node deletion");
                     continue;
                 }
+                
+                if (itemAssoc.getTypeQName().equals(WorkflowModel.ASSOC_PACKAGE_CONTAINS))
+                {
+                    continue;
+                }
+                
                 boolean assocRemoved = nodeService.removeChildAssociation(itemAssoc);
                 if (assocRemoved)
                 {

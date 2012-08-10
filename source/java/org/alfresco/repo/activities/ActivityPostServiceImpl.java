@@ -77,7 +77,15 @@ public class ActivityPostServiceImpl implements ActivityPostService
      */
     public void postActivity(String activityType, String siteId, String appTool, String activityData)
     {
-        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, getCurrentUser());
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    public void postActivity(String activityType, String siteId, String appTool, String activityData, String userId)
+    {
+        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, userId);
     }
     
     /* (non-Javadoc)
@@ -90,7 +98,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
         StringBuffer sb = new StringBuffer();
         sb.append("{").append("\""+PostLookup.JSON_NODEREF_LOOKUP+"\":\"").append(nodeRef.toString()).append("\"").append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser());
     }
     
     /* (non-Javadoc)
@@ -105,7 +113,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
                       .append("\"name\":\"").append(name).append("\"")
                       .append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser());
     }
 
     /* (non-Javadoc)
@@ -126,12 +134,11 @@ public class ActivityPostServiceImpl implements ActivityPostService
                       .append("\""+PostLookup.JSON_NODEREF_PARENT+"\":\"").append(parentNodeRef.toString()).append("\"")
                       .append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser());
     }
     
-    private void postActivity(String activityType, String siteId, String appTool, String activityData, ActivityPostEntity.STATUS status)
+    private void postActivity(String activityType, String siteId, String appTool, String activityData, ActivityPostEntity.STATUS status, String userId)
     {
-        String currentUser = getCurrentUser();
         
         try
         {
@@ -197,11 +204,11 @@ public class ActivityPostServiceImpl implements ActivityPostService
             }
             
             // required
-            ParameterCheck.mandatoryString("currentUser", currentUser);
+            ParameterCheck.mandatoryString("userId", userId);
             
-            if (currentUser.length() > ActivityPostDAO.MAX_LEN_USER_ID)
+            if (userId.length() > ActivityPostDAO.MAX_LEN_USER_ID)
             {
-                throw new IllegalArgumentException("Invalid user - exceeds " + ActivityPostDAO.MAX_LEN_USER_ID + " chars: " + currentUser);
+                throw new IllegalArgumentException("Invalid user - exceeds " + ActivityPostDAO.MAX_LEN_USER_ID + " chars: " + userId);
             }
         } 
         catch (IllegalArgumentException e)
@@ -215,7 +222,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
         {
             Date postDate = new Date();
             ActivityPostEntity activityPost = new ActivityPostEntity();
-            activityPost.setUserId(currentUser);
+            activityPost.setUserId(userId);
             
             activityPost.setSiteNetwork(tenantService.getName(siteId));
             
@@ -228,7 +235,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
             
             // hash the userid to generate a job task node
             int nodeCount = estGridSize;
-            int userHashCode = currentUser.hashCode();
+            int userHashCode = userId.hashCode();
             int nodeHash = (userHashCode % nodeCount) + 1;
             
             activityPost.setJobTaskNode(nodeHash);

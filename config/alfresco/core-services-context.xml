@@ -151,6 +151,9 @@
                 <entry key="alfresco.udp.mcast_port">
                     <value>${alfresco.udp.mcast_port}</value>
                 </entry>
+                <entry key="alfresco.fping.shared.dir">
+                    <value>${alfresco.fping.shared.dir}</value>
+                </entry>
             </map>
         </property>
     </bean>

@@ -482,9 +482,9 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 {
                     public Object doWork() throws Exception
                     {
-                        if (!personService.personExists(userName)
-                                || !nodeService.getProperty(personService.getPerson(userName),
-                                        ContentModel.PROP_USERNAME).equals(userName))
+                        String identifier;
+                        if ((identifier = personService.getUserIdentifier(userName)) == null
+                             || !identifier.equals(userName)) 
                         {
                             if (logger.isDebugEnabled())
                             {

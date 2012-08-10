@@ -39,6 +39,17 @@ public interface ActivityPostService
     public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData);
     
     /**
+     * Post a custom activity type
+     *
+     * @param activityType - required
+     * @param siteId - optional, if null will be stored as empty string
+     * @param appTool - optional, if null will be stored as empty string
+     * @param jsonActivityData - required
+     * @param userId - required
+     */
+    public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData, String userId);    
+    
+    /**
      * Post a pre-defined activity type - certain activity data will be looked-up asynchronously, including:
      *
      *   name (of nodeRef)

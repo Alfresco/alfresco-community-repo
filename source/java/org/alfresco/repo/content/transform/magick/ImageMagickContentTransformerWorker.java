@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -172,7 +172,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
             }
             properties.put(KEY_OPTIONS, commandOptions);
         }
-        properties.put(VAR_SOURCE, sourceFile.getAbsolutePath() + "[0]");
+        properties.put(VAR_SOURCE, sourceFile.getAbsolutePath() + (options.getPageLimit() == 1 ? "[0]" : ""));
         properties.put(VAR_TARGET, targetFile.getAbsolutePath());
         
         // execute the statement

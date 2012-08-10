@@ -340,7 +340,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         if (s_logger.isDebugEnabled())
         {
             NodeRef parentRef = relationshipRef.getParentRef();
-            Path path = parentRef == null ? new Path() : nodeService.getPath(parentRef);
+            Path path = (parentRef == null || !nodeService.exists(parentRef)) ? new Path() : nodeService
+                    .getPath(parentRef);
             path.append(new ChildAssocElement(relationshipRef));
             s_logger.debug(event + " " + path + " " + relationshipRef.getChildRef());
         }

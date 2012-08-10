@@ -85,6 +85,9 @@
       <property name="policyComponent" ref="policyComponent" />
       <property name="authenticationCache" ref="authenticationCache" />
       <property name="singletonCache" ref="immutableSingletonCache"/>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
    </bean>
 
    <!-- Authentication service for chaining -->

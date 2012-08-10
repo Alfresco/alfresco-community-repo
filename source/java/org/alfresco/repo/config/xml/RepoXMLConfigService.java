@@ -26,13 +26,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.transaction.UserTransaction;
 
-import org.springframework.extensions.config.ConfigDeployment;
-import org.springframework.extensions.config.ConfigImpl;
-import org.springframework.extensions.config.ConfigSection;
-import org.springframework.extensions.config.ConfigSource;
-import org.springframework.extensions.config.evaluator.Evaluator;
-import org.springframework.extensions.config.xml.XMLConfigService;
-import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -40,10 +33,18 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.config.ConfigDeployment;
+import org.springframework.extensions.config.ConfigImpl;
+import org.springframework.extensions.config.ConfigSection;
+import org.springframework.extensions.config.ConfigSource;
+import org.springframework.extensions.config.evaluator.Evaluator;
+import org.springframework.extensions.config.xml.XMLConfigService;
+import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
 
 /**
  * XML-based configuration service which can optionally read config from the Repository
@@ -108,40 +109,39 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
         return resetRepoConfig().getConfigDeployments();
     }
     
-    private ConfigData initRepoConfig(String tenantDomain)
+    private ConfigData initRepoConfig(final String tenantDomain)
     {
-        ConfigData configData = null;
-    	
-    	// can be null e.g. initial login, after fresh bootstrap
+        ConfigData configData;
+
+        // can be null e.g. initial login, after fresh bootstrap
         String currentUser = authenticationContext.getCurrentUserName();
         if (currentUser == null)
         {
             authenticationContext.setSystemUserAsCurrentUser();
         }
-        
-        UserTransaction userTransaction = transactionService.getUserTransaction();
-        
+
         try
         {
-            userTransaction.begin();
-            
-            // parse config
-            List<ConfigDeployment> configDeployments = super.initConfig();
-            
-            configData = getConfigDataLocal(tenantDomain);
-            if (configData != null)
-            {
-                configData.setConfigDeployments(configDeployments);
-            }
-            
-            userTransaction.commit();
-            
+            configData = transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<ConfigData>()
+                    {
+
+                        @Override
+                        public ConfigData execute() throws Throwable
+                        {
+                            // parse config
+                            List<ConfigDeployment> configDeployments = RepoXMLConfigService.super.initConfig();
+
+                            ConfigData configData = getConfigDataLocal(tenantDomain);
+                            if (configData != null)
+                            {
+                                configData.setConfigDeployments(configDeployments);
+                            }
+                            return configData;
+                        }
+                    }, transactionService.isReadOnly());
+
             logger.info("Config initialised");
-        }
-        catch(Throwable e)
-        {
-            try { userTransaction.rollback(); } catch (Exception ex) {}           
-            throw new AlfrescoRuntimeException("Failed to initialise config service", e);
         }
         finally
         {
@@ -150,7 +150,7 @@ public class RepoXMLConfigService extends XMLConfigService implements TenantDepl
                 authenticationContext.clearCurrentSecurityContext();
             }
         }
-        
+
         return configData;
     }
     

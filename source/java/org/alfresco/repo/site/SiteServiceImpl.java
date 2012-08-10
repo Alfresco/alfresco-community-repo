@@ -1969,7 +1969,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_USER_JOINED, shortName,
-                                ACTIVITY_TOOL, getActivityUserData(authorityName, role));
+                                ACTIVITY_TOOL, getActivityUserData(authorityName, role), authorityName);
                     } 
                     else if (authorityType == AuthorityType.GROUP)
                     {

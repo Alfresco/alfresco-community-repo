@@ -1806,8 +1806,13 @@ alfresco.xforms.ComboboxSelect1 = alfresco.xforms.AbstractSelectWidget.extend({
   {
     var values = this._getItemValues();
     var initial_value = this.getInitialValue();
-    this.domNode = new Element("select");
-    this.domNode.id = attach_point.id + "-select2";
+
+    if ((null == this.domNode) || ("SELECT" != this.domNode.tagName))
+    {
+      this.domNode = new Element("select");
+      this.domNode.id = attach_point.id + "-select2";
+    }
+
     attach_point.appendChild(this.domNode);
     this.widget = this.domNode;
     for (var i = 0; i < values.length; i++)
@@ -2761,11 +2766,50 @@ alfresco.xforms.MonthDayPicker = alfresco.xforms.Widget.extend({
   initialize: function(xform, xformsNode, parentWidget)
   {
     this.parent(xform, xformsNode, parentWidget);
+
+    var originalIds = {};
+    originalIds.parentId = this._changeStructuralElementId(parentWidget, "-MDP-MonthCombobox", false);
+    originalIds.xformsId = this._changeStructuralElementId(xformsNode, "-MDP-MonthCombobox", false);
+
     this.monthPicker = new alfresco.xforms.MonthPicker(xform, xformsNode);
     this.monthPicker._compositeParent = this;
-               
+
+    this._changeStructuralElementId(parentWidget, (originalIds.parentId + "-MDP-DayCombobox"), true);
+    this._changeStructuralElementId(xformsNode, (originalIds.xformsId + "-MDP-DayCombobox"), true);
     this.dayPicker = new alfresco.xforms.DayPicker(xform, xformsNode);
     this.dayPicker._compositeParent = this;
+
+    this._changeStructuralElementId(parentWidget, originalIds.parentId, true);
+    this._changeStructuralElementId(xformsNode, originalIds.xformsId, true);
+  },
+
+  _changeStructuralElementId: function(element, newId, replace)
+  {
+    var result = null;
+
+    if (null != element)
+    {
+      var id = ("undefined" != typeof(element.getAttribute)) ? (element.getAttribute("id")) : (element.id);
+      if (null == id)
+      {
+        id = "select-" + (new Date()).getTime();
+      }
+
+      result = id;
+
+      newId = (replace) ? (newId) : (id + newId);
+
+      if ("undefined" != typeof(element.setAttribute))
+      {
+        element.setAttribute("id", newId);
+      }
+      else
+      {
+        element.id = newId;
+      }
+    }
+
+    return result;
   },
 
   /////////////////////////////////////////////////////////////////
@@ -5193,18 +5237,27 @@ alfresco.xforms.XForm = new Class({
         _show_error(document.createTextNode(alfresco.resources["validation_provide_values_for_required_fields"]), invalid_widgets.length);
         var error_list = document.createElement("ul");
 
+        var resolver = alfresco.xforms.FOCUS_RESOLVER;
+        resolver.release();
+
+        resolver.clearTheScope();
+
         _removeAccessibilityErrorNotification(this._previousInvalidWidgets);
-        var strongTabIndex = 2;
+
         invalid_widgets.each(function(invalid)
         {
           var error_item = document.createElement("li");
           error_item.id = invalid.domNode.id + "-alertItem";
           error_item.appendChild(document.createTextNode(invalid.getAlert()));
           error_list.appendChild(error_item);
-          _applyAccessibilityErrorNotification(invalid, strongTabIndex++, error_item.id);
+
+          resolver.addParentsAsScopeContainers(invalid.domNode);
+          _applyAccessibilityErrorNotification(invalid, error_item.id);
+
           invalid.showAlert();
         });
 
+        resolver.init();
         this._previousInvalidWidgets = invalid_widgets;
 
         _show_error(error_list);
@@ -5233,6 +5286,396 @@ alfresco.xforms.XForm = new Class({
     }
   }
 });
+
+/**
+ * Emulates strict sequence of the elements which are NOT valid for submit in case of Tab navigation
+ * 
+ * @author Dmitry Velichkevich
+ */
+alfresco.xforms.FocusResolver = new Class({
+  _forced: false,
+  _scopeContainers: {},
+  _currentElement: null,
+  _currentParent: null,
+  _navigationDirection: 0,
+
+  initialize: function()
+  {
+  },
+
+  init: function()
+  {
+    if (document.addEventListener)
+    {
+      document.addEventListener("mouseup", this.mouseUpWatcher, true);
+      document.addEventListener("keydown", this.keyDownWatcher, true);
+
+      document.addEventListener("focus", this.focusWatcher, true);
+    }
+    else
+    {
+      if (document.attachEvent)
+      {
+        document.onmouseup = this.mouseUpWatcher;
+        document.onkeydown = this.keyDownWatcher;
+
+        document.onactivate = this.focusWatcher;
+      }
+    }
+  },
+
+  release: function()
+  {
+    if (document.removeEventListener)
+    {
+      document.removeEventListener("mouseup", this.mouseUpWatcher, true);
+      document.removeEventListener("keydown", this.keyDownWatcher, true);
+
+      document.removeEventListener("focus", this.focusWatcher, true);
+    }
+    else
+    {
+      if (document.detachEvent)
+      {
+        document.onmouseup = null;
+        document.onkeydown = null;
+
+        document.onactivate = null;
+      }
+    }
+  },
+
+  mouseUpWatcher: function(e)
+  {
+    var resolver = alfresco.xforms.FOCUS_RESOLVER;
+    resolver._navigationDirection = 0;
+  },
+
+  keyDownWatcher: function(e)
+  {
+    if (null == e)
+    {
+      e = event;
+    }
+
+    if (null == e)
+    {
+      return;
+    }
+
+    var resolver = alfresco.xforms.FOCUS_RESOLVER;
+    var code = (e.keyCode) ? (e.keyCode) : (e.which);
+
+    if (27 == code)
+    {
+      resolver.release();
+    }
+    else
+    {
+      resolver._navigationDirection = (9 == code) ? ((e.shiftKey) ? (-1) : (1)) :(0);
+    }
+  },
+
+  focusWatcher: function(e)
+  {
+    // In case of IE global handler receives global event object...
+    if (e == null)
+    {
+      e = event;
+    }
+
+    var focusedElement = ((null != e) && (null != e.target)) ? (e.target) : (document.activeElement);
+
+    var resolver = alfresco.xforms.FOCUS_RESOLVER;
+    resolver._ensureInUniqueId(focusedElement);
+
+    // Ignores the event if focus actually is the same as at previous time or if nothing is focused
+    if ((null == focusedElement) || ((null != resolver._currentElement) && !resolver._forced && ((resolver._currentElement.id == focusedElement.id) || (0 == focusedElement.id.indexOf("undefined")))))
+    {
+      if (0 != focusedElement.id.indexOf("undefined"))
+      {
+        resolver._navigationDirection = 0;
+      }
+
+      return;
+    }
+
+    if (window.ie && !resolver._navigationDirection && ("IFRAME" == focusedElement.tagName))
+    {
+      var frameParent = resolver.getHighestParent(focusedElement);
+
+      if (frameParent.id != resolver._currentParent)
+      {
+        resolver._navigationDirection = 0;
+        resolver._navigationDirection = 0;
+        resolver._forced = true;
+        resolver._currentElement.focus();
+        resolver._forced = false;
+        if ("undefined" == typeof(e.stopPropagation))
+        {
+          window.event.cancelBubble = true;
+        }
+        else
+        {
+          e.stopPropagation();
+        }
+        return;
+      }
+    }
+
+
+    // Focus received via the Keyboard?..
+    if (resolver._navigationDirection)
+    {
+      var direction = resolver._navigationDirection;
+      resolver._navigationDirection = 0;
+
+      // Is focus trapped into the element which is valid for submit?..
+      if (!resolver._isElementInTheScope(focusedElement))
+      {
+        // Stopping propagation of the vent since it has been fired for not valid element...
+        if ("undefined" == typeof(e.stopPropagation))
+        {
+          window.event.cancelBubble = true;
+        }
+        else
+        {
+          e.stopPropagation();
+        }
+
+        var parent = resolver.getHighestParent(focusedElement);
+
+        // Nullifying these value in any case to initiate changes in the resolver
+        resolver._currentParent = null;
+        focusedElement = null;
+
+        // Searching for a "label(s) + widget(s)" container with a widget which is NOT valid for submit in accordance with direction (Tab or Shift + Tab)
+        // This cycle iterates only "label(s) + widget(s)" containers...
+        while ((null == focusedElement) && (null != parent))
+        {
+          // Does container contain widget(s) which is NOT valid for submit?..
+          if (null != resolver._scopeContainers[parent.id])
+          {
+            // Searching for this widget...
+            focusedElement = resolver._searchForTheBestElement(parent);
+          }
+
+          // Searching for another "label(s) + widget(s)" container
+          do
+          {
+            parent = (direction > 0) ? (parent.nextSibling) : (parent.previousSibling);
+          }
+          while ((null != parent) && (1 != parent.nodeType)) // "1 != parent.nodeType" is a cross-browsers condition for enumerating siblings
+        }
+
+        // Is the widget found?..
+        if (null != focusedElement)
+        {
+          // Setting focus to the found widget
+
+          // Preventing processing of focus change without user action
+          resolver._navigationDirection = 0;
+          focusedElement.focus();
+        }
+
+        // Saving its parent...
+        resolver._currentParent = parent;
+      }
+      else
+      {
+        // Receiving a "label(s) + widget(s)" container...
+        var parent = resolver.getHighestParent(focusedElement);
+
+        // Is container changed? And should navigation between ALL the elements of a group be stopped?..
+        if ((null == resolver._currentParent) || (resolver._currentParent.id != parent.id))
+        {
+          // Searching for the first element which is NOT valid for submit in accordance with order of the navigation...
+          var element = resolver._searchForTheBestElement(parent);
+
+          // Is required element found?..
+          if ((null != element) && (element.id != focusedElement.id))
+          {
+            // Setting focus to the found element
+
+            focusedElement = element;
+            // Preventing processing of focus change without user action
+            resolver._navigationDirection = 0;
+            element.focus();
+          }
+
+          resolver._currentParent = parent;
+        }
+      }
+    }
+    else
+    {
+      // Updating rosolver in accordance with focused element 
+      if (resolver._isElementInTheScope(focusedElement))
+      {
+        resolver._currentParent = resolver.getHighestParent(focusedElement);
+      }
+      else
+      {
+        resolver._currentParent = null;
+      }
+    }
+
+    resolver._currentElement = focusedElement;
+  },
+
+  getDirection: function()
+  {
+    return this._navigationDirection;
+  },
+
+  setDirection: function(direction)
+  {
+    this._navigationDirection = direction;
+  },
+
+  _searchForTheBestElement: function(start)
+  {
+    var result = this._findControl(start, true, false);
+    if ((null != result) && ((0 != result.tabIndex) || ("DIV" == result.tagName) || ("SPAN" == result.tagName)) && (null != result.children))
+    {
+      result = this._findControl(result, false, true);
+    }
+    return result;
+  },
+
+  getHighestParent: function(element)
+  {
+    if (null == element)
+    {
+      return null;
+    }
+
+    for (var previousChild = element, parent = element.parentNode; null != parent; previousChild = parent, parent = parent.parentNode)
+    {
+      var node = parent.parentNode;
+      if (((null == parent.className) || (0 == parent.className.length)) && (null != node) && ("xformsViewRoot" == node.className))
+      {
+        return previousChild;
+      }
+    }
+
+    return null;
+  },
+
+  _findControl: function(element, ignoreTabIndex, dontCareAboutValidity)
+  {
+    if (null == element)
+    {
+      return null;
+    }
+
+    var result = null;
+
+    if ((!dontCareAboutValidity || (("DIV" != element.tagName) && ("SPAN" != element.tagName))) && (ignoreTabIndex || (0 == element.tabIndex))
+        && (dontCareAboutValidity || ((null != element.widget) && (!element.widget.isValidForSubmit()))))
+    {
+      result = element;
+    }
+
+    if ((null == result) && (null != element.children))
+    {
+      for (var i = 0; (null == result) && (i < element.children.length); i++)
+      {
+        result = this._findControl(element.children[i], ignoreTabIndex, dontCareAboutValidity);
+      }
+    }
+
+    return result;
+  },
+
+  _isElementInTheScope: function(element)
+  {
+    if (null != element)
+    {
+      for (var parent = element.parentNode; null != parent; parent = parent.parentNode)
+      {
+        if (null != this._scopeContainers[parent.id])
+        {
+          return true;
+        }
+        else
+        {
+          var node = parent.parentNode;
+          if (((null == parent.className) || (0 == parent.className.length)) && (null != node) && ("xformsViewRoot" == node.className))
+          {
+            break;
+          }
+        }
+      }
+    }
+
+    return false;
+  },
+
+  addScopeContainer: function(container)
+  {
+    if (null != container)
+    {
+      this._scopeContainers[container.id] = container;
+      return true;
+    }
+
+    return false;
+  },
+
+  addParentsAsScopeContainers: function(element)
+  {
+    if (null != element)
+    {
+      for (var parent = element.parentNode; null != parent; parent = parent.parentNode)
+      {
+        var node = parent.parentNode;
+        if (((null == parent.className) || (0 == parent.className.length)) && (null != node) && ("xformsViewRoot" == node.className))
+        {
+          break;
+        }
+
+        this._ensureInUniqueId(parent);
+
+        this.addScopeContainer(parent);
+      }
+    }
+  },
+
+  _ensureInUniqueId: function(element)
+  {
+    if ((null != element) && (null == element.id) || (0 == element.id.length))
+    {
+      element.id = (((null != element.type) && (element.type.length > 0)) ? (element.type) : (element.tagName)) + "_generated_id_" + (new Date()).getTime();
+    }
+  },
+
+  removeScopeContainer: function(container)
+  {
+    if ((null != container) && (null != this._scopeContainers[container.id]))
+    {
+      this._scopeContainers[container.id] = null;
+      return true;
+    }
+
+    return false;
+  },
+
+  clearTheScope: function()
+  {
+    this._currentElement = null;
+    this._currentParent = null;
+    this._navigationDirection = 0;
+
+    for (var key in this._scopeContainers)
+    {
+      this._scopeContainers[key] = null;
+    }
+
+    this._scopeContainers = {};
+  }
+});
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // error message display management
@@ -5282,10 +5725,14 @@ function _show_error(msg, errorCount)
                               "src": "javascript: ;",
                               "accessKey": "v",
                               "role": "alert",
-                              "tabIndex": 1
+                              "tabIndex": 0
                             });
     errorLink.onclick = "return false;"
     errorLink.onmousedown = "return false;"
+    errorLink.onfocus = function(e)
+    {
+      alfresco.xforms.FOCUS_RESOLVER.init();
+    }
 
     var errorMessage = new Element("div",
                                    {
@@ -5404,115 +5851,122 @@ function _removeAccessibilityErrorNotification(widgets)
   {
     widgets.each(function(invalid)
                  {
-                   _applyAccessibilityErrorNotification(invalid, 0, null);
+                   _applyAccessibilityErrorNotification(invalid, null);
                  });
   }
 }
 
-function _applyAccessibilityErrorNotification(field, tabIndex, alertId)
+function _applyAccessibilityErrorNotification(field, alertId)
 {
-  if ((null == field) || (null == tabIndex))
+  if (null == field)
   {
     return;
   }
 
-  var control = _findFirstControl(field.domNode);
+  var control = _findControl(field.domNode);
 
   if (null != control)
   {
-    control.tabIndex = tabIndex;
-
     if (null == alertId)
     {
       control.removeAttribute("aria-labelledby");
     }
     else
     {
-      control.setAttribute("aria-labelledby", alertId);
-    }
+      var labelIds = alertId;
+      if ((null != field.widget) && (null != field.widget.labelNode) && (null != field.widget.labelNode.id) && (field.widget.labelNode.id.length > 0))
+      {
+        labelIds += " " + field.widget.labelNode.id;
+      }
+      control.setAttribute("aria-labelledby", labelIds);
 
-    if ((tabIndex > 0) && (null == control.getAttribute("role")))
-    {
-      switch (control.tagName)
+      if (null == control.getAttribute("role"))
       {
-      case "SELECT":
-      {
-        control.setAttribute("role", ((control.multiple) ? ("listbox") : ("combobox")));
-        break;
-      }
-      case "A":
-      {
-        control.setAttribute("role", "link");
-        break;
-      }
-      case "TEXTAREA": case "DIV":
-      {
-        control.setAttribute("role", "textbox");
-        control.setAttribute("aria-multiline", true);
-        break;
-      }
-      case "INPUT":
-      {
-        switch (control.type)
+        switch (control.tagName)
         {
-        case "button": case "checkbox": case "radio":
+        case "SELECT":
         {
-          control.setAttribute("role", control.type);
+          control.setAttribute("role", ((control.multiple) ? ("listbox") : ("combobox")));
           break;
         }
-        case "hidden": case "password": case "text":
+        case "A":
+        {
+          control.setAttribute("role", "link");
+          break;
+        }
+        case "TEXTAREA": case "DIV":
         {
           control.setAttribute("role", "textbox");
+          control.setAttribute("aria-multiline", true);
           break;
         }
-        case "submit": case "reset":
+        case "INPUT":
         {
-          control.setAttribute("role", "button");
+          switch (control.type)
+          {
+          case "button": case "checkbox": case "radio":
+          {
+            control.setAttribute("role", control.type);
+            break;
+          }
+          case "hidden": case "password": case "text":
+          {
+            control.setAttribute("role", "textbox");
+            break;
+          }
+          case "submit": case "reset":
+          {
+            control.setAttribute("role", "button");
+          }
+          }
         }
         }
-      }
-      }
-    }
-    else
-    {
-      if (0 == tabIndex)
-      {
-        control.removeAttribute("role");
       }
     }
   }
 }
 
-function _findFirstControl(element)
+function _findControl(element, parentNotValid)
 {
   if (null == element)
   {
     return null;
   }
 
+  var result = null;
+
   if (("INPUT" == element.tagName) || ("SELECT" == element.tagName) || ("TEXTAREA" == element.tagName) || ((null != element.id) && (0 == element.id.toLowerCase().indexOf("textarea"))))
   {
-    if (("DIV" == element.tagName) && (null != element.parentNode.children) && (0 != element.parentNode.children.length) && ("A" == element.parentNode.children[0].tagName))
+    if (!parentNotValid && ("SELECT" == element.tagName) && (null != element.parentNode) && (null != element.parentNode.widget) && !element.parentNode.widget.isValidForSubmit())
     {
-      return element.parentNode.children[0];
+      parentNotValid = true;
     }
-    return element;
-  }
 
-  if (null != element.children)
-  {
-    for (var i = 0; i < element.children.length; i++)
+    if (parentNotValid || ((null != element.widget) && !element.widget.isValidForSubmit()))
     {
-      var result = _findFirstControl(element.children[i]);
-      if (null != result)
+      if (("DIV" == element.tagName) && (null != element.parentNode.children) && (0 != element.parentNode.children.length) && ("A" == element.parentNode.children[0].tagName))
       {
-        return result;
+        result = element.parentNode.children[0];
+      }
+      else
+      {
+        result = (0 == element.tabIndex) ? (element) : (null);
       }
     }
   }
 
-  return null;
+  if ((null == result) && (null != element.children))
+  {
+    for (var i = 0; (null == result) && (i < element.children.length); i++)
+    {
+      result = _findControl(element.children[i], parentNotValid || ((null != element.widget) && !element.widget.isValidForSubmit()));
+    }
+  }
+
+  return result;
 }
+
+alfresco.xforms.FOCUS_RESOLVER = new alfresco.xforms.FocusResolver();
 
 ////////////////////////////////////////////////////////////////////////////////
 // DOM utilities - XXXarielb should be merged into common.js
@@ -5661,6 +6115,10 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
   editor_condition: 'accesskey="z"', // ALF-11956: CSS select condition for an element which should be interpreted as the "central" element of the RTE. Focusable element searching will be started from this element
   forward_element_classes: "xformsAccessibilityInvisibleText", // ALF-11956: These CSS classes MUST BE applied to an element which should be interpreted as focusable during forward navigation
   backward_element_classes: "mceButton mceButtonEnabled", // ALF-11956: These CSS classes MUST BE applied to an element which should be interpreted as focusable during backward navigation
+  pre_focus_changed_handler: function(direction)
+  {
+    alfresco.xforms.FOCUS_RESOLVER.setDirection(direction);
+  },
   language: alfresco.constants.LANGUAGE,
   width: -1,
   height: -1,
@@ -5676,7 +6134,7 @@ alfresco.constants.TINY_MCE_DEFAULT_SETTINGS =
   theme_advanced_buttons2: "",
   theme_advanced_buttons3: "",
   urlconverter_callback: "alfresco_TinyMCE_urlconverter_callback",
-  file_browser_callback: "alfresco_TinyMCE_file_browser_callback",
+  file_browser_callback: "alfresco_TinyMCE_file_browser_callback"
 };
 
 window.addEvent("domready", 

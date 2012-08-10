@@ -135,9 +135,11 @@ alfresco.xforms.constants.XFORMS_FOCUSABLE_ELEMENTS = ["INPUT", "AREA", "BUTTON"
 
             if (9 === code)
             {
+               var direction = (e.shiftKey) ? (-1) : (1);
+
                var options = 
                {
-                  "direction": (e.shiftKey) ? (-1) : (1),
+                  "direction": direction,
                   "formScopeId": ed.getParam("form_scope_id"),
                   "editorCondition": ed.getParam("editor_condition"),
                   "forwardClasses": ed.getParam("forward_element_classes"),
@@ -148,6 +150,7 @@ alfresco.xforms.constants.XFORMS_FOCUSABLE_ELEMENTS = ["INPUT", "AREA", "BUTTON"
 
                if (el)
                {
+                  var editor = ed;
                   if (ed = tinymce.EditorManager.get(el.id || el.name))
                   {
                      ed.focus();
@@ -157,6 +160,13 @@ alfresco.xforms.constants.XFORMS_FOCUSABLE_ELEMENTS = ["INPUT", "AREA", "BUTTON"
                     window.setTimeout(function ()
                     {
                        window.focus();
+
+                       var focusHandler = editor.getParam("pre_focus_changed_handler");
+                       if ((null != focusHandler) && ("function" == typeof(focusHandler)))
+                       {
+                          focusHandler.call(focusHandler, direction);
+                       }
+
                        el.focus();
                     }, 10);
                   }

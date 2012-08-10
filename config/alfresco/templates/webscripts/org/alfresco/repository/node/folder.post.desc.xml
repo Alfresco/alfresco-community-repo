@@ -1,0 +1,41 @@
+<webscript>
+  <shortname>Create Child Folder</shortname>
+  <description><![CDATA[
+  Creates a Child Folder in the specified Site Container or existing Folder.
+  <BR>
+  By default the new folder will be of type cm:folder, but subtypes of cm:folder
+  may be specified instead.
+  <BR>
+  The new NodeRef will be returned if the folder can be created.
+  <BR>
+  The minimum request is of the form:
+   <pre>
+     { "name": "NewNodeName" }
+   </pre>
+  <BR>
+  The full set of parameters accepted in the request is of the form:
+   <pre>
+    {  
+       "name": "NewNodeName",
+       "title": "New Node Title",
+       "description": "A shiny new node",
+       "type": "cm:folder"
+    }
+   </pre>
+  <BR>
+  <ul>
+  <li>If the folder is created, STATUS_SUCCESS (200)</li>
+  <li>If the parent for the folder is not found, STATUS_NOT_FOUND (404)</li>
+  <li>If the user lacks permission to create the folder, STATUS_FORBIDDEN (403)</li>
+  <li>If the request JSON is invalid in some way, STATUS_BAD_REQUEST (400)</li>
+  </ul>
+  ]]>
+  </description>
+  <url>/api/node/folder/{store_type}/{store_id}/{id}</url>
+  <url>/api/site/folder/{site}/{container}/{path}</url>
+  <url>/api/site/folder/{site}/{container}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>public_api</lifecycle>
+</webscript>

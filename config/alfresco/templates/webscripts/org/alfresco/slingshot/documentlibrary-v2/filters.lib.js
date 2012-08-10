@@ -162,8 +162,8 @@ var Filters =
 
          case "editingOthers":
             filterQuery = this.constructPathQuery(parsedArgs);
-            filterQuery += " +ASPECT:\"workingcopy\"";
-            filterQuery += " +((-@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
+            filterQuery += " +((+ASPECT:\"workingcopy\"";
+            filterQuery += " -@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
             filterQuery += " OR (-@cm\\:lockOwner:\"" + person.properties.userName + '"';
             filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
             filterParams.query = filterQuery;
@@ -194,6 +194,18 @@ var Filters =
                filterQuery = "+ID:\"\"";
             }
             
+            filterParams.query = filterQuery;
+            break;
+
+         case "synced":
+            filterQuery = this.constructPathQuery(parsedArgs);
+            filterQuery += " +ASPECT:\"sync:syncSetMemberNode\"";
+            filterParams.query = filterQuery;
+            break;
+
+         case "syncedErrors":
+            filterQuery = this.constructPathQuery(parsedArgs);
+            filterQuery += " +ASPECT:\"sync:failed\"";
             filterParams.query = filterQuery;
             break;
 

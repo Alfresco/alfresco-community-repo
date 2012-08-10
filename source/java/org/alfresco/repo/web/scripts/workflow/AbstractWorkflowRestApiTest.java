@@ -718,8 +718,8 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
 
     public void testWorkflowDefinitionsGet() throws Exception
     {
-    	personManager.setUser(USER1);
-    	 
+        personManager.setUser(USER1);
+         
         Response response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         JSONObject json = new JSONObject(response.getContentAsString());
@@ -817,8 +817,8 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
 
     public void testWorkflowDefinitionGet() throws Exception
     {
-    	personManager.setUser(USER1);
-    	 
+        personManager.setUser(USER1);
+         
         // Get the latest definition for the adhoc-workflow
         WorkflowDefinition wDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
 

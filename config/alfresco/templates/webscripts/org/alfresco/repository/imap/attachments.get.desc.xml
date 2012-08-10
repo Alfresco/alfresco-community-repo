@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Node Attachments Info</shortname>
+  <description>Node Attachments Info</description>
+  <url>/api/attachments?nodeRef={noderef}</url>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

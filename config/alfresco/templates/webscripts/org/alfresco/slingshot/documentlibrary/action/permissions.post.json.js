@@ -90,7 +90,7 @@ function runAction(p_params)
                      if (jsonPermissions[i].get("group") == "GROUP_EVERYONE" && !site.isPublic)
                      {
                         result.success = false;
-                        status.setCode(status.STATUS_BAD_REQUEST, "Cannot give permissions to all other permissions on non-public site");
+                        status.setCode(status.STATUS_BAD_REQUEST, "Cannot give permissions to all other users on non-public site");
                         return;
                      }
                   }

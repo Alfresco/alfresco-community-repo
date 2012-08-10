@@ -8,7 +8,8 @@
       <#if doclist.parent?? && doclist.parent.nodeJSON??>"parent": <#noescape>${doclist.parent.nodeJSON},</#noescape></#if>
       <#if doclist.customJSON??>"custom": <#noescape>${doclist.customJSON},</#noescape></#if>
       "onlineEditing": ${doclist.onlineEditing?string},
-      "workingCopyLabel": "${workingCopyLabel}"
+      "workingCopyLabel": "${workingCopyLabel}",
+      "shareURL": "${site.getShareUrl()}"
    },
    "item":
    {

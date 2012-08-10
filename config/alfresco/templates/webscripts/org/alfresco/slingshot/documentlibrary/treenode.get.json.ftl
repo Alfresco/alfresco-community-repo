@@ -27,7 +27,13 @@
             "create": ${t.hasPermission("CreateChildren")?string},
             "edit": ${t.hasPermission("Write")?string},
             "delete": ${t.hasPermission("Delete")?string}
-         }
+         },
+         "aspects": 
+         [
+         <#list item.aspects as aspect>
+            "${aspect}"<#if aspect_has_next>,</#if>
+         </#list>
+         ]
       }<#if item_has_next>,</#if>
    </#list>
    ]

@@ -57,7 +57,7 @@ public class LocalTestRunAsAuthenticatorFactory implements ServletAuthenticatorF
         return new LocalTestRunAsAuthenticator(runAsUser);
     }
     
-    public class LocalTestRunAsAuthenticator implements Authenticator
+    public static class LocalTestRunAsAuthenticator implements Authenticator
     {
         private String userName;
         

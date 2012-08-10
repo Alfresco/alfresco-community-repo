@@ -38,6 +38,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory;
+import org.alfresco.repo.web.scripts.servlet.LocalTestRunAsAuthenticatorFactory.LocalTestRunAsAuthenticator;
 import org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory.BasicHttpAuthenticator;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethodBase;
@@ -211,17 +212,13 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
             throw new AuthenticationException("Forbidden to access this resource");
         }
         
-        // Check for some general ones
-        if (resp.getStatus() >= 400 && resp.getStatus() <= 499)
-        {
-            throw new RemoteConnectorClientException(resp.getStatus(), "(not available)", null);
-        }
+        // Check for failures where we don't care about the response body
         if (resp.getStatus() >= 500 && resp.getStatus() <= 599)
         {
             throw new RemoteConnectorServerException(resp.getStatus(), "(not available)");
         }
         
-        // Convert the response
+        // Convert the response into our required format
         String charset = null;
         String contentType = resp.getContentType();
         if (contentType != null && contentType.contains("charset="))
@@ -235,6 +232,14 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
         
         RemoteConnectorResponse response = new RemoteConnectorResponseImpl(
                 request, contentType, charset, resp.getStatus(), respHeaders, body);
+        
+        // If it's a client error, let them know what went wrong
+        if (resp.getStatus() >= 400 && resp.getStatus() <= 499)
+        {
+            throw new RemoteConnectorClientException(resp.getStatus(), "(not available)", response);
+        }
+        
+        // Otherwise return the response for processing
         return response;
     }
     
@@ -287,6 +292,7 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
             httpAuthFactory = (BasicHttpAuthenticatorFactory)server.getApplicationContext().getBean("webscripts.authenticator.basic");
             
             // Wire us into the test
+            test.setCustomAuthenticatorFactory(this);
             server.setServletAuthenticatorFactory(this);
         }
 
@@ -298,8 +304,9 @@ public class LocalWebScriptConnectorServiceImpl implements RemoteConnectorServic
             {
                 // There are already details existing
                 // Allow these to be kept and used
-                logger.debug("Existing Authentication found, remaining as " + AuthenticationUtil.getFullyAuthenticatedUser());
-                return null;
+                String fullUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                logger.debug("Existing Authentication found, remaining as " + fullUser);
+                return new LocalTestRunAsAuthenticator(fullUser);
             }
             
             // Fall back to the http auth one

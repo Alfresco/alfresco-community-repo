@@ -48,6 +48,7 @@ import org.apache.commons.httpclient.params.HttpClientParams;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
 
 /**
  * Base unit test class for web scripts.
@@ -56,13 +57,13 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  */
 public abstract class BaseWebScriptTest extends TestCase
 {
-    
     // Test Listener
     private WebScriptTestListener listener = null;
     private boolean traceReqRes = false;
 
     // Local Server access
     private String customContext = null;
+    private ServletAuthenticatorFactory customAuthenticatorFactory = null;
     
     // Remote Server access
     private String defaultRunAs = null;
@@ -215,6 +216,25 @@ public abstract class BaseWebScriptTest extends TestCase
         return defaultRunAs;
     }
 
+    /**
+     * Returns the custom {@link ServletAuthenticatorFactory} which is injected into
+     *  an {@link TestWebScriptServer} instances that are returned, if any.
+     * Default is not to alter the {@link ServletAuthenticatorFactory}
+     */
+    public ServletAuthenticatorFactory getCustomAuthenticatorFactory()
+    {
+        return customAuthenticatorFactory;
+    }
+
+    /**
+     * Sets that a custom {@link ServletAuthenticatorFactory} should be injected into
+     *  instances of {@link TestWebScriptServer} returned from {@link #getServer()}
+     */
+    public void setCustomAuthenticatorFactory(ServletAuthenticatorFactory customAuthenticatorFactory)
+    {
+        this.customAuthenticatorFactory = customAuthenticatorFactory;
+    }
+
     @Override
     protected void setUp() throws Exception
     {
@@ -236,14 +256,21 @@ public abstract class BaseWebScriptTest extends TestCase
      */
     protected TestWebScriptServer getServer()
     {
+        TestWebScriptServer server;
         if (customContext == null)
         {
-            return TestWebScriptRepoServer.getTestServer();
+            server = TestWebScriptRepoServer.getTestServer();
         }
         else
         {
-            return TestWebScriptRepoServer.getTestServer(customContext);
+            server = TestWebScriptRepoServer.getTestServer(customContext);
         }
+        
+        if (customAuthenticatorFactory != null)
+        {
+            server.setServletAuthenticatorFactory(customAuthenticatorFactory);
+        }
+        return server;
     }
     
 
@@ -344,7 +371,12 @@ public abstract class BaseWebScriptTest extends TestCase
         if (AuthenticationUtil.isMtEnabled())
         {
             // MT repository container requires non-none authentication (ie. guest or higher)
-            tws.setServletAuthenticatorFactory(new LocalTestRunAsAuthenticatorFactory());
+            // If the servlet authenticator is still the default, substitute in a custom one
+            // (If they test has already changed the authenticator, then stay with that)
+            if (customAuthenticatorFactory == null)
+            {
+                tws.setServletAuthenticatorFactory(new LocalTestRunAsAuthenticatorFactory());
+            }
         }
         
         if (asUser == null)

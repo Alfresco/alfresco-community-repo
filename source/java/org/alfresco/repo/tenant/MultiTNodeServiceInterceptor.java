@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -31,6 +31,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -134,7 +135,15 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         }
         
         // Make the call
-        Object ret = invocation.proceed();
+        Object ret = null;
+        try
+        {
+            ret = invocation.proceed();
+        }
+        catch (InvalidNodeRefException inre)
+        {
+            throw new InvalidNodeRefException(inre.getMessage(), tenantService.getBaseName(inre.getNodeRef()));
+        }
         
         if (methodName.equals("getProperty"))
         {
@@ -246,7 +255,6 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
     /**
      * Convert outbound collection to spoofed (ie. without tenant prefix) values.
      */
-    @SuppressWarnings("unchecked")
     private Collection<Object> convertOutboundValues(Collection<Object> rawValues)
     {
         /*
@@ -335,7 +343,6 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
     /**
      * Convert inbound collection to non-spoofed (ie. with tenant prefix) values.
      */
-    @SuppressWarnings("unchecked")
     private Collection<Object> convertInboundValues(Collection<Object> rawValues)
     {
         /*

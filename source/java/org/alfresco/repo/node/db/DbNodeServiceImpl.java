@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -2394,15 +2394,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         {
             // remove the deleted node from the list of new nodes
             untrackNewNodeRef(nodeToMoveRef);
-
+            
             // track the deletion of this node - so we can prevent new associations to it.
             trackDeletedNodeRef(nodeToMoveRef);
+            
+            // The Node changes NodeRefs, so this is really the deletion of the old node and creation
+            // of a node in a new store as far as the clients are concerned.
             
             invokeBeforeDeleteNode(nodeToMoveRef);
             invokeBeforeCreateNode(newParentRef, assocTypeQName, assocQName, nodeToMoveTypeQName);
         }
         else
         {
+            invokeBeforeMoveNode(oldParentAssocRef, newParentRef);
             invokeBeforeDeleteChildAssociation(oldParentAssocRef);
         }
         
@@ -2435,7 +2439,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             // Propagate timestamps
             propagateTimeStamps(oldParentAssocRef);
             propagateTimeStamps(newParentAssocRef);
-
+            
             // The Node changes NodeRefs, so this is really the deletion of the old node and creation
             // of a node in a new store as far as the clients are concerned.
             invokeOnDeleteNode(oldParentAssocRef, nodeToMoveTypeQName, nodeToMoveAspectQNames, true);

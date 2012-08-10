@@ -1116,7 +1116,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         if (visibilityValue == null)
         {
             // Examine each permission to see if this is a public site or not
-            Set<AccessPermission> permissions = this.permissionService.getAllSetPermissions(siteNodeRef);
+        	Set<AccessPermission> permissions;
+        	try {
+        		 permissions = this.permissionService.getAllSetPermissions(siteNodeRef);
+        	} catch (AccessDeniedException ae){
+        		// We might not have permission to examine the permissions
+        		return visibility;
+        	}
             for (AccessPermission permission : permissions)
             {
                 if (permission.getAuthority().equals(PermissionService.ALL_AUTHORITIES) == true && 

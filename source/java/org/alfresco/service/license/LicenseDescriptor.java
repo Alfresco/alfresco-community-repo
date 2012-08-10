@@ -111,4 +111,11 @@ public interface LicenseDescriptor
      * @return the license mode.
      */
     public LicenseMode getLicenseMode();
+    
+    
+    /**
+     * Get the cloud sync key or <code>null</code>
+     * @return the cloud sync key
+     */
+    public String getCloudSyncKey();
 }

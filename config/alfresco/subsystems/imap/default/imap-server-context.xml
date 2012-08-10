@@ -84,6 +84,19 @@
         </property>
     </bean>
     
+    <!-- The IMAP attachments common folder, which has to be a sub-folder -->
+    <bean id="imap.attachments.folder" class="org.alfresco.util.config.RepositoryFolderConfigBean">
+        <property name="store">
+            <value>${imap.attachments.folder.store}</value>
+        </property>
+        <property name="rootPath">
+            <value>${imap.attachments.folder.rootPath}</value>
+        </property>
+        <property name="folderPath">
+            <value>${imap.attachments.folder.folderPath}</value>
+        </property>
+    </bean> 
+    
     <bean id="ImapService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -93,6 +106,24 @@
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
         </property>
+    </bean>
+    
+    <bean id="attachmentsExtractor" class="org.alfresco.repo.imap.AttachmentsExtractor" init-method="init">
+        <property name="fileFolderService">
+            <ref bean="FileFolderService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="attachmentsFolder">
+            <ref bean="imap.attachments.folder" />
+        </property>
+        <property name="attachmentsExtractorMode">
+            <value>${imap.attachments.mode}</value>
+        </property>        
     </bean>
     
     <bean id="imapService" class="org.alfresco.repo.imap.ImapServiceImpl" init-method="init">
@@ -123,6 +154,9 @@
         <property name="searchService">
             <ref bean="SearchService"/>
         </property>   
+        <property name="attachmentsExtractor">
+            <ref bean="attachmentsExtractor"/>
+        </property>
         <property name="imapConfigMountPoints">
             <ref bean="imap.config.server.mountPoints" />
         </property>

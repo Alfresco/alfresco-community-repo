@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -88,7 +88,21 @@ public interface NodeServicePolicies
          */
         public void onCreateNode(ChildAssociationRef childAssocRef);
     }
-
+    
+    public interface BeforeMoveNodePolicy extends ClassPolicy
+    {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeMoveNode");
+        /**
+         * Called before a node is moved.
+         *
+         * @param oldChildAssocRef the child association reference prior to the move
+         * @param newParentRef the new parent node reference
+         * 
+         * @since 4.1
+         */
+        public void beforeMoveNode(ChildAssociationRef oldChildAssocRef, NodeRef newParentRef);
+    }
+    
     public interface OnMoveNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode");

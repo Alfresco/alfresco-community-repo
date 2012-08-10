@@ -471,6 +471,11 @@ public class FileContentStore
             }
             // create the writer
             FileContentWriter writer = new FileContentWriter(file, contentUrl, existingContentReader);
+            
+            if (contentLimitProvider != null)
+            {
+                writer.setContentLimitProvider(contentLimitProvider);
+            }
             writer.setAllowRandomAccess(allowRandomAccess);
             
             // done

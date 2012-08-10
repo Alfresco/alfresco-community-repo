@@ -20,19 +20,37 @@ package org.alfresco.repo.tenant;
 
 import java.io.File;
 
+import org.alfresco.repo.content.ContentLimitProvider;
+import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.springframework.context.ApplicationContext;
-
-
 
 /**
  * MT-aware File Content Store
  */
 public class TenantRoutingFileContentStore extends AbstractTenantRoutingContentStore
 {
+    private ContentLimitProvider contentLimitProvider = new NoLimitProvider();
+    
+    /**
+     * Sets a new {@link ContentLimitProvider} which will provide a maximum filesize for content.
+     */
+    public void setContentLimitProvider(ContentLimitProvider contentLimitProvider)
+    {
+        this.contentLimitProvider = contentLimitProvider;
+    }
+    
     protected ContentStore initContentStore(ApplicationContext ctx, String contentRoot)
     {
-        return new FileContentStore(ctx, new File(contentRoot));
+        FileContentStore fileContentStore = new FileContentStore(ctx, new File(contentRoot));
+        
+        // Set the content filesize limiter if there is one.
+        if (this.contentLimitProvider != null)
+        {
+            fileContentStore.setContentLimitProvider(contentLimitProvider);
+        }
+        
+        return fileContentStore;
     }
 }

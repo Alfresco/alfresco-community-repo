@@ -771,7 +771,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         
         if (extractAttachmentsEnabled)
         {
-            imapService.extractAttachments(folderFileInfo.getNodeRef(), messageFile.getNodeRef(), message);
+            imapService.extractAttachments(messageFile.getNodeRef(), message);
         }
         // Force persistence of the message to the repository
         new IncomingImapMessage(messageFile, serviceRegistry, message);

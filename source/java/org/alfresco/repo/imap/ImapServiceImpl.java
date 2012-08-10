@@ -146,6 +146,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     private MimetypeService mimetypeService; 
     private NamespaceService namespaceService;
     private SearchService searchService;
+    private AttachmentsExtractor attachmentsExtractor;
 
     // Note that this cache need not be cluster synchronized, as it is keyed by the cluster-safe 
     // change token.  Key is username, changeToken
@@ -269,6 +270,12 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     public void setPolicyFilter(BehaviourFilter policyFilter)
     {
         this.policyBehaviourFilter = policyFilter;
+    }
+
+
+    public void setAttachmentsExtractor(AttachmentsExtractor attachmentsExtractor)
+    {
+        this.attachmentsExtractor = attachmentsExtractor;
     }
 
     public void setImapHome(RepositoryFolderConfigBean imapHomeConfigBean)
@@ -2089,6 +2096,11 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     public SearchService getSearchService()
     {
         return searchService;
+    }
+
+    public void extractAttachments(NodeRef messageRef, MimeMessage originalMessage) throws IOException, MessagingException
+    {
+        attachmentsExtractor.extractAttachments(messageRef, originalMessage);
     }
 
     static class CacheItem

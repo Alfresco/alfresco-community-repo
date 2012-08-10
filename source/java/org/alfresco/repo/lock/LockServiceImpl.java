@@ -35,6 +35,7 @@ import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.PolicyScope;
@@ -57,6 +58,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * Simple Lock service implementation
@@ -79,6 +81,7 @@ public class LockServiceImpl implements LockService,
     private TenantService tenantService;
     private AuthenticationService authenticationService;
     private SearchService searchService;
+    private BehaviourFilter behaviourFilter;
 
     private PolicyComponent policyComponent;
     
@@ -112,6 +115,13 @@ public class LockServiceImpl implements LockService,
      */
     public void init()
     {
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "tenantService",  tenantService);
+        PropertyCheck.mandatory(this, "authenticationService", authenticationService);
+        PropertyCheck.mandatory(this, "searchService",  searchService);
+        PropertyCheck.mandatory(this, "behaviourFilter",  behaviourFilter);
+        PropertyCheck.mandatory(this, "policyComponent",  policyComponent);
+        
         // Register the various class behaviours to enable lock checking
         this.policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
@@ -648,5 +658,27 @@ public class LockServiceImpl implements LockService,
     {
         NodeRef nodeRef = oldChildAssocRef.getChildRef();
         checkForLock(nodeRef);
+    }
+
+    @Override
+    public void suspendLocks()
+    {
+       getBehaviourFilter().disableBehaviour(ContentModel.ASPECT_LOCKABLE);
+    }
+    
+    @Override
+    public void enableLocks()
+    {
+       getBehaviourFilter().enableBehaviour(ContentModel.ASPECT_LOCKABLE);
+    }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
+    public BehaviourFilter getBehaviourFilter()
+    {
+        return behaviourFilter;
     }
 }

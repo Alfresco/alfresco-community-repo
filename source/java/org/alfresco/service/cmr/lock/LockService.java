@@ -266,4 +266,16 @@ public interface LockService
     */
    @Auditable(parameters = {"storeRef", "lockType"})
    public List<NodeRef> getLocks(StoreRef storeRef, LockType lockType);
+   
+   /**
+    * Allow the current transaction to update a node despite any locks that may be on it.
+    * <p>
+    * Used for the system to be able to update locked nodes. 
+    */
+   public void suspendLocks();
+   
+   /**
+    * After calling suspendLocks turn the locks back on.
+    */
+   public void enableLocks();
 }

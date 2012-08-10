@@ -20,6 +20,7 @@ package org.alfresco.service.descriptor;
 
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.license.LicenseDescriptor;
+import org.alfresco.service.license.LicenseService.LicenseChangeHandler;
 
 
 /**
@@ -113,4 +114,10 @@ public interface DescriptorService
      * @return          Returns a message telling the user what happened
      */
     public String loadLicense();
+    
+    /**
+     * Register a callback that gets called when a license changes.
+     */
+    public void registerOnLicenseChange(LicenseChangeHandler callback);
+ 
 }

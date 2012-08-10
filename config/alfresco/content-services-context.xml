@@ -7,6 +7,15 @@
       <constructor-arg>
          <value>${dir.contentstore}</value>
       </constructor-arg>
+      
+      <!-- Uncomment the property below to add content filesize limit.
+      <property name="contentLimitProvider" ref="defaultContentLimitProvider"/>
+      -->
+   </bean>
+   
+   <!-- This content limit provider is used above and also in the Thor module. -->
+   <bean id="defaultContentLimitProvider" class="org.alfresco.repo.content.ContentLimitProvider$SimpleFixedLimitProvider">
+       <property name="sizeLimitString" value="${system.content.maximumFileSizeLimit}"/>
    </bean>
    
    <!-- deleted content will get pushed into this store, where it can be cleaned up at will -->

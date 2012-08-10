@@ -20,6 +20,7 @@ package org.alfresco.repo.content;
 
 import java.util.Date;
 
+import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -75,6 +76,8 @@ public abstract class AbstractContentStore implements ContentStore
         }
         return true;
     }
+
+    protected ContentLimitProvider contentLimitProvider = new NoLimitProvider();
     
     /**
      * Splits the content URL into its component parts as separated by
@@ -308,5 +311,10 @@ public abstract class AbstractContentStore implements ContentStore
     public String getRootLocation()
     {
         return ".";
+    }
+
+    public void setContentLimitProvider(ContentLimitProvider contentLimitProvider)
+    {
+        this.contentLimitProvider = contentLimitProvider;
     }
 }

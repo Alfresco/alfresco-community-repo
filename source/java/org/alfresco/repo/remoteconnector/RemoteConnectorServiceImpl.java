@@ -124,13 +124,22 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             String responseCharSet = httpRequest.getResponseCharSet();
             String responseContentType = (responseContentTypeH != null ? responseContentTypeH.getValue() : null);
             
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("response url=" + request.getURL() + ", length =" + httpRequest.getResponseContentLength() + ", responceContentType " + responseContentType + ", statusText =" + statusText );
+            }
             
             // Decide on how best to handle the response, based on the size
             // Ideally, we want to close the HttpClient resources immediately, but
             //  that isn't possible for very large responses
             // If we can close immediately, it makes cleanup simpler and fool-proof
-            if (httpRequest.getResponseContentLength() > MAX_BUFFER_RESPONSE_SIZE)
+            if (httpRequest.getResponseContentLength() > MAX_BUFFER_RESPONSE_SIZE || httpRequest.getResponseContentLength() == -1 )
             {
+                if(logger.isTraceEnabled())
+                {
+                	logger.trace("large response (or don't know length) url=" + request.getURL());
+                }
+                
                 // Need to wrap the InputStream in something that'll close
                 InputStream wrappedStream = new HttpClientReleasingInputStream(httpRequest);
                 httpRequest = null;
@@ -141,6 +150,10 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             }
             else
             {
+                if(logger.isTraceEnabled())
+                {
+                    logger.debug("small response for url=" + request.getURL());
+                }
                 // Fairly small response, just keep the bytes and make life simple
                 response = new RemoteConnectorResponseImpl(request, responseContentType, responseCharSet,
                                                            status, responseHdrs, httpRequest.getResponseBody());
@@ -184,6 +197,10 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             if (status >= 500 && status <= 599)
             {
                 throw new RemoteConnectorServerException(status, statusText);
+            }
+            if(status == Status.STATUS_PRECONDITION_FAILED)
+            {
+                throw new RemoteConnectorClientException(status, statusText, response);
             }
             else
             {

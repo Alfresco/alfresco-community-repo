@@ -36,6 +36,9 @@
             <list>
                 <value>classpath:alfresco/repository.properties</value>
                 <value>classpath:alfresco/domain/transaction.properties</value>
+                <!-- Enterprise defaults -->
+                <!--  Overrides supplied if this is an enterprise install (none exist for community) -->
+                <value>classpath*:alfresco/enterprise/repository.properties</value>
                 <!-- <value>classpath:alfresco/jndi.properties</value> -->
                 <!--  Overrides supplied by modules -->
                 <value>classpath*:alfresco/module/*/alfresco-global.properties</value>
@@ -521,6 +524,7 @@
         <property name="policyComponent" ref="policyComponent" />
         <property name="authenticationService" ref="authenticationService" />
         <property name="searchService" ref="admSearchService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />      
     </bean>
 
     <!--                               -->

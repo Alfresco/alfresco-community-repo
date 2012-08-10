@@ -305,6 +305,16 @@ public interface ImapService
      */
     public boolean getImapServerEnabled();  
     
+    /**
+     * Extract attachments from message.
+     * 
+     * @param messageRef nodeRef that represents message in Alfresco.
+     * @param originalMessage original message in eml format.
+     * @throws IOException
+     * @throws MessagingException
+     */
+    public void extractAttachments(NodeRef messageRef, MimeMessage originalMessage) throws IOException, MessagingException;
+    
     static class FolderStatus
     {        
         public final int messageCount;

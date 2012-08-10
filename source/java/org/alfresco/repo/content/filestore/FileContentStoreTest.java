@@ -24,6 +24,9 @@ import java.nio.ByteBuffer;
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentExistsException;
+import org.alfresco.repo.content.ContentLimitProvider;
+import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
+import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.TempFileProvider;
@@ -202,6 +205,37 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         assertDirExists(root, "1965/12/1/13/12");
         // root should be untouched.
         assertDirExists(root, "");
+    }
+    
+    /**
+     * This method tests that writing content with a configured {@link ContentLimitProvider limit} fails with
+     * the expected exception.
+     * @since Thor
+     */
+    public void testWriteFileWithSizeLimit() throws Exception
+    {
+        ContentWriter writer = getWriter();
+        assertEquals("Writer was of wrong type", FileContentWriter.class, writer.getClass());
+        
+        FileContentWriter fileContentWriter = (FileContentWriter)writer;
+        
+        // Set a maximum size limit for this writer. We use a limit of 3 bytes.
+        ContentLimitProvider limitProvider = new SimpleFixedLimitProvider(3);
+        fileContentWriter.setContentLimitProvider(limitProvider);
+        
+        // Attempt to write content that will exceed the limit.
+        boolean expectedExceptionThrown = false;
+        try
+        {
+            writer.putContent("This will exceed the short limit.");
+        }
+        catch (ContentLimitViolationException clvx)
+        {
+            expectedExceptionThrown = true;
+        }
+        
+        assertTrue("Expected exception not thrown.", expectedExceptionThrown);
+        assertTrue("Stream close not detected", writer.isClosed());
     }
     
     

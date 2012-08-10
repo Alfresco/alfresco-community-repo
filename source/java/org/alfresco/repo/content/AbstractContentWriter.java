@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentAccessor;
@@ -68,6 +69,13 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
     private DoGuessingOnCloseListener guessingOnCloseListener;
     
     /**
+     * This object provides a maximum size limit for content.
+     * @since Thor
+     */
+    private ContentLimitProvider limitProvider = new NoLimitProvider();
+    private LimitedStreamCopier sizeLimitedStreamCopier = new LimitedStreamCopier();
+    
+    /**
      * @param contentUrl the content URL
      * @param existingContentReader a reader of a previous version of this content
      */
@@ -83,6 +91,11 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
         //  the normal listeners kick in and eg write things to the DB
         guessingOnCloseListener = new DoGuessingOnCloseListener();
         listeners.add(guessingOnCloseListener);
+    }
+    
+    public void setContentLimitProvider(ContentLimitProvider limitProvider)
+    {
+        this.limitProvider = limitProvider;
     }
     
     /**
@@ -163,6 +176,16 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
                     "   new reader: " + reader);
         }
         return reader;
+    }
+    
+    /**
+     * This method returns the configured {@link ContentLimitProvider} for this writer.
+     * By default a {@link NoLimitProvider} will be returned.
+     * @since Thor
+     */
+    protected ContentLimitProvider getContentLimitProvider()
+    {
+        return this.limitProvider == null ? new NoLimitProvider() : this.limitProvider;
     }
 
     /**
@@ -470,44 +493,11 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
      */
     private final int copyStreams(InputStream in, OutputStream out) throws IOException
     {
-        int byteCount = 0;
-        IOException error = null;
-        try
-        {
-            byte[] buffer = new byte[4096];
-            int bytesRead = -1;
-            while ((bytesRead = in.read(buffer)) != -1)
-            {
-                out.write(buffer, 0, bytesRead);
-                byteCount += bytesRead;
-            }
-            out.flush();
-        }
-        finally
-        {
-            try
-            {
-                in.close();
-            }
-            catch (IOException e)
-            {
-                error = e;
-                logger.error("Failed to close output stream: " + this, e);
-            }
-            try
-            {
-                out.close();
-            }
-            catch (IOException e)
-            {
-                error = e;
-                logger.error("Failed to close output stream: " + this, e);
-            }
-        }
-        if (error != null)
-        {
-            throw error;
-        }
+        ContentLimitProvider contentLimitProvider = getContentLimitProvider();
+        final long sizeLimit = contentLimitProvider.getSizeLimit();
+        
+        int byteCount = sizeLimitedStreamCopier.copyStreams(in, out, sizeLimit);
+        
         return byteCount;
     }
     

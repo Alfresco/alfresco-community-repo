@@ -67,4 +67,9 @@ public class AlfTicketRemoteAlfrescoTicketImpl extends AbstractRemoteAlfrescoTic
     {
         return new Pair<String,String>(TICKET_USERNAME, ticket);
     }
+    
+    public String toString()
+    {
+        return "Remote Alfresco Ticket: " + ticket;
+    }
 }

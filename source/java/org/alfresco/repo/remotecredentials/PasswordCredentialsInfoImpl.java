@@ -55,4 +55,10 @@ public class PasswordCredentialsInfoImpl extends AbstractCredentialsImpl impleme
    {
        remotePassword = password;
    }
+   
+   public String toString()
+   {
+       return "Username & Password Credentials, Username="+getRemoteUsername()+" for System="+
+               getRemoteSystemName() + " stored @ " + getNodeRef();
+   }
 }

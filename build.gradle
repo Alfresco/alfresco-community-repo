@@ -239,6 +239,13 @@ subprojects {
 		}	
 	}
 	
+	task localisationPackage (type: Copy) << {
+	
+		from configDir
+		include "**/*.properties"
+		into "${assembleDir}/i18n"				
+	}
+	
 	task deployExploded(dependsOn: 'jar') << {
 	
 		def jarFileObj = file(jarFilePath)

@@ -13,6 +13,17 @@ dependencies {
 	testRuntime files(testResourceDir)
 	
 	testRuntime group: 'org.alfresco.enterprise', name: 'alfresco', version: alfrescoBaseVersion, type: 'war'
+	testRuntime group: 'org.alfresco.enterprise', name: 'alfresco-solr', version: alfrescoBaseVersion, type: 'zip'
+}
+
+task fetchSOLR(type:Copy) {
+	from configurations.testRuntime
+	into '.'
+	include '*.zip'
+	rename { String filename -> solrFile }
+}
+
+task useSOLR << {
 }
 
 task resetDatabase << {

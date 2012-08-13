@@ -106,13 +106,14 @@ public class RMSecurityCommon
      */
     public int checkRead(NodeRef nodeRef)
     {
+        int result = AccessDecisionVoter.ACCESS_ABSTAIN;
         if (nodeRef != null)
         {
             // now we know the node - we can abstain for certain types and aspects (eg, rm)
-            return checkRead(nodeRef, false);
+            result = checkRead(nodeRef, false);
         }
 
-        return AccessDecisionVoter.ACCESS_ABSTAIN;
+        return result;
     }
     
     /**
@@ -123,35 +124,32 @@ public class RMSecurityCommon
      */
     public int checkRead(NodeRef nodeRef, boolean allowDMRead)
     {
-        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+        int result = AccessDecisionVoter.ACCESS_ABSTAIN;
+        
+        if (rmService.isFilePlanComponent(nodeRef) == true)
         {
-            return checkRmRead(nodeRef);
+            result = checkRmRead(nodeRef);
         }
-        else
+        else if (allowDMRead == true)
         {
-            if (allowDMRead)
+            // Check DM read for copy etc
+            // DM does not grant - it can only deny
+            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
             {
-                // Check DM read for copy etc
-                // DM does not grant - it can only deny
-                if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+                if (logger.isDebugEnabled())
                 {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("\t\tPermission is denied");
-                        Thread.dumpStack();
-                    }
-                    return AccessDecisionVoter.ACCESS_DENIED;
+                    logger.debug("\t\tPermission is denied");
+                    Thread.dumpStack();
                 }
-                else
-                {
-                    return AccessDecisionVoter.ACCESS_GRANTED;
-                }
+                result = AccessDecisionVoter.ACCESS_DENIED;
             }
             else
             {
-                return AccessDecisionVoter.ACCESS_ABSTAIN;
+                result =  AccessDecisionVoter.ACCESS_GRANTED;
             }
         }
+        
+        return result;            
     }  
     
     /**

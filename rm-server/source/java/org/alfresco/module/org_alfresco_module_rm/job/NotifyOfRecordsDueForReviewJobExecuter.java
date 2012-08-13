@@ -69,7 +69,7 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#execute()
      */
-    public void execute() 
+    public void executeImpl() 
     {       
         if (logger.isDebugEnabled())
         {

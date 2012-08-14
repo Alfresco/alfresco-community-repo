@@ -115,6 +115,7 @@ function getRepositoryItem(folderPath, node)
             modifiedByUser: node.properties["cm:modifier"],
             createdOn: node.properties["cm:created"],
             createdByUser: node.properties["cm:creator"],
+            mimetype: node.mimetype,
             path: folderPath.join("/")
          };
          item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
@@ -170,6 +171,7 @@ function getDocumentItem(siteId, containerId, pathParts, node)
             modifiedByUser: node.properties["cm:modifier"],
             createdOn: node.properties["cm:created"],
             createdByUser: node.properties["cm:creator"],
+            mimetype: node.mimetype,
             path: pathParts.join("/")
          };
          item.modifiedBy = getPersonDisplayName(item.modifiedByUser);

@@ -16,6 +16,7 @@
 			"modifiedByUser": "${item.modifiedByUser}",
 			"modifiedBy": "${item.modifiedBy}",
 			"size": ${item.size?c},
+			"mimetype": "${item.mimetype!''}",
 			<#if item.site??>
 			"site":
 			{

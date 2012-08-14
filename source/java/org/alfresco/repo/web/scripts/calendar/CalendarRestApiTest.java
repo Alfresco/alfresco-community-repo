@@ -252,6 +252,57 @@ public class CalendarRestApiTest extends BaseWebScriptTest
     }
     
     /**
+     * Creates an all day event for the 29th in a +1hr time zone
+     */
+    private JSONObject createAllDayEntryDifferentTimeZone(String name, String where, String description, 
+          int expectedStatus) throws Exception
+    {
+       String date = "2011-06-29"; // A wednesday
+       String start = "00:00";
+       String end = "00:00";
+       
+       JSONObject json = new JSONObject();
+       json.put("startAt", date + "T" + start + ":00+04:00");
+       json.put("endAt",   date + "T" + end + ":00+04:00");
+       json.put("allday", Boolean.TRUE);
+       return createEntry(name, where, description, json, expectedStatus);
+    }
+    
+    /**
+     * Creates an all day event for the 29th
+     */
+    private JSONObject createAllDayEntry(String name, String where, String description, 
+          int expectedStatus) throws Exception
+    {
+       String date = "2011-06-29"; // A wednesday
+       String start = "00:00";
+       String end = "00:00";
+       
+       JSONObject json = new JSONObject();
+       json.put("startAt", date + "T" + start + ":00+01:00");
+       json.put("endAt",   date + "T" + end + ":00+01:00");
+       json.put("allday", Boolean.TRUE);
+       return createEntry(name, where, description, json, expectedStatus);
+    }
+    
+    /**
+     * Creates an all day event that starts on the 27th and ends on the 29th
+     */
+    private JSONObject createMultiAllDayEntry(String name, String where, String description, 
+          int expectedStatus) throws Exception
+    {
+       String startDate = "2011-06-27"; // A wednesday
+       String endDate = "2011-06-29"; 
+       String time = "00:00";
+       
+       JSONObject json = new JSONObject();
+       json.put("startAt", startDate + "T" + time + ":00+00:00");
+       json.put("endAt",   endDate + "T" + time + ":00+00:00");
+       json.put("allday", Boolean.TRUE);
+       return createEntry(name, where, description, json, expectedStatus);
+    }
+    
+    /**
      * Creates an event, with the date properties manually set
      */
     private JSONObject createEntry(String name, String where, String description, 
@@ -550,6 +601,135 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals(true, entry.has("error"));
     }
     
+    
+    /**
+     * Creating, editing, fetching and deleting an entry
+     */
+    public void testCreateAllDayEntry() throws Exception
+    {
+       JSONObject entry;
+       String name;
+       
+       
+       // Won't be there to start with
+       entry = getEntry(EVENT_TITLE_ONE, Status.STATUS_OK);
+       assertEquals(true, entry.has("error"));
+       
+       
+       // Create all day event
+       entry = createAllDayEntry(EVENT_TITLE_ONE, "Where", "Thing", Status.STATUS_OK);
+       name = getNameFromEntry(entry);
+       
+       assertEquals(EVENT_TITLE_ONE, entry.getString("name"));
+       assertEquals("Where", entry.getString("where"));
+       assertEquals("Thing", entry.getString("desc"));
+       assertEquals("2011-06-29", entry.getJSONObject("startAt").getString("legacyDate")); // Different format!
+       assertEquals("2011-06-29", entry.getJSONObject("endAt").getString("legacyDate")); // Different format!
+       assertEquals("00:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("00:00", entry.getJSONObject("endAt").getString("legacyTime"));
+       assertEquals("true", entry.getString("allday"));
+       // No isoutlook on create/edit
+       
+       
+       // Fetch
+       entry = getEntry(name, Status.STATUS_OK);
+       
+       assertEquals("Error found " + entry.toString(), false, entry.has("error"));
+       assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
+       assertEquals(name, entry.getString("name"));
+       assertEquals("Where", entry.getString("location")); // Not where...
+       assertEquals("Thing", entry.getString("description")); // Not desc...
+       
+       assertEquals("false", entry.getString("isoutlook"));
+       assertEquals("6/29/2011", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("6/29/2011", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("00:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("00:00", entry.getJSONObject("endAt").getString("legacyTime"));
+       assertEquals("true", entry.getString("allday"));
+       
+       // Check the new style dates too,
+       assertEquals("2011-06-29T00:00:00.000", entry.getJSONObject("startAt").get("iso8601"));
+       assertEquals("2011-06-29T00:00:00.000", entry.getJSONObject("endAt").get("iso8601"));
+
+       
+       
+       
+       // Create all day event in different time zone
+       entry = createAllDayEntryDifferentTimeZone(EVENT_TITLE_ONE, "Where", "Thing", Status.STATUS_OK);
+       name = getNameFromEntry(entry);
+       
+       assertEquals(EVENT_TITLE_ONE, entry.getString("name"));
+       assertEquals("Where", entry.getString("where"));
+       assertEquals("Thing", entry.getString("desc"));
+       assertEquals("2011-06-29", entry.getJSONObject("startAt").getString("legacyDate")); // Different format!
+       assertEquals("2011-06-29", entry.getJSONObject("endAt").getString("legacyDate")); // Different format!
+       assertEquals("00:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("00:00", entry.getJSONObject("endAt").getString("legacyTime"));
+       assertEquals("true", entry.getString("allday"));
+       // No isoutlook on create/edit
+       
+       
+       // Fetch
+       entry = getEntry(name, Status.STATUS_OK);
+       
+       assertEquals("Error found " + entry.toString(), false, entry.has("error"));
+       assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
+       assertEquals(name, entry.getString("name"));
+       assertEquals("Where", entry.getString("location")); // Not where...
+       assertEquals("Thing", entry.getString("description")); // Not desc...
+       
+       assertEquals("false", entry.getString("isoutlook"));
+       assertEquals("6/29/2011", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("6/29/2011", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("00:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("00:00", entry.getJSONObject("endAt").getString("legacyTime"));
+       assertEquals("true", entry.getString("allday"));
+       
+       // Check the new style dates too
+       assertEquals("2011-06-29T00:00:00.000", entry.getJSONObject("startAt").get("iso8601"));
+       assertEquals("2011-06-29T00:00:00.000", entry.getJSONObject("endAt").get("iso8601"));
+
+       
+       
+       // Create Multi all day event
+       entry = createMultiAllDayEntry(EVENT_TITLE_ONE, "Where", "Thing", Status.STATUS_OK);
+       name = getNameFromEntry(entry);
+       
+       assertEquals(EVENT_TITLE_ONE, entry.getString("name"));
+       assertEquals("Where", entry.getString("where"));
+       assertEquals("Thing", entry.getString("desc"));
+       assertEquals("2011-06-27", entry.getJSONObject("startAt").getString("legacyDate")); // Different format!
+       assertEquals("2011-06-29", entry.getJSONObject("endAt").getString("legacyDate")); // Different format!
+       assertEquals("00:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("00:00", entry.getJSONObject("endAt").getString("legacyTime"));
+       assertEquals("true", entry.getString("allday"));
+       // No isoutlook on create/edit
+       
+       
+       // Fetch
+       entry = getEntry(name, Status.STATUS_OK);
+       
+       assertEquals("Error found " + entry.toString(), false, entry.has("error"));
+       assertEquals(EVENT_TITLE_ONE, entry.getString("what"));
+       assertEquals(name, entry.getString("name"));
+       assertEquals("Where", entry.getString("location")); // Not where...
+       assertEquals("Thing", entry.getString("description")); // Not desc...
+       
+       assertEquals("false", entry.getString("isoutlook"));
+       assertEquals("6/27/2011", entry.getJSONObject("startAt").getString("legacyDate"));
+       assertEquals("6/29/2011", entry.getJSONObject("endAt").getString("legacyDate"));
+       assertEquals("00:00", entry.getJSONObject("startAt").getString("legacyTime"));
+       assertEquals("00:00", entry.getJSONObject("endAt").getString("legacyTime"));
+       assertEquals("true", entry.getString("allday"));
+       
+       // Check the new style dates too
+       assertEquals("2011-06-27T00:00:00.000", entry.getJSONObject("startAt").get("iso8601"));
+       assertEquals("2011-06-29T00:00:00.000", entry.getJSONObject("endAt").get("iso8601"));
+       
+    }
+    
+    
+    
     /**
      * When fetching an event, we get permission details.
      * This test ensures they are correct
@@ -825,18 +1005,6 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("00:00", entry.getJSONObject("startAt").getString("legacyTime"));
        assertEquals("00:00", entry.getJSONObject("endAt").getString("legacyTime"));
        assertEquals("true", entry.getString("allday"));
-
-       
-       // All-day ISO8601 with offset
-       json = new JSONObject();
-       json.put("startAt", "2011-06-21T00:00:00+01:00");
-       json.put("endAt",   "2011-06-21T00:00:00+01:00");
-       json.put("allday", Boolean.TRUE);
-       
-       assertEquals("2011-06-21", entry.getJSONObject("startAt").getString("legacyDate"));
-       assertEquals("2011-06-21", entry.getJSONObject("endAt").getString("legacyDate"));
-       assertEquals("true", entry.getString("allday"));
-
        
        // All-day ISO8601 with timezone
        json = new JSONObject();

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -158,13 +159,24 @@ public class UserCalendarEntriesGet extends AbstractCalendarListingWebScript
       {
          // Build the object
          Map<String, Object> result = new HashMap<String, Object>();
+         boolean isAllDay = CalendarEntryDTO.isAllDay(entry);
          result.put(RESULT_EVENT,  entry);
          result.put(RESULT_NAME,   entry.getSystemName());
          result.put(RESULT_TITLE,  entry.getTitle());
          result.put("description", entry.getDescription());
          result.put("where",       entry.getLocation());
-         result.put(RESULT_START,  entry.getStart());
-         result.put(RESULT_END,    entry.getEnd());
+         result.put(RESULT_START,  removeTimeZoneIfIsAllDay(entry.getStart(),isAllDay));
+         result.put(RESULT_END,    removeTimeZoneIfIsAllDay(entry.getEnd(),isAllDay));
+         
+         String legacyDateFormat = "yyyy-MM-dd";
+         String legacyTimeFormat ="HH:mm";
+         result.put("legacyDateFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyDateFormat));
+         result.put("legacyTimeFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyTimeFormat));
+         result.put("legacyDateTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyDateFormat));
+         result.put("legacyTimeTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyTimeFormat));
+        
+         
+         
          result.put("duration", buildDuration(entry));
          result.put("tags", entry.getTags());
          result.put("isoutlook", entry.isOutlook());

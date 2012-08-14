@@ -159,8 +159,16 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
       result.put("summary", entry.getTitle());
       result.put("description", entry.getDescription());
       result.put("location", entry.getLocation());
-      result.put("dtstart", entry.getStart());
-      result.put("dtend", entry.getEnd());
+      result.put("dtstart", removeTimeZoneIfIsAllDay(entry.getStart(),isAllDay));
+      result.put("dtend", removeTimeZoneIfIsAllDay(entry.getEnd(),isAllDay));
+      
+      String legacyDateFormat = "yyyy-MM-dd";
+      String legacyTimeFormat ="HH:mm";
+      result.put("legacyDateFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyDateFormat));
+      result.put("legacyTimeFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyTimeFormat));
+      result.put("legacyDateTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyDateFormat));
+      result.put("legacyTimeTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyTimeFormat));
+      
       result.put("uri", "calendar/event/" + site.getShortName() + "/" +
                         entry.getSystemName() + dateOpt);
       

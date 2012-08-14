@@ -31,6 +31,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
+import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.json.simple.JSONObject;
@@ -87,8 +88,17 @@ public class CalendarEntriesListGet extends AbstractCalendarListingWebScript
          result.put(RESULT_EVENT, entry);
          result.put(RESULT_NAME,  entry.getSystemName());
          result.put(RESULT_TITLE, entry.getTitle());
-         result.put(RESULT_START, entry.getStart());
-         result.put(RESULT_END,   entry.getEnd());
+         boolean isAllDay = CalendarEntryDTO.isAllDay(entry);
+         result.put(RESULT_START, removeTimeZoneIfIsAllDay(entry.getStart(),isAllDay));
+         result.put(RESULT_END,   removeTimeZoneIfIsAllDay(entry.getEnd(),isAllDay));
+         
+         String legacyDateFormat = "M/d/yyyy";
+         String legacyTimeFormat ="HH:mm";
+         result.put("legacyDateFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyDateFormat));
+         result.put("legacyTimeFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyTimeFormat));
+         result.put("legacyDateTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyDateFormat));
+         result.put("legacyTimeTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyTimeFormat));
+        
          
          result.put("fromDate", entry.getStart());
          result.put("tags", entry.getTags());
@@ -125,7 +135,7 @@ public class CalendarEntriesListGet extends AbstractCalendarListingWebScript
       // If they asked for repeating events to be expanded, then do so
       if (resortNeeded)
       {
-         Collections.sort(results, getEventDetailsSorter());
+          Collections.sort(results, getEventDetailsSorter());
       }
       
       // All done

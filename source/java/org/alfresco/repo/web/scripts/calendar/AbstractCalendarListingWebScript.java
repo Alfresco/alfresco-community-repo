@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.calendar;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -28,6 +29,7 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
+import org.alfresco.util.ISO8601DateFormat;
 
 /**
  * This class provides functionality common across the webscripts
@@ -55,14 +57,14 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
          public int compare(Map<String, Object> resultA,
                Map<String, Object> resultB) 
          {
-            Date startA = (Date)resultA.get(RESULT_START);
-            Date startB = (Date)resultB.get(RESULT_START);
+            Date startA = ISO8601DateFormat.parse((String)resultA.get(RESULT_START));
+            Date startB =  ISO8601DateFormat.parse((String)resultB.get(RESULT_START));
 
             int cmp = startA.compareTo(startB);
             if (cmp == 0)
             {
-               Date endA = (Date)resultA.get(RESULT_END);
-               Date endB = (Date)resultB.get(RESULT_END);
+               Date endA =  ISO8601DateFormat.parse((String)resultA.get(RESULT_END));
+               Date endB =  ISO8601DateFormat.parse((String)resultB.get(RESULT_END));
                cmp = endA.compareTo(endB);
                if (cmp == 0)
                {
@@ -173,7 +175,15 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
    private void updateRepeatingStartEnd(Date newStart, long duration, Map<String, Object> result)
    {
       Date newEnd = new Date(newStart.getTime() + duration);
-      result.put(RESULT_START, newStart);
-      result.put(RESULT_END, newEnd);
+      result.put(RESULT_START,  ISO8601DateFormat.format(newStart));
+      result.put(RESULT_END, ISO8601DateFormat.format(newEnd));
+      String legacyDateFormat = "M/d/yyyy";
+      SimpleDateFormat ldf = new SimpleDateFormat(legacyDateFormat);
+      String legacyTimeFormat ="HH:mm";
+      SimpleDateFormat ltf = new SimpleDateFormat(legacyTimeFormat);
+      result.put("legacyDateFrom", ldf.format(newStart));
+      result.put("legacyTimeFrom", ltf.format(newStart));
+      result.put("legacyDateTo", ldf.format(newEnd));
+      result.put("legacyTimeTo", ltf.format(newEnd));
    }
 }

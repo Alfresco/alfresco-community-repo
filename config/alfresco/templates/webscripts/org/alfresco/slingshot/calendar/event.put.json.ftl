@@ -10,17 +10,17 @@
        "description" : "${result.description?js_string}",
        "startAt":
       {
-           "iso8601": "${xmldate(result.dtstart)}",
-           "legacyDateTime": "${result.dtstart?string("yyyy-MM-dd")}T${result.dtstart?string("HH:mm")}",
-           "legacyDate": "${result.dtstart?string("yyyy-MM-dd")}",
-           "legacyTime": "${result.dtstart?string("HH:mm")}"
+           "iso8601": "${result.dtstart}",
+           "legacyDateTime": "${result.legacyDateFrom}T${result.legacyTimeFrom}",
+           "legacyDate": "${result.legacyDateFrom}",
+           "legacyTime": "${result.legacyTimeFrom}"
       },
        "endAt":
       {
-           "iso8601": "${xmldate(result.dtend)}",
-           "legacyDateTime": "${result.dtend?string("yyyy-MM-dd")}T${result.dtend?string("HH:mm")}",
-           "legacyDate": "${result.dtend?string("yyyy-MM-dd")}",
-           "legacyTime": "${result.dtend?string("HH:mm")}"
+           "iso8601": "${result.dtend}",
+           "legacyDateTime": "${result.legacyDateTo}T${result.legacyTimeTo}",
+           "legacyDate": "${result.legacyDateTo}",
+           "legacyTime": "${result.legacyTimeTo}"
       },
       "uri" : "${result.uri}",
       "allday" : "${result.allday?string}",

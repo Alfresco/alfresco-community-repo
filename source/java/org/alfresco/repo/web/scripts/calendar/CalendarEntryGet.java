@@ -71,12 +71,21 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       result.put("what", entry.getTitle());
       result.put("description", entry.getDescription());
       result.put("location", entry.getLocation());
-      result.put("from", entry.getStart());
-      result.put("to", entry.getEnd());
+      boolean isAllDay = CalendarEntryDTO.isAllDay(entry);
+      result.put("from", removeTimeZoneIfIsAllDay(entry.getStart(),isAllDay));
+      result.put("to", removeTimeZoneIfIsAllDay(entry.getEnd(),isAllDay));
+      
+      String legacyDateFormat = "M/d/yyyy";
+      String legacyTimeFormat ="HH:mm";
+      result.put("legacyDateFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyDateFormat));
+      result.put("legacyTimeFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyTimeFormat));
+      result.put("legacyDateTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyDateFormat));
+      result.put("legacyTimeTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyTimeFormat));
+      
       result.put("tags", entry.getTags());
       result.put("isoutlook", entry.isOutlook());
       result.put("outlookuid", entry.getOutlookUID());
-      result.put("allday", CalendarEntryDTO.isAllDay(entry));
+      result.put("allday", isAllDay);
       result.put("docfolder", entry.getSharePointDocFolder());
       result.put("recurrence", buildRecurrenceString(entry));
       
@@ -120,6 +129,10 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       // Get our days of the week, in the current locale, for each outlook two letter code
       Map<String,String> days = 
          CalendarRecurrenceHelper.buildLocalRecurrenceDaysOfTheWeek(I18NUtil.getLocale());
+      
+      // Get our weeks names, in the current locale
+      Map<Integer, String> weeks =
+    		  CalendarRecurrenceHelper.buildLocalRecurrenceWeekNames(I18NUtil.getLocale());
       
       // Turn the string into a useful map
       Map<String,String> params = CalendarRecurrenceHelper.extractRecurrenceRule(event);
@@ -173,8 +186,8 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
             }
             else if (params.get("BYSETPOS") != null)
             {
-               text.append("Occurs the ");
-               text.append(days.get(params.get("BYSETPOS")));
+            	text.append(weeks.get((Integer.parseInt(params.get("BYSETPOS")))) + " ");
+                text.append(days.get(params.get("BYDAY")));
             }
             text.append(" of every " + interval + " month(s) ");
          }
@@ -188,7 +201,8 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
             else
             {
               text.append("Occurs the ");
-              text.append(days.get(params.get("BYSETPOS")));
+              text.append(weeks.get((Integer.parseInt(params.get("BYSETPOS")))) + " ");
+              text.append(days.get(params.get("BYDAY")) + " ");
               text.append(" of " +  params.get("BYMONTH") + " month ");
             }
          }

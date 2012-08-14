@@ -10,15 +10,15 @@
             "title": "${event.title}",
             "where": "${event.where}",
             "description": "${event.description}",
-            "url": "page/site/${event.siteName}/calendar?date=${event.start?string("yyyy-MM-dd")}",
+            "url": "page/site/${event.siteName}/calendar?date=${event.legacyDateFrom}",
 
             "startAt": {
-                "iso8601": "${xmldate(event.start)}",
-                "legacyTime": "${event.start?string("HH:mm")}"
+                "iso8601": "${event.start}",
+                "legacyTime": "${event.legacyTimeFrom}"
             },
             "endAt": {
-                "iso8601": "${xmldate(event.end)}",
-                "legacyTime": "${event.end?string("HH:mm")}"
+                "iso8601": "${event.end}",
+                "legacyTime": "${event.legacyTimeTo}"
             },
 
             "site": "${event.siteName}",

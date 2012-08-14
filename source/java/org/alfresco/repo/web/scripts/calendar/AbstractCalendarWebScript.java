@@ -34,6 +34,7 @@ import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
+import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -45,6 +46,11 @@ import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.ScriptPagingDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -258,8 +264,19 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        else if (json.containsKey("allday"))
        {
           // Old style all-day event
-          entry.setStart(parseDate(getOrNull(json, "from")));
-          entry.setEnd(parseDate(getOrNull(json, "to")));
+          Date start = parseDate(getOrNull(json, "from"));
+          Date end = parseDate(getOrNull(json, "to"));
+          // Store it as UTC midnight to midnight
+          // Reset the time part to ensure that
+          String isoStartAt = ISO8601DateFormat.format(start);
+          String isoEndAt =  ISO8601DateFormat.format(end);
+    	  String utcMidnight = "T00:00:00Z";
+          isoStartAt = isoStartAt.substring(0, 10) + utcMidnight;
+          isoEndAt = isoEndAt.substring(0, 10) + utcMidnight;
+          entry.setStart(ISO8601DateFormat.parse(isoStartAt));
+          entry.setEnd(ISO8601DateFormat.parse(isoEndAt));
+    	  
+    	 
        }
        else
        {
@@ -482,6 +499,45 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
        
        // Have the real work done
        return executeImpl(site, eventName, req, json, status, cache); 
+    }
+    
+       
+    /**
+     * Remove the time zone for a given date if the 
+     * Calendar Entry is an all day event
+     * @return ISO 8601 formatted date String
+     */
+    protected String removeTimeZoneIfIsAllDay(Date date, Boolean isAllDay){
+    	return removeTimeZoneIfIsAllDay(date, isAllDay, null);
+    }
+    
+    
+    /**
+     * Remove the time zone for a given date if the 
+     * Calendar Entry is an all day event
+     * @return ISO 8601 formatted date String if datePattern is null
+     */
+    protected String removeTimeZoneIfIsAllDay(Date date, Boolean isAllDay, String datePattern){
+    	
+    	DateTime dt;
+    	if(isAllDay){
+    		 dt= new DateTime(date, DateTimeZone.UTC);
+    	}else{
+    		 dt = new DateTime(date);	
+    	}
+    	DateTimeFormatter fmt;
+    	if(datePattern==null){
+    		if(isAllDay){
+    			fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T00:00:00.000'");
+    		}else{
+    			fmt = ISODateTimeFormat.dateTime();
+    		}
+    		
+    	}else{
+    		//For Legacy Dates and Times.
+    		fmt = DateTimeFormat.forPattern(datePattern);
+    	}
+    	return 	dt.toString(fmt);
     }
     
     protected abstract Map<String, Object> executeImpl(SiteInfo site, 

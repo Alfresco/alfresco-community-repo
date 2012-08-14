@@ -19,6 +19,7 @@
 package org.alfresco.repo.web.scripts.calendar;
 
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -91,8 +92,17 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
       result.put("name", entry.getTitle());
       result.put("desc", entry.getDescription());
       result.put("where", entry.getLocation());
-      result.put("from", entry.getStart());
-      result.put("to", entry.getEnd());
+      
+      result.put("from", removeTimeZoneIfIsAllDay(entry.getStart(),isAllDay));
+      result.put("to", removeTimeZoneIfIsAllDay(entry.getEnd(),isAllDay));
+      
+      String legacyDateFormat = "yyyy-MM-dd";
+      String legacyTimeFormat ="HH:mm";
+      result.put("legacyDateFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyDateFormat));
+      result.put("legacyTimeFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyTimeFormat));
+      result.put("legacyDateTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyDateFormat));
+      result.put("legacyTimeTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyTimeFormat));
+      
       result.put("uri", "calendar/event/" + site.getShortName() + "/" +
                         entry.getSystemName() + dateOpt);
       

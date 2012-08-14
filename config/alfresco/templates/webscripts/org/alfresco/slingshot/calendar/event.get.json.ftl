@@ -9,14 +9,14 @@
    "location": "${result.location}",
    "tags": [<#list result.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
    "startAt": {
-       "iso8601": "${xmldate(result.from)}",
-       "legacyDate": "${result.from?string("M/d/yyyy")}",
-       "legacyTime": "${result.from?string("HH:mm")}"
+       "iso8601": "${result.from}",
+       "legacyDate": "${result.legacyDateFrom}",
+       "legacyTime": "${result.legacyTimeFrom}"
    },
    "endAt": {
-       "iso8601": "${xmldate(result.to)}",
-       "legacyDate": "${result.to?string("M/d/yyyy")}",
-       "legacyTime": "${result.to?string("HH:mm")}"
+       "iso8601": "${result.to}",
+       "legacyDate": "${result.legacyDateTo}",
+       "legacyTime": "${result.legacyTimeTo}"
    },
    "allday": "${result.allday?string}",
 

@@ -10,14 +10,14 @@
     "desc": "${result.desc?html}",
     "where": "${result.where?html}",
     "startAt": {
-        "iso8601": "${xmldate(result.from)}",
-        "legacyDate": "${result.from?string("yyyy-MM-dd")}",
-        "legacyTime": "${result.from?string("HH:mm")}"
+        "iso8601": "${result.from}",
+        "legacyDate": "${result.legacyDateFrom}",
+        "legacyTime": "${result.legacyTimeFrom}"
     },
     "endAt": {
-        "iso8601": "${xmldate(result.to)}",
-        "legacyDate": "${result.to?string("yyyy-MM-dd")}",
-        "legacyTime": "${result.to?string("HH:mm")}"
+        "iso8601": "${result.to}",
+        "legacyDate": "${result.legacyDateTo}",
+        "legacyTime": "${result.legacyTimeTo}"
     },
     "allday": "${result.allday?string}",
 

@@ -82,6 +82,26 @@ public class CalendarRecurrenceHelper
       return days;
    }
    
+
+   @SuppressWarnings("serial")
+   protected final static Map<Integer,String> WEEK_NUMBER_TO_WEEK_NAME = 
+      Collections.unmodifiableMap(new HashMap<Integer, String>() {{
+         put(1, "first");
+         put(2, "second");
+         put(3, "third");
+         put(4, "fourth");
+         put(-1, "last");
+      }});
+   
+   
+   /**
+    * The lookup from the week in month number to week 
+	* in month name in the specified locale
+    */
+   public static Map<Integer, String> buildLocalRecurrenceWeekNames(Locale locale){
+	   return WEEK_NUMBER_TO_WEEK_NAME;
+   }
+   
    /**
     * Returns the parsed calendar recurrence rule
     * WARNING - Alfresco use only. Return type will likely shift to
@@ -664,22 +684,11 @@ public class CalendarRecurrenceHelper
     */
    private static void toDayOfWeekInMonth(Calendar c, int dayOfWeek, int weekInMonth)
    {
-      // First up, move to the start of the month
-      c.set(Calendar.DATE, 1);
-      
-      // Now, move to the 1st instance of the day of the week
-      Date t = c.getTime();
-      c.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-      // If we went back, go forward a week
-      if (c.getTime().before(t))
-      {
-         c.add(Calendar.DATE, 7);
-      }
-      
-      // Now move to the required week
-      if (weekInMonth > 1)
-      {
-         c.add(Calendar.DATE, 7 * (weekInMonth-1));
-      }
+	   //set it to the first day
+	   c.set(Calendar.DATE, 1);
+	   //move to the day we need
+	   c.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+	   //and then to the month
+	   c.set(Calendar.DAY_OF_WEEK_IN_MONTH, weekInMonth);
    }
 }

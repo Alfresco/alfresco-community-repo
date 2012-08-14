@@ -311,6 +311,8 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware
 		        properties.setProperty("org.quartz.scheduler.instanceName", "SolrWatcherScheduler");
 		        properties.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
 		        properties.setProperty("org.quartz.threadPool.threadCount", "3");
+		        properties.setProperty("org.quartz.threadPool.makeThreadsDaemons", "true");
+		        properties.setProperty("org.quartz.scheduler.makeSchedulerThreadDaemon", "true");
 		        properties.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
 		        factory.initialize(properties);
 		        scheduler = factory.getScheduler();

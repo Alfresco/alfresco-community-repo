@@ -577,6 +577,52 @@ public class CalendarHelpersTest
    }
    
    /**
+    * Test recurrence rules that occur monthly or yearly 
+    * on the last day within the month 
+    */
+   @Test public void reccurenceByLastDay(){
+	      List<Date> dates = new ArrayList<Date>();
+	      Calendar currentDate = Calendar.getInstance();
+	      currentDate.set(2012,7-1,15,10,30);
+	      
+	      //Recur Monthly on the last Monday
+	      Map<String,String> params = new HashMap<String, String>();
+	      params.put("FREQ", "MONTHLY");
+	      params.put("BYDAY", "MO");
+	      params.put("INTERVAL", "1");
+	      params.put("BYSETPOS", "-1");
+	      
+	      dates.clear();
+	      
+	      RecurrenceHelper.buildMonthlyRecurrences(
+	            currentDate, dates, params,
+	            date(2012,7,1), date(2012,9,30),
+	            false, 1);
+	      assertEquals(3, dates.size());
+	      assertEquals("2012-07-30", dateFmt.format(dates.get(0)));
+	      assertEquals("2012-08-27", dateFmt.format(dates.get(1)));
+	      assertEquals("2012-09-24", dateFmt.format(dates.get(2)));
+	      
+	    //Recur yearly on the last Monday in July
+	      params = new HashMap<String, String>();
+	      params.put("BYMONTH", "7");
+	      params.put("BYDAY", "MO");
+	      params.put("BYSETPOS", "-1");
+	      
+	      dates.clear();
+	      
+	      RecurrenceHelper.buildYearlyRecurrences(
+	            currentDate, dates, params,
+	            date(2012,7,1), date(2015,10,1),
+	            false, 1);
+	      assertEquals(3, dates.size());
+	      assertEquals("2013-07-29", dateFmt.format(dates.get(0)));
+	      assertEquals("2014-07-28", dateFmt.format(dates.get(1)));
+	      assertEquals("2015-07-27", dateFmt.format(dates.get(2)));
+   }
+   
+   
+   /**
     * on the 1st Tuesday of the month
     */
    @Test public void monthlyRecurrenceByDayOfWeek()

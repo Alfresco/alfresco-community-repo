@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.propval;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,7 +41,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.bouncycastle.util.Arrays;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
@@ -301,7 +301,7 @@ public class PropertyValueDAOTest extends TestCase
                 Serializable check = propertyValueDAO.getPropertySerializableValueById(id).getSecond();
                 assertNotNull(check);
                 assertTrue(check instanceof byte[]);
-                Arrays.areEqual((byte[])bytes, (byte[])check);
+                Arrays.equals((byte[])bytes, (byte[])check);
                 return null;
             }
         };

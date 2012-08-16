@@ -21,12 +21,12 @@ package org.alfresco.encryption;
 import java.io.Serializable;
 import java.security.AlgorithmParameters;
 import java.security.KeyException;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.Pair;
-import org.bouncycastle.util.Arrays;
 
 /**
  * @since 4.0
@@ -53,7 +53,7 @@ public class EncryptorTest extends TestCase
                 "fluff",
                 encryptedPair.getSecond(),
                 encryptedPair.getFirst());
-        assertTrue("Encryption round trip failed. ", Arrays.areEqual(bytes, decrypted));
+        assertTrue("Encryption round trip failed. ", Arrays.equals(bytes, decrypted));
     }
     
     public void testBasicBytes_WithKey()
@@ -65,7 +65,7 @@ public class EncryptorTest extends TestCase
                 "mykey1",
                 encryptedPair.getSecond(),
                 encryptedPair.getFirst());
-        assertTrue("Encryption round trip failed. ", Arrays.areEqual(bytes, decrypted));
+        assertTrue("Encryption round trip failed. ", Arrays.equals(bytes, decrypted));
     }
     
     public void testBasicObject()

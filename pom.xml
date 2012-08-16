@@ -214,6 +214,19 @@
                 </configuration>
             </plugin>
 
+            <!--  Create a jar of test classes, to be reused later in remote-api -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                 <executions>
+                    <execution>
+                        <id>create-test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- TODO Use wsdl2java to regenerate sources 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

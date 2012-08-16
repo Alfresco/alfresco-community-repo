@@ -702,6 +702,9 @@
                  <executions>
                     <execution>
                         <id>create-test-jar</id>
+                        <!-- Usually bound to package phase, but set earlier so that we can trigger it in sonar.phase -->
+                        <!-- That's because this jar is used later in enterprise-repository, and Sonar hits MDEP-98 -->
+                        <phase>process-test-classes</phase>
                         <goals>
                             <goal>test-jar</goal>
                         </goals>

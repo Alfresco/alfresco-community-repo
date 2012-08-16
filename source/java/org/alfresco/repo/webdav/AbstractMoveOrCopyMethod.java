@@ -114,29 +114,27 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
         try
         {
             destInfo = getDAVHelper().getNodeForPath(rootNodeRef, destPath, servletPath);
-            // ALF-7079 fix, if destInfo is working copy then content will be updated later
-			boolean isDestWorkingCopy = getNodeService().hasAspect(destInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY);
-            if (!hasOverWrite() && !isDestWorkingCopy)
+            if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()))
             {
-                if (logger.isDebugEnabled())
+                // ALF-7079 fix, if destInfo is working copy then content will be updated later
+    			boolean isDestWorkingCopy = getNodeService().hasAspect(destInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY);
+                if (!hasOverWrite() && !isDestWorkingCopy)
                 {
-                    logger.debug("Destination exists but overwrite is not allowed");
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Destination exists but overwrite is not allowed");
+                    }
+                    // it exists and we may not overwrite
+                    throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
                 }
-                // it exists and we may not overwrite
-                throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
-            }
-            // delete the destination node if it is not the same as the source node and not a working copy
-            if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()) && !isDestWorkingCopy &&
-                !isShuffleOperation(sourceInfo) && !isVersioned(destInfo))
-            {
-                checkNode(destInfo);
+                // delete the destination node if it is not the same as the source node and not a working copy
+                if (!isDestWorkingCopy && !isShuffleOperation(sourceInfo) && !isVersioned(destInfo))
+                {
+                    checkNode(destInfo);
 
-                // attempting to move or copy onto another node
-                fileFolderService.delete(destInfo.getNodeRef());
-            }
-            else
-            {
-                // it is a copy or move onto itself
+                    // attempting to move or copy onto another node
+                    fileFolderService.delete(destInfo.getNodeRef());
+                }
             }
         }
         catch (FileNotFoundException e)

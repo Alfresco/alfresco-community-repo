@@ -186,6 +186,7 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
             }
             else if (params.get("BYSETPOS") != null)
             {
+            	text.append("Occurs the ");
             	text.append(weeks.get((Integer.parseInt(params.get("BYSETPOS")))) + " ");
                 text.append(days.get(params.get("BYDAY")));
             }

@@ -169,6 +169,7 @@
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
+                    <attachClasses>true</attachClasses>
                     <overlays>
                         <overlay>
                             <groupId>${project.groupId}</groupId>

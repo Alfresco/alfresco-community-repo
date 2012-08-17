@@ -42,6 +42,7 @@ public class VtiServerCustomResponse implements CustomResponse
     private int vtiServerPort = 0;
     private String vtiServerHost;
     private String vtiServerProtocol;
+    private String contextPath;
     private SysAdminParams sysAdminParams;
     private ScriptUtils scriptUtils;
 
@@ -94,6 +95,16 @@ public class VtiServerCustomResponse implements CustomResponse
     {
         this.vtiServerProtocol = vtiServerProtocol;
     }
+    
+    /**
+     * Setter for the vtiServer (external) context path.
+     * 
+     * @param contextPath
+     */
+    public void setContextPath(String contextPath)
+    {
+        this.contextPath = contextPath;
+    }
 
     /**
      * Populates the DocLib webscript response with custom metadata
@@ -122,6 +133,10 @@ public class VtiServerCustomResponse implements CustomResponse
             if (this.vtiServerProtocol != null)
             {
                 jsonObj.put("protocol", this.vtiServerProtocol);
+            }
+            if (contextPath != null)
+            {                
+                jsonObj.put("contextPath", contextPath);
             }
             return (Serializable)jsonObj;
         }

@@ -36,6 +36,9 @@
         <property name="protocol">
             <value>${vti.server.external.protocol}</value>
         </property>
+        <property name="contextPath">
+            <value>${vti.server.external.contextPath}</value>
+        </property>
     </bean>
 
     <bean id="doclibCustomGoogleDocs" class="org.alfresco.repo.jscript.app.GoogleDocsCustomResponse"/>

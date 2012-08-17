@@ -16,10 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.repo.content.transform;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -32,24 +33,25 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.txt.Icu4jEncodingDetector;
 
 /**
- * Uses javax.mail.MimeMessage to generate plain text versions of
- *  RFC822 email messages.
- * Searches for all text content parts, and returns them. Any
- *  attachments are ignored.
- * 
- * TIKA Note - could be replaced with the Tika email parser. Would
- *  require a recursing parser to be specified, but not the full
- *  Auto one (we don't want attachments), just one containing
- *  text and html related parsers.
+ * Uses javax.mail.MimeMessage to generate plain text versions of RFC822 email
+ * messages. Searches for all text content parts, and returns them. Any
+ * attachments are ignored. TIKA Note - could be replaced with the Tika email
+ * parser. Would require a recursing parser to be specified, but not the full
+ * Auto one (we don't want attachments), just one containing text and html
+ * related parsers.
  */
 public class EMLTransformer extends AbstractContentTransformer2
 {
     @Override
     public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        if (!MimetypeMap.MIMETYPE_RFC822.equals(sourceMimetype) || !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
+        if (!MimetypeMap.MIMETYPE_RFC822.equals(sourceMimetype)
+                || !MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(targetMimetype))
         {
             // only support RFC822 -> TEXT
             return false;
@@ -61,15 +63,24 @@ public class EMLTransformer extends AbstractContentTransformer2
     }
 
     @Override
-    protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception
+    protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options)
+            throws Exception
     {
-        InputStream is = null;
+        TikaInputStream tikaInputStream = null;
         try
         {
-            is = reader.getContentInputStream();
+            // wrap the given stream to a TikaInputStream instance
+            tikaInputStream = TikaInputStream.get(reader.getContentInputStream());
 
-            MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()), is);
+            final Icu4jEncodingDetector encodingDetector = new Icu4jEncodingDetector();
+            final Charset charset = encodingDetector.detect(tikaInputStream, new Metadata());
 
+            MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()), tikaInputStream);
+            if (charset != null)
+            {
+                mimeMessage.setHeader("Content-Type", "text/plain; charset=" + charset.name());
+                mimeMessage.setHeader("Content-Transfer-Encoding", "quoted-printable");
+            }
             final StringBuilder sb = new StringBuilder();
             Object content = mimeMessage.getContent();
             if (content instanceof Multipart)
@@ -80,16 +91,16 @@ public class EMLTransformer extends AbstractContentTransformer2
             {
                 sb.append(content.toString());
             }
-
             writer.putContent(sb.toString());
         }
         finally
         {
-            if (is != null)
+            if (tikaInputStream != null)
             {
                 try
                 {
-                    is.close();
+                    // it closes any other resources associated with it
+                    tikaInputStream.close();
                 }
                 catch (IOException e)
                 {

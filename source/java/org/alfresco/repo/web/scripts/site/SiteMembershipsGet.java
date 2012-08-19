@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -60,6 +60,10 @@ public class SiteMembershipsGet extends AbstractSiteWebScript
     {
        // Grab out filters
        String nameFilter = req.getParameter("nf");
+       if (nameFilter!=null)
+       {
+           nameFilter = nameFilter.endsWith("*") ? nameFilter : nameFilter+"*";
+       }
        String roleFilter = req.getParameter("rf");
        String authorityType = req.getParameter("authorityType");
        String sizeS = req.getParameter("size");

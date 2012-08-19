@@ -1322,14 +1322,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_THREE));
         
         //    - filter by name - person name
-        members = this.siteService.listMembers("testMembership", "UserOne", null, 0, true);
+        members = this.siteService.listMembers("testMembership", "UserOne*", null, 0, true);
         assertNotNull(members);
         assertEquals(1, members.size());
         assertTrue(members.containsKey(USER_ONE));
         assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
         
         //    - filter by name - person name as part of group
-        members = this.siteService.listMembers("testMembership", "UserTwo", null, 0, true);
+        members = this.siteService.listMembers("testMembership", "UserTwo*", null, 0, true);
         assertNotNull(members);
         assertEquals(1, members.size());
         assertTrue(members.containsKey(USER_TWO));
@@ -1337,7 +1337,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         //    - filter by name - person name without group expansion
         // (won't match as the group name doesn't contain the user's name) 
-        members = this.siteService.listMembers("testMembership", "UserTwo", null, 0, false);
+        members = this.siteService.listMembers("testMembership", "UserTwo*", null, 0, false);
         assertNotNull(members);
         assertEquals(0, members.size());
         

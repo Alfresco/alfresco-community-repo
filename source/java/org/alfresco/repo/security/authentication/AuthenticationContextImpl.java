@@ -18,9 +18,13 @@
  */
 package org.alfresco.repo.security.authentication;
 
+import net.sf.acegisecurity.AccountExpiredException;
 import net.sf.acegisecurity.Authentication;
+import net.sf.acegisecurity.CredentialsExpiredException;
+import net.sf.acegisecurity.DisabledException;
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
+import net.sf.acegisecurity.LockedException;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
@@ -51,6 +55,24 @@ public class AuthenticationContextImpl implements AuthenticationContext
     {
         try
         {
+            // Apply the same validation that ACEGI would have to the user details - we may be going through a 'back
+            // door'.
+            if (!ud.isEnabled())
+            {
+                throw new DisabledException("User is disabled");
+            }
+            if (!ud.isAccountNonExpired())
+            {
+                throw new AccountExpiredException("User account has expired");
+            }
+            if (!ud.isAccountNonLocked())
+            {
+                throw new LockedException("User account is locked");
+            }
+            if (!ud.isCredentialsNonExpired())
+            {
+                throw new CredentialsExpiredException("User credentials have expired");
+            }
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(ud, "", ud
                     .getAuthorities());
             auth.setDetails(ud);

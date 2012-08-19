@@ -178,6 +178,7 @@
    
    <bean id="action-constraint" abstract="true" init-method="init">
       <property name="actionService" ref="actionService"/>
+      <property name="cacheAllowableValues" value="false"/>
    </bean>
    
    <bean id="ac-compare-operations" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">

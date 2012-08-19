@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -31,6 +31,8 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -1578,7 +1580,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                             if (nameFilter != null && nameFilter.length() != 0)
                             {
                                 // found a filter - does it match Group name part?
-                                if (authority.substring(GROUP_PREFIX_LENGTH).toLowerCase().contains(nameFilterLower))
+                                if (matchByFilter(authority.substring(GROUP_PREFIX_LENGTH).toLowerCase(), nameFilterLower))
                                 {
                                     members.put(authority, permission);
                                 }
@@ -1586,7 +1588,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                                 {
                                    // Does it match on the Group Display Name part instead?
                                    String displayName = authorityService.getAuthorityDisplayName(authority);
-                                   if(displayName != null && displayName.toLowerCase().contains(nameFilterLower))
+                                   if(displayName != null && matchByFilter(displayName.toLowerCase(), nameFilterLower))
                                    {
                                       members.put(authority, permission);
                                    }
@@ -1657,21 +1659,20 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
            NodeRef person = personService.getPerson(username, false);
            String firstName = (String)directNodeService.getProperty(person, ContentModel.PROP_FIRSTNAME);
            String lastName = (String)directNodeService.getProperty(person, ContentModel.PROP_LASTNAME);
+           String userName = (String)directNodeService.getProperty(person, ContentModel.PROP_USERNAME);
 
            final String lowFirstName = (firstName != null ? firstName.toLowerCase() : "");
            final String lowLastName = (lastName != null ? lastName.toLowerCase() : "");
+           final String lowUserName = (userName != null ? userName.toLowerCase() : "");
            for (int i=0; i<nameFilters.length; i++)
            {
-              if (lowFirstName.indexOf(nameFilters[i]) != -1)
-              {
-                 addUser = true;
-                 break;
-              }
-              else if (lowLastName.indexOf(nameFilters[i]) != -1)
-              {
-                 addUser = true;
-                 break;
-              }
+               if (matchByFilter(lowUserName, nameFilters[i]) ||
+                   matchByFilter(lowFirstName, nameFilters[i]) ||
+                   matchByFilter(lowLastName, nameFilters[i]))
+               {
+                  addUser = true;
+                  break;
+               }
            }
         }
         catch(NoSuchPersonException e)
@@ -1680,6 +1681,39 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         }
         
         return addUser;
+    }
+
+    private boolean matchByFilter(String compareString, String patternString)
+    {
+        if (compareString==null || compareString.isEmpty())
+        {
+            return false;
+        }
+        if (patternString==null || patternString.isEmpty())
+        {
+            return true;
+        }
+        StringBuilder paternStr=new StringBuilder();
+        for (char c: patternString.toCharArray())
+        {
+            if (c=='*')
+            {
+                paternStr.append(".*");
+            }
+            else if (c=='(' || c==')')
+            {
+                paternStr.append("\\"+c);
+            }
+            else if (Character.isLetterOrDigit(c) || c=='*')
+            {
+                paternStr.append(c);
+            }
+            else paternStr.append("\\"+c);
+
+        }
+        Pattern p=Pattern.compile(paternStr.toString(), Pattern.CASE_INSENSITIVE);
+        Matcher matcher=p.matcher(compareString);
+        return matcher.matches();
     }
 
     /**

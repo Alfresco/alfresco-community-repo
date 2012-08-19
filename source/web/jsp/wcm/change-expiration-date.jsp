@@ -29,7 +29,7 @@
    <h:outputText value="&nbsp;#{msg.expiration_date_header}" escape="false" />
 </h:panelGrid>
 
-<h:panelGrid columns="2" cellpadding="2" cellpadding="2" width="100%" style="margin-left:8px"
+<h:panelGrid columns="2" cellpadding="2" width="100%" style="margin-left:8px"
              columnClasses=",rightHandColumn">
    <h:outputText value="#{msg.expire_date_label}:"/>
    <a:inputDatePicker id="expire-date" value="#{DialogManager.bean.expirationDate}" 

@@ -158,7 +158,7 @@
 <h:panelGrid columns="1" cellpadding="2" width="100%" style="margin-left:8px">
    <h:panelGroup rendered="#{DialogManager.bean.warningItemsSize != 0}">
       <f:verbatim><% PanelGenerator.generatePanelStart(out, request.getContextPath(), "yellowInner", "#ffffcc"); %></f:verbatim>
-      <h:panelGrid columns="2" cellpadding="0" cellpadding="0">
+      <h:panelGrid columns="2" cellpadding="0">
          <h:graphicImage url="/images/icons/warning.gif" style="padding-top:2px;padding-right:4px" width="16" height="16"/>
          <h:outputText styleClass="mainSubText" value="#{msg.submit_not_submit_warning}" />
       </h:panelGrid>

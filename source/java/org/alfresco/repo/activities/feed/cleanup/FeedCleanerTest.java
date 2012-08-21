@@ -27,8 +27,11 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -71,6 +74,10 @@ public class FeedCleanerTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        JobLockService jobLockService = (JobLockService) ctx.getBean("JobLockService");
+        PolicyComponent policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
+        NodeService nodeService = (NodeService) ctx.getBean("NodeService");
+
         siteService = (SiteService) ctx.getBean("SiteService");
         personService = (PersonService) ctx.getBean("PersonService");
         feedDAO = (ActivityFeedDAO) ctx.getBean("feedDAO");
@@ -89,6 +96,9 @@ public class FeedCleanerTest extends TestCase
         // construct the test cleaner
         cleaner = new FeedCleaner();
         cleaner.setFeedDAO(feedDAO);
+        cleaner.setPolicyComponent(policyComponent);
+        cleaner.setJobLockService(jobLockService);
+        cleaner.setNodeService(nodeService);
     }
     
     public void tearDown() throws Exception
@@ -114,6 +124,31 @@ public class FeedCleanerTest extends TestCase
         // NOOP
     }
     
+    public void testMaxIdRange() throws Exception
+    {
+        // insert site feed entries for TEST_SITE_4
+        for (int i = 0; i < 10; i++)
+        {
+            ActivityFeedEntity feedEntry = new ActivityFeedEntity();
+            
+            feedEntry.setPostDate(new Date(System.currentTimeMillis()-(i*60*1000L)));
+            feedEntry.setActivitySummaryFormat("json");
+            feedEntry.setSiteNetwork(TEST_SITE_4);
+            feedEntry.setActivityType("testActivityType");
+            feedEntry.setPostUserId(TEST_USER_C);
+            feedEntry.setFeedUserId("");
+            feedEntry.setFeedDate(new Date());
+            
+            feedDAO.insertFeedEntry(feedEntry);
+        }
+        // Check
+        assertEquals(10, feedDAO.selectSiteFeedEntries(TEST_SITE_4, "json", -1).size());
+        // Limit the ID range we will keep
+        cleaner.setMaxIdRange(5);
+        cleaner.execute();
+        // Check
+        assertEquals(5, feedDAO.selectSiteFeedEntries(TEST_SITE_4, "json", -1).size());
+    }
     public void testMaxAge() throws Exception
     {
         cleaner.setMaxFeedSize(0);

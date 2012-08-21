@@ -72,6 +72,7 @@ import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.util.DatabaseMetaDataHelper;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.schemacomp.ExportDb;
@@ -511,7 +512,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     private int countAppliedPatches(Configuration cfg, Connection connection) throws Exception
     {
-        String defaultSchema = cfg.getProperty("hibernate.default_schema");
+        String defaultSchema = DatabaseMetaDataHelper.getSchema(connection);
         if (defaultSchema != null && defaultSchema.length() == 0)
         {
             defaultSchema = null;
@@ -783,8 +784,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         final Dialect dialect = Dialect.getDialect(cfg.getProperties());
         String dialectStr = dialect.getClass().getSimpleName();
 
-        // Initialise Activiti DB, using an unclosable connection.
-        initialiseActivitiDBSchema(new UnclosableConnection(connection), cfg);
+        // Initialise Activiti DB, using an unclosable connection
+        initialiseActivitiDBSchema(new UnclosableConnection(connection));
         
         if (create)
         {
@@ -877,7 +878,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * 
      * @param connection Connection to use the initialise DB schema
      */
-    private void initialiseActivitiDBSchema(Connection connection, Configuration cfg)
+    private void initialiseActivitiDBSchema(Connection connection)
     {
         // create instance of activiti engine to initialise schema
         ProcessEngine engine = null;
@@ -893,7 +894,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 buildProcessEngine();
         
             // create or upgrade the DB schema
-            engine.getManagementService().databaseSchemaUpgrade(connection, null, cfg.getProperty("hibernate.default_schema"));
+            engine.getManagementService().databaseSchemaUpgrade(connection, null, DatabaseMetaDataHelper.getSchema(connection));
         }
         finally
         {

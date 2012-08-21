@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,6 +42,9 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -86,7 +89,9 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     
     /** The node service */
     private NodeService nodeService;
-    
+
+    private LockService lockService;
+
     /** The Version service */
     private VersionService versionService;
 
@@ -140,7 +145,17 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     {
         this.nodeService = nodeService;
     }
-    
+
+    /**
+     * Set the lock service
+     * 
+     * @param lockService   the lock service
+     */
+    public void setLockService(LockService lockService)
+    {
+        this.lockService = lockService;
+    }
+
     /**
      * Sets the dictionary DAO.
      * 
@@ -436,10 +451,10 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        if ((this.nodeService.exists(nodeRef) == true) && 
+        if ((this.nodeService.exists(nodeRef) == true) &&
+            !isLockedOrReadOnly(nodeRef) &&
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true) && 
-            (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false) &&
-            (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE) == false))
+            (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false))
         {
         	onUpdatePropertiesBehaviour.disable();
         	try
@@ -506,6 +521,21 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             	onUpdatePropertiesBehaviour.enable();
             }
         }
+    }
+
+    /**
+     * Indicates if the node is unlocked or the current user has a WRITE_LOCK<p>
+     * 
+     * Ideally this would be a new method on the lockService, but cannot do this at the moment,
+     * as this method is being added as part of a hot fix, so a public service cannot change
+     * as the RM AMP might be installed and it has its own security context which would also need
+     * to reflect this change.
+     */
+    private boolean isLockedOrReadOnly(NodeRef nodeRef)
+    {
+        LockStatus lockStatus = lockService.getLockStatus(nodeRef);
+        LockType lockType = lockService.getLockType(nodeRef);
+        return ! (lockStatus == LockStatus.NO_LOCK || (lockStatus == LockStatus.LOCK_OWNER && lockType == LockType.WRITE_LOCK));
     }
     
     /**

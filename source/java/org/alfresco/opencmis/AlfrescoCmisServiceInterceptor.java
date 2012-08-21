@@ -44,7 +44,7 @@ public class AlfrescoCmisServiceInterceptor implements MethodInterceptor
     }
 
     @Override
-    public synchronized Object invoke(MethodInvocation invocation) throws Throwable
+    public Object invoke(MethodInvocation invocation) throws Throwable
     {
         // Keep note of whether debug is required
         boolean debug = logger.isDebugEnabled();

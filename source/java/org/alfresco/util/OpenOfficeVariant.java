@@ -109,17 +109,29 @@ public class OpenOfficeVariant
 
     public boolean isLibreOffice3Dot5(File officeHome)
     {
-        logger.debug("System.getProperty(\"os.name\")="+System.getProperty("os.name"));
-        logger.debug("officeHome="+(officeHome == null ? null : "'"+officeHome.getAbsolutePath()+"'"));
-        logger.debug("basis-link:"+new File(officeHome, "basis-link").isFile());
-        logger.debug("  ure-link:"+new File(officeHome, "ure-link").isFile());
-        logger.debug("basis-link:"+new File(officeHome, "basis-link").isDirectory());
-        logger.debug("  ure-link:"+new File(officeHome, "ure-link").isDirectory());
-        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("System.getProperty(\"os.name\")="+System.getProperty("os.name"));
+            logger.debug("officeHome="+(officeHome == null ? null : "'"+officeHome.getAbsolutePath()+"'"));
+            logger.debug("basis-link:"+new File(officeHome, "basis-link").isFile());
+            logger.debug("basis-link:"+new File(officeHome, "basis-link").isDirectory());
+            logger.debug("  ure-link:"+new File(officeHome, "ure-link").isFile());
+            logger.debug("  ure-link:"+new File(officeHome, "ure-link").isDirectory());
+            logger.debug("    NOTICE:"+new File(officeHome, "NOTICE").isFile());
+        }
         return
             officeHome != null &&
             !new File(officeHome, "basis-link").isFile() &&
             (new File(officeHome, "ure-link").isFile() || new File(officeHome, "ure-link").isDirectory());
+    }
+
+    public boolean isLibreOffice3Dot6(File officeHome)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("    NOTICE:"+new File(officeHome, "NOTICE").isFile());
+        }
+        return isLibreOffice3Dot5(officeHome) && new File(officeHome, "NOTICE").isFile();
     }
 
     public boolean isLinux()

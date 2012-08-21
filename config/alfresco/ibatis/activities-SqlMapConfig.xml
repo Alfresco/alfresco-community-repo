@@ -13,6 +13,7 @@
     
     <mappers>
         <mapper resource="alfresco/ibatis/#resource.dialect#/activities-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/activities-select-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/activities-insert-SqlMap.xml"/>
     </mappers>
     

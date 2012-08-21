@@ -28,15 +28,16 @@ Deploying the RM AMPs
   - Set the envoronment variables TOMCAT_HOME and APP_TOMCAT_HOME to the home directory of the repository and share Tomcat instances respectively.
     NOTE: these can be the same tomcat instance, but it is recommended that two are used.
   - Configure your repository Tomcat so that your repository.properties settings will be successfully picked up when Alfresco is started.
-  - Run "gradlew installAmp" in the root directory.  This will use the MMT to apply the RM AMPs to the Alfresco and Share WARs respectively.  The modified WARs will then be copied to the set Tomcat instances, cleaning any exisiting exploded WARs.
+  - Run "gradlew deployAmp" in the root directory.  This will use the MMT to apply the RM AMPs to the Alfresco and Share WARs respectively.  The modified WARs will then be copied to the set Tomcat instances, cleaning any exisiting exploded WARs.
   - Start Tomcat(s). 
  
 For users of the Alfresco DevEnv
 
  - Create a normal project using "create-project".
- - Manually check out RM code into the "code" directory as described above.  Don't use the checkout script provided.
+ - Check out RM code into the "code" directory (checkout https://svn.alfresco.com/repos/alfresco-enterprise/modules/recordsmanagement/HEAD)
  - The devEnv will automatically set the TOMCAT_HOME and APP_TOMCAT_HOME environment variables to point to the Tomcat instances created by the use-tomcat6 and use-app-tomcat6 scipts.  Magic!
- - You can use the dev-context.xml generated for you to configure the repository.  Place it in <TOMCAT_HOME>/shared/alfresco/extension.
+ - Copy the JDBC driver to <TOMCAT_HOME>/lib/
+ - You can use the dev-context.xml generated for you to configure the repository. Place it in <TOMCAT_HOME>/shared/classes/alfresco/extension and <PROJECT_NAME>/code/rm-server/config/alfresco/extension.
  
 Summary Of Available Gradle Tasks
 

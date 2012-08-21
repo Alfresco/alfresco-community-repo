@@ -75,18 +75,18 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
     * @param ref
     * @param mode
     */
-   public WorkspaceClipboardItem(NodeRef ref, ClipboardStatus mode)
+   public WorkspaceClipboardItem(NodeRef ref, ClipboardStatus mode, List<String> customPasteViewIds)
    {
-      super(ref, mode);
+      super(ref, mode, customPasteViewIds);
    }
    
    /**
     * @param ref
     * @param mode
     */
-   public WorkspaceClipboardItem(NodeRef ref, NodeRef parent, ClipboardStatus mode)
+   public WorkspaceClipboardItem(NodeRef ref, NodeRef parent, ClipboardStatus mode, List<String> customPasteViewIds)
    {
-      super(ref, parent, mode);
+      super(ref, parent, mode, customPasteViewIds);
    }
 
    /**
@@ -116,9 +116,8 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
       }
       else
       {
-         return (WORKSPACE_PASTE_VIEW_ID.equals(viewId) ||
-                 FORUMS_PASTE_VIEW_ID.equals(viewId) || 
-                 FORUM_PASTE_VIEW_ID.equals(viewId));
+          return super.canCopyToViewId(viewId) || (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || AVM_PASTE_VIEW_ID.equals(viewId) ||
+              FORUMS_PASTE_VIEW_ID.equals(viewId) || FORUM_PASTE_VIEW_ID.equals(viewId));       
       }
    }
 
@@ -127,7 +126,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
     */
    public boolean canMoveToViewId(String viewId)
    {
-      return (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || FORUMS_PASTE_VIEW_ID.equals(viewId) || 
+          return super.canMoveToViewId(viewId) || (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || FORUMS_PASTE_VIEW_ID.equals(viewId) ||
               FORUM_PASTE_VIEW_ID.equals(viewId));
    }
 
@@ -138,7 +137,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    {
       final ServiceRegistry serviceRegistry = getServiceRegistry();
       final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
-      if (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || FORUMS_PASTE_VIEW_ID.equals(viewId) || 
+      if (super.canCopyToViewId(viewId) || WORKSPACE_PASTE_VIEW_ID.equals(viewId) || FORUMS_PASTE_VIEW_ID.equals(viewId) || 
           FORUM_PASTE_VIEW_ID.equals(viewId))
       {
          NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);

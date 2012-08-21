@@ -18,6 +18,7 @@
  */
 package org.alfresco.web.bean.clipboard;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
@@ -55,9 +56,9 @@ public class AVMClipboardItem extends AbstractClipboardItem
     * @param ref
     * @param mode
     */
-   public AVMClipboardItem(NodeRef ref, ClipboardStatus mode)
+   public AVMClipboardItem(NodeRef ref, ClipboardStatus mode, List<String> customPasteViewIds)
    {
-      super(ref, mode);
+      super(ref, mode, customPasteViewIds);
    }
 
    /**
@@ -73,7 +74,7 @@ public class AVMClipboardItem extends AbstractClipboardItem
     */
    public boolean canCopyToViewId(String viewId)
    {
-      if (AVM_PASTE_VIEW_ID.equals(viewId)) 
+      if (super.canCopyToViewId(viewId) || AVM_PASTE_VIEW_ID.equals(viewId)) 
       { 
          AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), AVMBrowseBean.BEAN_NAME); 
          String destPath = avmBrowseBean.getCurrentPath(); 
@@ -87,7 +88,7 @@ public class AVMClipboardItem extends AbstractClipboardItem
       } 
       else 
       { 
-         return WORKSPACE_PASTE_VIEW_ID.equals(viewId); 
+         return (super.canCopyToViewId(viewId) || WORKSPACE_PASTE_VIEW_ID.equals(viewId)); 
       } 
    }
 

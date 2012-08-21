@@ -111,18 +111,6 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
-     */
-    @Override
-    protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session)
-        throws IOException
-    {
-        // Redirect to the login page if user validation fails
-
-    	redirectToLoginPage(req, res);
-    }
-    
-    /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#onLoginComplete(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
     @Override

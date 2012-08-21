@@ -63,6 +63,7 @@ public class ClipboardBean implements Serializable
    
    transient private NodeService nodeService;
    
+   private List<String> customPasteViewIds;
    
    // ------------------------------------------------------------------------------
    // Bean property getters and setters 
@@ -98,6 +99,16 @@ public class ClipboardBean implements Serializable
        return nodeService;
    }
 
+   public void setCustomPasteViewIds(List<String> customPasteViewIds)
+   {
+       this.customPasteViewIds = customPasteViewIds;
+   }
+
+   public List<String> getCustomPasteViewIds()
+   {
+       return customPasteViewIds;
+   }
+   
    // ------------------------------------------------------------------------------
    // Navigation action event handlers 
    
@@ -317,11 +328,11 @@ public class ClipboardBean implements Serializable
       ClipboardItem item = null;
       if (StoreRef.PROTOCOL_WORKSPACE.equals(ref.getStoreRef().getProtocol()))
       {
-         item = new WorkspaceClipboardItem(ref, parent, mode);
+         item = new WorkspaceClipboardItem(ref, parent, mode, customPasteViewIds);
       }
       else if (StoreRef.PROTOCOL_AVM.equals(ref.getStoreRef().getProtocol()))
       {
-         item = new AVMClipboardItem(ref, mode);
+         item = new AVMClipboardItem(ref, mode, customPasteViewIds);
       }
       else
       {

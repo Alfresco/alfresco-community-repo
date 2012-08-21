@@ -50,18 +50,6 @@ public class NtlmAuthenticationHandler extends BaseNTLMAuthenticationFilter
         setUserAttributeName(SharepointConstants.USER_SESSION_ATTRIBUTE);
         super.init();
     }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
-     */
-    @Override
-    protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session)
-        throws IOException
-    {
-        // Restart the login challenge process if validation fails
-        
-        restartLoginChallenge(sc, req, res);
-    }    
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#createUserObject(java.lang.String, java.lang.String, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)

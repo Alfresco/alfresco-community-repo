@@ -65,6 +65,37 @@ abstract class AbstractClipboardItem implements ClipboardItem
    
    transient protected AVMService avmService;
    
+   private List<String> customPasteViewIds;
+   
+   
+   /**
+    * Constructor
+    * 
+    * @param ref        The ref of the item on the clipboard
+    * @param mode       The ClipboardStatus enum value
+    */
+   public AbstractClipboardItem(NodeRef ref, ClipboardStatus mode, List<String> customPasteViewIds)
+   {
+      this.ref = ref;
+      this.mode = mode;
+      this.customPasteViewIds = customPasteViewIds;
+   }
+   
+   /**
+     * Constructor
+     * 
+     * @param ref The ref of the item on the clipboard
+     * @param parent The parent of the item on the clipboard
+     * @param mode The ClipboardStatus enum value
+     */
+   public AbstractClipboardItem(NodeRef ref, NodeRef parent, ClipboardStatus mode, List<String> customPasteViewIds)
+   {
+       this.ref = ref;
+       this.mode = mode;
+       this.parent = parent;
+       this.customPasteViewIds = customPasteViewIds;
+   }
+   
    public void setAvmService(AVMService avmService)
    {
       this.avmService = avmService;
@@ -77,33 +108,6 @@ abstract class AbstractClipboardItem implements ClipboardItem
          avmService = getServiceRegistry().getAVMLockingAwareService();
       }
       return avmService;
-   }
-   
-   
-   /**
-    * Constructor
-    * 
-    * @param ref        The ref of the item on the clipboard
-    * @param mode       The ClipboardStatus enum value
-    */
-   public AbstractClipboardItem(NodeRef ref, ClipboardStatus mode)
-   {
-      this.ref = ref;
-      this.mode = mode;
-   }
-   
-   /**
-     * Constructor
-     * 
-     * @param ref The ref of the item on the clipboard
-     * @param parent The parent of the item on the clipboard
-     * @param mode The ClipboardStatus enum value
-     */
-   public AbstractClipboardItem(NodeRef ref, NodeRef parent, ClipboardStatus mode)
-   {
-       this.ref = ref;
-       this.mode = mode;
-       this.parent = parent;
    }
    
    public ClipboardStatus getMode()
@@ -184,6 +188,24 @@ abstract class AbstractClipboardItem implements ClipboardItem
          services = Repository.getServiceRegistry(FacesContext.getCurrentInstance());
       }
       return services;
+   }
+   
+   public boolean canCopyToViewId(String viewId)
+   {
+      if (this.customPasteViewIds != null)
+      {
+         return this.customPasteViewIds.contains(viewId);
+      }
+      return false;
+   }
+
+   public boolean canMoveToViewId(String viewId)
+   {
+      if (this.customPasteViewIds != null)
+      {
+         return this.customPasteViewIds.contains(viewId);
+      }
+      return false;
    }
    
    protected boolean checkExists(String name, NodeRef parent)

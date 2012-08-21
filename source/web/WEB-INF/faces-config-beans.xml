@@ -544,6 +544,17 @@
          <property-name>nodeService</property-name>
          <value>#{NodeService}</value>
       </managed-property>
+
+      <!-- When using custom pages, uncomment this block and add each custom page in the 'list-entries' as it shown in example below.
+           This will ensure those pages can receive copy/paste events from the user. -->
+      <!--
+      <managed-property>
+         <property-name>customPasteViewIds</property-name>
+         <list-entries>
+            <value>/jsp/browse/customBrowse.jsp</value>
+         </list-entries>
+      </managed-property> 
+      -->
    </managed-bean>
 
    <managed-bean>

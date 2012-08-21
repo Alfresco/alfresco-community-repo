@@ -186,8 +186,8 @@ public class GetMethod extends WebDAVMethod
             {
                 pathToNode = pathToNode.subPath(2, pathToNode.size() -1);
             }
-           
-            String rootURL = WebDAV.getURLForPath(m_request, pathToNode.toDisplayPath(getNodeService(), getPermissionService()), true);
+
+            String rootURL = getDAVHelper().getURLForPath(m_request, pathToNode.toDisplayPath(getNodeService(), getPermissionService()), true);
             if (rootURL.endsWith(WebDAVHelper.PathSeperator) == false)
             {
                 rootURL = rootURL + WebDAVHelper.PathSeperator;

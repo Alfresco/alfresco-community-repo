@@ -270,6 +270,7 @@
 		<property name="kinds">
 			<set>
 				<value>RECORD</value>
+				<value>RECORD_FOLDER</value>
 			</set>
 		</property>
 		<property name="capability" value="FileToRecords" />

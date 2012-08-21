@@ -3264,4 +3264,41 @@
             <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/increase-column-size-activiti.sql</value>
         </property>
     </bean>
+    
+    <bean id="patch.updateMimetypesSVG" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+        <property name="id"><value>patch.updateMimetypesSVG</value></property>
+        <property name="description"><value>patch.updateMimetypesSVG.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6013</value></property>
+        <property name="targetSchema"><value>6014</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.db-V3.2-ContentTables2"/>
+            </list>
+        </property>
+        <property name="mimetypeDAO">
+            <ref bean="mimetypeDAO"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
+        </property>
+        <property name="mimetypeMappings">
+            <map>
+                <entry key="image/svg" value="image/svg+xml" />
+            </map>
+        </property>
+        <property name="reindex">
+            <value>true</value>
+        </property>
+    </bean>
 </beans>

@@ -390,24 +390,6 @@ public class PropFindMethod extends WebDAVMethod
         // Build the href string for the current node
         String strHRef = getURLForPath(m_request, path, isFolder);
 
-        if (nodeInfo.isLink())
-        {
-            Path pathToNode = getNodeService().getPath(nodeInfo.getLinkNodeRef());
-            if (pathToNode.size() > 2)
-            {
-                pathToNode = pathToNode.subPath(2, pathToNode.size() - 1);
-            }
-
-            String rootURL = getURLForPath(m_request, pathToNode.toDisplayPath(getNodeService(), getPermissionService()), true);
-            if (rootURL.endsWith(WebDAVHelper.PathSeperator) == false)
-            {
-                rootURL = rootURL + WebDAVHelper.PathSeperator;
-            }
-
-            String fname = (String) getNodeService().getProperty(nodeInfo.getLinkNodeRef(), ContentModel.PROP_NAME);
-            strHRef = rootURL + WebDAVHelper.encodeURL(fname, m_userAgent) + WebDAVHelper.PathSeperator;
-            isFolder = getFileFolderService().getFileInfo(nodeInfo.getLinkNodeRef()).isFolder();
-        }
         xml.startElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF, getDAVHelper().getNullAttributes());
         xml.write(strHRef);
         xml.endElement(WebDAV.DAV_NS, WebDAV.XML_HREF, WebDAV.XML_NS_HREF);

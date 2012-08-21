@@ -176,12 +176,38 @@ public class GetMethod extends WebDAVMethod
         }
         
         FileInfo realNodeInfo = nodeInfo;
-        if (nodeInfo.isLink())
+
+        // ALF-12008: Due to Windows Explorer's URL concatenation behaviour, we must present links as shortcuts to the real URL, rather than direct hrefs
+        // This is at least consistent with the way the CIFS server handles links. See org.alfresco.filesys.repo.ContentDiskDriver.openFile().
+        if (realNodeInfo.isLink())
         {
-            realNodeInfo = getFileFolderService().getFileInfo(nodeInfo.getLinkNodeRef());
+            Path pathToNode = getNodeService().getPath(nodeInfo.getLinkNodeRef());
+            if (pathToNode.size() > 2)
+            {
+                pathToNode = pathToNode.subPath(2, pathToNode.size() -1);
+            }
+           
+            String rootURL = WebDAV.getURLForPath(m_request, pathToNode.toDisplayPath(getNodeService(), getPermissionService()), true);
+            if (rootURL.endsWith(WebDAVHelper.PathSeperator) == false)
+            {
+                rootURL = rootURL + WebDAVHelper.PathSeperator;
+            }
+           
+            String fname = (String) getNodeService().getProperty(nodeInfo.getLinkNodeRef(), ContentModel.PROP_NAME);
+            String webDavUrl = m_request.getServerName() + ":" + m_request.getServerPort() + rootURL + WebDAVHelper.encodeURL(fname, m_userAgent);
+            
+            StringBuilder urlStr = new StringBuilder();
+            urlStr.append("[InternetShortcut]\r\n");
+            urlStr.append("URL=file://");
+            urlStr.append(webDavUrl);
+            urlStr.append("\r\n");
+           
+            m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, "text/plain; charset=ISO-8859-1");
+            m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, String.valueOf(urlStr.length()));
+            m_response.getWriter().write(urlStr.toString());
         }
         // Check if the node is a folder
-        if (realNodeInfo.isFolder())
+        else if (realNodeInfo.isFolder())
         {
             // is content required
             if (!m_returnContent)

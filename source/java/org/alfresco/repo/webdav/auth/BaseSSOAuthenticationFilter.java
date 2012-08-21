@@ -172,6 +172,9 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session)
         throws IOException
     {
+        // Restart the login challenge process if validation fails
+        
+        restartLoginChallenge(sc, req, res);
     }
     
     /**

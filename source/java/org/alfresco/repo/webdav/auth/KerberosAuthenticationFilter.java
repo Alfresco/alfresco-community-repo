@@ -39,18 +39,6 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     
     private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);    
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
-     */
-    @Override
-    protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session)
-        throws IOException
-    {
-        // Restart the login challenge process if validation fails
-    	
-        restartLoginChallenge(sc, req, res);
-    }
-    
 	/* (non-Javadoc)
 	 * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#getLogger()
 	 */

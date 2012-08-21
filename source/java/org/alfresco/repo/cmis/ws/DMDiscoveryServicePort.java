@@ -32,6 +32,7 @@ import org.alfresco.cmis.CMISChangeLog;
 import org.alfresco.cmis.CMISChangeType;
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryModel;
+import org.alfresco.cmis.CMISObjectNotFoundException;
 import org.alfresco.cmis.CMISQueryOptions;
 import org.alfresco.cmis.CMISRelationshipDirectionEnum;
 import org.alfresco.cmis.CMISResultSet;
@@ -120,6 +121,24 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
                 break;
             }
             
+            Object identifier;
+            NodeRef nodeRef;
+            try
+            {
+                nodeRef = row.getNodeRef();
+                identifier = cmisService.getReadableObject((String) nodeRef.toString(), Object.class);
+            }
+            catch (CMISObjectNotFoundException e)
+            {
+                // ALF-15001: Handle stale nodeRefs in the index
+                numItems--;
+                continue;
+            }
+            catch (CMISServiceException e)
+            {
+                throw ExceptionUtil.createCmisException(e);
+            }
+
             CmisPropertiesType properties = new CmisPropertiesType();
             Map<String, Serializable> values = row.getValues();
 
@@ -136,17 +155,6 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
 
             CmisObjectType object = new CmisObjectType();
             object.setProperties(properties);
-            Object identifier;
-            NodeRef nodeRef;
-            try
-            {
-                nodeRef = row.getNodeRef();
-                identifier = cmisService.getReadableObject((String) nodeRef.toString(), Object.class);
-            }
-            catch (CMISServiceException e)
-            {
-                throw ExceptionUtil.createCmisException(e);
-            }
             if (includeAllowableActions)
             {
                 object.setAllowableActions(determineObjectAllowableActions(identifier));

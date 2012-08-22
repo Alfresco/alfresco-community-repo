@@ -77,13 +77,12 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
         }
         catch (FileNotFoundException e)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Node not found: " + getPath());
-            }
-            
             if (sourceFileInfo == null)
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Source node not found: " + sourcePath);
+                }
                 // nothing to move
                 throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
             }

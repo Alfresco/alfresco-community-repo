@@ -113,24 +113,7 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
             if (sourceParentNodeRef.equals(destParentNodeRef)) 
             { 
                // It is rename method
-               try
-               {
-                   fileFolderService.rename(sourceNodeRef, name);
-               }
-               catch (AccessDeniedException e)
-               {
-                   XMLWriter xml = createXMLWriter();
-
-                   Attributes nullAttr = getDAVHelper().getNullAttributes();
-
-                   xml.startElement(WebDAV.DAV_NS, WebDAV.XML_ERROR, WebDAV.XML_NS_ERROR, nullAttr);
-                   // Output error
-                   xml.write(DocumentHelper.createElement(WebDAV.XML_NS_CANNOT_MODIFY_PROTECTED_PROPERTY));
-
-                   xml.endElement(WebDAV.DAV_NS, WebDAV.XML_ERROR, WebDAV.XML_NS_ERROR);
-                   m_response.setStatus(HttpServletResponse.SC_CONFLICT);
-                   return; 
-               }
+               fileFolderService.rename(sourceNodeRef, name);
             } 
             else 
             { 

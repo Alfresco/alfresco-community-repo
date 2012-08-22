@@ -29,16 +29,12 @@ import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileInfo;
-import org.alfresco.jlan.server.filesys.FileOpenParams;
 import org.alfresco.jlan.server.filesys.NetworkFile;
 import org.alfresco.jlan.smb.SeekType;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.ContentAccessor;
@@ -76,7 +72,6 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     private FileChannel channel;        // File channel to file content
     private ContentAccessor content;    // content
 
-    private String preUpdateContentURL;
     
     // Indicate if file has been written to or truncated/resized
     private boolean modified;
@@ -336,7 +331,6 @@ public class ContentNetworkFile extends NodeRefNetworkFile
                 throw new AccessDeniedException("The network file was created for read-only: " + this);
             }
         
-            preUpdateContentURL = null;
             
             // Need to open content for write
             if (write)
@@ -349,14 +343,6 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         	
                 content = contentService.getWriter( getNodeRef(), ContentModel.PROP_CONTENT, false);
                         
-                // Keep the original content for later comparison
-            
-                ContentData preUpdateContentData = (ContentData) nodeService.getProperty( getNodeRef(), ContentModel.PROP_CONTENT);
-                if (preUpdateContentData != null)
-                {
-                    preUpdateContentURL = preUpdateContentData.getContentUrl();
-                }
-            
                 // Indicate that we have a writable channel to the file
             
                 writableChannel = true;
@@ -484,40 +470,17 @@ public class ContentNetworkFile extends NodeRefNetworkFile
 
                 final ContentData contentData = content.getContentData();
 
-                // Update node properties, but only if the binary has changed (ETHREEOH-1861)
-            
-                ContentReader postUpdateContentReader = writer.getReader();
-
-                RunAsWork<ContentReader> getReader = new RunAsWork<ContentReader>()
+                // Update node properties
+                nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_NO_CONTENT);
+                try
                 {
-                    public ContentReader doWork() throws Exception
-                    {
-                	    return preUpdateContentURL == null ? null : contentService.getRawReader(preUpdateContentURL);
-                    }
-                };
-                ContentReader preUpdateContentReader = AuthenticationUtil.runAs(getReader, AuthenticationUtil.getSystemUserName());
-            
-                boolean contentChanged = preUpdateContentURL == null
-                    || !AbstractContentReader.compareContentReaders(preUpdateContentReader,
-                            postUpdateContentReader);
-            
-                if (contentChanged)
+                    nodeService.setProperty( contentNodeRef, ContentModel.PROP_CONTENT, contentData);
+                }
+                catch (ContentQuotaException qe)
                 {
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("content has changed - remove ASPECT_NO_CONTENT");
-                    }
-                    nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_NO_CONTENT);
-                    try
-                    {
-                        nodeService.setProperty( contentNodeRef, ContentModel.PROP_CONTENT, contentData);
-                    }
-                    catch (ContentQuotaException qe)
-                    {
-                        content = null;
-                        setClosed( true);
-                        throw new DiskFullException(qe.getMessage());
-                    }
+                    content = null;
+                    setClosed( true);
+                    throw new DiskFullException(qe.getMessage());
                 }
 
                 // Tidy up after ourselves after a successful commit. Otherwise leave things to allow a retry. 
@@ -531,7 +494,6 @@ public class ContentNetworkFile extends NodeRefNetworkFile
                             if(channel == null)
                             {
                                 content = null;
-                                preUpdateContentURL = null;
                                 setClosed( true);
                             }
                         }

@@ -21,9 +21,11 @@ package org.alfresco.repo.web.scripts.calendar;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.TimeZone;
 
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
@@ -233,6 +235,13 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       
       text.append(" from " + tFormat.format(event.getStart()));
       text.append(" to " + tFormat.format(event.getEnd()));
+      
+      // Add timezone in which recurrence rule was parsed
+      TimeZone timeZone = TimeZone.getDefault();
+	  boolean daylight = timeZone.inDaylightTime(new Date());
+	  String tzDisplayName = timeZone.getDisplayName(daylight, TimeZone.SHORT);
+	  
+      text.append(" ("+tzDisplayName+")");
       
       // All done
       return text.toString();

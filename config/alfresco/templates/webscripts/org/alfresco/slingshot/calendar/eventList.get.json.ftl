@@ -18,7 +18,7 @@
       "name": "${item.title}",
       "uri": "calendar/event/${siteId}/${event.systemName}",
       "startAt": {
-          "iso8601": "$(item.start}",
+          "iso8601": "${item.start}",
           "legacyDate": "${item.legacyDateFrom}",
           "legacyTime": "${item.legacyTimeFrom}"
       },

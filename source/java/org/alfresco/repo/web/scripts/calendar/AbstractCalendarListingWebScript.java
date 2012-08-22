@@ -30,6 +30,10 @@ import java.util.Map;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 import org.alfresco.service.cmr.calendar.CalendarRecurrenceHelper;
 import org.alfresco.util.ISO8601DateFormat;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * This class provides functionality common across the webscripts
@@ -57,15 +61,26 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
          public int compare(Map<String, Object> resultA,
                Map<String, Object> resultB) 
          {
-            Date startA = ISO8601DateFormat.parse((String)resultA.get(RESULT_START));
-            Date startB =  ISO8601DateFormat.parse((String)resultB.get(RESULT_START));
+        	 DateTimeFormatter fmtNoTz  = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        	 DateTimeFormatter fmtTz  =   DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+        	 
+        	 String startA = (String)resultA.get(RESULT_START);
+        	 String startB = (String)resultB.get(RESULT_START);
+        
+        	 //check and parse iso8601 date without time zone (All day events are stripped of time zone)
+        	 DateTime sa = startA.length()>23?fmtTz.parseDateTime(startA):fmtNoTz.parseDateTime(startA);
+        	 DateTime sb = startB.length()>23?fmtTz.parseDateTime(startB):fmtNoTz.parseDateTime(startB);
 
-            int cmp = startA.compareTo(startB);
+            int cmp = sa.compareTo(sb);
             if (cmp == 0)
             {
-               Date endA =  ISO8601DateFormat.parse((String)resultA.get(RESULT_END));
-               Date endB =  ISO8601DateFormat.parse((String)resultB.get(RESULT_END));
-               cmp = endA.compareTo(endB);
+            	String endA = (String)resultA.get(RESULT_END);
+            	String endB = (String)resultB.get(RESULT_END);
+            	
+            	DateTime ea = endA.length()>23?fmtTz.parseDateTime(endA):fmtNoTz.parseDateTime(endA);
+            	DateTime eb = endB.length()>23?fmtTz.parseDateTime(endB):fmtNoTz.parseDateTime(endB);
+
+               cmp = ea.compareTo(eb);
                if (cmp == 0)
                {
                   String nameA = (String)resultA.get(RESULT_NAME);

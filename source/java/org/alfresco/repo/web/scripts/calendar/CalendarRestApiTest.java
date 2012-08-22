@@ -581,7 +581,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals("false", entry.getString("allday"));
        assertEquals(
              "Occurs every 2 weeks on Wednesday, Friday, effective " +
-             "28-Jun-2011 until 11-Sep-2011 from 11:30 to 13:30", 
+             "28-Jun-2011 until 11-Sep-2011 from 11:30 to 13:30 (BST)", 
              entry.getString("recurrence"));
        
        // Delete
@@ -1048,6 +1048,9 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        assertEquals(EVENT_TITLE_ONE, entries.getJSONObject(0).getString("name"));
        assertEquals(EVENT_TITLE_TWO, entries.getJSONObject(1).getString("name"));
        
+       //Check the dates
+       assertEquals("2011-06-29T12:00:00.000+01:00", entries.getJSONObject(0).getJSONObject("startAt").getString("iso8601"));
+       assertEquals("2011-06-29T13:00:00.000+01:00", entries.getJSONObject(0).getJSONObject("endAt").getString("iso8601"));
        
        // Add a third, on the next day
        JSONObject entry = createEntry(EVENT_TITLE_THREE, "Where3", "Thing 3", Status.STATUS_OK);

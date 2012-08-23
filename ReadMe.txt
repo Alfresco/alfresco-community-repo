@@ -19,6 +19,7 @@ Initial Setup
  
 Using Eclipse
 
+  - Run "gradlew eclipse".  This will generate the eclipse project files.
   - Start Eclipse in the usual way.
     Note: make sure the WAR dependancies have been exploded before opening Eclispe.
   - Import projects found in rm-server and rm-share directories.
@@ -52,3 +53,4 @@ Summary Of Available Gradle Tasks
 					  NOTE: the installed WAR can be found in build/dist.
   - deployAmp       : depolys the project AMP to the configured Tomcat instance.
   - fetchWarFile    : fetches the dependant Alfresco WAR files
+  - eclipse         : generates eclipse projects for repository and share projects

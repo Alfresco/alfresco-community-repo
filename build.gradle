@@ -101,6 +101,9 @@ subprojects {
 		compile fileTree(dir: explodedLibsDir, include: '*.jar')     	
 	}	
 	
+	// make sure existing eclipse projects are cleared
+	tasks.eclipse.dependsOn(cleanEclipse)
+	
 	/** --- Compile tasks --- */
 		
 	// make sure that the dependancies have been unpacked before compiling the Java

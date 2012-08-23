@@ -26,6 +26,22 @@ task fetchSOLR(type:Copy) {
 task useSOLR << {
 }
 
+eclipse {
+	classpath {
+		file {
+			withXml {
+			    
+				Map<String, String> map = new HashMap<String, String>()
+				map.put('kind', 'src')
+				map.put('path', configDir)
+				
+				def node = it.asNode()
+				node.appendNode('classpathentry', map)
+			}
+		}
+	}
+}
+
 task resetDatabase << {
   // Loading the properties in all possible locations
   ant.property(file: System.properties.getProperty('DB_PROPERTIES') )

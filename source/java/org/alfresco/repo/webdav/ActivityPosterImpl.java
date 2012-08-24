@@ -43,7 +43,7 @@ public class ActivityPosterImpl implements ActivityPoster
     private static final String FILE_ADDED = "org.alfresco.documentlibrary.file-added";
     private static final String FILE_UPDATED = "org.alfresco.documentlibrary.file-updated";
     private static final String FILE_DELETED = "org.alfresco.documentlibrary.file-deleted";
-    private static final String APP_TOOL = "WebDAV";
+    private String appTool;
     private ActivityService activityService;
     private NodeService nodeService;
     private PersonService personService;
@@ -58,13 +58,15 @@ public class ActivityPosterImpl implements ActivityPoster
 
     /**
      * Constructor
-     * 
+     *
+     * @param appTool
      * @param activityService
      * @param nodeService
      * @param personService
      */
-    public ActivityPosterImpl(ActivityService activityService, NodeService nodeService, PersonService personService)
+    public ActivityPosterImpl(String appTool, ActivityService activityService, NodeService nodeService, PersonService personService)
     {
+        this.appTool = appTool;
         this.activityService = activityService;
         this.nodeService = nodeService;
         this.personService = personService;
@@ -126,7 +128,7 @@ public class ActivityPosterImpl implements ActivityPoster
         activityService.postActivity(
                     activityType,
                     siteId,
-                    APP_TOOL,
+                    appTool,
                     json.toString());
     }
     
@@ -201,6 +203,10 @@ public class ActivityPosterImpl implements ActivityPoster
         return new Pair<String, String>(firstName, lastName);
     }
 
+    public void setAppTool(String appTool)
+    {
+        this.appTool = appTool;
+    }
 
     public void setActivityService(ActivityService activityService)
     {

@@ -321,7 +321,7 @@ public class WebDAVServlet extends HttpServlet
         singletonCache = (SimpleCache<String, NodeRef>)context.getBean("immutableSingletonCache");
         
         // Collaborator used by WebDAV methods to create activity posts.
-        activityPoster = new ActivityPosterImpl(activityService, nodeService, personService);
+        activityPoster = new ActivityPosterImpl("WebDAV", activityService, nodeService, personService);
         
         // Create the WebDAV helper
         m_davHelper = (WebDAVHelper) context.getBean("webDAVHelper");

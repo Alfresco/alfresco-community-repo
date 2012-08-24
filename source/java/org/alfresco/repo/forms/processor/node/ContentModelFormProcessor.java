@@ -22,10 +22,10 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DA
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_REMOVED_SUFFIX;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DEFAULT_CONTENT_MIMETYPE;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ON;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DOT_CHARACTER;
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.DOT_CHARACTER_REPLACEMENT;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ON;
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,8 +42,8 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
-import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormData.FieldData;
+import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.processor.FilteredFormProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -610,7 +610,12 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             }
             catch (FileExistsException fee)
             {
-                throw new FormException("Failed to persist field '" + fieldData.getName() + "'", fee);
+                // ALF-6739: Notification should be more user friendly on editing with duplicated name.
+                // throwing FormException is not informative, therefore, for now we 
+                // throw the captured runtime exception back, as it gives us better information.
+                
+                //throw new FormException("Failed to persist field '" + fieldData.getName() + "'", fee);
+                throw fee;
             }
             catch (FileNotFoundException fnne)
             {

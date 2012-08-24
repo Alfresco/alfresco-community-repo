@@ -44,11 +44,18 @@ public class ActivityPosterImpl implements ActivityPoster
     private static final String FILE_UPDATED = "org.alfresco.documentlibrary.file-updated";
     private static final String FILE_DELETED = "org.alfresco.documentlibrary.file-deleted";
     private static final String APP_TOOL = "WebDAV";
-    private final ActivityService activityService;
-    private final NodeService nodeService;
-    private final PersonService personService;
+    private ActivityService activityService;
+    private NodeService nodeService;
+    private PersonService personService;
     
     
+    /**
+     * Default constructor. 
+     */
+    public ActivityPosterImpl()
+    {
+    }
+
     /**
      * Constructor
      * 
@@ -192,5 +199,21 @@ public class ActivityPosterImpl implements ActivityPoster
         }
         
         return new Pair<String, String>(firstName, lastName);
+    }
+
+
+    public void setActivityService(ActivityService activityService)
+    {
+        this.activityService = activityService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
     }
 }

@@ -136,26 +136,27 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
                     "Could not find property definition for: " + propId);
         }
         
+        if (params.containsKey(PARAM_CONSTRAINT_REF))
+        {
+           String constraintRef = (String)params.get(PARAM_CONSTRAINT_REF);
+           
+           if (constraintRef == null)
+           {
+              result = rmAdminService.removeCustomPropertyDefinitionConstraints(propQName);
+           }
+           else
+           {
+              QName constraintRefQName = QName.createQName(constraintRef, namespaceService);
+              result = rmAdminService.setCustomPropertyDefinitionConstraint(propQName, constraintRefQName);
+           }
+        }
+
         if (params.containsKey(PARAM_LABEL))
         {
             String label = (String)params.get(PARAM_LABEL);
             result = rmAdminService.updateCustomPropertyDefinitionName(propQName, label);
         }
 
-        if (params.containsKey(PARAM_CONSTRAINT_REF))
-        {
-            String constraintRef = (String)params.get(PARAM_CONSTRAINT_REF);
-            
-            if (constraintRef == null)
-            {
-                result = rmAdminService.removeCustomPropertyDefinitionConstraints(propQName);
-            }
-            else
-            {
-                QName constraintRefQName = QName.createQName(constraintRef, namespaceService);
-                result = rmAdminService.setCustomPropertyDefinitionConstraint(propQName, constraintRefQName);
-            }
-        }
         return result;
     }
 

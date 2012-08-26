@@ -33,6 +33,7 @@ import org.alfresco.service.namespace.QName;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -152,7 +153,7 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
         String customisableElement = (String)params.get(PARAM_ELEMENT);
         QName customisableType = mapToTypeQName(customisableElement);
         
-        String label = (String)params.get(PARAM_LABEL);
+        String label = URLDecoder.decode((String)params.get(PARAM_LABEL));
         
         //According to the wireframes, type here can only be date|text|number
         Serializable serializableParam = params.get(PARAM_DATATYPE);

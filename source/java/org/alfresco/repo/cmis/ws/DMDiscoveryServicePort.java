@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -94,32 +94,36 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
         // TODO: If the select clause includes properties from more than a single type reference, then the repository SHOULD throw an exception if includeRelationships or
         // includeAllowableActions is specified as true.
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
-        CMISResultSet resultSet = cmisQueryService.query(options);
-        CMISResultSetColumn[] columns = resultSet.getMetaData().getColumns();
-
-        // build query response
         QueryResponse response = new QueryResponse();
-        response.setObjects(new CmisObjectListType());
-
-        EnumIncludeRelationships cmisDirection = (null != parameters.getIncludeRelationships()) ? (parameters.getIncludeRelationships().getValue()) : (null);
-        CMISRelationshipDirectionEnum includeRelationships = INCLUDE_RELATIONSHIPS_ENUM_MAPPING.get(cmisDirection);
-
-        int maxItems = -1;
-        if (parameters.getMaxItems() != null && parameters.getMaxItems().getValue() != null)
+        CMISResultSet resultSet = null;
+        
+        try
         {
-            maxItems = parameters.getMaxItems().getValue().intValue();
-        }
+            resultSet = cmisQueryService.query(options);
+            CMISResultSetColumn[] columns = resultSet.getMetaData().getColumns();
 
-        // total number of items
-        int numItems = resultSet.getLength();
-        // for each row...
-        int idx = 0;
-        for (CMISResultSetRow row : resultSet)
-        {
-            if (maxItems != -1 && idx == maxItems)
+            // build query response
+
+            response.setObjects(new CmisObjectListType());
+            EnumIncludeRelationships cmisDirection = (null != parameters.getIncludeRelationships()) ? (parameters.getIncludeRelationships().getValue()) : (null);
+            CMISRelationshipDirectionEnum includeRelationships = INCLUDE_RELATIONSHIPS_ENUM_MAPPING.get(cmisDirection);
+
+            int maxItems = -1;
+            if (parameters.getMaxItems() != null && parameters.getMaxItems().getValue() != null)
             {
-                break;
+                maxItems = parameters.getMaxItems().getValue().intValue();
             }
+
+            // total number of items
+            int numItems = resultSet.getLength();
+            // for each row...
+            int idx = 0;
+            for (CMISResultSetRow row : resultSet)
+            {
+                if (maxItems != -1 && idx == maxItems)
+                {
+                    break;
+                }
             
             Object identifier;
             NodeRef nodeRef;
@@ -139,44 +143,49 @@ public class DMDiscoveryServicePort extends DMAbstractServicePort implements Dis
                 throw ExceptionUtil.createCmisException(e);
             }
 
-            CmisPropertiesType properties = new CmisPropertiesType();
-            Map<String, Serializable> values = row.getValues();
+                CmisPropertiesType properties = new CmisPropertiesType();
+                Map<String, Serializable> values = row.getValues();
 
-            // for each column...
-            for (CMISResultSetColumn column : columns)
-            {
-                CmisProperty property = propertiesUtil.createProperty(column.getName(), column.getCMISDataType(), values.get(column.getName()));
-                if (property != null)
+                // for each column...
+                for (CMISResultSetColumn column : columns)
                 {
-                    property.setQueryName(column.getName());
-                    properties.getProperty().add(property);
+                    CmisProperty property = propertiesUtil.createProperty(column.getName(), column.getCMISDataType(), values.get(column.getName()));
+                    if (property != null)
+                    {
+                        property.setQueryName(column.getName());
+                        properties.getProperty().add(property);
+                    }
                 }
-            }
-
-            CmisObjectType object = new CmisObjectType();
-            object.setProperties(properties);
-            if (includeAllowableActions)
-            {
-                object.setAllowableActions(determineObjectAllowableActions(identifier));
-            }
-            if (null != includeRelationships)
-            {
-                appendWithRelationships(nodeRef, createPropertyFilter((String) null), includeRelationships, includeAllowableActions, renditionFilter, object);
-            }
-            if (renditionFilter != null)
-            {
-                List<CmisRenditionType> renditions = getRenditions(identifier, renditionFilter);
-                if (renditions != null && !renditions.isEmpty())
+  
+                CmisObjectType object = new CmisObjectType();
+                object.setProperties(properties);
+                if (includeAllowableActions)
                 {
-                    object.getRendition().addAll(renditions);
+                    object.setAllowableActions(determineObjectAllowableActions(identifier));
                 }
+                if (null != includeRelationships)
+                {
+                    appendWithRelationships(nodeRef, createPropertyFilter((String) null), includeRelationships, includeAllowableActions, renditionFilter, object);
+                }
+                if (renditionFilter != null)
+                {
+                    List<CmisRenditionType> renditions = getRenditions(identifier, renditionFilter);
+                    if (renditions != null && !renditions.isEmpty())
+                    {
+                        object.getRendition().addAll(renditions);
+                    }
+                }
+                response.getObjects().getObjects().add(object);
+                idx++;
             }
-            response.getObjects().getObjects().add(object);
-            idx++;
+            response.getObjects().setNumItems(BigInteger.valueOf(numItems));
+            boolean hasMoreItems = (maxItems != -1 ? (numItems - (skipCount + maxItems)) > 0 : false) || resultSet.hasMore();
+            response.getObjects().setHasMoreItems(hasMoreItems);
         }
-        response.getObjects().setNumItems(BigInteger.valueOf(numItems));
-        boolean hasMoreItems = (maxItems != -1 ? (numItems - (skipCount + maxItems)) > 0 : false) || resultSet.hasMore();
-        response.getObjects().setHasMoreItems(hasMoreItems);
+        finally
+        {
+        	if (resultSet != null) {resultSet.close();}
+        }
         return response;
     }
 

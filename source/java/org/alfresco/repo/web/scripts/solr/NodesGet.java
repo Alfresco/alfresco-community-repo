@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
@@ -62,6 +63,8 @@ public class NodesGet extends DeclarativeWebScript
     
     private TenantService tenantService;
     
+    private QNameDAO qnameDAO;
+    
     public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
     {
         this.solrTrackingComponent = solrTrackingComponent;
@@ -70,8 +73,13 @@ public class NodesGet extends DeclarativeWebScript
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
-    }
+    }       
     
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
+    }
+
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -178,12 +186,12 @@ public class NodesGet extends DeclarativeWebScript
             
             nodeParameters.setMaxResults(maxResults);
             
-            WebNodeQueryCallback nodeQueryCallback = new WebNodeQueryCallback(maxResults, storeRef, tenantService);
+            WebNodeQueryCallback nodeQueryCallback = new WebNodeQueryCallback(maxResults, storeRef, tenantService, qnameDAO);
             
             solrTrackingComponent.getNodes(nodeParameters, nodeQueryCallback);
             
             Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
-            List<Node> nodes = nodeQueryCallback.getNodes();
+            List<NodeRecord> nodes = nodeQueryCallback.getNodes();
             model.put("nodes", nodes);
             
             if (logger.isDebugEnabled())
@@ -203,25 +211,64 @@ public class NodesGet extends DeclarativeWebScript
         }
     }
 
+    public static class NodeRecord
+    {
+        private final Long id;
+        private final Long txnId;
+        private final boolean isDeleted;
+        private final String nodeRef;
+
+        public NodeRecord(Node node, QNameDAO qnameDAO)
+        {
+            this.id = node.getId();
+            this.txnId = node.getTransaction().getId();
+            this.isDeleted = node.getNodeStatus(qnameDAO).isDeleted();
+            this.nodeRef = node.getNodeRef().toString();
+        }
+
+        public Long getId()
+        {
+            return id;
+        }
+
+        public Long getTxnId()
+        {
+            return txnId;
+        }
+
+        public boolean isDeleted()
+        {
+            return isDeleted;
+        }
+
+        public String getNodeRef()
+        {
+            return nodeRef;
+        }
+    }
+
     /**
      * Callback for DAO get nodes query
      */
     private class WebNodeQueryCallback implements NodeQueryCallback
     {
-        private ArrayList<Node> nodes;
+        private ArrayList<NodeRecord> nodes;
         
         private StoreRef storeRef;
         
         private TenantService tenantService;
         
-        public WebNodeQueryCallback(int count, StoreRef storeRef, TenantService tenantService)
+        private QNameDAO qnameDAO;
+        
+        public WebNodeQueryCallback(int count, StoreRef storeRef, TenantService tenantService, QNameDAO qnameDAO)
         {
             super();
             
             this.storeRef = storeRef;
             this.tenantService = tenantService;
+            this.qnameDAO = qnameDAO;
            
-            nodes = new ArrayList<Node>(count == 0 || count == Integer.MAX_VALUE ? 100 : count);
+            nodes = new ArrayList<NodeRecord>(count == 0 || count == Integer.MAX_VALUE ? 100 : count);
         }
         
         @Override
@@ -234,19 +281,19 @@ public class NodesGet extends DeclarativeWebScript
                 StoreRef baseStoreRef = new StoreRef(tenantStoreRef.getProtocol(), tenantService.getBaseName(tenantStoreRef.getIdentifier(), true));
                 if (storeRef.equals(baseStoreRef))
                 {
-                    nodes.add(node);
+                    nodes.add(new NodeRecord(node, qnameDAO));
                 }
             }
             else
             {
-                nodes.add(node);
+                nodes.add(new NodeRecord(node, qnameDAO));
             }
             
             // continue - get next node
             return true;
         }
         
-        public List<Node> getNodes()
+        public List<NodeRecord> getNodes()
         {
             return nodes;
         }

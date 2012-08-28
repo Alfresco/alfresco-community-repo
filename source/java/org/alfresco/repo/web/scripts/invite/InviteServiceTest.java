@@ -29,8 +29,8 @@ import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -303,7 +302,7 @@ public class InviteServiceTest extends BaseWebScriptTest
                             //
 
                             Set<NodeRef> people = 
-                                personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, inviteeEmail);
+                                personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, inviteeEmail, 1000);
                             for (NodeRef person : people)
                             {
                                 String userName = DefaultTypeConverter.INSTANCE.convert(String.class,
@@ -334,35 +333,6 @@ public class InviteServiceTest extends BaseWebScriptTest
                 }
                 return null;
             }});
-    }
-
-    private void addUserToGroup(String groupName, String userName)
-    {
-        // get the full name for the group
-        String fullGroupName = this.authorityService.getName(
-                AuthorityType.GROUP, groupName);
-
-        // create group if it does not exist
-        if (this.authorityService.authorityExists(fullGroupName) == false)
-        {
-            this.authorityService.createAuthority(AuthorityType.GROUP, fullGroupName);
-        }
-
-        // add the user to the group
-        this.authorityService.addAuthority(fullGroupName, userName);
-    }
-
-    private void removeUserFromGroup(String groupName, String userName)
-    {
-        // get the full name for the group
-        String fullGroupName = this.authorityService.getName(
-                AuthorityType.GROUP, groupName);
-
-        // remove user from the group
-        this.authorityService.removeAuthority(fullGroupName, userName);
-
-        // delete the group
-        this.authorityService.deleteAuthority(fullGroupName);
     }
 
     public static String PERSON_FIRSTNAME = "FirstName123";
@@ -647,10 +617,8 @@ public class InviteServiceTest extends BaseWebScriptTest
 
 
         //
-        // test that invitation represented by invite ID (of invitation started
-        // above)
-        // is no longer pending (as a result of the invitation having being
-        // accepted)
+        // test that invitation represented by invite ID (of invitation started above)
+        // is no longer pending (as a result of the invitation having being accepted)
         //
 
         // get pending invite matching inviteId from invite started above (run as inviter user)
@@ -678,10 +646,8 @@ public class InviteServiceTest extends BaseWebScriptTest
         rejectInvite(inviteId, inviteTicket, Status.STATUS_CONFLICT);
 
         //
-        // test that invite represented by invite ID (of invitation started
-        // above)
-        // is no longer pending (as a result of the invitation having being
-        // rejected)
+        // test that invite represented by invite ID (of invitation started above)
+        // is no longer pending (as a result of the invitation having being rejected)
         //
 
         // get pending invite matching inviteId from invite started above (run as inviter user)

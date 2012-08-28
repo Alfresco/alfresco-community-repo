@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -92,11 +92,18 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
         {
             logger.debug("Patching legacy thumbnails by applying appropriate rendition aspect");
         }
+        List<NodeRef> resultNodeRefs = null; 
+        ResultSet types = null;
 
-        ResultSet types = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, QUERY);
-        
-        final List<NodeRef> resultNodeRefs = types.getNodeRefs();
-        types.close();
+        try
+        {
+            types = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, QUERY);
+            resultNodeRefs = types.getNodeRefs();
+        }
+        finally
+        {
+            if (types != null) {types.close();}
+        }
         
         long patchedNodeRefs = 0;
         

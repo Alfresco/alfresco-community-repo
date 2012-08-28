@@ -42,7 +42,8 @@
 <#macro nodeJSON node>
       {
          "id": ${node.id?c},
-         "txnId": ${node.transaction.id?c},
+         "nodeRef": "${node.nodeRef}",
+         "txnId": ${node.txnId?c},
          "status": "<#if node.deleted>d<#else>u</#if>"
       }
 </#macro>

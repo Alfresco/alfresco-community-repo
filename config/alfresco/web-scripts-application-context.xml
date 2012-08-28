@@ -558,6 +558,7 @@
    <bean id="webscript.org.alfresco.repository.activities.feed.userfeed.get" class="org.alfresco.repo.web.scripts.activities.feed.UserFeedRetrieverWebScript" parent="webscript">
       <property name="activityService" ref="activityService"/>
       <property name="subscriptionService" ref="SubscriptionService"/>
+   <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
    </bean>
   
    <!-- Activity Admin Feed - to get activities feed for specified user -->
@@ -1497,6 +1498,7 @@
          parent="webscript">
       <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
       <property name="tenantService" ref="tenantService"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.nodesMetaData.post"

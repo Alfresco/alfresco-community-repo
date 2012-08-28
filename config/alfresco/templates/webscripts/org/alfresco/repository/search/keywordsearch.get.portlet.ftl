@@ -1,18 +1,18 @@
     <table>
       <tr>
-        <td>Results <b>${search.startIndex}</b> - <b>${search.startIndex + search.totalPageItems - 1}</b> of <b>${search.totalResults}</b> for <b>${search.searchTerms}</b> visible to user <b><#if person??>${person.properties.userName}<#else>unknown</#if>.</b></td>
+        <td>Results <b>${search.startIndex}</b> - <b>${search.startIndex + search.totalPageItems - 1}</b> of <b>${search.totalResults}</b> for <b>${search.searchTerms?html}</b> visible to user <b><#if person??>${person.properties.userName}<#else>unknown</#if>.</b></td>
      </tr>
     </table>
     <br>
     <table>
 <#list search.results as row>            
       <tr>
-      <td><img src="${url.context}${row.icon16}"/></td><td><a href="${url.serviceContext}${row.url}">${row.name}</a></td>
+      <td><img src="${url.context}${row.icon16}"/></td><td><a href="${url.serviceContext}${row.url}">${row.name?html}</a></td>
       </tr>
       <#if row.properties.description?? == true>
       <tr>
       <td></td>
-      <td>${row.properties.description}</td>
+      <td>${row.properties.description?html}</td>
       </tr>
       </#if>
 </#list>

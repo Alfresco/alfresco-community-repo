@@ -827,7 +827,7 @@ function getSearchResults(params)
                            // work out if "from" and/or "to" are specified - use MIN and MAX otherwise;
                            // we only want the "YYYY-MM-DD" part of the ISO date value - so crop the strings
                            from = (sepindex === 0 ? "MIN" : propValue.substr(0, 10));
-                           to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1, sepindex + 10));
+                           to = (sepindex === propValue.length - 1 ? "MAX" : propValue.substr(sepindex + 1, 10));
                         }
                         else
                         {

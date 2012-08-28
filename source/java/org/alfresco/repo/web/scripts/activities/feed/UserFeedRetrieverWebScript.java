@@ -58,6 +58,8 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
     private ActivityService activityService;
     private SubscriptionService subscriptionService;
     
+    private boolean userNamesAreCaseSensitive = false;
+    
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
@@ -66,8 +68,13 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
     public void setSubscriptionService(SubscriptionService subscriptionService)
     {
         this.subscriptionService = subscriptionService;
-    }
+    }   
     
+    public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
+    {
+        this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
+	}
+
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -122,7 +129,10 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
                 PagingFollowingResults following = subscriptionService.getFollowing(AuthenticationUtil.getRunAsUser(), new PagingRequest(-1, null));
                 if (following.getPage() != null)
                 {
-                    userFilter.addAll(following.getPage());
+                    for (String userName : following.getPage())
+                    {
+                        userFilter.add(this.userNamesAreCaseSensitive ? userName : userName.toLowerCase());
+                    }
                 }
             }
         }

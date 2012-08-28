@@ -137,30 +137,21 @@
 
     <!-- Supports scheduled, persisted actions -->
     <bean id="scheduledPersistedActionService" class="org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceImpl">
+        <property name="behaviourFilter" ref="policyBehaviourFilter"/>
         <property name="nodeService" ref="NodeService" />
         <property name="startupNodeService" ref="nodeService" />
         <property name="runtimeActionService" ref="actionService"/>
         <property name="repositoryHelper" ref="repositoryHelper"/>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
+        <property name="scheduler" ref="schedulerFactory" />
     </bean>
 
    <!-- Actions Aspect -->
    
    <bean id="actionsAspect" class="org.alfresco.repo.action.ActionsAspect" init-method="init">
-      <property name="policyComponent">
-         <ref bean="policyComponent"/>
-      </property>             
-      <property name="behaviourFilter">
-         <ref bean="policyBehaviourFilter"/>
-      </property>             
-      <property name="nodeService">
-         <ref bean="nodeService"/>
-      </property>       
-      <property name="ruleService">
-         <ref bean="ruleService"/>
-      </property>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="ruleService" ref="ruleService"/>
    </bean>   
    
    <!-- I18N -->

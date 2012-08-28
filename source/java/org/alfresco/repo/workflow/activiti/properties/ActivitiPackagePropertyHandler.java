@@ -40,6 +40,11 @@ public class ActivitiPackagePropertyHandler extends ActivitiTaskPropertyHandler
     
     private RuntimeService runtimeService;
     
+    public void setRuntimeService(RuntimeService runtimeService)
+    {
+        this.runtimeService = runtimeService;
+    }
+    
     /**
     * {@inheritDoc}
     */

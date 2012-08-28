@@ -50,6 +50,8 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.Assert;
+import org.springframework.util.DefaultPropertiesPersister;
+import org.springframework.util.PropertiesPersister;
 
 /**
  * A factory allowing initialization of an entire 'subsystem' in a child application context. As with other
@@ -152,6 +154,8 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
     /** The registered composite properties and their types. */
     private Map<String, Class<?>> compositePropertyTypes = Collections.emptyMap();
 
+    private PropertiesPersister persister = new DefaultPropertiesPersister();
+
     /**
      * Default constructor for container construction.
      */
@@ -236,6 +240,22 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         this.compositePropertyTypes = compositePropertyTypes;
     }
 
+    /**
+	 * @return the persister
+	 */
+	public PropertiesPersister getPersister() 
+	{
+		return persister;
+	}
+
+	/**
+	 * @param persister the persister to set
+	 */
+	public void setPersister(PropertiesPersister persister) 
+	{
+		this.persister = persister;
+	}
+
     /*
      * (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -289,6 +309,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         // Apply any property overrides from the extension classpath and also allow system properties and JNDI to
         // override. We use the type name and last component of the ID in the path
         JndiPropertiesFactoryBean overrideFactory = new JndiPropertiesFactoryBean();
+        overrideFactory.setPropertiesPersister(getPersister());
         overrideFactory.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_OVERRIDE);
         overrideFactory.setLocations(getParent().getResources(
                 ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX + getCategory() + '/' + getTypeName() + '/'
@@ -529,6 +550,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         {
             // Load the property defaults
             PropertiesFactoryBean factory = new PropertiesFactoryBean();
+            factory.setPropertiesPersister(getPersister());
             factory.setLocations(getParent().getResources(
                     ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
                             + ChildApplicationContextFactory.PROPERTIES_SUFFIX));

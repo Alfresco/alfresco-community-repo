@@ -79,8 +79,6 @@ public class UnlinkRules extends ActionExecuterAbstractBase
                 NodeRef linkedToNode = ((RuleService)ruleService).getLinkedToRuleNode(actionedUponNodeRef);
                 if (linkedToNode != null)
                 {
-                    NodeRef ruleFolder = ruleService.getSavedRuleFolderAssoc(linkedToNode).getChildRef();
-                    nodeService.removeChild(actionedUponNodeRef, ruleFolder);
                     nodeService.removeAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES);
                 }
             }

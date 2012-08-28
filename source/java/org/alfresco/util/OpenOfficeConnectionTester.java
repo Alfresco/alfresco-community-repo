@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Semaphore;
 
 import net.sf.jooreports.openoffice.connection.AbstractOpenOfficeConnection;
 import net.sf.jooreports.openoffice.connection.OpenOfficeConnection;
@@ -64,6 +65,8 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
     private Map<String, Object> openOfficeMetadata = new TreeMap<String, Object>();
     private boolean strict;
 
+    private Semaphore singleThreadSemaphore = new Semaphore(1);
+    
     public OpenOfficeConnectionTester()
     {
         this.strict = false;
@@ -140,6 +143,31 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
         else
         {
             logger.warn(msg);
+        }
+    }
+    
+    /**
+     * Calls {@link #testAndConnect()} if no other Threads are currently calling it.
+     * As a result we should NOT get a queue of Threads from the Quartz scheduler hanging
+     * one after another, if OpenOffice is taking a long time responding or waiting for the
+     * connection timeout. This way we get one timeout rather than multiple timeouts. ALF-15406 
+     * @return {code null} if another Thread is checking the connection or the result from
+     *         {@link #testAndConnect()}.
+     */
+    public Boolean testAndConnectNoQueuing()
+    {
+        boolean checking = false;
+        try
+        {
+            checking = singleThreadSemaphore.tryAcquire();
+            return checking ? testAndConnect() : null;
+        }
+        finally
+        {
+            if (checking)
+            {
+                singleThreadSemaphore.release();
+            }
         }
     }
     
@@ -267,35 +295,39 @@ public class OpenOfficeConnectionTester extends AbstractLifecycleBean
             }            
             
             // Now ping the connection.  It doesn't matter if it fails or not.
-            boolean connected = openOfficeConnectionTester.testAndConnect();
-            // Now log, if necessary
-            if (OpenOfficeConnectionTesterJob.wasConnected == null)
+            // If there is another Thread already checking. Lets not block and then potentially wait for a timeout.
+            Boolean connected = openOfficeConnectionTester.testAndConnectNoQueuing();
+            if (connected != null)
             {
-                // This is the first pass
-            }
-            else if (OpenOfficeConnectionTesterJob.wasConnected.booleanValue() == connected)
-            {
-                // Nothing changed since last time
-            }
-            else
-            {
-                if (connected)
+                // Now log, if necessary
+                if (OpenOfficeConnectionTesterJob.wasConnected == null)
                 {
-                    // This is reported as a warning as admins must be aware that it is bouncing
-                    logger.info(I18NUtil.getMessage(ERR_CONNECTION_REMADE));
+                    // This is the first pass
+                }
+                else if (OpenOfficeConnectionTesterJob.wasConnected.booleanValue() == connected)
+                {
+                    // Nothing changed since last time
                 }
                 else
                 {
-                    logger.error(I18NUtil.getMessage(ERR_CONNECTION_LOST));
+                    if (connected)
+                    {
+                        // This is reported as a warning as admins must be aware that it is bouncing
+                        logger.info(I18NUtil.getMessage(ERR_CONNECTION_REMADE));
+                    }
+                    else
+                    {
+                        logger.error(I18NUtil.getMessage(ERR_CONNECTION_LOST));
+                    }
+                    // The value changed so ensure that the registries are bounced
+                    if (metadataExtracterRegistry != null)
+                    {
+                        metadataExtracterRegistry.resetCache();
+                    }
                 }
-                // The value changed so ensure that the registries are bounced
-                if (metadataExtracterRegistry != null)
-                {
-                    metadataExtracterRegistry.resetCache();
-                }
+                // Record the state
+                OpenOfficeConnectionTesterJob.wasConnected = Boolean.valueOf(connected);
             }
-            // Record the state
-            OpenOfficeConnectionTesterJob.wasConnected = Boolean.valueOf(connected);
         }
     }
 }

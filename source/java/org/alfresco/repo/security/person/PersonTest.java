@@ -81,6 +81,7 @@ public class PersonTest extends TestCase
     private MutableAuthenticationDao authenticationDAO;
     private UserTransaction testTX;
 
+    @SuppressWarnings("deprecation")
     public void setUp() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
@@ -511,12 +512,12 @@ public class PersonTest extends TestCase
 
         assertEquals(3, getPeopleCount());
         checkPeopleContain("derek");
-        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "derek").size());
-        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh").size());
-        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "alfresco").size());
-        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "glen").size());
-        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "gj@email.com").size());
-        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "microsoft").size());
+        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "derek", 10).size());
+        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh", 10).size());
+        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "alfresco", 10).size());
+        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "glen", 10).size());
+        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "gj@email.com", 10).size());
+        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "microsoft", 10).size());
 
         personService.deletePerson("derek");
         assertEquals(2, getPeopleCount());
@@ -547,12 +548,12 @@ public class PersonTest extends TestCase
 
         assertEquals(3, getPeopleCount());
         checkPeopleContain("Derek");
-        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "Derek").size());
-        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh").size());
-        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "alfresco").size());
-        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "Glen").size());
-        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "gj@email.com").size());
-        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "microsoft").size());
+        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "Derek", 10).size());
+        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "dh@dh", 10).size());
+        assertEquals(1, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "alfresco", 10).size());
+        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "Glen", 10).size());
+        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "gj@email.com", 10).size());
+        assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "microsoft", 10).size());
         assertEquals(personService.personExists("derek"), EqualsHelper.nullSafeEquals(personService.getUserIdentifier("derek"), "Derek"));
         assertEquals(personService.personExists("dEREK"), EqualsHelper.nullSafeEquals(personService.getUserIdentifier("dEREK"), "Derek"));
         assertEquals(personService.personExists("DEREK"), EqualsHelper.nullSafeEquals(personService.getUserIdentifier("DEREK"), "Derek"));
@@ -1260,7 +1261,7 @@ public class PersonTest extends TestCase
         txnHelper.doInTransaction(callback2);
     }
     
-    public void testCheckForIndirectUsage()
+    public void testCheckForIndirectUsage() throws Exception
     {
         final String TEST_PERSON = "Test_Person_Four";
         
@@ -1316,6 +1317,10 @@ public class PersonTest extends TestCase
             // ignore - expected
         }
         
+        // The transaction is broken
+        testTX.rollback();
+        
+        // Clean up
         personService.deletePerson(TEST_PERSON);
     }
     

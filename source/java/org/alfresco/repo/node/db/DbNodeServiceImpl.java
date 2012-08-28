@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,10 +43,12 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.AbstractNodeServiceImpl;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.node.db.NodeHierarchyWalker.VisitedNode;
 import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -66,10 +68,10 @@ import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
@@ -90,9 +92,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 {
-    private final static String KEY_PRE_COMMIT_ADD_NODE = "DbNodeServiceImpl.PreCommitAddNode";
-    private final static String KEY_DELETED_NODES = "DbNodeServiceImpl.DeletedNodes";
-
+    public static final String KEY_PENDING_DELETE_NODES = "DbNodeServiceImpl.pendingDeleteNodes";
+    
     private static Log logger = LogFactory.getLog(DbNodeServiceImpl.class);
     
     private QNameDAO qnameDAO;
@@ -311,6 +312,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             QName nodeTypeQName,
             Map<QName, Serializable> properties)
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(parentRef);
+        
         ParameterCheck.mandatory("parentRef", parentRef);
         ParameterCheck.mandatory("assocTypeQName", assocTypeQName);
         ParameterCheck.mandatory("assocQName", assocQName);
@@ -333,14 +337,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         
         // get an ID for the node
         String newUuid = generateGuid(properties);
-        
-        /**
-         *  Check the parent node has not been deleted in this txn.
-         */
-        if(isDeletedNodeRef(parentRef))
-        {               
-            throw new InvalidNodeRefException("The parent node has been deleted", parentRef);
-        }
         
         // Invoke policy behaviour
         invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
@@ -397,8 +393,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 propertiesBefore,
                 propertiesAfter);
         
-        untrackDeletedNodeRef(childAssocRef.getChildRef());       
-        
         // Index
         nodeIndexer.indexCreateNode(childAssocRef);
         
@@ -409,59 +403,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return childAssocRef;
     }
     
-    
-    /**
-     * Track a deleted node
-     * 
-     * The deleted node set is used to break an infinite loop which can happen when adding a new node into a path containing a 
-     * deleted node.  This transactional list is used to detect and prevent that from 
-     * happening.
-     *  
-     * @param nodeRef   the deleted node to track
-     * @return          <tt>true</tt> if the node was not already tracked
-     */
-    private boolean trackDeletedNodeRef(NodeRef deletedNodeRef)
-    {
-        Set<NodeRef> deletedNodes = TransactionalResourceHelper.getSet(KEY_DELETED_NODES);
-        return deletedNodes.add(deletedNodeRef);
-    }
-    
-    /**
-     * Untrack a deleted node ref
-     * 
-     * Used when a deleted node is restored. 
-     * 
-     * @param deletedNodeRef
-     */
-    private void untrackDeletedNodeRef(NodeRef deletedNodeRef)
-    {
-        Set<NodeRef> deletedNodes = TransactionalResourceHelper.getSet(KEY_DELETED_NODES);
-        if (deletedNodes.size() > 0)
-        {
-            deletedNodes.remove(deletedNodeRef);
-        }
-    }
-    
-    private boolean isDeletedNodeRef(NodeRef deletedNodeRef)
-    {
-        Set<NodeRef> deletedNodes = TransactionalResourceHelper.getSet(KEY_DELETED_NODES);
-        return deletedNodes.contains(deletedNodeRef);
-    }
-    
-    /**
-     * loose interest in tracking a node ref
-     * 
-     * for example if its been deleted or moved
-     * @param nodeRef the node ref to untrack
-     */
-    private void untrackNewNodeRef(NodeRef nodeRef)
-    {
-        Set<NodeRef> newNodes = TransactionalResourceHelper.getSet(KEY_PRE_COMMIT_ADD_NODE);
-        if (newNodes.size() > 0)
-        {
-            newNodes.remove(nodeRef);
-        }
-    }
     
     /**
      * Adds all the aspects and properties required for the given node, along with mandatory aspects
@@ -760,6 +701,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     public void setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(nodeRef);
+        
         // check the node type
         TypeDefinition nodeTypeDef = dictionaryService.getType(typeQName);
         if (nodeTypeDef == null)
@@ -791,9 +735,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
     
-    /**
-     * @see Node#getAspects()
-     */
+    @Override
     public void addAspect(
             NodeRef nodeRef,
             QName aspectTypeQName,
@@ -805,6 +747,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         if (aspectDef == null)
         {
             throw new InvalidAspectException("The aspect is invalid: " + aspectTypeQName, aspectTypeQName);
+        }
+        
+        // Don't allow spoofed aspect(s) to be added
+        if (aspectTypeQName.equals(ContentModel.ASPECT_PENDING_DELETE))
+        {
+            throw new IllegalArgumentException("The aspect is reserved for system use: " + aspectTypeQName);
         }
         
         // Check the properties
@@ -849,9 +797,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     	return nodeDAO.countChildAssocsByParent(nodeId, isPrimary);
     }
     
+    @Override
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
+        // Don't allow spoofed aspect(s) to be removed
+        if (aspectTypeQName.equals(ContentModel.ASPECT_PENDING_DELETE))
+        {
+            throw new IllegalArgumentException("The aspect is reserved for system use: " + aspectTypeQName);
+        }
+        
         /*
          * Note: Aspect and property removal is resilient to missing dictionary definitions
          */
@@ -901,6 +856,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                         Pair<Long, NodeRef> childNodePair
                         )
                 {
+                    if (isPendingDelete(parentNodePair.getSecond()) || isPendingDelete(childNodePair.getSecond()))
+                    {
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace(
+                                    "Aspect-triggered association removal: " +
+                            		"Ignoring child associations where one of the nodes is pending delete: " + childAssocPair);
+                        }
+                        return true;
+                    }
+                    
                     // Double check that it's not a primary association.  If so, we can't delete it and
                     //    have to delete the child node directly and with full archival.
                     if (childAssocPair.getSecond().isPrimary())
@@ -941,19 +907,67 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 this.deleteNode(childNodeRef);
             }
             
-            // Remove regular associations
+            // Gather peer associations to delete
             Map<QName, AssociationDefinition> nodeAssocDefs = aspectDef.getAssociations();
-            Set<QName> nodeAssocTypeQNamesToRemove = new HashSet<QName>(13);
+            List<Long> nodeAssocIdsToRemove = new ArrayList<Long>(13);
+            List<AssociationRef> assocRefsRemoved = new ArrayList<AssociationRef>(13);
             for (Map.Entry<QName, AssociationDefinition> entry : nodeAssocDefs.entrySet())
             {
+                if (isPendingDelete(nodeRef))
+                {
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace(
+                                "Aspect-triggered association removal: " +
+                                "Ignoring peer associations where one of the nodes is pending delete: " + nodeRef);
+                    }
+                    continue;
+                }
                 if (entry.getValue().isChild())
                 {
                     // Not interested in child assocs
                     continue;
                 }
-                nodeAssocTypeQNamesToRemove.add(entry.getKey());
+                QName assocTypeQName = entry.getKey();
+                Collection<Pair<Long, AssociationRef>> targetAssocRefs = nodeDAO.getTargetNodeAssocs(nodeId, assocTypeQName);
+                for (Pair<Long, AssociationRef> assocPair : targetAssocRefs)
+                {
+                    if (isPendingDelete(assocPair.getSecond().getTargetRef()))
+                    {
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace(
+                                    "Aspect-triggered association removal: " +
+                                    "Ignoring peer associations where one of the nodes is pending delete: " + assocPair);
+                        }
+                        continue;
+                    }
+                    nodeAssocIdsToRemove.add(assocPair.getFirst());
+                    assocRefsRemoved.add(assocPair.getSecond());
+                }
+                Collection<Pair<Long, AssociationRef>> sourceAssocRefs = nodeDAO.getSourceNodeAssocs(nodeId, assocTypeQName);
+                for (Pair<Long, AssociationRef> assocPair : sourceAssocRefs)
+                {
+                    if (isPendingDelete(assocPair.getSecond().getSourceRef()))
+                    {
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace(
+                                    "Aspect-triggered association removal: " +
+                                    "Ignoring peer associations where one of the nodes is pending delete: " + assocPair);
+                        }
+                        continue;
+                    }
+                    nodeAssocIdsToRemove.add(assocPair.getFirst());
+                    assocRefsRemoved.add(assocPair.getSecond());
+                }
             }
-            int assocsDeleted = nodeDAO.removeNodeAssocsToAndFrom(nodeId, nodeAssocTypeQNamesToRemove);
+            // Now delete peer associations
+            int assocsDeleted = nodeDAO.removeNodeAssocs(nodeAssocIdsToRemove);
+            for (AssociationRef assocRefRemoved : assocRefsRemoved)
+            {
+                invokeOnDeleteAssociation(assocRefRemoved);
+            }
             updated = updated || assocsDeleted > 0;
         }
         
@@ -976,6 +990,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      */
     public boolean hasAspect(NodeRef nodeRef, QName aspectQName) throws InvalidNodeRefException, InvalidAspectException
     {
+        if (aspectQName.equals(ContentModel.ASPECT_PENDING_DELETE))
+        {
+            return isPendingDelete(nodeRef);
+        }
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         return nodeDAO.hasNodeAspect(nodePair.getFirst(), aspectQName);
     }
@@ -983,14 +1001,53 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-        return nodeDAO.getNodeAspects(nodePair.getFirst());
+        Set<QName> aspectQNames = nodeDAO.getNodeAspects(nodePair.getFirst());
+        if (isPendingDelete(nodeRef))
+        {
+            aspectQNames.add(ContentModel.ASPECT_PENDING_DELETE);
+        }
+        return aspectQNames;
     }
 
+    /**
+     * @return      Returns <tt>true</tt> if the node is being deleted
+     * 
+     * @see #KEY_PENDING_DELETE_NODES
+     */
+    private boolean isPendingDelete(NodeRef nodeRef)
+    {
+        // Avoid creating a Set if the transaction is read-only
+        if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_READ_WRITE)
+        {
+            return false;
+        }
+        Set<NodeRef> nodesPendingDelete = TransactionalResourceHelper.getSet(KEY_PENDING_DELETE_NODES);
+        return nodesPendingDelete.contains(nodeRef);
+    }
+    
+    /**
+     * @throws      IllegalStateException   if the node is pending delete
+     * 
+     * @see #KEY_PENDING_DELETE_NODES
+     */
+    private void checkPendingDelete(NodeRef nodeRef)
+    {
+        if (isPendingDelete(nodeRef))
+        {
+            throw new IllegalStateException(
+                    "Operation not allowed against node pending deletion." +
+                    "  Check the node for aspect " + ContentModel.ASPECT_PENDING_DELETE);
+        }
+    }
+    
     /**
      * Delete Node
      */
     public void deleteNode(NodeRef nodeRef)
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(nodeRef);
+        
         // Pair contains NodeId, NodeRef
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
@@ -1007,10 +1064,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         StoreRef storeRef = nodeRef.getStoreRef();
         StoreRef archiveStoreRef = storeArchiveMap.get(storeRef);
 
-        /*
-         *  Work out whether we need to archive or delete the node.
-         */
-     
+        // Gather information about the hierarchy
+        NodeHierarchyWalker walker = new NodeHierarchyWalker(nodeDAO);
+        walker.walkHierarchy(nodePair, childAssocPair);
+        
+        // Protect the nodes from being link/unlinked for the remainder of the process
+        Set<NodeRef> nodesPendingDelete = new HashSet<NodeRef>(walker.getNodes(false).size());
+        for (VisitedNode visitedNode : walker.getNodes(true))
+        {
+            nodesPendingDelete.add(visitedNode.nodeRef);
+        }
+        Set<NodeRef> nodesPendingDeleteTxn = TransactionalResourceHelper.getSet(KEY_PENDING_DELETE_NODES);
+        nodesPendingDeleteTxn.addAll(nodesPendingDelete);           // We need to remove these later, again
+        
+        // Work out whether we need to archive or delete the node.
         if (archiveStoreRef == null)
         {
             // The store does not specify archiving
@@ -1045,157 +1112,133 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 }
             }
         }
+        
+        // Propagate timestamps
+        propagateTimeStamps(childAssocRef);
 
-        /*
-         * Now we have worked out whether to archive or delete, go ahead and do it
-         */
-        if (requiresDelete == null || requiresDelete)
+        // Archive, if necessary
+        boolean archive = requiresDelete != null && !requiresDelete.booleanValue();
+
+        // Fire pre-delete events
+        Set<Long> childAssocIds = new HashSet<Long>(23);            // Prevents duplicate firing
+        Set<Long> peerAssocIds = new HashSet<Long>(23);            // Prevents duplicate firing
+        List<VisitedNode> nodesToDelete = walker.getNodes(true);
+        for (VisitedNode nodeToDelete : nodesToDelete)
         {
-            // remove the deleted node from the list of new nodes
-            untrackNewNodeRef(nodeRef);
+            // Target associations
+            for (Pair<Long, AssociationRef> targetAssocPair : nodeToDelete.targetAssocs)
+            {
+                if (!peerAssocIds.add(targetAssocPair.getFirst()))
+                {
+                    continue;           // Already fired
+                }
+                invokeBeforeDeleteAssociation(targetAssocPair.getSecond());
+            }
+            // Source associations
+            for (Pair<Long, AssociationRef> sourceAssocPair : nodeToDelete.sourceAssocs)
+            {
+                if (!peerAssocIds.add(sourceAssocPair.getFirst()))
+                {
+                    continue;           // Already fired
+                }
+                invokeBeforeDeleteAssociation(sourceAssocPair.getSecond());
+            }
+            // Secondary child associations
+            for (Pair<Long, ChildAssociationRef> secondaryChildAssocPair : nodeToDelete.secondaryChildAssocs)
+            {
+                if (!childAssocIds.add(secondaryChildAssocPair.getFirst()))
+                {
+                    continue;           // Already fired
+                }
+                invokeBeforeDeleteChildAssociation(secondaryChildAssocPair.getSecond());
+            }
+            // Secondary parent associations
+            for (Pair<Long, ChildAssociationRef> secondaryParentAssocPair : nodeToDelete.secondaryParentAssocs)
+            {
+                if (!childAssocIds.add(secondaryParentAssocPair.getFirst()))
+                {
+                    continue;           // Already fired
+                }
+                invokeBeforeDeleteChildAssociation(secondaryParentAssocPair.getSecond());
+            }
+            // Primary child associations
+            if (archive)
+            {
+                invokeBeforeArchiveNode(nodeToDelete.nodeRef);
+            }
+            invokeBeforeDeleteNode(nodeToDelete.nodeRef);
+        }
+        
+        // Archive, if necessary
+        if (archive)
+        {
+            // Archive node
+            archiveHierarchy(walker, archiveStoreRef);
+        }
 
-            // track the deletion of this node - so we can prevent new associations to it.
-            trackDeletedNodeRef(nodeRef);
-            
-            // Invoke policy behaviours
-            invokeBeforeDeleteNode(nodeRef);
-
-            // Cascade delecte as required
-            deleteChildrenNotArchived(nodePair);
-            // perform a normal deletion
-            nodeDAO.deleteNode(nodeId);
-            
-            // Propagate timestamps
-            propagateTimeStamps(childAssocRef);
-            // Invoke policy behaviours
-            invokeOnDeleteNode(childAssocRef, nodeTypeQName, nodeAspectQNames, false);
-            // Index
+        // Delete/Archive and fire post-delete events incl. updating indexes
+        childAssocIds.clear();                                    // Prevents duplicate firing
+        peerAssocIds.clear();                                     // Prevents duplicate firing
+        for (VisitedNode nodeToDelete : nodesToDelete)
+        {
+            // Target associations
+            for (Pair<Long, AssociationRef> targetAssocPair : nodeToDelete.targetAssocs)
+            {
+                if (!peerAssocIds.add(targetAssocPair.getFirst()))
+                {
+                    continue;           // Already fired
+                }
+                nodeDAO.removeNodeAssocs(Collections.singletonList(targetAssocPair.getFirst()));
+                invokeOnDeleteAssociation(targetAssocPair.getSecond());
+            }
+            // Source associations
+            for (Pair<Long, AssociationRef> sourceAssocPair : nodeToDelete.sourceAssocs)
+            {
+                if (!peerAssocIds.add(sourceAssocPair.getFirst()))
+                {
+                    continue;           // Already fired
+                }
+                nodeDAO.removeNodeAssocs(Collections.singletonList(sourceAssocPair.getFirst()));
+                invokeOnDeleteAssociation(sourceAssocPair.getSecond());
+            }
+            // Secondary child associations
+            for (Pair<Long, ChildAssociationRef> secondaryChildAssocPair : nodeToDelete.secondaryChildAssocs)
+            {
+                if (!childAssocIds.add(secondaryChildAssocPair.getFirst()))
+                {
+                    continue;           // Already fired
+                }
+                nodeDAO.deleteChildAssoc(secondaryChildAssocPair.getFirst());
+                invokeOnDeleteChildAssociation(secondaryChildAssocPair.getSecond());
+                nodeIndexer.indexDeleteChildAssociation(secondaryChildAssocPair.getSecond());
+            }
+            // Secondary parent associations
+            for (Pair<Long, ChildAssociationRef> secondaryParentAssocPair : nodeToDelete.secondaryParentAssocs)
+            {
+                if (!childAssocIds.add(secondaryParentAssocPair.getFirst()))
+                {
+                    continue;           // Already fired
+                }
+                nodeDAO.deleteChildAssoc(secondaryParentAssocPair.getFirst());
+                invokeOnDeleteChildAssociation(secondaryParentAssocPair.getSecond());
+                nodeIndexer.indexDeleteChildAssociation(secondaryParentAssocPair.getSecond());
+            }
+            QName childNodeTypeQName = nodeDAO.getNodeType(nodeToDelete.id);
+            Set<QName> childAspectQnames = nodeDAO.getNodeAspects(nodeToDelete.id);
+            // Delete the node
+            nodeDAO.deleteChildAssoc(nodeToDelete.primaryParentAssocPair.getFirst());
+            nodeDAO.deleteNode(nodeToDelete.id);
+            invokeOnDeleteNode(
+                    nodeToDelete.primaryParentAssocPair.getSecond(),
+                    childNodeTypeQName, childAspectQnames, archive);
             nodeIndexer.indexDeleteNode(childAssocRef);
         }
-        else
-        {
-            /*
-             *  Go ahead and archive the node
-             *  
-             *  Archiving will take responsibility for firing the policy behaviours on 
-             *  the nodes it modifies. 
-             */
-            archiveNode(nodeRef, archiveStoreRef);
-        }
+        
+        // Clear out the list of nodes pending delete
+        nodesPendingDeleteTxn = TransactionalResourceHelper.getSet(KEY_PENDING_DELETE_NODES);
+        nodesPendingDeleteTxn.removeAll(nodesPendingDelete);
     }
     
-    /**
-     * delete children - private method for deleteNode.
-     * 
-     * recurses through primary children when deleting a node.   Does not archive.
-     */
-    private void deleteChildrenNotArchived(Pair<Long, NodeRef> nodePair)
-    {
-        Long nodeId = nodePair.getFirst();
-        // Get the node's children
-        final List<Pair<Long, ChildAssociationRef>> primaryChildAssocs = new ArrayList<Pair<Long,ChildAssociationRef>>(5);
-
-        // Get all the QNames to remove and prune affected secondary associations
-        removeSecondaryAssociationsCascade(nodeId, primaryChildAssocs);
-
-        // Each primary child must be deleted
-        for (Pair<Long, ChildAssociationRef> childAssoc : primaryChildAssocs)
-        {
-            // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
-            Long childNodeId = childAssoc.getFirst();
-            ChildAssociationRef childParentAssocRef = childAssoc.getSecond();
-            NodeRef childNodeRef = childParentAssocRef.getChildRef();
-            QName childNodeType = nodeDAO.getNodeType(childNodeId);
-            Set<QName> childNodeQNames = nodeDAO.getNodeAspects(childNodeId);
-        
-            // remove the deleted node from the list of new nodes
-            untrackNewNodeRef(childNodeRef);
-
-            // track the deletion of this node - so we can prevent new associations to it.
-            trackDeletedNodeRef(childNodeRef);
-            
-            invokeBeforeDeleteNode(childNodeRef);
-            
-            // Delete the child and its parent associations
-            nodeDAO.deleteNode(childNodeId);
-
-            // Propagate timestamps
-            propagateTimeStamps(childParentAssocRef);
-            invokeOnDeleteNode(childParentAssocRef, childNodeType, childNodeQNames, false);
-            
-            // Index
-            nodeIndexer.indexDeleteNode(childParentAssocRef);
-                        
-            // lose interest in tracking this node ref
-            untrackNewNodeRef(childNodeRef);
-        }
-    }
-
-    private void removeSecondaryAssociationsCascade(Long nodeId, List<Pair<Long, ChildAssociationRef>> primaryChildAssocs)
-    {
-        // Get the node's children
-        final List<Pair<Long, Pair<Long, ChildAssociationRef>>> childAssocs = new ArrayList<Pair<Long,Pair<Long, ChildAssociationRef>>>(5);
-
-        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
-        {
-            public boolean preLoadNodes()
-            {
-                return true;
-            }
-
-            @Override
-            public boolean orderResults()
-            {
-                return false;
-            }
-
-            public boolean handle(
-                    Pair<Long, ChildAssociationRef> childAssocPair,
-                    Pair<Long, NodeRef> parentNodePair,
-                    Pair<Long, NodeRef> childNodePair
-                    )
-            {
-                // Add it
-                childAssocs.add(new Pair<Long, Pair<Long, ChildAssociationRef>>(childNodePair.getFirst(), childAssocPair));
-                // More results
-                return true;
-            }
-
-            public void done()
-            {
-            }                               
-       };
-
-       // Get all the QNames to remove
-       nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, callback);
-       // Each child association must be visited, recursively
-       for (Pair<Long, Pair<Long, ChildAssociationRef>> childAssoc: childAssocs)
-       {
-            Long childNodeId = childAssoc.getFirst();
-            ChildAssociationRef childParentAssocRef = childAssoc.getSecond().getSecond();
-            // Recurse on primary associations
-            if (childParentAssocRef.isPrimary())
-            {
-                // Cascade first
-                // This ensures that the beforeDelete policy is fired for all nodes in the hierarchy before
-                // the actual delete starts.
-                removeSecondaryAssociationsCascade(childNodeId, primaryChildAssocs);
-                primaryChildAssocs.add(new Pair<Long, ChildAssociationRef>(childNodeId, childParentAssocRef));
-            }
-            // Remove secondary associations
-            else
-            {
-                // Secondary association - we must fire the appropriate event to touch the node, update the caches and
-                // fire the index event
-                invokeBeforeDeleteChildAssociation(childParentAssocRef);
-                nodeDAO.deleteChildAssoc(childAssoc.getSecond().getFirst());
-                invokeOnDeleteChildAssociation(childParentAssocRef);
-                // Index
-                nodeIndexer.indexDeleteChildAssociation(childParentAssocRef);
-            }
-        }
-    }
-
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)
     {
         return addChild(Collections.singletonList(parentRef), childRef, assocTypeQName, assocQName).get(0);
@@ -1203,6 +1246,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public List<ChildAssociationRef> addChild(Collection<NodeRef> parentRefs, NodeRef childRef, QName assocTypeQName, QName assocQName)
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(childRef);
+        
         // Get the node's name, if present
         Pair<Long, NodeRef> childNodePair = getNodePairNotNull(childRef);
         Long childNodeId = childNodePair.getFirst();
@@ -1217,10 +1263,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         List<Pair<Long, NodeRef>> parentNodePairs = new ArrayList<Pair<Long, NodeRef>>(parentRefs.size());
         for (NodeRef parentRef : parentRefs)
         {
-            if (isDeletedNodeRef(parentRef))
-            {
-                throw new InvalidNodeRefException("The parent node has been deleted", parentRef);
-            }
+            // The node(s) involved may not be pending deletion
+            checkPendingDelete(parentRef);
+            
             Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
             Long parentNodeId = parentNodePair.getFirst();
             parentNodePairs.add(parentNodePair);
@@ -1261,6 +1306,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(parentRef);
+        checkPendingDelete(childRef);
+        
         final Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
         final Long parentNodeId = parentNodePair.getFirst();
         final Pair<Long, NodeRef> childNodePair = getNodePairNotNull(childRef);
@@ -1336,6 +1385,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     public boolean removeChildAssociation(ChildAssociationRef childAssocRef)
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(childAssocRef.getParentRef());
+        checkPendingDelete(childAssocRef.getChildRef());
+        
         Long parentNodeId = getNodePairNotNull(childAssocRef.getParentRef()).getFirst();
         Long childNodeId = getNodePairNotNull(childAssocRef.getChildRef()).getFirst();
         QName assocTypeQName = childAssocRef.getTypeQName();
@@ -1373,6 +1426,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     @Override
     public boolean removeSecondaryChildAssociation(ChildAssociationRef childAssocRef)
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(childAssocRef.getParentRef());
+        checkPendingDelete(childAssocRef.getChildRef());
+        
         Long parentNodeId = getNodePairNotNull(childAssocRef.getParentRef()).getFirst();
         Long childNodeId = getNodePairNotNull(childAssocRef.getChildRef()).getFirst();
         QName assocTypeQName = childAssocRef.getTypeQName();
@@ -1940,6 +1997,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException, AssociationExistsException
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(sourceRef);
+        checkPendingDelete(targetRef);
+        
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
         long sourceNodeId = sourceNodePair.getFirst();
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
@@ -1961,6 +2022,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     @Override
     public void setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(sourceRef);
+        
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
         Long sourceNodeId = sourceNodePair.getFirst();
         // First get the existing associations
@@ -1976,6 +2040,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         // Work out which associations need to be removed
         toRemoveMap.keySet().removeAll(targetRefs);
+        // Fire policies for redundant assocs
+        for (NodeRef targetRef : toRemoveMap.keySet())
+        {
+            AssociationRef assocRef = new AssociationRef(sourceRef, assocTypeQName, targetRef);
+            invokeBeforeDeleteAssociation(assocRef);
+        }
+        // Remove reduncant assocs
         List<Long> toRemoveIds = new ArrayList<Long>(toRemoveMap.values());
         nodeDAO.removeNodeAssocs(toRemoveIds);
         
@@ -1987,6 +2058,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         int assocIndex = 1;
         for (NodeRef targetNodeRef : targetRefs)
         {
+            // The node(s) involved may not be pending deletion
+            checkPendingDelete(targetNodeRef);
+            
             Long id = targetRefsBefore.get(targetNodeRef);
             // Is this an existing assoc?
             if (id != null)
@@ -2119,17 +2193,24 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException
     {
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(sourceRef);
+        checkPendingDelete(targetRef);
+        
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
         Long sourceNodeId = sourceNodePair.getFirst();
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
         Long targetNodeId = targetNodePair.getFirst();
+
+        AssociationRef assocRef = new AssociationRef(sourceRef, assocTypeQName, targetRef);
+        // Invoke policy behaviours
+        invokeBeforeDeleteAssociation(assocRef);
 
         // delete it
         int assocsDeleted = nodeDAO.removeNodeAssoc(sourceNodeId, targetNodeId, assocTypeQName);
         
         if (assocsDeleted > 0)
         {
-            AssociationRef assocRef = new AssociationRef(sourceRef, assocTypeQName, targetRef);
             // Invoke policy behaviours
             invokeOnDeleteAssociation(assocRef);
         }
@@ -2224,12 +2305,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     /**
      * Archives the node without the <b>cm:auditable</b> aspect behaviour
      */
-    private void archiveNode(NodeRef nodeRef, StoreRef archiveStoreRef)
+    private void archiveHierarchy(NodeHierarchyWalker walker, StoreRef archiveStoreRef)
     {
         policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
         try
         {
-            archiveNodeImpl(nodeRef, archiveStoreRef);
+            archiveHierarchyImpl(walker, archiveStoreRef);
         }
         finally
         {
@@ -2237,58 +2318,140 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
     
-    private void archiveNodeImpl(NodeRef nodeRef, StoreRef archiveStoreRef)
+    /**
+     * Archive (direct copy) a node hierarchy
+     * 
+     * @param walker                the node hierarchy to archive
+     * @param archiveStoreRef
+     */
+    private void archiveHierarchyImpl(NodeHierarchyWalker walker, StoreRef archiveStoreRef)
     {
-        Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-        Long nodeId = nodePair.getFirst();
-        Pair<Long, ChildAssociationRef> primaryParentAssocPair = nodeDAO.getPrimaryParentAssoc(nodeId);
-        Set<QName> newAspects = new HashSet<QName>(5);
-        Map<QName, Serializable> existingProperties = nodeDAO.getNodeProperties(nodeId);
-        Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>(11);
-        
-        // move the node
+        // Start with the node we are archiving to
         Pair<Long, NodeRef> archiveStoreRootNodePair = nodeDAO.getRootNode(archiveStoreRef);
-        Pair<Long, NodeRef> newNodePair = null;
-        try
-        {
-            ChildAssociationRef newPrimaryParentAssocPair = moveNode(
-                    nodeRef,
-                    archiveStoreRootNodePair.getSecond(),
-                    ContentModel.ASSOC_CHILDREN,
-                    NodeArchiveService.QNAME_ARCHIVED_ITEM);
-            newNodePair = getNodePairNotNull(newPrimaryParentAssocPair.getChildRef());
-        }
-        catch (NodeExistsException e)
-        {
-            // Clear out the offending node and try again
-            deleteNode(e.getNodePair().getSecond());
-            ChildAssociationRef newPrimaryParentAssocPair = moveNode(
-                    nodeRef,
-                    archiveStoreRootNodePair.getSecond(),
-                    ContentModel.ASSOC_CHILDREN,
-                    NodeArchiveService.QNAME_ARCHIVED_ITEM);
-            newNodePair = getNodePairNotNull(newPrimaryParentAssocPair.getChildRef());
-        }
         
-        // add the aspect
-        newAspects.add(ContentModel.ASPECT_ARCHIVED);
-        newProperties.put(ContentModel.PROP_ARCHIVED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-        newProperties.put(ContentModel.PROP_ARCHIVED_DATE, new Date());
-        newProperties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, primaryParentAssocPair.getSecond());
-        Serializable originalOwner = existingProperties.get(ContentModel.PROP_OWNER);
-        Serializable originalCreator = existingProperties.get(ContentModel.PROP_CREATOR);
-        if (originalOwner != null || originalCreator != null)
+        // Work through the hierarchy from the top down and archive all the nodes
+        boolean firstNode = true;
+        Map<Long, Pair<Long, NodeRef>> archiveRecord = new HashMap<Long, Pair<Long, NodeRef>>(walker.getNodes(false).size() * 2);
+        for (VisitedNode node : walker.getNodes(false))
         {
-            newProperties.put(
-                    ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER,
-                    originalOwner != null ? originalOwner : originalCreator);
+            // Get node metadata
+            Map<QName, Serializable> archiveProperties = nodeDAO.getNodeProperties(node.id);
+            Set<QName> archiveAspects = nodeDAO.getNodeAspects(node.id);
+
+            // The first node gets special treatment as it contains the archival details
+            ChildAssociationRef archivePrimaryParentAssocRef = null;
+            final Pair<Long, NodeRef> archiveParentNodePair;
+            if (firstNode)
+            {
+                firstNode = false;
+                // Attach top-level archival details
+                ChildAssociationRef primaryParentAssocRef = node.primaryParentAssocPair.getSecond();
+                archiveAspects.add(ContentModel.ASPECT_ARCHIVED);
+                archiveProperties.put(ContentModel.PROP_ARCHIVED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
+                archiveProperties.put(ContentModel.PROP_ARCHIVED_DATE, new Date());
+                archiveProperties.put(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC, primaryParentAssocRef);
+                Serializable originalOwner = archiveProperties.get(ContentModel.PROP_OWNER);
+                Serializable originalCreator = archiveProperties.get(ContentModel.PROP_CREATOR);
+                if (originalOwner != null || originalCreator != null)
+                {
+                    archiveProperties.put(
+                            ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER,
+                            originalOwner != null ? originalOwner : originalCreator);
+                }
+                // change the node ownership
+                archiveAspects.add(ContentModel.ASPECT_OWNABLE);
+                archiveProperties.put(ContentModel.PROP_OWNER, AuthenticationUtil.getFullyAuthenticatedUser());
+                // Create new primary association
+                archivePrimaryParentAssocRef = new ChildAssociationRef(
+                        ContentModel.ASSOC_CHILDREN,
+                        archiveStoreRootNodePair.getSecond(),
+                        NodeArchiveService.QNAME_ARCHIVED_ITEM,
+                        new NodeRef(archiveStoreRef, node.nodeRef.getId()),
+                        true,
+                        -1);
+                archiveParentNodePair = archiveStoreRootNodePair;
+            }
+            else
+            {
+                ChildAssociationRef primaryParentAssocRef = node.primaryParentAssocPair.getSecond();
+                NodeRef parentNodeRef = primaryParentAssocRef.getParentRef();
+                // Look it up
+                VisitedNode parentNode = walker.getNode(parentNodeRef);
+                if (parentNode == null)
+                {
+                    throw new IllegalStateException("Expected that a child has a visited primary parent: " + primaryParentAssocRef);
+                }
+                // This needs to have been mapped to a new parent
+                archiveParentNodePair = archiveRecord.get(parentNode.id);
+                if (archiveParentNodePair == null)
+                {
+                    throw new IllegalStateException("Expected to have archived primary parent: " + primaryParentAssocRef);
+                }
+                // Build the primary association details
+                archivePrimaryParentAssocRef = new ChildAssociationRef(
+                        primaryParentAssocRef.getTypeQName(),
+                        archiveParentNodePair.getSecond(),
+                        primaryParentAssocRef.getQName(),
+                        new NodeRef(archiveStoreRef, node.nodeRef.getId()),
+                        true,
+                        primaryParentAssocRef.getNthSibling());
+            }
+            
+            // Invoke behaviours
+            invokeBeforeCreateNode(
+                    archivePrimaryParentAssocRef.getParentRef(),
+                    archivePrimaryParentAssocRef.getTypeQName(),
+                    archivePrimaryParentAssocRef.getQName(),
+                    node.nodeType);
+                    
+            // Create a new node
+            boolean attempted = false;
+            Node archiveNode = null;
+            while (true)
+            {
+                try
+                {
+                    ChildAssocEntity archiveChildAssocEntity = nodeDAO.newNode(
+                            archiveParentNodePair.getFirst(),
+                            archivePrimaryParentAssocRef.getTypeQName(),
+                            archivePrimaryParentAssocRef.getQName(),
+                            archiveStoreRef,
+                            node.nodeRef.getId(),
+                            node.nodeType,
+                            (Locale) archiveProperties.get(ContentModel.PROP_LOCALE),
+                            (String) archiveProperties.get(ContentModel.PROP_NAME),
+                            archiveProperties);
+                    archiveNode = archiveChildAssocEntity.getChildNode();
+                    // Store the archive mapping for this node
+                    archiveRecord.put(node.id, archiveNode.getNodePair());
+                    break;
+                }
+                catch (NodeExistsException e)
+                {
+                    if (!attempted)
+                    {
+                        // There is a conflict, so delete the currently-archived node
+                        NodeRef conflictingNodeRef = e.getNodePair().getSecond();
+                        deleteNode(conflictingNodeRef);
+                        attempted = true;
+                    }
+                    else
+                    {
+                        throw e;
+                    }
+                }
+            }
+          
+            // Add properties and aspects
+            Long archiveNodeId = archiveNode.getId();
+            nodeDAO.addNodeAspects(archiveNodeId, archiveAspects);
+            nodeDAO.addNodeProperties(archiveNodeId, archiveProperties);
+            // TODO: archive other associations
+            
+            // Invoke behaviours
+            nodeIndexer.indexCreateNode(archivePrimaryParentAssocRef);
+            invokeOnCreateNode(archivePrimaryParentAssocRef);
         }
-        // change the node ownership
-        newAspects.add(ContentModel.ASPECT_OWNABLE);
-        newProperties.put(ContentModel.PROP_OWNER, AuthenticationUtil.getFullyAuthenticatedUser());
-        
-        // Set the aspects and properties
-        addAspectsAndProperties(newNodePair, null, null, null, newAspects, newProperties, false);
     }
     
     /**
@@ -2389,11 +2552,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             QName assocTypeQName,
             QName assocQName)
     {
-        if (isDeletedNodeRef(newParentRef))
-        {
-            throw new InvalidNodeRefException("The parent node has been deleted", newParentRef);
-        }
-
+        // The node(s) involved may not be pending deletion
+        checkPendingDelete(nodeToMoveRef);
+        checkPendingDelete(newParentRef);
+        
         Pair<Long, NodeRef> nodeToMovePair = getNodePairNotNull(nodeToMoveRef);
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(newParentRef);
         
@@ -2422,15 +2584,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         // Invoke "Before"policy behaviour
         if (movingStore)
         {
-            // remove the deleted node from the list of new nodes
-            untrackNewNodeRef(nodeToMoveRef);
-            
-            // track the deletion of this node - so we can prevent new associations to it.
-            trackDeletedNodeRef(nodeToMoveRef);
-            
-            // The Node changes NodeRefs, so this is really the deletion of the old node and creation
-            // of a node in a new store as far as the clients are concerned.
-            
             invokeBeforeDeleteNode(nodeToMoveRef);
             invokeBeforeCreateNode(newParentRef, assocTypeQName, assocQName, nodeToMoveTypeQName);
         }
@@ -2464,12 +2617,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         
         // Call behaviours
+        // TODO: Use NodeHierarchyWalker
         if (movingStore)
         {
             // Propagate timestamps
             propagateTimeStamps(oldParentAssocRef);
             propagateTimeStamps(newParentAssocRef);
-            
+
             // The Node changes NodeRefs, so this is really the deletion of the old node and creation
             // of a node in a new store as far as the clients are concerned.
             invokeOnDeleteNode(oldParentAssocRef, nodeToMoveTypeQName, nodeToMoveAspectQNames, true);
@@ -2557,12 +2711,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             Set<QName> childNodeAspectQNames = nodeDAO.getNodeAspects(childNodeId);
             Pair<Long, ChildAssociationRef> oldParentAssocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
             ChildAssociationRef oldParentAssocRef = oldParentAssocPair.getSecond();
-            
-            // remove the deleted node from the list of new nodes
-            untrackNewNodeRef(childNodeRef);
-
-            // track the deletion of this node - so we can prevent new associations to it.
-            trackDeletedNodeRef(childNodeRef);
             
             // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
             invokeBeforeDeleteNode(childNodeRef);

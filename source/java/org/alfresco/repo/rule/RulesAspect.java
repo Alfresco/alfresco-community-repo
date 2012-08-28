@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.rule;
 
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -34,7 +33,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -49,7 +47,7 @@ public class RulesAspect implements
                  CopyServicePolicies.OnCopyNodePolicy,
                  CopyServicePolicies.OnCopyCompletePolicy,
                  NodeServicePolicies.OnAddAspectPolicy,
-                 NodeServicePolicies.BeforeDeleteNodePolicy
+                 NodeServicePolicies.BeforeDeleteChildAssociationPolicy
 {
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
@@ -86,21 +84,22 @@ public class RulesAspect implements
         PropertyCheck.mandatory(this, "nodeService", nodeService);
 
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 RuleModel.ASPECT_RULES,
                 new JavaBehaviour(this, "getCopyCallback"));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
+                CopyServicePolicies.OnCopyCompletePolicy.QNAME,
                 RuleModel.ASPECT_RULES,
                 new JavaBehaviour(this, "onCopyComplete"));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), 
+                NodeServicePolicies.OnAddAspectPolicy.QNAME, 
                 RuleModel.ASPECT_RULES, 
                 new JavaBehaviour(this, "onAddAspect"));
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"), 
+        this.policyComponent.bindAssociationBehaviour(
+                NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
                 RuleModel.ASPECT_RULES, 
-                new JavaBehaviour(this, "beforeDeleteNode"));
+                RuleModel.ASSOC_RULE_FOLDER,
+                new JavaBehaviour(this, "beforeDeleteChildAssociation"));
     }
     
     /**
@@ -132,38 +131,23 @@ public class RulesAspect implements
     }
     
     /**
-     * @since 4.0.2
-     * @author Neil Mc Erlean
+     * ALF-11923
+     * @since 4.1.1
+     * @author Derek Hulley
      */
-    @Override public void beforeDeleteNode(NodeRef nodeRef)
+    @Override
+    public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
+        NodeRef nodeRef = childAssocRef.getParentRef();
         this.ruleService.disableRules(nodeRef);
-        
-        // The rule folder & below will be deleted automatically in the normal way, so we don't
-        // need to worry about them.
-        // But we need additional handling for any other folders which have rules linked to this folder's rules. See ALF-11923.
-        List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
-        if ( !children.isEmpty())
+        try
         {
-            final ChildAssociationRef primaryRulesFolderAssoc = children.get(0);
-            NodeRef rulesSystemFolder = primaryRulesFolderAssoc.getChildRef();
-            
-            List<ChildAssociationRef> foldersLinkedToThisRuleFolder = nodeService.getParentAssocs(rulesSystemFolder, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
-            
-            for (ChildAssociationRef linkedFolder : foldersLinkedToThisRuleFolder)
-            {
-                // But don't delete the primary child-assoc, which is done automatically
-                if ( !linkedFolder.getParentRef().equals(primaryRulesFolderAssoc.getParentRef()))
-                {
-                    // Remove the aspect that marks the other folder has having rules (linked ones)
-                    nodeService.removeAspect(linkedFolder.getParentRef(), RuleModel.ASPECT_RULES);
-                    // And remove the child-assoc to the rules folder.
-                    if (nodeService.exists(linkedFolder.getChildRef()))
-                    {
-                        nodeService.removeSecondaryChildAssociation(linkedFolder);
-                    }
-                }
-            }
+            // Just remove the aspect for the association
+            nodeService.removeAspect(nodeRef, RuleModel.ASPECT_RULES);
+        }
+        finally
+        {
+            ruleService.enableRules(nodeRef);
         }
     }
     
@@ -184,7 +168,6 @@ public class RulesAspect implements
     private class RulesAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
     {
         private final BehaviourFilter behaviourFilter;
-        boolean behaviourDisabled = false;
         
         private RulesAspectCopyBehaviourCallback(BehaviourFilter behaviourFilter)
         {

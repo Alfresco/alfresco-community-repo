@@ -27,9 +27,10 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy;
-import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodeAssociationPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeArchiveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateStorePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeMoveNodePolicy;
@@ -39,7 +40,6 @@ import org.alfresco.repo.node.NodeServicePolicies.BeforeUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
-import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodeAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateStorePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteAssociationPolicy;
@@ -117,18 +117,18 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private ClassPolicyDelegate<BeforeSetNodeTypePolicy> beforeSetNodeTypeDelegate;
     private ClassPolicyDelegate<OnUpdatePropertiesPolicy> onUpdatePropertiesDelegate;
     private ClassPolicyDelegate<BeforeDeleteNodePolicy> beforeDeleteNodeDelegate;
+    private ClassPolicyDelegate<BeforeArchiveNodePolicy> beforeArchiveNodeDelegate;
     private ClassPolicyDelegate<OnDeleteNodePolicy> onDeleteNodeDelegate;
     private ClassPolicyDelegate<OnRestoreNodePolicy> onRestoreNodePolicy;
     private ClassPolicyDelegate<BeforeAddAspectPolicy> beforeAddAspectDelegate;
     private ClassPolicyDelegate<OnAddAspectPolicy> onAddAspectDelegate;
     private ClassPolicyDelegate<BeforeRemoveAspectPolicy> beforeRemoveAspectDelegate;
     private ClassPolicyDelegate<OnRemoveAspectPolicy> onRemoveAspectDelegate;
-    private AssociationPolicyDelegate<BeforeCreateNodeAssociationPolicy> beforeCreateNodeAssociationDelegate;
-    private AssociationPolicyDelegate<OnCreateNodeAssociationPolicy> onCreateNodeAssociationDelegate;
     private AssociationPolicyDelegate<OnCreateChildAssociationPolicy> onCreateChildAssociationDelegate;
     private AssociationPolicyDelegate<BeforeDeleteChildAssociationPolicy> beforeDeleteChildAssociationDelegate;
     private AssociationPolicyDelegate<OnDeleteChildAssociationPolicy> onDeleteChildAssociationDelegate;
     private AssociationPolicyDelegate<OnCreateAssociationPolicy> onCreateAssociationDelegate;
+    private AssociationPolicyDelegate<BeforeDeleteAssociationPolicy> beforeDeleteAssociationDelegate;
     private AssociationPolicyDelegate<OnDeleteAssociationPolicy> onDeleteAssociationDelegate;
 
     /**
@@ -208,6 +208,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         beforeSetNodeTypeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeSetNodeTypePolicy.class);
         onUpdatePropertiesDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnUpdatePropertiesPolicy.class);
         beforeDeleteNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeDeleteNodePolicy.class);
+        beforeArchiveNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeArchiveNodePolicy.class);
         onDeleteNodeDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnDeleteNodePolicy.class);
         onRestoreNodePolicy = policyComponent.registerClassPolicy(NodeServicePolicies.OnRestoreNodePolicy.class);
         
@@ -216,13 +217,12 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         beforeRemoveAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.BeforeRemoveAspectPolicy.class);
         onRemoveAspectDelegate = policyComponent.registerClassPolicy(NodeServicePolicies.OnRemoveAspectPolicy.class);
         
-        beforeCreateNodeAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeCreateNodeAssociationPolicy.class);
-        onCreateNodeAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateNodeAssociationPolicy.class);
         onCreateChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateChildAssociationPolicy.class);
         beforeDeleteChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeDeleteChildAssociationPolicy.class);
         onDeleteChildAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnDeleteChildAssociationPolicy.class);
         
         onCreateAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnCreateAssociationPolicy.class);
+        beforeDeleteAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.BeforeDeleteAssociationPolicy.class);
         onDeleteAssociationDelegate = policyComponent.registerAssociationPolicy(NodeServicePolicies.OnDeleteAssociationPolicy.class);
     }
     
@@ -483,6 +483,23 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
+     * @see NodeServicePolicies.BeforeAr
+     */
+    protected void invokeBeforeArchiveNode(NodeRef nodeRef)
+    {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+        
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
+        // execute policy for node type and aspects
+        NodeServicePolicies.BeforeArchiveNodePolicy policy = beforeArchiveNodeDelegate.get(nodeRef, qnames);
+        policy.beforeArchiveNode(nodeRef);
+    }
+
+    /**
      * @see NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(ChildAssociationRef)
      */
     protected void invokeOnDeleteNode(ChildAssociationRef childAssocRef, QName childNodeTypeQName, Set<QName> childAspectQnames, boolean isArchivedNode)
@@ -589,45 +606,6 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
     
     /**
-     * @see NodeServicePolicies.BeforeCreateNodeAssociationPolicy#beforeCreateChildAssociation(NodeRef,
-     *      NodeRef, QName, QName)
-     */
-    protected void invokeBeforeCreateNodeAssociation(NodeRef parentNodeRef, QName assocTypeQName, QName assocQName)
-    {
-        if (ignorePolicy(parentNodeRef))
-        {
-            return;
-        }
-        
-        // get qnames to invoke against
-        Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
-        // execute policy for node type
-        NodeServicePolicies.BeforeCreateNodeAssociationPolicy policy = beforeCreateNodeAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
-        policy.beforeCreateNodeAssociation(parentNodeRef, assocTypeQName, assocQName);
-    }
-
-    /**
-     * @see NodeServicePolicies.OnCreateNodeAssociationPolicy#onCreateChildAssociation(ChildAssociationRef)
-     */
-    protected void invokeOnCreateNodeAssociation(ChildAssociationRef childAssocRef)
-    {
-        // Get the parent reference and the assoc type qName
-        NodeRef parentNodeRef = childAssocRef.getParentRef();
-        
-        if (ignorePolicy(parentNodeRef))
-        {
-            return;
-        }
-        
-        QName assocTypeQName = childAssocRef.getTypeQName();
-        // get qnames to invoke against
-        Set<QName> qnames = getTypeAndAspectQNames(parentNodeRef);
-        // execute policy for node type and aspects
-        NodeServicePolicies.OnCreateNodeAssociationPolicy policy = onCreateNodeAssociationDelegate.get(parentNodeRef, qnames, assocTypeQName);
-        policy.onCreateNodeAssociation(childAssocRef);
-    }
-
-    /**
      * @see NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(ChildAssociationRef)
      */
     protected void invokeOnCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
@@ -706,6 +684,26 @@ public abstract class AbstractNodeServiceImpl implements NodeService
         // execute policy for node type and aspects
         NodeServicePolicies.OnCreateAssociationPolicy policy = onCreateAssociationDelegate.get(sourceNodeRef, qnames, assocTypeQName);
         policy.onCreateAssociation(nodeAssocRef);
+    }
+
+    /**
+     * @see NodeServicePolicies.BeforeDeleteAssociationPolicy#beforeDeleteAssociation(AssociationRef)
+     */
+    protected void invokeBeforeDeleteAssociation(AssociationRef nodeAssocRef)
+    {
+        NodeRef sourceNodeRef = nodeAssocRef.getSourceRef();
+        
+        if (ignorePolicy(sourceNodeRef))
+        {
+            return;
+        }
+        
+        QName assocTypeQName = nodeAssocRef.getTypeQName();
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(sourceNodeRef);
+        // execute policy for node type and aspects
+        NodeServicePolicies.BeforeDeleteAssociationPolicy policy = beforeDeleteAssociationDelegate.get(sourceNodeRef, qnames, assocTypeQName);
+        policy.beforeDeleteAssociation(nodeAssocRef);
     }
 
     /**

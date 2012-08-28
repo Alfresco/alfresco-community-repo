@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -40,16 +40,15 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -89,31 +88,14 @@ public class TaggingServiceImpl implements TaggingService,
     
     private static Log logger = LogFactory.getLog(TaggingServiceImpl.class);
 
-    /** Node service */
     private NodeService nodeService;
-    
-    /** Categorty Service */
+    private NodeService nodeServiceInternal;
     private CategoryService categoryService;
-    
-    /** Search Service */
     private SearchService searchService;
-    
-    /** Action Service */
     private ActionService actionService;
-    
-    /** Content Service */
     private ContentService contentService;
-    
-    /** Namespace Service */
     private NamespaceService namespaceService;
-    
-    /** Policy componenet */
     private PolicyComponent policyComponent;
-    
-    /** Audit Service */
-    private AuditService auditService;
-    
-    /** Audit Component, used with Audit Service */
     private AuditComponent auditComponent;
     
     /** Tag Details Delimiter */
@@ -138,7 +120,15 @@ public class TaggingServiceImpl implements TaggingService,
     {
         this.nodeService = nodeService;
     }
-    
+
+    /**
+     * @param nodeServiceInternal           service to use when permission checks are not required
+     */
+    public void setNodeServiceInternal(NodeService nodeServiceInternal)
+    {
+        this.nodeServiceInternal = nodeServiceInternal;
+    }
+
     /**
      * Set the search service
      */
@@ -177,14 +167,6 @@ public class TaggingServiceImpl implements TaggingService,
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
-    }
-    
-    /**
-     * Set the audit service
-     */
-    public void setAuditService(AuditService auditService)
-    {
-        this.auditService = auditService;
     }
     
     /**
@@ -948,15 +930,22 @@ public class TaggingServiceImpl implements TaggingService,
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
+        ResultSet resultSet= null;
         
-        // Do the search for nodes
-        ResultSet resultSet = this.searchService.query(
+        try
+        {
+            // Do the search for nodes
+            resultSet = this.searchService.query(
                 storeRef, 
                 SearchService.LANGUAGE_LUCENE, 
                 "+PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
-        List<NodeRef> nodeRefs = resultSet.getNodeRefs();
-        resultSet.close();
-        return nodeRefs;
+            List<NodeRef> nodeRefs = resultSet.getNodeRefs();
+            return nodeRefs;
+        }
+        finally
+        {
+            if(resultSet != null) {resultSet.close();}
+        }
     }
 
     /**
@@ -970,15 +959,22 @@ public class TaggingServiceImpl implements TaggingService,
         // Get path
         Path nodePath = this.nodeService.getPath(nodeRef);
         String pathString = nodePath.toPrefixString(this.namespaceService);
+        ResultSet resultSet = null;
         
-        // Do query
-        ResultSet resultSet = this.searchService.query(
+        try
+        {
+            // Do query
+            resultSet = this.searchService.query(
                 storeRef, 
                 SearchService.LANGUAGE_LUCENE, 
                 "+PATH:\"" + pathString + "//*\" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
-        List<NodeRef> nodeRefs = resultSet.getNodeRefs();
-        resultSet.close();
-        return nodeRefs;
+            List<NodeRef> nodeRefs = resultSet.getNodeRefs();
+            return nodeRefs;
+        }
+        finally
+        {
+            if(resultSet != null) {resultSet.close();}
+        }
     }
     
     /**
@@ -1061,13 +1057,6 @@ public class TaggingServiceImpl implements TaggingService,
      */
     private void updateTagScope(NodeRef nodeRef, Map<String, Boolean> updates)
     {
-       // Warn if auditing is disabled - we need it!
-       if(! auditService.isAuditEnabled(TAGGING_AUDIT_APPLICATION_NAME, TAGGING_AUDIT_ROOT_PATH))
-       {
-          logger.warn("Tag updates won't propogate to the TagScope caches as auditing is disabled");
-          return;
-       }
-       
        // First up, locate all the tag scopes for this node
        // (Need to do a recursive search up to the root)
        ArrayList<NodeRef> tagScopeNodeRefs = new ArrayList<NodeRef>(3);
@@ -1190,6 +1179,11 @@ public class TaggingServiceImpl implements TaggingService,
                 Map<String, Boolean> tagUpdates = updates.get(nodeRef);
                 if (tagUpdates != null && tagUpdates.size() != 0)
                 {
+                    // Anything can happen during the transaction
+                    if (!nodeServiceInternal.exists(nodeRef))
+                    {
+                        continue;
+                    }
                     updateTagScope(nodeRef, tagUpdates);
                 }
             }

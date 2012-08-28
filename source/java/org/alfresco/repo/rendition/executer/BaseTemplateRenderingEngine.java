@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -173,12 +173,21 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
             if (path != null && path.length() > 0)
             {
                 StoreRef storeRef = context.getDestinationNode().getStoreRef();
-                ResultSet result = searchService.query(storeRef, SearchService.LANGUAGE_XPATH, path);
-                if (result.length() != 1)
+                ResultSet result = null;
+                
+                try
                 {
-                    throw new RenditionServiceException("Could not find template node for path: " + path);
+                    result = searchService.query(storeRef, SearchService.LANGUAGE_XPATH, path);
+                    if (result.length() != 1)
+                    {
+                        throw new RenditionServiceException("Could not find template node for path: " + path);
+                    }
+                    node = result.getNodeRef(0);
                 }
-                node = result.getNodeRef(0);
+                finally
+                {
+                	if (result != null) {result.close();}
+                }
             }
         }
         return node;

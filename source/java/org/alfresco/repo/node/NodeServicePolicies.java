@@ -170,6 +170,17 @@ public interface NodeServicePolicies
 		public void beforeDeleteNode(NodeRef nodeRef);
 	}
 	
+    public interface BeforeArchiveNodePolicy extends ClassPolicy
+    {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeArchiveNode");
+        /**
+         * Called before a node is archived.
+         * 
+         * @param nodeRef   the node reference
+         */
+        public void beforeArchiveNode(NodeRef nodeRef);
+    }
+    
 	public interface OnDeleteNodePolicy extends ClassPolicy
 	{
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode");
@@ -243,33 +254,6 @@ public interface NodeServicePolicies
         public void onRestoreNode(ChildAssociationRef childAssocRef);
     }
 
-    public interface BeforeCreateNodeAssociationPolicy extends AssociationPolicy
-    {
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateNodeAssociation");
-        /**
-         * Called before a new node is created with the details of the new child association.
-         * 
-         * @param parentNodeRef
-         * @param assocTypeQName the type of the association
-         * @param assocQName the name of the association
-         */
-        public void beforeCreateNodeAssociation(
-                NodeRef parentNodeRef,
-                QName assocTypeQName,
-                QName assocQName);
-    }
-    
-    public interface OnCreateNodeAssociationPolicy extends AssociationPolicy
-    {
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNodeAssociation");
-        /**
-         * Called after a node is created with the created association details
-         * 
-         * @param childAssocRef the child association that has been created
-         */
-        public void onCreateNodeAssociation(ChildAssociationRef childAssocRef);
-    }
-
     public interface OnCreateChildAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation");
@@ -314,7 +298,18 @@ public interface NodeServicePolicies
          */
         public void onCreateAssociation(AssociationRef nodeAssocRef);
     }
-    
+
+    public interface BeforeDeleteAssociationPolicy extends AssociationPolicy
+    {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteAssociation");
+        /**
+         * Called before a regular node association is deleted.
+         * 
+         * @param nodeAssocRef the regular node association that will be removed
+         */
+        public void beforeDeleteAssociation(AssociationRef nodeAssocRef);
+    }
+
     public interface OnDeleteAssociationPolicy extends AssociationPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteAssociation");

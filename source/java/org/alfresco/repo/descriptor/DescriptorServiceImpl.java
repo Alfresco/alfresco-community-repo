@@ -19,8 +19,6 @@
 package org.alfresco.repo.descriptor;
 
 import java.lang.reflect.Constructor;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -69,6 +67,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
      */
     private Descriptor serverDescriptor;
     private Descriptor currentRepoDescriptor;
+    private Object currentRepoDescriptorLock = new Object();
     private Descriptor installedRepoDescriptor;
     
     private static final Log logger = LogFactory.getLog(DescriptorServiceImpl.class);
@@ -123,27 +122,38 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     }
 
     @Override
-    public synchronized Descriptor getServerDescriptor()
+    public Descriptor getServerDescriptor()
     {
         return this.serverDescriptor;
     }
 
     @Override
-    public synchronized Descriptor getCurrentRepositoryDescriptor()
+    public Descriptor getCurrentRepositoryDescriptor()
     {
-        return this.currentRepoDescriptor;
+        synchronized (this.currentRepoDescriptorLock)
+        {
+            return this.currentRepoDescriptor;
+        }
     }
 
     @Override
-    public synchronized Descriptor getInstalledRepositoryDescriptor()
+    public Descriptor getInstalledRepositoryDescriptor()
     {
+        if (this.installedRepoDescriptor == null)
+        {
+            throw new IllegalStateException("Not bootstrapped");
+        }
         return this.installedRepoDescriptor;
     }
 
     @Override
-    public synchronized LicenseDescriptor getLicenseDescriptor()
+    public LicenseDescriptor getLicenseDescriptor()
     {
-        return this.licenseService == null ? null : this.licenseService.getLicense();
+        if (this.licenseService == null)
+        {
+            throw new IllegalStateException("Not bootstrapped");
+        }        
+        return this.licenseService.getLicense();
     }
 
     /**
@@ -202,7 +212,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         ((ApplicationContext) event.getSource()).publishEvent(new DescriptorServiceAvailableEvent(this));
     }
     
-    private synchronized void bootstrap()
+    private void bootstrap()
     {
         logger.debug("onBootstrap");
 
@@ -337,11 +347,13 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
          */
         public void verifyLicense() throws LicenseException
         {
-            if (currentRepoDescriptor == null)
+            synchronized (currentRepoDescriptorLock)
             {
-                currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
-                        serverDescriptor,
-                        LicenseMode.UNKNOWN);
+                if (currentRepoDescriptor == null)
+                {
+                    currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor,
+                            LicenseMode.UNKNOWN);
+                }
             }
         }
 
@@ -613,47 +625,50 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     }
     
     @Override
-    public synchronized void onLicenseChange(final LicenseDescriptor licenseDescriptor)
+    public void onLicenseChange(final LicenseDescriptor licenseDescriptor)
     {
-        logger.debug("Received changed license descriptor: " + licenseDescriptor);
-        
-        RetryingTransactionCallback<RepoUsage> updateLicenseCallback = new RetryingTransactionCallback<RepoUsage>()
+        synchronized (currentRepoDescriptorLock)
         {
-            public RepoUsage execute()
+            logger.debug("Received changed license descriptor: " + licenseDescriptor);
+                    
+            RetryingTransactionCallback<RepoUsage> updateLicenseCallback = new RetryingTransactionCallback<RepoUsage>()
             {
-                // Configure the license restrictions
-                RepoUsage.LicenseMode newMode = licenseDescriptor.getLicenseMode();
-                Long expiryTime = licenseDescriptor.getValidUntil() == null ? null : licenseDescriptor.getValidUntil().getTime();
-                RepoUsage restrictions = new RepoUsage(
-                        System.currentTimeMillis(), 
-                        licenseDescriptor.getMaxUsers(), 
-                        licenseDescriptor.getMaxDocs(), 
-                        newMode,
-                        expiryTime,
-                        false);
-                repoUsageComponent.setRestrictions(restrictions);
-                
-                // persist the server descriptor values in the current repository descriptor
-                if (currentRepoDescriptor == null || newMode != currentRepoDescriptor.getLicenseMode())
+                public RepoUsage execute()
                 {
+                    // Configure the license restrictions
+                    RepoUsage.LicenseMode newMode = licenseDescriptor.getLicenseMode();
+                    Long expiryTime = licenseDescriptor.getValidUntil() == null ? null : licenseDescriptor.getValidUntil().getTime();
+                    RepoUsage restrictions = new RepoUsage(
+                            System.currentTimeMillis(), 
+                            licenseDescriptor.getMaxUsers(), 
+                            licenseDescriptor.getMaxDocs(), 
+                            newMode,
+                            expiryTime,
+                            false);
+                    repoUsageComponent.setRestrictions(restrictions);
+                    
+                    // persist the server descriptor values in the current repository descriptor
+                    if (currentRepoDescriptor == null || newMode != currentRepoDescriptor.getLicenseMode())
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Changing license mode in current repo descriptor to: " + newMode);
+                        }
+                        currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
+                                serverDescriptor,
+                                newMode);
+                    }
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("Changing license mode in current repo descriptor to: " + newMode);
+                        logger.debug("License restrictions updated: " + restrictions);
                     }
-                    currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
-                            serverDescriptor,
-                            newMode);
+                    return null;
                 }
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("License restrictions updated: " + restrictions);
-                }
-                return null;
-            }
-        };
-        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        txnHelper.setForceWritable(true);
-        txnHelper.doInTransaction(updateLicenseCallback);
+            };
+            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            txnHelper.setForceWritable(true);
+            txnHelper.doInTransaction(updateLicenseCallback);
+        }
     }
 
     /**
@@ -662,15 +677,18 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
      * Restrictions are not changed; previous restrictions remain in place.
      */
     @Override
-    public synchronized void onLicenseFail()
+    public void onLicenseFail()
     {
-        // Current restrictions remain in place
-        // Make sure that the repo descriptor is updated the first time
-        if (currentRepoDescriptor == null)
+        synchronized (currentRepoDescriptorLock)
         {
-            currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
-                    serverDescriptor,
-                    LicenseMode.UNKNOWN);
+            // Current restrictions remain in place
+            // Make sure that the repo descriptor is updated the first time
+            if (currentRepoDescriptor == null)
+            {
+                currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
+                        serverDescriptor,
+                        LicenseMode.UNKNOWN);
+            }
         }
     }
 }

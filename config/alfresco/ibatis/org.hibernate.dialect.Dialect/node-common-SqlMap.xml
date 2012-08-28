@@ -45,14 +45,13 @@
         <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
     </resultMap>
     <resultMap id="result_NodeStatus" type="Node">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
+        <result property="typeQNameId" column="type_qname_id" jdbcType="VARCHAR" javaType="java.lang.Long"/>
         <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="transaction.changeTxnId" column="txn_change_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
@@ -66,7 +65,6 @@
         <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="localeId" column="locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
         <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="transaction.changeTxnId" column="txn_change_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <association property="auditableProperties" resultMap="alfresco.node.result_AuditProps"/>
@@ -253,7 +251,7 @@
     <sql id="insert_Node_AutoIncrement">
         insert into alf_node
         (
-            version, store_id, uuid, type_qname_id, locale_id, acl_id, node_deleted, transaction_id
+            version, store_id, uuid, type_qname_id, locale_id, acl_id, transaction_id
             <if test="auditableProperties != null">
               , audit_creator, audit_created,
                 audit_modifier, audit_modified,
@@ -262,7 +260,7 @@
         )
         values
         (
-            #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{localeId}, #{aclId,jdbcType=BIGINT}, #{deleted}, #{transaction.id}
+            #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{localeId}, #{aclId,jdbcType=BIGINT}, #{transaction.id}
             <if test="auditableProperties != null">
               , #{auditableProperties.auditCreator,jdbcType=VARCHAR}, #{auditableProperties.auditCreated,jdbcType=VARCHAR},
                 #{auditableProperties.auditModifier,jdbcType=VARCHAR}, #{auditableProperties.auditModified,jdbcType=VARCHAR},
@@ -274,7 +272,7 @@
     <sql id="insert_Node_Sequence">
         insert into alf_node
         (
-            id, version, store_id, uuid, type_qname_id, locale_id, acl_id, node_deleted, transaction_id
+            id, version, store_id, uuid, type_qname_id, locale_id, acl_id, transaction_id
             <if test="auditableProperties != null">
               , audit_creator, audit_created,
                 audit_modifier, audit_modified,
@@ -283,7 +281,7 @@
         )
         values
         (
-            #{id}, #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{localeId}, #{aclId,jdbcType=BIGINT}, #{deleted}, #{transaction.id}
+            #{id}, #{version}, #{store.id}, #{uuid}, #{typeQNameId}, #{localeId}, #{aclId,jdbcType=BIGINT}, #{transaction.id}
             <if test="auditableProperties != null">
               , #{auditableProperties.auditCreator,jdbcType=VARCHAR}, #{auditableProperties.auditCreated,jdbcType=VARCHAR},
                 #{auditableProperties.auditModifier,jdbcType=VARCHAR}, #{auditableProperties.auditModified,jdbcType=VARCHAR},
@@ -392,7 +390,6 @@
             <if test="updateTypeQNameId == true"> , type_qname_id     = #{typeQNameId}</if>
             <if test="updateLocaleId == true">    , locale_id         = #{localeId}</if>
             <if test="updateAclId == true">       , acl_id            = #{aclId,jdbcType=BIGINT}</if>
-            <if test="updateDeleted == true">     , node_deleted      = #{deleted}</if>
             <if test="updateTransaction == true"> , transaction_id    = #{transaction.id}</if>
             <if test="updateAuditableProperties == true">
                 , audit_creator = #{auditableProperties.auditCreator,jdbcType=VARCHAR}
@@ -511,14 +508,14 @@
         delete from alf_node
         where
             id = #{id}
-            <if test="deleted == true">and node_deleted = #{deleted}</if>
+            <if test="typeQNameId != null">and type_qname_id = #{typeQNameId}</if>
     </delete>
     
     <delete id="delete_NodesByTxnCommitTime" parameterType="TransactionQuery">
         <![CDATA[
         delete from alf_node
         where
-            node_deleted = #{deletedNodes} and
+            type_qname_id = #{typeQNameId} and
             transaction_id <=
             (
                 select max(txn.id) from alf_transaction txn
@@ -565,18 +562,6 @@
             type_qname_id = #{typeQNameId}
     </delete>
     
-    <delete id="delete_NodeAssocsToAndFrom" parameterType="NodeAssoc">
-        delete from alf_node_assoc
-        where
-            (source_node_id = #{sourceNode.id} or target_node_id = #{targetNode.id})
-            <if test="typeQNameIds != null">
-                and type_qname_id in
-                <foreach item="item" index="index" collection="typeQNameIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-    </delete>
-    
     <delete id="delete_NodeAssocs" parameterType="Ids">
         delete from alf_node_assoc
         where
@@ -593,22 +578,13 @@
             node_id = #{idOne}
     </delete>
     
-    <delete id="delete_ChildAssocById" parameterType="ChildAssoc">
+    <delete id="delete_ChildAssocs" parameterType="Ids">
         delete from alf_child_assoc
         where
-            id = #{id}
-    </delete>
-    
-    <delete id="delete_ParentAssocsTo" parameterType="ChildAssoc">
-        delete from alf_child_assoc
-        where
-            child_node_id = #{childNode.id}
-            <if test="typeQNameIds != null">
-                and type_qname_id in
-                <foreach item="item" index="index" collection="typeQNameIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
+            id in
+            <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
     </delete>
     
     <!--                -->
@@ -676,7 +652,6 @@
             node.type_qname_id  as type_qname_id,
             node.locale_id      as locale_id,
             node.acl_id         as acl_id,
-            node.node_deleted   as node_deleted,
             txn.id              as txn_id,
             txn.change_txn_id   as txn_change_id,
             node.audit_creator  as audit_creator,
@@ -694,7 +669,7 @@
             join alf_transaction txn on (txn.id = node.transaction_id)
         where
             node.id = #{id}
-            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
+            <if test="typeQNameId != null">and node.type_qname_id = #{typeQNameId}</if>
     </select>
     
     <select id="select_NodeByNodeRef" parameterType="Node" resultMap="result_Node">
@@ -707,7 +682,7 @@
             store.protocol = #{store.protocol} and
             store.identifier = #{store.identifier} and
             node.uuid = #{uuid}
-            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
+            <if test="typeQNameId != null">and node.type_qname_id = #{typeQNameId}</if>
     </select>
     
     <select id="select_NodesByUuids" parameterType="NodeBatchLoad" resultMap="result_Node">
@@ -722,7 +697,6 @@
             <foreach item="item" index="index" collection="uuids" open="(" separator="," close=")">
                 #{item}
             </foreach>
-            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
     </select>
     
     <select id="select_NodesByIds" parameterType="NodeBatchLoad" resultMap="result_Node">
@@ -736,7 +710,6 @@
             <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
                 #{item}
             </foreach>
-            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
     </select>
     
     <sql id="select_NodeProperty_Results">
@@ -820,8 +793,7 @@
             node.id             as id,
             store.protocol      as protocol,
             store.identifier    as identifier,
-            node.uuid           as uuid,
-            node.node_deleted   as node_deleted
+            node.uuid           as uuid
         from
             alf_node_aspects na
             join alf_node node on (na.node_id = node.id)
@@ -859,6 +831,13 @@
             assoc.assoc_index ASC
     </sql>
     
+    <select id="select_NodeAssocs" parameterType="Node" resultMap="result_NodeAssoc">
+        <include refid="alfresco.node.select_NodeAssoc_Results"/>
+        where
+            sourceNode.id = #{id} or
+            targetNode.id = #{id}
+    </select>
+
     <select id="select_NodeAssocsBySource" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
         <include refid="alfresco.node.select_NodeAssoc_Results"/>
         where
@@ -1217,7 +1196,7 @@
     <sql id="select_Transaction_FullWhere">
         <where>
             <if test="id != null">txn.id = #{id}</if>
-            <if test="deletedNodes != null"> and node.node_deleted = #{deletedNodes}</if>
+            <if test="typeQNameId != null"> and node.type_qname_id = #{typeQNameId}</if>
             <if test="storeId != null"> and store.id = #{storeId}</if>
             <if test="excludeServerId != null"><![CDATA[ and server_id <> #{excludeServerId}]]></if>
             <if test="minCommitTime != null"><![CDATA[ and txn.commit_time_ms >= #{minCommitTime}]]></if>
@@ -1255,7 +1234,7 @@
             store.protocol      as protocol,
             store.identifier    as identifier,
             node.uuid           as uuid,
-            node.node_deleted   as node_deleted,
+            node.type_qname_id  as type_qname_id,
             txn.id              as txn_id,
             txn.change_txn_id   as txn_change_id
         from
@@ -1308,16 +1287,6 @@
             alf_transaction txn
     </select>
     
-    <select id="select_TxnNodeCount" parameterType="Node" resultType="java.lang.Integer">
-        select
-            count(node.id)
-        from
-            alf_node node
-        where
-            node.transaction_id = #{transaction.id}
-            <if test="deleted != null">and node.node_deleted = #{deleted}</if>
-    </select>
-
     <select id="select_TxnsUnused" parameterType="TransactionQuery" resultType="java.lang.Long">
         select
             txn.id

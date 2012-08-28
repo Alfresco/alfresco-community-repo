@@ -23,7 +23,7 @@
     </resultMap>
     <resultMap id="result_Node" type="SOLRNode">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="deleted" column="node_deleted" jdbcType="BIT" javaType="java.lang.Boolean" />
+        <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long" />
         <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -93,7 +93,7 @@
                  alf_node node
              where
                  txn.id = node.transaction_id and
-                 node.node_deleted = #{false}
+                 node.type_qname_id != #{deletedTypeQNameId}
             ) as updates,
             (select
                  count(node.id)
@@ -101,7 +101,7 @@
                  alf_node node
              where
                  txn.id = node.transaction_id and
-                 node.node_deleted = #{true}
+                 node.type_qname_id = #{deletedTypeQNameId}
             ) as deletes
         from
             alf_transaction txn
@@ -124,8 +124,8 @@
 
     <select id="select_Txn_Nodes" parameterType="SOLRNodeParameters" resultMap="result_Node">
         select
-            node.id             as id,
-            node.node_deleted   as node_deleted,
+            COALESCE(np.long_value, node.id) as id,
+            node.type_qname_id  as type_qname_id,
             node.transaction_id as txn_id,
             node.uuid           as uuid,
             store.protocol      as protocol,
@@ -134,6 +134,7 @@
             alf_transaction txn
             join alf_node node on (txn.id = node.transaction_id)
             join alf_store store on (store.id = node.store_id)
+            left outer join alf_node_properties np on (np.node_id = node.id and np.qname_id = #{originalIdPropQNameId})
         <where>
            <choose>
 	           <when test="transactionIds != null">

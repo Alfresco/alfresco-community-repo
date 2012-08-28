@@ -26,14 +26,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.transaction.SystemException;
-
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -54,6 +54,8 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Multilingual support implementation.
@@ -78,6 +80,7 @@ import org.apache.commons.logging.LogFactory;
 public class MultilingualContentServiceImpl implements MultilingualContentService
 {
     private static final QName QNAME_ASSOC_ML_ROOT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "multilingualRoot");
+    private static final String KEY_ML_CONTAINERS_TO_DELETE = "MultilingualContentServiceImpl.mlContainersToDelete";
     
     private static Log logger = LogFactory.getLog(MultilingualContentServiceImpl.class);
 
@@ -88,9 +91,11 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     private VersionService versionService;
 
     private BehaviourFilter policyBehaviourFilter;
+    private final MLContainerCleaner mlContainerCleaner;
 
     public MultilingualContentServiceImpl()
     {
+        mlContainerCleaner = new MLContainerCleaner();
     }
 
     /**
@@ -320,6 +325,10 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                     ContentModel.ASSOC_MULTILINGUAL_CHILD,
                     QNAME_ML_TRANSLATION);
         }
+        
+        // Make sure that we don't delete the container if it was previously scheduled for pre-commit deletion.
+        // This arises when editions are going to be created
+        TransactionalResourceHelper.getSet(KEY_ML_CONTAINERS_TO_DELETE).remove(mlContainerNodeRef);
 
         // done
         return mlContainerNodeRef;
@@ -405,17 +414,17 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
         // remove the translations
         for(NodeRef translationToRemove : translations.values())
         {
-            // unmake the translation, ignore any parent-child logic
-            this.unmakeTranslationSimple(translationToRemove);
-            // remove it, if necessary
-            if (nodeService.exists(translationToRemove))
+            if (!nodeService.exists(translationToRemove))
             {
-                nodeService.deleteNode(translationToRemove);
+                // We've just queried for these
+                throw new ConcurrencyFailureException("Translation has been deleted externally: " + translationToRemove);
             }
+            nodeService.deleteNode(translationToRemove);
         }
 
-        // force its deletion
-        nodeService.deleteNode(mlContainerNodeRef);
+        // Keep track of the container for pre-commit deletion
+        TransactionalResourceHelper.getSet(KEY_ML_CONTAINERS_TO_DELETE).add(mlContainerNodeRef);
+        AlfrescoTransactionSupport.bindListener(mlContainerCleaner);
 
         // done
         if (logger.isDebugEnabled())
@@ -448,32 +457,16 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     /** @inheritDoc */
     public void unmakeTranslation(NodeRef translationNodeRef)
     {
-        NodeRef containerNodeRef = getMLContainer(translationNodeRef, true);
-        if (containerNodeRef == null)
+        if (isPivotTranslation(translationNodeRef))
         {
-            unmakeTranslationSimple(translationNodeRef);
+            NodeRef containerNodeRef = getMLContainer(translationNodeRef, true);
+            // We have not cleaned up all other translations
+            // Mark the container for deletion
+            TransactionalResourceHelper.getSet(KEY_ML_CONTAINERS_TO_DELETE).add(containerNodeRef);
+            AlfrescoTransactionSupport.bindListener(mlContainerCleaner);
         }
-        else if (isPivotTranslation(translationNodeRef))
-        {
-            // Pivot nodes are handled by unmaking all translations and removing the container
-            List<ChildAssociationRef> mlChildAssocs = nodeService.getChildAssocs(
-                    containerNodeRef,
-                    ContentModel.ASSOC_MULTILINGUAL_CHILD,
-                    RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef mlChildAssoc : mlChildAssocs)
-            {
-                NodeRef mlChildNodeRef = mlChildAssoc.getChildRef();
-                // Delete empty translations
-                unmakeTranslationSimple(mlChildNodeRef);
-            }
-            // Now delete the container
-            nodeService.deleteNode(containerNodeRef);
-        }
-        else
-        {
-            nodeService.removeChild(containerNodeRef, translationNodeRef);
-            unmakeTranslationSimple(translationNodeRef);
-        }
+        // Turns the document from a translation into a normal document by removing MLDocument aspect
+        unmakeTranslationSimple(translationNodeRef);
     }
 
     /** {@inheritDoc} */
@@ -775,10 +768,6 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
     }
 
     /**
-     * @throws SystemException
-     * @throws Exception
-     * @throws FileNotFoundException
-     * @throws FileExistsException
      * @inheritDoc
      */
     public NodeRef copyTranslationContainer(NodeRef mlContainerNodeRef, NodeRef newParentRef, String prefixName) throws Exception
@@ -943,8 +932,32 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
                     "   Old location of " + mlContainerNodeRef + " : " + spaceBefore + ") \n" +
                     "   New location of " + mlContainerNodeRef + " : " + newParentRef + ")");
         }
-   }
+    }
 
+    /**
+     * Cleans up any <b>ml:container</b> types that are empty or have lost their pivot translation
+     * 
+     * @author Derek Hulley
+     * @since 4.1.1
+     */
+    private class MLContainerCleaner extends TransactionListenerAdapter
+    {
+        @Override
+        public void beforeCommit(boolean readOnly)
+        {
+            if (readOnly)
+            {
+                return;             // Don't ever expect to be here
+            }
+            Set<NodeRef> mlContainerNodeRefs = TransactionalResourceHelper.getSet(KEY_ML_CONTAINERS_TO_DELETE);
+            for (NodeRef mlContainerNodeRef : mlContainerNodeRefs)
+            {
+                // Just delete it.
+                // Any remaining translations will be cleaned up
+                nodeService.deleteNode(mlContainerNodeRef);
+            }
+        }
+    }
 
     public void setNodeService(NodeService nodeService)
     {

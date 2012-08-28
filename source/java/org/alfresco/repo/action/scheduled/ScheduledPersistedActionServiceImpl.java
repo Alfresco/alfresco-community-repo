@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -47,7 +48,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
@@ -85,11 +85,17 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
 
     private static final Log log = LogFactory.getLog(ScheduledPersistedActionServiceImpl.class);
 
+    private BehaviourFilter behaviourFilter;
     private Scheduler scheduler;
     private NodeService nodeService;
     private NodeService startupNodeService;
     private RuntimeActionService runtimeActionService;
     private Repository repositoryHelper;
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
 
     public void setScheduler(Scheduler scheduler)
     {
@@ -226,27 +232,35 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         // update association to reflect updated schedule
         AssociationRef actionAssoc = findActionAssociationFromSchedule(nodeRef);
         NodeRef actionNodeRef = schedule.getActionNodeRef();
-        if (actionNodeRef == null)
+        try
         {
-            if (actionAssoc != null)
+            behaviourFilter.disableBehaviour(ActionModel.TYPE_ACTION_SCHEDULE);
+            if (actionNodeRef == null)
             {
-                // remove associated action
-                nodeService.removeAssociation(actionAssoc.getSourceRef(), actionAssoc.getTargetRef(), actionAssoc.getTypeQName());
+                if (actionAssoc != null)
+                {
+                    // remove associated action
+                    nodeService.removeAssociation(actionAssoc.getSourceRef(), actionAssoc.getTargetRef(), actionAssoc.getTypeQName());
+                }
+            }
+            else
+            {
+                if (actionAssoc == null)
+                {
+                    // create associated action
+                    nodeService.createAssociation(nodeRef, actionNodeRef, ActionModel.ASSOC_SCHEDULED_ACTION);
+                }
+                else if (!actionAssoc.getTargetRef().equals(actionNodeRef))
+                {
+                    // associated action has changed... first remove existing association
+                    nodeService.removeAssociation(actionAssoc.getSourceRef(), actionAssoc.getTargetRef(), actionAssoc.getTypeQName());
+                    nodeService.createAssociation(nodeRef, actionNodeRef, ActionModel.ASSOC_SCHEDULED_ACTION);
+                }
             }
         }
-        else
+        finally
         {
-            if (actionAssoc == null)
-            {
-                // create associated action
-                nodeService.createAssociation(nodeRef, actionNodeRef, ActionModel.ASSOC_SCHEDULED_ACTION);
-            }
-            else if (!actionAssoc.getTargetRef().equals(actionNodeRef))
-            {
-                // associated action has changed... first remove existing association
-                nodeService.removeAssociation(actionAssoc.getSourceRef(), actionAssoc.getTargetRef(), actionAssoc.getTypeQName());
-                nodeService.createAssociation(nodeRef, actionNodeRef, ActionModel.ASSOC_SCHEDULED_ACTION);
-            }
+            behaviourFilter.enableBehaviour(ActionModel.TYPE_ACTION_SCHEDULE);
         }
     }
     
@@ -290,15 +304,11 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         }
 
         // locate associated schedule for action
-        List<AssociationRef> assocs = nodeService.getSourceAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
+        List<AssociationRef> assocs = nodeService.getSourceAssocs(nodeRef, ActionModel.ASSOC_SCHEDULED_ACTION);
         AssociationRef scheduledAssoc = null;
         for (AssociationRef assoc : assocs)
         {
-            if (ActionModel.ASSOC_SCHEDULED_ACTION.equals(assoc.getTypeQName()))
-            {
-                scheduledAssoc = assoc;
-                break;
-            }
+            scheduledAssoc = assoc;
         }
         
         if (scheduledAssoc == null)
@@ -367,17 +377,12 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     
     private AssociationRef findActionAssociationFromSchedule(NodeRef schedule)
     {
-        List<AssociationRef> assocs = nodeService.getTargetAssocs(schedule, RegexQNamePattern.MATCH_ALL);
+        List<AssociationRef> assocs = nodeService.getTargetAssocs(schedule, ActionModel.ASSOC_SCHEDULED_ACTION);
         AssociationRef actionAssoc = null;
         for (AssociationRef assoc : assocs)
         {
-            if (ActionModel.ASSOC_SCHEDULED_ACTION.equals(assoc.getTypeQName()))
-            {
-                actionAssoc = assoc;
-                break;
-            }
+            actionAssoc = assoc;
         }
-        
         return actionAssoc;
     }
     

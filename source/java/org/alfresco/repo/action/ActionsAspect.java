@@ -25,9 +25,11 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -41,7 +43,7 @@ import org.alfresco.util.PropertyCheck;
  * 
  * @author Roy Wetherall
  */
-public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, CopyServicePolicies.OnCopyCompletePolicy
+public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, CopyServicePolicies.OnCopyCompletePolicy, NodeServicePolicies.OnDeleteAssociationPolicy
 {
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
@@ -75,12 +77,18 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
         PropertyCheck.mandatory(this, "ruleService", ruleService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         
+        this.policyComponent.bindAssociationBehaviour(
+                NodeServicePolicies.OnDeleteAssociationPolicy.QNAME,
+                ActionModel.TYPE_ACTION_SCHEDULE,
+                ActionModel.ASSOC_SCHEDULED_ACTION,
+                new JavaBehaviour(this, "onDeleteAssociation"));
+        
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ActionModel.ASPECT_ACTIONS,
                 new JavaBehaviour(this, "getCopyCallback"));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
+                CopyServicePolicies.OnCopyCompletePolicy.QNAME,
                 ActionModel.ASPECT_ACTIONS,
                 new JavaBehaviour(this, "onCopyComplete"));
         
@@ -90,6 +98,19 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
                 new JavaBehaviour(this, "onAddAspect"));
     }
     
+    @Override
+    public void onDeleteAssociation(AssociationRef nodeAssocRef)
+    {
+        // The act:actionSchedule type must have the association, so remove the source when the
+        // association is deleted.
+        NodeRef actionScheduleNodeRef = nodeAssocRef.getSourceRef();
+        if (nodeService.exists(actionScheduleNodeRef) && !nodeService.hasAspect(actionScheduleNodeRef, ContentModel.ASPECT_PENDING_DELETE))
+        {
+            // Delete the source
+            nodeService.deleteNode(actionScheduleNodeRef);
+        }
+    }
+
     /**
      * On add aspect policy behaviour
      * 

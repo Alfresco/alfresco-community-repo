@@ -700,10 +700,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testUpdateSite", "changedTitle", "changedDescription", SiteVisibility.PUBLIC);         
     }
     
-    public void testDeleteSite()
+    public void testDeleteSite_DoesNotExist()
     {
-        SiteService smallSiteService = (SiteService)this.applicationContext.getBean("siteService");
-        
         // delete a site that isn't there
         try
         {
@@ -714,7 +712,31 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         {
             // Expected
         }
+    }
+    
+    public void testDeleteSite_ViaNodeService()
+    {
+        String siteShortName = "testUpdateSite";
+        this.siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        SiteInfo siteInfo = this.siteService.getSite(siteShortName);
+        assertNotNull(siteInfo);
         
+        // delete a site through the nodeService - not allowed
+        try
+        {
+            nodeService.deleteNode(siteInfo.getNodeRef());
+            fail("Shouldn't be able to delete a site via the nodeService");
+        }
+        catch (AlfrescoRuntimeException expected)
+        {
+            // Intentionally empty
+        }
+    }
+    
+    public void testDeleteSite()
+    {
+        @SuppressWarnings("deprecation")
+        SiteService smallSiteService = (SiteService)this.applicationContext.getBean("siteService");
         // Create a test group
         final String testGroupName = "siteServiceImplTestGroup_" + GUID.generate();
         String testGroup = AuthenticationUtil.runAs(        
@@ -735,17 +757,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         // Add the test group as a member of the site
         this.siteService.setMembership(siteShortName, testGroup, SiteModel.SITE_CONTRIBUTOR);
-        
-        // delete a site through the nodeService - not allowed
-        try
-        {
-            nodeService.deleteNode(siteInfo.getNodeRef());
-            fail("Shouldn't be able to delete a site via the nodeService");
-        }
-        catch (AlfrescoRuntimeException expected)
-        {
-            // Intentionally empty
-        }
         
         // Delete the site
         this.siteService.deleteSite(siteShortName);
@@ -1113,6 +1124,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * Creates a site with a custom type, and ensures that
      *  it behaves correctly.
      */
+    @SuppressWarnings("deprecation")
     public void testCustomSiteType()
     {
         final String CS_URI = "http://example.com/site";
@@ -1699,9 +1711,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 {
                     // Can site content be read by the user?
                     NodeRef folder = this.siteService.getContainer(siteInfo.getShortName(), "testComp");
-                    List<FileInfo> files = null;  
-                    
-                    files = this.fileFolderService.listFiles(folder);
+                    @SuppressWarnings("unused")
+                    List<FileInfo> files = this.fileFolderService.listFiles(folder);
                     if (readSite == false)
                     {
                         fail(message + ":  Content of the site '" + siteInfo.getShortName() + "' was NOT expected to be read by user '" + userName + "'");
@@ -2014,8 +2025,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testALF_1017_nonSitesInSitesSpace() throws Exception
     {
-       final String testTitlePrefix = TEST_TITLE.substring(0, 9);
-       
        // Initially listing is fine
        List<SiteInfo> sites = this.siteService.listSites(null, null);
        assertNotNull("sites list was null.", sites);
@@ -2079,7 +2088,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     			TEST_TITLE, 
     			TEST_DESCRIPTION, 
     			visibility);
-        NodeRef siteContainer = this.siteService.createContainer(siteShortName, componentId, ContentModel.TYPE_FOLDER, null);
+        this.siteService.createContainer(siteShortName, componentId, ContentModel.TYPE_FOLDER, null);
         return siteInfo;
     }
 

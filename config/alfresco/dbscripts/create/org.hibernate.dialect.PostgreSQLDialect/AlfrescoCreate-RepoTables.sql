@@ -218,7 +218,6 @@ CREATE TABLE alf_node
     store_id INT8 NOT NULL,
     uuid VARCHAR(36) NOT NULL,
     transaction_id INT8 NOT NULL,
-    node_deleted BOOL NOT NULL,
     type_qname_id INT8 NOT NULL,
     locale_id INT8 NOT NULL,
     acl_id INT8,
@@ -235,10 +234,8 @@ CREATE TABLE alf_node
     CONSTRAINT fk_alf_node_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id)
 );
 CREATE UNIQUE INDEX store_id ON alf_node (store_id, uuid);
-CREATE INDEX idx_alf_node_del ON alf_node (node_deleted);
-CREATE INDEX idx_alf_node_txn_del ON alf_node (transaction_id, node_deleted);
+CREATE INDEX idx_alf_node_txn_type ON alf_node (transaction_id, type_qname_id);
 CREATE INDEX fk_alf_node_acl ON alf_node (acl_id);
-CREATE INDEX fk_alf_node_txn ON alf_node (transaction_id);
 CREATE INDEX fk_alf_node_store ON alf_node (store_id);
 CREATE INDEX fk_alf_node_tqn ON alf_node (type_qname_id);
 CREATE INDEX fk_alf_node_loc ON alf_node (locale_id);

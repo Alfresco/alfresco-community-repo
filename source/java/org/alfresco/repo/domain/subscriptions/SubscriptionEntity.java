@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,7 @@ public class SubscriptionEntity
 {
     private Long userNodeId;
     private Long nodeId;
+    private Long deletedTypeQNameId;
 
     public Long getUserNodeId()
     {
@@ -43,8 +44,13 @@ public class SubscriptionEntity
         this.nodeId = nodeId;
     }
 
-    public boolean getFalse()
+    public Long getDeletedTypeQNameId()
     {
-        return false;
+        return deletedTypeQNameId;
+    }
+
+    public void setDeletedTypeQNameId(Long deletedTypeQNameId)
+    {
+        this.deletedTypeQNameId = deletedTypeQNameId;
     }
 }

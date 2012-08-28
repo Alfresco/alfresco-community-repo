@@ -18,8 +18,9 @@
  */
 package org.alfresco.repo.domain.solr;
 
-import java.util.Date;
 import java.util.List;
+
+import org.alfresco.util.EqualsHelper;
 
 /**
  * Holds parameters for SOLR DAO calls against <b>alf_transaction</b> and <b>alf_change_set</b>.
@@ -33,9 +34,18 @@ public class SOLRTrackingParameters
     private List<Long> ids;
     private Long toIdExclusive;
     private Long toCommitTimeExclusive;
-    
-    private boolean trueOrFalse;
+    private final Long deletedTypeQNameId;
 
+    /**
+     * Construct the parameters
+     * 
+     * @param deletedTypeQNameId            the QName ID representing deleted nodes
+     */
+    public SOLRTrackingParameters(Long deletedTypeQNameId)
+    {
+        this.deletedTypeQNameId = deletedTypeQNameId;
+    }
+    
     public Long getFromIdInclusive()
     {
         return fromIdInclusive;
@@ -86,20 +96,9 @@ public class SOLRTrackingParameters
 	    return false;
 	}
 
-	/**
-	 * Simple mutalbe cross-DB boolean value
-	 */
-	public boolean isTrueOrFalse()
+    public Long getDeletedTypeQNameId()
     {
-        return trueOrFalse;
-    }
-
-	/**
-     * Simple mutalbe cross-DB boolean value
-	 */
-    public void setTrueOrFalse(boolean trueOrFalse)
-    {
-        this.trueOrFalse = trueOrFalse;
+        return deletedTypeQNameId;
     }
 
     public Long getToIdExclusive()
@@ -132,7 +131,7 @@ public class SOLRTrackingParameters
         result = prime * result + ((ids == null) ? 0 : ids.hashCode());
         result = prime * result + ((toCommitTimeExclusive == null) ? 0 : toCommitTimeExclusive.hashCode());
         result = prime * result + ((toIdExclusive == null) ? 0 : toIdExclusive.hashCode());
-        result = prime * result + (trueOrFalse ? 1231 : 1237);
+        result = prime * result + ((deletedTypeQNameId == null) ? 0 : deletedTypeQNameId.hashCode());
         return result;
     }
 
@@ -146,53 +145,21 @@ public class SOLRTrackingParameters
         if (getClass() != obj.getClass())
             return false;
         SOLRTrackingParameters other = (SOLRTrackingParameters) obj;
-        if (fromCommitTimeInclusive == null)
-        {
-            if (other.fromCommitTimeInclusive != null)
-                return false;
-        }
-        else if (!fromCommitTimeInclusive.equals(other.fromCommitTimeInclusive))
-            return false;
-        if (fromIdInclusive == null)
-        {
-            if (other.fromIdInclusive != null)
-                return false;
-        }
-        else if (!fromIdInclusive.equals(other.fromIdInclusive))
-            return false;
-        if (ids == null)
-        {
-            if (other.ids != null)
-                return false;
-        }
-        else if (!ids.equals(other.ids))
-            return false;
-        if (toCommitTimeExclusive == null)
-        {
-            if (other.toCommitTimeExclusive != null)
-                return false;
-        }
-        else if (!toCommitTimeExclusive.equals(other.toCommitTimeExclusive))
-            return false;
-        if (toIdExclusive == null)
-        {
-            if (other.toIdExclusive != null)
-                return false;
-        }
-        else if (!toIdExclusive.equals(other.toIdExclusive))
-            return false;
-        if (trueOrFalse != other.trueOrFalse)
-            return false;
-        return true;
+        return
+                EqualsHelper.nullSafeEquals(this.fromCommitTimeInclusive, other.fromCommitTimeInclusive) &&
+                EqualsHelper.nullSafeEquals(this.fromIdInclusive, other.fromIdInclusive) &&
+                EqualsHelper.nullSafeEquals(this.ids, other.ids) &&
+                EqualsHelper.nullSafeEquals(this.toIdExclusive, other.toIdExclusive) &&
+                EqualsHelper.nullSafeEquals(this.toCommitTimeExclusive, other.toCommitTimeExclusive) &&
+                EqualsHelper.nullSafeEquals(this.deletedTypeQNameId, other.deletedTypeQNameId);
     }
 
     @Override
     public String toString()
     {
-        return "SOLRTrackingParameters [fromIdInclusive="
-                + fromIdInclusive + ", fromCommitTimeInclusive=" + fromCommitTimeInclusive + ", ids=" + ids + ", toIdExclusive=" + toIdExclusive + ", toCommitTimeExclusive="
-                + toCommitTimeExclusive + ", trueOrFalse=" + trueOrFalse + "]";
+        return "SOLRTrackingParameters [fromIdInclusive=" + fromIdInclusive
+                + ", fromCommitTimeInclusive=" + fromCommitTimeInclusive + ", ids=" + ids
+                + ", toIdExclusive=" + toIdExclusive + ", toCommitTimeExclusive="
+                + toCommitTimeExclusive + ", typeQNameId=" + deletedTypeQNameId + "]";
     }
-
-    
 }

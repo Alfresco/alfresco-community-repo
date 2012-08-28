@@ -1627,7 +1627,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         UidValidityTransactionListener txnListener = AlfrescoTransactionSupport.getResource(key);
         if (txnListener == null)
         {
-            txnListener = new UidValidityTransactionListener(folderRef, nodeService);
+            txnListener = new UidValidityTransactionListener(folderRef);
             AlfrescoTransactionSupport.bindListener(txnListener);
             AlfrescoTransactionSupport.bindResource(key, txnListener);
         }
@@ -1805,16 +1805,14 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
     {
         // Generate a unique token for each folder change with which we can validate session caches
         private String changeToken = GUID.generate();
-        private NodeService nodeService;
         private NodeRef folderNodeRef;
         private Long minUid;
         private Long maxUid;
         private boolean forceNewUidValidity = false;
         
-        public UidValidityTransactionListener(NodeRef folderNodeRef, NodeService nodeService)
+        public UidValidityTransactionListener(NodeRef folderNodeRef)
         {
             this.folderNodeRef = folderNodeRef;
-            this.nodeService = nodeService;
         }
         
         public void forceNewUidvalidity()
@@ -1851,14 +1849,20 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 @Override
                 public Void doWork() throws Exception
                 {
+                    // This fires at the end of the transaction, so double-check that the node is still present
+                    if (!nodeService.exists(folderNodeRef))
+                    {
+                        return null;
+                    }
+                    
                     if (UidValidityTransactionListener.this.forceNewUidValidity || UidValidityTransactionListener.this.minUid != null)
                     {
                         long modifDate = System.currentTimeMillis();
-                        Long oldMax = (Long)UidValidityTransactionListener.this.nodeService.getProperty(folderNodeRef, ImapModel.PROP_MAXUID);
+                        Long oldMax = (Long) nodeService.getProperty(folderNodeRef, ImapModel.PROP_MAXUID);
                         // Only update UIDVALIDITY if a new node has and ID that is smaller than the old maximum (as UIDs are always meant to increase)
                         if (UidValidityTransactionListener.this.forceNewUidValidity || oldMax == null || UidValidityTransactionListener.this.minUid < oldMax)
                         {
-                            UidValidityTransactionListener.this.nodeService.setProperty(folderNodeRef, ImapModel.PROP_UIDVALIDITY, modifDate);                            
+                            nodeService.setProperty(folderNodeRef, ImapModel.PROP_UIDVALIDITY, modifDate);                            
                             if (logger.isDebugEnabled())
                             {
                                 logger.debug("UIDVALIDITY was modified for folder, nodeRef:" + folderNodeRef);
@@ -1866,14 +1870,14 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                         }
                         if(UidValidityTransactionListener.this.maxUid != null)
                         {
-                            UidValidityTransactionListener.this.nodeService.setProperty(folderNodeRef, ImapModel.PROP_MAXUID, UidValidityTransactionListener.this.maxUid);
+                            nodeService.setProperty(folderNodeRef, ImapModel.PROP_MAXUID, UidValidityTransactionListener.this.maxUid);
                             if (logger.isDebugEnabled())
                             {
                                 logger.debug("MAXUID was modified for folder, nodeRef:" + folderNodeRef);
                             }
                         }
                     }
-                    UidValidityTransactionListener.this.nodeService.setProperty(folderNodeRef, ImapModel.PROP_CHANGE_TOKEN, changeToken);                            
+                    nodeService.setProperty(folderNodeRef, ImapModel.PROP_CHANGE_TOKEN, changeToken);                            
                     return null;
                 }                        
             });

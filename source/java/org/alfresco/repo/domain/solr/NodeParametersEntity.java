@@ -22,8 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.solr.NodeParameters;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Stores node query parameters for use in SOLR DAO queries
@@ -38,12 +41,15 @@ public class NodeParametersEntity extends NodeParameters
     private List<Long> includeAspectIds;
     private List<Long> excludeAspectIds;
     
+    private Long originalIdPropQNameId;
+    
     /**
      * Public constructor, but not generally useful
      */
-    public NodeParametersEntity()
+    public NodeParametersEntity(QNameDAO qnameDAO)
     {
-        
+        Pair<Long, QName> qnamePair = qnameDAO.getOrCreateQName(ContentModel.PROP_ORIGINAL_ID);
+        this.setOriginalIdPropQNameId(qnamePair == null ? -1 : qnamePair.getFirst());        
     }
     
     /**
@@ -51,6 +57,8 @@ public class NodeParametersEntity extends NodeParameters
      */
     public NodeParametersEntity(NodeParameters params, QNameDAO qnameDAO)
     {
+        this(qnameDAO);
+
         this.setFromNodeId(params.getFromNodeId());
         this.setToNodeId(params.getToNodeId());
 
@@ -60,7 +68,7 @@ public class NodeParametersEntity extends NodeParameters
 
         this.setStoreIdentifier(params.getStoreIdentifier());
         this.setStoreProtocol(params.getStoreProtocol());
-        
+                
         // Translate the QNames, if provided
         if (params.getIncludeNodeTypes() != null)
         {
@@ -86,7 +94,17 @@ public class NodeParametersEntity extends NodeParameters
             this.setIncludeAspectIds(new ArrayList<Long>(qnamesIds));
         }
     }
-    
+        
+    public void setOriginalIdPropQNameId(Long originalIdPropQNameId)
+    {
+        this.originalIdPropQNameId = originalIdPropQNameId;
+    }
+
+    public Long getOriginalIdPropQNameId()
+    {
+        return originalIdPropQNameId;
+    }
+
     public boolean getStoreFilter()
     {
         return (getStoreProtocol() != null || getStoreIdentifier() != null);

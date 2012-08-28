@@ -25,12 +25,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -41,6 +39,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -189,6 +188,7 @@ public class HomeFolderProviderSynchronizerTest
             try
             {
                 trans.commit();
+                trans = null;
             }
             catch (Exception e)
             {
@@ -201,15 +201,26 @@ public class HomeFolderProviderSynchronizerTest
             }
         }
 
-        trans = transactionService.getUserTransaction();
-        trans.begin();
-        Set<NodeRef> adminGuestUserHomeFolders = deleteNonAdminGuestUsers();
-        deleteNonAdminGuestFolders(adminGuestUserHomeFolders);
-        deleteAllTenants();
-        trans.commit();
-        trans = null;
-        AuthenticationUtil.clearCurrentSecurityContext();
-        userNameMatcher.setUserNamesAreCaseSensitive(false); // Put back the default
+        RetryingTransactionCallback<Void> cleanup = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                Set<NodeRef> adminGuestUserHomeFolders = deleteNonAdminGuestUsers();
+                deleteNonAdminGuestFolders(adminGuestUserHomeFolders);
+                deleteAllTenants();
+                return null;
+            }
+        };
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(cleanup);
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+            userNameMatcher.setUserNamesAreCaseSensitive(false); // Put back the default
+        }
     }
 
     private Set<NodeRef> deleteNonAdminGuestUsers()

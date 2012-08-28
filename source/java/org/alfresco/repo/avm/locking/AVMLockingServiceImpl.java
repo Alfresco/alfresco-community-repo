@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -426,13 +426,21 @@ public class AVMLockingServiceImpl implements AVMLockingService
         query.append("+@").append(NamespaceService.WCMAPP_MODEL_PREFIX).append("\\:username:\"");
         query.append(lockOwner);
         query.append("\"");
-        ResultSet resultSet = searchService.query(
-                new StoreRef(this.webProjectStore),
-                SearchService.LANGUAGE_LUCENE,
-                query.toString());
-        List<NodeRef> nodes = resultSet.getNodeRefs();
-        resultSet.close();
+        ResultSet resultSet = null;
+        List<NodeRef> nodes =null;
         
+        try
+        {
+            resultSet = searchService.query(
+                    new StoreRef(this.webProjectStore),
+                    SearchService.LANGUAGE_LUCENE,
+                    query.toString());
+            nodes = resultSet.getNodeRefs();
+        }
+        finally
+        {
+        	if (resultSet != null) {resultSet.close();}
+        }
         if (nodes.size() == 1)
         {
             String userrole = (String)nodeService.getProperty(nodes.get(0), WCMAppModel.PROP_WEBUSERROLE);

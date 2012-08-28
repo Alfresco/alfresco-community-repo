@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.domain.node;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
@@ -40,9 +42,16 @@ public interface Node extends NodeIdAndAclId
     
     public abstract NodeRef getNodeRef();
 
-    public NodeRef.Status getNodeStatus();
+    public NodeRef.Status getNodeStatus(QNameDAO qnameDAO);
     
     public abstract Pair<Long, NodeRef> getNodePair();
+    
+    /**
+     * Checks the {@link #getTypeQNameId() type} of the node to determine if the node is deleted
+     * @param qnameDAO          DAO to work out type IDs
+     * @return                  <tt>true</tt> if the node is {@link ContentModel#TYPE_DELETED}
+     */
+    public abstract boolean getDeleted(QNameDAO qnameDAO);
 
     public abstract Long getVersion();
 
@@ -53,8 +62,6 @@ public interface Node extends NodeIdAndAclId
     public abstract Long getTypeQNameId();
     
     public abstract Long getLocaleId();
-
-    public abstract Boolean getDeleted();
 
     public abstract TransactionEntity getTransaction();
 

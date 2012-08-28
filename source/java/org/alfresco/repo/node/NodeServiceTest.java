@@ -42,6 +42,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeEntity;
 import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.node.ParentAssocsInfo;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeSetNodeTypePolicy;
@@ -51,6 +52,8 @@ import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnSetNodeTypePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
+import org.alfresco.repo.node.db.NodeHierarchyWalker;
+import org.alfresco.repo.node.db.NodeHierarchyWalker.VisitedNode;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.Policy;
@@ -99,6 +102,7 @@ public class NodeServiceTest extends TestCase
     
     protected ServiceRegistry serviceRegistry;
     protected NodeService nodeService;
+    protected NodeDAO nodeDAO;
     private TransactionService txnService;
     private PolicyComponent policyComponent;
     private CannedQueryDAO cannedQueryDAO;
@@ -118,6 +122,7 @@ public class NodeServiceTest extends TestCase
 
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
+        nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         txnService = serviceRegistry.getTransactionService();
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         cannedQueryDAO = (CannedQueryDAO) ctx.getBean("cannedQueryDAO");
@@ -1068,15 +1073,18 @@ public class NodeServiceTest extends TestCase
      */
     public void testConcurrentLinkToDeletedNode() throws Throwable
     {
+        QNameDAO qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
+        Long deletedTypeQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_DELETED).getFirst();
         // First find any broken links to start with
         final NodeEntity params = new NodeEntity();
         params.setId(0L);
-        params.setDeleted(true);
+        params.setTypeQNameId(deletedTypeQNameId);
         
-        List<Long> ids = getChildNodesWithDeletedParentNode(params, 0);
-        logger.debug("Found child nodes with deleted parent node (before): " + ids);
-        
-        final int idsToSkip = ids.size();
+        // Find all 'at risk' nodes before the test
+        final List<Long> attachedToDeletedIdsBefore = getChildNodesWithDeletedParentNode(params, 0);
+        logger.debug("Found child nodes with deleted parent node (before): " + attachedToDeletedIdsBefore);
+        final List<Long> orphanedNodeIdsBefore = getChildNodesWithNoParentNode(params, 0);
+        logger.debug("Found child nodes without parent (before): " + orphanedNodeIdsBefore);
         
         final NodeRef[] nodeRefs = new NodeRef[10];
         final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -1088,7 +1096,7 @@ public class NodeServiceTest extends TestCase
             @Override
             public NodeRef execute() throws Throwable
             {
-                String randomName = getName() + "-" + System.nanoTime();
+                String randomName = getName() + "-" + GUID.generate();
                 QName randomQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, randomName);
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                 props.put(ContentModel.PROP_NAME, randomName);
@@ -1169,16 +1177,20 @@ public class NodeServiceTest extends TestCase
         
         logger.info("All threads should have finished");
         
+        // Find all 'at risk' nodes after the test
+        final List<Long> attachedToDeletedIdsAfter = getChildNodesWithDeletedParentNode(params, attachedToDeletedIdsBefore.size());
+        logger.debug("Found child nodes with deleted parent node (after): " + attachedToDeletedIdsAfter);
+        final List<Long> orphanedNodeIdsAfter = getChildNodesWithNoParentNode(params, orphanedNodeIdsBefore.size());
+        logger.debug("Found child nodes without parent (after): " + attachedToDeletedIdsAfter);
         // Now need to identify the problem nodes
-        final List<Long> childNodeIds = getChildNodesWithDeletedParentNode(params, idsToSkip);
-        
-        if (childNodeIds.isEmpty())
+
+        if (attachedToDeletedIdsAfter.isEmpty() && orphanedNodeIdsAfter.isEmpty())
         {
             // nothing more to test
             return;
         }
         
-        logger.debug("Found child nodes with deleted parent node (after): " + childNodeIds);
+        // We are already in a failed state, but check if the orphan cleanup works
         
         // workaround recovery: force collection of any orphan nodes (ALF-12358 + ALF-13066)
         for (final NodeRef nodeRef : nodesAtRisk)
@@ -1197,24 +1209,35 @@ public class NodeServiceTest extends TestCase
             });
         }
         
-        // check again ...
-        ids = getChildNodesWithDeletedParentNode(params, idsToSkip);
-        assertTrue("The following child nodes have deleted parent node: " + ids, ids.isEmpty());
+        // Find all 'at risk' nodes after the test
+        final List<Long> attachedToDeletedIdsCleaned = getChildNodesWithDeletedParentNode(params, attachedToDeletedIdsBefore.size());
+        logger.debug("Found child nodes with deleted parent node (cleaned): " + attachedToDeletedIdsAfter);
+        final List<Long> orphanedNodeIdsCleaned = getChildNodesWithNoParentNode(params, orphanedNodeIdsBefore.size());
+        logger.debug("Found child nodes without parent (cleaned): " + attachedToDeletedIdsAfter);
+        
+        // Check
+        assertTrue(
+                "Expected full cleanup of nodes referencing deleted nodes: " + attachedToDeletedIdsCleaned,
+                attachedToDeletedIdsCleaned.isEmpty());
+        assertTrue(
+                "Expected full cleanup of nodes referencing without parents: " + orphanedNodeIdsCleaned,
+                orphanedNodeIdsCleaned.isEmpty());
         
         // check lost_found ...
         List<NodeRef> lostAndFoundNodeRefs = getLostAndFoundNodes();
         assertFalse(lostAndFoundNodeRefs.isEmpty());
         
-        List<Long> lostAndFoundNodeIds = new ArrayList<Long>(lostAndFoundNodeRefs.size());
+        Set<Long> lostAndFoundNodeIds = new HashSet<Long>(lostAndFoundNodeRefs.size());
         for (NodeRef nodeRef : lostAndFoundNodeRefs)
         {
             lostAndFoundNodeIds.add((Long)nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
         }
         
-        for (Long childNodeId : childNodeIds)
-        {
-            assertTrue("Not found: "+childNodeId, lostAndFoundNodeIds.contains(childNodeId));
-        }
+        assertTrue("Nodes linked to deleted parent nodes not handled.", lostAndFoundNodeIds.containsAll(attachedToDeletedIdsAfter));
+        assertTrue("Orphaned nodes not all handled.", lostAndFoundNodeIds.containsAll(orphanedNodeIdsAfter));
+        
+        // Now fail because we allowed the situation in the first place
+        fail("We allowed orphaned nodes or nodes with deleted parents.");
     }
     
     /**
@@ -1222,9 +1245,12 @@ public class NodeServiceTest extends TestCase
      */
     public void testForceNonRootNodeWithNoParentNode() throws Throwable
     {
+        QNameDAO qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
+        Long deletedTypeQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_DELETED).getFirst();
+        // First find any broken links to start with
         final NodeEntity params = new NodeEntity();
         params.setId(0L);
-        params.setDeleted(true);
+        params.setTypeQNameId(deletedTypeQNameId);
         
         List<Long> ids = getChildNodesWithNoParentNode(params, 0);
         logger.debug("Found child nodes with deleted parent node (before): " + ids);
@@ -1361,5 +1387,65 @@ public class NodeServiceTest extends TestCase
         }
         
         return lostNodeRefs;
+    }
+    
+    /**
+     * @see NodeHierarchyWalker
+     */
+    public void testNodeHierarchyWalker() throws Exception
+    {
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        final NodeRef[] nodes = new NodeRef[6];
+        buildNodeHierarchy(workspaceRootNodeRef, nodes);
+        Pair<Long, NodeRef> parentNodePair = nodeDAO.getNodePair(nodes[0]);
+        Pair<Long, ChildAssociationRef> parentAssocPair = nodeDAO.getPrimaryParentAssoc(parentNodePair.getFirst());
+        // Hook up some associations
+        nodeService.addAspect(nodes[1], ContentModel.ASPECT_COPIEDFROM, null);
+        nodeService.createAssociation(nodes[1], nodes[0], ContentModel.ASSOC_ORIGINAL);             // Peer n1-n0
+        nodeService.addChild(                                                                       // Secondary child n0-n2
+                nodes[0],
+                nodes[2],
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.ALFRESCO_URI, "testNodeHierarchyWalker"));
+        
+        // Walk the hierarchy
+        NodeHierarchyWalker walker = new NodeHierarchyWalker(nodeDAO);
+        walker.walkHierarchy(parentNodePair, parentAssocPair);
+        
+        List<VisitedNode> nodesLeafFirst = walker.getNodes(true);
+        assertEquals("Unexpected number of nodes visited", 6, nodesLeafFirst.size());
+        assertEquals("Incorrect order ", nodesLeafFirst.get(0).nodeRef, nodes[5]);
+        assertEquals("Incorrect order ", nodesLeafFirst.get(5).nodeRef, nodes[0]);
+        List<VisitedNode> nodesParentFirst = walker.getNodes(false);
+        assertEquals("Unexpected number of nodes visited", 6, nodesParentFirst.size());
+        assertEquals("Incorrect order ", nodesParentFirst.get(0).nodeRef, nodes[0]);
+        assertEquals("Incorrect order ", nodesParentFirst.get(5).nodeRef, nodes[5]);
+        
+        // Check primary parent links
+        assertEquals(workspaceRootNodeRef, nodesParentFirst.get(0).primaryParentAssocPair.getSecond().getParentRef());
+        assertEquals(nodes[0], nodesParentFirst.get(1).primaryParentAssocPair.getSecond().getParentRef());
+        assertEquals(nodes[4], nodesParentFirst.get(5).primaryParentAssocPair.getSecond().getParentRef());
+        
+        // Check secondary parent links
+        assertEquals(0, nodesParentFirst.get(0).secondaryParentAssocs.size());
+        assertEquals(nodes[0], nodesParentFirst.get(2).secondaryParentAssocs.get(0).getSecond().getParentRef());
+        assertEquals(0, nodesParentFirst.get(1).secondaryParentAssocs.size());
+        assertEquals(1, nodesParentFirst.get(2).secondaryParentAssocs.size());
+        assertEquals(0, nodesParentFirst.get(3).secondaryParentAssocs.size());
+        
+        // Check secondary child links
+        assertEquals(1, nodesParentFirst.get(0).secondaryChildAssocs.size());
+        assertEquals(nodes[2], nodesParentFirst.get(0).secondaryChildAssocs.get(0).getSecond().getChildRef());
+        assertEquals(0, nodesParentFirst.get(1).secondaryChildAssocs.size());
+        
+        // Check target assocs
+        assertEquals(0, nodesParentFirst.get(0).targetAssocs.size());
+        assertEquals(1, nodesParentFirst.get(1).targetAssocs.size());
+        assertEquals(nodes[0], nodesParentFirst.get(1).targetAssocs.get(0).getSecond().getTargetRef());
+        
+        // Check source assocs
+        assertEquals(1, nodesParentFirst.get(0).sourceAssocs.size());
+        assertEquals(nodes[1], nodesParentFirst.get(0).sourceAssocs.get(0).getSecond().getSourceRef());
+        assertEquals(0, nodesParentFirst.get(1).sourceAssocs.size());
     }
 }

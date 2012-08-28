@@ -31,7 +31,6 @@ public class NodeBatchLoadEntity
     private Long storeId;
     private List<String> uuids;
     private List<Long> ids;
-    private Boolean deleted;
     
     public Long getStoreId()
     {
@@ -56,13 +55,5 @@ public class NodeBatchLoadEntity
     public void setIds(List<Long> ids)
     {
         this.ids = ids;
-    }
-    public Boolean getDeleted()
-    {
-        return deleted;
-    }
-    public void setDeleted(Boolean deleted)
-    {
-        this.deleted = deleted;
     }
 }

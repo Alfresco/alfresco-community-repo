@@ -494,6 +494,7 @@
       </property>
       <property name="maxCacheSize" value="40000" />
       <property name="mutable" value="true" />
+      <property name="allowEqualsChecks" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 

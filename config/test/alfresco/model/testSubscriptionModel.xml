@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="tsbs:testsubscriptionsmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/testsubscriptionsmodel/1.0" prefix="tsbs"/>
+   </namespaces>
+
+   <aspects>
+       <aspect name="tsbs:archive">
+           <archive>true</archive>
+       </aspect>
+   </aspects>
+
+</model>

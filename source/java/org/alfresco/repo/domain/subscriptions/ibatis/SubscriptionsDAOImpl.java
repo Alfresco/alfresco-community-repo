@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.subscriptions.PagingSubscriptionResultsImpl;
 import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 
@@ -81,7 +82,6 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("userNodeId", dbid);
-        map.put("false", Boolean.FALSE);
 
         int maxItems = (pagingRequest.getMaxItems() < 0 || pagingRequest.getMaxItems() > Integer.MAX_VALUE - 1 ? Integer.MAX_VALUE - 1
                 : pagingRequest.getMaxItems() + 1);
@@ -135,7 +135,6 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("userNodeId", dbid);
-        map.put("false", Boolean.FALSE);
 
         Number count = (Number) template.selectOne("alfresco.subscriptions.select_countSubscriptions", map);
         return count == null ? 0 : count.intValue();
@@ -250,9 +249,14 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
 
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("userIdQname", qnameDAO.getQName(ContentModel.PROP_USERNAME).getFirst());
+
+        Pair<Long, QName> qNamePair = qnameDAO.getQName(ContentModel.PROP_USERNAME);
+        if (null != qNamePair)
+        {
+            map.put("userIdQname", qNamePair.getFirst());
+        }
+
         map.put("userNodeId", dbid);
-        map.put("false", Boolean.FALSE);
 
         int maxItems = (pagingRequest.getMaxItems() < 0 || pagingRequest.getMaxItems() > Integer.MAX_VALUE - 1 ? Integer.MAX_VALUE - 1
                 : pagingRequest.getMaxItems() + 1);
@@ -293,9 +297,14 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         Long dbid = (Long) nodeService.getProperty(userNodeRef, PROP_SYS_NODE_DBID);
 
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("userIdQname", qnameDAO.getQName(ContentModel.PROP_USERNAME).getFirst());
+
+        Pair<Long, QName> qNamePair = qnameDAO.getQName(ContentModel.PROP_USERNAME);
+        if (null != qNamePair)
+        {
+            map.put("userIdQname", qNamePair.getFirst());
+        }
+
         map.put("userNodeId", dbid);
-        map.put("false", Boolean.FALSE);
 
         int maxItems = (pagingRequest.getMaxItems() < 0 || pagingRequest.getMaxItems() > Integer.MAX_VALUE - 1 ? Integer.MAX_VALUE - 1
                 : pagingRequest.getMaxItems() + 1);
@@ -337,7 +346,6 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("userNodeId", dbid);
-        map.put("false", Boolean.FALSE);
 
         Number count = (Number) template.selectOne("alfresco.subscriptions.select_countFollowers", map);
         return count == null ? 0 : count.intValue();

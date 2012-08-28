@@ -18,8 +18,11 @@
  */
 package org.alfresco.repo.domain.node;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
@@ -39,7 +42,6 @@ public class NodeEntity implements Node, PermissionCheckValue
     private Long typeQNameId;
     private Long localeId;
     private Long aclId;
-    private Boolean deleted;
     private TransactionEntity transaction;
     private AuditablePropertiesEntity auditableProperties;
     
@@ -75,7 +77,6 @@ public class NodeEntity implements Node, PermissionCheckValue
         this.typeQNameId = node.getTypeQNameId();
         this.localeId = node.getLocaleId();
         this.aclId = node.getAclId();
-        this.deleted = node.getDeleted();
         this.transaction = node.getTransaction();
         this.auditableProperties = node.getAuditableProperties();
     }
@@ -118,7 +119,6 @@ public class NodeEntity implements Node, PermissionCheckValue
           .append(", typeQNameId=").append(typeQNameId)
           .append(", localeId=").append(localeId)
           .append(", aclId=").append(aclId)
-          .append(", deleted=").append(deleted)
           .append(", transaction=").append(transaction)
           .append(", auditProps=").append(auditableProperties)
           .append("]");
@@ -176,9 +176,10 @@ public class NodeEntity implements Node, PermissionCheckValue
     }
     
     @Override
-    public NodeRef.Status getNodeStatus()
+    public NodeRef.Status getNodeStatus(QNameDAO qnameDAO)
     {
         NodeRef nodeRef = new NodeRef(store.getStoreRef(), uuid);
+        boolean deleted = getDeleted(qnameDAO);
         return new NodeRef.Status(nodeRef, transaction.getChangeTxnId(), transaction.getId(), deleted);
     }
     
@@ -186,6 +187,14 @@ public class NodeEntity implements Node, PermissionCheckValue
     public Pair<Long, NodeRef> getNodePair()
     {
         return new Pair<Long, NodeRef>(id, getNodeRef());
+    }
+    
+    @Override
+    public boolean getDeleted(QNameDAO qnameDAO)
+    {
+        Pair<Long, QName> deletedTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
+        return  deletedTypeQNamePair != null &&
+                deletedTypeQNamePair.getFirst().equals(typeQNameId);
     }
 
     @Override
@@ -269,18 +278,6 @@ public class NodeEntity implements Node, PermissionCheckValue
     {
         checkLock();
         this.aclId = aclId;
-    }
-
-    @Override
-    public Boolean getDeleted()
-    {
-        return deleted;
-    }
-
-    public synchronized void setDeleted(Boolean deleted)
-    {
-        checkLock();
-        this.deleted = deleted;
     }
 
     @Override

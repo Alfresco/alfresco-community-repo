@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,11 +26,19 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
 import org.alfresco.service.cmr.subscriptions.PrivateSubscriptionListException;
+import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
@@ -38,16 +46,24 @@ import org.springframework.context.ApplicationContext;
 
 public class SubscriptionServiceImplTest extends TestCase
 {
+    public static final String[] CONTEXTS = new String[] { "classpath:alfresco/application-context.xml", "classpath:test/alfresco/test-subscriptions-context.xml" };
+
     public static final String USER_BOB = "bob";
     public static final String USER_TOM = "tom";
     public static final String USER_LISA = "lisa";
 
+    public static final String FOLLOWED_NODE_NAME = "Followed.txt";
+
+    public static final QName ASPECT_ARCHIVE = QName.createQName("http://www.alfresco.org/model/testsubscriptionsmodel/1.0", "archive");
+
     private UserTransaction txn;
 
-    protected ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    protected ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONTEXTS);
     protected TransactionService transactionService;
     protected SubscriptionService subscriptionService;
     protected PersonService personService;
+    protected NodeService nodeService;
+    protected SearchService searchService;
 
     @Override
     public void setUp() throws Exception
@@ -56,6 +72,8 @@ public class SubscriptionServiceImplTest extends TestCase
         transactionService = (TransactionService) ctx.getBean("TransactionService");
         subscriptionService = (SubscriptionService) ctx.getBean("SubscriptionService");
         personService = (PersonService) ctx.getBean("PersonService");
+        nodeService = (NodeService) ctx.getBean("NodeService");
+        searchService = (SearchService) ctx.getBean("SearchService");
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
@@ -237,5 +255,68 @@ public class SubscriptionServiceImplTest extends TestCase
                 return null;
             }
         }, userId2);
+    }
+
+    public void testSubscriptionsRemovalOnArchivingNodesForAlf12358() throws Exception
+    {
+        NodeRef companyHome = null;
+        ResultSet resultSet = null;
+        try
+        {
+            resultSet = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, "PATH:\"/app\\:company_home\"");
+            assertNotNull("Can't find Company Home NodeRef!", resultSet);
+            assertEquals("Found too many Company Home nodes!", 1, resultSet.length());
+
+            companyHome = resultSet.getNodeRef(0);
+            assertNotNull("Company Home NodeRef is invalid!", companyHome);
+        }
+        finally
+        {
+            if (null != resultSet)
+            {
+                try
+                {
+                    resultSet.close();
+                }
+                catch (Exception e)
+                {
+                    // Doing nothing
+                }
+            }
+        }
+
+        ChildAssociationRef followed = null;
+
+        int initialCount = subscriptionService.getSubscriptionCount(USER_TOM, SubscriptionItemTypeEnum.USER);
+
+        try
+        {
+            followed = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName
+                    .createValidLocalName(FOLLOWED_NODE_NAME)), ContentModel.TYPE_USER);
+            nodeService.addAspect(followed.getChildRef(), ASPECT_ARCHIVE, null);
+            assertTrue("Fake User node MUST BE archival!", nodeService.hasAspect(followed.getChildRef(), ASPECT_ARCHIVE));
+
+            subscriptionService.subscribe(USER_TOM, followed.getChildRef());
+            assertEquals("Initial subscriptions count MUST BE lesser by 1 after adding new subscription!", 1, (subscriptionService.getSubscriptionCount(USER_TOM,
+                    SubscriptionItemTypeEnum.USER) - initialCount));
+
+            nodeService.deleteNode(followed.getChildRef());
+            assertEquals("Archiving of node MUST cause removal all the subscriptions created against it!", initialCount, subscriptionService.getSubscriptionCount(USER_TOM,
+                    SubscriptionItemTypeEnum.USER));
+        }
+        finally
+        {
+            if ((null != followed) && nodeService.exists(followed.getChildRef()))
+            {
+                try
+                {
+                    nodeService.deleteNode(followed.getChildRef());
+                }
+                catch (Exception e)
+                {
+                    // Doing nothing
+                }
+            }
+        }
     }
 }

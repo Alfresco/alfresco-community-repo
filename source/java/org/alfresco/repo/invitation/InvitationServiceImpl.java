@@ -1100,19 +1100,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Moderated invitation implementation
      * 
-     * @param inviteeComments
-     * @param inviteeUserName
-     * @param resourceType
-     * @param resourceName
-     * @param inviteeRole
      * @return the new moderated invitation
      */
     private ModeratedInvitation startModeratedInvite(String inviteeComments, String inviteeUserName,
                 Invitation.ResourceType resourceType, String resourceName, String inviteeRole)
     {
-        // Get invitee person NodeRef to add as assignee
-        NodeRef inviteeNodeRef = personService.getPerson(inviteeUserName);
-
         SiteInfo siteInfo = siteService.getSite(resourceName);
 
         if (siteService.isMember(resourceName, inviteeUserName))
@@ -1193,7 +1185,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
             inviteeUserName = null;
 
-            Set<NodeRef> peopleWithInviteeEmail = personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, inviteeEmail);
+            Set<NodeRef> peopleWithInviteeEmail = personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, inviteeEmail, 100);
 
             if (peopleWithInviteeEmail.size() > 0)
             {

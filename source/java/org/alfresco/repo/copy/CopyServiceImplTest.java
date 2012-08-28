@@ -564,6 +564,7 @@ public class CopyServiceImplTest extends TestCase
         PagingResults<CopyInfo> copies = null;
         
         NodeRef firstCopy = null;
+        NodeRef secondCopy = null;
 
         for (int i = 1; i <= 100; i++)
         {
@@ -575,6 +576,10 @@ public class CopyServiceImplTest extends TestCase
             if (firstCopy == null)
             {
                 firstCopy = copyNodeRef;
+            }
+            else if (secondCopy == null)
+            {
+                secondCopy = copyNodeRef;
             }
             copies = copyService.getCopies(nodeRef, pageRequest);
             assertEquals("Total count not correct", new Pair<Integer, Integer>(i, i), copies.getTotalResultCount());
@@ -624,6 +629,7 @@ public class CopyServiceImplTest extends TestCase
         // Should be no original
         NodeRef originalCheck = copyService.getOriginal(firstCopy);
         assertNull("Original should not be present. ", originalCheck);
+        assertFalse("Copy should not have cm:copiedfrom aspect. ", nodeService.hasAspect(firstCopy, ContentModel.ASPECT_COPIEDFROM));
     }
     
     /**

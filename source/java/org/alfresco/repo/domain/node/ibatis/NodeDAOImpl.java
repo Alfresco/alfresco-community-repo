@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import org.alfresco.ibatis.IdsEntity;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.node.ChildPropertyEntity;
@@ -104,8 +105,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String INSERT_NODE_ASSOC = "alfresco.node.insert.insert_NodeAssoc";
     private static final String UPDATE_NODE_ASSOC = "alfresco.node.update_NodeAssoc";
     private static final String DELETE_NODE_ASSOC = "alfresco.node.delete_NodeAssoc";
-    private static final String DELETE_NODE_ASSOCS_TO_AND_FROM = "alfresco.node.delete_NodeAssocsToAndFrom";
     private static final String DELETE_NODE_ASSOCS = "alfresco.node.delete_NodeAssocs";
+    private static final String SELECT_NODE_ASSOCS = "alfresco.node.select_NodeAssocs";
     private static final String SELECT_NODE_ASSOCS_BY_SOURCE = "alfresco.node.select_NodeAssocsBySource";
     private static final String SELECT_NODE_ASSOCS_BY_TARGET = "alfresco.node.select_NodeAssocsByTarget";
     private static final String SELECT_NODE_ASSOC_BY_ID = "alfresco.node.select_NodeAssocById";
@@ -113,10 +114,9 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_CHILD_NODE_IDS = "alfresco.node.select.children.select_ChildNodeIds_Limited";
     private static final String SELECT_NODE_PRIMARY_CHILD_ACLS = "alfresco.node.select_NodePrimaryChildAcls";
     private static final String INSERT_CHILD_ASSOC = "alfresco.node.insert.insert_ChildAssoc";
-    private static final String DELETE_CHILD_ASSOC_BY_ID = "alfresco.node.delete_ChildAssocById";
+    private static final String DELETE_CHILD_ASSOCS = "alfresco.node.delete_ChildAssocs";
     private static final String UPDATE_CHILD_ASSOCS_INDEX = "alfresco.node.update_ChildAssocsIndex";
     private static final String UPDATE_CHILD_ASSOCS_UNIQUE_NAME = "alfresco.node.update_ChildAssocsUniqueName";
-    private static final String DELETE_PARENT_ASSOCS_TO = "alfresco.node.delete_ParentAssocsTo";
     private static final String SELECT_CHILD_ASSOC_BY_ID = "alfresco.node.select_ChildAssocById";
     private static final String COUNT_CHILD_ASSOC_BY_PARENT_ID = "alfresco.node.count_ChildAssocByParentId";
     private static final String SELECT_CHILD_ASSOCS_BY_PROPERTY_VALUE = "alfresco.node.select_ChildAssocsByPropertyValue";
@@ -140,7 +140,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_TXN_NODES = "alfresco.node.select_TxnNodes";
     private static final String SELECT_TXNS = "alfresco.node.select_Txns";
     private static final String SELECT_TXN_COUNT = "alfresco.node.select_TxnCount";
-    private static final String SELECT_TXN_NODE_COUNT = "alfresco.node.select_TxnNodeCount";
     private static final String SELECT_TXNS_UNUSED = "alfresco.node.select_TxnsUnused";
     private static final String DELETE_TXNS_UNUSED = "alfresco.node.delete_Txns_Unused";
     private static final String SELECT_TXN_MIN_COMMIT_TIME = "alfresco.node.select_TxnMinCommitTime";
@@ -354,40 +353,40 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected int deleteNodeById(Long nodeId, boolean deletedOnly)
+    protected int deleteNodeById(Long nodeId)
     {
         NodeEntity node = new NodeEntity();
         node.setId(nodeId);
-        // Do we delete everything (false) or just nodes already marked as deleted (true)
-        node.setDeleted(deletedOnly);
         return template.delete(DELETE_NODE_BY_ID, node);
     }
 
     @Override
     protected int deleteNodesByCommitTime(boolean deletedOnly, long maxTxnCommitTimeMs)
     {
+        // Get the deleted nodes
+        Pair<Long, QName> deletedTypePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
+        if (deletedTypePair == null)
+        {
+            // Nothing to do
+            return 0;
+        }
         TransactionQueryEntity query = new TransactionQueryEntity();
-        query.setDeletedNodes(Boolean.TRUE);
+        query.setTypeQNameId(deletedTypePair.getFirst());
         query.setMaxCommitTime(maxTxnCommitTimeMs);
         return template.delete(DELETE_NODES_BY_TXN_COMMIT_TIME, query);
     }
 
     @Override
-    protected NodeEntity selectNodeById(Long id, Boolean deleted)
+    protected NodeEntity selectNodeById(Long id)
     {
         NodeEntity node = new NodeEntity();
         node.setId(id);
-        // Deleted
-        if (deleted != null)
-        {
-            node.setDeleted(deleted);
-        }
         
         return (NodeEntity) template.selectOne(SELECT_NODE_BY_ID, node);
     }
 
     @Override
-    protected NodeEntity selectNodeByNodeRef(NodeRef nodeRef, Boolean deleted)
+    protected NodeEntity selectNodeByNodeRef(NodeRef nodeRef)
     {
         StoreEntity store = new StoreEntity();
         StoreRef storeRef = nodeRef.getStoreRef();
@@ -404,45 +403,30 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             return null;            // Avoid DB2 query failure if someone passes in a made-up UUID
         }
         node.setUuid(uuid);
-        // Deleted
-        if (deleted != null)
-        {
-            node.setDeleted(deleted);
-        }
         
         return (NodeEntity) template.selectOne(SELECT_NODE_BY_NODEREF, node);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids, Boolean deleted)
+    protected List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids)
     {
         NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
         // Store ID
         nodeBatchLoadEntity.setStoreId(storeId);
         // UUID
         nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
-        // Deleted
-        if (deleted != null)
-        {
-            nodeBatchLoadEntity.setDeleted(deleted);
-        }
         
         return (List<Node>) template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected List<Node> selectNodesByIds(SortedSet<Long> ids, Boolean deleted)
+    protected List<Node> selectNodesByIds(SortedSet<Long> ids)
     {
         NodeBatchLoadEntity nodeBatchLoadEntity = new NodeBatchLoadEntity();
         // IDs
         nodeBatchLoadEntity.setIds(new ArrayList<Long>(ids));
-        // Deleted
-        if (deleted != null)
-        {
-            nodeBatchLoadEntity.setDeleted(deleted);
-        }
         
         return (List<Node>) template.selectList(SELECT_NODES_BY_IDS, nodeBatchLoadEntity);
     }
@@ -735,44 +719,22 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected int deleteNodeAssocsToAndFrom(Long nodeId)
-    {
-        NodeAssocEntity assoc = new NodeAssocEntity();
-        // Source
-        NodeEntity sourceNode = new NodeEntity();
-        sourceNode.setId(nodeId);
-        assoc.setSourceNode(sourceNode);
-        // Target
-        NodeEntity targetNode = new NodeEntity();
-        targetNode.setId(nodeId);
-        assoc.setTargetNode(targetNode);
-        
-        return template.delete(DELETE_NODE_ASSOCS_TO_AND_FROM, assoc);
-    }
-
-    @Override
-    protected int deleteNodeAssocsToAndFrom(Long nodeId, Set<Long> assocTypeQNameIds)
-    {
-        NodeAssocEntity assoc = new NodeAssocEntity();
-        assoc.setTypeQNameIds(new ArrayList<Long>(assocTypeQNameIds));
-        // Source
-        NodeEntity sourceNode = new NodeEntity();
-        sourceNode.setId(nodeId);
-        assoc.setSourceNode(sourceNode);
-        // Target
-        NodeEntity targetNode = new NodeEntity();
-        targetNode.setId(nodeId);
-        assoc.setTargetNode(targetNode);
-        
-        return template.delete(DELETE_NODE_ASSOCS_TO_AND_FROM, assoc);
-    }
-
-    @Override
     protected int deleteNodeAssocs(List<Long> ids)
     {
         IdsEntity param = new IdsEntity();
         param.setIds(ids);
         return template.delete(DELETE_NODE_ASSOCS, param);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List<NodeAssocEntity> selectNodeAssocs(Long nodeId)
+    {
+        // Node
+        NodeEntity node = new NodeEntity();
+        node.setId(nodeId);
+        
+        return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS, node);
     }
 
     @SuppressWarnings("unchecked")
@@ -838,13 +800,13 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected int deleteChildAssocById(Long assocId)
+    protected int deleteChildAssocs(List<Long> ids)
     {
-        ChildAssocEntity assoc = new ChildAssocEntity();
-        // ID
-        assoc.setId(assocId);
+        IdsEntity idsEntity = new IdsEntity();
+        // IDs
+        idsEntity.setIds(ids);
         
-        return template.delete(DELETE_CHILD_ASSOC_BY_ID, assoc);
+        return template.delete(DELETE_CHILD_ASSOCS, idsEntity);
     }
 
     @Override
@@ -886,19 +848,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setChildNodeNameAll(null, null, name);
         
         return template.update(UPDATE_CHILD_ASSOCS_UNIQUE_NAME, assoc);
-    }
-
-    @Override
-    protected int deleteParentAssocsTo(Long nodeId)
-    {
-        ChildAssocEntity assoc = new ChildAssocEntity();
-
-        // Child
-        NodeEntity childNode = new NodeEntity();
-        childNode.setId(nodeId);
-        assoc.setChildNode(childNode);
-        
-        return template.delete(DELETE_PARENT_ASSOCS_TO, assoc);
     }
 
     @Override
@@ -1532,23 +1481,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         // TODO: Return List<Node> for quicker node_deleted access
         return (List<NodeEntity>) template.selectList(SELECT_TXN_NODES, query);
-    }
-
-    @Override
-    protected int selectTxnNodeChangeCount(Long txnId, Boolean updates)
-    {
-        NodeEntity node = new NodeEntity();
-        // Updates or deletes
-        if (updates != null)
-        {
-            node.setDeleted(Boolean.valueOf(!updates));
-        }
-        // Transaction
-        TransactionEntity transaction = new TransactionEntity();
-        transaction.setId(txnId);
-        node.setTransaction(transaction);
-
-        return (Integer) template.selectOne(SELECT_TXN_NODE_COUNT, node);
     }
 
     @SuppressWarnings("unchecked")

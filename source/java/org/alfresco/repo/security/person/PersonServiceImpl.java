@@ -1305,11 +1305,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     
     /**
      * {@inheritDoc}
-     * 
-     * @deprecated see getPeople
      */
-    public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue)
+    @Override
+    public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue, int count)
     {
+        if (count > 1000)
+        {
+            throw new IllegalArgumentException("Only 1000 results are allowed but got a request for " + count + ". Use getPeople.");
+        }
+        
         // check that given property key is defined for content model type 'cm:person'
         // and throw exception if it isn't
         if (this.dictionaryService.getProperty(ContentModel.TYPE_PERSON, propertyKey) == null)
@@ -1320,7 +1324,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         List<Pair<QName, String>> filterProps = new ArrayList<Pair<QName, String>>(1);
         filterProps.add(new Pair<QName, String>(propertyKey, (String)propertyValue));
         
-        PagingRequest pagingRequest = new PagingRequest(Integer.MAX_VALUE, null);
+        PagingRequest pagingRequest = new PagingRequest(count, null);
         List<PersonInfo> personInfos = getPeople(filterProps, true, null, pagingRequest).getPage();
         
         Set<NodeRef> refs = new HashSet<NodeRef>(personInfos.size());

@@ -240,7 +240,9 @@ public class RepoAdminServiceImplTest extends TestCase
             catch (AlfrescoRuntimeException are)
             {
                 // expected
-                assertTrue(are.getMessage().contains("Failed to validate model delete"));
+                assertTrue(
+                        "Incorrect exception message: " + are.getMessage(),
+                        are.getMessage().contains("Failed to validate model delete"));
             }
             
             nodeService.deleteNode(node1);

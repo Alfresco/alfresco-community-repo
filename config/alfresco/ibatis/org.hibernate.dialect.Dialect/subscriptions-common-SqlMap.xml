@@ -52,7 +52,7 @@
             join alf_store store on (store.id = node.store_id)
             join alf_subscriptions sub on (sub.node_id = node.id)
         where
-            node.node_deleted = #{false} and sub.user_node_id = #{userNodeId}
+            sub.user_node_id = #{userNodeId}
     </select>
     
     <!-- Get the ... -->
@@ -62,7 +62,7 @@
         from
             alf_node node join alf_subscriptions sub on (sub.node_id = node.id)
         where
-            node.node_deleted = #{false} and sub.user_node_id = #{userNodeId}
+            sub.user_node_id = #{userNodeId}
     </select>
     
     <select id="select_hasSubscribed" parameterMap="pararmeter_Subscription" resultType="long">
@@ -71,7 +71,7 @@
         from
             alf_node node join alf_subscriptions sub on (sub.node_id = node.id)
         where
-            node.node_deleted = #{false} and sub.user_node_id = #{userNodeId} and sub.node_id = #{nodeId}
+            sub.user_node_id = #{userNodeId} and sub.node_id = #{nodeId}
     </select>
     
     <select id="select_Following" parameterType="map" resultType="String">
@@ -82,7 +82,7 @@
             join alf_subscriptions sub on (sub.node_id = node.id)
             join alf_node_properties props on (props.node_id = node.id)
         where
-            node.node_deleted = #{false} and props.qname_id=#{userIdQname} and sub.user_node_id = #{userNodeId}
+            props.qname_id=#{userIdQname} and sub.user_node_id = #{userNodeId}
     </select>
     
     <select id="select_Followers" parameterType="map" resultType="String">
@@ -93,7 +93,7 @@
             join alf_subscriptions sub on (sub.user_node_id = node.id)
             join alf_node_properties props on (props.node_id = node.id)
         where
-            node.node_deleted = #{false} and props.qname_id=#{userIdQname} and sub.node_id = #{userNodeId}
+            props.qname_id=#{userIdQname} and sub.node_id = #{userNodeId}
     </select>
 
     <select id="select_countFollowers" parameterType="map" resultType="long">
@@ -102,7 +102,7 @@
         from
             alf_node node join alf_subscriptions sub on (sub.user_node_id = node.id)
         where
-            node.node_deleted = #{false} and sub.node_id = #{userNodeId}
+            sub.node_id = #{userNodeId}
     </select>    
   
 </mapper>

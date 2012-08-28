@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;

@@ -58,6 +58,9 @@
                 <value>hibernate.default_schema</value>
             </list>
         </property>
+        <property name="propertiesPersister">
+        	<bean class="org.alfresco.config.AlfrescoPropertiesPersister"/>
+        </property>
     </bean>
 
     <bean id="common-placeholder-configurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" abstract="true">
@@ -70,6 +73,9 @@
         </property>
         <property name="searchSystemEnvironment">
             <value>false</value>
+        </property>        
+        <property name="propertiesPersister">
+        	<bean class="org.alfresco.config.AlfrescoPropertiesPersister"/>
         </property>        
     </bean>
     
@@ -867,16 +873,17 @@
 
     <!-- Referenceable -->
     <bean id="referenceableAspect" class="org.alfresco.repo.node.ReferenceableAspect" init-method="init">
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
+        <property name="policyComponent" ref="policyComponent" />
     </bean>
 
     <!-- Temporary Aspect -->
     <bean id="temporaryAspect" class="org.alfresco.repo.node.TemporaryAspect" init-method="init">
-        <property name="policyComponent">
-            <ref bean="policyComponent" />
-        </property>
+        <property name="policyComponent" ref="policyComponent" />
+    </bean>
+
+    <!-- Temporary Aspect -->
+    <bean id="pendingDeleteAspect" class="org.alfresco.repo.node.PendingDeleteAspect" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
     </bean>
 
     <!-- Configurable service -->

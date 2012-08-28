@@ -43,6 +43,7 @@ import org.alfresco.repo.copy.CopyBehaviourCallback.ChildAssocRecurseAction;
 import org.alfresco.repo.copy.CopyBehaviourCallback.CopyAssociationDetails;
 import org.alfresco.repo.copy.CopyBehaviourCallback.CopyChildAssociationDetails;
 import org.alfresco.repo.copy.query.AbstractCopyCannedQueryFactory;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -179,6 +180,11 @@ public class CopyServiceImpl implements CopyService
         beforeCopyDelegate = policyComponent.registerClassPolicy(CopyServicePolicies.BeforeCopyPolicy.class);
         
         // Register policy behaviours
+        this.policyComponent.bindAssociationBehaviour(
+                NodeServicePolicies.BeforeDeleteAssociationPolicy.QNAME,
+                ContentModel.ASPECT_COPIEDFROM,
+                ContentModel.ASSOC_ORIGINAL,
+                new JavaBehaviour(this, "beforeDeleteOriginalAssociation"));    
         this.policyComponent.bindClassBehaviour(
                 CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ContentModel.ASPECT_COPIEDFROM,
@@ -208,8 +214,6 @@ public class CopyServiceImpl implements CopyService
 
         if (sourceNodeRef.getStoreRef().equals(targetParentRef.getStoreRef()) == false)
         {
-            // TODO We need to create a new node in the other store with the same id as the source
-
             // Error - since at the moment we do not support cross store copying
             throw new UnsupportedOperationException("Copying nodes across stores is not currently supported.");
         }
@@ -596,11 +600,17 @@ public class CopyServiceImpl implements CopyService
                         originalAssoc.getTargetRef(),
                         ContentModel.ASSOC_ORIGINAL);
             }
-            // We create the link if the source is a cm:object
+            // We create the link if the source is a cm:object and the not sys:pendingDelete
             QName sourceTypeQName = internalNodeService.getType(sourceNodeRef);
-            if (dictionaryService.isSubClass(sourceTypeQName, ContentModel.TYPE_CMOBJECT))
+            if (dictionaryService.isSubClass(sourceTypeQName, ContentModel.TYPE_CMOBJECT) &&
+                    !sourceNodeAspectQNames.contains(ContentModel.ASPECT_PENDING_DELETE))
             {
                 internalNodeService.createAssociation(copyTarget, sourceNodeRef, ContentModel.ASSOC_ORIGINAL);
+            }
+            else
+            {
+                // We are not creating the association, so remove the associated aspect
+                internalNodeService.removeAspect(copyTarget, ContentModel.ASPECT_COPIEDFROM);
             }
 
             // Copy permissions
@@ -1317,7 +1327,17 @@ public class CopyServiceImpl implements CopyService
     }
 
     /**
-     * Callback behaviour retrieval for the 'copiedFrom' aspect.
+     * Callback behaviour for the 'original' assoc ('copiedfrom' aspect).
+     */
+    public void beforeDeleteOriginalAssociation(AssociationRef nodeAssocRef)
+    {
+        // Remove the cm:copiedfrom aspect
+        NodeRef sourceNodeRef = nodeAssocRef.getSourceRef();
+        internalNodeService.removeAspect(sourceNodeRef, ContentModel.ASPECT_COPIEDFROM);
+    }
+    
+    /**
+     * Callback behaviour retrieval for the 'copiedfrom' aspect.
      * 
      * @return              Returns {@link DoNothingCopyBehaviourCallback} always
      */

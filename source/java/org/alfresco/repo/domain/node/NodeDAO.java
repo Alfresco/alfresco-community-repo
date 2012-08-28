@@ -21,12 +21,14 @@ package org.alfresco.repo.domain.node;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.node.NodeBulkLoader;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -127,6 +129,13 @@ public interface NodeDAO extends NodeBulkLoader
      * @return                  Returns <tt>true</tt> if the node is present and undeleted
      */
     public boolean exists(NodeRef nodeRef);
+
+    /**
+     * Find out if a node exists.  Unpurged deleted nodes do not count as they are the DAO's concern only.
+     * 
+     * @param nodeId            the potentially valid node ID
+     * @return                  Returns <tt>true</tt> if the node is present and undeleted
+     */
     public boolean exists(Long nodeId);
 
     /**
@@ -235,6 +244,72 @@ public interface NodeDAO extends NodeBulkLoader
             Long newSharedAclId);
     
     /**
+     * An object that contains data giving a 'view' of the node to be deleted.
+     * It is used for ensuring that node cleanup is only done for node-related
+     * data that has been handled by the NodeService's policy and related code.
+     * <p/>
+     * If new data is introduced to a node that has not been covered by the
+     * NodeService, then a subsequent node deletion will fail.
+     * <p/>
+     * This class is NOT thread-safe and should only be used within a transaction.
+     * Client code should use the getters to get the ID sets and add any IDs
+     * that have been visited during policy triggering.
+     * 
+     * @author Derek Hulley
+     * @since 4.1.1
+     */
+    public static class NodeView
+    {
+        private static final String RESOURCE_KEY = "NodeViewMap";
+        /**
+         * Finds an instance to manage the views for a specific node in this transaction
+         */
+        public static NodeView getView(Long nodeId)
+        {
+            Map<Long, NodeView> nodeViewsById = TransactionalResourceHelper.getMap(RESOURCE_KEY);
+            NodeView nodeView = nodeViewsById.get(nodeId);
+            if (nodeView == null)
+            {
+                nodeView = new NodeView();
+                nodeViewsById.put(nodeId, nodeView);
+            }
+            return nodeView;
+        }
+        
+        private Set<Long> primaryParentAssocIds = new HashSet<Long>(7);
+        private Set<Long> secondaryParentAssocIds = new HashSet<Long>(7);
+        private Set<Long> primaryChildAssocIds = new HashSet<Long>(167);
+        private Set<Long> secondaryChildAssocIds = new HashSet<Long>(11);
+        private Set<Long> targetAssocIds = new HashSet<Long>(11);
+        private Set<Long> sourceAssocIds = new HashSet<Long>(11);
+        
+        public Set<Long> getPrimaryParentAssocIds()
+        {
+            return primaryParentAssocIds;
+        }
+        public Set<Long> getSecondaryParentAssocIds()
+        {
+            return secondaryParentAssocIds;
+        }
+        public Set<Long> getPrimaryChildAssocIds()
+        {
+            return primaryChildAssocIds;
+        }
+        public Set<Long> getSecondaryChildAssocIds()
+        {
+            return secondaryChildAssocIds;
+        }
+        public Set<Long> getTargetAssocIds()
+        {
+            return targetAssocIds;
+        }
+        public Set<Long> getSourceAssocIds()
+        {
+            return sourceAssocIds;
+        }
+    }
+    
+    /**
      * Deletes the node and all entities.  Note that the node entry will still exist and be
      * associated with a live transaction.
      */
@@ -333,29 +408,18 @@ public interface NodeDAO extends NodeBulkLoader
     public int removeNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName);
     
     /**
-     * Remove all node associations that share the given node.
-     * 
-     * @param nodeId            the source or target of the associations
-     * @return                  Returns the number of associations removed
-     */
-    public int removeNodeAssocsToAndFrom(Long nodeId);
-    
-    /**
-     * Remove all node associations of given types that share the given node.
-     * 
-     * @param nodeId            the source or target of the associations
-     * @param assocTypeQNames   the types that should be deleted
-     * @return                  Returns the number of associations removed
-     */
-    public int removeNodeAssocsToAndFrom(Long nodeId, Set<QName> assocTypeQNames);
-
-    /**
      * Remove all node associations of given IDs
      * 
      * @param ids               the IDs of the associations to remove
      * @return                  Returns the number of associations removed
      */
     public int removeNodeAssocs(List<Long> ids);
+
+    /**
+     * @param nodeId            the source or target of the associations
+     * @return                  Returns all the node associations where the node is the <b>source</b> or </b>target</b>
+     */
+    public Collection<Pair<Long, AssociationRef>> getNodeAssocsToAndFrom(Long nodeId);
 
     /**
      * @param targetNodeId      the target of the association
@@ -701,10 +765,6 @@ public interface NodeDAO extends NodeBulkLoader
      * @return                  Returns the transactions by commit time for the given IDs
      */
     public List<Transaction> getTxnsByCommitTimeAscending(List<Long> includeTxnIds);
-    
-    public int getTxnUpdateCount(Long txnId);
-
-    public int getTxnDeleteCount(Long txnId);
     
     public int getTransactionCount();
     

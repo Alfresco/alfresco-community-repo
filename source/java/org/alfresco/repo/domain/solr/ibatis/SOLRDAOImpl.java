@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.solr.ibatis;
 
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.NodeParametersEntity;
@@ -29,6 +30,8 @@ import org.alfresco.repo.solr.Acl;
 import org.alfresco.repo.solr.AclChangeSet;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -79,7 +82,11 @@ public class SOLRDAOImpl implements SOLRDAO
             throw new IllegalArgumentException("Maximum results must be a reasonable number.");
         }
 
-        SOLRTrackingParameters params = new SOLRTrackingParameters();
+        // We simulate an ID for the sys:deleted type
+        Pair<Long, QName> deletedTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
+        Long deletedTypeQNameId = deletedTypeQNamePair == null ? -1L : deletedTypeQNamePair.getFirst();
+
+        SOLRTrackingParameters params = new SOLRTrackingParameters(deletedTypeQNameId);
         params.setFromIdInclusive(minAclChangeSetId);
         params.setFromCommitTimeInclusive(fromCommitTime);
         params.setToIdExclusive(maxAclChangeSetId);
@@ -108,7 +115,11 @@ public class SOLRDAOImpl implements SOLRDAO
             throw new IllegalArgumentException("'aclChangeSetIds' cannot have more than 512 entries.");
         }
         
-        SOLRTrackingParameters params = new SOLRTrackingParameters();
+        // We simulate an ID for the sys:deleted type
+        Pair<Long, QName> deletedTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
+        Long deletedTypeQNameId = deletedTypeQNamePair == null ? -1L : deletedTypeQNamePair.getFirst();
+
+        SOLRTrackingParameters params = new SOLRTrackingParameters(deletedTypeQNameId);
         params.setIds(aclChangeSetIds);
         params.setFromIdInclusive(minAclId);
 
@@ -127,7 +138,11 @@ public class SOLRDAOImpl implements SOLRDAO
             throw new IllegalArgumentException("Maximum results must be a reasonable number.");
         }
 
-	    SOLRTrackingParameters params = new SOLRTrackingParameters();
+        // We simulate an ID for the sys:deleted type
+        Pair<Long, QName> deletedTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
+        Long deletedTypeQNameId = deletedTypeQNamePair == null ? -1L : deletedTypeQNamePair.getFirst();
+
+        SOLRTrackingParameters params = new SOLRTrackingParameters(deletedTypeQNameId);
 	    params.setFromIdInclusive(minTxnId);
 	    params.setFromCommitTimeInclusive(fromCommitTime);
 	    params.setToIdExclusive(maxTxnId);

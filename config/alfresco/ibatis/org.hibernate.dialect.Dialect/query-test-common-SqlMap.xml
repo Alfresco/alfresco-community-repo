@@ -63,24 +63,25 @@
             alf_node n
             join alf_child_assoc ca on (ca.parent_node_id = n.id)
         where
-            n.node_deleted = #{deleted} and
+            n.type_qname_id = #{typeQNameId} and
             n.id > #{id}
         order by
             ca.parent_node_id
     </select>
     
     <select id="select_NodeServiceTest_testForceNonRootNodeWithNoParentNode_GetChildNodesWithNoParentNodeCannedQuery" parameterType="Node" resultType="Long" >
+        <![CDATA[
         select
             n.id
         from
             alf_node n
             left join alf_child_assoc ca on (ca.child_node_id = n.id)
-            left join alf_store store on (store.root_node_id = n.id)
         where
-            ca.parent_node_id is null and
-            store.id is null
+            n.type_qname_id <> #{typeQNameId} and
+            ca.parent_node_id is null
         order by
             n.id
+        ]]>
     </select>
 
 </mapper>

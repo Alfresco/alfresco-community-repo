@@ -572,6 +572,13 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         for(Long nodeId : nodeIds)
         {
             Status status = nodeDAO.getNodeIdStatus(nodeId);
+            if (status == null)
+            {
+                // We've been called with the ID of a purged node, probably due to processing a transaction with a
+                // cascading delete. Fine to skip and assume it will be processed in a transaction.
+                // See org.alfresco.solr.tracker.CoreTracker.updateDescendantAuxDocs(NodeMetaData, boolean, SolrIndexSearcher)
+                continue;
+            }
             NodeRef nodeRef = status.getNodeRef();
           
             NodeMetaData nodeMetaData = new NodeMetaData();

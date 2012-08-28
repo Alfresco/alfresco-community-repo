@@ -451,8 +451,8 @@ public class ImapMessageTest extends TestCase
         
         String cmOriginator = (String) properties.get(ContentModel.PROP_ORIGINATOR);
         String cmAddressee = (String) properties.get(ContentModel.PROP_ADDRESSEE);
-        // TODO cm:addressees is returned as list
-        //String cmAddressees = (String) properties.get(ContentModel.PROP_ADDRESSEES);
+        @SuppressWarnings("unchecked")
+        List<String> cmAddressees = (List<String>) properties.get(ContentModel.PROP_ADDRESSEES);
         String imapMessageFrom = (String) properties.get(ImapModel.PROP_MESSAGE_FROM);
         String imapMessageTo = (String) properties.get(ImapModel.PROP_MESSAGE_TO);
         String imapMessageCc = (String) properties.get(ImapModel.PROP_MESSAGE_CC);
@@ -461,8 +461,9 @@ public class ImapMessageTest extends TestCase
         assertEquals(decodedAddress, cmOriginator);
         assertNotNull(cmAddressee);
         assertEquals(decodedAddress, cmAddressee);
-        //assertNotNull(cmAddressees);
-        //assertEquals(cmAddressees, encodedAddress);
+        assertNotNull(cmAddressees);
+        assertEquals(1, cmAddressees.size());
+        assertEquals(decodedAddress, cmAddressees.get(0));
         assertNotNull(imapMessageFrom);
         assertEquals(decodedAddress, imapMessageFrom);
         assertNotNull(imapMessageTo);
@@ -479,12 +480,8 @@ public class ImapMessageTest extends TestCase
 
         String folderName = "Alfresco IMAP/" + IMAP_FOLDER_NAME;
         
-        UserTransaction txn = transactionService.getUserTransaction();
-        
         IMAPFolder lfolder = (IMAPFolder) lstore.getFolder(folderName);
         lfolder.open(Folder.READ_WRITE);
-        
-
 
         InputStream messageFileInputStream1 = null;
         InputStream messageFileInputStream2 = null;

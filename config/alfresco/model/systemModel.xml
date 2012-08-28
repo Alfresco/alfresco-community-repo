@@ -20,6 +20,11 @@
       <type name="sys:deleted">
          <title>Deleted</title>
          <description>Placeholder type for deleted nodes</description>
+         <properties>
+            <property name="sys:originalId">
+               <type>d:long</type>
+            </property>
+         </properties>
       </type>
 
       <type name="sys:base">
@@ -189,9 +194,14 @@
          </properties>
       </aspect>
       
-      <!-- aspect to tag nodes which are, by default, undeletable -->
+      <!-- aspect to tag nodes that are, by default, undeletable -->
       <aspect name="sys:undeletable">
          <title>Undeletable</title>
+      </aspect>
+      
+      <!-- aspect to tag nodes during delete operations -->
+      <aspect name="sys:pendingDelete">
+         <title>Pending Delete</title>
       </aspect>
       
       <!-- aspect to tag nodes being formed and without any content yet -->

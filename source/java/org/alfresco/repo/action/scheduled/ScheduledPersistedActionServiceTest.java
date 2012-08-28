@@ -959,16 +959,13 @@ public class ScheduledPersistedActionServiceTest extends TestCase
       assertNotNull(service.getSchedule(testAction));
       assertNull(service.getSchedule(testAction2));
 
-      // If we delete the action, then we have an orphaned schedule
+      // If we delete the action, then the schedule must go as well
       UserTransaction txn = transactionService.getUserTransaction();
       txn.begin();
       nodeService.deleteNode(testAction.getNodeRef());
       txn.commit();
 
-      assertEquals(1, service.listSchedules().size());
-      assertEquals(1, service.listSchedules().size());
-      assertEquals(null, service.listSchedules().get(0).getAction());
-      assertEquals(null, service.listSchedules().get(0).getActionNodeRef());
+      assertEquals(0, service.listSchedules().size());
    }
 
    /**
@@ -1176,8 +1173,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
                   Thread.sleep(5000);
 
                   // Zap it - should still be live
-                  ScheduledPersistedAction schedule = service
-                        .getSchedule(testAction);
+                  ScheduledPersistedAction schedule = service.getSchedule(testAction);
                   assertEquals(
                         1,
                         scheduler

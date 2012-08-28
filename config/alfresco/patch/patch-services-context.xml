@@ -3301,4 +3301,16 @@
             <value>true</value>
         </property>
     </bean>
+
+    <bean id="patch.db-V4.1-NodeDeleted" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.1-NodeDeleted</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6014</value></property>
+        <property name="targetSchema"><value>6015</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/NodeDeleted.sql</value>
+        </property>
+    </bean>
+    
 </beans>

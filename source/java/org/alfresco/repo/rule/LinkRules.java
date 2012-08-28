@@ -104,9 +104,7 @@ public class LinkRules extends ActionExecuterAbstractBase
                 }
                 else
                 {
-                    // Unlink the folder, before relinking later to the specified node
-                    NodeRef ruleFolder = ruleService.getSavedRuleFolderAssoc(linkedToNode).getChildRef();
-                    nodeService.removeChild(actionedUponNodeRef, ruleFolder);
+                    // Just remove the aspect and have the associated data automatically removed
                     nodeService.removeAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES);
                 }
                 
@@ -114,8 +112,8 @@ public class LinkRules extends ActionExecuterAbstractBase
             
             // Create the destination folder as a secondary child of the first
             NodeRef ruleSetNodeRef = ruleService.getSavedRuleFolderAssoc(linkedFromNodeRef).getChildRef();
+            // The required aspect will automatically be added to the node
             nodeService.addChild(actionedUponNodeRef, ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
-            nodeService.addAspect(actionedUponNodeRef, RuleModel.ASPECT_RULES, null);
         }
     }
 

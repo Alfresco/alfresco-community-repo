@@ -264,7 +264,7 @@ public class RuleLinkTest extends BaseSpringTest
      * @since 4.0.2
      * @author Neil Mc Erlean.
      */
-    public void testDeleteFolderWithRulesLinkedTo()
+    public void testDeleteFolderWithPrimaryRules()
     {
         // Setup test data
         Rule rule = createTestRule(false, "luke");
@@ -294,6 +294,44 @@ public class RuleLinkTest extends BaseSpringTest
         
         assertTrue(rules3.isEmpty());
         assertFalse(nodeService.hasAspect(folderThree, RuleModel.ASPECT_RULES));
+    }
+    
+    /**
+     * ALF-11923
+     * @since 4.1.1
+     * @author Neil Mc Erlean.
+     */
+    public void testDeleteFolderWithSecondaryRules()
+    {
+        // Setup test data
+        Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        
+        link(folderOne, folderTwo);
+        link(folderOne, folderThree);
+        
+        List<Rule> rules1 = ruleService.getRules(folderOne);
+        assertNotNull(rules1);
+        assertFalse(rules1.isEmpty());
+        assertEquals(1, rules1.size());
+        
+        List<Rule> rules2 = ruleService.getRules(folderTwo);
+        assertEquals(rules1, rules2);
+        
+        List<Rule> rules3 = ruleService.getRules(folderThree);
+        assertEquals(rules1, rules3);
+        
+        // Now delete folder 2.
+        nodeService.deleteNode(folderTwo);
+        rules1 = ruleService.getRules(folderOne);
+        rules3 = ruleService.getRules(folderThree);
+        
+        assertFalse(rules1.isEmpty());
+        assertTrue(nodeService.hasAspect(folderOne, RuleModel.ASPECT_RULES));
+        
+        assertFalse(rules3.isEmpty());
+        assertTrue(nodeService.hasAspect(folderThree, RuleModel.ASPECT_RULES));
+        assertEquals(rules1, rules3);
     }
     
     protected Rule createTestRule(boolean isAppliedToChildren, String title)

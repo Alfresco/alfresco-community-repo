@@ -31,10 +31,10 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
@@ -48,7 +48,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 public class MultilingualDocumentAspect implements
         CopyServicePolicies.OnCopyNodePolicy,
-        NodeServicePolicies.BeforeDeleteNodePolicy,
+        NodeServicePolicies.BeforeDeleteChildAssociationPolicy,
         NodeServicePolicies.OnUpdatePropertiesPolicy
 {
 
@@ -66,17 +66,18 @@ public class MultilingualDocumentAspect implements
     public void init()
     {
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
                 new JavaBehaviour(this, "getCopyCallback"));
 
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-                ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
-                new JavaBehaviour(this, "beforeDeleteNode"));
+        this.policyComponent.bindAssociationBehaviour(
+                NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
+                ContentModel.TYPE_MULTILINGUAL_CONTAINER,
+                ContentModel.ASSOC_MULTILINGUAL_CHILD,
+                new JavaBehaviour(this, "beforeDeleteChildAssociation"));
 
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
                 ContentModel.ASPECT_MULTILINGUAL_DOCUMENT,
                 new JavaBehaviour(this, "onUpdateProperties"));
 
@@ -93,8 +94,7 @@ public class MultilingualDocumentAspect implements
     /**
      * @param multilingualContentService the Multilingual Content Service to set
      */
-    public void setMultilingualContentService(
-            MultilingualContentService multilingualContentService)
+    public void setMultilingualContentService(MultilingualContentService multilingualContentService)
     {
         this.multilingualContentService = multilingualContentService;
     }
@@ -118,12 +118,15 @@ public class MultilingualDocumentAspect implements
     }
 
     /**
-     * Ensure that the node is properly unhooked from the translation mechanism first.
+     * Make sure that the child is no longer a translation and that the
+     * associated container is cleaned up, if required.
      */
-    public void beforeDeleteNode(NodeRef nodeRef)
+    @Override
+    public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        // First unhook it
-        multilingualContentService.unmakeTranslation(nodeRef);
+        NodeRef childNodeRef = childAssocRef.getChildRef();
+        // This will remove the aspect and take care of the translation container, as required
+        multilingualContentService.unmakeTranslation(childNodeRef);
     }
 
     /**

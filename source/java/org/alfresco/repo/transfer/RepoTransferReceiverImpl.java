@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Alfresco Software Limited.
+ * Copyright (C) 2009-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -354,17 +354,26 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         // If not then do so.
         if (transferTempFolder == null)
         {
-            ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
+            ResultSet rs = null;
+            
+            try
+            {
+                rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
                     transferTempFolderPath);
-            if (rs.length() > 0)
-            {
-                transferTempFolder = rs.getNodeRef(0);
+                if (rs.length() > 0)
+                {
+                    transferTempFolder = rs.getNodeRef(0);
                 singletonCache.put(KEY_TRANSFER_TEMP_NODEREF, transferTempFolder);
-            }
-            else
-            {
-                throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[] { transferId,
+                }
+                else
+                {
+                    throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[] { transferId,
                         transferTempFolderPath });
+                }
+            }
+            finally
+            {
+            	if (rs != null) {rs.close();}
             }
         }
 
@@ -500,18 +509,27 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         if (inboundTransferRecordsFolder == null)
         {
             log.debug("Trying to find transfer records folder: " + inboundTransferRecordsPath);
-            ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
+            ResultSet rs = null;
+            
+            try
+            {
+                rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
                     inboundTransferRecordsPath);
-            if (rs.length() > 0)
-            {
-                inboundTransferRecordsFolder = rs.getNodeRef(0);
+                if (rs.length() > 0)
+                {
+                    inboundTransferRecordsFolder = rs.getNodeRef(0);
                 singletonCache.put(KEY_INBOUND_TRANSFER_RECORDS_NODEREF, inboundTransferRecordsFolder);
-                log.debug("Found inbound transfer records folder: " + inboundTransferRecordsFolder);
-            }
-            else
-            {
-                throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND,
+                    log.debug("Found inbound transfer records folder: " + inboundTransferRecordsFolder);
+                }
+                else
+                {
+                    throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND,
                         new Object[] { inboundTransferRecordsPath });
+                }
+            }
+            finally
+            {
+            	if (rs != null) {rs.close();}
             }
         }
 

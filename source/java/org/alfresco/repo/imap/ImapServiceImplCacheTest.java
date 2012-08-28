@@ -9,9 +9,9 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -21,7 +21,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.springframework.context.ApplicationContext;
@@ -48,7 +47,6 @@ public class ImapServiceImplCacheTest extends TestCase
     private NamespaceService namespaceService;
     private FileFolderService fileFolderService;
     private ContentService contentService;
-    private TransactionService transactionService;
     private FileInfo oldFile;
     
     private ImapService imapService;
@@ -66,7 +64,6 @@ public class ImapServiceImplCacheTest extends TestCase
         namespaceService = serviceRegistry.getNamespaceService();
         fileFolderService = serviceRegistry.getFileFolderService();
         contentService = serviceRegistry.getContentService();
-        transactionService = serviceRegistry.getTransactionService();
         
         authenticationService.authenticate(USER_NAME, USER_PASSWORD.toCharArray());
 
@@ -87,7 +84,7 @@ public class ImapServiceImplCacheTest extends TestCase
         // Creating IMAP test folder for IMAP root
         LinkedList<String> folders = new LinkedList<String>();
         folders.add(TEST_IMAP_FOLDER_NAME);
-        FileInfo folder = FileFolderServiceImpl.makeFolders(fileFolderService, companyHomeNodeRef, folders, ContentModel.TYPE_FOLDER);
+        FileInfo folder = FileFolderUtil.makeFolders(fileFolderService, companyHomeNodeRef, folders, ContentModel.TYPE_FOLDER);
         oldFile = fileFolderService.create(folder.getNodeRef(), "oldFile", ContentModel.TYPE_CONTENT);
         
         // Setting IMAP root

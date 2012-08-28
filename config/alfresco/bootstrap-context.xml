@@ -135,8 +135,6 @@
              <ref bean="patch.db-V3.2-AddFKIndexes" />
              <ref bean="patch.db-V3.2-AddFKIndexes-2" />
              <ref bean="patch.db-V3.0-ActivityTables" />
-             <ref bean="patch.db-V4.0-Activiti-task-id-indexes" />
-             <ref bean="patch.db-V4.0-TenantTables" />
           </list>
        </property>
        <property name="postUpdateScriptPatches">
@@ -160,13 +158,16 @@
              <ref bean="patch.db-V3.4-Upgrade-JBPM" />
              <ref bean="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" />
              <ref bean="patch.db-V3.4-AVM-index-child-entries-lower" />
+             <ref bean="patch.db-V3.4-remove-redundant-jbpm-indexes" />
              <ref bean="patch.db-V4.0-AclChangeSet" />
              <ref bean="patch.db-V4.0-NodeAssoc-Ordering" />
              <ref bean="patch.db-V4.0-Node-Locale" />
              <ref bean="patch.db-V4.0-SubscriptionTables" />
              <ref bean="patch.db-V4.0-SolrTracking" />
              <ref bean="patch.db-V4.0-AclChangeSet2" />
-             <ref bean="patch.db-V3.4-remove-redundant-jbpm-indexes" />
+             <ref bean="patch.db-V4.0-Activiti-task-id-indexes" />
+             <ref bean="patch.db-V4.0-TenantTables" />
+             <ref bean="patch.db-V4.1-NodeDeleted" />
              <ref bean="patch.db-V4.1-increase-column-size-activiti" />
           </list>
        </property>
@@ -416,6 +417,23 @@
         <property name="repositoryWorkflowDefsLocations" ref="customWorkflowDefsRepositoryLocation"/>
     </bean>
     
+    <!-- Descriptor Service -->
+    <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
+       <property name="serverDescriptorDAO">
+           <ref bean="serverDescriptorDAO"/>
+       </property>
+       <property name="currentRepoDescriptorDAO">
+           <ref bean="currentRepoDescriptorDAO"/>
+       </property>
+       <property name="installedRepoDescriptorDAO">
+           <ref bean="installedRepoDescriptorDAO"/>
+       </property>
+       <property name="transactionService">
+           <ref bean="transactionService"/>
+       </property>
+       <property name="repoUsageComponent" ref="repoUsageComponent"/>
+    </bean>
+
     <!-- Bootstrap MT (multi-tenancy) if applicable -->
     <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >
         <property name="tenantAdminService" ref="tenantAdminService"/>
@@ -463,23 +481,6 @@
        </property>
     </bean>
     
-    <!-- Descriptor Service -->
-    <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
-       <property name="serverDescriptorDAO">
-           <ref bean="serverDescriptorDAO"/>
-       </property>
-       <property name="currentRepoDescriptorDAO">
-           <ref bean="currentRepoDescriptorDAO"/>
-       </property>
-       <property name="installedRepoDescriptorDAO">
-           <ref bean="installedRepoDescriptorDAO"/>
-       </property>
-       <property name="transactionService">
-           <ref bean="transactionService"/>
-       </property>
-       <property name="repoUsageComponent" ref="repoUsageComponent"/>
-    </bean>
-
     <!-- This component checks the interconnection between the metadata, indexes and content -->
     <bean id="configurationChecker" class="org.alfresco.repo.admin.ConfigurationChecker">
        <property name="strict">
@@ -564,6 +565,9 @@
                     <value>org.alfresco.filesys.config.DomainMappingConfigBean</value>
                 </entry>
             </map>
+        </property>
+        <property name="persister">
+        	<bean class="org.alfresco.config.AlfrescoPropertiesPersister"/>
         </property>
     </bean>
 

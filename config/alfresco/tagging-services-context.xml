@@ -35,13 +35,13 @@
     
     <bean id="taggingService" class="org.alfresco.repo.tagging.TaggingServiceImpl" init-method="init">
     	<property name="nodeService" ref="NodeService"/>
+        <property name="nodeServiceInternal" ref="nodeService"/>
     	<property name="categoryService" ref="CategoryService"/>
     	<property name="searchService" ref="SearchService"/>
     	<property name="actionService" ref="ActionService"/>
     	<property name="contentService" ref="ContentService"/>
     	<property name="namespaceService" ref="NamespaceService"/>
     	<property name="policyComponent" ref="policyComponent"/>
-    	<property name="auditService" ref="auditService"/>
     	<property name="auditComponent" ref="auditComponent"/>
     </bean>
     

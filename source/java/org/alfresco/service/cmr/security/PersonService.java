@@ -224,7 +224,7 @@ public interface PersonService
      * 
      * @return a set of people in no specific order.
      * 
-     * @deprecated see getPeople
+     * @deprecated see {@link #getPeople(List, boolean, List, PagingRequest)}
      */
     @Auditable
     public Set<NodeRef> getAllPeople();
@@ -287,16 +287,19 @@ public interface PersonService
     public PagingResults<PersonInfo> getPeople(List<Pair<QName,String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
     
     /**
-     * Get people filtered by the given property name/value pair
+     * Get people filtered by the given property name/value pair.
+     * <p/>
+     * In order to get paging, use {@link #getPeople(List, boolean, List, PagingRequest)}
      * 
-     * @param propertyKey property key of property to filter people by 
-     * @param propertyValue property value of property to filter people by
-     * @return people filtered by the given property name/value pair
+     * @param propertyKey       property key of property to filter people by 
+     * @param propertyValue     property value of property to filter people by
+     * @param count             the number of results to retrieve, up to a maximum of 1000
+     * @return                  people filtered by the given property name/value pair
      * 
-     * @deprecated see getPeople
+     * @see #getPeople(List, boolean, List, PagingRequest)
      */
     @Auditable
-    public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue);
+    public Set<NodeRef> getPeopleFilteredByProperty(QName propertyKey, Serializable propertyValue, int count);
 
     /**
      * Return the container that stores people.

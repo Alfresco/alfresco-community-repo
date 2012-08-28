@@ -37,6 +37,7 @@ import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
@@ -83,6 +84,7 @@ public class SOLRTrackingComponentTest extends TestCase
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private NodeDAO nodeDAO;
+    private QNameDAO qnameDAO;
     private DictionaryDAO dictionaryDAO;
     private SOLRTrackingComponent solrTrackingComponent;
     private DbNodeServiceImpl dbNodeService;
@@ -99,6 +101,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
         solrTrackingComponent = (SOLRTrackingComponent) ctx.getBean("solrTrackingComponent");
         nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
+        qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
         dictionaryDAO =  (DictionaryDAO)ctx.getBean("dictionaryDAO");
         nodeService = (NodeService)ctx.getBean("NodeService");
         fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
@@ -162,7 +165,7 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         long startTime = System.currentTimeMillis();
 
-        SOLRTest st = new SOLRTest3(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
+        SOLRTest st = new SOLRTest3(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
         List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
@@ -198,7 +201,7 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         long startTime = System.currentTimeMillis();
 
-        SOLRTest st = new SOLRTest3(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
+        SOLRTest st = new SOLRTest3(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
         // All
@@ -256,7 +259,7 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         long startTime = System.currentTimeMillis();
 
-        SOLRTest st = new SOLRTestResidualProperties(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
+        SOLRTest st = new SOLRTestResidualProperties(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
         List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
@@ -280,7 +283,7 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         long startTime = System.currentTimeMillis();
 
-        SOLRTest st = new SOLRTest100Nodes(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
+        SOLRTest st = new SOLRTest100Nodes(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testGetNodeMetaData", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
         List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
@@ -309,7 +312,7 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         long fromCommitTime = System.currentTimeMillis();
 
-        SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
+        SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
         List<Long> createdTransactions = st.buildTransactions();
 
         List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime-1000, null, null, 100);
@@ -366,7 +369,7 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         long fromCommitTime = System.currentTimeMillis();
 
-        SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
+        SOLRTest st = new SOLRTest4(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataManyNodes", true, false);
         List<Long> createdTransactions = st.buildTransactions();
 
         List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime-1000, null, null, 100);
@@ -396,7 +399,7 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         long fromCommitTime = System.currentTimeMillis();
 
-        SOLRTest st = new SOLRTest5(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
+        SOLRTest st = new SOLRTest5(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testNodeMetaDataNullPropertyValue", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
         List<Transaction> txns = solrTrackingComponent.getTransactions(null, fromCommitTime-1000, null, null, 100);
@@ -418,7 +421,7 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         long startTime = System.currentTimeMillis();
 
-        SOLRTest st = new SOLRTest1(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, "testFilters", true, true);
+        SOLRTest st = new SOLRTest1(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, "testFilters", true, true);
         List<Long> createdTransactions = st.buildTransactions();
 
         List<Transaction> txns = solrTrackingComponent.getTransactions(null, startTime-1000, null, null, 100);
@@ -709,6 +712,7 @@ public class SOLRTrackingComponentTest extends TestCase
         protected NodeService nodeService;
         protected NodeRef rootNodeRef;
         protected NodeDAO nodeDAO;
+        protected QNameDAO qnameDAO;
         protected DictionaryService dictionaryService;
 
         protected String containerName;
@@ -728,7 +732,9 @@ public class SOLRTrackingComponentTest extends TestCase
         protected long actualNodeCount = 0;
         protected long actualNodeMetaDataCount = 0;
 
-        SOLRTest(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
+        SOLRTest(
+                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
+                NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
                 {
             this.txnHelper = txnHelper;
@@ -736,6 +742,7 @@ public class SOLRTrackingComponentTest extends TestCase
             this.rootNodeRef = rootNodeRef;
             this.fileFolderService = fileFolderService;
             this.nodeDAO = nodeDAO;
+            this.qnameDAO = qnameDAO;
             this.dictionaryService = dictionaryService;
 
             this.containerName = containerName;
@@ -819,10 +826,6 @@ public class SOLRTrackingComponentTest extends TestCase
             {
                 expectedNumMetaDataNodes++;
             }
-            if(nodeStatus == NodeStatus.DELETED)
-            {
-                expectedNumMetaDataNodes++;
-            }
 
             if(doChecks)
             {
@@ -837,13 +840,14 @@ public class SOLRTrackingComponentTest extends TestCase
         }
 
         @Override
-        public boolean handleNode(Node node) {
+        public boolean handleNode(Node node)
+        {
             actualNodeCount++;
 
             if(doNodeChecks)
             {
                 NodeRef nodeRef = node.getNodeRef();
-                Boolean isDeleted = node.getDeleted();
+                Boolean isDeleted = node.getDeleted(qnameDAO);
                 nodeIds.add(node.getId());
 
                 NodeAssertions expectedStatus = getNodeAssertions(nodeRef);
@@ -1031,10 +1035,11 @@ public class SOLRTrackingComponentTest extends TestCase
         private NodeRef content2;
 
         SOLRTest1(
-                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
+                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
+                NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
                 {
-            super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+            super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
                 }
 
         public int getExpectedNumNodes()
@@ -1092,10 +1097,12 @@ public class SOLRTrackingComponentTest extends TestCase
         private NodeRef content1;
         private NodeRef content2;
 
-        SOLRTest3(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService, 
+        SOLRTest3(
+                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
+                NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService, 
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
                 {
-            super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+            super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
                 }
 
         public int getExpectedNumNodes()
@@ -1155,10 +1162,12 @@ public class SOLRTrackingComponentTest extends TestCase
 
     private static class SOLRTest100Nodes extends SOLRTest
     {
-        SOLRTest100Nodes(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
+        SOLRTest100Nodes(
+                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
+                NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
                 {
-            super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+            super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
                 }
 
         public int getExpectedNumNodes()
@@ -1203,10 +1212,12 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         private int numContentNodes = 2000;
 
-        SOLRTest4(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
+        SOLRTest4(
+                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
+                NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
                 {
-            super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+            super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
                 }
 
         public int getExpectedNumNodes()
@@ -1258,10 +1269,12 @@ public class SOLRTrackingComponentTest extends TestCase
     {
         private int numContentNodes = 10;
 
-        SOLRTest5(RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
+        SOLRTest5(
+                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
+                NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
                 {
-            super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+            super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
                 }
 
         public int getExpectedNumNodes()
@@ -1326,10 +1339,11 @@ public class SOLRTrackingComponentTest extends TestCase
         private NodeRef content;
 
         SOLRTestResidualProperties(
-                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService, NodeDAO nodeDAO, NodeService nodeService, DictionaryService dictionaryService,
+                RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
+                NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
                 {
-            super(txnHelper, fileFolderService, nodeDAO, nodeService, dictionaryService,rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
+            super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService,rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
                 }
 
         public int getExpectedNumNodes()

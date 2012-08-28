@@ -1453,53 +1453,55 @@
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="node_deleted" order="6">
-          <type>bool</type>
-          <nullable>false</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="type_qname_id" order="7">
+        <column name="type_qname_id" order="6">
           <type>int8</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="locale_id" order="8">
+        <column name="locale_id" order="7">
           <type>int8</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="acl_id" order="9">
+        <column name="acl_id" order="8">
           <type>int8</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="audit_creator" order="10">
+        <column name="audit_creator" order="9">
           <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="audit_created" order="11">
+        <column name="audit_created" order="10">
           <type>varchar(30)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="audit_modifier" order="12">
+        <column name="audit_modifier" order="11">
           <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="audit_modified" order="13">
+        <column name="audit_modified" order="12">
           <type>varchar(30)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="audit_accessed" order="14">
+        <column name="audit_accessed" order="13">
           <type>varchar(30)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
       </columns>
       <primarykey name="alf_node_pkey">
+        <validators>
+            <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
+              <properties>
+                <property name="pattern">alf_node_pkey1?</property>
+              </properties>
+            </validator>
+        </validators>
         <columnnames>
           <columnname order="1">id</columnname>
         </columnnames>
@@ -1558,20 +1560,10 @@
             <columnname>type_qname_id</columnname>
           </columnnames>
         </index>
-        <index name="fk_alf_node_txn" unique="false">
+        <index name="idx_alf_node_txn_type" unique="false">
           <columnnames>
             <columnname>transaction_id</columnname>
-          </columnnames>
-        </index>
-        <index name="idx_alf_node_del" unique="false">
-          <columnnames>
-            <columnname>node_deleted</columnname>
-          </columnnames>
-        </index>
-        <index name="idx_alf_node_txn_del" unique="false">
-          <columnnames>
-            <columnname>transaction_id</columnname>
-            <columnname>node_deleted</columnname>
+            <columnname>type_qname_id</columnname>
           </columnnames>
         </index>
       </indexes>

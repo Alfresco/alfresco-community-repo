@@ -227,6 +227,48 @@ public class CalendarTimezoneHelper
       return new int[] {month, dayOfMonth, dayOfWeek};
    }
    
+  
+   /**
+    * Splits an iCal line into key and value by the first
+    * unquoted colon.
+    * @param icalLine
+    */
+   protected static String[] icalLineKeyValue(String icalLine){
+	   int delim = indexOfFirstUnquotedColon(icalLine);
+	   if(delim == -1){
+		   return new String[]{"",""};
+	   }
+	   String key = icalLine.substring(0,delim);
+	   String value = icalLine.substring(delim+1);
+       return new String[]{key,value};
+   }
+   
+   /**
+    * @param icalLine
+    * @return location of first non quote enclosed colon
+    */
+   private static int indexOfFirstUnquotedColon(String icalLine){
+	   int colon = icalLine.indexOf(":");
+	   int quote = icalLine.indexOf("\"");
+	   
+	   if(quote == -1){
+    	   return colon;
+       }else{
+    	   if(colon<quote){
+    		   return colon;
+    	   }else{
+    		   //next quote, skipping past a colon if exists
+    		   int nextQuote = icalLine.indexOf("\"", quote+1);
+    		   if(nextQuote==-1){
+    			  //will only happen if the quotes are unbalanced
+    			  return  -1;
+    		   }else{
+    			   return nextQuote + indexOfFirstUnquotedColon(icalLine.substring(nextQuote+1, icalLine.length())) + 1;
+    		   }
+    	   }
+       }
+   }
+   
    /**
     * Turns an iCal event into event + timezone parameters.
     * This is very closely tied to the SPP / VTI implementation,
@@ -250,7 +292,7 @@ public class CalendarTimezoneHelper
        Stack<String> stack = new Stack<String>();
        for (String line : segregatedLines)
        {
-           String[] keyValue = line.split(":");
+           String[] keyValue = icalLineKeyValue(line);
            if (keyValue.length >= 2)
            {
                if (keyValue[0].equals("BEGIN"))

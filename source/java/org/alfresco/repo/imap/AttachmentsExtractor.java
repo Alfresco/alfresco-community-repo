@@ -156,6 +156,10 @@ public class AttachmentsExtractor
    private void createAttachment(NodeRef messageFile, NodeRef attachmentsFolderRef, Part part) throws MessagingException, IOException
    {
        String fileName = part.getFileName();
+       if (fileName == null || fileName.isEmpty())
+       {
+    	   fileName = "unnamed";
+       }
        try
        {
            fileName = MimeUtility.decodeText(fileName);

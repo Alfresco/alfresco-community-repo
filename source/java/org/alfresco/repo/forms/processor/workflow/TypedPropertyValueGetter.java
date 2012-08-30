@@ -66,11 +66,6 @@ public class TypedPropertyValueGetter
         {
             return processLocaleValue(value);
         }
-        else if(isDateProperty(propDef) && value instanceof String && !ISO8601DateFormat.isTimeComponentDefined((String) value))
-        {
-        	// Special handling for day-only date storage (ALF-10243)
-        	return ISO8601DateFormat.parseDayOnly((String) value, TimeZone.getDefault());
-        }
         else if (value instanceof String)
         {
             String valStr = (String) value;
@@ -84,6 +79,11 @@ public class TypedPropertyValueGetter
             if(valStr.isEmpty())
             {
                 return null;
+            }
+            if(isDateProperty(propDef) && !ISO8601DateFormat.isTimeComponentDefined((String) value))
+            {
+                // Special handling for day-only date storage (ALF-10243)
+                return ISO8601DateFormat.parseDayOnly(valStr, TimeZone.getDefault());
             }
         }
         if (value instanceof Serializable)

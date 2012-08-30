@@ -147,12 +147,16 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                     return;
                 }
 
+                if (isFolder())
+                {
+                	// folders can't be versioned, so no need to check
+                	objecVariant = CMISObjectVariant.FOLDER;
+                	return;
+                }
+
                 if (versionLabel == null)
                 {
-                    if (isFolder())
-                    {
-                        objecVariant = CMISObjectVariant.FOLDER;
-                    } else if (isDocument())
+					if (isDocument())
                     {
                         objecVariant = CMISObjectVariant.CURRENT_VERSION;
                         

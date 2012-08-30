@@ -358,6 +358,9 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
        // The reply count is one less than all posts (first is the primary one)
        item.put("totalReplyCount", numReplies);
        
+       // Add the topic site 
+       item.put("site", topic.getShortSiteName());
+       
        // We want details on the most recent post
        if (mostRecentPost != null)
        {

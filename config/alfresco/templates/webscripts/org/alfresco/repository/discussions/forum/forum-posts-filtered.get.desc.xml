@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Get filtered forum posts</shortname>
+  <description>Get the discussion topics that match the filters.</description>
+  <url>/api/forum/site/{site}/discussions/posts/filtered</url>
+  <url>/api/forum/discussions/posts/filtered</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

@@ -61,6 +61,7 @@
          </#if>
 		</#if>
 		"tags": [<#list postData.tags as x>"${x}"<#if x_has_next>, </#if></#list>],
+		"site": "${postData.site!""}",
    <#else>
 		"name": "${post.name}",
 	</#if>

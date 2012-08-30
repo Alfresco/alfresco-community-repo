@@ -41,6 +41,7 @@ public class TopicInfoImpl implements TopicInfo
    private String modifier;
    private Date createdAt;
    private Date modifiedAt;
+   private String shortSiteName;
    private List<String> tags = new ArrayList<String>();
 
    /**
@@ -143,5 +144,36 @@ public class TopicInfoImpl implements TopicInfo
    public void setTags(List<String> tags)
    {
       this.tags = tags;
+   }
+   
+   @Override
+   public int hashCode()
+   {
+      return nodeRef.hashCode();
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj instanceof TopicInfoImpl)
+      {
+         TopicInfoImpl tii = (TopicInfoImpl) obj;
+         if(nodeRef.equals(tii.nodeRef))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   @Override
+   public String getShortSiteName()
+   {
+      return shortSiteName;
+   }
+   
+   public void setShortSiteName(String shortSiteName)
+   {
+      this.shortSiteName = shortSiteName;
    }
 }

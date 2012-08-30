@@ -21,6 +21,7 @@ package org.alfresco.repo.discussion;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -383,6 +384,7 @@ public class DiscussionServiceImplTest
     @Test public void createUpdateDeleteEntries() throws Exception
     {
        TopicInfo siteTopic;
+       TopicInfo siteTopic2;
        TopicInfo nodeTopic;
        PostInfo post;
        PostInfo reply;
@@ -397,6 +399,8 @@ public class DiscussionServiceImplTest
        testNodesToTidy.add(siteTopic.getNodeRef());
        testNodesToTidy.add(nodeTopic.getNodeRef());
        
+       // Create a second object with the same topic as siteTopic to test equals.
+       siteTopic2 = DISCUSSION_SERVICE.getForNodeRef(siteTopic.getNodeRef()).getFirst();
        
        // Check them
        assertEquals("Site Title", siteTopic.getTitle());
@@ -407,6 +411,10 @@ public class DiscussionServiceImplTest
        assertEquals(TEST_USER,    nodeTopic.getCreator());
        assertEquals(0,            nodeTopic.getTags().size());
        
+       // Check that the overridden equals is correct.
+       assertEquals(siteTopic, siteTopic2);
+       // Ensure they are not pointing to the same object.
+       assertNotSame(siteTopic, siteTopic2);
        
        // Change them
        siteTopic.setTitle("Site Changed");

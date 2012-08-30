@@ -87,4 +87,9 @@ public interface TopicInfo extends Serializable, PermissionCheckValue
     * @return the Tags associated with the topic 
     */
    List<String> getTags();
+   
+   /**
+    * @return the site this topic is associated with
+    */
+   String getShortSiteName();
 }

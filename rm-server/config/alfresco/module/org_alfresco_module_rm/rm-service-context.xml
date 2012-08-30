@@ -292,7 +292,7 @@
                 	{
                 		"name" : "Vital Records Due For Review",
                 		"description" : "All records currently due for review.",
-                		"search" : "reviewAsOf:[MIN TO TODAY]",
+                		"search" : "rma:reviewAsOf:[MIN TO TODAY]",
                 		"searchparams" :
                 		{
                 			"records" : true,

@@ -83,6 +83,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
+import org.springframework.extensions.surf.util.URLDecoder;
 
 /**
  * Records Management AdminService Implementation.
@@ -765,20 +766,23 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         if (newName == null) return propQName;
         
         QName newPropQName = getQNameForClientId(newName);
-        propDefn = dictionaryService.getProperty(newPropQName);
-        if (propDefn != null)
+        if (newPropQName != null)
         {
-            // The requested QName is already in use
-            String propIdAsString = newPropQName.toPrefixString(namespaceService);
-            throw new PropertyAlreadyExistsMetadataException(propIdAsString);
+           propDefn = dictionaryService.getProperty(newPropQName);
+           if (propDefn != null)
+           {
+              // The requested QName is already in use
+              String propIdAsString = newPropQName.toPrefixString(namespaceService);
+              throw new PropertyAlreadyExistsMetadataException(propIdAsString);
+           }
         }
         
         NodeRef modelRef = getCustomModelRef(propQName.getNamespaceURI());
         M2Model deserializedModel = readCustomContentModel(modelRef);
         
         M2Property targetProperty = findProperty(propQName, deserializedModel);
-        targetProperty.setName(newName);
-        targetProperty.setTitle(newName);
+        targetProperty.setName(new StringBuilder().append(RecordsManagementCustomModel.RM_CUSTOM_PREFIX).append(QName.NAMESPACE_PREFIX).append(newName).toString());
+        targetProperty.setTitle(URLDecoder.decode(newName));
         writeCustomContentModel(modelRef, deserializedModel);
         
         if (logger.isInfoEnabled())

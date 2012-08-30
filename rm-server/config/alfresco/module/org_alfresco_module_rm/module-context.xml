@@ -2,6 +2,53 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
+	 <bean id="permissionServiceImpl" class="org.alfresco.module.org_alfresco_module_rm.permission.PermissionServiceImpl" init-method="init">
+        <property name="nodeService">
+            <ref bean="mtAwareNodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="permissionsDaoComponent">
+            <ref bean="permissionsDaoComponent" />
+        </property>
+        <property name="modelDAO">
+            <ref bean="permissionsModelDAO" />
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="accessCache">
+            <ref bean="permissionsAccessCache" />
+        </property>
+        <property name="readersCache">
+            <ref bean="readersCache" />
+        </property>
+        <property name="readersDeniedCache">
+            <ref bean="readersDeniedCache" />
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="aclDAO">
+            <ref bean="aclDAO" />
+        </property>
+        <property name="ownableService">
+            <ref bean="ownableService" />
+        </property>        
+        <property name="anyDenyDenies">
+            <value>${security.anyDenyDenies}</value>
+        </property>
+        <property name="dynamicAuthorities">
+            <list>
+                <ref bean="ownerDynamicAuthority" />
+                <ref bean="lockOwnerDynamicAuthority" />
+            </list>
+        </property>
+    </bean>
    
     <!-- Bootstrap records management data -->
     <bean id="org_alfresco_module_rm_bootstrapData" 

@@ -982,7 +982,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             {                
                 // Publish the updates
                 PublishUpdatesJobExecuter updater = (PublishUpdatesJobExecuter)applicationContext.getBean("publishUpdatesJobExecuter");
-                updater.execute();
+                updater.executeImpl();
 
                 // Check the record has been updated 
                 DispositionAction dispositionAction = dispositionService.getNextDispositionAction(testRM386Record);

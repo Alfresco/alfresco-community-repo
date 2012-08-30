@@ -473,8 +473,11 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 {
                     inclusionMask.set(i, true);
                 }
-                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(returnedObject.getResultSetMetaData().getLimitedBy(), PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
-                        .getSearchParameters()));
+                filteringResultSet.setResultSetMetaData(
+                        new SimpleResultSetMetaData(
+                                returnedObject.getResultSetMetaData().getLimitedBy(), 
+                                PermissionEvaluationMode.EAGER, 
+                                returnedObject.getResultSetMetaData().getSearchParameters()));
                 return filteringResultSet;
             }
             else
@@ -483,27 +486,37 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 {
                     inclusionMask.set(i, true);
                 }
-                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(returnedObject.getResultSetMetaData().getLimitedBy(), PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
-                        .getSearchParameters()));
+                filteringResultSet.setResultSetMetaData(
+                        new SimpleResultSetMetaData(
+                                returnedObject.getResultSetMetaData().getLimitedBy(), 
+                                PermissionEvaluationMode.EAGER, 
+                                returnedObject.getResultSetMetaData().getSearchParameters()));
                 return filteringResultSet;
             }
         }
 
         // record the start time
         long startTimeMillis = System.currentTimeMillis();
+        
         // set the default, unlimited resultset type
-        filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(returnedObject.getResultSetMetaData().getLimitedBy(), PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData()
-                .getSearchParameters()));
+        filteringResultSet.setResultSetMetaData(
+                new SimpleResultSetMetaData(
+                        returnedObject.getResultSetMetaData().getLimitedBy(), 
+                        PermissionEvaluationMode.EAGER, 
+                        returnedObject.getResultSetMetaData().getSearchParameters()));
 
         for (int i = 0; i < returnedObject.length(); i++)
         {
             long currentTimeMillis = System.currentTimeMillis();
-            if (i >= maxChecks || (currentTimeMillis - startTimeMillis) > maxCheckTime)
-            {
-                filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, PermissionEvaluationMode.EAGER, returnedObject
-                        .getResultSetMetaData().getSearchParameters()));
-                break;
-            }
+//            if (i >= maxChecks || (currentTimeMillis - startTimeMillis) > maxCheckTime)
+//            {
+//                filteringResultSet.setResultSetMetaData(
+//                        new SimpleResultSetMetaData(
+//                                LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, 
+//                                PermissionEvaluationMode.EAGER, 
+//                                returnedObject.getResultSetMetaData().getSearchParameters()));
+//                break;
+//            }
 
             // All permission checks must pass
             inclusionMask.set(i, true);

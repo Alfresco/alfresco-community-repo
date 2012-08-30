@@ -80,7 +80,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
         this.behaviourFilter = behaviourFilter;
     }    
     
-    public void execute()
+    public void executeImpl()
     {        
         if (logger.isDebugEnabled() == true)
         {

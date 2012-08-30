@@ -72,7 +72,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#execute()
      */
-    public void execute()
+    public void executeImpl()
     {
         logger.debug("Job Starting");
        

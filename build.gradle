@@ -101,6 +101,9 @@ subprojects {
 		compile fileTree(dir: explodedLibsDir, include: '*.jar')     	
 	}	
 	
+	// make sure existing eclipse projects are cleared
+	tasks.eclipse.dependsOn(cleanEclipse)
+	
 	/** --- Compile tasks --- */
 
 	// make sure that the dependancies have been unpacked before compiling the Java
@@ -237,6 +240,13 @@ subprojects {
 		ant.zip(destfile: "${buildDistDir}/${ampFile}", update: 'true') {
 			ant.zipfileset(dir: assembleDir)
 		}	
+	}
+	
+	task localisationPackage (type: Copy) << {
+	
+		from configDir
+		include "**/*.properties"
+		into "${assembleDir}/i18n"				
 	}
 	
 	task deployExploded(dependsOn: 'jar') << {

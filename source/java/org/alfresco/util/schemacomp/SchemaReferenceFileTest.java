@@ -62,7 +62,6 @@ public class SchemaReferenceFileTest
         ctx.close();
     }
 
-    @Ignore("Disabled until reference files brought up to date.")
     @Test
     public void checkReferenceFile()
     {

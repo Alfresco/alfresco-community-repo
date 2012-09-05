@@ -53,6 +53,9 @@ public class RMMetaDataGet extends DeclarativeWebScript
     /** NodeRef pattern */
     private static final Pattern nodeRefPattern = Pattern.compile(".+://.+/.+");
     
+    /** QName pattern */
+    private static final Pattern qnamePattern = Pattern.compile(".+:[^=,]+");
+    
     /** Records management service */
     private RecordsManagementService rmService;
     
@@ -103,14 +106,18 @@ public class RMMetaDataGet extends DeclarativeWebScript
         if (nodeRef == null || nodeRef.length() == 0)
         {
             String type = req.getParameter(PARAM_TYPE);
-            if (type != null && type.length() != 0)
+            if (type != null && type.length() != 0 && type.indexOf(':') != -1)
             {
-                QName qname = QName.createQName(type, namespaceService);
-                FilePlanComponentKind kind = rmService.getFilePlanComponentKindFromType(qname);
-                if (kind != null)
-                {
-                    result = kind.toString();
-                }
+            	Matcher m = qnamePattern.matcher(type);
+            	if (m.matches() == true)
+            	{
+	                QName qname = QName.createQName(type, namespaceService);
+	                FilePlanComponentKind kind = rmService.getFilePlanComponentKindFromType(qname);
+	                if (kind != null)
+	                {
+	                    result = kind.toString();
+	                }
+            	}
             }          
         }
         else

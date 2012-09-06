@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Import data set into a file plan</shortname>
+   <description>WebScript to import a given data set into a given file plan</description>
+   <url>/api/rma/datasets/{dataSetId}?site={site}</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

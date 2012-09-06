@@ -381,4 +381,10 @@
         <property name="dataSetService" ref="DataSetService" />
     </bean>
     
+    <!-- REST impl for POST Load Data Set -->
+    <bean id="webscript.org.alfresco.rma.dataset.post" class="org.alfresco.module.org_alfresco_module_rm.script.DataSetPost" parent="webscript">
+        <property name="dataSetService" ref="DataSetService" />
+        <property name="siteService" ref="SiteService" />
+    </bean>
+    
 </beans>

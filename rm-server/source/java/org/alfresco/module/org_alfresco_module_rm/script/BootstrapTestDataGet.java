@@ -60,6 +60,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 /**
  * BootstrapTestData GET WebScript implementation.
  */
+@Deprecated
 public class BootstrapTestDataGet extends DeclarativeWebScript
                                   implements RecordsManagementModel
 {

@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -187,6 +188,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
    @Override
    public void register(DataSet dataSet)
    {
+      ParameterCheck.mandatory("dataSet", dataSet);
+
       this.dataSets.put(dataSet.getId(), dataSet);
    }
 
@@ -206,6 +209,9 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
    @Override
    public void loadDataSet(String dataSetId, NodeRef filePlan)
    {
+      ParameterCheck.mandatoryString("dataSetId", dataSetId);
+      ParameterCheck.mandatory("filePlan", filePlan);
+
       // Get the data set
       DataSet dataSet = getDataSets().get(dataSetId);
 
@@ -224,10 +230,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
       importerService.importView(viewReader, location, null, null);
 
       // Patch data
-      DataSetServiceImpl.patchLoadedData(searchService, nodeService, recordsManagementService,
-               recordsManagementActionService, permissionService, authorityService,
-               recordsManagementSecurityService, recordsManagementSearchBehaviour,
-               dispositionService);
+      patchLoadedData();
    }
 
    /**
@@ -238,13 +241,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     * @param recordsManagementService
     * @param recordsManagementActionService
     */
-   private static void patchLoadedData(final SearchService searchService,
-            final NodeService nodeService, final RecordsManagementService recordsManagementService,
-            final RecordsManagementActionService recordsManagementActionService,
-            final PermissionService permissionService, final AuthorityService authorityService,
-            final RecordsManagementSecurityService recordsManagementSecurityService,
-            final RecordsManagementSearchBehaviour recordManagementSearchBehaviour,
-            final DispositionService dispositionService)
+   private void patchLoadedData()
    {
       AuthenticationUtil.RunAsWork<Object> runAsWork = new AuthenticationUtil.RunAsWork<Object>()
       {
@@ -349,7 +346,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
                   // fixup the search behaviour aspect for the record folder
                   logger.info("Setting up search aspect for record folder: " + folderName);
-                  recordManagementSearchBehaviour.fixupSearchAspect(recordFolder);
+                  recordsManagementSearchBehaviour.fixupSearchAspect(recordFolder);
                }
             }
             finally
@@ -363,6 +360,17 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
       AuthenticationUtil.runAs(runAsWork, AuthenticationUtil.getAdminUserName());
 
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#existsDataSet(java.lang.String)
+    */
+   @Override
+   public boolean existsDataSet(String dataSetId)
+   {
+      ParameterCheck.mandatoryString("dataSetId", dataSetId);
+
+      return getDataSets().containsKey(dataSetId);
    }
 
 }

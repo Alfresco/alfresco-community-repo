@@ -5,5 +5,5 @@
    <format default="json">argument</format>
    <authentication>admin</authentication>
    <transaction>required</transaction>
-   <lifecycle>internal</lifecycle>
+   <lifecycle>deprecated</lifecycle>
 </webscript>

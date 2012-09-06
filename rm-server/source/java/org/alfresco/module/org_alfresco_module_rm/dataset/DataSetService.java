@@ -29,4 +29,12 @@ public interface DataSetService
     */
    void loadDataSet(String dataSetId, NodeRef filePlan);
 
+   /**
+    * Checks if a data set exists with the given data set id
+    *  
+    * @param dataSetId the id of the data set which will be checked
+    * @return true if the data set exists, false otherwise
+    */
+   boolean existsDataSet(String dataSetId);
+
 }

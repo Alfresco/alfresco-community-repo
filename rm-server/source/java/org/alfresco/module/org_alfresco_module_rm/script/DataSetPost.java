@@ -63,6 +63,11 @@ public class DataSetPost extends DeclarativeWebScript implements RecordsManageme
       {
          throw new WebScriptException(Status.STATUS_BAD_REQUEST, "A data set id was not provided.");
       }
+      if (!dataSetService.existsDataSet(dataSetId))
+      {
+         throw new WebScriptException(Status.STATUS_NOT_FOUND, "A data set with the id '" + dataSetId + "'"
+                  + " does not exist.");
+      }
 
       // Resolve RM site
       String siteName = req.getParameter(ARG_SITE_NAME);
@@ -71,6 +76,7 @@ public class DataSetPost extends DeclarativeWebScript implements RecordsManageme
          siteName = RmSiteType.DEFAULT_SITE_NAME;
       }
 
+      // Check the site if it exists
       if (siteService.getSite(siteName) == null)
       {
          throw new WebScriptException(Status.STATUS_BAD_REQUEST, "A Records Management site with the name '"
@@ -85,6 +91,7 @@ public class DataSetPost extends DeclarativeWebScript implements RecordsManageme
                   TYPE_FILE_PLAN, null);
       }
 
+      // Load data set in to the file plan
       dataSetService.loadDataSet(dataSetId, filePlan);
 
       Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);

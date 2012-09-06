@@ -1,17 +1,15 @@
 package org.alfresco.module.org_alfresco_module_rm.script;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSet;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 public class DataSetsGet extends DeclarativeWebScript
@@ -38,33 +36,23 @@ public class DataSetsGet extends DeclarativeWebScript
    @Override
    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
    {
-      try
+      Map<String, DataSet> dataSets = dataSetService.getDataSets();
+      List<Map<String, String>> dataSetList = new ArrayList<Map<String, String>>(dataSets.size());
+
+      for (Map.Entry<String, DataSet> entry : dataSets.entrySet())
       {
-         JSONObject data = new JSONObject();
-         JSONArray dataSets = new JSONArray();
+         Map<String, String> dataSet = new HashMap<String, String>(2);
+         DataSet value = entry.getValue();
 
-         for (Map.Entry<String, DataSet> entry : dataSetService.getDataSets().entrySet())
-         {
-            DataSet value = entry.getValue();
-            JSONObject dataSet = new JSONObject();
+         dataSet.put("label", value.getLabel());
+         dataSet.put("id", value.getId());
 
-            dataSet.put("label", value.getLabel());
-            dataSet.put("id", value.getId());
-
-            dataSets.put(dataSet);
-         }
-
-         data.put("datasets", dataSets);
-
-         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
-         model.put("data", data.toString());
-
-         return model;
+         dataSetList.add(dataSet);
       }
-      catch (JSONException error)
-      {
-         throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                  "Cannot convert data set details into JSON.", error);
-      }
+
+      Map<String, Object> model = new HashMap<String, Object>(1);
+      model.put("datasets", dataSetList);
+
+      return model;
    }
 }

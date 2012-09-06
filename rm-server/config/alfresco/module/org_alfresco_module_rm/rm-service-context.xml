@@ -988,4 +988,77 @@
         <property name="methodSecurity" ref="SiteService_security_listSites"/>
     </bean>
     
+    <!--  Data Set Service -->
+
+    <bean id="dataSetService" class="org.alfresco.module.org_alfresco_module_rm.dataset.DataSetServiceImpl">
+        <property name="importerService" ref="ImporterService"/>
+        <property name="searchService" ref="SearchService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="authorityService" ref="AuthorityService"/>
+        <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
+        <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour"/>
+        <property name="dispositionService" ref="DispositionService"/>
+    </bean>
+
+    <bean id="DataSetService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService</value>
+        </property>
+        <property name="target">
+            <ref bean="dataSetService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="DataSetService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="DataSetService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="DataSetService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="DataSetService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService.*=RM_ALLOW
+                ]]>
+            </value>
+        </property>
+    </bean>
+
+    <!-- Data Set Implementations -->
+
+    <bean id="dataSetBase" abstract="true" init-method="register" class="org.alfresco.module.org_alfresco_module_rm.dataset.DataSetBase">
+        <property name="dataSetService" ref="dataSetService"/>
+    </bean>
+    
+    <bean id="dataSetDOD5015" parent="dataSetBase">
+        <property name="label" value="DOD 5015 Example Data"/>
+        <property name="id" value="dod5015"/>
+        <property name="path" value="alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml" />
+    </bean>
+    
 </beans>    

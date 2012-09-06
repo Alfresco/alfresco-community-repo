@@ -72,7 +72,8 @@ public class OfficeMetadataExtracter extends TikaPoweredMetadataExtracter
           new String[] {
               MimetypeMap.MIMETYPE_WORD,
               MimetypeMap.MIMETYPE_EXCEL,
-              MimetypeMap.MIMETYPE_PPT},
+              MimetypeMap.MIMETYPE_PPT,
+              MimetypeMap.MIMETYPE_VISIO },
           new OfficeParser()
     );
     static {

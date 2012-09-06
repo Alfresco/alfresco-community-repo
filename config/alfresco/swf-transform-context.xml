@@ -68,6 +68,7 @@
             ppam swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.ppam.swf.maxSourceSizeKBytes} ;
             sldx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.sldx.swf.maxSourceSizeKBytes} ;
             sldm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.sldm.swf.maxSourceSizeKBytes} ;
+            vsd  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.vsd.swf.maxSourceSizeKBytes}  ;
             xls  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xls.swf.maxSourceSizeKBytes}  ;
             xlsx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xlsx.swf.maxSourceSizeKBytes} ;
             xltx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xltx.swf.maxSourceSizeKBytes} ;
@@ -217,5 +218,5 @@
          </list> 
       </property> 
    </bean> 
-
+   
 </beans>

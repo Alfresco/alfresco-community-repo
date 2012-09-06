@@ -340,5 +340,14 @@
       <entry><family>Presentation</family><string>MS PowerPoint 2007</string></entry>
     </export-filters>
   </document-format>
-
+  
+  <document-format><name>Microsoft Visio</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.visio</mime-type>
+    <file-extension>vsd</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS Visio</string></entry>
+    </export-filters>
+  </document-format> 
+  
 </document-formats>

@@ -888,6 +888,7 @@
             ppam pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.ppam.pdf.maxSourceSizeKBytes} ;
             sldx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.sldx.pdf.maxSourceSizeKBytes} ;
             sldm pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.sldm.pdf.maxSourceSizeKBytes} ;
+            vsd  pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.vsd.pdf.maxSourceSizeKBytes}  ;
             xls  pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xls.pdf.maxSourceSizeKBytes}  ;
             xlsx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xlsx.pdf.maxSourceSizeKBytes} ;
             xltx pdf  maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.xltx.pdf.maxSourceSizeKBytes} ;

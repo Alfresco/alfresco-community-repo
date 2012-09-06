@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Get data sets</shortname>
+   <description>WebScript to get the list of available RM test data</description>
+   <url>/api/rma/datasets</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

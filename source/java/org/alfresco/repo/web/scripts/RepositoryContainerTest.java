@@ -19,10 +19,14 @@
 package org.alfresco.repo.web.scripts;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import static org.springframework.extensions.webscripts.Status.*;
 
 /**
  * Unit test to test runas function
@@ -33,22 +37,25 @@ public class RepositoryContainerTest extends BaseWebScriptTest
 {
     private MutableAuthenticationService authenticationService;
     private PersonService personService;
-
+    private AuthenticationComponent authenticationComponent;
+    
     private static final String USER_ONE = "RunAsOne";
+    private static final String USER_TWO = "RunAsTwo";
 
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
 
-        this.authenticationService = (MutableAuthenticationService) getServer().getApplicationContext().getBean(
-                "AuthenticationService");
+        this.authenticationService = (MutableAuthenticationService) getServer().getApplicationContext().getBean("AuthenticationService");
+        this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         // Create users
         createUser(USER_ONE);
+        createUser(USER_TWO);
     }
 
     private void createUser(String userName)
@@ -57,7 +64,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
         {
             this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
 
-            PropertyMap ppOne = new PropertyMap(4);
+            PropertyMap ppOne = new PropertyMap(5);
             ppOne.put(ContentModel.PROP_USERNAME, userName);
             ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
             ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
@@ -74,8 +81,29 @@ public class RepositoryContainerTest extends BaseWebScriptTest
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
+    
+    
+    /**
+     * Person should be current user irrespective of runas user.
+     */
+	public void testRunAsAdmin() throws Exception {
+		authenticationComponent.setCurrentUser(USER_ONE);
+		
+		// No runas specified within our webscript descriptor
+		Response response = sendRequest(new GetRequest("/test/runas"), STATUS_OK);
+		assertEquals(USER_ONE, response.getContentAsString());
 
-    public void testReset() throws Exception
+		authenticationComponent.setCurrentUser(USER_TWO);
+		
+		// runas "Admin" specified within our webscript descriptor
+		response = sendRequest(new GetRequest("/test/runasadmin"), STATUS_OK);
+		assertEquals(USER_TWO, response.getContentAsString());
+		
+		authenticationComponent.setSystemUserAsCurrentUser();
+	}
+
+    
+	public void testReset() throws Exception
     {
         RepositoryContainer repoContainer = (RepositoryContainer) getServer().getApplicationContext().getBean("webscripts.container");
         repoContainer.reset();

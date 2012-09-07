@@ -237,7 +237,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
             {
                 params.put("companyhome", companyHome);
             }
-            NodeRef person = repository.getPerson();
+            NodeRef person = repository.getFullyAuthenticatedPerson();
             if (person != null)
             {
                 params.put("person", person);

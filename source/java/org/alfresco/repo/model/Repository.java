@@ -256,13 +256,32 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
 
     /**
      * Gets the currently authenticated person
-     * 
+     * Includes any overlay authentication set by runas 
      * @return  person node ref
      */
     public NodeRef getPerson()
     {
         NodeRef person = null;
         String currentUserName = AuthenticationUtil.getRunAsUser();
+        if (currentUserName != null)
+        {
+            if (personService.personExists(currentUserName))
+            {
+                person = personService.getPerson(currentUserName);
+            }
+        }
+        return person;
+    }
+    
+    /**
+     * Gets the currently fully authenticated person, 
+     * Excludes any overlay authentication set by runas 
+     * @return  person node ref
+     */
+    public NodeRef getFullyAuthenticatedPerson()
+    {
+        NodeRef person = null;
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         if (currentUserName != null)
         {
             if (personService.personExists(currentUserName))

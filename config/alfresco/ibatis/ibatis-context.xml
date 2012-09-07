@@ -20,6 +20,10 @@
         </property>
     </bean>
     
+    <!-- CLOUD-452: Activities (comment-out Activities-specific domain/datasource) -->
+    
+    <!-- MyBatis config for Activities domain -->
+    <!--
     <bean id="activitiesDataSource" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>javax.sql.DataSource</value>
@@ -41,9 +45,6 @@
         </property>
     </bean>
     
-    
-    <!-- MyBatis config for Activities domain -->
-    
     <bean id="activitiesSqlSessionFactory" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
         <property name="useLocalCaches" value="${mybatis.useLocalCaches}"/>
         <property name="resourceLoader" ref="dialectResourceLoader"/>
@@ -53,9 +54,14 @@
         </property>
     </bean>
     
-    <!-- MyBatis-Spring sqlSessionTemplate -->
     <bean id="activitiesSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" ref="activitiesSqlSessionFactory"/>
+    </bean>
+    -->
+    
+    <!-- CLOUD-452: Activities (see also alfresco-SqlMapConfig.xml) -->
+    <bean id="activitiesSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>
     
     <!-- MyBatis config for Alfresco (using common datasource) -->
@@ -67,6 +73,8 @@
             <value>classpath:alfresco/ibatis/alfresco-SqlMapConfig.xml</value>
         </property>
     </bean>
+    
+    
     
     <bean id="avmSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" ref="repoSqlSessionFactory"/>

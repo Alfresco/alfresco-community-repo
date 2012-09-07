@@ -15,6 +15,12 @@ Inbound settings from iBatis
  -->
 
     <typeAliases>
+    
+        <!-- CLOUD-452: Activities -->
+        <typeAlias alias="ActivityFeedQuery" type="org.alfresco.repo.domain.activities.ActivityFeedQueryEntity"/>
+        <typeAlias alias="ActivityFeed" type="org.alfresco.repo.domain.activities.ActivityFeedEntity"/>
+        <typeAlias alias="FeedControl" type="org.alfresco.repo.domain.activities.FeedControlEntity"/>
+        <typeAlias alias="ActivityPost" type="org.alfresco.repo.domain.activities.ActivityPostEntity"/>
         
         <!-- AppliedPatch -->
         
@@ -88,7 +94,7 @@ Inbound settings from iBatis
         
         <!-- Discussions CQ -->
         <typeAlias alias="NodeWithChildrenEntity" type="org.alfresco.repo.discussion.cannedqueries.NodeWithChildrenEntity"/>
-
+        
         <!-- Patch -->
         
         <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
@@ -166,7 +172,7 @@ Inbound settings from iBatis
         <!-- Tenants -->
         
         <typeAlias alias="Tenant" type="org.alfresco.repo.domain.tenant.TenantEntity"/>
- 
+        
     </typeAliases>
     
     <typeHandlers> 
@@ -174,6 +180,12 @@ Inbound settings from iBatis
     </typeHandlers>
         
     <mappers>
+        <!-- CLOUD-452: Activities -->
+        <mapper resource="alfresco/ibatis/#resource.dialect#/activities-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/activities-insert-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/activities-select-SqlMap.xml"/>
+        
+        
         <mapper resource="alfresco/ibatis/#resource.dialect#/alfresco-util-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/appliedpatch-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/audit-common-SqlMap.xml"/>

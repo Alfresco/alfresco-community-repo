@@ -31,6 +31,7 @@
       <property name="jobLockService" ref="JobLockService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="policyComponent" ref="policyComponent"/>
+      <property name="transactionService" ref="transactionService"/>
       
       <property name="maxIdRange">
          <value>${activities.feed.max.idRange}</value> <!-- max ID range between max(id) and min(id).  Limits absolute number of entries. -->

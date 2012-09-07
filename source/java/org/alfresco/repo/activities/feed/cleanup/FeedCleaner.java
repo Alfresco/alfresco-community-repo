@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,12 +36,14 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,6 +51,9 @@ import org.quartz.JobExecutionException;
 
 /**
  * The feed cleaner component is responsible for purging 'obsolete' activity feed entries
+ * 
+ * @author janv
+ * @since 3.0
  */
 public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
 {
@@ -66,6 +71,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     private JobLockService jobLockService;
     private NodeService nodeService;
     private PolicyComponent policyComponent;
+    private TransactionService transactionService;
     
     private FeedCleanerDeleteSiteTransactionListener deleteSiteTransactionListener;
     private FeedCleanerDeletePersonTransactionListener deletePersonTransactionListener;
@@ -100,6 +106,11 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
         this.maxIdRange = maxIdRange;
     }
 
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
     public void setMaxAgeMins(int mins)
     {
         this.maxAgeMins = mins;
@@ -372,16 +383,31 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
         public void afterCommit()
         {
             Set<String> deletedSiteIds = TransactionalResourceHelper.getSet(KEY_DELETED_SITE_IDS);
-            for (String siteId : deletedSiteIds)
+            if (deletedSiteIds != null)
             {
-                try
+                for (final String siteId : deletedSiteIds)
                 {
-                    // Since we are in post-commit, we do best-effort
-                    feedDAO.deleteSiteFeedEntries(siteId);
-                }
-                catch (SQLException e)
-                {
-                    logger.error("Activities feed cleanup for site '"+siteId+"' failed: ", e);
+                    transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                    {
+                        public Void execute() throws Throwable
+                        {
+                            try
+                            {
+                                // Since we are in post-commit, we do best-effort
+                                int deletedCnt = feedDAO.deleteSiteFeedEntries(siteId);
+                                
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("afterCommit: deleted "+deletedCnt+" site feed entries for site '"+siteId+"'");
+                                }
+                            }
+                            catch (SQLException e)
+                            {
+                                logger.error("Activities feed cleanup for site '"+siteId+"' failed: ", e);
+                            }
+                            return null;
+                        }
+                    }, false, true);
                 }
             }
         }
@@ -393,16 +419,27 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
         public void afterCommit()
         {
             Set<String> deletedUserIds = TransactionalResourceHelper.getSet(KEY_DELETED_USER_IDS);
-            for (String userId : deletedUserIds)
+            if (deletedUserIds != null)
             {
-                try
+                for (final String userId : deletedUserIds)
                 {
-                    // Since we are in post-commit, we do best-effort
-                    feedDAO.deleteUserFeedEntries(userId);
-                }
-                catch (SQLException e)
-                {
-                    logger.error("Activities feed cleanup for user '"+userId+"' failed: ", e);
+                    transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                    {
+                        public Void execute() throws Throwable
+                        {
+                            try
+                            {
+                                // Since we are in post-commit, we do best-effort
+                                feedDAO.deleteUserFeedEntries(userId);
+                            }
+                            catch (SQLException e)
+                            {
+                                logger.error("Activities feed cleanup for user '"+userId+"' failed: ", e);
+                            }
+                            
+                            return null;
+                        }
+                    }, false, true);
                 }
             }
         }

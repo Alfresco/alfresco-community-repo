@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,12 +37,14 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.quartz.Scheduler;
 import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.activities.feed.cleanup.FeedCleaner
  * 
  * @author janv
+ * @since 3.0
  */
 public class FeedCleanerTest extends TestCase
 {
@@ -82,6 +84,10 @@ public class FeedCleanerTest extends TestCase
         personService = (PersonService) ctx.getBean("PersonService");
         feedDAO = (ActivityFeedDAO) ctx.getBean("feedDAO");
         transactionHelper = (RetryingTransactionHelper)ctx.getBean("retryingTransactionHelper");
+        
+        // Let's shut down the scheduler so that we aren't competing with the scheduled versions of jobs (ie. feed cleaner)
+        Scheduler scheduler = (Scheduler) ctx.getBean("schedulerFactory");
+        scheduler.shutdown();
         
         tearDown();
         
@@ -343,7 +349,7 @@ public class FeedCleanerTest extends TestCase
             feedDAO.insertFeedEntry(feedEntry);
         }
         
-        int site5FeedCnt = 5;
+        final int site5FeedCnt = 5;
         
         // add some additional user feed entries (for TEST_SITE_5 and TEST_USER_D)
         for (int i = 0; i < site5FeedCnt; i++)
@@ -365,14 +371,22 @@ public class FeedCleanerTest extends TestCase
         assertEquals(site4FeedCnt+site5FeedCnt, feedDAO.selectUserFeedEntries(TEST_USER_D, "json", null, false, false,-1L, -1).size());
         
         // delete the site
-        siteService.deleteSite(TEST_SITE_4);
+        siteService.deleteSite(TEST_SITE_4); 
         
-        assertEquals(0, feedDAO.selectSiteFeedEntries(TEST_SITE_4, "json", -1).size());
-        assertEquals(site5FeedCnt, feedDAO.selectUserFeedEntries(TEST_USER_D, "json", null, false, false, -1L, -1).size());
-        
-        siteService.createSite("mypreset", TEST_SITE_4, TEST_SITE_4, TEST_SITE_4, SiteVisibility.PUBLIC);
-        
-        assertEquals(0, feedDAO.selectSiteFeedEntries(TEST_SITE_4, "json", -1).size());
+        // note: site feed cleanup is done in separate txn after commit
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertEquals(0, feedDAO.selectSiteFeedEntries(TEST_SITE_4, "json", -1).size());
+                assertEquals(site5FeedCnt, feedDAO.selectUserFeedEntries(TEST_USER_D, "json", null, false, false, -1L, -1).size());
+                
+                siteService.createSite("mypreset", TEST_SITE_4, TEST_SITE_4, TEST_SITE_4, SiteVisibility.PUBLIC);
+                
+                assertEquals(0, feedDAO.selectSiteFeedEntries(TEST_SITE_4, "json", -1).size());
+                return null;
+            }
+        }, false, true);
     }
     
     public void testPersonDelete() throws Exception
@@ -384,7 +398,7 @@ public class FeedCleanerTest extends TestCase
         assertEquals(0, feedDAO.selectSiteFeedEntries(TEST_SITE_6, "json", -1).size());
         assertEquals(0, feedDAO.selectUserFeedEntries(TEST_USER_E, "json", null, false, false, -1L, -1).size());
         
-        int site6FeedCnt = 10;
+        final int site6FeedCnt = 10;
         
         // insert site / user feed entries (for TEST_SITE_6 and TEST_USER_E)
         for (int i = 0; i < site6FeedCnt; i++)
@@ -407,7 +421,7 @@ public class FeedCleanerTest extends TestCase
             feedDAO.insertFeedEntry(feedEntry);
         }
         
-        int site7FeedCnt = 5;
+        final int site7FeedCnt = 5;
         
         // insert site / user feed entries (for TEST_SITE_7 and TEST_USER_E)
         for (int i = 0; i < site7FeedCnt; i++)
@@ -437,14 +451,22 @@ public class FeedCleanerTest extends TestCase
         // delete the person
         personService.deletePerson(TEST_USER_E);
         
-        assertEquals(site6FeedCnt, feedDAO.selectSiteFeedEntries(TEST_SITE_6, "json", -1).size());
-        assertEquals(site7FeedCnt, feedDAO.selectSiteFeedEntries(TEST_SITE_7, "json", -1).size());
-        
-        assertEquals(0, feedDAO.selectUserFeedEntries(TEST_USER_E, "json", null, false, false, -1L, -1).size());
-        
-        assertTrue(createPerson(TEST_USER_E));
-        
-        assertEquals(0, feedDAO.selectUserFeedEntries(TEST_USER_E, "json", null, false, false, -1L, -1).size());
+        // note: site feed cleanup is done in separate txn after commit
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertEquals(site6FeedCnt, feedDAO.selectSiteFeedEntries(TEST_SITE_6, "json", -1).size());
+                assertEquals(site7FeedCnt, feedDAO.selectSiteFeedEntries(TEST_SITE_7, "json", -1).size());
+                
+                assertEquals(0, feedDAO.selectUserFeedEntries(TEST_USER_E, "json", null, false, false, -1L, -1).size());
+                
+                assertTrue(createPerson(TEST_USER_E));
+                
+                assertEquals(0, feedDAO.selectUserFeedEntries(TEST_USER_E, "json", null, false, false, -1L, -1).size());
+                return null;
+            }
+        }, false, true);
     }
     
     private boolean createPerson(String userName)

@@ -39,6 +39,9 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -81,6 +84,7 @@ public class TemporaryNodesTest
     private static CheckOutCheckInService      COCI_SERVICE;
     private static ContentService              CONTENT_SERVICE;
     private static NodeService                 NODE_SERVICE;
+    private static SiteService                 SITE_SERVICE;
     private static RetryingTransactionHelper   TRANSACTION_HELPER;
     
     private static NodeRef COMPANY_HOME;
@@ -93,6 +97,7 @@ public class TemporaryNodesTest
         COCI_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("checkOutCheckInService", CheckOutCheckInService.class);
         CONTENT_SERVICE    = APP_CONTEXT_INIT.getApplicationContext().getBean("contentService", ContentService.class);
         NODE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("nodeService", NodeService.class);
+        SITE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("siteService", SiteService.class);
         TRANSACTION_HELPER = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
         
         Repository repositoryHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper", Repository.class);
@@ -185,6 +190,48 @@ public class TemporaryNodesTest
                     {
                         fail("Node '" + NODE_SERVICE.getProperty(node, ContentModel.PROP_NAME) + "' still exists.");
                     }
+                }
+                return null;
+            }
+        });
+    }
+    
+    /** Site nodes are a special case as they can only be deleted through the SiteService. */
+    @Test public void ensureSiteNodesAreCleanedUp() throws Throwable
+    {
+        // Note that because we need to test that the Rule's 'after' behaviour has worked correctly, we cannot
+        // use the Rule that has been declared in the normal way - otherwise nothing would be cleaned up until
+        // after our test method.
+        // Therefore we have to manually poke the Rule to get it to cleanup during test execution.
+        // NOTE! This is *not* how a JUnit Rule would normally be used.
+        TemporaryNodes myTemporaryNodes = new TemporaryNodes(APP_CONTEXT_INIT);
+        
+        // Currently this is a no-op, but just in case that changes.
+        myTemporaryNodes.before();
+        
+        
+        // and ensure that the site node is gone.
+        SiteInfo createdSite = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<SiteInfo>()
+        {
+            public SiteInfo execute() throws Throwable
+            {
+                return SITE_SERVICE.createSite("sitePreset", "siteShortName", "site title", "site description", SiteVisibility.PUBLIC);
+            }
+        });
+        final NodeRef siteNodeRef = createdSite.getNodeRef();
+        myTemporaryNodes.addNodeRef(siteNodeRef);
+        
+        // Now trigger the Rule's cleanup behaviour.
+        myTemporaryNodes.after();
+        
+        // and ensure that the site node is gone.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                if (NODE_SERVICE.exists(siteNodeRef))
+                {
+                    fail("Node '" + NODE_SERVICE.getProperty(siteNodeRef, ContentModel.PROP_NAME) + "' still exists.");
                 }
                 return null;
             }

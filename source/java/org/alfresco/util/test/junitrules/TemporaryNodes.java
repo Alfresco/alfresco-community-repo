@@ -29,14 +29,18 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -79,9 +83,11 @@ public class TemporaryNodes extends ExternalResource
         
         final RetryingTransactionHelper transactionHelper = springContext.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
         final CheckOutCheckInService cociService          = springContext.getBean("CheckOutCheckInService", CheckOutCheckInService.class);
+        final DictionaryService dictionaryService         = springContext.getBean("DictionaryService", DictionaryService.class);
         final NodeService nodeService                     = springContext.getBean("NodeService", NodeService.class);
+        final SiteService siteService                     = springContext.getBean("SiteService", SiteService.class);
         
-        // Run as admin to ensure all non-system nodes can be deleted irrespecive of which user created them.
+        // Run as system to ensure all non-system nodes can be deleted irrespective of which user created them.
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override public Void doWork() throws Exception
@@ -104,7 +110,18 @@ public class TemporaryNodes extends ExternalResource
                                     cociService.cancelCheckout(workingCopy);
                                 }
                                 log.debug("Deleting temporary node " + nodeService.getProperty(node, ContentModel.PROP_NAME));
-                                nodeService.deleteNode(node);
+                                
+                                // Site nodes are a special case which must be deleted through the SiteService.
+                                final QName nodeType = nodeService.getType(node);
+                                if (nodeType.equals(SiteModel.TYPE_SITE) || dictionaryService.isSubClass(nodeType, SiteModel.TYPE_SITE))
+                                {
+                                    SiteInfo siteInfo = siteService.getSite(node);
+                                    siteService.deleteSite(siteInfo.getShortName());
+                                }
+                                else
+                                {
+                                    nodeService.deleteNode(node);
+                                }
                             }
                         }
                         

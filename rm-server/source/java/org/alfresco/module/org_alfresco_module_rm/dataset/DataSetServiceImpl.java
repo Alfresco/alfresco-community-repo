@@ -1,5 +1,6 @@
 package org.alfresco.module.org_alfresco_module_rm.dataset;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -216,21 +217,43 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
       DataSet dataSet = getDataSets().get(dataSetId);
 
       // Import the RM test data ACP into the the provided file plan node reference
-      InputStream is = DataSetServiceImpl.class.getClassLoader().getResourceAsStream(
-               dataSet.getPath());
-      if (is == null)
+      InputStream is = null;
+      try
       {
-         throw new AlfrescoRuntimeException("The '" + dataSet.getLabel()
-               + "' import file could not be found!");
+         is = getClass().getClassLoader().getResourceAsStream(dataSet.getPath());
+         if (is == null)
+         {
+            throw new AlfrescoRuntimeException("The '" + dataSet.getLabel()
+                  + "' import file could not be found!");
+         }
+   
+         // Import view
+         Reader viewReader = new InputStreamReader(is);
+         Location location = new Location(filePlan);
+         importerService.importView(viewReader, location, null, null);
+   
+         // Patch data
+         patchLoadedData();
       }
-
-      // Import view
-      Reader viewReader = new InputStreamReader(is);
-      Location location = new Location(filePlan);
-      importerService.importView(viewReader, location, null, null);
-
-      // Patch data
-      patchLoadedData();
+      catch (Exception ex)
+      {
+         throw new RuntimeException("Unexpected exception thrown", ex);
+      }
+      finally
+      {
+         if (is != null)
+         {
+            try
+            {
+               is.close();
+               is = null;
+            }
+            catch (IOException ex)
+            {
+               throw new RuntimeException("Failed to close the input stream!", ex);
+            }
+         }
+      }
    }
 
    /**

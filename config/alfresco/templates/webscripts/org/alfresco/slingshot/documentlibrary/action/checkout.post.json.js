@@ -29,7 +29,7 @@ function runAction(p_params)
       var workingCopy = assetNode.checkout();
       if (workingCopy === null)
       {
-         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not checkout: " + p_params.path);
+         status.setCode(status.STATUS_FORBIDDEN, "Could not checkout: " + p_params.path);
          return;
       }
       

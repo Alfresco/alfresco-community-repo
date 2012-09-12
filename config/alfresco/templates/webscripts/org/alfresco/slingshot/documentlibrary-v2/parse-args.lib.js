@@ -89,62 +89,69 @@ var Common =
     */
    getLocation: function Common_getLocation(node, libraryRoot)
    {
-      var location = null,
-         qnamePaths = node.qnamePath.split("/"),
-         displayPaths = node.displayPath.split("/");
-
-      if (libraryRoot == undefined && qnamePaths[2] != TYPE_SITES)
+      try
       {
-         libraryRoot = companyhome;
-      }
+         var location = null,
+            qnamePaths = node.qnamePath.split("/"),
+            displayPaths = node.displayPath.split("/");
 
-      if (libraryRoot)
-      {
-         // Generate the path from the supplied library root
-         location =
+         if (libraryRoot == undefined && qnamePaths[2] != TYPE_SITES)
          {
-            site: null,
-            container: null,
-            path: "/" + displayPaths.slice(libraryRoot.displayPath.split("/").length + 1, displayPaths.length).join("/"),
-            file: node.name
-         };
-      }
-      else if ((qnamePaths.length > 4) && (qnamePaths[2] == TYPE_SITES))
-      {
-         var siteId = displayPaths[3],
-            siteNode = Common.getSite(siteId),
-            containerId = qnamePaths[4].substr(3);
+            libraryRoot = companyhome;
+         }
 
-         if (siteNode != null)
+         if (libraryRoot)
          {
-            var containerNode = siteNode.getContainer(containerId);
-            location = 
+            // Generate the path from the supplied library root
+            location =
             {
-               site: siteId,
-               siteNode: siteNode,
-               siteTitle: siteNode.title,
-               sitePreset: siteNode.sitePreset,
-               container: containerId,
-               containerNode: containerNode,
-               containerType: containerNode.typeShort,
-               path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
+               site: null,
+               container: null,
+               path: "/" + displayPaths.slice(libraryRoot.displayPath.split("/").length + 1, displayPaths.length).join("/"),
                file: node.name
             };
          }
-      }
-      
-      if (location == null)
-      {
-         location =
+         else if ((qnamePaths.length > 4) && (qnamePaths[2] == TYPE_SITES))
          {
-            site: null,
-            container: null,
-            path: "/" + displayPaths.slice(2, displayPaths.length).join("/"),
-            file: node.name
-         };
+            var siteId = displayPaths[3],
+               siteNode = Common.getSite(siteId),
+               containerId = qnamePaths[4].substr(3);
+
+            if (siteNode != null)
+            {
+               var containerNode = siteNode.getContainer(containerId);
+               location = 
+               {
+                  site: siteId,
+                  siteNode: siteNode,
+                  siteTitle: siteNode.title,
+                  sitePreset: siteNode.sitePreset,
+                  container: containerId,
+                  containerNode: containerNode,
+                  containerType: containerNode.typeShort,
+                  path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
+                  file: node.name
+               };
+            }
+         }
+         
+         if (location == null)
+         {
+            location =
+            {
+               site: null,
+               container: null,
+               path: "/" + displayPaths.slice(2, displayPaths.length).join("/"),
+               file: node.name
+            };
+         }
+         
+         return location;
       }
-      
-      return location;
+      catch(e)
+      {
+         return null;
+      }
    },
 
    /**
@@ -275,6 +282,11 @@ var ParseArgs =
 
       // Parent location parameter adjustment
       location = Common.getLocation(pathNode, libraryRoot);
+      if (location === null)
+      {
+         status.setCode(status.STATUS_GONE, "Location is 'null'. (No permission?)");
+         return null;
+      }
       if (path !== "")
       {
          location.path = ParseArgs.combinePaths(location.path, location.file);

@@ -1034,7 +1034,7 @@ function getQueryTemplate()
          template: "%(cm:name cm:title cm:description ia:whatEvent ia:descriptionEvent lnk:title lnk:description TEXT TAG)"
       }],
       qt = new XML(config.script)["default-query-template"];
-   if (qt != null && qt.length != 0)
+   if (qt != null && qt.length() != 0)
    {
       t[0].template = qt.toString();
    }

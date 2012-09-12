@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -959,5 +960,17 @@ public class WebDAVHelper
         // Return the path
         
         return strPath;
+    }
+
+    /**
+     * Indicates if the node is unlocked or the current user has a WRITE_LOCK<p>
+     * 
+     * @see LockService#isLockedOrReadOnly(NodeRef)
+     * 
+     * @param nodeRef    the node reference
+     */
+    public boolean isLockedOrReadOnly(final NodeRef nodeRef)
+    {
+        return LockUtils.isLockedOrReadOnly(nodeRef, m_serviceRegistry.getLockService());
     }
 }

@@ -805,7 +805,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
                 if (logger.isDebugEnabled())
                     logger.debug("Attaching content using filename: " + attachFileName);
                 
-                headerValue += "; filename*=UTF-8''" + WebDAVHelper.encodeURL(attachFileName) + "; filename=\"" + attachFileName + "\"";
+                headerValue += "; filename=\"" + attachFileName + "\"; filename*=UTF-8''" + WebDAVHelper.encodeURL(attachFileName); 
             }
             
             // set header based on filename - will force a Save As from the browse if it doesn't recognize it

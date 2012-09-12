@@ -64,8 +64,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
@@ -1006,52 +1004,24 @@ public abstract class WebDAVMethod
     protected LockInfo checkNode(FileInfo fileInfo, boolean ignoreShared, boolean lockMethod) throws WebDAVServerException
     {
         LockInfo nodeLockInfo = getNodeLockInfo(fileInfo);
-        
         nodeLockInfo.getRWLock().readLock().lock();
         try
         {
             String nodeETag = getDAVHelper().makeQuotedETag(fileInfo);
+            NodeRef nodeRef = fileInfo.getNodeRef();
 
-            
+        
+            // Handle the case where there are no conditions and no lock token stored on the node. Node just needs to be writable with no shared locks
             if (m_conditions == null)
-            {
-                if (!nodeLockInfo.isLocked())
+            {            
+                // ALF-3681 fix. WebDrive 10 client doesn't send If header when locked resource is updated so check the node by lockOwner.
+                if (!nodeLockInfo.isExclusive() || (m_userAgent != null && m_userAgent.equals(WebDAV.AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV)))
                 {
-                    // Not locked
-                    return nodeLockInfo;
-                }
-                
-                if (nodeLockInfo.isShared())
-                {
-                    if (nodeLockInfo.getSharedLockTokens().isEmpty())
+                    if (getDAVHelper().isLockedOrReadOnly(nodeRef) || (!ignoreShared && nodeLockInfo.isShared() && !nodeLockInfo.getSharedLockTokens().isEmpty()))
                     {
-                        // Although flagged as shared - no shared locks.
-                        return nodeLockInfo;
-                    }
-                    if (!ignoreShared)
-                    {
-                        // Shared locks exist
                         throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
                     }
-                }
-                else
-                {
-                    // ALF-3681 fix. WebDrive 10 client doesn't send If header when locked resource is updated so check the node by lockOwner.
-                    if (m_userAgent != null && m_userAgent.equals(WebDAV.AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV))
-                    {
-                        String currentUser = getAuthenticationService().getCurrentUserName();
-                        String lockOwner = nodeLockInfo.getOwner();
-                        if (lockOwner.equals(currentUser))
-                        {
-                            // OK to write - lock is owned by current user.
-                            return nodeLockInfo;
-                        }
-                        else
-                        {
-                            // Exclusive lock, owned by someone else
-                            throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
-                        }
-                    }
+                    return nodeLockInfo;
                 }
             }
 

@@ -113,7 +113,7 @@ function getBlogPostData(node)
  */
 function hasExternalBlogConfiguration(node)
 {
-   if (node === null)
+   if (node === null || !node.hasPermission("ReadProperties"))
    {
       return false;
    }

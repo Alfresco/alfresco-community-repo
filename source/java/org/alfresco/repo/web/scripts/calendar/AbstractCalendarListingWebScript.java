@@ -67,6 +67,9 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
         	 String startA = (String)resultA.get(RESULT_START);
         	 String startB = (String)resultB.get(RESULT_START);
         
+        	 startA = startA.replace("Z", "+00:00");
+        	 startB = startB.replace("Z", "+00:00");
+        	 
         	 //check and parse iso8601 date without time zone (All day events are stripped of time zone)
         	 DateTime sa = startA.length()>23?fmtTz.parseDateTime(startA):fmtNoTz.parseDateTime(startA);
         	 DateTime sb = startB.length()>23?fmtTz.parseDateTime(startB):fmtNoTz.parseDateTime(startB);

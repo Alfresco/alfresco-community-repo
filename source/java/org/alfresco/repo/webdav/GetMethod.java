@@ -194,12 +194,17 @@ public class GetMethod extends WebDAVMethod
             }
            
             String fname = (String) getNodeService().getProperty(nodeInfo.getLinkNodeRef(), ContentModel.PROP_NAME);
-            String webDavUrl = m_request.getServerName() + ":" + m_request.getServerPort() + rootURL + WebDAVHelper.encodeURL(fname, m_userAgent);
-            
-            StringBuilder urlStr = new StringBuilder();
+            StringBuilder urlStr = new StringBuilder(200);
             urlStr.append("[InternetShortcut]\r\n");
             urlStr.append("URL=file://");
-            urlStr.append(webDavUrl);
+            urlStr.append(m_request.getServerName());
+            // Only append the port if it is non-default for compatibility with XP
+            int port = m_request.getServerPort();
+            if (port != 80)
+            {
+                urlStr.append(":").append(port);
+            }
+            urlStr.append(rootURL).append(WebDAVHelper.encodeURL(fname, m_userAgent));
             urlStr.append("\r\n");
            
             m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, "text/plain; charset=ISO-8859-1");

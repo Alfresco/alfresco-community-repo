@@ -568,8 +568,8 @@ public class SiteActivitySystemTest extends TestCase
         getUserFeed(null, site3, ticket, false, false, false, 6);
         
         getUserFeed(null, null, ticket, false, false, false, 14); // no filter
-        getUserFeed(null, null, ticket, false, true, false, 14);  // exclude any from user1
-        getUserFeed(null, null, ticket, false, false, true, 0);   // exclude all except user1
+        getUserFeed(null, null, ticket, false, true, false, 12);  // exclude any from user1
+        getUserFeed(null, null, ticket, false, false, true, 2);   // exclude all except user1
         getUserFeed(null, null, ticket, false, true, true, 0);    // exclude all (NOOP)
         
         // TODO - add more (eg. other non-admin user activities)

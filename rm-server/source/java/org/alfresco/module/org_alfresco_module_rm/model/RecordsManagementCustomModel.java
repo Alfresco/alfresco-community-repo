@@ -49,4 +49,10 @@ public interface RecordsManagementCustomModel
     // Some Custom references which are present on system startup.
     public static QName CUSTOM_REF_VERSIONS = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions");
     public static QName CUSTOM_REF_SUPERSEDES = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supersedes");
+
+    // Custom property for loaded data set ids
+    public static QName PROP_LOADED_DATA_SET_IDS = QName.createQName(RM_CUSTOM_URI, "loadedDataSetIds");
+
+    // Loaded data set ids aspect
+    public static QName ASPECT_LOADED_DATA_SET_IDS = QName.createQName(RM_CUSTOM_URI, "customLoadedDataSetIds");
 }

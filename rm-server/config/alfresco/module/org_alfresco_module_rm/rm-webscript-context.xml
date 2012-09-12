@@ -379,6 +379,8 @@
     <!-- REST impl for GET Data Sets -->
     <bean id="webscript.org.alfresco.rma.datasets.get" class="org.alfresco.module.org_alfresco_module_rm.script.DataSetsGet" parent="webscript">
         <property name="dataSetService" ref="DataSetService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="nodeService" ref="NodeService" />
     </bean>
     
     <!-- REST impl for POST Load Data Set -->

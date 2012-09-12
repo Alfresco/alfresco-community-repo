@@ -1,8 +1,5 @@
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +10,6 @@ import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.view.ImporterService;
-import org.alfresco.service.cmr.view.Location;
 
 public class DataSetServiceImplTest extends BaseRMTestCase
 {
@@ -113,42 +109,22 @@ public class DataSetServiceImplTest extends BaseRMTestCase
          @Override
          public Void run() throws Exception
          {
-            // Test filePlan
+            // Test the file plan
             assertNotNull(filePlan);
 
             for (String dataSetId : dataSetIds)
             {
-               // Get a data set and test it
-               DataSet dataSet = dataSetService.getDataSets().get(dataSetId);
-               assertNotNull(dataSet);
-
-               // Import the RM test data ACP into the the provided file plan node reference
-               String path = dataSet.getPath();
-               assertNotNull(path);
-               InputStream is = null;
-               is = getClass().getClassLoader().getResourceAsStream(path);
-               assertNotNull(is);
-
-               // Get view reader and test it
-               Reader viewReader = new InputStreamReader(is);
-               assertNotNull(viewReader);
-
-               // Get location and test it
-               Location location = new Location(filePlan);
-               assertNotNull(location);
+               // Test the data set id
+               assertNotNull(dataSetId);
 
                // Test the file plan before importing the data sets
                testFilePlan(filePlan, dataSetId, Condition.BEFORE);
 
-               // Import view
-               importerService.importView(viewReader, location, null, null);
+               // Load the data set into the specified file plan
+               dataSetService.loadDataSet(dataSetId, filePlan);
 
                // Test the file plan after importing the data sets
                testFilePlan(filePlan, dataSetId, Condition.AFTER);
-
-               // Close the input stream
-               is.close();
-               is = null;
             }
 
             return null;
@@ -323,7 +299,8 @@ public class DataSetServiceImplTest extends BaseRMTestCase
          {
             for (String dataSetId : dataSetIds)
             {
-               assertTrue(dataSetService.getDataSets().containsKey(dataSetId));
+               // Test if a data set with the specified data set id exists
+               assertTrue(dataSetService.existsDataSet(dataSetId));
             }
 
             return null;

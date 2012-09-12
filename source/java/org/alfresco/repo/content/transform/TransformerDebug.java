@@ -306,7 +306,14 @@ public class TransformerDebug
         {
             Deque<Frame> ourStack = ThreadInfo.getStack();
             Frame frame = ourStack.peek();
-            
+
+            // Override setDebugOutput(false) to allow debug when there are transformers but they are all unavailable
+            // Note once turned on we don't turn it off again.
+            if (transformers.size() == 0 &&
+                frame.unavailableTransformers != null &&
+                frame.unavailableTransformers.size() != 0) {
+                ThreadInfo.setDebugOutput(true);
+            }
             // Log the basic info about this transformation
             logBasicDetails(frame, sourceSize,
                     calledFrom + ((transformers.size() == 0) ? " NO transformers" : ""),
@@ -490,9 +497,8 @@ public class TransformerDebug
      */
     public boolean isEnabled()
     {
-        return
-            (logger.isDebugEnabled() && ThreadInfo.getDebugOutput()) ||
-             logger.isTraceEnabled();
+        // Don't check ThreadInfo.getDebugOutput() as availableTransformers() may upgrade from trace to debug.
+        return logger.isDebugEnabled();
     }
     
     /**

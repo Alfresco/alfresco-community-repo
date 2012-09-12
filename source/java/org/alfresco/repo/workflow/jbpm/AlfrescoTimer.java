@@ -76,7 +76,15 @@ public class AlfrescoTimer extends Timer
             && taskInstance.isOpen())
         {
             taskInstance.setSignalling(false);
-                	taskInstance.end();
+        	String transitionName = getTransitionName();
+        	if (transitionName==null)
+        	{
+        	taskInstance.end();
+        	}
+        	else
+        	{
+        	    taskInstance.end(transitionName);
+        	}
         }
         
         return deleteTimer;

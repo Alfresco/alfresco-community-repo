@@ -111,6 +111,10 @@
       <property name="active">
          <value>${alfresco.authentication.authenticateCIFS}</value>
       </property>
+
+	  <property name="sessionCleanup">
+         <value>${alfresco.authentication.sessionCleanup}</value>
+      </property>
    </bean>
 
    <!--                                                                    -->

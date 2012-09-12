@@ -48,6 +48,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
+import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
 import org.alfresco.repo.search.QueryParameterDefImpl;
@@ -2823,16 +2824,29 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         // Have the thumbnail created
         if (async == false)
         {
-            // Create the thumbnail
-            NodeRef thumbnailNodeRef = this.services.getThumbnailService().createThumbnail(
+            try
+            {
+                // Create the thumbnail
+                NodeRef thumbnailNodeRef = this.services.getThumbnailService().createThumbnail(
                     this.nodeRef, 
                     ContentModel.PROP_CONTENT, 
                     details.getMimetype(), 
                     details.getTransformationOptions(), 
                     details.getName());
             
-            // Create the thumbnail script object
-            result = new ScriptThumbnail(thumbnailNodeRef, this.services, this.scope);
+                // Create the thumbnail script object
+                result = new ScriptThumbnail(thumbnailNodeRef, this.services, this.scope);
+            }
+            catch (AlfrescoRuntimeException e)
+            {
+                Throwable rootCause = e.getRootCause();
+                if (rootCause instanceof UnimportantTransformException)
+                {
+                    logger.debug("Unable to create thumbnail '" + details.getName() + "' as "+rootCause.getMessage());
+                    return null;
+                }
+                throw e;
+            }
         }
         else
         {

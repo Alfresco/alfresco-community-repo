@@ -257,7 +257,7 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
     protected TransformationOptions getTransformOptionsImpl(TransformationOptions options, RenderingContext context)
     {
         options.setSourceNodeRef(context.getSourceNode());
-        options.setTargetNodeRef(context.getDestinationNode());
+
         ImageTransformationOptions imageTransformationOptions = (ImageTransformationOptions)options;
         
         String commandOptions = context.getCheckedParam(PARAM_COMMAND_OPTIONS, String.class);

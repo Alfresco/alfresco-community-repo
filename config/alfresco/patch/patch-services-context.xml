@@ -3350,4 +3350,15 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V3.4-JBPM-varinst-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-JBPM-varinst-indexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6016</value></property>
+        <property name="targetSchema"><value>6017</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-varinst-indexes.sql</value>
+        </property>
+    </bean>
+    
 </beans>

@@ -25,6 +25,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
 import org.alfresco.filesys.auth.PassthruServerFactory;
+import org.alfresco.jlan.debug.Debug;
 import org.alfresco.jlan.server.SessionListener;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.AuthContext;
@@ -109,7 +110,6 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
 
     private Hashtable<String, PassthruDetails> m_sessions;
     
-
     /**
      * Passthru Authenticator Constructor
      * <p>
@@ -122,7 +122,6 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         m_sessions = new Hashtable<String, PassthruDetails>();
     }        
 
-    
     public void setPassthruServers(PassthruServers servers)
     {
         m_passthruServers = servers;
@@ -782,6 +781,20 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
         
         if ( loggedOn == true) {
 
+			// Check for virtual circuit zero, disconnect any other sessions from this client
+			
+			if ( vcNum == 0 && hasSessionCleanup()) {
+			
+				// Disconnect other sessions from this client, cleanup any open files/locks/oplocks
+				
+				int discCnt = sess.disconnectClientSessions();
+
+				// DEBUG
+
+				if ( discCnt > 0 && Debug.EnableInfo && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
+					Debug.println("[SMB] Disconnected " + discCnt + " existing sessions from client, sess=" + sess);
+			}
+			
           // Clear any stored session setup object for the logon
           
           sess.removeSetupObject( client.getProcessId());

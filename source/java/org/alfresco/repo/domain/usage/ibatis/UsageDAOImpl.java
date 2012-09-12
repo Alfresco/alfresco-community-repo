@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -50,6 +50,7 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
     private static final String SELECT_USERS_WITH_USAGE = "alfresco.usage.select_GetUsersWithUsage";
     private static final String SELECT_USERS_WITHOUT_USAGE = "alfresco.usage.select_GetUsersWithoutUsage";
     private static final String SELECT_CONTENT_SIZES_NEW = "alfresco.usage.select_GetContentSizesForStoreNew";
+    private static final String SELECT_CONTENT_SIZE_NEW_USER = "alfresco.usage.select_GetContentSizeForStoreForUser";
     private static final String DELETE_USAGE_DELTAS_BY_NODE = "alfresco.usage.delete_UsageDeltasByNodeId";
     
     
@@ -201,6 +202,35 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
         }
     }
     
+    @Override
+    protected Long selectContentSizeForStoreForUser(StoreRef storeRef, String userName)
+    {
+        Pair<Long, ? extends Object> contentTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_CONTENT);
+        Pair<Long, ? extends Object> ownerPropQNamePair = qnameDAO.getQName(ContentModel.PROP_OWNER);
+        Pair<Long, ? extends Object> contentPropQNamePair = qnameDAO.getQName(ContentModel.PROP_CONTENT);
+        
+        if (contentTypeQNamePair == null || ownerPropQNamePair == null || contentPropQNamePair == null)
+        {
+            return null; // The statics have not been used, so there can be no results
+        }
+        
+        Long contentTypeQNameEntityId = contentTypeQNamePair.getFirst();
+        Long ownerPropQNameEntityId = ownerPropQNamePair.getFirst();
+        Long contentPropQNameEntityId = contentPropQNamePair.getFirst();
+        
+        Map<String, Object> params = new HashMap<String, Object>(6);
+        params.put("contentTypeQNameID", contentTypeQNameEntityId); // cm:content (type)
+        params.put("ownerPropQNameID", ownerPropQNameEntityId); // cm:owner (prop)
+        params.put("contentPropQNameID", contentPropQNameEntityId); // cm:content (prop)
+        params.put("storeProtocol", storeRef.getProtocol());
+        params.put("storeIdentifier", storeRef.getIdentifier());
+        params.put("userName", userName);
+        params.put("userName2", userName);
+        
+        // Query for the 'new' (FK) style content data properties (stored in 'string_value')
+        return (Long)template.selectOne(SELECT_CONTENT_SIZE_NEW_USER, params);
+    }
+   
     /**
      * Row handler for getting map of strings
      */

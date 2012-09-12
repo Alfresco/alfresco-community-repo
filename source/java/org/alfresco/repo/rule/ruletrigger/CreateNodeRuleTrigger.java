@@ -20,6 +20,7 @@ package org.alfresco.repo.rule.ruletrigger;
 
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -57,8 +58,6 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
     private static Log logger = LogFactory.getLog(CreateNodeRuleTrigger.class);
     
     private static final String POLICY = "onCreateNode";
-    
-    private static final QName ASPECT_NO_CONTENT = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "noContent");
     
     /** Indicates whether this is a class behaviour or not */
     private boolean isClassBehaviour = false;
@@ -105,11 +104,11 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
 		// Register interest in the addition and removal of the sys:noContent aspect
 		this.policyComponent.bindClassBehaviour(
 		        NodeServicePolicies.OnAddAspectPolicy.QNAME, 
-		        ASPECT_NO_CONTENT, 
+		        ContentModel.ASPECT_NO_CONTENT, 
 		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.EVERY_EVENT));
 		this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
-                ASPECT_NO_CONTENT, 
+                ContentModel.ASPECT_NO_CONTENT, 
                 new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
 	}
     
@@ -172,7 +171,7 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
         
         if (nodeRef != null && 
             nodeService.exists(nodeRef) == true &&
-            nodeService.hasAspect(nodeRef, ASPECT_NO_CONTENT) == false)
+            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT) == false)
         {
             NodeRef parentNodeRef = childAssocRef.getParentRef();
             

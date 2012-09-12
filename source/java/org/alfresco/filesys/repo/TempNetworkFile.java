@@ -30,6 +30,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
         super(file, netPath);
         setFullName(netPath);
         setAttributes(FileAttribute.NTNormal);
+        setClosed(false);
     }
     
     /**
@@ -43,6 +44,7 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
         super(file, netPath);
         setFullName(netPath);
         setAttributes(FileAttribute.NTNormal);
+        setClosed(false);
     }
     
     /**

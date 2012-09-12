@@ -105,6 +105,9 @@
       <property name="passthruServers">
          <ref bean="passthruServers" />
       </property>
+	  <property name="sessionCleanup">
+         <value>${passthru.authentication.sessionCleanup}</value>
+      </property>
    </bean>
 
    <!-- FTP authentication -->

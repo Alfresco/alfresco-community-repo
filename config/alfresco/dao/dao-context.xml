@@ -120,7 +120,8 @@
       <property name="nodesCache" ref="node.nodesCache"/>
       <property name="aspectsCache" ref="node.aspectsCache"/>
       <property name="propertiesCache" ref="node.propertiesCache"/>
-      <property name="parentAssocsCache" ref="node.parentAssocsCache"/>
+      <property name="parentAssocsCacheSize" value="${system.cache.parentAssocs.maxSize}"/>
+      <property name="parentAssocsCacheLimitFactor" value="${system.cache.parentAssocs.limitFactor}"/>
       <property name="childByNameCache" ref="node.childByNameCache"/>
    </bean>
    <bean id="nodeDAO.org.hibernate.dialect.Dialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" parent="nodeDAObase" />

@@ -98,15 +98,7 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
         boolean fail = false;
         if (newContent == true)
         {
-            Boolean value = (Boolean)nodeService.getProperty(nodeRef, QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "editInline"));
-            if (value != null)
-            {
-                boolean editInline = value.booleanValue();
-                if (editInline == true)
-                {
-                    fail = true;
-                }
-            }
+            fail = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT);
             
             if (fail == false)
             {

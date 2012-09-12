@@ -102,6 +102,7 @@
           <list>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-Extra.sql</value>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-FK-indexes.sql</value>
+             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-varinst-indexes.sql</value>
           </list>
        </property>
        <property name="schemaReferenceUrls">
@@ -158,6 +159,7 @@
              <ref bean="patch.db-V3.4-Upgrade-JBPM" />
              <ref bean="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" />
              <ref bean="patch.db-V3.4-AVM-index-child-entries-lower" />
+             <ref bean="patch.db-V3.4-JBPM-varinst-indexes" />
              <ref bean="patch.db-V3.4-remove-redundant-jbpm-indexes" />
              <ref bean="patch.db-V4.0-AclChangeSet" />
              <ref bean="patch.db-V4.0-NodeAssoc-Ordering" />
@@ -695,7 +697,10 @@
 
 
     <!--  User usage tracking (requires a query across all users on startup) -->
-    <bean id="userUsageTrackingComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent">
+    <bean id="userUsageTrackingComponent" class="org.alfresco.repo.usage.UserUsageTrackingComponent" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
         <property name="transactionService">
             <ref bean="transactionService"/>
         </property>

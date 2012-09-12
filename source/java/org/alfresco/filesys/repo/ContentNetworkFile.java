@@ -169,7 +169,7 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         
         // If the file is read-only then only allow read access
         
-        if ( netFile.isReadOnly())
+        if ( netFile.isReadOnly() && netFile.getGrantedAccess() == NetworkFile.READWRITE)
             netFile.setGrantedAccess(NetworkFile.READONLY);
         
         // DEBUG
@@ -222,8 +222,27 @@ public class ContentNetworkFile extends NodeRefNetworkFile
         str.append( channel);
         if ( channel != null)
         	str.append( writableChannel ? "(Write)" : "(Read)");
+        
+        str.append(",");
+        str.append( getGrantedAccessAsString());
+        
+        if ( hasLocks()) {
+        	str.append(",locks=");
+        	str.append( numberOfLocks());
+        }
+        
+        if ( hasOpLock()) {
+        	str.append(",oplock=");
+        	str.append( getOpLock());
+        }
+        
         if ( modified)
-        	str.append( ",modified");
+        	str.append( ",Modified");
+        if ( isClosed())
+        	str.append(",Closed");
+        str.append(",open=");
+        str.append( getOpenCount());
+        
         str.append( "]");
 
         return str.toString();
@@ -691,6 +710,10 @@ public class ContentNetworkFile extends NodeRefNetworkFile
     public void openFile(boolean createFlag)
     	throws IOException
     {
+    	// Mark as open
+    	
+    	setClosed( false);
+    	
     	// Wait for read/write before opening the content channel
     }
 

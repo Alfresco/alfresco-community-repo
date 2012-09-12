@@ -35,14 +35,16 @@ public class CloseFileOperation implements Operation
     
     private NetworkFile networkFile;
     boolean deleteOnClose;
+    boolean force;
     
-    public CloseFileOperation(String name, NetworkFile networkFile, NodeRef rootNodeRef, String path, boolean deleteOnClose)
+    public CloseFileOperation(String name, NetworkFile networkFile, NodeRef rootNodeRef, String path, boolean deleteOnClose, boolean force)
     {
         this.name = name;
         this.networkFile = networkFile;
         this.rootNodeRef = rootNodeRef;
         this.path = path;
         this.deleteOnClose = deleteOnClose;
+        this.force = force;
     }
 
     public String getName()
@@ -78,6 +80,11 @@ public class CloseFileOperation implements Operation
     public boolean isDeleteOnClose()
     {
         return deleteOnClose;
+    }
+    
+    public boolean isForce()
+    {
+        return force;
     }
     
     public boolean equals(Object o)

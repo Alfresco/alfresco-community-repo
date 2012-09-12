@@ -26,8 +26,10 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
+import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleServiceImpl;
@@ -414,9 +416,19 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 };
                 AuthenticationUtil.runAs(actionRunAs, userName);
             }
-            catch (Throwable exception)
+            catch (Throwable e)
             {
-                logger.error("Failed to execute asynchronous action: " + action, exception);
+                Throwable rootCause = (e instanceof AlfrescoRuntimeException) ? ((AlfrescoRuntimeException)e).getRootCause() : null;
+                String message = (rootCause == null ? null : rootCause.getMessage());
+                message = "Failed to execute asynchronous action: " + action+ (message == null ? "" : ": "+message);
+                if (rootCause instanceof UnimportantTransformException)
+                {
+                    logger.debug(message);
+                }
+                else
+                {
+                    logger.error(message, e);
+                }
             }
             handleAsyncActionIsCompleted(actionedUponNodeRef, action);
         }

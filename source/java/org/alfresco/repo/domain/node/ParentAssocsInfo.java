@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,8 +65,8 @@ public class ParentAssocsInfo implements Serializable
         this.isRoot = isRoot;
         this.isStoreRoot = isStoreRoot;
         Long primaryAssocId = null;
-        // Build map of child associations
-        Map<Long, ChildAssocEntity> parentAssocsById = new HashMap<Long, ChildAssocEntity>(5);
+        // Build compact map of child associations
+        Map<Long, ChildAssocEntity> parentAssocsById = new TreeMap<Long, ChildAssocEntity>();
         for (ChildAssocEntity parentAssoc : parents)
         {
             Long parentAssocId = parentAssoc.getId();

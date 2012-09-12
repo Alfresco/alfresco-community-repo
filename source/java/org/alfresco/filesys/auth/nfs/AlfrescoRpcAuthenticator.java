@@ -37,6 +37,7 @@ import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -296,10 +297,42 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
                     
                     AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
                     
-                      // Check if the authentication token has been set for the client
+                    // Check if the authentication token has been set for the client
+                    
+                    if ( alfClient.hasAuthenticationTicket()) {
+                    	
+                    	// Check if the ticket is still valid
+                    	
+                    	try {
+                    		
+                            // Set the authentication context for the request
+                            
+                            getAuthenticationService().validate(alfClient.getAuthenticationTicket());
+                            
+                            // DEBUG
+                            
+                            if ( logger.isDebugEnabled())
+                                logger.debug("Set user using auth ticket, ticket=" + alfClient.getAuthenticationTicket());
+                    	}
+                    	catch ( AuthenticationException ex) {
+                    		
+                    		// Ticket not valid, re-authenticate the user
+                    		
+                    		alfClient.setAuthenticationTicket( null);
+
+                    		// DEBUG
+                            
+                            if ( logger.isDebugEnabled()) {
+                                logger.debug("Failed to set user using auth ticket, ticket=" + alfClient.getAuthenticationTicket() + ", re-authenticating");
+                                logger.debug("  Exception=" + ex.getMessage());
+                            }
+                    	}
+                    }
+                    
+                    // Check if the authentication token has been set for the client
                       
-                      if ( !alfClient.hasAuthenticationTicket() )
-                      {
+                    if ( !alfClient.hasAuthenticationTicket() )
+                    {
                           // ALF-9793: It's possible that the user we're about to accept doesn't even exist, yet we
                           // are using alfresco authentication. In such cases we must automatically create
                           // authentication (using a randomized password) in order to successfully authenticate.
@@ -317,18 +350,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
                           
                           if ( logger.isDebugEnabled())
                               logger.debug("Set user name=" + client.getUserName() + ", ticket=" + alfClient.getAuthenticationTicket());
-                      }
-                      else
-                      {
-                          // Set the authentication context for the request
-                          
-                          getAuthenticationService().validate(alfClient.getAuthenticationTicket());
-                          
-                          // DEBUG
-                          
-                          if ( logger.isDebugEnabled())
-                              logger.debug("Set user using auth ticket, ticket=" + alfClient.getAuthenticationTicket());
-                      }
+                    }
                   }
                   else
                   {

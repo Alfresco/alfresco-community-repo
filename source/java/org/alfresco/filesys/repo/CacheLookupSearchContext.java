@@ -63,9 +63,10 @@ public class CacheLookupSearchContext extends DotDotContentSearchContext {
             String searchStr,
             PseudoFileList pseudoList,
             String relPath,
-            FileStateCache stateCache)
+            FileStateCache stateCache,
+            boolean lockedFilesAsOffline)
     {
-        super(cifsHelper, results, searchStr, pseudoList, relPath);
+        super(cifsHelper, results, searchStr, pseudoList, relPath, lockedFilesAsOffline);
         super.setSearchString(searchStr);
         
         m_stateCache = stateCache;

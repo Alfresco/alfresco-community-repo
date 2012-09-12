@@ -319,13 +319,15 @@
       <property name="policyComponent"><ref bean="policyComponent"/></property>
    </bean>
    
-   <bean id="cifsHelper" class="org.alfresco.filesys.repo.CifsHelper">
+   <bean id="cifsHelper" class="org.alfresco.filesys.repo.CifsHelper" 
+      init-method="init" >
       <property name="dictionaryService"><ref bean="dictionaryService" /></property>
       <property name="nodeService"><ref bean="NodeService" /></property>
       <property name="fileFolderService"><ref bean="FileFolderService" /></property>
       <property name="mimetypeService"><ref bean="mimetypeService" /></property>
       <property name="permissionService"><ref bean="permissionService"/></property>
       <property name="hiddenAspect"><ref bean="hiddenAspect"/></property>
+      <property name="lockService"><ref bean="lockService"/></property>
       <property name="excludedTypes">
           <list>
               <value>{http://www.alfresco.org/model/forum/1.0}forum</value>

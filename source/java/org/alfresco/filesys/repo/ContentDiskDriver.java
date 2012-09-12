@@ -1267,8 +1267,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             if ( searchFileSpec.equals( "*"))
             {
             	// Use a cache lookup search context 
-
-            	CacheLookupSearchContext cacheContext = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateCache());
+                                                                                                                                                                               
+            	CacheLookupSearchContext cacheContext = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
             	searchCtx = cacheContext;
             	
             	// Set the '.' and '..' pseudo file entry details
@@ -1355,9 +1355,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             }
             else {
             	if ( ctx.hasStateCache())
-                	searchCtx = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateCache());
+                	searchCtx = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
             	else
-                	searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0]);
+                	searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], isLockedFilesAsOffline);
             }
             
             // Debug
@@ -1949,6 +1949,10 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             if ( netFile != null) {
                 long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
                 netFile.setFileId(( int) ( id & 0xFFFFFFFFL));
+                
+                // Indicate the file is open
+                
+                netFile.setClosed( false);
             }
             
             // If the file has been opened for overwrite then truncate the file to zero length, this will
@@ -2120,6 +2124,10 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             
             netFile.truncateFile( 0L);
 
+            // Indicate the file is open
+            
+            netFile.setClosed( false);
+            
             // Generate a file id for the file
             
             if ( netFile != null) {
@@ -2498,6 +2506,23 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     
                     if ( file.getGrantedAccess() > NetworkFile.ATTRIBUTESONLY && fstate.decrementOpenCount() == 0)
                         fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
+                    
+                    // Check if there is an oplock on the file
+                    
+                    if ( file.hasOpLock()) {
+                    	
+                    	// Release the oplock
+                    	
+                        OpLockInterface flIface = (OpLockInterface) this;
+                        OpLockManager oplockMgr = flIface.getOpLockManager(sess, tree);
+                        
+                        oplockMgr.releaseOpLock( file.getOpLock().getPath());
+
+                        //  DEBUG
+                        
+                        if ( logger.isDebugEnabled())
+                          logger.debug("Released oplock for closed file, file=" + file.getFullName());
+                    }
                     
                     // Check if there is a cached modification timestamp to be written out
                     
@@ -3224,7 +3249,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                                 if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Found archived node " + archivedNode);
                                 
-                                if ( archivedNode != null )
+                                if ( archivedNode != null && getNodeService().exists(archivedNode) )
                                 {
                                     // Restore the node
                                     

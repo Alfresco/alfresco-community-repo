@@ -20,10 +20,13 @@ package org.alfresco.repo.security.authority.script;
 
 import java.io.Serializable;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.mozilla.javascript.Scriptable;
 
 /**
@@ -36,10 +39,12 @@ public class ScriptUser implements Authority, Serializable
     private static final long serialVersionUID = 7865300693011208293L;
     private transient ServiceRegistry serviceRegistry;
     private transient AuthorityService authorityService;
+    private transient PersonService personService;
     private ScriptAuthorityType authorityType = ScriptAuthorityType.USER;
     private String userName;
     private String shortName;
     private String displayName;
+    private String fullName;
     private NodeRef personNodeRef;
     private Scriptable scope;
     
@@ -56,38 +61,21 @@ public class ScriptUser implements Authority, Serializable
     {
        this.serviceRegistry = serviceRegistry;
        this.authorityService = serviceRegistry.getAuthorityService();
+       this.personService = serviceRegistry.getPersonService();
        this.scope = scope;
-       this.personNodeRef = personNodeRef;
+       this.personNodeRef = personNodeRef == null ? personService.getPerson(userName) : personNodeRef;
        this.userName = userName;
        
-       shortName = authorityService.getShortName(userName);
-       displayName = authorityService.getAuthorityDisplayName(userName);
+       this.shortName = authorityService.getShortName(userName);
+       NodeService nodeService = serviceRegistry.getNodeService();
+       String firstName = (String)nodeService.getProperty(this.personNodeRef, ContentModel.PROP_FIRSTNAME);
+       String lastName = (String)nodeService.getProperty(this.personNodeRef, ContentModel.PROP_LASTNAME);
+       this.displayName = this.fullName = (firstName != null ? firstName : "") + (lastName != null ? (' ' + lastName) : "");
     }
     
-    /**
-     * @deprecated The ServiceRegistry and a Scriptable scope are now required
-     */
-    public ScriptUser(String userName, AuthorityService authorityService)
-    {
-       this.authorityService = authorityService;
-       this.userName = userName; 
-       shortName = authorityService.getShortName(userName);
-       displayName = authorityService.getAuthorityDisplayName(userName);
-    }
-    
-    public void setAuthorityType(ScriptAuthorityType authorityType) 
-    {
-       this.authorityType = authorityType;
-    }
-
     public ScriptAuthorityType getAuthorityType() 
     {
        return authorityType;
-    }
-
-    public void setShortName(String shortName) 
-    {
-       this.shortName = shortName;
     }
 
     public String getShortName() 
@@ -95,28 +83,17 @@ public class ScriptUser implements Authority, Serializable
        return shortName;
     }
 
-    public void setFullName(String fullName) 
-    {
-       this.userName = fullName;
-    }
-
     public String getFullName() 
     {
-       return userName;
+       return fullName;
     }
 
     /**
-     * Return the User Name, also known as the 
-     *  Authority Full Name 
+     * Return the User Name, also known as the Authority Full Name 
      */
     public String getUserName() 
     {
        return userName;
-    }
-
-    public void setDisplayName(String displayName) 
-    {
-       this.displayName = displayName;
     }
 
     public String getDisplayName() 

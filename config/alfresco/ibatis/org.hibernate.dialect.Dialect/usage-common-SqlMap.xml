@@ -63,6 +63,16 @@
         <parameter property="isDeleted" jdbcType="BIT" javaType="boolean"/>
     </parameterMap>
     
+	<parameterMap id="parameter_SelectorMapUserContentSize" type="map">
+        <parameter property="contentTypeQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="ownerPropQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="contentPropQNameID" jdbcType="BIGINT" javaType="long"/>
+        <parameter property="storeProtocol" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="storeIdentifier" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="userName" jdbcType="VARCHAR" javaType="string"/>
+        <parameter property="userName2" jdbcType="VARCHAR" javaType="string"/>
+    </parameterMap>
+    
     <!--                         -->
     <!-- SQL Snippets / Inserts  -->
     <!--                         -->
@@ -140,7 +150,7 @@
             p1.string_value <> 'System']]>
     </select>
     
-    <!-- Query for the 'new' style content properties stored in the 'content_url' table -->
+    <!-- Query for the 'new' style content properties stored in the 'content_url' table -->
     <select id="select_GetContentSizesForStoreNew" parameterMap="parameter_Selector2Map" resultMap="result_UserContentSize">
         select
             p1.string_value as owner,
@@ -160,6 +170,24 @@
                (p1.string_value is null and n.audit_creator <> 'System'))]]>
         group by 
             p1.string_value, n.audit_creator
+    </select>
+    
+    <!-- Query for the 'new' user -->
+    <select id="select_GetContentSizeForStoreForUser" parameterMap="parameter_SelectorMapUserContentSize" resultType="Long">
+        select
+            sum(cu.content_size) as contentSize
+        from
+            alf_node n
+            join alf_store s on (s.id = n.store_id and n.type_qname_id = ?)
+            left join alf_node_properties p1 on (p1.node_id = n.id and p1.qname_id = ?)
+            join alf_node_properties p2 on (p2.node_id = n.id and p2.qname_id = ?)
+            join alf_content_data cd on (p2.long_value = cd.id)
+            join alf_content_url cu on (cd.content_url_id = cu.id)
+        where
+            s.protocol = ? and
+            s.identifier = ? and
+            (p1.string_value = ? or
+            (p1.string_value is null and n.audit_creator = ?))
     </select>
     
     <!--                -->

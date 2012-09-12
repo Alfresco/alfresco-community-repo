@@ -45,6 +45,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.beans.factory.InitializingBean;
 import org.alfresco.filesys.config.ServerConfigurationBean;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Multi Tenant Share Mapper Class
@@ -54,6 +56,7 @@ import org.alfresco.filesys.config.ServerConfigurationBean;
 public class MultiTenantShareMapper implements ShareMapper, ConfigurationListener, InitializingBean {
 
 	//	Server configuration and configuration sections
+    private static final Log logger = LogFactory.getLog(MultiTenantShareMapper.class);
 	
 	private ServerConfiguration m_config;
 	
@@ -76,15 +79,12 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	//	Quota manager to use when creating multi-tenant shares
 	
 	private QuotaManager m_quotaManager;
-	
-	//	Debug enable flag
-	
-	private boolean m_debug;
-	
+		
 	/**
 	 * Default constructor
 	 */
-	public MultiTenantShareMapper() {
+	public MultiTenantShareMapper() 
+	{
 	}
 	
 	
@@ -100,10 +100,7 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
         m_tenantShareName = shareName;
     }
 
-    public void setDebug(boolean debug)
-    {
-        this.m_debug = debug;
-    }
+
 
     /**
      * Set the quota manager to be used by multi-tenant shares
@@ -122,7 +119,12 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	 * @exception InvalidConfigurationException
 	 */
 	public void initializeMapper(ServerConfiguration config, ConfigElement params)
-		throws InvalidConfigurationException {
+		throws InvalidConfigurationException 
+	{
+	    if(logger.isDebugEnabled())
+	    {
+	        logger.debug("initialiseMapper");
+	    }
 		
 		//	Save the server configuration
 		
@@ -142,11 +144,6 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 				throw new InvalidConfigurationException("Invalid tenant share name");
 		}
 		
-		//	Check if debug is enabled
-		
-		if ( params.getChild("debug") != null)
-			setDebug(true);
-
 		// Complete initialization
 		afterPropertiesSet();
 	}
@@ -174,16 +171,6 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
         
         m_tenantShareLists = new Hashtable<String, SharedDeviceList>();
     }
-
-
-    /**
-	 * Check if debug output is enabled
-	 * 
-	 * @return boolean
-	 */
-	public final boolean hasDebug() {
-		return m_debug;
-	}
 	
 	/**
 	 * Find a share using the name and type for the specified client.
@@ -253,11 +240,6 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 			//	Close the shared device
 			
 			shr.getContext().CloseContext();
-			
-			//	DEBUG
-			
-			if ( Debug.EnableInfo && hasDebug())
-				Debug.println("Deleted dynamic share " + shr);
 		}
 	}
 	

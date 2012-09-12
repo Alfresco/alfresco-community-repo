@@ -2657,6 +2657,14 @@
             <columnname>tokenvariablemap_</columnname>
           </columnnames>
         </index>
+        <index name="idx_varinst_strval" unique="false">
+          <columnnames>
+            <columnname>name_</columnname>
+            <columnname>class_</columnname>
+            <columnname>stringvalue_</columnname>
+            <columnname>tokenvariablemap_</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
   </objects>

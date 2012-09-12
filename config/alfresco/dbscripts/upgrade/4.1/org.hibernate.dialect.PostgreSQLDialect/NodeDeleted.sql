@@ -26,7 +26,7 @@ select id from alf_qname where ns_id = ${SYSTEM_NS_ID} and local_name = 'deleted
 
 
 drop index idx_alf_node_txn_del;
-drop index store_id;
+drop index store_id; -- (optional)
 drop index fk_alf_node_acl;
 drop index fk_alf_node_txn;
 drop index fk_alf_node_store;
@@ -39,6 +39,7 @@ alter table alf_node drop constraint fk_alf_node_store;
 alter table alf_node drop constraint fk_alf_node_tqn;
 alter table alf_node drop constraint fk_alf_node_txn;
 alter table alf_node drop constraint fk_alf_node_loc;
+alter table alf_node drop constraint alf_node_store_id_key;  -- (optional)
 
 alter table alf_store drop constraint fk_alf_store_root;
 

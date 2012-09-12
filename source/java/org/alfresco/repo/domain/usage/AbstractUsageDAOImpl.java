@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -138,11 +138,17 @@ public abstract class AbstractUsageDAOImpl implements UsageDAO
         selectUsersWithUsage(storeRef, handler);
     }
     
+    public Long getContentSizeForStoreForUser(StoreRef storeRef, String userName)
+    {
+        return selectContentSizeForStoreForUser(storeRef, userName);
+    }
+    
     protected abstract UsageDeltaEntity insertUsageDeltaEntity(UsageDeltaEntity entity);
     protected abstract UsageDeltaEntity selectTotalUsageDeltaSize(long nodeEntityId);
     protected abstract List<Long> selectUsageDeltaNodes();
     protected abstract void selectUsersWithoutUsage(StoreRef storeRef, MapHandler handler);
     protected abstract void selectUsersWithUsage(StoreRef storeRef, MapHandler handler);
     protected abstract void selectUserContentSizesForStore(StoreRef storeRef, MapHandler resultsCallback);
+    protected abstract Long selectContentSizeForStoreForUser(StoreRef storeRef, String userName);
     protected abstract int deleteUsageDeltaEntitiesByNodeId(long nodeEntityId);
 }

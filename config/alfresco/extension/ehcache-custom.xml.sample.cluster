@@ -169,17 +169,6 @@
     </cache>
 
     <cache
-        name="org.alfresco.cache.node.parentAssocsCache"
-        maxElementsInMemory="130000"
-        eternal="true"
-        overflowToDisk="false"
-        statistics="false"
-        >
-
-        <!-- We are intentionally not replicating this secondary cache and validating in the code --> 
-    </cache>
-
-    <cache
         name="org.alfresco.cache.node.childByNameCache"
         maxElementsInMemory="130000"
         eternal="true"

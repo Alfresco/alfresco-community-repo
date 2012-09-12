@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -48,6 +48,8 @@ import org.apache.poi.openxml4j.opc.PackageRelationshipTypes;
  */
 public class OOXMLThumbnailContentTransformer extends AbstractContentTransformer2
 {
+    public static final String NO_THUMBNAIL_PRESENT_IN_FILE = "No thumbnail present in file, unable to generate ";
+
     private static final Log log = LogFactory.getLog(OOXMLThumbnailContentTransformer.class);
     
     private static final List<String> OOXML_MIMETYPES = Arrays.asList(new String[]{MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET,
@@ -107,7 +109,7 @@ public class OOXMLThumbnailContentTransformer extends AbstractContentTransformer
             else
             {
                 log.debug("No thumbnail present in " + reader.toString());
-                throw new AlfrescoRuntimeException("No thumbnail present in file, unable to generate " + targetMimetype);
+                throw new UnimportantTransformException(NO_THUMBNAIL_PRESENT_IN_FILE + targetMimetype);
             }
         } 
         catch (IOException e) 

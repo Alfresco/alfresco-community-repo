@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -47,13 +47,19 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+
 /**
  * User Usage Tracking Component - to allow user usages to be collapsed or re-calculated
  * 
  * - used by UserUsageCollapseJob to collapse usage deltas.
  * - used on bootstrap to either clear all usages or (re-)calculate all missing usages.
  */
-public class UserUsageTrackingComponent extends AbstractLifecycleBean
+public class UserUsageTrackingComponent extends AbstractLifecycleBean implements NodeServicePolicies.OnCreateNodePolicy
 {
     private static Log logger = LogFactory.getLog(UserUsageTrackingComponent.class);
     
@@ -73,6 +79,24 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
     
     private boolean enabled = true;
     private Lock writeLock = new ReentrantLock();
+    
+    private PolicyComponent policyComponent;
+
+    /**
+     * Spring bean init method
+     */
+    public void init()
+    {
+        if (enabled)
+        {
+            this.policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, ContentModel.TYPE_PERSON, new JavaBehaviour(this, "onCreateNode"));
+        }
+    }
+
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
     
     public void setTransactionService(TransactionServiceImpl transactionService)
     {
@@ -204,6 +228,54 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean
             finally
             {
                 writeLock.unlock();
+            }
+        }
+    }
+    
+    @Override
+    public void onCreateNode(ChildAssociationRef childAssocRef)
+    {
+        if (enabled == true)
+        {
+            final NodeRef personRef = childAssocRef.getChildRef();
+            final String userName = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+            
+            if (userName != null)
+            {
+                RetryingTransactionCallback<Long> updateUserWithUsage = new RetryingTransactionCallback<Long>()
+                {
+                    public Long execute() throws Throwable
+                    {
+                        List<String> stores = contentUsageImpl.getStores();
+                        
+                        Long currentUsage = null;
+                        
+                        for (String store : stores)
+                        {
+                            final StoreRef storeRef = tenantService.getName(new StoreRef(store));
+                            
+                            Long contentSize = usageDAO.getContentSizeForStoreForUser(storeRef, userName);
+                            
+                            if (contentSize != null)
+                            {
+                                currentUsage = (currentUsage == null ? 0L : currentUsage) + contentSize;
+                            }
+                        }
+                        
+                        if (currentUsage != null && currentUsage > 0L)
+                        {
+                            List<Pair<NodeRef, Long>> batchUserUsages = new ArrayList<Pair<NodeRef, Long>>(1);
+                            batchUserUsages.add(new Pair<NodeRef, Long>(personRef, currentUsage));
+                            
+                            updateUsages(batchUserUsages);
+                        }
+                        
+                        return null;
+                    }
+                };
+                
+                // execute in READ-WRITE txn
+                transactionService.getRetryingTransactionHelper().doInTransaction(updateUserWithUsage, false);
             }
         }
     }

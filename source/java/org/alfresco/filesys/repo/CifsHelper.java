@@ -39,6 +39,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderUtil;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -52,6 +55,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileFilterMode.Client;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,6 +77,7 @@ public class CifsHelper
     private FileFolderService fileFolderService;
     private MimetypeService mimetypeService;
     private PermissionService permissionService;
+    private LockService lockService;
     private HiddenAspect hiddenAspect;
 
     private Set<QName> excludedTypes = new HashSet<QName>();
@@ -84,6 +89,16 @@ public class CifsHelper
      */
     public CifsHelper()
     {
+    }
+    
+    public void init()
+    {   
+        PropertyCheck.mandatory(this, "dictionaryService",dictionaryService);
+        PropertyCheck.mandatory(this, "nodeService",nodeService);
+        PropertyCheck.mandatory(this, "fileFolderService",fileFolderService);
+        PropertyCheck.mandatory(this, "permissionService",permissionService);
+        PropertyCheck.mandatory(this, "lockService",lockService);
+        PropertyCheck.mandatory(this, "mimetypeService",mimetypeService);
     }
     
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -244,25 +259,55 @@ public class CifsHelper
                 fileInfo.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
             }
             
-            // Check the lock status of the file
+            // Check whether the file is locked 
             
-            String lockTypeStr = (String) nodeProperties.get(ContentModel.PROP_LOCK_TYPE);
-                    
-            if ( lockTypeStr != null )
+            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
             {
-                // File is locked so mark it as read-only and offline
-
-            	int attr = fileInfo.getFileAttributes();
-            	
-            	if (( attr & FileAttribute.ReadOnly) == 0)
-            		attr += FileAttribute.ReadOnly;
-            	
-                if ( lockedFilesAsOffline)
-                {
-                	attr += FileAttribute.NTOffline;
-                }
+                LockType lockType = lockService.getLockType(nodeRef);
                 
-                fileInfo.setFileAttributes( attr);
+                int attr = fileInfo.getFileAttributes();
+                
+                if(lockType != null)
+                {
+                    switch(lockType)
+                    {
+                        case NODE_LOCK:
+                            if (( attr & FileAttribute.ReadOnly) == 0)
+                                attr += FileAttribute.ReadOnly;
+                            break;
+                        case WRITE_LOCK:
+                            LockStatus lockStatus = lockService.getLockStatus(nodeRef);
+                            if (lockStatus == LockStatus.LOCK_OWNER)
+                            {
+                            }
+                            else
+                            {
+                                if (( attr & FileAttribute.ReadOnly) == 0)
+                                {
+                                    attr += FileAttribute.ReadOnly;
+                                }
+                        
+                                if ( lockedFilesAsOffline)
+                                {
+                                    attr += FileAttribute.NTOffline;
+                                }
+                            }
+                            break;
+                        case READ_ONLY_LOCK:
+                            if (( attr & FileAttribute.ReadOnly) == 0)
+                            {
+                                attr += FileAttribute.ReadOnly;
+                            }
+                    
+                            if ( lockedFilesAsOffline)
+                            {
+                                attr += FileAttribute.NTOffline;
+                            }
+                            break;
+                    }
+                
+                    fileInfo.setFileAttributes( attr);
+                }
             }
             
             // Check if it is a link node
@@ -725,6 +770,16 @@ public class CifsHelper
     		return true;
     	}
     	return false;
+    }
+
+    public void setLockService(LockService lockService)
+    {
+        this.lockService = lockService;
+    }
+
+    public LockService getLockService()
+    {
+        return lockService;
     }
 
 }

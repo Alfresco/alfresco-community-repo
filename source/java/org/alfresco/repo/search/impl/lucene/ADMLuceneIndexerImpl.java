@@ -75,9 +75,9 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -85,7 +85,6 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.EqualsHelper;
@@ -100,12 +99,12 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -365,7 +364,18 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     {
                         try
                         {
-                            return nodeService.getParentAssocs(childRef).size() > PATH_GENERATION_FACTOR;
+                            // If the child node has 5 or less (cached) parents, assume it's NOT OK to cascade reindex
+                            // the parent
+                            int parentCount = nodeService.getParentAssocs(childRef).size();
+                            if (parentCount <= PATH_GENERATION_FACTOR)
+                            {
+                                return false;
+                            }
+                            // Otherwise, if the parent has less children than the child has parents, then cascade
+                            // reindex the parent
+                            int childCount = nodeService.getChildAssocs(parentRef, RegexQNamePattern.MATCH_ALL,
+                                    RegexQNamePattern.MATCH_ALL, false).size();
+                            return childCount < parentCount;
                         }
                         catch (InvalidNodeRefException e)
                         {
@@ -632,7 +642,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
     public List<Document> createDocuments(final String stringNodeRef, final FTSStatus ftsStatus,
             final boolean indexAllProperties, final boolean includeDirectoryDocuments, final boolean cascade,
-            final Set<Path> pathsProcessedSinceFlush,
+            final Set<Pair<Boolean, Path>> pathsToRegenerate,
             final Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush, final IndexReader deltaReader,
             final IndexReader mainReader)
     {
@@ -645,14 +655,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 public List<Document> doWork()
                 {
                     return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments,
-                            cascade, pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader);
+                            cascade, pathsToRegenerate, childAssociationsSinceFlush, deltaReader, mainReader);
                 }
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(new NodeRef(stringNodeRef).getStoreRef().getIdentifier())));
         }
         else
         {
             return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments,
-                    cascade, pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader);
+                    cascade, pathsToRegenerate, childAssociationsSinceFlush, deltaReader, mainReader);
         }
     }
 
@@ -732,7 +742,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     
     private List<Document> createDocumentsImpl(final String stringNodeRef, FTSStatus ftsStatus,
             boolean indexAllProperties, boolean includeDirectoryDocuments, final boolean cascade,
-            final Set<Path> pathsProcessedSinceFlush,
+            final Set<Pair<Boolean, Path>> pathsToRegenerate,
             final Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush, final IndexReader deltaReader,
             final IndexReader mainReader)
     {
@@ -761,9 +771,6 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 @Override
                 public Void doWork() throws Exception
                 {
-                    // Remember if we have already cascaded
-                    boolean cascaded = false;
-
                     // We we must cope with the possibility of the container not existing for some of this node's parents
                     for (ChildAssociationRef assocRef : nodeService.getParentAssocs(nodeRef))
                     {
@@ -773,17 +780,16 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             String parentRefSString = parentRef.toString();
                             if (!locateContainer(parentRefSString, deltaReader) && (containerDeletions.contains(parentRefSString) || !locateContainer(parentRefSString, mainReader)))
                             {
-                                generateContainersAndBelow(nodeService.getPaths(parentRef, false), docs, cascade, pathsProcessedSinceFlush, childAssociationsSinceFlush);
-                                cascaded = cascade;
+                                generateContainersAndBelow(nodeService.getPaths(parentRef, false), docs, false, pathsToRegenerate, childAssociationsSinceFlush);
                             }
                         }
                     }
                     
                     // Now regenerate the containers for this node if necessary
-                    if (cascade && !cascaded || isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
+                    if (cascade || isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
                     {
                         generateContainersAndBelow(nodeService.getPaths(nodeRef, false), docs, cascade,
-                                pathsProcessedSinceFlush, childAssociationsSinceFlush);
+                                pathsToRegenerate, childAssociationsSinceFlush);
                     }
                     
                     return null;
@@ -919,7 +925,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     }
     
     private void generateContainersAndBelow(List<Path> paths, List<Document> docs, boolean cascade,
-            Set<Path> pathsProcessedSinceFlush, Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush)
+            Set<Pair<Boolean, Path>> pathsToRegenerate, Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush)
     {
         if (paths.isEmpty())
         {
@@ -930,57 +936,30 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         {
             NodeRef nodeRef = tenantService.getName(((ChildAssocElement) path.last()).getRef().getChildRef());
             
-            // Prevent duplication of path cascading
-            if (pathsProcessedSinceFlush.add(path))
+            // Categories have special powers - generate their container regardless of their actual children
+            boolean isCategory = isCategory(getDictionaryService().getType(nodeService.getType(nodeRef)));
+
+            // For other containers, we only add a doc if they actually have children
+            if (!isCategory)
             {
-                // Categories have special powers - generate their container regardless of their actual children
-                boolean isCategory = isCategory(getDictionaryService().getType(nodeService.getType(nodeRef)));
-
-                // For other containers, we only add a doc if they actually have children
-                if (!isCategory)
+                // Only process 'containers' - not leaves
+                if (!mayHaveChildren(nodeRef))
                 {
-                    // Only process 'containers' - not leaves
-                    if (!mayHaveChildren(nodeRef))
-                    {
-                        continue;
-                    }
-        
-                    // Only process 'containers' - not leaves
-                    if (getCachedChildren(childAssociationsSinceFlush, nodeRef, cascade).isEmpty())
-                    {
-                        continue;
-                    }
+                    continue;
                 }
-
-                // Skip the root, which is a single document
-                if (path.size() > 1)
+    
+                // Only process 'containers' - not leaves
+                if (getCachedChildren(childAssociationsSinceFlush, nodeRef, cascade).isEmpty())
                 {
-                    String pathString = path.toString();    
-                    if ((pathString.length() > 0) && (pathString.charAt(0) == '/'))
-                    {
-                        pathString = pathString.substring(1);
-                    }
-                    Document directoryEntry = new Document();
-                    directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES,
-                            Field.Index.NO_NORMS, Field.TermVector.NO));
-                    directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED,
-                            Field.TermVector.NO));
-                    for (NodeRef parent : getParents(path))
-                    {
-                        directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(),
-                                Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
-                    }
-                    directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS,
-                            Field.TermVector.NO));
-            
-                    if (isCategory)
-                    {
-                        directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.NO_NORMS,
-                                Field.TermVector.NO));
-                    }
-            
-                    docs.add(directoryEntry);
+                    continue;
                 }
+            }
+
+            // Skip the root, which is a single document
+            if (path.size() > 1)
+            {
+                // Record this path for writing to the index
+                pathsToRegenerate.add(new Pair<Boolean, Path>(isCategory, path));
             }
         
             if (cascade)
@@ -990,7 +969,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 {
                     childPaths.add(new Path().append(path).append(new Path.ChildAssocElement(childRef)));
                 }
-                generateContainersAndBelow(childPaths, docs, true, pathsProcessedSinceFlush,
+                generateContainersAndBelow(childPaths, docs, true, pathsToRegenerate,
                         childAssociationsSinceFlush);
             }
         }
@@ -1118,7 +1097,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             }
             
             // Now reindex what needs indexing!
-            Set<Path> pathsProcessedSinceFlush = new HashSet<Path>(97);
+            Set<Pair<Boolean, Path>> pathsToRegenerate = new LinkedHashSet<Pair<Boolean, Path>>(97);
             Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush = new HashMap<NodeRef, List<ChildAssociationRef>>(97);
 
             // First do the reading
@@ -1131,17 +1110,17 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     switch (entry.getValue())
                     {
                     case INDEX:
-                        docs.addAll(readDocuments(nodeRef, FTSStatus.New, false, true, false, pathsProcessedSinceFlush,
+                        docs.addAll(readDocuments(nodeRef, FTSStatus.New, false, true, false, pathsToRegenerate,
                                 childAssociationsSinceFlush, deltaReader, mainReader));
                         break;
                     case REINDEX:
                         docs.addAll(readDocuments(nodeRef, FTSStatus.Dirty, false, false, false,
-                                pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader));
+                                pathsToRegenerate, childAssociationsSinceFlush, deltaReader, mainReader));
                         break;
                     case CASCADEREINDEX:
                         // Add the nodes for index
                         docs.addAll(readDocuments(nodeRef, FTSStatus.Dirty, false, true, true,
-                                pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader));
+                                pathsToRegenerate, childAssociationsSinceFlush, deltaReader, mainReader));
                         break;
                     }
                 }
@@ -1152,13 +1131,52 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             }
             closeDeltaReader();
 
-            // Now the writing
+            // Now the writings
             IndexWriter writer = getDeltaWriter();        
             for (Document doc : docs)
             {
                 try
                 {
                     writer.addDocument(doc);
+                }
+                catch (IOException e)
+                {
+                    throw new LuceneIndexException("Failed to add document to index", e);
+                }
+            }
+            
+            // Regenerate all the required paths, accounting for cascading operations and avoiding duplicates
+            for (Pair<Boolean, Path> pathPair : pathsToRegenerate)
+            {
+                Path path = pathPair.getSecond();
+                NodeRef nodeRef = tenantService.getName(((ChildAssocElement) path.last()).getRef().getChildRef());
+                String pathString = path.toString();
+                if ((pathString.length() > 0) && (pathString.charAt(0) == '/'))
+                {
+                    pathString = pathString.substring(1);
+                }
+                Document directoryEntry = new Document();
+                directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS,
+                        Field.TermVector.NO));
+                directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED,
+                        Field.TermVector.NO));
+                for (NodeRef parent : getParents(path))
+                {
+                    directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(),
+                            Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+                }
+                directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS,
+                        Field.TermVector.NO));
+
+                if (pathPair.getFirst())
+                {
+                    directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.NO_NORMS,
+                            Field.TermVector.NO));
+                }
+
+                try
+                {
+                    writer.addDocument(directoryEntry);
                 }
                 catch (IOException e)
                 {
@@ -1433,20 +1451,67 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         // reader, but only if the reader is valid
                         if (readerReady)
                         {
-                            InputStreamReader isr = null;
-                            InputStream ris = reader.getReader().getContentInputStream();
-                            try
+                            // ALF-15857: We want to avoid actually opening any streams until we're writing this document to the
+                            // index. Then we can 'stream through'
+                            final ContentReader contentReader = reader;
+                            Reader lazyReader = new Reader()
                             {
-                                isr = new InputStreamReader(ris, "UTF-8");
-                            }
-                            catch (UnsupportedEncodingException e)
-                            {
-                                isr = new InputStreamReader(ris);
-                            }
+                                private Reader isr;
+
+                                private Reader getReader()
+                                {
+                                    if (isr == null)
+                                    {
+                                        InputStream ris = contentReader.getReader().getContentInputStream();
+                                        try
+                                        {
+                                            isr = new InputStreamReader(ris, "UTF-8");
+                                        }
+                                        catch (UnsupportedEncodingException e)
+                                        {
+                                            isr = new InputStreamReader(ris);
+                                        }
+                                    }
+                                    return isr;
+                                }
+
+                                @Override
+                                public int read(java.nio.CharBuffer target) throws IOException
+                                {
+                                    return getReader().read(target);
+                                }
+
+                                @Override
+                                public int read() throws IOException
+                                {
+                                    return getReader().read();
+                                }
+
+                                @Override
+                                public int read(char cbuf[], int off, int len) throws IOException
+                                {
+                                    return getReader().read(cbuf, off, len);
+                                }
+
+                                @Override
+                                public long skip(long n) throws IOException
+                                {
+                                    return getReader().skip(n);
+                                }
+
+                                @Override
+                                public void close() throws IOException
+                                {
+                                    if (isr != null)
+                                    {
+                                        getReader().close();
+                                    }
+                                }
+                            };
                             StringBuilder builder = new StringBuilder();
                             builder.append("\u0000").append(locale.toString()).append("\u0000");
                             StringReader prefix = new StringReader(builder.toString());
-                            Reader multiReader = new MultiReader(prefix, isr);
+                            Reader multiReader = new MultiReader(prefix, lazyReader);
                             doc.add(new Field(attributeName, multiReader, Field.TermVector.NO));
                         }
                     }
@@ -2082,7 +2147,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
     protected List<Document> readDocuments(final String stringNodeRef, final FTSStatus ftsStatus,
             final boolean indexAllProperties, final boolean includeDirectoryDocuments, final boolean cascade,
-            final Set<Path> pathsProcessedSinceFlush,
+            final Set<Pair<Boolean, Path>> pathsToRegenerate,
             final Map<NodeRef, List<ChildAssociationRef>> childAssociationsSinceFlush, final IndexReader deltaReader,
             final IndexReader mainReader)
     {
@@ -2092,7 +2157,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             public List<Document> execute() throws Throwable
             {
                 return createDocuments(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments,
-                        cascade, pathsProcessedSinceFlush, childAssociationsSinceFlush, deltaReader, mainReader);
+                        cascade, pathsToRegenerate, childAssociationsSinceFlush, deltaReader, mainReader);
             }
         });
     }

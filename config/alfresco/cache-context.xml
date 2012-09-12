@@ -279,40 +279,7 @@
       <property name="mutable" value="false" />
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
-   
-   <!-- ===================================== -->
-   <!-- Parent Associations lookup for nodes  -->
-   <!-- ===================================== -->
-
-   <!-- The cross-transaction shared cache for Parent Associations -->
-   
-   <bean name="node.parentAssocsSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-      <property name="cache">
-         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-            <property name="cacheManager">
-               <ref bean="internalEHCacheManager" />
-            </property>
-            <property name="cacheName">
-               <value>org.alfresco.cache.node.parentAssocsCache</value>
-            </property>
-         </bean>
-      </property>
-   </bean>
-   
-   <!-- The transactional cache for Parent Associations -->
-   
-   <bean name="node.parentAssocsCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="node.parentAssocsSharedCache" />
-      </property>
-      <property name="name">
-         <value>org.alfresco.cache.node.parentAssocsTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize" value="65000" />
-      <property name="mutable" value="false" />
-      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
-   </bean>
-   
+      
    <!-- ===================================== -->
    <!-- Child by cm:name lookup for nodes  -->
    <!-- ===================================== -->
@@ -336,7 +303,7 @@
    
    <bean name="node.childByNameCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache">
-         <ref bean="node.parentAssocsSharedCache" />
+         <ref bean="node.childByNameSharedCache" />
       </property>
       <property name="name">
          <value>org.alfresco.cache.node.childByNameTransactionalCache</value>

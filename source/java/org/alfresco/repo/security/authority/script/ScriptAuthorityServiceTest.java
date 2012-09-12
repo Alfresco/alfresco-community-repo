@@ -369,8 +369,8 @@ public class ScriptAuthorityServiceTest extends TestCase
        ScriptUser userB = null;
        for(ScriptUser user : users)
        {
-          if (user.getFullName().equals(USER_A)) userA = user;
-          if (user.getFullName().equals(USER_B)) userB = user;
+          if (user.getUserName().equals(USER_A)) userA = user;
+          if (user.getUserName().equals(USER_B)) userB = user;
        }
        assertNotNull(userA);
        assertNotNull(userB);
@@ -392,9 +392,10 @@ public class ScriptAuthorityServiceTest extends TestCase
        assertNull(userNA);
        
        // Check the details on one user
-       assertEquals(USER_A, userA.getFullName());
        assertEquals(USER_A, userA.getShortName());
-       assertEquals(USER_A, userA.getDisplayName());
+       String fullDisplayName = USER_A + " " + "Last_" + USER_A;
+       assertEquals(fullDisplayName, userA.getFullName());
+       assertEquals(fullDisplayName, userA.getDisplayName());
        
        NodeRef nodeA = personService.getPerson(USER_A, false);
        assertNotNull(nodeA);

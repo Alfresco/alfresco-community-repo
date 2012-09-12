@@ -2657,6 +2657,14 @@
             <columnname>TASKINSTANCE_</columnname>
           </columnnames>
         </index>
+        <index name="IDX_VARINST_STRVAL" unique="false">
+          <columnnames>
+            <columnname>NAME_</columnname>
+            <columnname>CLASS_</columnname>
+            <columnname>STRINGVALUE_</columnname>
+            <columnname>TOKENVARIABLEMAP_</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
   </objects>

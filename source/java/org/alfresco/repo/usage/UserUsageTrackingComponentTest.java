@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -87,17 +87,16 @@ public class UserUsageTrackingComponentTest extends TestCase
         contentUsageService = (ContentUsageService)applicationContext.getBean("ContentUsageService");
         
         userUsageTrackingComponent = (UserUsageTrackingComponent)applicationContext.getBean("userUsageTrackingComponent");
-
+        
         // Enable
         ContentUsageImpl contentUsage = (ContentUsageImpl)applicationContext.getBean("contentUsageImpl");
         contentUsage.setEnabled(true);
         contentUsage.init();
         userUsageTrackingComponent.setEnabled(true);
+        userUsageTrackingComponent.init();
         userUsageTrackingComponent.bootstrapInternal();
         
         AuthenticationUtil.setRunAsUserSystem();
-        
-        createUsersAndContent();
     }
     
     protected void tearDown() throws Exception
@@ -108,50 +107,49 @@ public class UserUsageTrackingComponentTest extends TestCase
         contentUsage.init();
         userUsageTrackingComponent.setEnabled(false);
         userUsageTrackingComponent.bootstrapInternal();
-
+        
         if (clean)
         {
-            deleteUsersAndContent();
+            deleteUsersAndContent(true);
         }
         
         super.tearDown();
     }
-
-    private void createUsersAndContent()
+    
+    private Map<String, Long> createUsersAndContent(String namePrefix)
     {
         long start = System.currentTimeMillis();
         long progressStart = System.currentTimeMillis();
         
+        Map<String, Long> personContent = new HashMap<String, Long>(MAX_USERS);
+        
         try
         {
             int count = 0;
-            int batch = 0;
-            //long batchStart = 0;
-               
+            
             for (int i = 1; i <= MAX_USERS; i++)
             {
                 if (count == 0)
                 {
-                    batch++;
-                    
                     testTX = transactionService.getUserTransaction();
                     testTX.begin();
-                    
-                    //batchStart = System.currentTimeMillis();
                 }
                 
                 count++;
                 String userName = TEST_USER_PREFIX+i;
-
+                
                 if (! authenticationService.authenticationExists(userName))
                 {
                     // Note: this will auto-create the user home
                     HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
                     props.put(ContentModel.PROP_USERNAME, userName);
-                    personService.createPerson(props);
+                    
+                    personService.createPerson(props); // ignore result
                     
                     authenticationService.createAuthentication(userName, userName.toCharArray());
                     authenticationService.setAuthenticationEnabled(userName, false);
+                    
+                    Long contentSize = null;
                     
                     NodeRef homeFolder = getHomeSpaceFolderNode(userName);
                     
@@ -164,8 +162,13 @@ public class UserUsageTrackingComponentTest extends TestCase
                     
                     AuthenticationUtil.setFullyAuthenticatedUser(userName);
                     
-                    addTextContent(homeFolder, "a-"+userName+".txt", sb.toString());
-                    addTextContent(homeFolder, "b-"+userName+".txt", sb.toString());
+                    NodeRef content = addTextContent(homeFolder, namePrefix + "-" + userName + "-1.txt", sb.toString());
+                    contentSize = contentService.getReader(content, ContentModel.PROP_CONTENT).getSize();
+                    
+                    content = addTextContent(homeFolder, namePrefix + "-" + userName + "-2.txt", sb.toString());
+                    contentSize += contentService.getReader(content, ContentModel.PROP_CONTENT).getSize();
+                    
+                    personContent.put(userName, contentSize);
                 }
                 
                 AuthenticationUtil.setRunAsUserSystem();
@@ -174,8 +177,6 @@ public class UserUsageTrackingComponentTest extends TestCase
                 {
                     testTX.commit();
                     count = 0;
-                    
-                    //logger.debug("Batch "+batch+" took "+((System.currentTimeMillis()-batchStart)/1000)+" secs");
                 }
                 
                 if (((i % PROGRESS_SIZE) == 0) && (i != MAX_USERS))
@@ -193,10 +194,15 @@ public class UserUsageTrackingComponentTest extends TestCase
             
             try { testTX.rollback(); } catch (Exception e) { e.printStackTrace(); }
         }
+        return personContent;
     }
     
     public void testEnableDisableCollapse()
     {
+        String fileNamePrefix = "TEST";
+        
+        createUsersAndContent(fileNamePrefix);
+        
         logger.debug("Test: " + getName());
         
         userUsageTrackingComponent.setEnabled(false);
@@ -219,7 +225,7 @@ public class UserUsageTrackingComponentTest extends TestCase
         for (int i = 1; i <= MAX_USERS; i++)
         {
             String userName = TEST_USER_PREFIX+i;
-
+            
             NodeRef homeFolder = getHomeSpaceFolderNode(userName);
             
             AuthenticationUtil.setFullyAuthenticatedUser(userName);
@@ -233,12 +239,12 @@ public class UserUsageTrackingComponentTest extends TestCase
             
             addTextContent(homeFolder, "c-"+userName+".txt", sb.toString());
             addTextContent(homeFolder, "d-"+userName+".txt", sb.toString());
-        
+            
             AuthenticationUtil.setRunAsUserSystem();
         }
         
         logger.debug("Added content");
-
+        
         checkUsage(4L);
         
         userUsageTrackingComponent.execute(); // collapse usages
@@ -246,20 +252,20 @@ public class UserUsageTrackingComponentTest extends TestCase
         logger.debug("Collapsed usages");
         
         checkUsage(4L);
-
+        
         // delete content
         for (int i = 1; i <= MAX_USERS; i++)
         {
             String userName = TEST_USER_PREFIX+i;
-
+            
             NodeRef homeFolder = getHomeSpaceFolderNode(userName);
             
             AuthenticationUtil.setFullyAuthenticatedUser(userName);
             
-            NodeRef childNodeRef = nodeService.getChildByName(homeFolder, ContentModel.ASSOC_CONTAINS, "a-"+userName+".txt");
+            NodeRef childNodeRef = nodeService.getChildByName(homeFolder, ContentModel.ASSOC_CONTAINS, fileNamePrefix+"-"+userName+"-1.txt");
             nodeService.deleteNode(childNodeRef);
             
-            childNodeRef = nodeService.getChildByName(homeFolder, ContentModel.ASSOC_CONTAINS, "b-"+userName+".txt");
+            childNodeRef = nodeService.getChildByName(homeFolder, ContentModel.ASSOC_CONTAINS, fileNamePrefix+"-"+userName+"-2.txt");
             nodeService.deleteNode(childNodeRef);
         
             AuthenticationUtil.setRunAsUserSystem();
@@ -280,6 +286,22 @@ public class UserUsageTrackingComponentTest extends TestCase
         
         logger.debug("Cleared usages");
         checkCleared();
+    }
+    
+    public void testRecalculateUserUsage() throws Exception
+    {
+        Map<String, Long> expectedResultsA = createUsersAndContent("A");
+        
+        deleteUsersAndContent(false);
+        
+        Map<String, Long> expectedResultsB = createUsersAndContent("B");
+        
+        for (int i = 1; i <= MAX_USERS; i++)
+        {
+            String userName = TEST_USER_PREFIX + i;
+            Long totalExpected = expectedResultsA.get(userName)+expectedResultsB.get(userName);
+            assertEquals(totalExpected, Long.valueOf(contentUsageService.getUserUsage(userName)));
+        }
     }
     
     private void checkCalculated(long factor)
@@ -318,15 +340,13 @@ public class UserUsageTrackingComponentTest extends TestCase
         }
     }
     
-    private void deleteUsersAndContent()
+    private void deleteUsersAndContent(boolean deleteContent)
     {   
         long start = System.currentTimeMillis();
         
         try
         {
             int count = 0;
-            int batch = 0;
-            //long batchStart = 0;
             
             int deleteCount = 0;
                
@@ -334,21 +354,20 @@ public class UserUsageTrackingComponentTest extends TestCase
             {
                 if (count == 0)
                 {
-                    batch++;
-                    
                     testTX = transactionService.getUserTransaction();
                     testTX.begin();
-                    //batchStart = System.currentTimeMillis();
                 }
                 
                 count++;
                 String userName = TEST_USER_PREFIX+i;
-
                 
                 if (authenticationService.authenticationExists(userName))
                 {
-                    NodeRef homeFolder = getHomeSpaceFolderNode(userName);
-                    nodeService.deleteNode(homeFolder);
+                    if (deleteContent)
+                    {
+                        NodeRef homeFolder = getHomeSpaceFolderNode(userName);
+                        nodeService.deleteNode(homeFolder);
+                    }
                     
                     personService.deletePerson(userName);
                     deleteCount++;
@@ -358,8 +377,6 @@ public class UserUsageTrackingComponentTest extends TestCase
                 {
                     testTX.commit();
                     count = 0;
-                    
-                    //logger.debug("Batch "+batch+" took "+((System.currentTimeMillis()-batchStart)/1000)+" secs");
                 }
             }
             
@@ -372,7 +389,7 @@ public class UserUsageTrackingComponentTest extends TestCase
             try { testTX.rollback(); } catch (Exception e) { e.printStackTrace(); }
         }
     }
-
+    
     private NodeRef getHomeSpaceFolderNode(String userName)
     {
         return (NodeRef)this.nodeService.getProperty(personService.getPerson(userName), ContentModel.PROP_HOMEFOLDER);
@@ -382,26 +399,26 @@ public class UserUsageTrackingComponentTest extends TestCase
     {
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, fileName);
-
+        
         ChildAssociationRef association = nodeService.createNode(spaceRef,
                 ContentModel.ASSOC_CONTAINS, 
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName), 
                 ContentModel.TYPE_CONTENT,
                 contentProps);
-
+        
         NodeRef content = association.getChildRef();
-
+        
         // add titled aspect (for Web Client display)
         Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
         titledProps.put(ContentModel.PROP_TITLE, fileName);
         titledProps.put(ContentModel.PROP_DESCRIPTION, fileName);
         this.nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
-
+        
         ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
-
+        
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");
-
+        
         writer.putContent(textData);
         
         return content;

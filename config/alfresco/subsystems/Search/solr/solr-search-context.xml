@@ -56,6 +56,9 @@
         <property name="storeMappings">
             <ref bean="solr.store.mappings" />
         </property>
+        <property name="includeGroupsForRoleAdmin">
+        	<value>${solr.query.includeGroupsForRoleAdmin}</value>
+        </property>
     </bean>
     
     

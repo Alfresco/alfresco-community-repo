@@ -74,13 +74,6 @@
         statistics="false"
         />
     <cache 
-        name="org.alfresco.cache.node.parentAssocsCache" 
-        maxElementsInMemory="130000"
-        eternal="true"
-        overflowToDisk="false"
-        statistics="false"
-        />
-    <cache 
         name="org.alfresco.cache.node.childByNameCache" 
         maxElementsInMemory="130000"
         eternal="true"

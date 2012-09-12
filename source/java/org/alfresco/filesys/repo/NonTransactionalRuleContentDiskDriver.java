@@ -157,7 +157,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         
         EvaluatorContext ctx = getEvaluatorContext(driverState, folder);
 
-        Operation o = new CloseFileOperation(file, param, rootNode, param.getFullName(), param.hasDeleteOnClose());
+        Operation o = new CloseFileOperation(file, param, rootNode, param.getFullName(), param.hasDeleteOnClose(), param.isForce());
         Command c = ruleEvaluator.evaluate(ctx, o);
         
         commandExecutor.execute(sess, tree, c);

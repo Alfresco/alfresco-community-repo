@@ -366,7 +366,9 @@ public class AVMServiceTest extends AVMServiceTestBase
         {
             public Object execute() throws Throwable
             {
-                fService.createStore("StagingArea" + "-" + getName() + "-" + System.currentTimeMillis());
+                String storeName = "StagingArea" + "-" + getName() + "-" + System.currentTimeMillis();
+                fService.createStore(storeName);
+                fService.purgeStore(storeName);
                 return null;
             }
         };

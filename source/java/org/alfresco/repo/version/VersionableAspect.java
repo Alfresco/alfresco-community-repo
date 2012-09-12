@@ -34,6 +34,7 @@ import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
+import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.Behaviour;
@@ -43,8 +44,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -452,7 +451,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             Map<QName, Serializable> after)
     {
         if ((this.nodeService.exists(nodeRef) == true) &&
-            !isLockedOrReadOnly(nodeRef) &&
+            !LockUtils.isLockedOrReadOnly(nodeRef, lockService) &&
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true) && 
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false))
         {
@@ -523,21 +522,6 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
         }
     }
 
-    /**
-     * Indicates if the node is unlocked or the current user has a WRITE_LOCK<p>
-     * 
-     * Ideally this would be a new method on the lockService, but cannot do this at the moment,
-     * as this method is being added as part of a hot fix, so a public service cannot change
-     * as the RM AMP might be installed and it has its own security context which would also need
-     * to reflect this change.
-     */
-    private boolean isLockedOrReadOnly(NodeRef nodeRef)
-    {
-        LockStatus lockStatus = lockService.getLockStatus(nodeRef);
-        LockType lockType = lockService.getLockType(nodeRef);
-        return ! (lockStatus == LockStatus.NO_LOCK || (lockStatus == LockStatus.LOCK_OWNER && lockType == LockType.WRITE_LOCK));
-    }
-    
     /**
      * On create version implementation method
      * 

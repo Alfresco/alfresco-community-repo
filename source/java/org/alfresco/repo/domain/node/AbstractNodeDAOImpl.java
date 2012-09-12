@@ -36,6 +36,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.BatchingDAO;
@@ -112,7 +114,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private static final String CACHE_REGION_NODES = "N.N";
     private static final String CACHE_REGION_ASPECTS = "N.A";
     private static final String CACHE_REGION_PROPERTIES = "N.P";
-    private static final String CACHE_REGION_PARENT_ASSOCS = "N.PA";
     
     private static final String KEY_LOST_NODE_PAIRS = AbstractNodeDAOImpl.class.getName() + ".lostNodePairs";
     private static final String KEY_DELETED_ASSOCS = AbstractNodeDAOImpl.class.getName() + ".deletedAssocs";
@@ -180,12 +181,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private EntityLookupCache<NodeVersionKey, Map<QName, Serializable>, Serializable> propertiesCache;
     /**
-     * Cache for the Node parent assocs:<br/>
-     * KEY: NodeVersionKey<br/>
-     * VALUE: ParentAssocs<br/>
-     * VALUE KEY: None<br/s>
+     * Non-clustered cache for the Node parent assocs:<br/>
+     * KEY: (nodeId, txnId) pair <br/>
+     * VALUE: ParentAssocs
      */
-    private EntityLookupCache<NodeVersionKey, ParentAssocsInfo, Serializable> parentAssocsCache;
+    private ParentAssocsCache parentAssocsCache;
+    private int parentAssocsCacheSize;
+    private int parentAssocsCacheLimitFactor = 8;
         
     /**
      * Cache for fast lookups of child nodes by <b>cm:name</b>. 
@@ -205,7 +207,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         nodesCache = new EntityLookupCache<Long, Node, NodeRef>(new NodesCacheCallbackDAO());
         aspectsCache = new EntityLookupCache<NodeVersionKey, Set<QName>, Serializable>(new AspectsCallbackDAO());
         propertiesCache = new EntityLookupCache<NodeVersionKey, Map<QName, Serializable>, Serializable>(new PropertiesCallbackDAO());
-        parentAssocsCache = new EntityLookupCache<NodeVersionKey, ParentAssocsInfo, Serializable>(new ParentAssocsCallbackDAO());
         childByNameCache = new NullCache<ChildByNameKey, ChildAssocEntity>();
     }
 
@@ -365,16 +366,27 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
     
     /**
-     * Set the cache that maintains the Node parent associations
+     * Sets the maximum capacity of the parent assocs cache
      * 
-     * @param parentAssocsCache     the cache
+     * @param parentAssocsCacheSize     the cache size
      */
-    public void setParentAssocsCache(SimpleCache<NodeVersionKey, Serializable> parentAssocsCache)
+    public void setParentAssocsCacheSize(int parentAssocsCacheSize)
     {
-        this.parentAssocsCache = new EntityLookupCache<NodeVersionKey, ParentAssocsInfo, Serializable>(
-                parentAssocsCache,
-                CACHE_REGION_PARENT_ASSOCS,
-                new ParentAssocsCallbackDAO());
+        this.parentAssocsCacheSize = parentAssocsCacheSize;
+    }
+    
+    /**
+     * Sets the average number of parents expected per cache entry. This parameter is multiplied by the
+     * {@link #setParentAssocsCacheSize(int)} parameter to compute a limit on the total number of cached parents, which
+     * will be proportional to the cache's memory usage. The cache will be pruned when this limit is exceeded to avoid
+     * excessive memory usage.
+     * 
+     * @param parentAssocsCacheLimitFactor
+     *            the parentAssocsCacheLimitFactor to set
+     */
+    public void setParentAssocsCacheLimitFactor(int parentAssocsCacheLimitFactor)
+    {
+        this.parentAssocsCacheLimitFactor = parentAssocsCacheLimitFactor;
     }
 
     /**
@@ -404,6 +416,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         PropertyCheck.mandatory(this, "nodeIndexer", nodeIndexer);
 
         this.nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
+        this.parentAssocsCache = new ParentAssocsCache(this.parentAssocsCacheSize, this.parentAssocsCacheLimitFactor);
     }
     
     /*
@@ -551,8 +564,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Node node = nodesCache.getValue(nodeId);
         if (node != null)
         {
-            NodeVersionKey nodeVersionKey = node.getNodeVersionKey();
-            invalidateNodeCaches(nodeVersionKey, true, true, true);
+            invalidateNodeCaches(node, true, true, true);
         }
         // Finally remove the node reference
         nodesCache.removeByKey(nodeId);
@@ -561,14 +573,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /**
      * Invalidate specific node caches using an exact key
      * 
-     * @param nodeVersionKey                    the node ID-VERSION key to use
+     * @param node the node in question
      */
-    private void invalidateNodeCaches(
-            NodeVersionKey nodeVersionKey,
-            boolean invalidateNodeAspectsCache,
-            boolean invalidateNodePropertiesCache,
-            boolean invalidateParentAssocsCache)
+    private void invalidateNodeCaches(Node node, boolean invalidateNodeAspectsCache,
+            boolean invalidateNodePropertiesCache, boolean invalidateParentAssocsCache)
     {
+        NodeVersionKey nodeVersionKey = node.getNodeVersionKey();
         if (invalidateNodeAspectsCache)
         {
             aspectsCache.removeByKey(nodeVersionKey);
@@ -579,10 +589,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         if (invalidateParentAssocsCache)
         {
-            parentAssocsCache.removeByKey(nodeVersionKey);
+            invalidateParentAssocsCached(node);            
         }
     }
-
 
     /*
      * Transactions
@@ -1646,9 +1655,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             {
                 copyNodePropertiesCached(nodeVersionKey, newNodeVersionKey);
             }
-            if (!invalidateParentAssocsCache)
+            if (invalidateParentAssocsCache)
             {
-                copyParentAssocsCached(nodeVersionKey, newNodeVersionKey);
+                // Because we cache parent assocs by transaction, we must manually invalidate on this version change
+                invalidateParentAssocsCached(node);
+            }
+            else
+            {
+                copyParentAssocsCached(node);
             }
         }
         else
@@ -1656,7 +1670,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // The node was not touched.  By definition it MUST be in the current transaction.
             // We invalidate the caches as specifically requested
             invalidateNodeCaches(
-                    nodeVersionKey,
+                    node,
                     invalidateNodeAspectsCache,
                     invalidateNodePropertiesCache,
                     invalidateParentAssocsCache);
@@ -2197,7 +2211,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 NodeVersionKey newNodeVersionKey = getNodeNotNull(nodeId, false).getNodeVersionKey();
                 copyNodeAspectsCached(nodeVersionKey, newNodeVersionKey);
                 copyNodePropertiesCached(nodeVersionKey, newNodeVersionKey);
-                copyParentAssocsCached(nodeVersionKey, newNodeVersionKey);
+                copyParentAssocsCached(node);
             }
         }
         else if (modifyProps)
@@ -3015,8 +3029,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         ChildAssocEntity assoc = newChildAssocImpl(
                 parentNodeId, childNodeId, false, assocTypeQName, assocQName, childNodeName, false);
         Long assocId = assoc.getId();
-        // Touch the node; all caches are fine
-        touchNode(childNodeId, null, null, false, false, false);
+        // Touch the node; parent assocs have been updated
+        touchNode(childNodeId, null, null, false, false, true);
         // update cache
         parentAssocInfo = parentAssocInfo.addAssoc(assocId, assoc);
         setParentAssocsCached(childNodeId, parentAssocInfo);
@@ -3045,8 +3059,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             throw new ConcurrencyFailureException("Child association not deleted: " + assocId);
         }
-        // Touch the node; all caches are fine
-        touchNode(childNodeId, null, null, false, false, false);
+        // Touch the node; parent assocs have been updated
+        touchNode(childNodeId, null, null, false, false, true);
         // Update cache
         parentAssocInfo = parentAssocInfo.removeAssoc(assocId);
         setParentAssocsCached(childNodeId, parentAssocInfo);
@@ -3925,20 +3939,174 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
         // done
     }
-    
+
     /**
-     * @return              Returns a node's parent associations
+     * A Map-like class for storing ParentAssocsInfos. It prunes its oldest ParentAssocsInfo entries not only when a
+     * capacity is reached, but also when a total number of cached parents is reached, as this is what dictates the
+     * overall memory usage.
+     */
+    private static class ParentAssocsCache
+    {
+        private final ReadWriteLock lock = new ReentrantReadWriteLock();
+        private final int size;
+        private final int maxParentCount;
+        private final Map<Pair <Long, String>, ParentAssocsInfo> cache;
+        private final Map<Pair <Long, String>, Pair <Long, String>> nextKeys;
+        private final Map<Pair <Long, String>, Pair <Long, String>> previousKeys;
+        private Pair <Long, String> firstKey;
+        private Pair <Long, String> lastKey;
+        private int parentCount;
+        
+        /**
+         * @param size
+         * @param limitFactor
+         */
+        public ParentAssocsCache(int size, int limitFactor)
+        {
+            this.size = size;
+            this.maxParentCount = size * limitFactor;
+            final int mapSize = size * 2;
+            this.cache = new HashMap<Pair <Long, String>, ParentAssocsInfo>(mapSize);
+            this.nextKeys = new HashMap<Pair <Long, String>, Pair <Long, String>>(mapSize);
+            this.previousKeys = new HashMap<Pair <Long, String>, Pair <Long, String>>(mapSize);
+        }
+
+        private ParentAssocsInfo get(Pair <Long, String> cacheKey)
+        {
+            lock.readLock().lock();
+            try
+            {
+                return cache.get(cacheKey);
+            }
+            finally
+            {
+                lock.readLock().unlock();
+            }
+        }
+        
+        private void put(Pair <Long, String> cacheKey, ParentAssocsInfo parentAssocs)
+        {
+            lock.writeLock().lock();
+            try
+            {
+                // If an entry already exists, remove it and do the necessary housekeeping
+                if (cache.containsKey(cacheKey))
+                {
+                    remove(cacheKey);
+                }
+
+                // Add the value and prepend the key
+                cache.put(cacheKey, parentAssocs);
+                if (firstKey == null)
+                {
+                    lastKey = cacheKey;
+                }
+                else
+                {
+                    nextKeys.put(cacheKey, firstKey);
+                    previousKeys.put(firstKey, cacheKey);
+                }
+                firstKey = cacheKey;
+                parentCount += parentAssocs.getParentAssocs().size();
+                
+                // Now prune the oldest entries whilst we have more cache entries or cached parents than desired
+                int currentSize = cache.size();
+                while (currentSize > size || parentCount > maxParentCount)
+                {
+                    remove(lastKey);
+                    currentSize--;
+                }
+            }
+            finally
+            {
+                lock.writeLock().unlock();
+            }
+        }
+
+        private ParentAssocsInfo remove(Pair <Long, String> cacheKey)
+        {
+            lock.writeLock().lock();
+            try
+            {
+                // Remove from the map
+                ParentAssocsInfo oldParentAssocs = cache.remove(cacheKey);
+
+                // If the object didn't exist, we are done
+                if (oldParentAssocs == null)
+                {
+                    return null;
+                }
+
+                // Re-link the list
+                Pair <Long, String> previousCacheKey = previousKeys.remove(cacheKey);
+                Pair <Long, String> nextCacheKey = nextKeys.remove(cacheKey);
+                if (nextCacheKey == null)
+                {
+                    if (previousCacheKey == null)
+                    {
+                        firstKey = lastKey = null;
+                    }
+                    else
+                    {
+                        lastKey = previousCacheKey;
+                        nextKeys.remove(previousCacheKey);
+                    }
+                }
+                else
+                {
+                    if (previousCacheKey == null)
+                    {
+                        firstKey = nextCacheKey;
+                        previousKeys.remove(nextCacheKey);
+                    }
+                    else
+                    {
+                        nextKeys.put(previousCacheKey, nextCacheKey);
+                        previousKeys.put(nextCacheKey, previousCacheKey);
+                    }
+                }
+                // Update the parent count
+                parentCount -= oldParentAssocs.getParentAssocs().size();
+                return oldParentAssocs;
+            }
+            finally
+            {
+                lock.writeLock().unlock();
+            }
+        }
+
+        private void clear()
+        {
+            lock.writeLock().lock();
+            try
+            {
+                cache.clear();
+                nextKeys.clear();
+                previousKeys.clear();
+                firstKey = lastKey = null;
+                parentCount = 0;
+            }
+            finally
+            {
+                lock.writeLock().unlock();
+            }
+        }
+    }
+
+    /**
+     * @return Returns a node's parent associations
      */
     private ParentAssocsInfo getParentAssocsCached(Long nodeId)
     {
-        NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId, false).getNodeVersionKey();
-        Pair<NodeVersionKey, ParentAssocsInfo> cacheEntry = parentAssocsCache.getByKey(nodeVersionKey);
-        if (cacheEntry == null)
+        Node node = getNodeNotNull(nodeId, false);
+        Pair<Long, String> cacheKey = new Pair<Long, String>(nodeId, node.getTransaction().getChangeTxnId());
+        ParentAssocsInfo value = parentAssocsCache.get(cacheKey);
+        if (value == null)
         {
-            invalidateNodeCaches(nodeId);
-            throw new DataIntegrityViolationException("Invalid node ID: " + nodeId);
+            value = loadParentAssocs(node.getNodeVersionKey());
+            parentAssocsCache.put(cacheKey, value);
         }
-        return cacheEntry.getSecond();
+        return value;
     }
     
     /**
@@ -3946,84 +4114,96 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      */
     private void setParentAssocsCached(Long nodeId, ParentAssocsInfo parentAssocs)
     {
-        NodeVersionKey nodeVersionKey = getNodeNotNull(nodeId, false).getNodeVersionKey();
-        parentAssocsCache.setValue(nodeVersionKey, parentAssocs);
+        Node node = getNodeNotNull(nodeId, false);
+        Pair<Long, String> cacheKey = new Pair<Long, String>(nodeId, node.getTransaction().getChangeTxnId());
+        parentAssocsCache.put(cacheKey, parentAssocs);
     }
     
     /**
      * Helper method to copy cache values from one key to another
      */
-    private void copyParentAssocsCached(NodeVersionKey from, NodeVersionKey to)
+    private void copyParentAssocsCached(Node from)
     {
-        ParentAssocsInfo cacheEntry = parentAssocsCache.getValue(from);
+        String fromTransactionId = from.getTransaction().getChangeTxnId();
+        String toTransactionId = getCurrentTransaction().getChangeTxnId();
+        // If the node is already in this transaction, there's nothing to do
+        if (fromTransactionId.equals(toTransactionId))
+        {
+            return;
+        }
+        Pair<Long, String> cacheKey = new Pair<Long, String>(from.getId(), fromTransactionId);
+        ParentAssocsInfo cacheEntry = parentAssocsCache.get(cacheKey);
         if (cacheEntry != null)
         {
-            parentAssocsCache.setValue(to, cacheEntry);
+            parentAssocsCache.put(new Pair<Long, String>(from.getId(), toTransactionId), cacheEntry);
         }
     }
     
     /**
-     * Callback to cache node parent assocs.
-     * 
-     * @author Derek Hulley
-     * @since 3.4
+     * Helper method to remove associations relating to a cached node
      */
-    private class ParentAssocsCallbackDAO extends EntityLookupCallbackDAOAdaptor<NodeVersionKey, ParentAssocsInfo, Serializable>
+    private void invalidateParentAssocsCached(Node node)
     {
-        public Pair<NodeVersionKey, ParentAssocsInfo> createValue(ParentAssocsInfo value)
+        // Invalidate both the node and current transaction ID, just in case
+        Long nodeId = node.getId();
+        String nodeTransactionId = node.getTransaction().getChangeTxnId();
+        parentAssocsCache.remove(new Pair<Long, String>(nodeId, nodeTransactionId));
+        if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_WRITE)
         {
-            throw new UnsupportedOperationException("Nodes are created independently.");
-        }
-        
-        public Pair<NodeVersionKey, ParentAssocsInfo> findByKey(NodeVersionKey nodeVersionKey)
-        {
-            Long nodeId = nodeVersionKey.getNodeId();
-            // Find out if it is a root or store root
-            boolean isRoot = hasNodeAspect(nodeId, ContentModel.ASPECT_ROOT);
-            boolean isStoreRoot = getNodeType(nodeId).equals(ContentModel.TYPE_STOREROOT);
-
-            // Select all the parent associations
-            List<ChildAssocEntity> assocs = selectParentAssocs(nodeId);
-            
-            // Build the cache object
-            ParentAssocsInfo value = new ParentAssocsInfo(isRoot, isStoreRoot, assocs);
-
-            // Now check if we are seeing the correct version of the node
-            if (assocs.isEmpty())
+            String currentTransactionId = getCurrentTransaction().getChangeTxnId();
+            if (!currentTransactionId.equals(nodeTransactionId))
             {
-                // No results.  Currently Alfresco has very few parentless nodes (root nodes)
-                // and the lack of parent associations will be cached, anyway.
-                // But to match earlier fixes of ALF-12393, we do a double-check of the node's details
-                NodeEntity nodeCheckFromDb = selectNodeById(nodeId);
-                if (nodeCheckFromDb == null || !nodeCheckFromDb.getNodeVersionKey().equals(nodeVersionKey))
-                {
-                    // The node is gone or has moved on in version
-                    invalidateNodeCaches(nodeId);
-                    throw new DataIntegrityViolationException(
-                            "Detected stale node entry: " + nodeVersionKey +
-                            " (now " + nodeCheckFromDb + ")");
-                }
+                parentAssocsCache.remove(new Pair<Long, String>(nodeId, currentTransactionId));
             }
-            else
-            {
-                ChildAssocEntity childAssoc = assocs.get(0);
-                // What is the real (at least to this txn) version of the child node?
-                NodeVersionKey childNodeVersionKeyFromDb = childAssoc.getChildNode().getNodeVersionKey();
-                if (!childNodeVersionKeyFromDb.equals(nodeVersionKey))
-                {
-                    // This method was called with a stale version
-                    invalidateNodeCaches(nodeId);
-                    throw new DataIntegrityViolationException(
-                            "Detected stale node entry: " + nodeVersionKey +
-                            " (now " + childNodeVersionKeyFromDb + ")");
-                }
-            }
-            
-            // Done
-            return new Pair<NodeVersionKey, ParentAssocsInfo>(nodeVersionKey, value);
-        }
+        }                        
     }
     
+    private ParentAssocsInfo loadParentAssocs(NodeVersionKey nodeVersionKey)
+    {
+        Long nodeId = nodeVersionKey.getNodeId();
+        // Find out if it is a root or store root
+        boolean isRoot = hasNodeAspect(nodeId, ContentModel.ASPECT_ROOT);
+        boolean isStoreRoot = getNodeType(nodeId).equals(ContentModel.TYPE_STOREROOT);
+
+        // Select all the parent associations
+        List<ChildAssocEntity> assocs = selectParentAssocs(nodeId);
+        
+        // Build the cache object
+        ParentAssocsInfo value = new ParentAssocsInfo(isRoot, isStoreRoot, assocs);
+
+        // Now check if we are seeing the correct version of the node
+        if (assocs.isEmpty())
+        {
+            // No results.  Currently Alfresco has very few parentless nodes (root nodes)
+            // and the lack of parent associations will be cached, anyway.
+            // But to match earlier fixes of ALF-12393, we do a double-check of the node's details
+            NodeEntity nodeCheckFromDb = selectNodeById(nodeId);
+            if (nodeCheckFromDb == null || !nodeCheckFromDb.getNodeVersionKey().equals(nodeVersionKey))
+            {
+                // The node is gone or has moved on in version
+                invalidateNodeCaches(nodeId);
+                throw new DataIntegrityViolationException(
+                        "Detected stale node entry: " + nodeVersionKey +
+                        " (now " + nodeCheckFromDb + ")");
+            }
+        }
+        else
+        {
+            ChildAssocEntity childAssoc = assocs.get(0);
+            // What is the real (at least to this txn) version of the child node?
+            NodeVersionKey childNodeVersionKeyFromDb = childAssoc.getChildNode().getNodeVersionKey();
+            if (!childNodeVersionKeyFromDb.equals(nodeVersionKey))
+            {
+                // This method was called with a stale version
+                invalidateNodeCaches(nodeId);
+                throw new DataIntegrityViolationException(
+                        "Detected stale node entry: " + nodeVersionKey +
+                        " (now " + childNodeVersionKeyFromDb + ")");
+            }
+        }
+        return value;
+    }
+
     /*
      * Bulk caching
      */

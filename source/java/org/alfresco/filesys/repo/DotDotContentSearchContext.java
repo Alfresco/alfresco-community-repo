@@ -62,10 +62,11 @@ public class DotDotContentSearchContext extends ContentSearchContext {
             List<NodeRef> results,
             String searchStr,
             PseudoFileList pseudoList,
-            String relPath)
+            String relPath,
+            boolean lockedFilesAsOffline)
            
     {
-        super(cifsHelper, results, searchStr, pseudoList, relPath);
+        super(cifsHelper, results, searchStr, pseudoList, relPath, lockedFilesAsOffline);
         super.setSearchString(searchStr);
     }
     

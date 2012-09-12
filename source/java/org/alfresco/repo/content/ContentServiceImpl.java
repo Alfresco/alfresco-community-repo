@@ -39,7 +39,9 @@ import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
+import org.alfresco.repo.content.transform.OOXMLThumbnailContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -706,13 +708,31 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 boolean first = true;
                 for (Exception e : exceptions)
                 {
+                    Throwable rootCause = (e instanceof AlfrescoRuntimeException) ? ((AlfrescoRuntimeException)e).getRootCause() : null;
+                    String message = (rootCause == null ? null : rootCause.getMessage());
                     if (done)
                     {
-                        logger.error("Transformer succeeded after previous transformer failed.", e);
+                        message = "Transformer succeeded after previous transformer failed"+ (message == null ? "" : ": "+message);
+                        if (rootCause instanceof UnimportantTransformException)
+                        {
+                            logger.debug(message);
+                        }
+                        else
+                        {
+                            logger.error(message, e);
+                        }
                     }
-                    else if (!first)
+                    else if (!first) // The first exception is logged later
                     {
-                        logger.error("Transformer exception.", e);
+                        message = "Transformer exception"+ (message == null ? "" : ": "+message);
+                        if (rootCause instanceof UnimportantTransformException)
+                        {
+                            logger.debug(message);
+                        }
+                        else
+                        {
+                            logger.error(message, e);
+                        }
                         first = false;
                     }
                 }

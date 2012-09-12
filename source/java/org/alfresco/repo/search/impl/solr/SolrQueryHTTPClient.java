@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,6 +47,7 @@ import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.codec.net.URLCodec;
@@ -94,6 +96,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
 	private RepositoryState repositoryState;
 
     private BeanFactory beanFactory;
+    
+    private boolean includeGroupsForRoleAdmin = false;
 	
     public SolrQueryHTTPClient()
     {
@@ -153,8 +157,16 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     {
         this.storeMappings = storeMappings;
     }
+    
+	/**
+     * @param includeGroupsForRoleAdmin the includeGroupsForRoleAdmin to set
+     */
+    public void setIncludeGroupsForRoleAdmin(boolean includeGroupsForRoleAdmin)
+    {
+        this.includeGroupsForRoleAdmin = includeGroupsForRoleAdmin;
+    }
 
-	public ResultSet executeQuery(SearchParameters searchParameters, String language)
+    public ResultSet executeQuery(SearchParameters searchParameters, String language)
     {   
 	    if(repositoryState.isBootstrapping())
 	    {
@@ -289,10 +301,23 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             
             // Authorities go over as is - and tenant mangling and query building takes place on the SOLR side
 
+            Set<String> allAuthorisations = permissionService.getAuthorisations();
+            boolean includeGroups = includeGroupsForRoleAdmin ? true : !allAuthorisations.contains(PermissionService.ADMINISTRATOR_AUTHORITY);
+            
             JSONArray authorities = new JSONArray();
-            for (String authority : permissionService.getAuthorisations())
+            for (String authority : allAuthorisations)
             {
-                authorities.put(authority);
+                if(includeGroups)
+                {
+                    authorities.put(authority);
+                }
+                else
+                {
+                    if(AuthorityType.getAuthorityType(authority) != AuthorityType.GROUP)
+                    {
+                        authorities.put(authority);
+                    }
+                }
             }
             body.put("authorities", authorities);
             

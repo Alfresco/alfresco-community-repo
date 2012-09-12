@@ -23,8 +23,10 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -131,8 +133,14 @@ public class MultiTDemoTest extends TestCase
     public static final String TEST_USER3 = "eve";
     public static final String TEST_USER4 = "fred";
     
-    private static final int DEFAULT_STORE_COUNT = 6; // Now 6 site store has been removed
-    
+    private static Set<StoreRef> DEFAULT_STORES = new HashSet<StoreRef>(Arrays.asList(new StoreRef[]
+    {
+        new StoreRef("workspace://lightWeightVersionStore"), new StoreRef("system://system"),
+        new StoreRef("workspace://version2Store"), new StoreRef("user://alfrescoUserStore"),
+        new StoreRef("workspace://SpacesStore"), new StoreRef("archive://SpacesStore")
+    }));
+    private static final int DEFAULT_STORE_COUNT = DEFAULT_STORES.size();
+        
     public static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     
     
@@ -986,7 +994,8 @@ public class MultiTDemoTest extends TestCase
             {
                 public Object doWork() throws Exception
                 {
-                    assertEquals("Tenant: "+tenantDomain, DEFAULT_STORE_COUNT, nodeService.getStores().size());
+                    Set<StoreRef> stores = new HashSet<StoreRef>(nodeService.getStores());
+                    assertEquals("Tenant: "+tenantDomain, DEFAULT_STORES, stores);
                     
                     return null;
                 }

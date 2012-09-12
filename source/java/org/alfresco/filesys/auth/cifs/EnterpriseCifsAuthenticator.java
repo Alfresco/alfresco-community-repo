@@ -1038,6 +1038,20 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
         
         if ( loggedOn == true) {
 
+			// Check for virtual circuit zero, disconnect any other sessions from this client
+			
+			if ( vcNum == 0 && hasSessionCleanup()) {
+			
+				// Disconnect other sessions from this client, cleanup any open files/locks/oplocks
+				
+				int discCnt = sess.disconnectClientSessions();
+
+				// DEBUG
+
+				if ( discCnt > 0 && logger.isDebugEnabled() && sess.hasDebug(SMBSrvSession.DBG_NEGOTIATE))
+					logger.debug("[SMB] Disconnected " + discCnt + " existing sessions from client, sess=" + sess);
+			}
+			
           // Clear any stored session setup object for the logon
           
           sess.removeSetupObject( client.getProcessId());

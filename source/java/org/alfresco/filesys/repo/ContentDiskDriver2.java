@@ -42,14 +42,11 @@ import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
-import org.alfresco.jlan.server.filesys.AccessMode;
 import org.alfresco.jlan.server.filesys.DirectoryNotEmptyException;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSizeInterface;
-import org.alfresco.jlan.server.filesys.FileAttribute;
-import org.alfresco.jlan.server.filesys.FileExistsException;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
@@ -72,7 +69,6 @@ import org.alfresco.jlan.server.locking.LockManager;
 import org.alfresco.jlan.server.locking.OpLockInterface;
 import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.jlan.smb.SMBException;
-import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.jlan.smb.server.SMBServer;
 import org.alfresco.jlan.util.DataBuffer;
 import org.alfresco.jlan.util.MemorySize;
@@ -792,7 +788,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 pseudoList = ctx.getPseudoFileOverlay().searchPseudoFiles(dirNodeRef, searchFileSpec);
             }
             
-            DotDotContentSearchContext searchCtx = new DotDotContentSearchContext(getCifsHelper(), results, searchFileSpec, pseudoList, paths[0]);          
+            DotDotContentSearchContext searchCtx = new DotDotContentSearchContext(getCifsHelper(), results, searchFileSpec, pseudoList, paths[0], isLockedFilesAsOffline);          
 
             FileInfo dotInfo = getCifsHelper().getFileInformation(searchRootNodeRef, false, isLockedFilesAsOffline);
             
@@ -2665,6 +2661,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             {
                 long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
                 netFile.setFileId(( int) ( id & 0xFFFFFFFFL));
+                
+                // Indicate the file is open
+                
+                netFile.setClosed( false);
             }
 
             if (logger.isDebugEnabled())
@@ -2715,13 +2715,30 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * 
      * @exception java.io.IOException If an error occurs.
      */
-    public void closeFile(NodeRef rootNode, String path, NetworkFile file) throws IOException
+    public void closeFile(SrvSession session, TreeConnection tree, NodeRef rootNode, String path, NetworkFile file) throws IOException
     {   
         if ( logger.isDebugEnabled())
         {
             logger.debug("Close file:" + path + ", readOnly=" + file.isReadOnly() );
         }
         
+        // Check if there is an oplock on the file
+        
+        if ( file.hasOpLock()) {
+            
+            // Release the oplock
+            
+            OpLockInterface flIface = (OpLockInterface) this;
+            OpLockManager oplockMgr = flIface.getOpLockManager(session, tree);
+            
+            oplockMgr.releaseOpLock( file.getOpLock().getPath());
+
+            //  DEBUG
+            
+            if ( logger.isDebugEnabled())
+              logger.debug("Released oplock for closed file, file=" + file.getFullName());
+        }
+
         if( file instanceof PseudoNetworkFile)
         {
             file.close();

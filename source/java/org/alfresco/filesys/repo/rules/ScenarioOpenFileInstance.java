@@ -256,7 +256,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                         if(isReadOnly(file))
                         {
                             // Read Only File
-                            if(openReadOnlyCount == 1)
+                            if(openReadOnlyCount == 1 || c.isForce())
                             {
                                 if(logger.isDebugEnabled())
                                 {
@@ -303,7 +303,7 @@ class ScenarioOpenFileInstance implements ScenarioInstance
                         {
                             // This is a close of a Read Write File
                             // Read Only File
-                            if(openReadWriteCount == 1)
+                            if(openReadWriteCount == 1 || c.isForce())
                             {
                                 if(logger.isDebugEnabled())
                                 {

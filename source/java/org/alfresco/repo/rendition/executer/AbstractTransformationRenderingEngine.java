@@ -19,9 +19,12 @@
 
 package org.alfresco.repo.rendition.executer;
 
+import java.io.IOException;
+
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
@@ -115,19 +118,24 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
 
         if (transformer.isTransformable(sourceMimeType, contentReader.getSize(), targetMimeType, options))
         {
-            ContentWriter contentWriter = context.makeContentWriter();
+        	//ALF-15715: Use temporary write to avoid operating on the real node for fear of row locking while long transforms are in progress
+            ContentWriter tempContentWriter = contentService.getTempWriter();
+            tempContentWriter.setMimetype(targetMimeType);
             try
             {
-                contentService.transform(contentReader, contentWriter, options);
+                contentService.transform(contentReader, tempContentWriter, options);
+                //Copy content from temp writer to real writer
+                ContentWriter writer = context.makeContentWriter();
+                writer.putContent(tempContentWriter.getReader().getContentInputStream());
             }
             catch (NoTransformerException ntx)
             {
                 {
                     logger.debug("No transformer found to execute rule: \n" + "   reader: " + contentReader + "\n"
-                                + "   writer: " + contentWriter + "\n" + "   action: " + this);
+                                + "   writer: " + tempContentWriter + "\n" + "   action: " + this);
                 }
                 throw new RenditionServiceException(TRANSFORMING_ERROR_MESSAGE + ntx.getMessage(), ntx);
-            }
+            } 
         }
         else
         {

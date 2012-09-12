@@ -207,11 +207,12 @@ public interface LockService
    
    
    /**
-    * Gets the lock status for the node reference relative to the current user.
+    * Gets the lock status for the node reference for the specified user.
     * 
     * @see LockService#getLockStatus(NodeRef, NodeRef)
     * 
     * @param nodeRef    the node reference
+    * @param userName   the user name
     * @return           the lock status
     */
    @Auditable(parameters = {"nodeRef", "userName"})

@@ -154,6 +154,14 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
      */
     public boolean getAuthenticationEnabled(String userName) throws AuthenticationException
     {
+        if (isAuthenticationMutable(userName))
+        {
+            MutableAuthenticationService mutableAuthenticationService = getMutableAuthenticationService();
+            if (mutableAuthenticationService != null)
+            {
+                return mutableAuthenticationService.getAuthenticationEnabled(userName);
+            }
+        }
         for (AuthenticationService authService : getUsableAuthenticationServices())
         {
             try

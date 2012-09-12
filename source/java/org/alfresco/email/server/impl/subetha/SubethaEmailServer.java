@@ -42,8 +42,8 @@ import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.auth.EasyAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.LoginFailedException;
-import org.subethamail.smtp.auth.MultipleAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
+import org.subethamail.smtp.io.DeferredFileOutputStream;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**
@@ -178,25 +178,57 @@ public class SubethaEmailServer extends EmailServer
 
         public void data(InputStream data) throws TooMuchDataException, IOException, RejectException
         {
+            if (deliveries.size() == 1)
+            {
+                EmailDelivery delivery = deliveries.get(0);
+                processDelivery(delivery, data);
+            }
+            else if (deliveries.size() > 1)
+            {
+                DeferredFileOutputStream dfos = null;
+                try
+                {
+                    dfos = new DeferredFileOutputStream(DEFAULT_DATA_DEFERRED_SIZE);
+                    byte[] bytes = new byte[1024 * 8];
+                    int bytesRead;
+                    while ((bytesRead = data.read(bytes)) != -1)
+                    {
+                        dfos.write(bytes, 0, bytesRead);
+                    }
+
+                    for (EmailDelivery delivery : deliveries)
+                    {
+                        processDelivery(delivery, dfos.getInputStream());
+                    }
+                }
+                finally
+                {
+                    try
+                    {
+                        dfos.close();
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+            }
+        }
+
+        private void processDelivery(EmailDelivery delivery, InputStream data) throws RejectException
+        {
             EmailMessage emailMessage;
             try
             {
                 emailMessage = new SubethaEmailMessage(data);
-                
-                // Only send to the first receipient -   TODO send to all recipients
-                if (deliveries.size() > 0)
-                {
-                    EmailDelivery delivery = deliveries.get(0);
-                    getEmailService().importMessage(delivery, emailMessage);
-                }           
+                getEmailService().importMessage(delivery, emailMessage);
             }
             catch (EmailMessageException e)
             {
-                    if(log.isDebugEnabled())
-                    {
-                        log.debug("about to raise EmailMessageException", e);
-                    }
-                    throw new RejectException(554, e.getMessage());
+                if (log.isDebugEnabled())
+                {
+                    log.debug("about to raise EmailMessageException", e);
+                }
+                throw new RejectException(554, e.getMessage());
             }
             catch (Throwable e)
             {

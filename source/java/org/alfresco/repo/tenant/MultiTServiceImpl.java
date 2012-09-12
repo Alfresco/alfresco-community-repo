@@ -38,7 +38,10 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /*
  * MT Service implementation
  *
- * Adapts names to be tenant specific or vice-versa.
+ * Adapts names to be tenant specific or vice-versa, if MT is enabled (otherwise NOOP).
+ *
+ * author janv
+ * since 3.0
  */
 public class MultiTServiceImpl implements TenantService
 {
@@ -121,8 +124,8 @@ public class MultiTServiceImpl implements TenantService
     public StoreRef getName(String username, StoreRef storeRef)
     {
         if (storeRef == null) { return null; }
-
-        if (username != null) 
+        
+        if ((username != null) && (AuthenticationUtil.isMtEnabled()))
         {
             int idx = username.lastIndexOf(SEPARATOR);
             if ((idx > 0) && (idx < (username.length()-1)))
@@ -710,7 +713,7 @@ public class MultiTServiceImpl implements TenantService
      */
     public boolean isEnabled()
     {
-        return true;
+        return AuthenticationUtil.isMtEnabled();
     }
     
     private String getTenantDomain(String tenantDomain)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -102,6 +102,15 @@ public interface UsageDAO
             StoreRef storeRef,
             MapHandler resultsCallback);
     
+    /**
+     * Get user with a calculated usage
+     * 
+     * @param storeRef                          the store to search in
+     * @param userName                          the username 
+     * @return Returns ussage
+     */
+    public Long getContentSizeForStoreForUser(StoreRef storeRef, String userName);
+
     /**
      * A callback handler for iterating over the String results
      */

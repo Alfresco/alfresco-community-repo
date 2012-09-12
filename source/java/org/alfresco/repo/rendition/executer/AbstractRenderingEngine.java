@@ -419,9 +419,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     					    // Request that the rendition is initially created
     					    //  as a child of the source node
     				        setTemporaryRenditionProperties(sourceNode, renditionDef);					    
-    					    
-    					    // Add renditioned aspect to the source node
-    				        tagSourceNodeAsRenditioned(renditionDef, sourceNode);
     					}
     
     				    // Have the concrete implementation do the actual rendition
@@ -430,6 +427,9 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     					// 
                         if (isComponentRendition == false)
                         {
+                            // Add renditioned aspect to the source node
+                            tagSourceNodeAsRenditioned(renditionDef, sourceNode);
+
                             // Currently the rendition is on a temporary node, which may
                             //  have the wrong name on it, and for path based renditions is
                             //  in the wrong place
@@ -492,19 +492,16 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         checkParameterValues(action);
         RenditionDefinition renditionDefinition = checkActionIsRenditionDefinition(action);
         checkSourceNodeExists(sourceNode);
-
-        ChildAssociationRef renditionAssoc = createRenditionNodeAssoc(sourceNode, renditionDefinition);
-
+        
         QName targetContentProp = getRenditionContentProperty(renditionDefinition);
-        NodeRef temporaryRenditionNode = renditionAssoc.getChildRef();
+
         RenderingContext context = new RenderingContext(sourceNode,
-                    temporaryRenditionNode,
                     renditionDefinition,
                     targetContentProp);
         render(context);
         // This is a workaround for the fact that actions don't have return
         // values.
-        action.getParameterValues().put(PARAM_RESULT, renditionAssoc);
+        action.getParameterValues().put(PARAM_RESULT, context.getChildAssociationRef());
     }
 
     /**
@@ -738,9 +735,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected class RenderingContext
     {
         private final NodeRef sourceNode;
-        private final NodeRef destinationNode;
         private final RenditionDefinition definition;
         private final QName renditionContentProperty;
+        
+        private ChildAssociationRef caNodeRef;
 
         /**
          * @param sourceNode
@@ -749,12 +747,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
          * @param renditionContentProperty
          */
         public RenderingContext(NodeRef sourceNode,//
-                    NodeRef destinationNode,//
                     RenditionDefinition definition,//
                     QName renditionContentProperty)
         {
             this.sourceNode = sourceNode;
-            this.destinationNode = destinationNode;
             this.definition = definition;
             this.renditionContentProperty = renditionContentProperty;
         }
@@ -766,13 +762,26 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         {
             return this.sourceNode;
         }
+        
+        /**
+         * Lazily instantiation of the ChildAssociationRef
+         * @return ChildAssociationRef
+         */
+        public synchronized ChildAssociationRef getChildAssociationRef()
+        {
+        	if (this.caNodeRef == null)
+        	{
+        		this.caNodeRef = createRenditionNodeAssoc(sourceNode, definition);
+        	}
+        	return this.caNodeRef;
+        }
 
         /**
          * @return the destinationNode
          */
         public NodeRef getDestinationNode()
         {
-            return this.destinationNode;
+            return getChildAssociationRef().getChildRef();
         }
 
         /**
@@ -826,7 +835,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
         public ContentWriter makeContentWriter()
         {
-            ContentWriter contentWriter = contentService.getWriter(destinationNode, renditionContentProperty, true);
+            ContentWriter contentWriter = contentService.getWriter(getDestinationNode(), renditionContentProperty, true);
             String mimetype = getTargetMimeType(this);
             contentWriter.setMimetype(mimetype);
             String encoding = getTargetEncoding(this);

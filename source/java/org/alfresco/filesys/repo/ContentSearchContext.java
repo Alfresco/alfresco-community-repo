@@ -73,6 +73,8 @@ public class ContentSearchContext extends SearchContext
     private PseudoFileList pseudoList;
     private boolean donePseudoFiles = false;
     
+    private boolean lockedFilesAsOffline;
+    
     // Resume id
     
     private int resumeId;
@@ -99,13 +101,15 @@ public class ContentSearchContext extends SearchContext
             List<NodeRef> results,
             String searchStr,
             PseudoFileList pseudoList,
-            String relPath)
+            String relPath,
+            boolean lockedFilesAsOffline)
     {
         super();
         super.setSearchString(searchStr);
         this.cifsHelper = cifsHelper;
         this.results    = results;
         this.pseudoList = pseudoList;
+        this.lockedFilesAsOffline = lockedFilesAsOffline;
 
 		m_relPath = relPath;
 		if ( m_relPath != null && m_relPath.endsWith( FileName.DOS_SEPERATOR_STR) == false)
@@ -243,7 +247,7 @@ public class ContentSearchContext extends SearchContext
 
         			// Get the file information and copy across to the caller's file info
     	            
-		            nextInfo = cifsHelper.getFileInformation(nextNodeRef, "", false, false);
+		            nextInfo = cifsHelper.getFileInformation(nextNodeRef, "", false, lockedFilesAsOffline);
 		            info.copyFrom(nextInfo);
 
 		            /**

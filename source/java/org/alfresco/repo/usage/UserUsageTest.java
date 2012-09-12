@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -75,8 +75,9 @@ public class UserUsageTest extends TestCase
     private OwnableService ownableService;
     private RepoAdminService repoAdminService;
     
-    private static final String TEST_USER = "userUsageTestUser";
-    private static final String TEST_USER_2 = "userUsageTestUser2";
+    private static final String TEST_RUN = System.currentTimeMillis()+"";
+    private static final String TEST_USER = "userUsageTestUser-"+TEST_RUN;
+    private static final String TEST_USER_2 = "userUsageTestUser2-"+TEST_RUN;
     protected NodeRef personNodeRef;
     protected NodeRef personNodeRef2;
     
@@ -251,6 +252,9 @@ public class UserUsageTest extends TestCase
         
         delete(content1); // - 57
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // delete folder to cleanup
+        delete(folder);
     }
     
     public void testCreateUpdateDeleteAcrossTx() throws Exception
@@ -319,6 +323,9 @@ public class UserUsageTest extends TestCase
         
         delete(content1);
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // delete folder to cleanup
+        delete(folder);
     }
     
     public void testCreateDeleteRestoreInTx() throws Exception
@@ -373,6 +380,9 @@ public class UserUsageTest extends TestCase
         
         restore(content2); // - 44
         assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // delete folder to cleanup
+        delete(folder);
     }
     
     public void testCreateDeleteRestoreAcrossTx() throws Exception
@@ -439,6 +449,9 @@ public class UserUsageTest extends TestCase
         
         restore(content2); // - 44
         assertEquals(145, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // delete folder to cleanup
+        delete(folder);
     }
     
     public void testCreateCopyDeleteInTx() throws Exception
@@ -485,6 +498,9 @@ public class UserUsageTest extends TestCase
         
         delete(content1); // - 43
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // delete folder to cleanup
+        delete(folder);
     }
     
     public void testCreateCopyDeleteAcrossTx() throws Exception
@@ -531,6 +547,9 @@ public class UserUsageTest extends TestCase
         
         delete(content1); // - 43
         assertEquals(0, contentUsageImpl.getUserUsage(TEST_USER));
+        
+        // delete folder to cleanup
+        delete(folder);
     }
     
     public void testCreateCopyDeleteFolderWithContentInTx() throws Exception
@@ -554,6 +573,7 @@ public class UserUsageTest extends TestCase
                 ContentModel.TYPE_FOLDER).getChildRef();
         
         // add content (in this case, some "panagrams")
+        
         
         addTextContent(folder1, "text1.txt", "The quick brown fox jumps over the lazy dog"); // + 43
         assertEquals(43, contentUsageImpl.getUserUsage(TEST_USER));
@@ -703,6 +723,9 @@ public class UserUsageTest extends TestCase
         
         assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
         assertEquals(before+44, contentUsageImpl.getUserUsage(ADMIN));
+        
+        // delete folder to cleanup
+        delete(folder);
     }
     
     public void testCreateTakeOwnershipAcrossTx() throws Exception
@@ -773,6 +796,9 @@ public class UserUsageTest extends TestCase
         
         assertEquals(101, contentUsageImpl.getUserUsage(TEST_USER));
         assertEquals(before+44, contentUsageImpl.getUserUsage(ADMIN));
+        
+        // delete folder to cleanup
+        delete(folder);
     }
     
     public void testCreateDeleteRestoreTwoUsersAcrossTx() throws Exception
@@ -907,6 +933,9 @@ public class UserUsageTest extends TestCase
         
         assertEquals(58, contentUsageImpl.getUserUsage(TEST_USER));
         assertEquals(87, contentUsageImpl.getUserUsage(TEST_USER_2));
+        
+        // delete folder to cleanup
+        delete(folder);
     }
     
     private NodeRef addTextContent(NodeRef folderRef, String name, String textData)

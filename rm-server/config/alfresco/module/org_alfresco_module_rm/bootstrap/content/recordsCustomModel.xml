@@ -154,15 +154,6 @@
          </associations>
       </aspect>
       
-      <aspect name="rmc:customLoadedDataSetIds">
-         <properties>
-            <property name="rmc:loadedDataSetIds">
-               <type>d:text</type>
-               <multiple>true</multiple>
-            </property>
-         </properties>
-      </aspect>
-      
    </aspects>
    
 </model>

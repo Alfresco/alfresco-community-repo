@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +30,6 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -237,9 +234,6 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
    
          // Patch data
          patchLoadedData();
-
-         // Set the data set id into the file plan's custom aspect
-         setDataSetIdIntoFilePlan(dataSetId, filePlan);
       }
       catch (Exception ex)
       {
@@ -260,38 +254,6 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
             }
          }
       }
-   }
-
-   /**
-    * Helper method for setting the id of the imported data set into the file plan's custom aspect
-    * 
-    * @param dataSetId The id of the imported data set
-    * @param filePlan The file plan into which the data set has been imported
-    */
-   @SuppressWarnings("unchecked")
-   private void setDataSetIdIntoFilePlan(String dataSetId, NodeRef filePlan)
-   {
-      ArrayList<String> loadedDataSetIds;
-      Serializable dataSetIds = nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS);
-
-      // Check if any data set has been imported
-      if (dataSetIds == null)
-      {
-         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
-         aspectProperties.put(PROP_LOADED_DATA_SET_IDS, (Serializable) new ArrayList<String>());
-         nodeService.addAspect(filePlan, ASPECT_LOADED_DATA_SET_IDS, aspectProperties);
-         loadedDataSetIds = (ArrayList<String>) nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS);
-      }
-      else
-      {
-         loadedDataSetIds = (ArrayList<String>) dataSetIds;
-      }
-
-      // Add the new loaded data set id
-      loadedDataSetIds.add(dataSetId);
-      Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
-      aspectProperties.put(PROP_LOADED_DATA_SET_IDS, (Serializable) loadedDataSetIds);
-      nodeService.addAspect(filePlan, ASPECT_LOADED_DATA_SET_IDS, aspectProperties);
    }
 
    /**

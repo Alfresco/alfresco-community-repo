@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -71,7 +71,7 @@ public class MultiTenantBootstrap extends AbstractLifecycleBean
         PropertyCheck.mandatory(this, "patchService", patchService);
         PropertyCheck.mandatory(this, "descriptorService", descriptorService);
         
-        if (tenantAdminService.isEnabled())
+        if (tenantAdminService.getAllTenants().size() > 0)
         {
             // note: alf*attributes* tables do not exist from Alfresco 4.0.0 schema 5007
             Descriptor desc = descriptorService.getInstalledRepositoryDescriptor();

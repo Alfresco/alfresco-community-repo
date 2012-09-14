@@ -253,22 +253,18 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.RuntimeContainer#executeScript(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse, org.alfresco.web.scripts.Authenticator)
      */
-    public void executeScript(WebScriptRequest scriptReq, WebScriptResponse scriptRes, Authenticator auth)
+    public void executeScript(WebScriptRequest scriptReq, WebScriptResponse scriptRes, final Authenticator auth)
         throws IOException
     {
-        WebScript script = scriptReq.getServiceMatch().getWebScript();
-        Description desc = script.getDescription();
+        final boolean debug = logger.isDebugEnabled();
+        final WebScript script = scriptReq.getServiceMatch().getWebScript();
+        final Description desc = script.getDescription();
         
         // Escalate the webscript declared level of authentication to the container required authentication
         // eg. must be guest if MT is enabled unless credentials are empty
-        RequiredAuthentication required = desc.getRequiredAuthentication();
         RequiredAuthentication containerRequiredAuthentication = getRequiredAuthentication();
-        
-        if ((required.compareTo(containerRequiredAuthentication) < 0) && (! auth.emptyCredentials()))
-        {
-            required = containerRequiredAuthentication;
-        }
-        boolean isGuest = scriptReq.isGuest();
+        final RequiredAuthentication required = (desc.getRequiredAuthentication().compareTo(containerRequiredAuthentication) < 0 && !auth.emptyCredentials() ? containerRequiredAuthentication : desc.getRequiredAuthentication());
+        final boolean isGuest = scriptReq.isGuest();
         
         if (required == RequiredAuthentication.none)
         {
@@ -283,53 +279,69 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
         }
         else
         {
-            String currentUser = null;
-
             try
             {
                 AuthenticationUtil.pushAuthentication();
+                
                 //
                 // Determine if user already authenticated
                 //
-                currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-                if (logger.isDebugEnabled())
+                if (debug)
                 {
+                    String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
                     logger.debug("Current authentication: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
                     logger.debug("Authentication required: " + required);
                     logger.debug("Guest login requested: " + isGuest);
                 }
-
+                
                 //
                 // Apply appropriate authentication to Web Script invocation
                 //
-                if (auth == null || auth.authenticate(required, isGuest))
+                RetryingTransactionCallback<Boolean> authWork = new RetryingTransactionCallback<Boolean>()
                 {
-                    // The user will now have been authenticated, based on HTTP Auth, Ticket etc
-                    // Check that the user they authenticated as has appropriate access to the script
-                    
-                    // Check to see if they supplied HTTP Auth or Ticket as guest, on a script that needs more
-                    if (required == RequiredAuthentication.user || required == RequiredAuthentication.admin)
+                    public Boolean execute() throws Exception
                     {
-                        String authenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
-                        if (authenticatedUser == null || authorityService.isGuestAuthority(authenticatedUser))
+                        if (auth == null || auth.authenticate(required, isGuest))
                         {
-                            throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires user authentication; however, a guest has attempted access.");
+                            // The user will now have been authenticated, based on HTTP Auth, Ticket etc
+                            // Check that the user they authenticated as has appropriate access to the script
+                            
+                            // Check to see if they supplied HTTP Auth or Ticket as guest, on a script that needs more
+                            if (required == RequiredAuthentication.user || required == RequiredAuthentication.admin)
+                            {
+                                String authenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                                String runAsUser = AuthenticationUtil.getRunAsUser();
+                                
+                                if ( (authenticatedUser == null) ||
+                                     (authenticatedUser.equals(runAsUser) && authorityService.hasGuestAuthority()) ||
+                                     (!authenticatedUser.equals(runAsUser) && authorityService.isGuestAuthority(authenticatedUser)) )
+                                {
+                                    throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires user authentication; however, a guest has attempted access.");
+                                }
+                            }
+                            
+                            // Check to see if they're admin or system on an Admin only script
+                            if (required == RequiredAuthentication.admin && !(authorityService.hasAdminAuthority() || AuthenticationUtil.getFullyAuthenticatedUser().equals(AuthenticationUtil.getSystemUserName())))
+                            {
+                                throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires admin authentication; however, a non-admin has attempted access.");
+                            }
+                            
+                            if (debug)
+                            {
+                                String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                                logger.debug("Authentication: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
+                            }
+                            
+                            return true;
                         }
-                    }
-                    
-                    // Check to see if they're admin or system on an Admin only script
-                    if (required == RequiredAuthentication.admin && !(authorityService.hasAdminAuthority() || AuthenticationUtil.getFullyAuthenticatedUser().equals(AuthenticationUtil.getSystemUserName())))
-                    {
-                        throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Web Script " + desc.getId() + " requires admin authentication; however, a non-admin has attempted access.");
-                    }
-                    
-                    if (logger.isDebugEnabled())
-                    {
-                    	currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-                        logger.debug("Authentication: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
-                    }
-                    
-                    // Execute Web Script
+                        return false;
+                    }        
+                };
+                
+                if (retryingTransactionHelper.doInTransaction(authWork, true))
+                {
+                    // Execute Web Script if authentication passed
+                    // The Web Script has its own txn management with potential runAs() user
                     transactionedExecuteAs(script, scriptReq, scriptRes);
                 }
             }
@@ -340,10 +352,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                 //
                 AuthenticationUtil.popAuthentication();
                 
-                if (logger.isDebugEnabled())
+                if (debug)
                 {
-                    String user = AuthenticationUtil.getFullyAuthenticatedUser();
-                    logger.debug("Authentication reset: " + (user == null ? "unauthenticated" : "authenticated as " + user));
+                    String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                    logger.debug("Authentication reset: " + (currentUser == null ? "unauthenticated" : "authenticated as " + currentUser));
                 }
             }
         }

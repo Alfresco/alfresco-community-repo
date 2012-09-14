@@ -1026,7 +1026,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
     
-    private NodeRef getAuthorityOrNull(String name)
+    private NodeRef getAuthorityOrNull(final String name)
     {
         try
         {
@@ -1034,13 +1034,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             {
                 return personService.getPerson(name, false);
             }
-            else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.GUEST))
+            else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.GUEST) || AuthorityType.getAuthorityType(name).equals(AuthorityType.ADMIN))
             {
-                return personService.getPerson(name, false);
-            }
-            else if (AuthorityType.getAuthorityType(name).equals(AuthorityType.ADMIN))
-            {
-                return personService.getPerson(name, false);
+                return null;
             }
             else
             {

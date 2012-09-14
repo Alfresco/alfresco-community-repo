@@ -199,7 +199,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             canonicalName = authorityName;
         }
         
-        // Determine whether the administrator role is mapped to this user or one of their groups
+        // Determine whether the guest role is mapped to this user or one of their groups
         return getAuthoritiesForUser(canonicalName).contains(PermissionService.GUEST_AUTHORITY);
     }
     
@@ -286,18 +286,20 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             tenantService.getBaseNameUser(currentUserName).equalsIgnoreCase(AuthenticationUtil.getGuestUserName()))
         {
             isGuestUser = true;
-
         }
         
         // Check if any of the user's groups are listed as guest groups
         if (!isAdminUser && !isGuestUser)
         {
-            for (String authority : guestGroups)
+            if (guestGroups.size() != 0)
             {
-                if (hasAuthority(currentUserName, authority) || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority)))
+                for (String authority : guestGroups)
                 {
-                    isGuestUser = true;
-                    break;
+                    if (hasAuthority(currentUserName, authority) || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority)))
+                    {
+                        isGuestUser = true;
+                        break;
+                    }
                 }
             }
         }
@@ -310,7 +312,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         // Give all non-guest users the ALL authorities
         if (!isGuestUser)
         {
-           authorities.addAll(allSet);
+            authorities.addAll(allSet);
         }
         else
         {

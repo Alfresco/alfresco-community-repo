@@ -1280,6 +1280,41 @@ public class MultiTDemoTest extends TestCase
         }, tenantAdminName);
     }
     
+    public void test_ALF_14354()
+    {
+        final String tenantDomain1 = TEST_RUN+".one.alf14354";
+        final String tenantDomain2 = TEST_RUN+".two.alf14354";
+        
+        createTenant(tenantDomain1);
+        createTenant(tenantDomain2);
+        
+        String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                NodeRef rootNodeRef = repositoryHelper.getRootHome();
+                
+                assertTrue(nodeService.exists(rootNodeRef));
+                
+                return null;
+            }
+        }, tenantAdminName);
+        
+        tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain2);
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                NodeRef rootNodeRef = repositoryHelper.getRootHome();
+                
+                assertTrue(nodeService.exists(rootNodeRef));
+                
+                return null;
+            }
+        }, tenantAdminName);
+    }
+    
     private void createGroup(String shortName, String parentShortName)
     {
         // create new Group using authority Service

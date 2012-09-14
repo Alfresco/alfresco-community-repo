@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,9 +28,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -76,7 +77,8 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     private StoreRef companyHomeStore;
     private String companyHomePath;
     private Map<String, NodeRef> companyHomeRefs;
-    private NodeRef rootRef;
+    
+    private Map<String, NodeRef> rootRefs;
     
     
     /**
@@ -199,7 +201,12 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
         
         if (companyHomeRefs == null)
         {
-        	companyHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
+            companyHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
+        }
+        
+        if (rootRefs == null)
+        {
+            rootRefs = new ConcurrentHashMap<String, NodeRef>(4);
         }
         
         getCompanyHome();
@@ -213,9 +220,18 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
      */
     public NodeRef getRootHome()
     {
+        String tenantDomain = tenantAdminService.getCurrentUserDomain();
+        NodeRef rootRef = rootRefs.get(tenantDomain);
         if (rootRef == null)
         {
-            rootRef = nodeService.getRootNode(companyHomeStore);
+            rootRef = TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                   return nodeService.getRootNode(companyHomeStore);
+                }
+            }, tenantDomain);
+            rootRefs.put(tenantDomain, rootRef);
         }
         return rootRef;
     }
@@ -231,8 +247,8 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
         NodeRef companyHomeRef = companyHomeRefs.get(tenantDomain);
         if (companyHomeRef == null)
         {
-        	companyHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-	        {
+            companyHomeRef = TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
+            {
                 public NodeRef doWork() throws Exception
                 {
                     return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
@@ -243,13 +259,13 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
                             if (refs.size() != 1)
                             {
                                 throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
-                                }
-                                return refs.get(0);
                             }
-                        }, true);
-                    }
-                }, AuthenticationUtil.getSystemUserName());
-        	companyHomeRefs.put(tenantDomain, companyHomeRef);
+                            return refs.get(0);
+                        }
+                    }, true);
+                }
+            }, tenantDomain);
+            companyHomeRefs.put(tenantDomain, companyHomeRef);
         }
         return companyHomeRef;
     }

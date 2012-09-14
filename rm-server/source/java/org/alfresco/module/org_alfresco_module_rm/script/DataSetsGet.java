@@ -7,6 +7,10 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSet;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
+import org.alfresco.module.org_alfresco_module_rm.model.RmSiteType;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -17,6 +21,9 @@ public class DataSetsGet extends DeclarativeWebScript
 
    /** Data set service */
    private DataSetService dataSetService;
+
+   /** Site service */
+   private SiteService siteService;
 
    /**
     * Set data set service
@@ -29,6 +36,16 @@ public class DataSetsGet extends DeclarativeWebScript
    }
 
    /**
+    * Set site service
+    * 
+    * @param siteService the site service
+    */
+   public void setSiteService(SiteService siteService)
+   {
+      this.siteService = siteService;
+   }
+
+   /**
     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
     *      org.springframework.extensions.webscripts.Status,
     *      org.springframework.extensions.webscripts.Cache)
@@ -36,17 +53,36 @@ public class DataSetsGet extends DeclarativeWebScript
    @Override
    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
    {
-      Map<String, DataSet> dataSets = dataSetService.getDataSets();
+      // Get the site name from the URL and find out the file plan
+      String siteName = req.getParameter("site");
+      NodeRef filePlan = siteService.getContainer(siteName, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
+
+      // Check if only unloaded data sets should be returned - default value is false
+      String unloadedOnlyParam = req.getParameter("unloadedonly");
+      boolean unloadedOnly = false;
+      if (StringUtils.isNotBlank(unloadedOnlyParam))
+      {
+         unloadedOnly = new Boolean(unloadedOnlyParam).booleanValue();
+      }
+
+      // Get the loaded/unloaded data sets depending on the "unloadedOnly" parameter 
+      Map<String, DataSet> dataSets = dataSetService.getDataSets(filePlan, unloadedOnly);
       List<Map<String, String>> dataSetList = new ArrayList<Map<String, String>>(dataSets.size());
 
       for (Map.Entry<String, DataSet> entry : dataSets.entrySet())
       {
-         Map<String, String> dataSet = new HashMap<String, String>(2);
+         Map<String, String> dataSet = new HashMap<String, String>(3);
          DataSet value = entry.getValue();
 
-         dataSet.put("label", value.getLabel());
-         dataSet.put("id", value.getId());
+         // Data set details
+         String dataSetId = value.getId();
+         Boolean isLoaded = new Boolean(dataSetService.isLoadedDataSet(filePlan, dataSetId));
 
+         dataSet.put("label", value.getLabel());
+         dataSet.put("id", dataSetId);
+         dataSet.put("isLoaded", isLoaded.toString());
+
+         // Add data set to the list
          dataSetList.add(dataSet);
       }
 

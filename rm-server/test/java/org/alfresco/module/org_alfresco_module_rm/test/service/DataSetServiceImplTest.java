@@ -1,5 +1,6 @@
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,7 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             // Test the data sets
             Map<String, DataSet> dataSets = dataSetService.getDataSets();
             assertNotNull(dataSets);
+            assertTrue(dataSets.size() > 0);
 
             for (Map.Entry<String, DataSet> entry : dataSets.entrySet())
             {
@@ -100,6 +102,38 @@ public class DataSetServiceImplTest extends BaseRMTestCase
    }
 
    /**
+    * @see DataSetService#getDataSets(NodeRef, boolean)
+    */
+   public void testGetDataSetsForNodeRef() throws Exception
+   {
+      doTestInTransaction(new Test<Void>()
+      {
+         @Override
+         public Void run() throws Exception
+         {
+            // This will be tested in testFilePlanBeforeImportingDOD5015DataSet() and testFilePlanAfterImportingDOD5015DataSet()
+            return null;
+         }
+      });
+   }
+
+   /**
+    * @see DataSetService#getLoadedDataSets(NodeRef)
+    */
+   public void testGetLoadedDataSets() throws Exception
+   {
+      doTestInTransaction(new Test<Void>()
+      {
+         @Override
+         public Void run() throws Exception
+         {
+            // This will be tested in testFilePlanBeforeImportingDOD5015DataSet() and testFilePlanAfterImportingDOD5015DataSet()
+            return null;
+         }
+      });
+   }
+
+   /**
     * @see DataSetService#loadDataSet(String, org.alfresco.service.cmr.repository.NodeRef)
     */
    public void testLoadDataSet() throws Exception
@@ -121,7 +155,7 @@ public class DataSetServiceImplTest extends BaseRMTestCase
                testFilePlan(filePlan, dataSetId, Condition.BEFORE);
 
                // Load the data set into the specified file plan
-               dataSetService.loadDataSet(dataSetId, filePlan);
+               dataSetService.loadDataSet(filePlan, dataSetId);
 
                // Test the file plan after importing the data sets
                testFilePlan(filePlan, dataSetId, Condition.AFTER);
@@ -166,6 +200,15 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             assertNull(getRecordCategory(filePlan, "Military Files"));
             assertNull(getRecordCategory(filePlan, "Miscellaneous Files"));
             assertNull(getRecordCategory(filePlan, "Reports"));
+
+            // The aspect should exist before loading a data set
+            assertNull(nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS));
+
+            // At the beginning the file plan is empty. So there should not be any data sets
+            assertTrue(dataSetService.getLoadedDataSets(filePlan).size() == 0);
+            assertFalse(dataSetService.isLoadedDataSet(filePlan, DATA_SET_ID_DOD5015));
+            assertTrue(dataSetService.getDataSets(filePlan, true).size() == 1);
+            assertTrue(dataSetService.getDataSets(filePlan, false).size() == 1);
          }
 
          /**
@@ -259,6 +302,22 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             NodeRef rep4 = getRecordCategory(rep, "Unit Manning Documents");
             assertNotNull(rep4);
             assertNotNull(getRecordFolder(rep4, "1st Quarter Unit Manning Documents"));
+
+            // After loading the data set into the file plan the custom aspect should contain the id of the loaded data set 
+            Serializable nodeProperty = nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS);
+            assertNotNull(nodeProperty);
+            @SuppressWarnings("unchecked")
+            ArrayList<String> loadedDataSetIds = (ArrayList<String>)nodeProperty;
+            assertTrue(loadedDataSetIds.size() == 1);
+            assertTrue(loadedDataSetIds.contains(DATA_SET_ID_DOD5015));
+
+            // The data set has been loaded into the file plan, so the file plan should contain the data set id
+            Map<String, DataSet> loadedDataSets = dataSetService.getLoadedDataSets(filePlan);
+            assertTrue(loadedDataSets.size() == 1);
+            assertTrue(loadedDataSets.containsKey(DATA_SET_ID_DOD5015));
+            assertTrue(dataSetService.isLoadedDataSet(filePlan, DATA_SET_ID_DOD5015));
+            assertTrue(dataSetService.getDataSets(filePlan, true).size() == 0);
+            assertTrue(dataSetService.getDataSets(filePlan, false).size() == 1);
          }
 
          /**
@@ -303,6 +362,22 @@ public class DataSetServiceImplTest extends BaseRMTestCase
                assertTrue(dataSetService.existsDataSet(dataSetId));
             }
 
+            return null;
+         }
+      });
+   }
+
+   /**
+    * @see DataSetService#isLoadedDataSet(NodeRef, String)
+    */
+   public void testIsLoadedDataSet() throws Exception
+   {
+      doTestInTransaction(new Test<Void>()
+      {
+         @Override
+         public Void run() throws Exception
+         {
+            // This will be tested in testFilePlanBeforeImportingDOD5015DataSet() and testFilePlanAfterImportingDOD5015DataSet()
             return null;
          }
       });

@@ -15,7 +15,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 public class DataSetPostTest extends BaseRMWebScriptTestCase
 {
    /** URL for the REST APIs */
-   private static final String GET_DATASETS_URL = "/api/rma/datasets";
+   private static final String GET_DATASETS_URL = "/api/rma/datasets?site=%s";
    private static final String POST_DATASET_URL = "/api/rma/datasets/%s?site=%s";
 
    /** Constant for the content type */
@@ -60,8 +60,9 @@ public class DataSetPostTest extends BaseRMWebScriptTestCase
     */
    private String getDataSetId() throws IOException, JSONException
    {
-      // Send request
-      Response response = sendRequest(new GetRequest(GET_DATASETS_URL), Status.STATUS_OK);
+      // Format url and send request
+      String url = String.format(GET_DATASETS_URL, SITE_ID);
+      Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
       // Get the response as string, convert to json and retrieve the data sets
       String contentAsString = response.getContentAsString();

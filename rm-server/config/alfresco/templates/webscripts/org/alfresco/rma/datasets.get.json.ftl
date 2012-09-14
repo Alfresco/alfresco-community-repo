@@ -6,7 +6,8 @@
          <#list datasets as item>
          {
             "label": "${item.label}",
-            "id": "${item.id}"
+            "id": "${item.id}",
+            "isLoaded": "${item.isLoaded}"
          }<#if item_has_next>,</#if>
          </#list>
       ]

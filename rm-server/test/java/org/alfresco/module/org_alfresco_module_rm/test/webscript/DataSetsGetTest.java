@@ -13,7 +13,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 public class DataSetsGetTest extends BaseRMWebScriptTestCase
 {
    /** URL for the REST API */
-   private static final String GET_DATASETS_URL = "/api/rma/datasets";
+   private static final String GET_DATASETS_URL = "/api/rma/datasets?site=%s";
 
    /**
     * Test the REST API to retrieve details of available RM data sets 
@@ -23,8 +23,9 @@ public class DataSetsGetTest extends BaseRMWebScriptTestCase
     */
    public void testGetDataSetsAction() throws IOException, JSONException
    {
-      // Send request
-      Response response = sendRequest(new GetRequest(GET_DATASETS_URL), Status.STATUS_OK);
+      // Format url and send request
+      String url = String.format(GET_DATASETS_URL, SITE_ID);
+      Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
 
       // Check the content from the response
       String contentAsString = response.getContentAsString();
@@ -43,9 +44,10 @@ public class DataSetsGetTest extends BaseRMWebScriptTestCase
       for (int i = 0; i < dataSets.length(); i++)
       {
          JSONObject dataSet = (JSONObject) dataSets.get(i);
-         assertTrue(dataSet.length() == 2);
+         assertTrue(dataSet.length() == 3);
          assertNotNull(dataSet.get("label"));
          assertNotNull(dataSet.get("id"));
+         assertNotNull(dataSet.get("isLoaded"));
       }
    }
 }

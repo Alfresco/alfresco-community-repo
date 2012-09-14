@@ -219,4 +219,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     public static final QName PROP_RS_DISPOITION_INSTRUCTIONS = QName.createQName(RM_URI, "recordSearchDispositionInstructions");
     public static final QName PROP_RS_DISPOITION_AUTHORITY = QName.createQName(RM_URI, "recordSearchDispositionAuthority");
     public static final QName PROP_RS_HOLD_REASON = QName.createQName(RM_URI, "recordSearchHoldReason");
+
+    // Loaded Data Set Ids
+    public static final QName ASPECT_LOADED_DATA_SET_ID = QName.createQName(RM_URI, "loadedDataSetId");
+    public static final QName PROP_LOADED_DATA_SET_IDS = QName.createQName(RM_URI, "loadedDataSetIds");
 }

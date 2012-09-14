@@ -1112,6 +1112,18 @@
          <archive>false</archive>
       </aspect> 
 
+      <!-- Aspect to hold the data for the loaded Data Set Ids -->
+      <aspect name="rma:loadedDataSetId">
+         <title>Loaded Data Set Id</title>
+         <properties>
+            <property name="rma:loadedDataSetIds">
+               <title>List of the loaded Data Set Ids</title>
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </aspect>
+
    </aspects>
 
 </model>

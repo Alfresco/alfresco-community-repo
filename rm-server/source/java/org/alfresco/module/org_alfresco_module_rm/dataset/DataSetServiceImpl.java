@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +32,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -204,14 +207,37 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
    }
 
    /**
+    * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#getDataSets(NodeRef,
+    *      boolean)
+    */
+   @Override
+   public Map<String, DataSet> getDataSets(NodeRef filePlan, boolean excludeLoaded)
+   {
+      ParameterCheck.mandatory("filePlan", filePlan);
+      ParameterCheck.mandatory("excludeLoaded", excludeLoaded);
+
+      // Get the list of all available data sets
+      Map<String, DataSet> dataSets = new HashMap<String, DataSet>(getDataSets());
+
+      // Should the list of unloaded data sets be retrieved
+      if (excludeLoaded)
+      {
+         dataSets.keySet().removeAll(getLoadedDataSets(filePlan).keySet());
+      }
+
+      // Return the (filtered) list of data sets
+      return dataSets;
+   }
+
+   /**
     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#loadDataSet(java.lang.String,
     *      org.alfresco.service.cmr.repository.NodeRef)
     */
    @Override
-   public void loadDataSet(String dataSetId, NodeRef filePlan)
+   public void loadDataSet(NodeRef filePlan, String dataSetId)
    {
-      ParameterCheck.mandatoryString("dataSetId", dataSetId);
       ParameterCheck.mandatory("filePlan", filePlan);
+      ParameterCheck.mandatoryString("dataSetId", dataSetId);
 
       // Get the data set
       DataSet dataSet = getDataSets().get(dataSetId);
@@ -231,9 +257,12 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
          Reader viewReader = new InputStreamReader(is);
          Location location = new Location(filePlan);
          importerService.importView(viewReader, location, null, null);
-   
+
          // Patch data
          patchLoadedData();
+
+         // Set the data set id into the file plan's custom aspect
+         setDataSetIdIntoFilePlan(dataSetId, filePlan);
       }
       catch (Exception ex)
       {
@@ -254,6 +283,63 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
             }
          }
       }
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#existsDataSet(java.lang.String)
+    */
+   @Override
+   public boolean existsDataSet(String dataSetId)
+   {
+      ParameterCheck.mandatoryString("dataSetId", dataSetId);
+
+      return getDataSets().containsKey(dataSetId);
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#getLoadedDataSets(org.alfresco.service.cmr.repository.NodeRef)
+    */
+   @Override
+   public Map<String, DataSet> getLoadedDataSets(NodeRef filePlan)
+   {
+      ParameterCheck.mandatory("filePlan", filePlan);
+
+      // Get the list of available data sets
+      Map<String, DataSet> availableDataSets = new HashMap<String, DataSet>(getDataSets());
+
+      // Get the property value of the aspect
+      Serializable dataSetIds = nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS);
+      // Check if any data has been loaded before
+      if (dataSetIds != null)
+      {
+         // Filter the data sets which have already been loaded
+         @SuppressWarnings("unchecked")
+         ArrayList<String> loadedDataSetIds = (ArrayList<String>) dataSetIds;
+         for (Map.Entry<String, DataSet> entry : availableDataSets.entrySet())
+         {
+            String key = entry.getKey();
+            if (!loadedDataSetIds.contains(key))
+            {
+               availableDataSets.remove(key);
+            }
+         }
+         return availableDataSets;
+      }
+
+      return new HashMap<String, DataSet>();
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#isLoadedDataSet(org.alfresco.service.cmr.repository.NodeRef,
+    *      java.lang.String)
+    */
+   @Override
+   public boolean isLoadedDataSet(NodeRef filePlan, String dataSetId)
+   {
+      ParameterCheck.mandatory("filePlan", filePlan);
+      ParameterCheck.mandatory("dataSetId", dataSetId);
+
+      return getLoadedDataSets(filePlan).containsKey(dataSetId);
    }
 
    /**
@@ -386,14 +472,37 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
    }
 
    /**
-    * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#existsDataSet(java.lang.String)
+    * Helper method for setting the id of the imported data set into the file
+    * plan's aspect
+    * 
+    * @param dataSetId The id of the imported data set
+    * @param filePlan The file plan into which the data set has been imported
     */
-   @Override
-   public boolean existsDataSet(String dataSetId)
+   @SuppressWarnings("unchecked")
+   private void setDataSetIdIntoFilePlan(String dataSetId, NodeRef filePlan)
    {
-      ParameterCheck.mandatoryString("dataSetId", dataSetId);
+      ArrayList<String> loadedDataSetIds;
+      Serializable dataSetIds = nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS);
 
-      return getDataSets().containsKey(dataSetId);
+      // Check if any data set has been imported
+      if (dataSetIds == null)
+      {
+         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
+         aspectProperties.put(PROP_LOADED_DATA_SET_IDS, (Serializable) new ArrayList<String>());
+         nodeService.addAspect(filePlan, ASPECT_LOADED_DATA_SET_ID, aspectProperties);
+         loadedDataSetIds = (ArrayList<String>) nodeService.getProperty(filePlan,
+                  PROP_LOADED_DATA_SET_IDS);
+      }
+      else
+      {
+         loadedDataSetIds = (ArrayList<String>) dataSetIds;
+      }
+
+      // Add the new loaded data set id
+      loadedDataSetIds.add(dataSetId);
+      Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
+      aspectProperties.put(PROP_LOADED_DATA_SET_IDS, (Serializable) loadedDataSetIds);
+      nodeService.addAspect(filePlan, ASPECT_LOADED_DATA_SET_ID, aspectProperties);
    }
 
 }

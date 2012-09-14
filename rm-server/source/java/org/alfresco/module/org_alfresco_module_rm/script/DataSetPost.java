@@ -92,7 +92,7 @@ public class DataSetPost extends DeclarativeWebScript implements RecordsManageme
       }
 
       // Load data set in to the file plan
-      dataSetService.loadDataSet(dataSetId, filePlan);
+      dataSetService.loadDataSet(filePlan, dataSetId);
 
       Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
       model.put("success", true);

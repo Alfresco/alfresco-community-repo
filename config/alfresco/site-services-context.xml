@@ -60,6 +60,7 @@
                 <value>removeMembership</value>
                 <value>createContainer</value>
                 <value>setMembership</value>
+                <value>cleanSitePermissions</value>
             </list>
         </property>
     </bean>
@@ -179,5 +180,6 @@
        <property name="publicServiceAccessService" ref="PublicServiceAccessService"/>
        <property name="aclDAO" ref="aclDAO"/>
        <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="tenantService" ref="tenantService"/>
     </bean>
 </beans>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -67,6 +67,9 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.usage.UsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -77,6 +80,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+/**
+ * @author janv
+ * since 3.0
+ */
 public class MultiTDemoTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(MultiTDemoTest.class);
@@ -88,6 +95,7 @@ public class MultiTDemoTest extends TestCase
     private NodeService nodeService;
     private MutableAuthenticationService authenticationService;
     private PersonService personService;
+    private SiteService siteService;
     private SearchService searchService;
     private ContentService contentService;
     private PermissionService permissionService;
@@ -173,6 +181,7 @@ public class MultiTDemoTest extends TestCase
         transactionService = (TransactionService) ctx.getBean("TransactionService");
         fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
+        siteService = (SiteService) ctx.getBean("SiteService");
         
         createTenants();
     }
@@ -1241,6 +1250,36 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
+    public void test_ALF_12732()
+    {
+        final String tenantDomain1 = TEST_RUN+".one.alf12732";
+        
+        createTenant(tenantDomain1);
+        
+        String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                createSite("site1");
+                
+                NodeRef docLib1Ref = siteService.getContainer("site1", SiteService.DOCUMENT_LIBRARY);
+                NodeRef contentRef = addContent(docLib1Ref, "tqbfjotld.txt", "The quick brown fox jumps over the lazy dog", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                
+                createSite("site2");
+                
+                NodeRef docLib2Ref = siteService.getContainer("site2", SiteService.DOCUMENT_LIBRARY);
+                
+                nodeService.moveNode(contentRef, docLib2Ref, ContentModel.ASSOC_CONTAINS, QName.createQName("tqbfjotld.txt"));
+                
+                // for Share, called via "move-to.post.json.js" -> ScriptSiteService.cleanSitePermissions
+                siteService.cleanSitePermissions(contentRef, null);
+                
+                return null;
+            }
+        }, tenantAdminName);
+    }
+    
     private void createGroup(String shortName, String parentShortName)
     {
         // create new Group using authority Service
@@ -1524,6 +1563,21 @@ public class MultiTDemoTest extends TestCase
         writer.putContent(is);
         
         return content;
+    }
+    
+    private SiteInfo createSite(String siteId)
+    {
+        SiteInfo siteInfo = siteService.createSite(null, siteId, "title - "+siteId, "description - "+siteId, SiteVisibility.PRIVATE);
+        
+        // ensure that the Document Library folder is pre-created so that test code can start creating content straight away.
+        // At the time of writing V4.1 does not create this folder automatically, but Thor does.
+        NodeRef result = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
+        if (result == null)
+        {
+            result = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+        }
+        
+        return siteInfo;
     }
     
     /*

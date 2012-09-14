@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,6 +27,7 @@ import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -51,6 +52,7 @@ public class SitesPermissionCleaner
     
     private AclDAO aclDAO;
     private NodeDAO nodeDAO;
+    private TenantService tenantService;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -82,6 +84,12 @@ public class SitesPermissionCleaner
         this.nodeDAO = nodeDAO;
     }
     
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+    
+    
     public void cleanSitePermissions(final NodeRef targetNode, SiteInfo containingSite)
     {
         if (nodeService.exists(targetNode))
@@ -96,8 +104,8 @@ public class SitesPermissionCleaner
             if (containingSite != null)
             {
                 // For performance reasons we navigate down the containment hierarchy using the DAOs
-                // rather than the NodeService.
-                final Long targetNodeID = nodeDAO.getNodePair(targetNode).getFirst();
+                // rather than the NodeService. Note: direct use of NodeDAO requires tenantService (ALF-12732).
+                final Long targetNodeID = nodeDAO.getNodePair(tenantService.getName(targetNode)).getFirst();
                 final Long targetNodeAclID = nodeDAO.getNodeAclId(targetNodeID);
                 Acl targetNodeAcl = aclDAO.getAcl(targetNodeAclID);
                 

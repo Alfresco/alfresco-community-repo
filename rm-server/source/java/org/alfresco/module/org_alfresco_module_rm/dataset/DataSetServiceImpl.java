@@ -7,7 +7,9 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -315,12 +317,14 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
          // Filter the data sets which have already been loaded
          @SuppressWarnings("unchecked")
          ArrayList<String> loadedDataSetIds = (ArrayList<String>) dataSetIds;
-         for (Map.Entry<String, DataSet> entry : availableDataSets.entrySet())
+         Iterator<Map.Entry<String, DataSet>> iterator = availableDataSets.entrySet().iterator();
+         while (iterator.hasNext())
          {
+            Entry<String, DataSet> entry = iterator.next();
             String key = entry.getKey();
             if (!loadedDataSetIds.contains(key))
             {
-               availableDataSets.remove(key);
+               iterator.remove();
             }
          }
          return availableDataSets;

@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view  xmlns:view="http://www.alfresco.org/view/repository/1.0" 
+            xmlns:nt="http://www.jcp.org/jcr/nt/1.0" 
+            xmlns:alf="http://www.alfresco.org" 
+            xmlns:d="http://www.alfresco.org/model/dictionary/1.0" 
+            xmlns:act="http://www.alfresco.org/model/action/1.0" 
+            xmlns:wf="http://www.alfresco.org/model/workflow/1.0" 
+            xmlns:app="http://www.alfresco.org/model/application/1.0" 
+            xmlns:usr="http://www.alfresco.org/model/user/1.0" 
+            xmlns:ver="http://www.alfresco.org/model/versionstore/1.0" 
+            xmlns:cm="http://www.alfresco.org/model/content/1.0" 
+            xmlns:sv="http://www.jcp.org/jcr/sv/1.0" 
+            xmlns:mix="http://www.jcp.org/jcr/mix/1.0" 
+            xmlns:jcr="http://www.jcp.org/jcr/1.0" 
+            xmlns:sys="http://www.alfresco.org/model/system/1.0" 
+            xmlns:rule="http://www.alfresco.org/model/rule/1.0" 
+            xmlns:fm="http://www.alfresco.org/model/forum/1.0" 
+            xmlns:bpm="http://www.alfresco.org/model/bpm/1.0" 
+            xmlns:rma="http://www.alfresco.org/model/recordsmanagement/1.0"
+            xmlns:dod="http://www.alfresco.org/model/dod5015/1.0"
+            xmlns:custom="custom.model" 
+            xmlns="" >
+
+   <rma:recordCategory view:childName="cm:TestRecordCategory1">
+      <view:properties>
+         <cm:name>TestRecordCategory1</cm:name>
+         <rma:identifier>0001</rma:identifier>
+         <cm:title>TestRecordCategory1</cm:title>
+         <cm:description>TestRecordCategory1 description</cm:description>
+      </view:properties>
+      <view:associations>
+         <cm:contains>
+            <rma:recordCategory view:childName="cm:TestRecordCategory11">
+               <view:aspects>
+                  <rma:scheduled></rma:scheduled>
+               </view:aspects>
+               <view:properties>
+                  <cm:name>TestRecordCategory11</cm:name>
+                  <rma:identifier>0001-01</rma:identifier>
+                  <cm:title>TestRecordCategory11</cm:title>
+                  <cm:description>TestRecordCategory11 description</cm:description>
+                  <rma:reviewPeriod>week|1</rma:reviewPeriod>
+                  <rma:vitalRecordIndicator>true</rma:vitalRecordIndicator>
+               </view:properties>
+               <view:associations>
+                  <rma:dispositionSchedule>
+                     <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                        <view:properties>
+                           <rma:dispositionAuthority>T0-000-00-1 item 001</rma:dispositionAuthority>
+                           <rma:dispositionInstructions>Cut off monthly, hold 1 month, then destroy.</rma:dispositionInstructions>
+                        </view:properties>
+                        <view:associations>
+                           <rma:dispositionActionDefinitions>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                    <rma:dispositionPeriod>monthend|1</rma:dispositionPeriod>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                    <rma:dispositionPeriod>month|1</rma:dispositionPeriod>
+                                    <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                           </rma:dispositionActionDefinitions>
+                        </view:associations>
+                     </rma:dispositionSchedule> 
+                  </rma:dispositionSchedule> 
+                  <cm:contains>
+                     <rma:recordFolder view:childName="cm:TestRecordFolder1">
+                        <view:properties>
+                           <cm:name>TestRecordFolder1</cm:name>
+                           <cm:title>TestRecordFolder1</cm:title>
+                           <rma:identifier>0001-01-01</rma:identifier>
+                           <rma:reviewPeriod>week|1</rma:reviewPeriod>
+                           <rma:vitalRecordIndicator>true</rma:vitalRecordIndicator>
+                        </view:properties>
+                     </rma:recordFolder>
+                     <rma:recordFolder view:childName="cm:TestRecordFolder2">
+                        <view:properties>
+                           <cm:name>TestRecordFolder2</cm:name>
+                           <cm:title>TestRecordFolder2</cm:title>
+                           <rma:identifier>0001-01-02</rma:identifier>
+                           <rma:reviewPeriod>week|1</rma:reviewPeriod>
+                           <rma:vitalRecordIndicator>true</rma:vitalRecordIndicator>
+                        </view:properties>
+                     </rma:recordFolder>
+                  </cm:contains>
+               </view:associations>
+            </rma:recordCategory>
+            <rma:recordCategory view:childName="cm:TestRecordCategory12">
+               <view:aspects>
+                  <rma:scheduled></rma:scheduled>
+               </view:aspects>
+               <view:properties>
+                  <cm:name>TestRecordCategory12</cm:name>
+                  <rma:identifier>0001-02</rma:identifier>
+                  <cm:title>TestRecordCategory12</cm:title>
+                  <cm:description>TestRecordCategory12 description</cm:description>
+               </view:properties>
+               <view:associations>
+                  <rma:dispositionSchedule>
+                     <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                        <view:properties>
+                           <rma:dispositionAuthority>T0-000-00-1 item 002</rma:dispositionAuthority>
+                           <rma:dispositionInstructions>Cut off every 3 months, hold 3 months, then destroy.</rma:dispositionInstructions>
+                        </view:properties>
+                        <view:associations>
+                           <rma:dispositionActionDefinitions>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                    <rma:dispositionPeriod>quarterend|1</rma:dispositionPeriod>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                    <rma:dispositionPeriod>month|3</rma:dispositionPeriod>
+                                    <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                           </rma:dispositionActionDefinitions>
+                        </view:associations>
+                     </rma:dispositionSchedule> 
+                  </rma:dispositionSchedule>
+                  <cm:contains>
+                     <rma:recordFolder view:childName="cm:TestRecordFolder3">
+                        <view:properties>
+                           <cm:name>TestRecordFolder3</cm:name>
+                           <rma:identifier>0001-02-01</rma:identifier>
+                           <cm:title>TestRecordFolder3</cm:title>
+                        </view:properties>
+                     </rma:recordFolder>
+                  </cm:contains>
+               </view:associations>
+            </rma:recordCategory>
+            <rma:recordCategory view:childName="cm:TestRecordCategory13">
+               <view:aspects>
+                  <rma:scheduled></rma:scheduled>
+               </view:aspects>
+               <view:properties>
+                  <cm:name>TestRecordCategory13</cm:name>
+                  <rma:identifier>0001-03</rma:identifier>
+                  <cm:title>TestRecordCategory13</cm:title>
+                  <cm:description>TestRecordCategory13 description</cm:description>
+               </view:properties>
+               <view:associations>
+                  <rma:dispositionSchedule>
+                     <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                        <view:properties>
+                           <rma:dispositionAuthority>T0-000-00-1 item 003</rma:dispositionAuthority>
+                           <rma:dispositionInstructions>Cut off at end of FY, hold 3 years, then destroy.</rma:dispositionInstructions>
+                        </view:properties>
+                        <view:associations>
+                           <rma:dispositionActionDefinitions>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                    <rma:dispositionPeriod>fyend|1</rma:dispositionPeriod>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                    <rma:dispositionPeriod>year|3</rma:dispositionPeriod>
+                                    <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                           </rma:dispositionActionDefinitions>
+                        </view:associations>
+                     </rma:dispositionSchedule> 
+                  </rma:dispositionSchedule>
+               </view:associations>
+            </rma:recordCategory>
+         </cm:contains>
+      </view:associations>
+   </rma:recordCategory> 
+   <rma:recordCategory view:childName="cm:TestRecordCategory2">
+      <view:properties>
+         <cm:name>TestRecordCategory2</cm:name>
+         <rma:identifier>0002</rma:identifier>
+         <cm:title>TestRecordCategory2</cm:title>
+         <cm:description>TestRecordCategory2 description</cm:description>
+      </view:properties>
+      <view:associations>
+         <cm:contains>
+            <rma:recordCategory view:childName="cm:TestRecordCategory21">
+               <view:aspects>
+                  <rma:scheduled></rma:scheduled>
+               </view:aspects>
+               <view:properties>
+                  <cm:name>TestRecordCategory21</cm:name>
+                  <rma:identifier>0002-01</rma:identifier>
+                  <cm:title>TestRecordCategory21</cm:title>
+                  <cm:description>TestRecordCategory21 description</cm:description>
+               </view:properties>
+               <view:associations>
+                  <rma:dispositionSchedule>
+                     <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                        <view:properties>
+                           <rma:dispositionAuthority>T0-000-00-2 item 001</rma:dispositionAuthority>
+                           <rma:dispositionInstructions>Cut off when superseded, hold 5 years, then destroy.</rma:dispositionInstructions> 
+                           <rma:recordLevelDisposition>true</rma:recordLevelDisposition>
+                        </view:properties>
+                        <view:associations>
+                           <rma:dispositionActionDefinitions>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                    <rma:dispositionEvent>superseded</rma:dispositionEvent>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                    <rma:dispositionPeriod>year|5</rma:dispositionPeriod>
+                                    <rma:dispositionPeriodProperty>{http://www.alfresco.org/model/recordsmanagement/1.0}cutOffDate</rma:dispositionPeriodProperty>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                           </rma:dispositionActionDefinitions>
+                        </view:associations>
+                     </rma:dispositionSchedule> 
+                  </rma:dispositionSchedule>
+               </view:associations>
+            </rma:recordCategory>
+            <rma:recordCategory view:childName="cm:TestRecordCategory22">
+               <view:aspects>
+                  <rma:scheduled></rma:scheduled>
+               </view:aspects>
+               <view:properties>
+                  <cm:name>TestRecordCategory22</cm:name>
+                  <rma:identifier>0002-02</rma:identifier>
+                  <cm:title>TestRecordCategory22</cm:title>
+                  <cm:description>TestRecordCategory22 description</cm:description>
+               </view:properties>
+               <view:associations>
+                  <rma:dispositionSchedule>
+                     <rma:dispositionSchedule view:childName="rma:dispositionSchedule">
+                        <view:properties>
+                           <rma:dispositionAuthority>T0-000-00-2 item 002</rma:dispositionAuthority>
+                           <rma:dispositionInstructions>Cut off when no longer needed and destroy immediately.</rma:dispositionInstructions>
+                        </view:properties>
+                        <view:associations>
+                           <rma:dispositionActionDefinitions>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>cutoff</rma:dispositionActionName>
+                                    <rma:dispositionEvent>no_longer_needed</rma:dispositionEvent>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                              <rma:dispositionActionDefinition view:childName="rma:dispositionActionDefinition">
+                                 <view:properties>
+                                    <rma:dispositionActionName>destroy</rma:dispositionActionName>
+                                    <rma:dispositionPeriod>immediately|0</rma:dispositionPeriod>
+                                 </view:properties>
+                              </rma:dispositionActionDefinition>
+                           </rma:dispositionActionDefinitions>
+                        </view:associations>
+                     </rma:dispositionSchedule> 
+                  </rma:dispositionSchedule>
+                  <cm:contains>
+                     <rma:recordFolder view:childName="cm:TestRecordFolder4">
+                        <view:properties>
+                           <cm:name>TestRecordFolder4</cm:name>
+                           <rma:identifier>0002-02-01</rma:identifier>
+                           <cm:title>TestRecordFolder4</cm:title>
+                        </view:properties>
+                     </rma:recordFolder>
+                     <rma:recordFolder view:childName="cm:TestRecordFolder5">
+                        <view:properties>
+                           <cm:name>TestRecordFolder5</cm:name>
+                           <rma:identifier>0002-02-02</rma:identifier>
+                           <cm:title>TestRecordFolder5</cm:title>
+                        </view:properties>
+                     </rma:recordFolder>
+                  </cm:contains>
+               </view:associations>
+            </rma:recordCategory>
+         </cm:contains>
+      </view:associations>
+   </rma:recordCategory>
+</view:view> 

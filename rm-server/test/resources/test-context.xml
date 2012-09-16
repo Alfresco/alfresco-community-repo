@@ -67,4 +67,10 @@
             </list>
       </property>
     </bean> 
+
+    <bean id="dataSetTest" parent="dataSetBase">
+        <property name="label" value="Test Example Data"/>
+        <property name="id" value="testExampleData"/>
+        <property name="path" value="test-filePlan.xml" />
+    </bean>
 </beans> 

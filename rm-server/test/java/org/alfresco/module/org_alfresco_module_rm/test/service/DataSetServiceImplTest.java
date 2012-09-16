@@ -1,47 +1,25 @@
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSet;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.view.ImporterService;
 
 public class DataSetServiceImplTest extends BaseRMTestCase
 {
    /** Services */
-   protected DataSetService dataSetService;
-   protected ImporterService importerService;
+   private DataSetService dataSetService;
 
-   /** List of data set ids */
-   private List<String> dataSetIds;
-
-   /** Constants for data set ids */
-   private static final String DATA_SET_ID_DOD5015 = "dod5015";
+   /** Id of the test data set*/
+   private static final String DATA_SET_ID = "testExampleData"; 
 
    /** Enum for checking the condition */
    private enum Condition
    {
       BEFORE, // Test a file plan before a data set has been imported
       AFTER; // Test a file plan after a data set has been imported
-   }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setUp()
-    */
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      // Add the id's of the data sets to the list
-      dataSetIds = new ArrayList<String>();
-      dataSetIds.add(DATA_SET_ID_DOD5015);
    }
 
    /**
@@ -52,9 +30,8 @@ public class DataSetServiceImplTest extends BaseRMTestCase
    {
       super.initServices();
 
-      // Get Services
+      // Get RM Services
       dataSetService = (DataSetService) applicationContext.getBean("DataSetService");
-      importerService = (ImporterService) applicationContext.getBean("ImporterService");
    }
 
    /**
@@ -111,7 +88,7 @@ public class DataSetServiceImplTest extends BaseRMTestCase
          @Override
          public Void run() throws Exception
          {
-            // This will be tested in testFilePlanBeforeImportingDOD5015DataSet() and testFilePlanAfterImportingDOD5015DataSet()
+            // This will be tested in testFilePlanBeforeImportingDataSet() and testFilePlanAfterImportingDataSet()
             return null;
          }
       });
@@ -127,7 +104,7 @@ public class DataSetServiceImplTest extends BaseRMTestCase
          @Override
          public Void run() throws Exception
          {
-            // This will be tested in testFilePlanBeforeImportingDOD5015DataSet() and testFilePlanAfterImportingDOD5015DataSet()
+            // This will be tested in testFilePlanBeforeImportingDataSet() and testFilePlanAfterImportingDataSet()
             return null;
          }
       });
@@ -146,20 +123,17 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             // Test the file plan
             assertNotNull(filePlan);
 
-            for (String dataSetId : dataSetIds)
-            {
-               // Test the data set id
-               assertNotNull(dataSetId);
+            // Test the data set id
+            assertNotNull(DATA_SET_ID);
 
-               // Test the file plan before importing the data sets
-               testFilePlan(filePlan, dataSetId, Condition.BEFORE);
+            // Test the file plan before importing the data sets
+            testFilePlan(filePlan, DATA_SET_ID, Condition.BEFORE);
 
-               // Load the data set into the specified file plan
-               dataSetService.loadDataSet(filePlan, dataSetId);
+            // Load the data set into the specified file plan
+            dataSetService.loadDataSet(filePlan, DATA_SET_ID);
 
-               // Test the file plan after importing the data sets
-               testFilePlan(filePlan, dataSetId, Condition.AFTER);
-            }
+            // Test the file plan after importing the data sets
+            testFilePlan(filePlan, DATA_SET_ID, Condition.AFTER);
 
             return null;
          }
@@ -173,28 +147,28 @@ public class DataSetServiceImplTest extends BaseRMTestCase
           */
          private void testFilePlan(NodeRef filePlan, String dataSetId, Condition condition)
          {
-            if (dataSetId.equals(DATA_SET_ID_DOD5015))
+            switch (condition)
             {
-               switch (condition)
-               {
-                  case BEFORE:
-                     testFilePlanBeforeImportingDOD5015DataSet(filePlan);
-                     break;
+               case BEFORE:
+                  testFilePlanBeforeImportingDataSet(filePlan);
+                  break;
 
-                  case AFTER:
-                     testFilePlanAfterImportingDOD5015DataSet(filePlan);
-                     break;
-               }
+               case AFTER:
+                  testFilePlanAfterImportingDataSet(filePlan);
+                  break;
             }
          }
 
+         // FIXME: Change the tests according to the new data set
+
          /**
-          * Helper method for testing the file plan before importing the DOD5015 data
+          * Helper method for testing the test file plan before importing the data
           * 
           * @param filePlan The NodeRef of the filePlan which is to test
           */
-         private void testFilePlanBeforeImportingDOD5015DataSet(NodeRef filePlan)
+         private void testFilePlanBeforeImportingDataSet(NodeRef filePlan)
          {
+            /*
             // There should not be any categories before importing
             assertNull(getRecordCategory(filePlan, "Civilian Files"));
             assertNull(getRecordCategory(filePlan, "Military Files"));
@@ -206,18 +180,20 @@ public class DataSetServiceImplTest extends BaseRMTestCase
 
             // At the beginning the file plan is empty. So there should not be any data sets
             assertTrue(dataSetService.getLoadedDataSets(filePlan).size() == 0);
-            assertFalse(dataSetService.isLoadedDataSet(filePlan, DATA_SET_ID_DOD5015));
+            assertFalse(dataSetService.isLoadedDataSet(filePlan, dataSetId));
             assertTrue(dataSetService.getDataSets(filePlan, true).size() == 1);
             assertTrue(dataSetService.getDataSets(filePlan, false).size() == 1);
+            */
          }
 
          /**
-          * Helper method for testing the file plan after importing the DOD5015 data
+          * Helper method for testing the test file plan after importing the data
           * 
           * @param filePlan The NodeRef of the filePlan which is to test
           */
-         private void testFilePlanAfterImportingDOD5015DataSet(NodeRef filePlan)
+         private void testFilePlanAfterImportingDataSet(NodeRef filePlan)
          {
+            /*
             // Test the "first level" categories after importing if they exist
             NodeRef civFil = getRecordCategory(filePlan, "Civilian Files");
             assertNotNull(civFil);
@@ -309,15 +285,16 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             @SuppressWarnings("unchecked")
             ArrayList<String> loadedDataSetIds = (ArrayList<String>)nodeProperty;
             assertTrue(loadedDataSetIds.size() == 1);
-            assertTrue(loadedDataSetIds.contains(DATA_SET_ID_DOD5015));
+            assertTrue(loadedDataSetIds.contains(dataSetId));
 
             // The data set has been loaded into the file plan, so the file plan should contain the data set id
             Map<String, DataSet> loadedDataSets = dataSetService.getLoadedDataSets(filePlan);
             assertTrue(loadedDataSets.size() == 1);
-            assertTrue(loadedDataSets.containsKey(DATA_SET_ID_DOD5015));
-            assertTrue(dataSetService.isLoadedDataSet(filePlan, DATA_SET_ID_DOD5015));
+            assertTrue(loadedDataSets.containsKey(dataSetId));
+            assertTrue(dataSetService.isLoadedDataSet(filePlan, dataSetId));
             assertTrue(dataSetService.getDataSets(filePlan, true).size() == 0);
             assertTrue(dataSetService.getDataSets(filePlan, false).size() == 1);
+            */
          }
 
          /**
@@ -327,10 +304,12 @@ public class DataSetServiceImplTest extends BaseRMTestCase
           * @param recordCategoryName the record category name
           * @return Returns the record category nodeRef or null if not found
           */
+         /*
          private NodeRef getRecordCategory(NodeRef parentNode, String recordCategoryName)
          {
             return nodeService.getChildByName(parentNode, ContentModel.ASSOC_CONTAINS, recordCategoryName);
          }
+         */
 
          /**
           * Helper method for getting the record folder with the given folder name within the context of the record category
@@ -339,10 +318,12 @@ public class DataSetServiceImplTest extends BaseRMTestCase
           * @param recordFolderName the folder name
           * @return Returns the record folder nodeRef or null if not found
           */
+         /*
          private NodeRef getRecordFolder(NodeRef recordCategory, String recordFolderName)
          {
             return nodeService.getChildByName(recordCategory, ContentModel.ASSOC_CONTAINS, recordFolderName);
          }
+         */
       });
    }
 
@@ -356,11 +337,8 @@ public class DataSetServiceImplTest extends BaseRMTestCase
          @Override
          public Void run() throws Exception
          {
-            for (String dataSetId : dataSetIds)
-            {
-               // Test if a data set with the specified data set id exists
-               assertTrue(dataSetService.existsDataSet(dataSetId));
-            }
+            // Test if a data set with the specified data set id exists
+            assertTrue(dataSetService.existsDataSet(DATA_SET_ID));
 
             return null;
          }
@@ -377,7 +355,7 @@ public class DataSetServiceImplTest extends BaseRMTestCase
          @Override
          public Void run() throws Exception
          {
-            // This will be tested in testFilePlanBeforeImportingDOD5015DataSet() and testFilePlanAfterImportingDOD5015DataSet()
+            // This will be tested in testFilePlanBeforeImportingDataSet() and testFilePlanAfterImportingDataSet()
             return null;
          }
       });

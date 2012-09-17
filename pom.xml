@@ -468,17 +468,6 @@
         <!-- Chemistry -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-client-impl</artifactId>
-            <version>${dependency.opencmis.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-commons-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
             <exclusions>

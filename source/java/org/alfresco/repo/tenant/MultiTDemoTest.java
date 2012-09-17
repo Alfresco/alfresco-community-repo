@@ -1257,27 +1257,37 @@ public class MultiTDemoTest extends TestCase
         createTenant(tenantDomain1);
         
         String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        
+        try
         {
-            public Object doWork() throws Exception
+            AuthenticationUtil.setFullyAuthenticatedUser(tenantAdminName); // note: since SiteServiceImpl.setupSitePermissions currently uses getCurrentUserName (rather than runAs)
+            
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
-                createSite("site1");
-                
-                NodeRef docLib1Ref = siteService.getContainer("site1", SiteService.DOCUMENT_LIBRARY);
-                NodeRef contentRef = addContent(docLib1Ref, "tqbfjotld.txt", "The quick brown fox jumps over the lazy dog", MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                
-                createSite("site2");
-                
-                NodeRef docLib2Ref = siteService.getContainer("site2", SiteService.DOCUMENT_LIBRARY);
-                
-                nodeService.moveNode(contentRef, docLib2Ref, ContentModel.ASSOC_CONTAINS, QName.createQName("tqbfjotld.txt"));
-                
-                // for Share, called via "move-to.post.json.js" -> ScriptSiteService.cleanSitePermissions
-                siteService.cleanSitePermissions(contentRef, null);
-                
-                return null;
-            }
-        }, tenantAdminName);
+                public Object doWork() throws Exception
+                {
+                    createSite("site1");
+                    
+                    NodeRef docLib1Ref = siteService.getContainer("site1", SiteService.DOCUMENT_LIBRARY);
+                    NodeRef contentRef = addContent(docLib1Ref, "tqbfjotld.txt", "The quick brown fox jumps over the lazy dog", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                    
+                    createSite("site2");
+                    
+                    NodeRef docLib2Ref = siteService.getContainer("site2", SiteService.DOCUMENT_LIBRARY);
+                    
+                    nodeService.moveNode(contentRef, docLib2Ref, ContentModel.ASSOC_CONTAINS, QName.createQName("tqbfjotld.txt"));
+                    
+                    // for Share, called via "move-to.post.json.js" -> ScriptSiteService.cleanSitePermissions
+                    siteService.cleanSitePermissions(contentRef, null);
+                    
+                    return null;
+                }
+            }, tenantAdminName);
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
     }
     
     public void test_ALF_14354()

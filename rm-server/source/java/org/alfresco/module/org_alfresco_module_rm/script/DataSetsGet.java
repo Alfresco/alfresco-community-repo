@@ -19,6 +19,12 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class DataSetsGet extends DeclarativeWebScript
 {
 
+   /** Constant for the site name parameter */
+   private static final String ARG_SITE_NAME = "site";
+
+   /** Constant for the unloadedonly parameter */
+   private static final String ARG_UNLOADED_ONLY = "unloadedonly";
+
    /** Data set service */
    private DataSetService dataSetService;
 
@@ -54,11 +60,15 @@ public class DataSetsGet extends DeclarativeWebScript
    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
    {
       // Get the site name from the URL and find out the file plan
-      String siteName = req.getParameter("site");
+      String siteName = req.getParameter(ARG_SITE_NAME);
+      if (StringUtils.isBlank(siteName))
+      {
+         siteName = RmSiteType.DEFAULT_SITE_NAME;
+      }
       NodeRef filePlan = siteService.getContainer(siteName, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
 
       // Check if only unloaded data sets should be returned - default value is false
-      String unloadedOnlyParam = req.getParameter("unloadedonly");
+      String unloadedOnlyParam = req.getParameter(ARG_UNLOADED_ONLY);
       boolean unloadedOnly = false;
       if (StringUtils.isNotBlank(unloadedOnlyParam))
       {

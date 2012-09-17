@@ -1,26 +1,25 @@
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSet;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public class DataSetServiceImplTest extends BaseRMTestCase
 {
-   /** Services */
+   /** Data Set Service */
    private DataSetService dataSetService;
 
    /** Id of the test data set*/
    private static final String DATA_SET_ID = "testExampleData"; 
-
-   /** Enum for checking the condition */
-   private enum Condition
-   {
-      BEFORE, // Test a file plan before a data set has been imported
-      AFTER; // Test a file plan after a data set has been imported
-   }
 
    /**
     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
@@ -30,7 +29,7 @@ public class DataSetServiceImplTest extends BaseRMTestCase
    {
       super.initServices();
 
-      // Get RM Services
+      // Get Data Set Service
       dataSetService = (DataSetService) applicationContext.getBean("DataSetService");
    }
 
@@ -44,10 +43,13 @@ public class DataSetServiceImplTest extends BaseRMTestCase
          @Override
          public Void run() throws Exception
          {
-            // Test the data sets
             Map<String, DataSet> dataSets = dataSetService.getDataSets();
+            // Test the data sets
             assertNotNull(dataSets);
-            assertTrue(dataSets.size() > 0);
+            // At least the test data set must exist
+            assertTrue(dataSets.size() >= 1);
+            // The test data set must be in the list of available data sets
+            assertNotNull(dataSets.get(DATA_SET_ID));
 
             for (Map.Entry<String, DataSet> entry : dataSets.entrySet())
             {
@@ -79,38 +81,6 @@ public class DataSetServiceImplTest extends BaseRMTestCase
    }
 
    /**
-    * @see DataSetService#getDataSets(NodeRef, boolean)
-    */
-   public void testGetDataSetsForNodeRef() throws Exception
-   {
-      doTestInTransaction(new Test<Void>()
-      {
-         @Override
-         public Void run() throws Exception
-         {
-            // This will be tested in testFilePlanBeforeImportingDataSet() and testFilePlanAfterImportingDataSet()
-            return null;
-         }
-      });
-   }
-
-   /**
-    * @see DataSetService#getLoadedDataSets(NodeRef)
-    */
-   public void testGetLoadedDataSets() throws Exception
-   {
-      doTestInTransaction(new Test<Void>()
-      {
-         @Override
-         public Void run() throws Exception
-         {
-            // This will be tested in testFilePlanBeforeImportingDataSet() and testFilePlanAfterImportingDataSet()
-            return null;
-         }
-      });
-   }
-
-   /**
     * @see DataSetService#loadDataSet(String, org.alfresco.service.cmr.repository.NodeRef)
     */
    public void testLoadDataSet() throws Exception
@@ -120,164 +90,117 @@ public class DataSetServiceImplTest extends BaseRMTestCase
          @Override
          public Void run() throws Exception
          {
-            // Test the file plan
-            assertNotNull(filePlan);
-
-            // Test the data set id
-            assertNotNull(DATA_SET_ID);
-
             // Test the file plan before importing the data sets
-            testFilePlan(filePlan, DATA_SET_ID, Condition.BEFORE);
+            testFilePlanBeforeImportingDataSet();
 
             // Load the data set into the specified file plan
             dataSetService.loadDataSet(filePlan, DATA_SET_ID);
 
             // Test the file plan after importing the data sets
-            testFilePlan(filePlan, DATA_SET_ID, Condition.AFTER);
+            testFilePlanAfterImportingDataSet();
 
             return null;
          }
 
          /**
-          * Helper method for testing the file plan
-          * 
-          * @param filePlan The NodeRef of the filePlan which is to test
-          * @param dataSetId The id of the data set which is to import / has been imported
-          * @param condition Indicates whether the filePlan should be tested before or after importing the test data
-          */
-         private void testFilePlan(NodeRef filePlan, String dataSetId, Condition condition)
-         {
-            switch (condition)
-            {
-               case BEFORE:
-                  testFilePlanBeforeImportingDataSet(filePlan);
-                  break;
-
-               case AFTER:
-                  testFilePlanAfterImportingDataSet(filePlan);
-                  break;
-            }
-         }
-
-         // FIXME: Change the tests according to the new data set
-
-         /**
           * Helper method for testing the test file plan before importing the data
-          * 
-          * @param filePlan The NodeRef of the filePlan which is to test
           */
-         private void testFilePlanBeforeImportingDataSet(NodeRef filePlan)
+         private void testFilePlanBeforeImportingDataSet()
          {
-            /*
             // There should not be any categories before importing
-            assertNull(getRecordCategory(filePlan, "Civilian Files"));
-            assertNull(getRecordCategory(filePlan, "Military Files"));
-            assertNull(getRecordCategory(filePlan, "Miscellaneous Files"));
-            assertNull(getRecordCategory(filePlan, "Reports"));
+            assertNull(nodeService.getChildByName(filePlan, ContentModel.ASSOC_CONTAINS, "TestRecordCategory1"));
+            assertNull(nodeService.getChildByName(filePlan, ContentModel.ASSOC_CONTAINS, "TestRecordCategory2"));
 
             // The aspect should exist before loading a data set
             assertNull(nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS));
 
             // At the beginning the file plan is empty. So there should not be any data sets
             assertTrue(dataSetService.getLoadedDataSets(filePlan).size() == 0);
-            assertFalse(dataSetService.isLoadedDataSet(filePlan, dataSetId));
-            assertTrue(dataSetService.getDataSets(filePlan, true).size() == 1);
-            assertTrue(dataSetService.getDataSets(filePlan, false).size() == 1);
-            */
+            assertFalse(dataSetService.isLoadedDataSet(filePlan, DATA_SET_ID));
+            assertTrue(dataSetService.getDataSets(filePlan, true).size() > 0);
+            assertTrue(dataSetService.getDataSets(filePlan, false).size() > 0);
          }
 
          /**
           * Helper method for testing the test file plan after importing the data
-          * 
-          * @param filePlan The NodeRef of the filePlan which is to test
           */
-         private void testFilePlanAfterImportingDataSet(NodeRef filePlan)
+         private void testFilePlanAfterImportingDataSet()
          {
-            /*
             // Test the "first level" categories after importing if they exist
-            NodeRef civFil = getRecordCategory(filePlan, "Civilian Files");
-            assertNotNull(civFil);
-            NodeRef milFil = getRecordCategory(filePlan, "Military Files");
-            assertNotNull(milFil);
-            NodeRef misFil = getRecordCategory(filePlan, "Miscellaneous Files");
-            assertNotNull(misFil);
-            NodeRef rep = getRecordCategory(filePlan, "Reports");
-            assertNotNull(rep);
+            // TestRecordCategory1
+            NodeRef recCat1 = nodeService.getChildByName(filePlan, ContentModel.ASSOC_CONTAINS, "TestRecordCategory1");
+            assertNotNull(recCat1);
+            List<NodeRef> recCat1ImmediateChildren = rmService.getAllContained(recCat1);
+            assertTrue(recCat1ImmediateChildren.size() == 3);
+            List<NodeRef> recCat1AllChildren = rmService.getAllContained(recCat1, true);
+            assertTrue(recCat1AllChildren.size() == 6);
+            DispositionSchedule recCat1DispositionSchedule = dispositionService.getDispositionSchedule(recCat1);
+            assertNull(recCat1DispositionSchedule);
 
+            // TestRecordCategory2
+            NodeRef recCat2 = nodeService.getChildByName(filePlan, ContentModel.ASSOC_CONTAINS, "TestRecordCategory2");
+            assertNotNull(recCat2);
+            List<NodeRef> recCat2ImmediateChildren = rmService.getAllContained(recCat2);
+            assertTrue(recCat2ImmediateChildren.size() == 2);
+            List<NodeRef> recCat2AllChildren = rmService.getAllContained(recCat2, true);
+            assertTrue(recCat2AllChildren.size() == 4);
+            DispositionSchedule recCat2DispositionSchedule = dispositionService.getDispositionSchedule(recCat2);
+            assertNull(recCat2DispositionSchedule);
 
-            // Civilian Files: Test the "second level" categories and record folders
-            NodeRef civFil1 = getRecordCategory(civFil, "Case Files and Papers");
-            assertNotNull(civFil1);
-            assertNotNull(getRecordFolder(civFil1, "Gilbert Competency Hearing"));
+            // TestRecordCategory1: Test the "second level" categories and record folders
+            NodeRef recCat11 = nodeService.getChildByName(recCat1, ContentModel.ASSOC_CONTAINS, "TestRecordCategory11");
+            assertNotNull(recCat11);
+            List<NodeRef> recCat11ImmediateChilderen = rmService.getAllContained(recCat11);
+            assertTrue(recCat11ImmediateChilderen.size() == 2);
+            List<NodeRef> recCat11Childeren = rmService.getAllContained(recCat11, true);
+            assertTrue(recCat11Childeren.size() == 2);
+            assertNotNull(nodeService.getChildByName(recCat11, ContentModel.ASSOC_CONTAINS, "TestRecordFolder1"));
+            assertNotNull(nodeService.getChildByName(recCat11, ContentModel.ASSOC_CONTAINS, "TestRecordFolder2"));
+            VitalRecordDefinition recCat11VitalRecordDefinition = vitalRecordService.getVitalRecordDefinition(recCat11);
+            assertNotNull(recCat11VitalRecordDefinition);
+            assertTrue(recCat11VitalRecordDefinition.getReviewPeriod().getExpression().equals("1"));
+            assertNotNull(recCat11VitalRecordDefinition.getNextReviewDate());
 
-            NodeRef civFil2 = getRecordCategory(civFil, "Employee Performance File System Records");
-            assertNotNull(civFil2);
+            NodeRef recCat12 = nodeService.getChildByName(recCat1, ContentModel.ASSOC_CONTAINS, "TestRecordCategory12");
+            assertNotNull(recCat12);
+            List<NodeRef> recCat12ImmediateChildren = rmService.getAllContained(recCat12);
+            assertTrue(recCat12ImmediateChildren.size() == 1);
+            List<NodeRef> recCat12Children = rmService.getAllContained(recCat12, true);
+            assertTrue(recCat12Children.size() == 1);
+            assertNotNull(nodeService.getChildByName(recCat12, ContentModel.ASSOC_CONTAINS, "TestRecordFolder3"));
+            DispositionSchedule recCat12DispositionSchedule = dispositionService.getDispositionSchedule(recCat12);
+            assertNotNull(recCat12DispositionSchedule);
+            assertTrue(recCat12DispositionSchedule.getDispositionInstructions().equals("Cut off every 3 months, hold 3 months, then destroy."));
+            assertTrue(recCat12DispositionSchedule.getDispositionAuthority().equals("T0-000-00-1 item 002"));
+            assertTrue(recCat12DispositionSchedule.getDispositionActionDefinitions().size() == 2);
+            assertNotNull(recCat12DispositionSchedule.getDispositionActionDefinitionByName("cutoff"));
+            assertNotNull(recCat12DispositionSchedule.getDispositionActionDefinitionByName("destroy"));
 
-            NodeRef civFil3 = getRecordCategory(civFil, "Foreign Employee Award Files");
-            assertNotNull(civFil3);
-            assertNotNull(getRecordFolder(civFil3, "Christian Bohr"));
-            assertNotNull(getRecordFolder(civFil3, "Karl Planck"));
+            NodeRef recCat13 = nodeService.getChildByName(recCat1, ContentModel.ASSOC_CONTAINS, "TestRecordCategory13");
+            assertNotNull(recCat13);
+            List<NodeRef> recCat13ImmediateChildren = rmService.getAllContained(recCat13);
+            assertTrue(recCat13ImmediateChildren.size() == 0);
+            DispositionSchedule recCat13DispositionSchedule = dispositionService.getDispositionSchedule(recCat13);
+            assertNotNull(recCat13DispositionSchedule);
 
-            NodeRef civFil4 = getRecordCategory(civFil, "Payroll Differential and Allowances");
-            assertNotNull(civFil4);
-            assertNotNull(getRecordFolder(civFil4, "Martin Payroll Differential and Allowances"));
+            // TestRecordCategory2: Test the "second level" categories and record folders
+            NodeRef recCat21 = nodeService.getChildByName(recCat2, ContentModel.ASSOC_CONTAINS, "TestRecordCategory21");
+            assertNotNull(recCat21);
+            List<NodeRef> recCat21ImmediateChildren = rmService.getAllContained(recCat21);
+            assertTrue(recCat21ImmediateChildren.size() == 0);
+            DispositionSchedule recCat21DispositionSchedule = dispositionService.getDispositionSchedule(recCat21);
+            assertNotNull(recCat21DispositionSchedule);
 
-            NodeRef civFil5 = getRecordCategory(civFil, "Withholding of Within-Grade Increase (WGI) Records");
-            assertNotNull(civFil5);
-            assertNotNull(getRecordFolder(civFil5, "Gilbert WGI Records"));
-
-
-            // Military Files: Test the "second level" categories and record folders
-            NodeRef milFil1 = getRecordCategory(milFil, "Military Assignment Documents");
-            assertNotNull(milFil1);
-
-            NodeRef milFil2 = getRecordCategory(milFil, "Official Military Personnel Privilege Card Applications");
-            assertNotNull(milFil2);
-            assertNotNull(getRecordFolder(milFil2, "COL Bob Johnson"));
-            assertNotNull(getRecordFolder(milFil2, "PFC Alan Murphy"));
-
-            NodeRef milFil3 = getRecordCategory(milFil, "Personnel Security Program Records");
-            assertNotNull(milFil3);
-            assertNotNull(getRecordFolder(milFil3, "Commander's Administrative Assistant"));
-            assertNotNull(getRecordFolder(milFil3, "Equal Opportunity Coordinator"));
-
-
-            // Miscellaneous Files: Test the "second level" categories and record folders
-            NodeRef misFil1 = getRecordCategory(misFil, "Civilian Employee Training Program Records");
-            assertNotNull(misFil1);
-            assertNotNull(getRecordFolder(misFil1, "Beth Tanaka Training Records (2008)"));
-            assertNotNull(getRecordFolder(misFil1, "Bob Prentice Training Records (2008)"));
-            assertNotNull(getRecordFolder(misFil1, "Chuck Stevens Training Records (2008)"));
-
-            NodeRef misFil2 = getRecordCategory(misFil, "Monthly Cockpit Crew Training");
-            assertNotNull(misFil2);
-            assertNotNull(getRecordFolder(misFil2, "February Cockpit Crew Training"));
-            assertNotNull(getRecordFolder(misFil2, "January Cockpit Crew Training"));
-
-            NodeRef misFil3 = getRecordCategory(misFil, "Purchase of Foreign Award Medals and Decorations");
-            assertNotNull(misFil3);
-
-            NodeRef misFil4 = getRecordCategory(misFil, "Science Advisor Records");
-            assertNotNull(misFil4);
-            assertNotNull(getRecordFolder(misFil4, "Phoenix Mars Mission"));
-
-
-            // Reports: Test the "second level" categories and record folders
-            NodeRef rep1 = getRecordCategory(rep, "AIS Audit Records");
-            assertNotNull(rep1);
-            assertNotNull(getRecordFolder(rep1, "January AIS Audit Records"));
-
-            NodeRef rep2 = getRecordCategory(rep, "Bi-Weekly Cost Reports");
-            assertNotNull(rep2);
-            assertNotNull(getRecordFolder(rep2, "CY08 Unit Manning Documents"));
-
-            NodeRef rep3 = getRecordCategory(rep, "Overtime Reports");
-            assertNotNull(rep3);
-            assertNotNull(getRecordFolder(rep3, "FY08 Overtime Reports"));
-
-            NodeRef rep4 = getRecordCategory(rep, "Unit Manning Documents");
-            assertNotNull(rep4);
-            assertNotNull(getRecordFolder(rep4, "1st Quarter Unit Manning Documents"));
+            NodeRef recCat22 = nodeService.getChildByName(recCat2, ContentModel.ASSOC_CONTAINS, "TestRecordCategory22");
+            assertNotNull(recCat22);
+            List<NodeRef> recCat22ImmediateChildren = rmService.getAllContained(recCat22);
+            assertTrue(recCat22ImmediateChildren.size() == 2);
+            List<NodeRef> recCat22Children = rmService.getAllContained(recCat22, true);
+            assertTrue(recCat22Children.size() == 2);
+            assertNotNull(nodeService.getChildByName(recCat22, ContentModel.ASSOC_CONTAINS, "TestRecordFolder4"));
+            assertNotNull(nodeService.getChildByName(recCat22, ContentModel.ASSOC_CONTAINS, "TestRecordFolder5"));
+            DispositionSchedule recCat22DispositionSchedule = dispositionService.getDispositionSchedule(recCat22);
+            assertNotNull(recCat22DispositionSchedule);
 
             // After loading the data set into the file plan the custom aspect should contain the id of the loaded data set 
             Serializable nodeProperty = nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS);
@@ -285,45 +208,16 @@ public class DataSetServiceImplTest extends BaseRMTestCase
             @SuppressWarnings("unchecked")
             ArrayList<String> loadedDataSetIds = (ArrayList<String>)nodeProperty;
             assertTrue(loadedDataSetIds.size() == 1);
-            assertTrue(loadedDataSetIds.contains(dataSetId));
+            assertTrue(loadedDataSetIds.contains(DATA_SET_ID));
 
             // The data set has been loaded into the file plan, so the file plan should contain the data set id
             Map<String, DataSet> loadedDataSets = dataSetService.getLoadedDataSets(filePlan);
             assertTrue(loadedDataSets.size() == 1);
-            assertTrue(loadedDataSets.containsKey(dataSetId));
-            assertTrue(dataSetService.isLoadedDataSet(filePlan, dataSetId));
-            assertTrue(dataSetService.getDataSets(filePlan, true).size() == 0);
-            assertTrue(dataSetService.getDataSets(filePlan, false).size() == 1);
-            */
+            assertTrue(loadedDataSets.containsKey(DATA_SET_ID));
+            assertTrue(dataSetService.isLoadedDataSet(filePlan, DATA_SET_ID));
+            assertTrue(dataSetService.getDataSets(filePlan, true).size() > 0);
+            assertTrue(dataSetService.getDataSets(filePlan, false).size() > 1);
          }
-
-         /**
-          * Helper method for getting the record category with the given category name within the context of the parent node
-          *
-          * @param parentNode the parent node
-          * @param recordCategoryName the record category name
-          * @return Returns the record category nodeRef or null if not found
-          */
-         /*
-         private NodeRef getRecordCategory(NodeRef parentNode, String recordCategoryName)
-         {
-            return nodeService.getChildByName(parentNode, ContentModel.ASSOC_CONTAINS, recordCategoryName);
-         }
-         */
-
-         /**
-          * Helper method for getting the record folder with the given folder name within the context of the record category
-          *
-          * @param recordCategory the record category node
-          * @param recordFolderName the folder name
-          * @return Returns the record folder nodeRef or null if not found
-          */
-         /*
-         private NodeRef getRecordFolder(NodeRef recordCategory, String recordFolderName)
-         {
-            return nodeService.getChildByName(recordCategory, ContentModel.ASSOC_CONTAINS, recordFolderName);
-         }
-         */
       });
    }
 
@@ -339,26 +233,23 @@ public class DataSetServiceImplTest extends BaseRMTestCase
          {
             // Test if a data set with the specified data set id exists
             assertTrue(dataSetService.existsDataSet(DATA_SET_ID));
+            assertFalse(dataSetService.existsDataSet("AnotherDataSetId"));
 
             return null;
          }
       });
    }
 
-   /**
-    * @see DataSetService#isLoadedDataSet(NodeRef, String)
+   /*
+    * INFO:
+    * 
+    * The tests for
+    * 
+    * DataSetService#getDataSets(NodeRef, boolean)
+    * DataSetService#getLoadedDataSets(NodeRef)
+    * DataSetService#isLoadedDataSet(NodeRef, String)
+    * 
+    * will be executed in testFilePlanBeforeImportingDataSet() and testFilePlanAfterImportingDataSet().
     */
-   public void testIsLoadedDataSet() throws Exception
-   {
-      doTestInTransaction(new Test<Void>()
-      {
-         @Override
-         public Void run() throws Exception
-         {
-            // This will be tested in testFilePlanBeforeImportingDataSet() and testFilePlanAfterImportingDataSet()
-            return null;
-         }
-      });
-   }
 
 }

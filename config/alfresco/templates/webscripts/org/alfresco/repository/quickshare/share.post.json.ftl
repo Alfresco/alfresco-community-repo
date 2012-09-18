@@ -1,5 +1,5 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "sharedId" : "${sharedId}"
+   "sharedId": "${sharedDTO.id}"
 }
 </#escape>

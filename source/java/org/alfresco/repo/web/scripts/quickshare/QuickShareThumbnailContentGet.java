@@ -48,6 +48,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  * WARNING: **unauthenticated** web script (equivalent to authenticated version - see "thumbnail.get.js")
  * 
  * @author janv
+ * @since Cloud/4.2
  */
 public class QuickShareThumbnailContentGet extends QuickShareContentGet
 {

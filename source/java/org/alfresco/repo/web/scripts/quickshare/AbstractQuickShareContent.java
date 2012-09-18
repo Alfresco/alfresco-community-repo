@@ -18,45 +18,25 @@
  */
 package org.alfresco.repo.web.scripts.quickshare;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
-import org.alfresco.service.cmr.attributes.AttributeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.util.Pair;
+import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.WebScriptException;
 
 
 /**
  * QuickShare/PublicView
  * 
  * @author janv
+ * @since Cloud/4.2
  */
 public abstract class AbstractQuickShareContent extends DeclarativeWebScript
 {
-    protected NodeService nodeService;
-    protected AttributeService attributeService;
-    protected TenantService tenantService;
+    protected QuickShareService quickShareService;
     
     private boolean enabled = true;
     
-    public void setNodeService(NodeService nodeService)
+    public void setQuickShareService(QuickShareService quickShareService)
     {
-        this.nodeService = nodeService;
-    }
-    
-    public void setAttributeService(AttributeService attributeService)
-    {
-        this.attributeService = attributeService;
-    }
-    
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
+        this.quickShareService = quickShareService;
     }
     
     public void setEnabled(boolean enabled)
@@ -67,32 +47,5 @@ public abstract class AbstractQuickShareContent extends DeclarativeWebScript
     protected boolean isEnabled()
     {
         return this.enabled;
-    }
-    
-    
-    protected Pair<String, NodeRef> getTenantNodeRefFromSharedId(final String sharedId)
-    {
-        return getTenantNodeRefFromSharedId(attributeService, tenantService, sharedId);
-    }
-    
-    /* package */ static Pair<String, NodeRef> getTenantNodeRefFromSharedId(final AttributeService attributeService, final TenantService tenantService, final String sharedId)
-    {
-        final NodeRef nodeRef = TenantUtil.runAsDefaultTenant(new TenantRunAsWork<NodeRef>()
-        {
-            public NodeRef doWork() throws Exception
-            {
-                return (NodeRef)attributeService.getAttribute(ShareContentPost.ATTR_KEY_SHAREDIDS_ROOT, sharedId);
-            }
-        });
-        
-        if (nodeRef == null)
-        {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: " + sharedId);
-        }
-        
-        // note: relies on tenant-specific (ie. mangled) nodeRef
-        String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier());
-        
-        return new Pair<String, NodeRef>(tenantDomain, tenantService.getBaseName(nodeRef));
     }
 }

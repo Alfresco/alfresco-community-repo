@@ -25,11 +25,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.web.scripts.content.ContentGet;
-import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
+import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -51,6 +51,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  * WARNING: **unauthenticated** web script (equivalent to authenticated version - see ContentGet.java)
  * 
  * @author janv
+ * @since Cloud/4.2
  */
 public class QuickShareContentGet extends ContentGet
 {
@@ -58,8 +59,7 @@ public class QuickShareContentGet extends ContentGet
     
     private NodeService nodeService;
     private NamespaceService namespaceService;
-    private AttributeService attributeService;
-    private TenantService tenantService;
+    private QuickShareService quickShareSerivce;
     
     private boolean enabled = true;
     
@@ -76,14 +76,9 @@ public class QuickShareContentGet extends ContentGet
         super.setNamespaceService(namespaceService);
     }
     
-    public void setAttributeService(AttributeService attributeService)
+    public void setQuickShareService(QuickShareService quickShareService)
     {
-        this.attributeService = attributeService;
-    }
-    
-    public void setTenantService(TenantService tenantService)
-    {
-        this.tenantService = tenantService;
+        this.quickShareSerivce = quickShareService;
     }
     
     public void setEnabled(boolean enabled)
@@ -115,7 +110,7 @@ public class QuickShareContentGet extends ContentGet
         
         try
         {
-            Pair<String, NodeRef> pair = ShareContentPost.getTenantNodeRefFromSharedId(attributeService, tenantService, sharedId);
+            Pair<String, NodeRef> pair = quickShareSerivce.getTenantNodeRefFromSharedId(sharedId);
             final String tenantDomain = pair.getFirst();
             final NodeRef nodeRef = pair.getSecond();
 
@@ -139,6 +134,11 @@ public class QuickShareContentGet extends ContentGet
                 logger.debug("QuickShare - retrieved content: "+sharedId+" ["+nodeRef+"]");
             }
 
+        }
+        catch (InvalidSharedIdException ex)
+        {
+            logger.error("Unable to find: "+sharedId);
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: "+sharedId);
         }
         catch (InvalidNodeRefException inre)
         {

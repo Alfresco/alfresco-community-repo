@@ -22,12 +22,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.model.QuickShareModel;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -44,6 +40,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * WARNING: **unauthenticated** web script (equivalent to authenticated version - see MetaDataGet.java)
  * 
  * @author janv
+ * @since Cloud/4.2
  */
 public class QuickShareMetaDataGet extends MetaDataGet
 {
@@ -67,29 +64,12 @@ public class QuickShareMetaDataGet extends MetaDataGet
         
         try
         {
-            Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(attributeService, tenantService, sharedId);
-            final String tenantDomain = pair.getFirst();
-            final NodeRef nodeRef = pair.getSecond();
-            
-            Map<String, Object> model = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, Object>>()
-            {
-                public Map<String, Object> doWork() throws Exception
-                {
-                    if (! nodeService.getAspects(nodeRef).contains(QuickShareModel.ASPECT_QSHARE))
-                    {
-                        throw new InvalidNodeRefException(nodeRef);
-                    }
-                    
-                    return getMetaDataModel(nodeRef);
-                }
-            }, tenantDomain);
-            
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("QuickShare - retrieved metadata: "+sharedId+" ["+nodeRef+"]["+model+"]");
-            }
-            
-            return model;
+            return quickShareService.getMetaData(sharedId);
+        }
+        catch (InvalidSharedIdException ex)
+        {
+            logger.error("Unable to find: "+sharedId);
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: "+sharedId);
         }
         catch (InvalidNodeRefException inre)
         {

@@ -20,11 +20,14 @@ package org.alfresco.repo.web.scripts.quickshare;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
@@ -44,6 +47,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyMap;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
@@ -64,6 +69,8 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     private static final String USER_ONE = "UserOne-"+RUN_ID;
     private static final String USER_TWO = "UserTwo-"+RUN_ID;
     
+    private final static String COPY_URL = "/slingshot/doclib/action/copy-to/node/{copy_dest}";
+
     private final static String SHARE_URL = "/api/internal/shared/share/{node_ref_3}";
     
     private final static String UNSHARE_URL = "/api/internal/shared/unshare/{shared_id}";
@@ -91,6 +98,8 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     private ContentService contentService;
     private Repository repositoryHelper;
     private RetryingTransactionHelper transactionHelper;
+    
+    private NodeRef userOneHome;
     
     @Override
     protected void setUp() throws Exception
@@ -125,7 +134,8 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
                 
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_NAME, TEST_NAME);
-                ChildAssociationRef result = nodeService.createNode(repositoryHelper.getUserHome(personService.getPerson(USER_ONE)),
+                userOneHome = repositoryHelper.getUserHome(personService.getPerson(USER_ONE));
+                ChildAssociationRef result = nodeService.createNode(userOneHome,
                                                         ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS,
                                                         ContentModel.TYPE_CONTENT, props);
                 
@@ -269,6 +279,45 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         rsp = sendRequest(new GetRequest(SHARE_METADATA_URL.replace("{shared_id}", sharedId)), expectedStatusNotFound, USER_TWO);
         rsp = sendRequest(new GetRequest(SHARE_CONTENT_URL.replace("{shared_id}", sharedId)), expectedStatusNotFound, USER_TWO);
         rsp = sendRequest(new GetRequest(SHARE_CONTENT_THUMBNAIL_URL.replace("{shared_id}", sharedId).replace("{thumbnailname}", "doclib")), expectedStatusNotFound, USER_TWO);
+    }
+    
+    /**
+     * This test verifies that copying a shared node does not across the shared aspect and it's associated properties.
+     * @throws IOException 
+     * @throws UnsupportedEncodingException 
+     * @throws JSONException 
+     */
+    public void testCopy() throws UnsupportedEncodingException, IOException, JSONException 
+    {
+        final int expectedStatusOK = 200;
+        
+        String testNodeRef = testNode.toString().replace("://", "/");
+        String userOneNodeRef = userOneHome.toString().replace("://", "/");
+
+        // As user one ...
+        
+        // share
+        Response rsp = sendRequest(new PostRequest(SHARE_URL.replace("{node_ref_3}", testNodeRef), "", APPLICATION_JSON), expectedStatusOK, USER_ONE);
+        JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        String sharedId = jsonRsp.getString("sharedId");
+        assertNotNull(sharedId);
+        assertEquals(22, sharedId.length()); // note: we may have to adjust/remove this check if we change length of id (or it becomes variable length)
+
+        JSONObject jsonReq = new JSONObject();
+        JSONArray nodeRefs = new JSONArray();
+        nodeRefs.put(testNode.toString());
+        jsonReq.put("nodeRefs", nodeRefs);
+        jsonReq.put("parentId", userOneHome);
+
+        rsp = sendRequest(new PostRequest(COPY_URL.replace("{copy_dest}", userOneNodeRef), jsonReq.toString(), APPLICATION_JSON), expectedStatusOK, USER_ONE);
+        jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        
+        JSONArray copyResults = jsonRsp.getJSONArray("results");
+        JSONObject copyResult = copyResults.getJSONObject(0);
+        
+        String copyNodeRef = copyResult.getString("nodeRef");
+        
+        assertFalse(nodeService.hasAspect(new NodeRef(copyNodeRef), QuickShareModel.ASPECT_QSHARE));
     }
     
     private void createUser(String userName)

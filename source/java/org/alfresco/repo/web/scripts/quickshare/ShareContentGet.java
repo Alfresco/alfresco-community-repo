@@ -44,6 +44,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * Note: authenticated web script
  * 
  * @author janv
+ * @since Cloud/4.2
  */
 public class ShareContentGet extends AbstractQuickShareContent
 {
@@ -74,7 +75,7 @@ public class ShareContentGet extends AbstractQuickShareContent
         
         try
         {
-            Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(attributeService, tenantService, sharedId);
+            Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
             final String tenantDomain = pair.getFirst();
             final NodeRef nodeRef = pair.getSecond();
             

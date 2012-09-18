@@ -143,16 +143,26 @@ public class UnshareContentDelete extends AbstractQuickShareContent implements N
     
     // behaviour - currently registered for content only !!
     // note: will remove "share" even if node is only being archived (ie. moved to trash) => a subsequent restore will *not* restore the "share"
-    public void beforeDeleteNode(final NodeRef nodeRef)
+    public void beforeDeleteNode(final NodeRef beforeDeleteNodeRef)
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             public Void doWork() throws Exception
             {
-                String sharedId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+                String sharedId = (String)nodeService.getProperty(beforeDeleteNodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
                 if (sharedId != null)
                 {
-                    removeSharedId(sharedId);
+                    Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(attributeService, tenantService, sharedId);
+                    
+                    @SuppressWarnings("unused")
+                    final String tenantDomain = pair.getFirst();
+                    final NodeRef nodeRef = pair.getSecond();
+                    
+                    // note: deleted nodeRef might not match, eg. for upload new version -> checkin -> delete working copy
+                    if (nodeRef.equals(beforeDeleteNodeRef))
+                    {
+                        removeSharedId(sharedId);
+                    }
                 }
                 return null;
             }

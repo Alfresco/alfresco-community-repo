@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,6 +35,7 @@ import org.alfresco.repo.web.scripts.invitation.InvitationWebScriptTest;
 import org.alfresco.repo.web.scripts.invite.InviteServiceTest;
 import org.alfresco.repo.web.scripts.person.PersonServiceTest;
 import org.alfresco.repo.web.scripts.preference.PreferenceServiceTest;
+import org.alfresco.repo.web.scripts.quickshare.QuickShareRestApiTest;
 import org.alfresco.repo.web.scripts.rating.RatingRestApiTest;
 import org.alfresco.repo.web.scripts.replication.ReplicationRestApiTest;
 import org.alfresco.repo.web.scripts.rule.RuleServiceTest;
@@ -49,7 +50,6 @@ import org.alfresco.repo.web.scripts.wcm.sandbox.SandboxTest;
 import org.alfresco.repo.web.scripts.workflow.ActivitiWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.JBPMWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest;
-import org.alfresco.repo.web.scripts.workflow.AbstractWorkflowRestApiTest;
 
 /**
  * Web Scripts test suite
@@ -59,11 +59,12 @@ public class WebScriptTestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-
+        
         // Ensure that a suitable context is available
         TestWebScriptRepoServer.getTestServer();
         
         // Add the tests
+        suite.addTestSuite( QuickShareRestApiTest.class );
         suite.addTestSuite( AdminWebScriptTest.class );
         suite.addTestSuite( AuditWebScriptTest.class );
         suite.addTestSuite( BlogServiceTest.class );
@@ -94,7 +95,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( WorkflowModelBuilderTest.class );
         suite.addTestSuite( ActivitiWorkflowRestApiTest.class );
         suite.addTestSuite( JBPMWorkflowRestApiTest.class );
-
+        
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,
         //  due to finalisers closing caches when we're not looking
@@ -102,4 +103,4 @@ public class WebScriptTestSuite extends TestSuite
         
         return suite;
     }
-}       
+}

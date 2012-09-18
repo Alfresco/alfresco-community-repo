@@ -18,12 +18,17 @@
  */
 package org.alfresco.repo.web.scripts.quickshare;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -50,12 +55,14 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * This class tests QuickShare REST API
  * 
  * @author janv
- * @since Cloud/4.1
+ * @since Cloud/4.2
  */
 public class QuickShareRestApiTest extends BaseWebScriptTest
 {
-    private static final String USER_ONE = "UserOne";
-    private static final String USER_TWO = "UserTwo";
+    private static final String RUN_ID = ""+System.currentTimeMillis();
+    
+    private static final String USER_ONE = "UserOne-"+RUN_ID;
+    private static final String USER_TWO = "UserTwo-"+RUN_ID;
     
     private final static String SHARE_URL = "/api/internal/shared/share/{node_ref_3}";
     
@@ -73,9 +80,9 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     
     private NodeRef testNode;
     private final static String TEST_NAME = "test node";
-    private final static String TEST_CONTENT = "test content";
-    private final static String TEST_MIMETYPE_TEXT_PLAIN = MimetypeMap.MIMETYPE_TEXT_PLAIN;
-    private final static String TEST_MIMETYPE_IMAGE_PNG = MimetypeMap.MIMETYPE_IMAGE_PNG;
+    private static byte[] TEST_CONTENT = null;
+    private final static String TEST_MIMETYPE_JPEG = MimetypeMap.MIMETYPE_IMAGE_JPEG;
+    private final static String TEST_MIMETYPE_PNG = MimetypeMap.MIMETYPE_IMAGE_PNG;
     
     private MutableAuthenticationService authenticationService;
     private NodeService nodeService;
@@ -108,6 +115,14 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         {
             public NodeRef execute() throws Throwable
             {
+                // no pun intended
+                File quickFile = AbstractContentTransformerTest.loadQuickTestFile("jpg");
+                
+                
+                TEST_CONTENT = new byte[new Long(quickFile.length()).intValue()];
+                        
+                new FileInputStream(quickFile).read(TEST_CONTENT);
+                
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_NAME, TEST_NAME);
                 ChildAssociationRef result = nodeService.createNode(repositoryHelper.getUserHome(personService.getPerson(USER_ONE)),
@@ -116,8 +131,8 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
                 
                 NodeRef nodeRef = result.getChildRef();
                 ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-                writer.setMimetype(TEST_MIMETYPE_TEXT_PLAIN);
-                writer.putContent(TEST_CONTENT);
+                writer.setMimetype(TEST_MIMETYPE_JPEG);
+                writer.putContent(quickFile);
                 
                 return nodeRef;
             }
@@ -154,8 +169,34 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         deleteUser(USER_TWO);
     }
     
+    private void checkTransformer()
+    {
+        ContentTransformer transformer = this.contentService.getImageTransformer();
+        assertNotNull("No transformer returned for 'getImageTransformer'", transformer);
+        
+        // Check that it is working
+        ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
+        if (!transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_JPEG, -1, MimetypeMap.MIMETYPE_IMAGE_PNG,
+                    imageTransformationOptions))
+        {
+            fail("Image transformer is not working.  Please check your image conversion command setup.");
+        }
+    }
+    
+    private void checkBytes(byte[] content1, byte[] content2)
+    {
+        assertEquals(content1.length, content2.length);
+        
+        for (int i = 0; i < content1.length; i++)
+        {
+            assertEquals(content1[i], content2[i]);
+        }
+    }
+    
     public void testSanityCheckUrls() throws Exception
     {
+        checkTransformer();
+        
         final int expectedStatusOK = 200;
         final int expectedStatusNotFound = 404;
         final int expectedStatusServerError = 500; // currently mapped from AccessDenied (should it be 403, 404 or does it depend on use-case)
@@ -170,17 +211,17 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         String name = jsonRsp.getString("name");
         assertEquals(TEST_NAME, name);
         String mimetype = jsonRsp.getString("mimetype");
-        assertEquals(TEST_MIMETYPE_TEXT_PLAIN, mimetype);
+        assertEquals(TEST_MIMETYPE_JPEG, mimetype);
         
         // get content for node (authenticated)
         rsp = sendRequest(new GetRequest(AUTH_CONTENT_URL.replace("{node_ref_3}", testNodeRef_3)), expectedStatusOK, USER_ONE);
-        String content = rsp.getContentAsString();
-        assertEquals(TEST_CONTENT, content);
+        byte[] content = rsp.getContentAsByteArray();
+        checkBytes(TEST_CONTENT, content);
         
         // get content thumbnail for node (authenticated)
         rsp = sendRequest(new GetRequest(AUTH_CONTENT_THUMBNAIL_URL.replace("{node_ref_3}", testNodeRef_3).replace("{thumbnailname}", "doclib")), expectedStatusOK, USER_ONE);
         String type = rsp.getContentType();
-        assertEquals(TEST_MIMETYPE_IMAGE_PNG, type);
+        assertEquals(TEST_MIMETYPE_PNG, type);
         
         // As user two ...
         
@@ -205,17 +246,17 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         name = jsonRsp.getString("name");
         assertEquals(TEST_NAME, name);
         mimetype = jsonRsp.getString("mimetype");
-        assertEquals(TEST_MIMETYPE_TEXT_PLAIN, mimetype);
+        assertEquals(TEST_MIMETYPE_JPEG, mimetype);
         
         // get content for share (note: can be unauthenticated)
         rsp = sendRequest(new GetRequest(SHARE_CONTENT_URL.replace("{shared_id}", sharedId)), expectedStatusOK, USER_TWO);
-        content = rsp.getContentAsString();
-        assertEquals(TEST_CONTENT, content);
+        content = rsp.getContentAsByteArray();
+        checkBytes(TEST_CONTENT, content);
         
         // get content thumbnail for share (note: can be unauthenticated)
         rsp = sendRequest(new GetRequest(SHARE_CONTENT_THUMBNAIL_URL.replace("{shared_id}", sharedId).replace("{thumbnailname}", "doclib")), expectedStatusOK, USER_TWO);
         type = rsp.getContentType();
-        assertEquals(TEST_MIMETYPE_IMAGE_PNG, type);
+        assertEquals(TEST_MIMETYPE_PNG, type);
         
         // As user one ...
         

@@ -49,9 +49,9 @@ public interface RecordService
     // TODO boolean isRecordFiled(NodeRef record);
     // TODO boolean isRecordClassified(NodeRef record);
     
-    NodeRef getNewRecordContainer(NodeRef filePlan);
+   // NodeRef getNewRecordContainer(NodeRef filePlan);
     
-    NodeRef createRecord(NodeRef filePlan, NodeRef document);
+    //NodeRef createRecord(NodeRef filePlan, NodeRef document);
     
     // TODO NodeRef createAndFileRecord(NodeRef recordFolder, NodeRef document);
     

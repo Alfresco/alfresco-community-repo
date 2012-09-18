@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Creates a new record from an existing content object.
@@ -52,6 +53,8 @@ import org.alfresco.service.namespace.QName;
 public class CreateRecordAction extends ActionExecuterAbstractBase
                                 implements RecordsManagementModel
 {
+    public static final String NAME = "create-record";
+    
     private RecordsManagementService recordsManagementService;
     
     private RecordService recordService;
@@ -103,7 +106,7 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
                     ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
                     
                     /// get the new record container for the file plan
-                    NodeRef newRecordContainer = recordService.getNewRecordContainer(filePlan);
+                    NodeRef newRecordContainer = getNewRecordContainer(filePlan);
                     if (newRecordContainer == null)
                     {
                         throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
@@ -127,6 +130,10 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
                                                     RecordReadersDynamicAuthority.RECORD_READERS, 
                                                     RMPermissionModel.READ_RECORDS, 
                                                     true);
+                    permissionService.setPermission(filePlan, 
+                                                    RecordReadersDynamicAuthority.RECORD_READERS, 
+                                                    RMPermissionModel.VIEW_RECORDS, 
+                                                    true);
                     
                     return null;
                 }
@@ -137,6 +144,16 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
             throw new AlfrescoRuntimeException("Unable to file file plan.");
         }        
     }
+    
+    private NodeRef getNewRecordContainer(NodeRef filePlan)
+    {
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_NEW_RECORDS, RegexQNamePattern.MATCH_ALL);
+        if (assocs.size() != 1)
+        {
+            throw new AlfrescoRuntimeException("Error getting the new record container, because the container cannot be indentified.");
+        }
+        return assocs.get(0).getChildRef();        
+    } 
 
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> params)

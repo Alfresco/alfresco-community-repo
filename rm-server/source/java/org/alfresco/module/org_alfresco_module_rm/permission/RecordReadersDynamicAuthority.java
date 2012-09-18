@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+`        * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.permission;
 
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
@@ -28,6 +29,7 @@ import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -104,16 +106,38 @@ public class RecordReadersDynamicAuthority implements DynamicAuthority, RecordsM
         {
             if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_RECORD_SECURITY) == true)
             {
-                result = true;
-                
-                System.out.println("Setting hasAuthority to true! - " + userName + " - " + nodeRef.toString());
-                
-//                Set<String> readers = (Set<String>)nodeService.getProperty(nodeRef, PROP_READERS);
-//                for (String reader : readers)
-//                {
-//                    // check to see if the user is one of the readers or is contained there within
-//                }
+                List<String> readers = (List<String>)nodeService.getProperty(nodeRef, PROP_READERS);
+                for (String reader : readers)
+                {
+                    if (reader.startsWith("GROUP_") == true)
+                    {
+                        Set<String> contained = getAuthorityService().getContainedAuthorities(AuthorityType.USER, reader, false);
+                        if (contained.isEmpty() == false && 
+                            contained.contains(userName) == true)
+                        {
+                            System.out.println("User " + userName + " is contained in the read group " + reader);
+                            
+                            result = true;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        // presume we have a user
+                        if (reader.equals(userName) == true)
+                        {
+                            System.out.println("User " + userName + " matches read user " + reader);
+                            
+                            result = true;
+                            break;
+                        }
+                    }
+                }
             }
+        }
+        else if (FilePlanComponentKind.FILE_PLAN.equals(kind) == true)
+        {
+            result = true;
         }
         
         return result;

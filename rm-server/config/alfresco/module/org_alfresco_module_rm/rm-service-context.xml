@@ -839,8 +839,6 @@
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getNewRecordContainer=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM.Write.0.1
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>

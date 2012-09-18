@@ -1,0 +1,12 @@
+<webscript>
+<shortname>Get some node context (nodeRef, tenantDomain, siteId) for given shared_id</shortname>
+  <description>
+  <![CDATA[
+  Note: authenticated script
+  ]]>
+  </description>
+  <url>/api/internal/shared/share/{shared_id}</url>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

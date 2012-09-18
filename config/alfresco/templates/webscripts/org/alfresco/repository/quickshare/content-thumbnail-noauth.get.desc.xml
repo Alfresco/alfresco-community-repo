@@ -1,0 +1,15 @@
+<webscript>
+  <shortname>QuickShare - get some "shared" thumbnail content</shortname>
+  <description>
+  <![CDATA[
+  Note: Unauthenticated => if QuickShare exists then gets the content stream for the specified document thumbnail/rendition
+  ]]>
+  </description>
+  
+  <url>/api/internal/shared/node/{shared_id}/content{property}/thumbnails/{thumbnailname}?a={attach?}</url>
+  
+  <format default="">argument</format>
+  <authentication>none</authentication>
+  <transaction allow="readonly"/>
+  <lifecycle>internal</lifecycle>
+</webscript>

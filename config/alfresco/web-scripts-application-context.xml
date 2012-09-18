@@ -1840,4 +1840,64 @@
     </property>
   </bean>
    
+   
+    <!-- BEGIN: QuickShare (aka PublicView) -->
+    
+    <!-- unauthenticated (note: equivalent to authenticated "content.get") -->
+    <bean id="webscript.org.alfresco.repository.quickshare.content-noauth.get" class="org.alfresco.repo.web.scripts.quickshare.QuickShareContentGet" parent="webscript">
+        <property name="referenceFactory" ref="CMISReferenceFactory" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="mimetypeService" ref="MimetypeService" />
+        <property name="CMISRenditionService" ref="CMISRenditionService" />
+        <property name="attributeService" ref="AttributeService" />
+        <property name="tenantService" ref="tenantService" />
+        <property name="enabled" value="${system.quickshare.enabled}" />
+    </bean>
+    
+    <!-- unauthenticated (note: equivalent to authenticated "thumbnail.get") -->
+    <bean id="webscript.org.alfresco.repository.quickshare.content-thumbnail-noauth.get" class="org.alfresco.repo.web.scripts.quickshare.QuickShareThumbnailContentGet" parent="webscript.org.alfresco.repository.quickshare.content-noauth.get">
+        <property name="thumbnailService" ref="ThumbnailService" />
+        <property name="scriptThumbnailService" ref="thumbnailServiceScript" />
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+    
+    <bean id="org.alfresco.repository.quickshare.abstract" class="org.alfresco.repo.web.scripts.quickshare.AbstractQuickShareContent" abstract="true">
+        <property name="nodeService" ref="NodeService" />
+        <property name="attributeService" ref="AttributeService" />
+        <property name="tenantService" ref="tenantService" />
+        <property name="enabled" value="${system.quickshare.enabled}" />
+    </bean>
+    
+    <!-- unauthenticated (note: equivalent to authenticated "metadata.get" (limited version with thumbnail data - see below) -->
+    <bean id="webscript.org.alfresco.repository.quickshare.metadata-noauth.get" class="org.alfresco.repo.web.scripts.quickshare.QuickShareMetaDataGet" parent="org.alfresco.repository.quickshare.abstract">
+        <property name="personService" ref="PersonService" />
+        <property name="thumbnailService" ref="ThumbnailService" />
+    </bean>
+    
+    <!-- authenticated -->
+    <bean id="webscript.org.alfresco.repository.quickshare.metadata.get" class="org.alfresco.repo.web.scripts.quickshare.MetaDataGet" parent="org.alfresco.repository.quickshare.abstract">
+        <property name="personService" ref="PersonService" />
+        <property name="thumbnailService" ref="ThumbnailService" />
+    </bean>
+    
+    <!-- authenticated -->
+    <bean id="webscript.org.alfresco.repository.quickshare.share.post" class="org.alfresco.repo.web.scripts.quickshare.ShareContentPost" parent="org.alfresco.repository.quickshare.abstract">
+    </bean>
+    
+    <!-- authenticated -->
+    <bean id="webscript.org.alfresco.repository.quickshare.share.get" class="org.alfresco.repo.web.scripts.quickshare.ShareContentGet" parent="org.alfresco.repository.quickshare.abstract">
+        <property name="siteService" ref="SiteService" />
+    </bean>
+    
+    <!-- authenticated -->
+    <bean id="webscript.org.alfresco.repository.quickshare.unshare.delete" class="org.alfresco.repo.web.scripts.quickshare.UnshareContentDelete" parent="org.alfresco.repository.quickshare.abstract" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
+    </bean>
+    
+    <!-- END: QuickShare (aka PublicView) -->
+   
 </beans>

@@ -1,0 +1,14 @@
+<webscript>
+  <shortname>QuickShare - "unshare" some content => disable public/unauthenticated access</shortname>
+  <description>
+  <![CDATA[
+  Note: Authenticated - you must have read access to the content in order to "unshare" it.
+  ]]>
+  </description>
+  
+  <url>/api/internal/shared/unshare/{shared_id}</url>
+  
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <lifecycle>internal</lifecycle>
+</webscript>

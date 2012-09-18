@@ -1,0 +1,17 @@
+<webscript>
+  <shortname>QuickShare - "share" some content => enable public/unauthenticated access</shortname>
+  <description>
+  <![CDATA[
+  Note: Authenticated - you must have read access to the content in order to "share" it.
+  
+  Returns {shared_id}
+  
+  ]]>
+  </description>
+  
+  <url>/api/internal/shared/share/{store_protocol}/{store_id}/{node_id}</url>
+  
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <lifecycle>internal</lifecycle>
+</webscript>

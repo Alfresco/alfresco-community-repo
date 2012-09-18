@@ -1,0 +1,12 @@
+<webscript>
+<shortname>Get some limited metadata for content (including thumbnail defs)</shortname>
+  <description>
+  <![CDATA[
+  Note: authenticated version of the metadata script
+  ]]>
+  </description>
+  <url>/api/node/{store_protocol}/{store_id}/{node_id}/metadata</url>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

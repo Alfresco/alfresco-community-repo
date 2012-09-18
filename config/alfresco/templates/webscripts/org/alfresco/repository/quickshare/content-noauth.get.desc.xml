@@ -1,0 +1,19 @@
+<webscript>
+  <shortname>QuickShare - get some "shared" content</shortname>
+  <description>
+  <![CDATA[
+  Note: Unauthenticated => if QuickShare exists then gets the content stream for the specified document
+  
+  TODO:
+  - do we need both options (/node/content/{shared_id} vs /node/{shared_id}/content) ?
+  ]]>
+  </description>
+  
+  <url>/api/internal/shared/node/content{property}/{shared_id}?a={attach?}</url>
+  <url>/api/internal/shared/node/{shared_id}/content{property}?a={attach?}</url>
+  
+  <format default="">argument</format>
+  <authentication>none</authentication>
+  <transaction allow="readonly"/>
+  <lifecycle>internal</lifecycle>
+</webscript>

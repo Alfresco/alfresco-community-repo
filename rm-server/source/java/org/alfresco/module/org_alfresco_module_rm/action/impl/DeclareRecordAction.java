@@ -64,7 +64,7 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     {
         if (recordsManagementService.isRecord(actionedUponNodeRef) == true)
         {
-            if (recordsManagementService.isRecordDeclared(actionedUponNodeRef) == false)
+            if (recordService.isDeclared(actionedUponNodeRef) == false)
             {
                 List<String> missingProperties = new ArrayList<String>(5);
                 // Aspect not already defined - check mandatory properties then add
@@ -195,7 +195,7 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     {
         if (recordsManagementService.isRecord(filePlanComponent) == true)
         {
-            if (recordsManagementService.isRecordDeclared(filePlanComponent) == false)
+            if (recordService.isDeclared(filePlanComponent) == false)
             {
                 // Aspect not already defined - check mandatory properties then add
                 List<String> missingProperties = new ArrayList<String>(10);

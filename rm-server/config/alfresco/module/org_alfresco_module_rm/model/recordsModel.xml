@@ -89,6 +89,11 @@
          </mandatory-aspects>
                  
       </type>
+      
+      <type name="rma:newRecordsContainer">
+      	 <title>New Records Container</title>
+         <parent>rma:recordsManagementContainer</parent>
+      </type>
 
 	  <!--  Disposition Schedule -->
 
@@ -618,6 +623,19 @@
                     <many>true</many>
                 </target>
             </child-association>
+            
+            <child-association name="rma:newRecords">
+                <title>New Records</title>
+                <source>
+                    <mandatory>true</mandatory>
+                    <many>false</many>
+                </source>
+                <target>
+                    <class>rma:newRecordsContainer</class>
+                    <mandatory>true</mandatory>
+                    <many>true</many>
+                </target>
+            </child-association>
 
          </associations>
          <mandatory-aspects>
@@ -824,6 +842,17 @@
         <mandatory-aspects>
             <aspect>rma:filePlanComponent</aspect>
         </mandatory-aspects>
+      </aspect>      
+      
+      <!--  Details used for DM-RM security mapping -->
+      <!--  @since 2.1 -->
+      <aspect name="rma:extendedRecordSecurity">      
+      	<properties>
+      		<property name="rma:readers">
+      			<type>d:text</type>
+      			<multiple>true</multiple>
+      		</property>
+      	</properties>      
       </aspect>
 
       <!-- State management aspects -->

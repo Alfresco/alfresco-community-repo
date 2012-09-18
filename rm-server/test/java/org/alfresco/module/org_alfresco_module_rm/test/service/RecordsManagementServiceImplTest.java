@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.service;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
@@ -591,7 +592,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                Set<QName> aspects = rmService.getRecordMetaDataAspects();
+                Set<QName> aspects = recordService.getRecordMetaDataAspects();
                 assertNotNull(aspects);
                 assertEquals(5, aspects.size());
                 assertTrue(aspects.containsAll(
@@ -612,6 +613,45 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
     // TODO void testGetRecordFolders(NodeRef record); 
     
     // TODO void testIsRecordDeclared(NodeRef nodeRef);
+    
+    public void testGetNewRecordsContainer()
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                NodeRef result1 = recordService.getNewRecordContainer(filePlan);
+                assertNotNull(result1);
+                assertEquals(TYPE_NEW_RECORDS_CONTAINER, nodeService.getType(result1));
+                
+                assertNull(recordService.getNewRecordContainer(rmContainer));
+                assertNull(recordService.getNewRecordContainer(rmFolder));
+                
+                return null;
+            }
+        });
+        
+        // Failure: File plan with no new record container
+        doTestInTransaction(new FailureTest
+        (
+           "The newly created file plan shouldn't yet have a new record container.",
+           AlfrescoRuntimeException.class
+        )
+        {
+            @Override
+            public void run()
+            {
+                NodeRef newFilePlan = rmService.createFilePlan(folder, GUID.generate());
+                recordService.getNewRecordContainer(newFilePlan);
+            }
+        });
+    }
+    
+    public void testCreateRecord()
+    {
+        
+    }
     
     /********** RM2 - Multi-hierarchy record taxonomy's **********/
     

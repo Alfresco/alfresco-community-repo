@@ -33,7 +33,7 @@ public class DeclaredCapabilityCondition extends AbstractCapabilityCondition
         boolean result = false;
         if (FilePlanComponentKind.RECORD.equals(rmService.getFilePlanComponentKind(nodeRef)) == true)
         {
-            result = rmService.isRecordDeclared(nodeRef);
+            result = recordService.isDeclared(nodeRef);
         }
         return result;
     }

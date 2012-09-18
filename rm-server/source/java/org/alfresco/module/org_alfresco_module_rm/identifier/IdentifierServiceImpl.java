@@ -120,7 +120,7 @@ public class IdentifierServiceImpl implements IdentifierService
     }
     
     /**
-     * Generate an identifier for a given type of object with the acompanying context.
+     * Generate an identifier for a given type of object with the accompanying context.
      * 
      * @param type      content type
      * @param context   context

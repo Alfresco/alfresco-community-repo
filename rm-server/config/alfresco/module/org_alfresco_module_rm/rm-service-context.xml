@@ -89,9 +89,9 @@
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordFolderClosed=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createRecordFolder=RM.Write.0                
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecords=RM.Read.0,AFTER_RM.FilterNode       
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode                      
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecordMetaDataAspects=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode                
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordDeclared=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordDeclared=RM.Read.0          
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.*=RM_DENY
                 ]]>
             </value>
@@ -782,6 +782,66 @@
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.fileAuditTrailAsRecord=RM_CAP.-1.rma:filePlanComponent.DeclareAuditAsRecord
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditEvents=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.*=RM_DENY
+                ]]>
+            </value>
+        </property>
+    </bean>
+    
+    <!--  Record Service -->
+    
+    <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
+    	<property name="recordsManagementService" ref="RecordsManagementService"/> 
+    	<property name="nodeService" ref="NodeService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+    	<property name="dictionaryService" ref="DictionaryService"/>
+        <property name="identifierService" ref="recordsManagementIdentifierService"/>
+    </bean>
+    
+    <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.record.RecordService</value>
+        </property>
+        <property name="target">
+            <ref bean="recordService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RecordService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="RecordService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="RecordService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="RecordService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getNewRecordContainer=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM.Write.0.1
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>
         </property>

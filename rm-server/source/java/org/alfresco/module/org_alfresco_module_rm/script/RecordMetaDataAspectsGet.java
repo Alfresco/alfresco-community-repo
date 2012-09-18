@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -41,7 +41,7 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
 {
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
-    protected RecordsManagementService recordsManagementService;
+    protected RecordService recordService;
     
     /**
      * Set the dictionary service instance
@@ -62,10 +62,13 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
     {
         this.namespaceService = namespaceService;
     }
-    
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+
+    /**
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
     {
-        this.recordsManagementService = recordsManagementService;
+        this.recordService = recordService;
     }
     
     /*
@@ -75,7 +78,7 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // Get the details of all the aspects
-        Set<QName> aspectQNames = recordsManagementService.getRecordMetaDataAspects();        
+        Set<QName> aspectQNames = recordService.getRecordMetaDataAspects();        
         List<Map<String, Object>> aspects = new ArrayList<Map<String,Object>>(aspectQNames.size()+1);
         for (QName aspectQName : aspectQNames)
         {

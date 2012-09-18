@@ -166,7 +166,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     
     protected void addRecordMetadataPropertyFieldsToGroup(Form form, NodeRef nodeRef)
     {
-        Set<QName> aspects = rmService.getRecordMetaDataAspects();
+        Set<QName> aspects = recordService.getRecordMetaDataAspects();
         
         for (QName aspect : aspects)
         {
@@ -214,7 +214,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     {
         if (rmService.isRecord(nodeRef) == true)
         {
-            addTransientPropertyField(form, TRANSIENT_DECLARED, DataTypeDefinition.BOOLEAN, rmService.isRecordDeclared(nodeRef));
+            addTransientPropertyField(form, TRANSIENT_DECLARED, DataTypeDefinition.BOOLEAN, recordService.isDeclared(nodeRef));
         }
         
         DispositionSchedule ds = dispositionService.getDispositionSchedule(nodeRef);

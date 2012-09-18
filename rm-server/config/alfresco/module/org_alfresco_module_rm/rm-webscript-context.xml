@@ -2,378 +2,483 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    <!-- REST impl for RM Action Service -->
-    <bean id="webscript.org.alfresco.rma.rmaction.post" class="org.alfresco.module.org_alfresco_module_rm.script.RmActionPost" parent="webscript">
-        <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
-        <property name="nodeService" ref="NodeService"/>
-    </bean>
-    
-    <!-- Abstract parent bean for many RM get and post beans -->
-    <bean id="rmBaseWebscript" parent="webscript" abstract="true">
-        <property name="nodeService" ref="NodeService"/>
-        <property name="namespaceService" ref="NamespaceService"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
-        <property name="dispositionService" ref="DispositionService"/>
-    </bean>
+	<!-- REST impl for RM Action Service -->
+	<bean id="webscript.org.alfresco.rma.rmaction.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.RmActionPost"
+		parent="webscript">
+		<property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+		<property name="nodeService" ref="NodeService" />
+	</bean>
 
-    <!-- REST impl for GET DOD Custom Types -->
-    <bean id="webscript.org.alfresco.rma.dodcustomtypes.get" class="org.alfresco.module.org_alfresco_module_rm.script.DodCustomTypesGet" parent="webscript">
-        <property name="dictionaryService" ref="DictionaryService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.rma.customisable.get" class="org.alfresco.module.org_alfresco_module_rm.script.CustomisableGet" parent="webscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-        <property name="namespaceService" ref="NamespaceService"/>
-        <property name="dictionaryService" ref="DictionaryService"/>
-    </bean>
+	<!-- Abstract parent bean for many RM get and post beans -->
+	<bean id="rmBaseWebscript" parent="webscript" abstract="true">
+		<property name="nodeService" ref="NodeService" />
+		<property name="namespaceService" ref="NamespaceService" />
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="dispositionService" ref="DispositionService" />
+	</bean>
 
-    <!-- REST impl for GET Custom Property Definitions -->
-    <bean id="webscript.org.alfresco.rma.custompropdefinitions.get" class="org.alfresco.module.org_alfresco_module_rm.script.CustomPropertyDefinitionsGet" parent="rmBaseWebscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>   
-    </bean>
+	<!-- REST impl for GET DOD Custom Types -->
+	<bean id="webscript.org.alfresco.rma.dodcustomtypes.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.DodCustomTypesGet"
+		parent="webscript">
+		<property name="dictionaryService" ref="DictionaryService" />
+	</bean>
 
-    <!-- REST impl for PUT Custom Property Definitions -->
-    <bean id="webscript.org.alfresco.rma.custompropdefinition.put" class="org.alfresco.module.org_alfresco_module_rm.script.CustomPropertyDefinitionPut" parent="rmBaseWebscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-    </bean>
-    
-    <!-- REST impl for POST Custom Property Definitions -->
-    <bean id="webscript.org.alfresco.rma.custompropdefinition.post" class="org.alfresco.module.org_alfresco_module_rm.script.CustomPropertyDefinitionPost" parent="rmBaseWebscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-    </bean>
-    
-    <!-- TODO Delete this -->
-    <!-- REST impl for DELETE Custom Property Definitions -->
-    <bean id="webscript.org.alfresco.rma.custompropdefinition.delete" class="org.alfresco.module.org_alfresco_module_rm.script.CustomPropertyDefinitionDelete" parent="rmBaseWebscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-    </bean>
-    
-    <!-- REST impl for GET Custom Reference Definitions -->
-    <bean id="webscript.org.alfresco.rma.customrefdefinitions.get" class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet" parent="webscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-        <property name="namespaceService" ref="NamespaceService"/>
-    </bean>
+	<bean id="webscript.org.alfresco.rma.customisable.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomisableGet"
+		parent="webscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+		<property name="namespaceService" ref="NamespaceService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+	</bean>
 
-    <!-- REST impl for PUT Custom Reference Definitions -->
-    <bean id="webscript.org.alfresco.rma.customrefdefinition.put" class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionPut" parent="rmBaseWebscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-    </bean>
+	<!-- REST impl for GET Custom Property Definitions -->
+	<bean id="webscript.org.alfresco.rma.custompropdefinitions.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomPropertyDefinitionsGet"
+		parent="rmBaseWebscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+	</bean>
 
-    <!-- REST impl for POST Custom Reference Definitions -->
-    <bean id="webscript.org.alfresco.rma.customrefdefinition.post" class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionPost" parent="rmBaseWebscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-    </bean>
-    
-    <!-- REST impl for GET Custom Reference Instances -->
-    <bean id="webscript.org.alfresco.rma.customrefs.get" class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefsGet" parent="rmBaseWebscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-    </bean>
+	<!-- REST impl for PUT Custom Property Definitions -->
+	<bean id="webscript.org.alfresco.rma.custompropdefinition.put"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomPropertyDefinitionPut"
+		parent="rmBaseWebscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+	</bean>
 
-    <!-- REST impl for POST Custom Reference Instance -->
-    <bean id="webscript.org.alfresco.rma.customref.post" class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefPost" parent="rmBaseWebscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-    </bean>
+	<!-- REST impl for POST Custom Property Definitions -->
+	<bean id="webscript.org.alfresco.rma.custompropdefinition.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomPropertyDefinitionPost"
+		parent="rmBaseWebscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+	</bean>
 
-    <!-- REST impl for DELETE Custom Reference Instance -->
-    <bean id="webscript.org.alfresco.rma.customref.delete" class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefDelete" parent="rmBaseWebscript">
-        <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-    </bean>
+	<!-- TODO Delete this -->
+	<!-- REST impl for DELETE Custom Property Definitions -->
+	<bean id="webscript.org.alfresco.rma.custompropdefinition.delete"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomPropertyDefinitionDelete"
+		parent="rmBaseWebscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+	</bean>
 
-    <!-- REST impl for GET Disposition Schedule -->
-    <bean id="webscript.org.alfresco.rma.dispositionschedule.get" class="org.alfresco.module.org_alfresco_module_rm.script.DispositionScheduleGet" parent="rmBaseWebscript">
-    </bean>
-    
-    <!-- REST impl for POST Disposition Action Definition -->
-    <bean id="webscript.org.alfresco.rma.dispositionactiondefinitions.post" class="org.alfresco.module.org_alfresco_module_rm.script.DispositionActionDefinitionPost" parent="rmBaseWebscript">
-    </bean>
-    
-    <!-- REST impl for PUT Disposition Action Definition -->
-    <bean id="webscript.org.alfresco.rma.dispositionactiondefinition.put" class="org.alfresco.module.org_alfresco_module_rm.script.DispositionActionDefinitionPut" parent="rmBaseWebscript">
-    </bean>
-    
-    <!-- REST impl for DELETE Disposition Action Definition -->
-    <bean id="webscript.org.alfresco.rma.dispositionactiondefinition.delete" class="org.alfresco.module.org_alfresco_module_rm.script.DispositionActionDefinitionDelete" parent="rmBaseWebscript">
-    </bean>
-    
-    <!-- REST impl for GET Disposition Lifecycle -->
-    <bean id="webscript.org.alfresco.rma.dispositionlifecycle.get" class="org.alfresco.module.org_alfresco_module_rm.script.DispositionLifecycleGet" parent="rmBaseWebscript">
-       <property name="personService" ref="PersonService"/>
-    </bean>
-    
-    <!-- REST impl for GET List Of Values -->
-    <bean id="webscript.org.alfresco.rma.listofvalues.get" class="org.alfresco.module.org_alfresco_module_rm.script.ListOfValuesGet" parent="webscript">
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
-        <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
-        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
-        <property name="recordsManagementEventService" ref="RecordsManagementEventService"/>
-        <property name="dispositionService" ref="DispositionService"/>
-        <property name="dictionaryService" ref="DictionaryService"/>
-        <property name="namespaceService" ref="NamespaceService"/>
-    </bean>
-    
-    <!--  REST impl for GET disposition properties -->
-    <bean id="webscript.org.alfresco.rma.dispositionproperties.get" class="org.alfresco.module.org_alfresco_module_rm.script.DispositionPropertiesGet" parent="webscript">
-        <property name="dispositionService" ref="DispositionService"/>
-        <property name="namespaceService" ref="NamespaceService"/>
-    </bean>
-    
-    <!--  REST impl for GET Records MetaData aspects -->
-    <bean id="webscript.org.alfresco.rma.recordmetadataaspects.get" class="org.alfresco.module.org_alfresco_module_rm.script.RecordMetaDataAspectsGet" parent="webscript">
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
-        <property name="dictionaryService" ref="DictionaryService"/>
-        <property name="namespaceService" ref="NamespaceService"/>
-    </bean>
-    
-    <!-- REST impl for GET Audit Log -->
-    <bean id="webscript.org.alfresco.rma.rmauditlog.get" class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogGet" parent="webscript">
-        <property name="nodeService" ref="nodeService"/>
-        <property name="contentService" ref="ContentService"/>
-        <property name="permissionService" ref="PermissionService"/>
-        <property name="mimetypeService" ref="mimetypeService"/>
-        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.rma.rmauditlogstatus.get" class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogStatusGet" parent="webscript">
-    	<property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
-    </bean>
-    
-    <!-- REST impl for POST Audit Log -->
-    <bean id="webscript.org.alfresco.rma.rmauditlog.post" class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogPost" parent="webscript">
-        <property name="nodeService" ref="nodeService"/>
-        <property name="contentService" ref="ContentService"/>
-        <property name="permissionService" ref="PermissionService"/>
-        <property name="mimetypeService" ref="mimetypeService"/>
-        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
-    </bean>
-    
-    <!-- REST impl for PUT Audit Log (starting and stopping auditing) -->
-    <bean id="webscript.org.alfresco.rma.rmauditlog.put" class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogPut" parent="webscript">
-        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
-    </bean>
-    
-    <!-- REST impl for DELETE Audit Log (clears audit log) -->
-    <bean id="webscript.org.alfresco.rma.rmauditlog.delete" class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogDelete" parent="webscript">
-        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
-    </bean>
-    
-    <!-- REST impl for POST export -->
-    <bean id="webscript.org.alfresco.rma.export.post" class="org.alfresco.module.org_alfresco_module_rm.script.ExportPost" parent="webscript">
-        <property name="nodeService" ref="nodeService"/>
-        <property name="contentService" ref="ContentService"/>
-        <property name="permissionService" ref="PermissionService"/>
-        <property name="mimetypeService" ref="mimetypeService"/>
-        <property name="exporterService" ref="ExporterService"/>
-    </bean>
-    
-    <!-- REST impl for POST import -->
-    <bean id="webscript.org.alfresco.rma.import.post" class="org.alfresco.module.org_alfresco_module_rm.script.ImportPost" parent="webscript">
-        <property name="nodeService" ref="NodeService"/>
-        <property name="dictionaryService" ref="DictionaryService"/>
-        <property name="importerService" ref="ImporterService"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
-        <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
-    </bean>
-    
-    <!-- Base bean for transfer web scripts -->
-    <bean id="rmBaseTransferWebscript" parent="webscript" abstract="true">
-       <property name="nodeService" ref="nodeService"/>
-       <property name="contentService" ref="ContentService"/>
-       <property name="permissionService" ref="PermissionService"/>
-       <property name="mimetypeService" ref="mimetypeService"/>
-       <property name="exporterService" ref="ExporterService"/>
-    </bean>
-    
-    <!-- REST impl for GET transfer -->
-    <bean id="webscript.org.alfresco.rma.transfer.get" class="org.alfresco.module.org_alfresco_module_rm.script.TransferGet" parent="rmBaseTransferWebscript">
-    </bean>
-    
-    <!-- REST impl for GET transfer report -->
-    <bean id="webscript.org.alfresco.rma.transferreport.get" class="org.alfresco.module.org_alfresco_module_rm.script.TransferReportGet" parent="rmBaseTransferWebscript">
-       <property name="dictionaryService" ref="DictionaryService"/>
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
-       <property name="dispositionService" ref="DispositionService"/>
-    </bean>
-    
-    <!-- REST impl for POST transfer report -->
-    <bean id="webscript.org.alfresco.rma.transferreport.post" class="org.alfresco.module.org_alfresco_module_rm.script.TransferReportPost" parent="rmBaseTransferWebscript">
-       <property name="dictionaryService" ref="DictionaryService"/>
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
-       <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
-       <property name="dispositionService" ref="DispositionService"/>
-    </bean>
-    
-    <!-- RM Role API-->
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmroles.get" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolesGet" parent="webscript">
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
-       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmroles.post" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolesPost" parent="webscript">
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
-       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
-       <property name="capabilityService" ref="CapabilityService" />
-    </bean>  
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.get" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRoleGet" parent="webscript">
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
-       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.put" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolePut" parent="webscript">
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
-       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
-       <property name="capabilityService" ref="CapabilityService" />
-    </bean>
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.delete" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRoleDelete" parent="webscript">
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
-       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
-    </bean>
-    
-    <!--  Capability API -->
-    
-    <bean id="webscript.org.alfresco.rma.capability.capabilities.get" 
-          class="org.alfresco.module.org_alfresco_module_rm.script.capability.CapabilitiesGet" 
-          parent="webscript">
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
-       <property name="capabilityService" ref="CapabilityService" />
-    </bean>
-    
-    <!-- RM Event API-->
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmevent.rmeventtypes.get" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventTypesGet" parent="webscript">
-       <property name="recordsManagementEventService" ref="RecordsManagementEventService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmevent.rmevents.get" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventsGet" parent="webscript">
-       <property name="recordsManagementEventService" ref="RecordsManagementEventService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmevent.rmevents.post" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventsPost" parent="webscript">
-       <property name="recordsManagementEventService" ref="RecordsManagementEventService"/>
-    </bean>  
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmevent.rmevent.get" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventGet" parent="webscript">
-       <property name="recordsManagementEventService" ref="RecordsManagementEventService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmevent.rmevent.put" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventPut" parent="webscript">
-       <property name="recordsManagementEventService" ref="RecordsManagementEventService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.rma.admin.rmevent.rmevent.delete" class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventDelete" parent="webscript">
-       <property name="recordsManagementEventService" ref="RecordsManagementEventService"/>
-    </bean>
-    
-    <!-- REST impl for GET Email Map  -->
-    <bean id="webscript.org.alfresco.rma.admin.emailmap.get" class="org.alfresco.module.org_alfresco_module_rm.script.EmailMapGet" parent="webscript">
-        <property name="customEmailMappingService" ref="CustomEmailMappingService" />
-    </bean>
-    
-    <!-- REST impl for POST Email Map  -->
-    <bean id="webscript.org.alfresco.rma.admin.emailmap.post" class="org.alfresco.module.org_alfresco_module_rm.script.EmailMapPost" parent="webscript">
-        <property name="customEmailMappingService" ref="CustomEmailMappingService" />
-    </bean>
-    
-    <!-- REST impl for PUT Email Map  -->
-    <bean id="webscript.org.alfresco.rma.admin.emailmap.put" class="org.alfresco.module.org_alfresco_module_rm.script.EmailMapPut" parent="webscript">
-        <property name="customEmailMappingService" ref="CustomEmailMappingService" />
-    </bean>
-    
-    <!-- REST impl for GET RM Constraint  -->
-    <bean id="webscript.org.alfresco.rma.rmconstraints.get" class="org.alfresco.module.org_alfresco_module_rm.script.RMConstraintGet" parent="webscript">
-        <property name="caveatConfigService" ref="CaveatConfigService" />
-    </bean>
-    
-    <!-- REST impl for GET User Rights Report -->
-    <bean id="webscript.org.alfresco.rma.userrightsreport.get" class="org.alfresco.module.org_alfresco_module_rm.script.UserRightsReportGet" parent="webscript">
-        <property name="authorityService" ref="AuthorityService" />
-        <property name="personService" ref="PersonService" />
-        <property name="nodeService" ref="NodeService" />
-        <property name="recordsManagementService" ref="RecordsManagementService" />
-        <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
-    </bean>
-    
-    <!-- REST impl for GET Bootstrap Test Data -->
-    <bean id="webscript.org.alfresco.rma.bootstraptestdata.get" class="org.alfresco.module.org_alfresco_module_rm.script.BootstrapTestDataGet" parent="webscript">
-        <property name="nodeService" ref="NodeService" />
-        <property name="searchService" ref="SearchService" />
-        <property name="importerService" ref="ImporterService"/>
-        <property name="permissionService" ref="PermissionService"/>
-        <property name="siteService" ref="SiteService"/>
-        <property name="recordsManagementService" ref="RecordsManagementService" />
-        <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
-        <property name="authorityService" ref="AuthorityService"/>
-        <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
-        <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour"/>
-        <property name="dispositionService" ref="dispositionService"/>
-    </bean>
-    
-    <!-- REST impl for GET applydodcertmodelfixes -->
-    <!-- This webscript is intended for patching the RM custom model during the DoD certification process. -->
-    <!-- TODO Delete this webscript after the certification process -->
-    <bean id="webscript.org.alfresco.rma.applydodcertmodelfixes.get" class="org.alfresco.module.org_alfresco_module_rm.script.ApplyDodCertModelFixesGet" parent="webscript">
-        <property name="contentService" ref="ContentService" />
-    </bean>
+	<!-- REST impl for GET Custom Reference Definitions -->
+	<bean id="webscript.org.alfresco.rma.customrefdefinitions.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet"
+		parent="webscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+		<property name="namespaceService" ref="NamespaceService" />
+	</bean>
 
-    <!-- REST impl for GET applyfixmob1573 -->
-    <!-- TODO Delete this webscript after the certification process -->
-    <bean id="webscript.org.alfresco.rma.applyfixmob1573.get" class="org.alfresco.module.org_alfresco_module_rm.script.ApplyFixMob1573Get" parent="webscript">
-        <property name="contentService" ref="ContentService" />
-    </bean>
-    
-    <!--  RM search web script -->
-    <bean id="webscript.org.alfresco.slingshot.rmsearch.rmsavedsearches.get" 
-          class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSavedSearchesGet" 
-          parent="webscript">
-    	<property name="siteService" ref="SiteService"/>
-    	<property name="recordsManagementSearchService" ref="RecordsManagementSearchService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.slingshot.rmsearch.rmsavedsearches.post" 
-          class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSavedSearchesPost" 
-          parent="webscript">
-    	<property name="siteService" ref="SiteService"/>
-    	<property name="recordsManagementSearchService" ref="RecordsManagementSearchService"/>
-    	<property name="namespaceService" ref="namespaceService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.slingshot.rmsearch.rmsavedsearches.delete" 
-          class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSavedSearchesDelete" 
-          parent="webscript">
-    	<property name="siteService" ref="SiteService"/>
-    	<property name="recordsManagementSearchService" ref="RecordsManagementSearchService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.slingshot.rmsearch.rmsearch.get" 
-          class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSearchGet" 
-          parent="webscript">
-    	<property name="siteService" ref="SiteService"/>
-    	<property name="recordsManagementSearchService" ref="RecordsManagementSearchService"/>
-    	<property name="namespaceService" ref="namespaceService"/>
-    	<property name="nodeService" ref="NodeService"/>
-    	<property name="dictionaryService" ref="DictionaryService"/>
-    	<property name="permissionService" ref="PermissionService"/>
-    	<property name="personService" ref="PersonService"/>
-    	<property name="contentService" ref="ContentService"/>
-    </bean>
-    
-    <bean id="webscript.org.alfresco.slingshot.rmsearch.rmsearchproperties.get" 
-          class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSearchPropertiesGet" 
-          parent="webscript">
-    	<property name="namespaceService" ref="namespaceService"/>
-    	<property name="dictionaryService" ref="DictionaryService"/>
-    	<property name="adminService" ref="RecordsManagementAdminService"/>
-    	<property name="recordsManagementService" ref="RecordsManagementService" />
-    </bean>
-    
-    <bean id="webscript.org.alfresco.slingshot.forms.metadata.get" 
-          class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.forms.RMMetaDataGet" 
-          parent="webscript">
-    	<property name="recordsManagementService" ref="RecordsManagementService"/>
-    	<property name="namespaceService" ref="namespaceService"/>
-    	<property name="nodeService" ref="NodeService"/>
-    </bean>
-    
+	<!-- REST impl for PUT Custom Reference Definitions -->
+	<bean id="webscript.org.alfresco.rma.customrefdefinition.put"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionPut"
+		parent="rmBaseWebscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+	</bean>
+
+	<!-- REST impl for POST Custom Reference Definitions -->
+	<bean id="webscript.org.alfresco.rma.customrefdefinition.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionPost"
+		parent="rmBaseWebscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+	</bean>
+
+	<!-- REST impl for GET Custom Reference Instances -->
+	<bean id="webscript.org.alfresco.rma.customrefs.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefsGet"
+		parent="rmBaseWebscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+	</bean>
+
+	<!-- REST impl for POST Custom Reference Instance -->
+	<bean id="webscript.org.alfresco.rma.customref.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefPost"
+		parent="rmBaseWebscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+	</bean>
+
+	<!-- REST impl for DELETE Custom Reference Instance -->
+	<bean id="webscript.org.alfresco.rma.customref.delete"
+		class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefDelete"
+		parent="rmBaseWebscript">
+		<property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+	</bean>
+
+	<!-- REST impl for GET Disposition Schedule -->
+	<bean id="webscript.org.alfresco.rma.dispositionschedule.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.DispositionScheduleGet"
+		parent="rmBaseWebscript">
+	</bean>
+
+	<!-- REST impl for POST Disposition Action Definition -->
+	<bean id="webscript.org.alfresco.rma.dispositionactiondefinitions.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.DispositionActionDefinitionPost"
+		parent="rmBaseWebscript">
+	</bean>
+
+	<!-- REST impl for PUT Disposition Action Definition -->
+	<bean id="webscript.org.alfresco.rma.dispositionactiondefinition.put"
+		class="org.alfresco.module.org_alfresco_module_rm.script.DispositionActionDefinitionPut"
+		parent="rmBaseWebscript">
+	</bean>
+
+	<!-- REST impl for DELETE Disposition Action Definition -->
+	<bean id="webscript.org.alfresco.rma.dispositionactiondefinition.delete"
+		class="org.alfresco.module.org_alfresco_module_rm.script.DispositionActionDefinitionDelete"
+		parent="rmBaseWebscript">
+	</bean>
+
+	<!-- REST impl for GET Disposition Lifecycle -->
+	<bean id="webscript.org.alfresco.rma.dispositionlifecycle.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.DispositionLifecycleGet"
+		parent="rmBaseWebscript">
+		<property name="personService" ref="PersonService" />
+	</bean>
+
+	<!-- REST impl for GET List Of Values -->
+	<bean id="webscript.org.alfresco.rma.listofvalues.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.ListOfValuesGet"
+		parent="webscript">
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+		<property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+		<property name="recordsManagementEventService" ref="RecordsManagementEventService" />
+		<property name="dispositionService" ref="DispositionService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="namespaceService" ref="NamespaceService" />
+	</bean>
+
+	<!--  REST impl for GET disposition properties -->
+	<bean id="webscript.org.alfresco.rma.dispositionproperties.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.DispositionPropertiesGet"
+		parent="webscript">
+		<property name="dispositionService" ref="DispositionService" />
+		<property name="namespaceService" ref="NamespaceService" />
+	</bean>
+
+	<!--  REST impl for GET Records MetaData aspects -->
+	<bean id="webscript.org.alfresco.rma.recordmetadataaspects.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.RecordMetaDataAspectsGet"
+		parent="webscript">
+		<property name="recordService" ref="RecordService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="namespaceService" ref="NamespaceService" />
+	</bean>
+
+	<!-- REST impl for GET Audit Log -->
+	<bean id="webscript.org.alfresco.rma.rmauditlog.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogGet"
+		parent="webscript">
+		<property name="nodeService" ref="nodeService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="permissionService" ref="PermissionService" />
+		<property name="mimetypeService" ref="mimetypeService" />
+		<property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.rmauditlogstatus.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogStatusGet"
+		parent="webscript">
+		<property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+	</bean>
+
+	<!-- REST impl for POST Audit Log -->
+	<bean id="webscript.org.alfresco.rma.rmauditlog.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogPost"
+		parent="webscript">
+		<property name="nodeService" ref="nodeService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="permissionService" ref="PermissionService" />
+		<property name="mimetypeService" ref="mimetypeService" />
+		<property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+	</bean>
+
+	<!-- REST impl for PUT Audit Log (starting and stopping auditing) -->
+	<bean id="webscript.org.alfresco.rma.rmauditlog.put"
+		class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogPut"
+		parent="webscript">
+		<property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+	</bean>
+
+	<!-- REST impl for DELETE Audit Log (clears audit log) -->
+	<bean id="webscript.org.alfresco.rma.rmauditlog.delete"
+		class="org.alfresco.module.org_alfresco_module_rm.script.AuditLogDelete"
+		parent="webscript">
+		<property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+	</bean>
+
+	<!-- REST impl for POST export -->
+	<bean id="webscript.org.alfresco.rma.export.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.ExportPost"
+		parent="webscript">
+		<property name="nodeService" ref="nodeService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="permissionService" ref="PermissionService" />
+		<property name="mimetypeService" ref="mimetypeService" />
+		<property name="exporterService" ref="ExporterService" />
+	</bean>
+
+	<!-- REST impl for POST import -->
+	<bean id="webscript.org.alfresco.rma.import.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.ImportPost"
+		parent="webscript">
+		<property name="nodeService" ref="NodeService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="importerService" ref="ImporterService" />
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+	</bean>
+
+	<!-- Base bean for transfer web scripts -->
+	<bean id="rmBaseTransferWebscript" parent="webscript" abstract="true">
+		<property name="nodeService" ref="nodeService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="permissionService" ref="PermissionService" />
+		<property name="mimetypeService" ref="mimetypeService" />
+		<property name="exporterService" ref="ExporterService" />
+	</bean>
+
+	<!-- REST impl for GET transfer -->
+	<bean id="webscript.org.alfresco.rma.transfer.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.TransferGet"
+		parent="rmBaseTransferWebscript">
+	</bean>
+
+	<!-- REST impl for GET transfer report -->
+	<bean id="webscript.org.alfresco.rma.transferreport.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.TransferReportGet"
+		parent="rmBaseTransferWebscript">
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="dispositionService" ref="DispositionService" />
+	</bean>
+
+	<!-- REST impl for POST transfer report -->
+	<bean id="webscript.org.alfresco.rma.transferreport.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.TransferReportPost"
+		parent="rmBaseTransferWebscript">
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+		<property name="dispositionService" ref="DispositionService" />
+	</bean>
+
+	<!-- RM Role API-->
+
+	<bean id="webscript.org.alfresco.rma.admin.rmrole.rmroles.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolesGet"
+		parent="webscript">
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.admin.rmrole.rmroles.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolesPost"
+		parent="webscript">
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+		<property name="capabilityService" ref="CapabilityService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRoleGet"
+		parent="webscript">
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.put"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolePut"
+		parent="webscript">
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+		<property name="capabilityService" ref="CapabilityService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.delete"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRoleDelete"
+		parent="webscript">
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+	</bean>
+
+	<!--  Capability API -->
+
+	<bean id="webscript.org.alfresco.rma.capability.capabilities.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.capability.CapabilitiesGet"
+		parent="webscript">
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="capabilityService" ref="CapabilityService" />
+	</bean>
+
+	<!-- RM Event API-->
+
+	<bean id="webscript.org.alfresco.rma.admin.rmevent.rmeventtypes.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventTypesGet"
+		parent="webscript">
+		<property name="recordsManagementEventService" ref="RecordsManagementEventService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.admin.rmevent.rmevents.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventsGet"
+		parent="webscript">
+		<property name="recordsManagementEventService" ref="RecordsManagementEventService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.admin.rmevent.rmevents.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventsPost"
+		parent="webscript">
+		<property name="recordsManagementEventService" ref="RecordsManagementEventService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.admin.rmevent.rmevent.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventGet"
+		parent="webscript">
+		<property name="recordsManagementEventService" ref="RecordsManagementEventService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.admin.rmevent.rmevent.put"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventPut"
+		parent="webscript">
+		<property name="recordsManagementEventService" ref="RecordsManagementEventService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.rma.admin.rmevent.rmevent.delete"
+		class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmEventDelete"
+		parent="webscript">
+		<property name="recordsManagementEventService" ref="RecordsManagementEventService" />
+	</bean>
+
+	<!-- REST impl for GET Email Map  -->
+	<bean id="webscript.org.alfresco.rma.admin.emailmap.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.EmailMapGet"
+		parent="webscript">
+		<property name="customEmailMappingService" ref="CustomEmailMappingService" />
+	</bean>
+
+	<!-- REST impl for POST Email Map  -->
+	<bean id="webscript.org.alfresco.rma.admin.emailmap.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.EmailMapPost"
+		parent="webscript">
+		<property name="customEmailMappingService" ref="CustomEmailMappingService" />
+	</bean>
+
+	<!-- REST impl for PUT Email Map  -->
+	<bean id="webscript.org.alfresco.rma.admin.emailmap.put"
+		class="org.alfresco.module.org_alfresco_module_rm.script.EmailMapPut"
+		parent="webscript">
+		<property name="customEmailMappingService" ref="CustomEmailMappingService" />
+	</bean>
+
+	<!-- REST impl for GET RM Constraint  -->
+	<bean id="webscript.org.alfresco.rma.rmconstraints.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.RMConstraintGet"
+		parent="webscript">
+		<property name="caveatConfigService" ref="CaveatConfigService" />
+	</bean>
+
+	<!-- REST impl for GET User Rights Report -->
+	<bean id="webscript.org.alfresco.rma.userrightsreport.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.UserRightsReportGet"
+		parent="webscript">
+		<property name="authorityService" ref="AuthorityService" />
+		<property name="personService" ref="PersonService" />
+		<property name="nodeService" ref="NodeService" />
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+	</bean>
+
+	<!-- REST impl for GET Bootstrap Test Data -->
+	<bean id="webscript.org.alfresco.rma.bootstraptestdata.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.BootstrapTestDataGet"
+		parent="webscript">
+		<property name="nodeService" ref="NodeService" />
+		<property name="searchService" ref="SearchService" />
+		<property name="importerService" ref="ImporterService" />
+		<property name="permissionService" ref="PermissionService" />
+		<property name="siteService" ref="SiteService" />
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+		<property name="authorityService" ref="AuthorityService" />
+		<property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+		<property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour" />
+		<property name="dispositionService" ref="dispositionService" />
+	</bean>
+
+	<!-- REST impl for GET applydodcertmodelfixes -->
+	<!--
+		This webscript is intended for patching the RM custom model during the
+		DoD certification process.
+	-->
+	<!-- TODO Delete this webscript after the certification process -->
+	<bean id="webscript.org.alfresco.rma.applydodcertmodelfixes.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.ApplyDodCertModelFixesGet"
+		parent="webscript">
+		<property name="contentService" ref="ContentService" />
+	</bean>
+
+	<!-- REST impl for GET applyfixmob1573 -->
+	<!-- TODO Delete this webscript after the certification process -->
+	<bean id="webscript.org.alfresco.rma.applyfixmob1573.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.ApplyFixMob1573Get"
+		parent="webscript">
+		<property name="contentService" ref="ContentService" />
+	</bean>
+
+	<!--  RM search web script -->
+	<bean id="webscript.org.alfresco.slingshot.rmsearch.rmsavedsearches.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSavedSearchesGet"
+		parent="webscript">
+		<property name="siteService" ref="SiteService" />
+		<property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.slingshot.rmsearch.rmsavedsearches.post"
+		class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSavedSearchesPost"
+		parent="webscript">
+		<property name="siteService" ref="SiteService" />
+		<property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
+		<property name="namespaceService" ref="namespaceService" />
+	</bean>
+
+	<bean
+		id="webscript.org.alfresco.slingshot.rmsearch.rmsavedsearches.delete"
+		class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSavedSearchesDelete"
+		parent="webscript">
+		<property name="siteService" ref="SiteService" />
+		<property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.slingshot.rmsearch.rmsearch.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSearchGet"
+		parent="webscript">
+		<property name="siteService" ref="SiteService" />
+		<property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
+		<property name="namespaceService" ref="namespaceService" />
+		<property name="nodeService" ref="NodeService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="permissionService" ref="PermissionService" />
+		<property name="personService" ref="PersonService" />
+		<property name="contentService" ref="ContentService" />
+	</bean>
+
+	<bean
+		id="webscript.org.alfresco.slingshot.rmsearch.rmsearchproperties.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSearchPropertiesGet"
+		parent="webscript">
+		<property name="namespaceService" ref="namespaceService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="adminService" ref="RecordsManagementAdminService" />
+		<property name="recordService" ref="RecordService" />
+	</bean>
+
+	<bean id="webscript.org.alfresco.slingshot.forms.metadata.get"
+		class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.forms.RMMetaDataGet"
+		parent="webscript">
+		<property name="recordsManagementService" ref="RecordsManagementService" />
+		<property name="namespaceService" ref="namespaceService" />
+		<property name="nodeService" ref="NodeService" />
+	</bean>
+
 </beans>

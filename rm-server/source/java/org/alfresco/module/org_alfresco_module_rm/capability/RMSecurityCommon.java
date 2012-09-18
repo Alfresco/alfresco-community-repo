@@ -22,7 +22,7 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -45,6 +45,7 @@ public class RMSecurityCommon
     protected NodeService nodeService;
     protected PermissionService permissionService;
     protected RecordsManagementService rmService;
+    protected RecordService recordService;
     protected RMCaveatConfigComponent caveatConfigComponent;
     
     public void setNodeService(NodeService nodeService)
@@ -60,6 +61,11 @@ public class RMSecurityCommon
     public void setRecordsManagementService(RecordsManagementService rmService)
     {
         this.rmService = rmService;
+    }
+    
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
     }
     
     public void setCaveatConfigComponent(RMCaveatConfigComponent caveatConfigComponent)

@@ -8,6 +8,7 @@
     <bean id="capabilityCondition.base"
           abstract="true">
 		<property name="recordsManagementService" ref="recordsManagementService" />
+		<property name="recordService" ref="recordService" />
 		<property name="permissionService" ref="PermissionService" />    
 		<property name="nodeService" ref="NodeService" />
     </bean>

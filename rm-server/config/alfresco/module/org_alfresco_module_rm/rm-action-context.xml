@@ -24,6 +24,7 @@
         <property name="recordsManagementAuditService" ref="recordsManagementAuditService"/>
         <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
         <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
+        <property name="recordService" ref="recordService"/>
         <property name="recordsManagementService" ref="recordsManagementService"/>
         <property name="dispositionService" ref="dispositionService"/>
         <property name="vitalRecordService" ref="vitalRecordService"/>
@@ -764,5 +765,6 @@
     <bean id="createDispositionSchedule" 
           class="org.alfresco.module.org_alfresco_module_rm.action.impl.CreateDispositionScheduleAction" 
           parent="rmAction" />
+          
     
 </beans>    

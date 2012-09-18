@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -446,15 +447,6 @@ public interface RecordsManagementService
     
     // TODO move? copy? link?
     
-    /********** Record methods **********/
-    
-    /**
-     * Get a list of all the record meta-data aspects
-     * 
-     * @return {@link Set}<{@link QName}>	list of record meta-data aspects
-     */
-    Set<QName> getRecordMetaDataAspects();
-    
     /**
      * Get all the record folders that a record is filed into.
      * 
@@ -463,12 +455,27 @@ public interface RecordsManagementService
      */
     // TODO rename to List<NodeRef> getParentRecordFolders(NodeRef record);
     List<NodeRef> getRecordFolders(NodeRef record); 
-        
+    
+    /********** Deprecated **********/
+
+    /**
+     * Get a list of all the record meta-data aspects
+     *
+     * @return {@link Set}<{@link QName}>      list of record meta-data aspects
+     * 
+     * @deprecated As of 2.1, replaced by {@link RecordService#getRecordMetaDataAspects()}
+     */
+    @Deprecated
+    Set<QName> getRecordMetaDataAspects();
+
     /**
      * Indicates whether the record is declared
-     * 
+     *
      * @param nodeRef   node reference (record)
      * @return boolean  true if record is declared, false otherwise
+     * 
+     * @deprecated As of 2.1, replaced by {@link RecordsService#isDeclared()}
      */
-    boolean isRecordDeclared(NodeRef nodeRef);  
+    @Deprecated
+    boolean isRecordDeclared(NodeRef nodeRef);
 }

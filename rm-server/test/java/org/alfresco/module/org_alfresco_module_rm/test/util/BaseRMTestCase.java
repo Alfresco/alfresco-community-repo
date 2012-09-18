@@ -31,7 +31,8 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.model.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
@@ -40,6 +41,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -101,6 +103,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected AuthorityService authorityService;
     protected PersonService personService;
     protected TransactionService transactionService;
+    protected FileFolderService fileFolderService;
     
     /** RM Services */
     protected RecordsManagementService rmService;
@@ -112,6 +115,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected RecordsManagementSecurityService securityService;
     protected CapabilityService capabilityService;
     protected VitalRecordService vitalRecordService;
+    protected RecordService recordService;
     
     /** test data */
     protected StoreRef storeRef;
@@ -255,6 +259,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("AuthenticationService");
         personService = (PersonService)this.applicationContext.getBean("PersonService");
         transactionService = (TransactionService)applicationContext.getBean("TransactionService");
+        fileFolderService = (FileFolderService)applicationContext.getBean("FileFolderService");
         
         // Get RM services
         rmService = (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
@@ -266,6 +271,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         securityService = (RecordsManagementSecurityService)this.applicationContext.getBean("RecordsManagementSecurityService");
         capabilityService = (CapabilityService)this.applicationContext.getBean("CapabilityService");
         vitalRecordService = (VitalRecordService)this.applicationContext.getBean("VitalRecordService");
+        recordService = (RecordService)this.applicationContext.getBean("RecordService");
     }
     
     /**
@@ -316,16 +322,24 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void setupTestData()
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+    	doTestInTransaction(new Test<Void>()
         {
-            @Override
-            public Object execute() throws Throwable
+            public Void run()
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                setupTestDataImpl();
-                return null;
+            	setupTestDataImpl();
+            	return null;
             }
-        });
+            
+            // check that the new records container has been created for the file plan
+            public void test(Void arg0) throws Exception 
+            {
+            	NodeRef newRecordsContainer = recordService.getNewRecordContainer(filePlan);
+            	assertNotNull(newRecordsContainer);
+            	assertEquals(TYPE_NEW_RECORDS_CONTAINER, nodeService.getType(newRecordsContainer));
+            	
+            };
+        }, 
+        AuthenticationUtil.getSystemUserName());    	
     }
     
     /**

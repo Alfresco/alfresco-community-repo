@@ -41,6 +41,7 @@ import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
@@ -98,6 +99,9 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
     
     /** Records management service */
     protected RecordsManagementService recordsManagementService;
+    
+    /** Record service */
+    protected RecordService recordService;
     
     /** Disposition service */
     protected DispositionService dispositionService;
@@ -192,6 +196,11 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
     {
         this.recordsManagementService = recordsManagementService;
     }    
+    
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
     
     /**
      * Set the disposition service

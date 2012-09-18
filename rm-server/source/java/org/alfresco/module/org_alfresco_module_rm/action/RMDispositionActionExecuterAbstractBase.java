@@ -100,7 +100,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                 if (this.recordsManagementService.isRecord(actionedUponNodeRef) == true)
                 {
                     // Can only execute disposition action on record if declared
-                    if (this.recordsManagementService.isRecordDeclared(actionedUponNodeRef) == true)
+                    if (recordService.isDeclared(actionedUponNodeRef) == true)
                     {
                         // Indicate that the disposition action is underway
                         this.nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
@@ -315,7 +315,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                 if (this.recordsManagementService.isRecord(filePlanComponent) == true)
                 {
                     // Can only execute disposition action on record if declared
-                    if (this.recordsManagementService.isRecordDeclared(filePlanComponent) == true)
+                    if (recordService.isDeclared(filePlanComponent) == true)
                     {
                         return true;
                     }

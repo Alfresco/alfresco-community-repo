@@ -128,6 +128,9 @@ public class DeclarativeCapability extends AbstractCapability
         this.isUndetermined = isUndetermined;
     }
     
+    /**
+     * @return
+     */
     public boolean isUndetermined()
     {
         return isUndetermined;

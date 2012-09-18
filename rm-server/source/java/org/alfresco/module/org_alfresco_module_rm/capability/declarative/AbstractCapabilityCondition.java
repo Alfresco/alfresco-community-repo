@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.springframework.beans.factory.BeanNameAware;
@@ -38,6 +39,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     
     /** Services */
     protected RecordsManagementService rmService;
+    protected RecordService recordService;
     protected PermissionService permissionService;
     protected NodeService nodeService;
     
@@ -47,6 +49,14 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     public void setRecordsManagementService(RecordsManagementService rmService)
     {
         this.rmService = rmService;
+    }
+    
+    /**
+     * @param recordService     record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
     }
     
     /**

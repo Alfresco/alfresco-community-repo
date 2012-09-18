@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -48,6 +49,9 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     
     /** Records management service */
     protected RecordsManagementService recordsManagementService;
+    
+    /** Record service */
+    protected RecordService recordService;
     
     /** Node service */
     protected NodeService nodeService;
@@ -78,6 +82,14 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     public void setRecordsManagementService(RecordsManagementService recordsManagementService)
     {
         this.recordsManagementService = recordsManagementService;
+    }
+    
+    /**
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
     }
     
     /**

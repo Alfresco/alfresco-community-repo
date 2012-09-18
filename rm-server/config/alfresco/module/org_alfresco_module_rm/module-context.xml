@@ -46,9 +46,12 @@
             <list>
                 <ref bean="ownerDynamicAuthority" />
                 <ref bean="lockOwnerDynamicAuthority" />
+                <ref bean="recordReadersDynamicAuthority" />
             </list>
         </property>
     </bean>
+   
+   <bean id="recordReadersDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.permission.RecordReadersDynamicAuthority" />
    
     <!-- Bootstrap records management data -->
     <bean id="org_alfresco_module_rm_bootstrapData" 
@@ -136,6 +139,7 @@
     
     <!-- Import the RM action's -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-action-context.xml"/>
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/action-context.xml"/>
     
     <!--  Import the RM module patches -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-patch-context.xml"/>
@@ -222,26 +226,28 @@
     </bean>
      
     <!-- Form Processor Filters to process RM nodes and types -->
-    <bean id="rmNodeFormFilter" parent="baseFormFilter"
-          class="org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementNodeFormFilter">
-       <property name="filterRegistry" ref="nodeFilterRegistry" />
-       <property name="namespaceService" ref="NamespaceService"/>
-       <property name="nodeService" ref="nodeService"/>
-       <property name="dictionaryService" ref="DictionaryService" />
-       <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry" />
-       <property name="recordsManagementService" ref="recordsManagementService"/>
-       <property name="dispositionService" ref="dispositionService"/>
-       <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
-    </bean>
     
-    <bean id="rmTypeFormFilter" parent="baseFormFilter"
-          class="org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilter">
-       <property name="filterRegistry" ref="typeFilterRegistry" />
+    <bean id="baseRMFormFilter" parent="baseFormFilter" abstract="true">
        <property name="namespaceService" ref="NamespaceService"/>
        <property name="nodeService" ref="NodeService"/>
        <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry" />
        <property name="recordsManagementService" ref="recordsManagementService"/>
+       <property name="recordService" ref="recordService"/>
        <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
+    </bean>
+        
+    <bean id="rmNodeFormFilter" 
+          parent="baseRMFormFilter"
+          class="org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementNodeFormFilter">
+       <property name="filterRegistry" ref="nodeFilterRegistry" />
+       <property name="dictionaryService" ref="DictionaryService" />
+       <property name="dispositionService" ref="dispositionService"/>
+    </bean>
+    
+    <bean id="rmTypeFormFilter" 
+          parent="baseRMFormFilter"
+          class="org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilter">
+       <property name="filterRegistry" ref="typeFilterRegistry" />
        <property name="identifierService" ref="recordsManagementIdentifierService"/>
     </bean>
     

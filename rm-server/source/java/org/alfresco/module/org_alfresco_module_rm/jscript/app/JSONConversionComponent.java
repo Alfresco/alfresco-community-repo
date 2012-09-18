@@ -25,6 +25,7 @@ import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -41,6 +42,9 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     /** Records management service */
     private RecordsManagementService recordsManagementService;
     
+    /** Record service */
+    private RecordService recordService;
+    
     /** Capability service */
     private CapabilityService capabilityService;
     
@@ -56,7 +60,15 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     public void setRecordsManagementService(RecordsManagementService recordsManagementService)
     {
         this.recordsManagementService = recordsManagementService;
-    }    
+    }   
+    
+    /**
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
     
     /**
      * @param capabilityService     capability service
@@ -219,7 +231,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                     }
                     else
                     {
-                        if (recordsManagementService.isRecordDeclared(nodeRef) == true)
+                        if (recordService.isDeclared(nodeRef) == true)
                         {
                             result = "record";
                         }

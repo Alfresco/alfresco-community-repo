@@ -35,7 +35,7 @@ public class SplitEmailActionEvaluator extends BaseEvaluator
     protected boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;        
-        if (recordsManagementService.isRecordDeclared(nodeRef) == false)
+        if (recordService.isDeclared(nodeRef) == false)
         {
             ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             if (contentData != null)

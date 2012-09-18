@@ -57,6 +57,9 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Records management root container
     public static final QName TYPE_FILE_PLAN = QName.createQName(RM_URI, "filePlan");
     
+    // New records container
+    public static final QName TYPE_NEW_RECORDS_CONTAINER = QName.createQName(RM_URI, "newRecordsContainer");
+    
     // Disposition instructions aspect
     public static final QName ASPECT_SCHEDULED = QName.createQName(RM_URI, "scheduled");
     public static final QName ASSOC_DISPOSITION_SCHEDULE = QName.createQName(RM_URI, "dispositionSchedule");
@@ -167,6 +170,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 	public static final QName ASPECT_RECORDS_MANAGEMENT_ROOT = QName.createQName(RM_URI, "recordsManagementRoot");
     public static final QName ASSOC_HOLDS = QName.createQName(RM_URI, "holds");
 	public static final QName ASSOC_TRANSFERS = QName.createQName(RM_URI, "transfers");
+	public static final QName ASSOC_NEW_RECORDS = QName.createQName(RM_URI, "newRecords");
 	
 	// Hold type
 	public static final QName TYPE_HOLD = QName.createQName(RM_URI, "hold");
@@ -219,4 +223,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     public static final QName PROP_RS_DISPOITION_INSTRUCTIONS = QName.createQName(RM_URI, "recordSearchDispositionInstructions");
     public static final QName PROP_RS_DISPOITION_AUTHORITY = QName.createQName(RM_URI, "recordSearchDispositionAuthority");
     public static final QName PROP_RS_HOLD_REASON = QName.createQName(RM_URI, "recordSearchHoldReason");
+    
+    // Extended record security aspect
+    public static final QName ASPECT_EXTENDED_RECORD_SECURITY = QName.createQName(RM_URI, "extendedRecordSecurity");
+    public static final QName PROP_READERS = QName.createQName(RM_URI, "readers");
 }

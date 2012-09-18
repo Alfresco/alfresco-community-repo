@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.model;
+package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;

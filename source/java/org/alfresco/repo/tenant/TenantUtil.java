@@ -129,13 +129,19 @@ public class TenantUtil
     // switch tenant and run as System within that tenant
     public static <R> R runAsSystemTenant(final TenantRunAsWork<R> runAsWork, final String tenantDomain)
     {
+        StringBuffer systemUser = new StringBuffer().append(AuthenticationUtil.getSystemUserName());
+        if (AuthenticationUtil.isMtEnabled())
+        {
+            systemUser.append(TenantService.SEPARATOR).append(tenantDomain);
+        }
+        
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<R>()
         {
             public R doWork()
             {
                 return runAsWork(runAsWork);
             }
-        }, AuthenticationUtil.getSystemUserName() + TenantService.SEPARATOR + tenantDomain);
+        }, systemUser.toString());
     }
     
     private static <R> R runAsWork(final TenantRunAsWork<R> runAsWork)

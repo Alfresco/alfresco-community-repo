@@ -14,6 +14,7 @@
     <import resource="classpath:alfresco/comment-services-context.xml"/>
     <import resource="classpath:alfresco/discussions-services-context.xml"/>
     <import resource="classpath:alfresco/links-services-context.xml"/>
+    <import resource="classpath:alfresco/quickshare-services-context.xml"/>
     <import resource="classpath:alfresco/rating-services-context.xml"/>
     <import resource="classpath:alfresco/remote-credentials-services-context.xml"/>
     <import resource="classpath:alfresco/oauth1-credentials-store-services-context.xml"/>

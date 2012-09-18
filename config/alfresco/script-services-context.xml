@@ -266,6 +266,7 @@
     			<value>cm:workingCopyOwner</value>
     			<value>cm:lockOwner</value>
     			<value>cm:owner</value>
+            <value>qshare:sharedBy</value>
     		</set>
    		</property>
     </bean>

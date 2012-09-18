@@ -778,6 +778,9 @@
                 
                 <!-- Share Data Lists model -->
                 <value>alfresco/model/datalistModel.xml</value>
+                
+                <!-- QuickShare (aka PublicView) -->
+                <value>alfresco/model/quickShareModel.xml</value>
             </list>
         </property>
         <property name="labels">

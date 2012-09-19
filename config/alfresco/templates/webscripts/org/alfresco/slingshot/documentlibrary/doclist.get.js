@@ -40,7 +40,7 @@ function getDoclist()
    var totalItemCount = filterParams.limitResults ? parseInt(filterParams.limitResults, 10) : -1;
    // For all sites documentLibrary query we pull in all available results and post filter
    if (totalItemCount === 0) totalItemCount = -1;
-   else if (allSites) totalItemCount = -1;
+   else if (allSites) totalItemCount = (totalItemCount > 0 ? totalItemCount * 10 : 500);
    
    if ((filter || "path") == "path")
    {

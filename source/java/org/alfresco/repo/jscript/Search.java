@@ -794,7 +794,7 @@ public class Search extends BaseScopableProcessorExtension
         Collection<ScriptNode> set = null;
         
         if (logger.isDebugEnabled())
-           logger.debug("query=" + sp.getQuery() + " limit=" + sp.getLimit());
+           logger.debug("query=" + sp.getQuery() + " limit=" + (sp.getLimitBy() != LimitBy.UNLIMITED ? sp.getLimit() : "none"));
         
         // perform the search against the repo
         ResultSet results = null;

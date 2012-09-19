@@ -39,7 +39,7 @@
       {
          "eventType" : "rmEventType.crossReferencedRecordTransfered",
          "eventName" : "related_record_trasfered_inactive_storage",
-         "eventDisplayLabel" : "Related Record Transfered To Inactive Storage"
+         "eventDisplayLabel" : "Related Record Transferred To Inactive Storage"
       },
       {
          "eventType" : "rmEventType.obsolete",

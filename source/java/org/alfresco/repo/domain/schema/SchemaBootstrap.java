@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 import javax.sql.DataSource;
 
@@ -2372,6 +2373,36 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         public void setTypeMap(Map<String, Class<?>> map) throws SQLException
         {
             wrapped.setTypeMap(map);
+        }
+
+        @Override
+        public void setSchema(String schema) throws SQLException
+        {
+            wrapped.setSchema(schema);
+        }
+
+        @Override
+        public String getSchema() throws SQLException
+        {
+            return wrapped.getSchema();
+        }
+
+        @Override
+        public void abort(Executor executor) throws SQLException
+        {
+            wrapped.abort(executor);
+        }
+
+        @Override
+        public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException
+        {
+            wrapped.setNetworkTimeout(executor, milliseconds);
+        }
+
+        @Override
+        public int getNetworkTimeout() throws SQLException
+        {
+            return wrapped.getNetworkTimeout();
         }
     }
 }

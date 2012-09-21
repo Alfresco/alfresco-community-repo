@@ -38,14 +38,15 @@
     
     <!-- Preference service implemenation bean -->
     <bean id="preferenceService" class="org.alfresco.repo.preference.PreferenceServiceImpl">
-    	<property name="nodeService" ref="NodeService"/>
-    	<property name="contentService" ref="ContentService"/>    	
-    	<property name="personService" ref="PersonService"/>    	
-    	<property name="permissionService" ref="PermissionService"/>    	
-    	<property name="authenticationContext" ref="authenticationContext"/>
-    </bean>   
+        <property name="nodeService" ref="NodeService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="personService" ref="PersonService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="authenticationContext" ref="authenticationContext"/>
+        <property name="authorityService" ref="AuthorityService"/>
+    </bean>
     
-     <bean id="preferenceServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.preference.script.ScriptPreferenceService">
+    <bean id="preferenceServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.preference.script.ScriptPreferenceService">
         <property name="extensionName">
             <value>preferenceService</value>
         </property>

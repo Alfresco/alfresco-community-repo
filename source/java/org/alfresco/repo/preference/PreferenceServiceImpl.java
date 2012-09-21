@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.json.JSONException;
@@ -64,6 +65,9 @@ public class PreferenceServiceImpl implements PreferenceService
 
     /** Authentication Service */
     private AuthenticationContext authenticationContext;
+    
+    /** Authority Service */
+    private AuthorityService authorityService;
 
     /**
      * Set the node service
@@ -114,6 +118,14 @@ public class PreferenceServiceImpl implements PreferenceService
     {
         this.authenticationContext = authenticationContext;
     }
+    
+    /**
+     * @param authorityService the authorityService to set
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
 
     /**
      * @see org.alfresco.service.cmr.preference.PreferenceService#getPreferences(java.lang.String)
@@ -134,15 +146,16 @@ public class PreferenceServiceImpl implements PreferenceService
 
         // Get the user node reference
         NodeRef personNodeRef = this.personService.getPerson(userName);
-        if (personNodeRef == null) 
-        { 
-            throw new AlfrescoRuntimeException("Can not get preferences for " + userName
-                + " because he/she does not exist."); 
+        if (personNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Could not get preferences for " + userName + " because they do not exist.");
         }
 
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (authenticationContext.isSystemUserName(currentUserName) == true || userName.equals(currentUserName) == true
-                || AuthenticationUtil.getAdminUserName().equals(currentUserName))
+        if (userName.equals(currentUserName) ||
+            personService.getUserIdentifier(userName).equals(personService.getUserIdentifier(currentUserName)) ||
+            authenticationContext.isSystemUserName(currentUserName) ||
+            authorityService.isAdminAuthority(currentUserName))
         {
             try
             {
@@ -162,10 +175,10 @@ public class PreferenceServiceImpl implements PreferenceService
                     Iterator<String> keys = jsonPrefs.keys();
                     while (keys.hasNext())
                     {
-                        String key = (String) keys.next();
+                        final String key = (String) keys.next();
 
-                        if (preferenceFilter == null || preferenceFilter.length() == 0
-                                || matchPreferenceNames(key, preferenceFilter) == true)
+                        if (preferenceFilter == null || preferenceFilter.length() == 0 ||
+                            matchPreferenceNames(key, preferenceFilter) == true)
                         {
                             preferences.put(key, (Serializable) jsonPrefs.get(key));
                         }
@@ -228,16 +241,12 @@ public class PreferenceServiceImpl implements PreferenceService
     {
         // Get the user node reference
         final NodeRef personNodeRef = this.personService.getPerson(userName);
-        if (personNodeRef == null) { throw new AlfrescoRuntimeException("Can not update preferences for " + userName
-                + " because he/she does not exist."); }
-
-        // Can only set preferences if the currently logged in user matches the
-        // user name being updated or
-        // the user already has write permissions on the person node
-        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (authenticationContext.isSystemUserName(currentUserName) == true
-                || permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED
-                || userName.equals(currentUserName) == true)
+        if (personNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Could not update preferences for " + userName + " because they do not exist.");
+        }
+        
+        if (userCanWritePreferences(userName, personNodeRef))
         {
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
@@ -283,14 +292,13 @@ public class PreferenceServiceImpl implements PreferenceService
 
                     return null;
                 }
-
             }, AuthenticationUtil.SYSTEM_USER_NAME);
         }
         else
         {
             // The current user does not have sufficient permissions to update
             // the preferences for this user
-            throw new UnauthorizedAccessException("The current user " + currentUserName
+            throw new UnauthorizedAccessException("The current user " + AuthenticationUtil.getFullyAuthenticatedUser()
                     + " does not have sufficient permissions to update the preferences of the user " + userName);
         }
     }
@@ -302,7 +310,7 @@ public class PreferenceServiceImpl implements PreferenceService
     {
         clearPreferences(userName, null);
     }
-
+    
     /**
      * @see org.alfresco.repo.person.PersonService#clearPreferences(java.lang.String,
      *      java.lang.String)
@@ -311,16 +319,12 @@ public class PreferenceServiceImpl implements PreferenceService
     {
         // Get the user node reference
         final NodeRef personNodeRef = this.personService.getPerson(userName);
-        if (personNodeRef == null) { throw new AlfrescoRuntimeException("Can not update preferences for " + userName
-                + " because he/she does not exist."); }
-
-        // Can only set preferences if the currently logged in user matches the
-        // user name being updated or
-        // the user already has write permissions on the person node
-        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (authenticationContext.isSystemUserName(currentUserName) == true
-                || permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED
-                || userName.equals(currentUserName) == true)
+        if (personNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Could not update preferences for " + userName + " because they do not exist.");
+        }
+        
+        if (userCanWritePreferences(userName, personNodeRef))
         {
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
@@ -347,10 +351,10 @@ public class PreferenceServiceImpl implements PreferenceService
                                 Iterator<String> keys = jsonPrefs.keys();
                                 while (keys.hasNext())
                                 {
-                                    String key = (String) keys.next();
+                                    final String key = (String) keys.next();
 
-                                    if (preferenceFilter == null || preferenceFilter.length() == 0
-                                            || matchPreferenceNames(key, preferenceFilter) == true)
+                                    if (preferenceFilter == null || preferenceFilter.length() == 0 ||
+                                        matchPreferenceNames(key, preferenceFilter) == true)
                                     {
                                         removeKeys.add(key);
                                     }
@@ -383,9 +387,26 @@ public class PreferenceServiceImpl implements PreferenceService
         {
             // The current user does not have sufficient permissions to update
             // the preferences for this user
-            throw new UnauthorizedAccessException("The current user " + currentUserName
+            throw new UnauthorizedAccessException("The current user " + AuthenticationUtil.getFullyAuthenticatedUser()
                     + " does not have sufficient permissions to update the preferences of the user " + userName);
         }
     }
-
+    
+    /**
+     * Helper to encapsulate the test for whether the currently authenticated user can write to the
+     * preferences objects for the given username and person node reference.
+     * 
+     * @param userName          Username owner of the preferences object for modification test 
+     * @param personNodeRef     Non-null person representing the given username
+     * 
+     * @return true if they are allowed to write to the user preferences, false otherwise
+     */
+    private boolean userCanWritePreferences(final String userName, final NodeRef personNodeRef)
+    {
+        final String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
+        return (userName.equals(currentUserName) ||
+                personService.getUserIdentifier(userName).equals(personService.getUserIdentifier(currentUserName)) ||
+                authenticationContext.isSystemUserName(currentUserName) ||
+                permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED);
+    }
 }

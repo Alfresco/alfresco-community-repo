@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -163,7 +164,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             
             // What locale must be used for filtering - ALF-3756 fix, ignore the country and variant
             Serializable value = (Serializable) invocation.proceed();
-            ret = convertOutboundProperty(contentLangLocale, nodeRef, pivotNodeRef, propertyQName, value);
+            ret = convertOutboundProperty(nodeRef, pivotNodeRef, propertyQName, value);
         }
         else if (methodName.equals("getProperties"))
         {
@@ -179,7 +180,7 @@ public class MLPropertyInterceptor implements MethodInterceptor
             {
                 QName propertyQName = entry.getKey();
                 Serializable value = entry.getValue();
-                Serializable convertedValue = convertOutboundProperty(contentLangLocale, nodeRef, pivotNodeRef, propertyQName, value);
+                Serializable convertedValue = convertOutboundProperty(nodeRef, pivotNodeRef, propertyQName, value);
                 // Add it to the return map
                 convertedProperties.put(propertyQName, convertedValue);
             }
@@ -334,7 +335,6 @@ public class MLPropertyInterceptor implements MethodInterceptor
      * Ensure that content is spoofed for empty translations.
      */
     private Serializable convertOutboundProperty(
-            Locale contentLocale,
             NodeRef nodeRef,
             NodeRef pivotNodeRef,
             QName propertyQName,
@@ -349,13 +349,13 @@ public class MLPropertyInterceptor implements MethodInterceptor
         {
             // It is MLText
             MLText mlText = (MLText) outboundValue;
-            ret = mlText.getClosestValue(contentLocale);
+            ret = getClosestValue(mlText);
         }
         else if(isCollectionOfMLText(outboundValue))
         {
             Collection<?> col = (Collection<?>)outboundValue; 
             ArrayList<String> answer = new ArrayList<String>(col.size());
-            Locale closestLocale = getClosestLocale(col, contentLocale);
+            Locale closestLocale = getClosestLocale(col);
             for(Object o : col)
             {
                 MLText mlText = (MLText) o;
@@ -412,7 +412,32 @@ public class MLPropertyInterceptor implements MethodInterceptor
         return ret;
     }
     
-    public Locale getClosestLocale(Collection<?> collection, Locale locale)
+    private Serializable getClosestValue(MLText mlText)
+    {
+        Set<Locale> locales = mlText.getLocales();
+        Locale contentLocale = I18NUtil.getContentLocale();
+        Locale locale = I18NUtil.getNearestLocale(contentLocale, locales);
+        if (locale != null)
+        {
+            return mlText.getValue(locale);
+        }
+
+        // If the content locale is too specific, try relaxing it to just language
+        Locale contentLocaleLang = I18NUtil.getContentLocaleLang();
+        if (!contentLocaleLang.equals(locale))
+        {
+            locale = I18NUtil.getNearestLocale(contentLocaleLang, locales);
+            if (locale != null)
+            {
+                return mlText.getValue(locale);
+            }
+        }
+        
+        // Just return the default translation
+        return mlText.getDefaultValue();
+    }
+
+    public Locale getClosestLocale(Collection<?> collection)
     {
         if (collection.size() == 0)
         {
@@ -425,17 +450,24 @@ public class MLPropertyInterceptor implements MethodInterceptor
             MLText mlText = (MLText)o;
             locales.addAll(mlText.keySet());
         }
-        // Get a match
+        // Try the content locale
+        Locale locale = I18NUtil.getContentLocale();
         Locale match = I18NUtil.getNearestLocale(locale, locales);
         if (match == null)
         {
-            // No close matches for the locale - go for the default locale
-            locale = I18NUtil.getLocale();
+            // Try just the content locale language
+            locale = I18NUtil.getContentLocaleLang();
             match = I18NUtil.getNearestLocale(locale, locales);
             if (match == null)
             {
-                // just get any locale
-                match = I18NUtil.getNearestLocale(null, locales);
+                // No close matches for the locale - go for the default locale
+                locale = I18NUtil.getLocale();
+                match = I18NUtil.getNearestLocale(locale, locales);
+                if (match == null)
+                {
+                    // just get any locale
+                    match = I18NUtil.getNearestLocale(null, locales);
+                }
             }
         }
         return match;

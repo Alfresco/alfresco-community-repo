@@ -1076,4 +1076,71 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         return inviteId;
     }
+    
+    public void testGetMemberInfo() throws Exception
+    {
+        String testGroup = "SiteServiceTestGroupA";
+        String testGroupName = "GROUP_" + testGroup;
+
+        if (!authorityService.authorityExists(testGroup))
+        {
+            this.authenticationComponent.setSystemUserAsCurrentUser();
+
+            testGroupName = authorityService.createAuthority(AuthorityType.GROUP, testGroup,
+                        testGroup, authorityService.getDefaultZones());
+            this.authorityService.addAuthority(testGroupName, USER_TWO);
+        }
+
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+
+        // CRUD a membership group for a web site
+        // Create a site
+        String shortName = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+
+        // Build the JSON membership object
+        JSONObject membership = new JSONObject();
+        membership.put("role", SiteModel.SITE_CONSUMER);
+        JSONObject group = new JSONObject();
+        group.put("fullName", testGroupName);
+        membership.put("group", group);
+
+        // Create a new group membership
+        {
+            Response response = sendRequest(new PostRequest(URL_SITES + "/" + shortName
+                        + URL_MEMBERSHIPS, membership.toString(), "application/json"), 200);
+            JSONObject newMember = new JSONObject(response.getContentAsString());
+
+            // Validate the return value
+            assertEquals("role not correct", SiteModel.SITE_CONSUMER, newMember.getString("role"));
+            JSONObject newGroup = newMember.getJSONObject("authority");
+            assertNotNull(newGroup);
+            assertEquals("full name not correct", testGroupName, newGroup.getString("fullName"));
+            assertEquals("authorityType not correct", "GROUP", newGroup.getString("authorityType"));
+        }
+
+        // Now List memberships
+        {
+            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName
+                        + URL_MEMBERSHIPS + "?authorityType=USER"), 200);
+            JSONArray listResult = new JSONArray(response.getContentAsString());
+            assertNotNull(listResult);
+            assertEquals(2, listResult.length());
+
+            for (int i = 0; i < listResult.length(); i++)
+            {
+                JSONObject json = listResult.getJSONObject(i);
+
+                if (USER_ONE.equals(json.getJSONObject("authority").get("fullName")))
+                {
+                    assertEquals("user one is Not member of any group", false, json.get("isMemberOfGroup"));
+                }
+                else
+                {
+                    assertEquals("full name not correct", USER_TWO, json.getJSONObject("authority").get("fullName"));
+                    assertEquals("user two is member of a SiteServiceTestGroupA group", true, json.get("isMemberOfGroup"));
+                }
+            }
+        }
+    }
 }

@@ -20,11 +20,13 @@ package org.alfresco.repo.web.scripts.site;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.security.authority.script.ScriptAuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteMemberInfo;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -54,7 +56,7 @@ public class SiteMembershipsGet extends AbstractSiteWebScript
        this.scriptAuthorityService = scriptAuthorityService;
     }
 
-   @Override
+    @Override
     protected Map<String, Object> executeImpl(SiteInfo site,
           WebScriptRequest req, Status status, Cache cache) 
     {
@@ -101,54 +103,47 @@ public class SiteMembershipsGet extends AbstractSiteWebScript
                    "Invalid size specified");
           }
        }
-       
-       
-       // Fetch the membership details of the site
-       Map<String, String> members =  this.siteService.listMembers(
-             site.getShortName(), nameFilter, roleFilter, limit, collapseGroups);
-       
-       
-       // Process it ready for FreeMarker
-       // Note that as usernames may be all numbers, we need to
-       //  prefix them with an underscore otherwise FTL can get confused!
-       Map<String,Object> authorities = new HashMap<String, Object>(members.size());
-       Map<String,String> roles = new LinkedHashMap<String, String>(members.size()); 
-       for(String authorityName : members.keySet())
-       {
-          String role = members.get(authorityName);
-          String ftlSafeName = "_" + authorityName;
-          
-          if(authorityName.startsWith("GROUP_"))
-          {
-             if(authorityType == null || authorityType.equals("GROUP"))
-             {
-                // Record the details
-                authorities.put(
-                      ftlSafeName,
-                      scriptAuthorityService.getGroupForFullAuthorityName(authorityName)
-                );
-                roles.put(ftlSafeName, role);
-             }
-          }
-          else
-          {
-             if(authorityType == null || authorityType.equals("USER"))
-             {
-                // Record the details
-                authorities.put(
-                      ftlSafeName,
-                      personService.getPerson(authorityName)
-                );
-                roles.put(ftlSafeName, role);
-             }
-          }
-       }
-       
-       // Pass the details to freemarker
-       Map<String,Object> model = new HashMap<String, Object>();
-       model.put("site", site);
-       model.put("roles", roles);
-       model.put("authorities", authorities);
-       return model;
+
+        // Fetch the membership details of the site
+        List<SiteMemberInfo> members = this.siteService.listMembersInfo(site.getShortName(),
+                    nameFilter, roleFilter, limit, collapseGroups);
+
+        // Process it ready for FreeMarker
+        // Note that as usernames may be all numbers, we need to
+        // prefix them with an underscore otherwise FTL can get confused!
+        Map<String, Object> authorities = new HashMap<String, Object>(members.size());      
+        Map<String, Object> memberInfo = new LinkedHashMap<String, Object>(members.size());
+        for (SiteMemberInfo authorityObj : members)
+        {           
+            String ftlSafeName = "_" + authorityObj.getMemberName();
+
+            if (authorityObj.getMemberName().startsWith("GROUP_"))
+            {
+                if (authorityType == null || authorityType.equals("GROUP"))
+                {
+                    // Record the details
+                    authorities.put(ftlSafeName, scriptAuthorityService
+                                .getGroupForFullAuthorityName(authorityObj.getMemberName()));                    
+                    memberInfo.put(ftlSafeName, authorityObj);
+                }
+            }
+            else
+            {
+                if (authorityType == null || authorityType.equals("USER"))
+                {
+                    // Record the details
+                    authorities.put(ftlSafeName,
+                                personService.getPerson(authorityObj.getMemberName()));                  
+                    memberInfo.put(ftlSafeName, authorityObj);                   
+                }
+            }
+        }
+
+        // Pass the details to freemarker
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("site", site);
+        model.put("authorities", authorities);
+        model.put("memberInfo", memberInfo);
+        return model;
     }
 }

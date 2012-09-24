@@ -2,7 +2,7 @@
 <#macro membershipJSON site role authority>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-	"role": "${role}",
+	"role": "${role}",	
 <#if authority.authorityType?? && authority.authorityType = "GROUP" >
 <#-- this is a group authority type -->
 	"authority":
@@ -16,6 +16,8 @@
 	"url": "${url.serviceContext + "/api/sites/" + site.shortName + "/memberships/" + authority.fullName!""}"
 <#else>
 <#-- this is a person authority type -->
+<#-- nested directive is used to add custom info about a person.e.g. if he belongs to a group? -->
+   <#nested>
 	"authority":
 	{
 		"authorityType": "USER",

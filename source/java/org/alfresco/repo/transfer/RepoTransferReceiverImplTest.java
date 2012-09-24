@@ -517,11 +517,14 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             {
                 receiver.saveContent(transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
             }
+            log.info("testMoreComplexCommit - commit");
             receiver.commit(transferId);
+            log.info("testMoreComplexCommit - commited");
 
         }
         finally
         {
+            log.info("testMoreComplexCommit - end");
             receiver.end(transferId);
             endTransaction();
         }
@@ -529,6 +532,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         startNewTransaction();
         try
         {
+            log.info("testMoreComplexCommit - validate nodes");
             assertTrue(nodeService.getAspects(node1.getNodeRef()).contains(ContentModel.ASPECT_ATTACHABLE));
             assertFalse(nodeService.getSourceAssocs(node2.getNodeRef(), ContentModel.ASSOC_ATTACHMENTS).isEmpty());
             for (TransferManifestNode node : nodes)

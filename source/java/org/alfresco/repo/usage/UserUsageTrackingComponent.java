@@ -313,7 +313,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                         users.put(username, new NodeRef(personStoreRef, uuid));
                     }
                 };
-                usageDAO.getUsersWithUsage(personStoreRef, userHandler);
+                usageDAO.getUsersWithUsage(tenantService.getName(personStoreRef), userHandler);
                 
                 return null;
             }

@@ -291,7 +291,7 @@ public class AVMShareMapper implements ShareMapper, InitializingBean {
 		                {
 		                    ServerConfigurationBean config = (ServerConfigurationBean)m_config;
 		                    
-		                    config.initialiseRuntimeContext(avmCtx);
+		                    config.initialiseRuntimeContext("cifs.avm" + name, avmCtx);
 		                    
 		                    // Enable file state caching          
 		                    // diskCtx.enableStateCache(serverConfigurationBean, true);

@@ -123,7 +123,7 @@
             <value><![CDATA[.*\.tmp]]></value>
             <value><![CDATA[.*\.temp]]></value>
             <value><![CDATA[.*\.wbk]]></value>
-            <value><![CDATA[\~.*]]></value>
+            <value><![CDATA[(\._)?\~.*]]></value>
          </list>
       </property>
    </bean>
@@ -141,6 +141,7 @@
    <bean name="filenameFilteringInterceptor" class="org.alfresco.repo.model.filefolder.FilenameFilteringInterceptor">
       <property name="nodeService" ref="nodeService" />
       <property name="permissionService" ref="permissionService" />
+      <property name="contentService" ref="contentService" />
       <property name="systemPaths" ref="systemPaths" />
       <property name="hiddenAspect" ref="hiddenAspect" />
       <property name="temporaryFiles" ref="temporaryFiles" />

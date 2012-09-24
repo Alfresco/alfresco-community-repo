@@ -18,7 +18,7 @@
  */
 package org.alfresco.repo.action;
 
-import java.util.List;
+import java.util.Set;
 
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.namespace.QName;
@@ -33,7 +33,7 @@ public class ActionDefinitionImpl extends ParameterizedItemDefinitionImpl implem
     private static final long serialVersionUID = 4048797883396863026L;    
     
     private String ruleActionExecutor;
-    private List<QName> applicableTypes;
+    private Set<QName> applicableTypes;
     private boolean trackStatus;
 
     /**
@@ -68,11 +68,11 @@ public class ActionDefinitionImpl extends ParameterizedItemDefinitionImpl implem
     }
     
     /**
-     * Gets the list of applicable types
+     * Gets the set of applicable types
      * 
-     * @return  the list of qnames
+     * @return  the set of qnames
      */
-    public List<QName> getApplicableTypes()
+    public Set<QName> getApplicableTypes()
     {
         return this.applicableTypes;
     }
@@ -82,7 +82,7 @@ public class ActionDefinitionImpl extends ParameterizedItemDefinitionImpl implem
      * 
      * @param applicableTypes   the applicable types
      */
-    public void setApplicableTypes(List<QName> applicableTypes)
+    public void setApplicableTypes(Set<QName> applicableTypes)
     {
         this.applicableTypes = applicableTypes;
     }

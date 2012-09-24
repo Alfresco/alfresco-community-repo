@@ -525,6 +525,37 @@
         ]]>
     </delete>
     
+    <delete id="delete_NodePropsByTxnCommitTime" parameterType="TransactionQuery">
+        <![CDATA[
+        delete from alf_node_properties np
+        where exists
+        (
+            select 1
+            from
+                alf_node node
+                join alf_transaction txn on (txn.id = node.transaction_id)
+            where
+                node.type_qname_id = #{typeQNameId} and
+                np.node_id = node.id and
+                txn.commit_time_ms < #{maxCommitTime}
+        )
+        ]]>
+    </delete>
+    
+    <delete id="delete_NodePropsByTxnCommitTime_MySQL" parameterType="TransactionQuery">
+        <![CDATA[
+        delete
+            np
+        from
+            alf_node_properties np
+            join alf_node node on (node.id = np.node_id)
+            join alf_transaction txn on (txn.id = node.transaction_id)
+        where
+            node.type_qname_id = #{typeQNameId} and
+            txn.commit_time_ms < #{maxCommitTime}
+        ]]>
+    </delete>
+    
     <delete id="delete_NodeProperties" parameterType="NodeProperty">
         delete from alf_node_properties
         where

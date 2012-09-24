@@ -18,7 +18,7 @@
  */
 package org.alfresco.service.cmr.action;
 
-import java.util.List;
+import java.util.Set;
 
 import org.alfresco.service.namespace.QName;
 
@@ -32,9 +32,9 @@ public interface ActionDefinition extends ParameterizedItemDefinition
     /**
      * Gets a list of the types that this action item is applicable for
      * 
-     * @return  list of types
+     * @return  set of types never <tt>null</tt>
      */
-    public List<QName> getApplicableTypes();
+    public Set<QName> getApplicableTypes();
     
     /**
      * Get whether the basic action definition supports action tracking

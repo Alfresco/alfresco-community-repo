@@ -21,12 +21,8 @@ package org.alfresco.filesys.alfresco;
 
 import java.util.Enumeration;
 
-import org.springframework.extensions.config.ConfigElement;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.filesys.repo.ContentContext;
-import org.alfresco.filesys.repo.ContentDiskDriver;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.InvalidUserException;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
@@ -39,8 +35,15 @@ import org.alfresco.jlan.server.core.SharedDeviceList;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
+import org.alfresco.jlan.server.filesys.quota.QuotaManager;
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Home Share Mapper Class
@@ -49,50 +52,47 @@ import org.apache.commons.logging.LogFactory;
  * configuration and provides a dynamic home share mapped to the users home node.
  * 
  * @author GKSpencer
+ * @author mrogers
  */
 public class HomeShareMapper implements ShareMapper
 {
     // Logging
     
-    private static final Log logger = LogFactory.getLog("org.alfresco.smb.protocol");
+    private static final Log logger = LogFactory.getLog("org.alfresco.filesys.alfresco.HomeShareMapper");
     
     //  Home folder share name
-    
     public static final String HOME_FOLDER_SHARE = "HOME";
     
     // Server configuration
-
     private ServerConfigurationAccessor m_config;
-    
-    private DiskInterface m_repoDiskInterface;
-    
+        
     // Home folder share name
+    private String homeShareName = HOME_FOLDER_SHARE;
     
-    private String m_homeShareName = HOME_FOLDER_SHARE;
+    private PersonService personService;
+    private NodeService nodeService;
+    private DiskInterface repoDiskInterface;
     
-    // Debug enable flag
-
-    private boolean m_debug;
-
+    private QuotaManager quotaManager; // optional quota manager
     
-    public void setConfig(ServerConfiguration config)
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "ServerConfiguration", m_config);
+        PropertyCheck.mandatory(this, "Home share name", homeShareName);
+        PropertyCheck.mandatory(this, "personService", getPersonService());
+        PropertyCheck.mandatory(this, "nodeService", getNodeService());
+        PropertyCheck.mandatory(this, "repoDiskInterface", getRepoDiskInterface());
+        
+    }
+    
+    public void setServerConfiguration(ServerConfiguration config)
     {
         m_config = config;
     }
 
-    public void setRepoDiskInterface(DiskInterface diskInterface)
-    {
-        m_repoDiskInterface = diskInterface;
-    }
-
     public void setHomeShareName(String shareName)
     {
-        m_homeShareName = shareName;
-    }
-
-    public void setDebug(boolean m_debug)
-    {
-        this.m_debug = m_debug;
+        homeShareName = shareName;
     }
 
     /**
@@ -112,31 +112,7 @@ public class HomeShareMapper implements ShareMapper
     public void initializeMapper(ServerConfiguration config, ConfigElement params) throws InvalidConfigurationException
     {
         // Save the server configuration
-
-        setConfig(config);
-        
-        setRepoDiskInterface(((AlfrescoConfigSection) m_config.getConfigSection( AlfrescoConfigSection.SectionName)).getRepoDiskInterface());
-        
-        // Check if the home share name has been specified
-        
-        String homeName = params.getAttribute("name");
-        if ( homeName != null && homeName.length() > 0)
-            setHomeShareName(homeName);
-
-        // Check if debug is enabled
-
-        if (params != null && params.getChild("debug") != null)
-            setDebug(true);
-    }
-
-    /**
-     * Check if debug output is enabled
-     * 
-     * @return boolean
-     */
-    public final boolean hasDebug()
-    {
-        return m_debug;
+        setServerConfiguration(config);
     }
 
     /**
@@ -146,7 +122,7 @@ public class HomeShareMapper implements ShareMapper
      */
     public final String getHomeFolderName()
     {
-        return m_homeShareName;
+        return homeShareName;
     }
     
     /**
@@ -162,21 +138,31 @@ public class HomeShareMapper implements ShareMapper
         // Check if the user has a home folder, and the session does not currently have any
         // dynamic shares defined
         
-        if ( sess != null && sess.hasClientInformation() && sess.hasDynamicShares() == false &&
+        if ( sess != null && 
+                sess.hasClientInformation() && 
+                sess.hasDynamicShares() == false &&
         		sess.getClientInformation() instanceof AlfrescoClientInfo)
         {
             AlfrescoClientInfo client = (AlfrescoClientInfo) sess.getClientInformation();
-            if ( client.hasHomeFolder())
+            
+            NodeRef personNode = getPersonService().getPerson(client.getUserName());
+            
+            if(personNode != null)
             {
-                // Create the home folder share
+                NodeRef homeSpaceRef = (NodeRef)getNodeService().getProperty(personNode, ContentModel.PROP_HOMEFOLDER);
+            
+                if (homeSpaceRef != null)
+                {
+                    // Create the home folder share                
+                    DiskSharedDevice homeShare = createHomeDiskShare(homeSpaceRef, client.getUserName());
+                    sess.addDynamicShare(homeShare);
                 
-                DiskSharedDevice homeShare = createHomeDiskShare(client);
-                sess.addDynamicShare(homeShare);
                 
-                // Debug
-                
-                if ( logger.isDebugEnabled())
-                    logger.debug("Added " + getHomeFolderName() + " share to list of shares for " + client.getUserName());
+                    if ( logger.isDebugEnabled())
+                    {
+                        logger.debug("Added " + getHomeFolderName() + " share to list of shares for " + client.getUserName());
+                    }
+                }
             }
         }
         
@@ -194,7 +180,9 @@ public class HomeShareMapper implements ShareMapper
         // Remove unavailable shares from the list and return the list
 
         if ( allShares == false)
+        {
             shrList.removeUnavailableShares();
+        }
         return shrList;
     }
 
@@ -231,7 +219,7 @@ public class HomeShareMapper implements ShareMapper
                 
             //  Check if the user has a home folder node
 
-            if ( client != null && client.hasHomeFolder()) {
+            if ( client != null ) {
                 
                 //  Check if the share has already been created for the session
 
@@ -253,23 +241,33 @@ public class HomeShareMapper implements ShareMapper
                     
                     // Create the home share mapped to the users home folder
                     
-                    DiskSharedDevice diskShare = createHomeDiskShare(client);
+                    NodeRef personNode = getPersonService().getPerson(client.getUserName());
                     
-                    // Add the new share to the sessions dynamic share list
+                    if(personNode != null)
+                    {
+                        NodeRef homeSpaceRef = (NodeRef)getNodeService().getProperty(personNode, ContentModel.PROP_HOMEFOLDER);
+                    
+                        DiskSharedDevice diskShare = createHomeDiskShare(client.getHomeFolder(), client.getUserName());
+                    
+                        // Add the new share to the sessions dynamic share list
 
-                    sess.addDynamicShare(diskShare);                    
-                    share = diskShare;
+                        sess.addDynamicShare(diskShare);                    
+                        share = diskShare;
                     
-                    //  DEBUG
-                    
-                    if (logger.isDebugEnabled())
-                        logger.debug("  Mapped share " + name + " to " + client.getHomeFolder());
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("  Mapped share " + name + " to " + client.getHomeFolder());
+                        }
+                    }
                 }
             }
             else
+            {
                 throw new InvalidUserException("No home directory");
+            }
         }
-        else {
+        else 
+        {
         
             //  Find the required share by name/type. Use a case sensitive search first, if that fails use a case
             //  insensitive search.
@@ -287,7 +285,9 @@ public class HomeShareMapper implements ShareMapper
         //  Check if the share is available
         
         if ( share != null && share.getContext() != null && share.getContext().isAvailable() == false)
+        {
             share = null;
+        }
         
         //  Return the shared device, or null if no matching device was found
         
@@ -347,39 +347,69 @@ public class HomeShareMapper implements ShareMapper
      * @param client AlfrescoClientInfo
      * @return DiskSharedDevice
      */
-    private final DiskSharedDevice createHomeDiskShare(AlfrescoClientInfo client)
+    private final DiskSharedDevice createHomeDiskShare(NodeRef homeFolderRef, String userName)
     {
         //  Create the disk driver and context
+        logger.debug("create home share for user " + userName);
         
-        ExtendedDiskInterface diskDrv = (ExtendedDiskInterface) getRepoDiskInterface();
-        ContentContext diskCtx = new ContentContext( getHomeFolderName(), "", "", client.getHomeFolder());
+        DiskInterface diskDrv = getRepoDiskInterface();
+   
+        ContentContext diskCtx = new ContentContext( getHomeFolderName(), "", "", homeFolderRef);
         
-        if(m_config instanceof ServerConfigurationBean)
+        if ( getQuotaManager() != null)
         {
-            ServerConfigurationBean config = (ServerConfigurationBean)m_config;
-            
-            config.initialiseRuntimeContext(diskCtx);
-            
-            // Enable file state caching          
-            // diskCtx.enableStateCache(serverConfigurationBean, true);
+            diskCtx.setQuotaManager( getQuotaManager());
         }
-        else
-        {
-            throw new AlfrescoRuntimeException("configuration error, unknown configuration bean");
-        }
+        
+        ServerConfigurationBean config = (ServerConfigurationBean)m_config;            
+        config.initialiseRuntimeContext("cifs.home." + userName, diskCtx);
 
         //  Create a temporary shared device for the users home directory
-        
         return new DiskSharedDevice(getHomeFolderName(), diskDrv, diskCtx, SharedDevice.Temporary);
-    }
-    
-    protected DiskInterface getRepoDiskInterface()
-    {
-        return m_repoDiskInterface;
     }
     
     protected FilesystemsConfigSection getFilesystemsConfigSection()
     {
         return (FilesystemsConfigSection)m_config.getConfigSection(FilesystemsConfigSection.SectionName);
+    }
+
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+
+    public PersonService getPersonService()
+    {
+        return personService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public NodeService getNodeService()
+    {
+        return nodeService;
+    }
+
+    public void setRepoDiskInterface(DiskInterface repoDiskInterface)
+    {
+        this.repoDiskInterface = repoDiskInterface;
+    }
+
+    public DiskInterface getRepoDiskInterface()
+    {
+        return repoDiskInterface;
+    }
+
+    public void setQuotaManager(QuotaManager quotaManager)
+    {
+        this.quotaManager = quotaManager;
+    }
+
+    public QuotaManager getQuotaManager()
+    {
+        return quotaManager;
     }
 }

@@ -22,17 +22,21 @@
    </bean>
 
    <!-- Wiki service transaction bean -->
-   <bean id="WikiService_transaction"
-      class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+   <bean id="WikiService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop> 
+                <prop key="list*">${server.transaction.mode.readOnly}</prop> 
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
    <!-- List of Wiki Canned queries -->
    <bean id="wikiCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">

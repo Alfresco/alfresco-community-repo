@@ -179,8 +179,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private static final String ERR_END_UNEXISTING_TASK = "activiti.engine.end.task.unexisting.error";
     private static final String ERR_GET_TASK_BY_ID = "activiti.engine.get.task.by.id.error";
     private static final String ERR_END_TASK_INVALID_TRANSITION = "activiti.engine.end.task.invalid.transition";
-
+    public static final QName QNAME_INITIATOR = QName.createQName(NamespaceService.DEFAULT_URI, WorkflowConstants.PROP_INITIATOR);
+    
     private final static String WORKFLOW_TOKEN_SEPERATOR = "\\$";
+    
+    
     
     private RepositoryService repoService;
     private RuntimeService runtimeService;
@@ -2285,7 +2288,27 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
         if (workflowInstanceQuery.getCustomProps() != null)
         {
-            for (Map.Entry<QName, Object> prop : workflowInstanceQuery.getCustomProps().entrySet())
+        	Map<QName, Object> customProps = workflowInstanceQuery.getCustomProps();
+        	
+        	// CLOUD-667: Extract initiator-property and use 'startedBy' instead
+        	Object initiatorObject = customProps.get(QNAME_INITIATOR);
+        	if(initiatorObject != null && initiatorObject instanceof NodeRef)
+        	{
+        		// Extract username from person-node
+        		NodeRef initiator = (NodeRef) initiatorObject;
+        		if(this.nodeService.exists(initiator))
+                {
+                    String initiatorUserName = (String) nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
+                    query.startedBy(initiatorUserName);
+                    
+                    // Clone properties map and remove initiator
+                    customProps = new HashMap<QName, Object>();
+                    customProps.putAll(workflowInstanceQuery.getCustomProps());
+                    customProps.remove(QNAME_INITIATOR);
+                }
+        	}
+        	
+            for (Map.Entry<QName, Object> prop : customProps.entrySet())
             {
                 String propertyName = factory.mapQNameToName(prop.getKey());
                 if (prop.getValue() == null)

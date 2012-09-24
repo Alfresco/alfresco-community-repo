@@ -111,6 +111,16 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
     }
     
     /**
+     * Helper method to get the item title.
+     * 
+     * @return  the item name
+     */
+    public String getTitle()
+    {
+        return (String)this.getProperties().get(ContentModel.PROP_TITLE);
+    }
+
+    /**
      * Helper method to get the created date from the version property data.
      * 
      * @return  the date the version was created

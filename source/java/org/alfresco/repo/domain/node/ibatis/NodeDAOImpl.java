@@ -89,6 +89,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String UPDATE_NODE_BULK_TOUCH = "alfresco.node.update_NodeBulkTouch";
     private static final String DELETE_NODE_BY_ID = "alfresco.node.delete_NodeById";
     private static final String DELETE_NODES_BY_TXN_COMMIT_TIME = "alfresco.node.delete_NodesByTxnCommitTime";
+    private static final String DELETE_NODE_PROPS_BY_TXN_COMMIT_TIME = "alfresco.node.delete_NodePropsByTxnCommitTime";
     private static final String SELECT_NODE_BY_ID = "alfresco.node.select_NodeById";
     private static final String SELECT_NODE_BY_NODEREF = "alfresco.node.select_NodeByNodeRef";
     private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";
@@ -148,8 +149,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_TXN_MAX_ID = "alfresco.node.select_TxnMaxId";
     private static final String SELECT_TXN_UNUSED_MIN_COMMIT_TIME = "alfresco.node.select_TxnMinUnusedCommitTime";
     
-    private QNameDAO qnameDAO;
-    private DictionaryService dictionaryService;
+    protected QNameDAO qnameDAO;
+    protected DictionaryService dictionaryService;
 
     private SqlSessionTemplate template;
     
@@ -361,7 +362,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected int deleteNodesByCommitTime(boolean deletedOnly, long maxTxnCommitTimeMs)
+    protected int deleteNodesByCommitTime(long maxTxnCommitTimeMs)
     {
         // Get the deleted nodes
         Pair<Long, QName> deletedTypePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
@@ -373,6 +374,10 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         TransactionQueryEntity query = new TransactionQueryEntity();
         query.setTypeQNameId(deletedTypePair.getFirst());
         query.setMaxCommitTime(maxTxnCommitTimeMs);
+        // TODO: Fix ALF-16030 Use ON DELETE CASCADE for node aspects and properties 
+        // First clean up properties
+        template.delete(DELETE_NODE_PROPS_BY_TXN_COMMIT_TIME, query);
+        // Finally remove the nodes
         return template.delete(DELETE_NODES_BY_TXN_COMMIT_TIME, query);
     }
 
@@ -1651,6 +1656,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
      */
     public static class MySQL extends NodeDAOImpl
     {
+        private static final String DELETE_NODE_PROPS_BY_TXN_COMMIT_TIME_MYSQL = "alfresco.node.delete_NodePropsByTxnCommitTime_MySQL";
         private static final String DELETE_TXNS_UNUSED_MYSQL = "alfresco.node.delete_Txns_Unused_MySQL";
 
         private SqlSessionTemplate template;
@@ -1659,6 +1665,26 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         {
             super.setSqlSessionTemplate(sqlSessionTemplate);
             this.template = sqlSessionTemplate;
+        }
+
+        @Override
+        protected int deleteNodesByCommitTime(long maxTxnCommitTimeMs)
+        {
+            // Get the deleted nodes
+            Pair<Long, QName> deletedTypePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
+            if (deletedTypePair == null)
+            {
+                // Nothing to do
+                return 0;
+            }
+            TransactionQueryEntity query = new TransactionQueryEntity();
+            query.setTypeQNameId(deletedTypePair.getFirst());
+            query.setMaxCommitTime(maxTxnCommitTimeMs);
+            // TODO: Fix ALF-16030 Use ON DELETE CASCADE for node aspects and properties 
+            // First clean up properties
+            template.delete(DELETE_NODE_PROPS_BY_TXN_COMMIT_TIME_MYSQL, query);
+            // Finally remove the nodes
+            return template.delete(DELETE_NODES_BY_TXN_COMMIT_TIME, query);
         }
 
         @Override

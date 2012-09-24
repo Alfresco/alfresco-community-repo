@@ -43,6 +43,7 @@ import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.quota.QuotaManager;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.apache.commons.logging.Log;
@@ -67,7 +68,7 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	
 	private String m_tenantShareName;
 	
-	//  Store name and root path from standard content filesystem share
+	//  Store name and root path 
 	
 	private String m_rootPath;
 	private String m_storeName;
@@ -79,6 +80,8 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	//	Quota manager to use when creating multi-tenant shares
 	
 	private QuotaManager m_quotaManager;
+	
+	private DiskInterface repoDiskInterface;
 		
 	/**
 	 * Default constructor
@@ -87,29 +90,14 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	{
 	}
 	
-	
-	public void setServerConfiguration(ServerConfiguration config)
-    {
-        this.m_config = config;
-    }
-	
-	
-
-    public void setTenantShareName(String shareName)
-    {
-        m_tenantShareName = shareName;
-    }
-
-
-
-    /**
-     * Set the quota manager to be used by multi-tenant shares
-     * 
-     * @param quotaManager QuotaManager
-     */
-    public void setQuotaManager( QuotaManager quotaManager) {
-    	m_quotaManager = quotaManager;
-    }
+	public void init()
+	{
+	    PropertyCheck.mandatory(this, "ServerConfiguration", m_config);
+	    PropertyCheck.mandatory(this, "Tenant share name", m_tenantShareName);
+	    PropertyCheck.mandatory(this, "repoDiskInterface", getRepoDiskInterface());
+	    PropertyCheck.mandatory(this, "Store name", m_storeName);
+	    PropertyCheck.mandatory(this, "Root Path", m_rootPath);
+	}
     
     /**
 	 * Initialize the share mapper
@@ -129,20 +117,6 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 		//	Save the server configuration
 		
 	    setServerConfiguration(config);
-
-		//  Check if a tenant share name has been specified
-		
-		ConfigElement tenantShareName = params.getChild( "TenantShareName");
-		
-		if ( tenantShareName != null)
-		{
-			// Validate the share name
-			
-			if ( tenantShareName.getValue() != null && tenantShareName.getValue().length() > 0)
-				setTenantShareName(tenantShareName.getValue());
-			else
-				throw new InvalidConfigurationException("Invalid tenant share name");
-		}
 		
 		// Complete initialization
 		afterPropertiesSet();
@@ -162,11 +136,6 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
         if ( m_filesysConfig == null || m_alfrescoConfig == null)
             m_config.addListener( this);
         
-        // Find the content filesystem details to be used for the tenant shares
-
-        if ( m_filesysConfig != null)
-            findContentShareDetails();
-        
         // Create the tenant share lists table
         
         m_tenantShareLists = new Hashtable<String, SharedDeviceList>();
@@ -180,7 +149,7 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	 * @param typ int
 	 * @param sess SrvSession
 	 * @param create boolean
-	 * @return SharedDevice
+	 * @return SharedDevice or null if no matching device was found
 	 * @exception InvalidUserException
 	 */
 	public SharedDevice findShare(String host, String name, int typ, SrvSession sess, boolean create)
@@ -188,9 +157,12 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 		
 		//  Check if this is a tenant user
 		
-		if ( m_alfrescoConfig.getTenantService().isEnabled() && m_alfrescoConfig.getTenantService().isTenantUser() &&
+		if ( m_alfrescoConfig.getTenantService().isEnabled() && 
+		        m_alfrescoConfig.getTenantService().isTenantUser() &&
 		        typ != ShareType.ADMINPIPE)
+		{
 			return findTenantShare(host, name, typ, sess, create);
+		}
 		
 		//	Find the required share by name/type. Use a case sensitive search first, if that fails use a case
 		//	insensitive search.
@@ -261,23 +233,26 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 		//  Check if this is a tenant user
 		
 		if ( m_alfrescoConfig.getTenantService().isEnabled() && m_alfrescoConfig.getTenantService().isTenantUser())
+		{
 			return getTenantShareList(host, sess, allShares);
+		}
 		
 		//	Make a copy of the global share list and add the per session dynamic shares
 		
 		SharedDeviceList shrList = new SharedDeviceList( m_filesysConfig.getShares());
 		
-		if ( sess != null && sess.hasDynamicShares()) {
-			
-			//	Add the per session dynamic shares
-			
+		if ( sess != null && sess.hasDynamicShares()) 
+		{	
+			//	Add the per session dynamic shares	
 			shrList.addShares(sess.getDynamicShareList());
 		}
 		  
 		//	Remove unavailable shares from the list and return the list
 
 		if ( allShares == false)
-		  shrList.removeUnavailableShares();
+		{
+		    shrList.removeUnavailableShares();
+		}
 		return shrList;
 	}
 	
@@ -322,10 +297,6 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 			return ConfigurationListener.StsAccepted;
 		}
 
-		// Check if the tenant share template details have been set
-		
-		if ( m_rootPath == null)
-			findContentShareDetails();
 		
 		// Return a dummy status
 
@@ -350,9 +321,11 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 		
 		SharedDeviceList shareList = getTenantShareList(host, sess, true);
 		if ( shareList == null)
+		{    
 			return null;
+		}
 		
-		// Search for the required share
+		// Search for the required share in the list of shares for the tennant
 		
 		return shareList.findShare( name, typ, true);
 	}
@@ -375,6 +348,11 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 
 		SharedDeviceList shareList = null;
 		
+		if(m_tenantShareLists.containsKey(tenantDomain))
+		{
+		    shareList = m_tenantShareLists.get( tenantDomain);
+		}
+		
 		synchronized ( m_tenantShareLists)
 		{
 			// Get the tenant specific share list
@@ -389,7 +367,7 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 				
 				// Create a tenant specific share for this domain
 				
-				shareList.addShare( createTenantShare());
+				shareList.addShare( createTenantShare(tenantDomain));
 				
 				// Store the list for use by other members of this domain
 				
@@ -405,20 +383,25 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
 	/**
 	 * Create a tenant domain specific share
 	 */
-	private final DiskSharedDevice createTenantShare()
+	private final DiskSharedDevice createTenantShare(String tenantDomain)
 	{
-        StoreRef storeRef = new StoreRef(m_storeName);
+	    logger.debug("create tenant share for domain " + tenantDomain);
+        StoreRef storeRef = new StoreRef(getStoreName());
         NodeRef rootNodeRef = new NodeRef(storeRef.getProtocol(), storeRef.getIdentifier(), "dummy"); 
         
         // Root nodeRef is required for storeRef part
         
-        rootNodeRef = m_alfrescoConfig.getTenantService().getRootNode(m_alfrescoConfig.getNodeService(), m_alfrescoConfig.getSearchService(),
-        		                                                      m_alfrescoConfig.getNamespaceService(), m_rootPath, rootNodeRef);
+        rootNodeRef = m_alfrescoConfig.getTenantService().getRootNode(
+                m_alfrescoConfig.getNodeService(), 
+                m_alfrescoConfig.getSearchService(),
+        		m_alfrescoConfig.getNamespaceService(), 
+        		getRootPath(), 
+        		rootNodeRef);
 
         //  Create the disk driver and context
 
-        DiskInterface diskDrv = m_alfrescoConfig.getRepoDiskInterface();
-        ContentContext diskCtx = new ContentContext(m_tenantShareName, "", m_rootPath, rootNodeRef);
+        DiskInterface diskDrv = getRepoDiskInterface();
+        ContentContext diskCtx = new ContentContext(m_tenantShareName, getStoreName(), getRootPath(), rootNodeRef);
         
         // Set a quota manager for the share, if enabled
         
@@ -431,10 +414,7 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
         {
             ServerConfigurationBean config = (ServerConfigurationBean)m_config;
             
-            config.initialiseRuntimeContext(diskCtx);
-            
-            // Enable file state caching          
-            // diskCtx.enableStateCache(serverConfigurationBean, true);
+            config.initialiseRuntimeContext("cifs.tenant." + tenantDomain, diskCtx);
         }
         else
         {
@@ -450,40 +430,53 @@ public class MultiTenantShareMapper implements ShareMapper, ConfigurationListene
         return new DiskSharedDevice(m_tenantShareName, diskDrv, diskCtx);
 	}
 	
-	/**
-	 * Find the content filesystem driver details used for the tenant shares
-	 */
- 	private final void findContentShareDetails()
+	public void setServerConfiguration(ServerConfiguration config)
 	{
-		// Need the file system configuration to do the lookup
- 		
- 		if ( m_filesysConfig == null)
- 			return;
- 		
- 		// Get the fixed share list
- 		
- 		SharedDeviceList shareList = m_filesysConfig.getShares();
- 		Enumeration<SharedDevice> shareEnum = shareList.enumerateShares();
- 		
- 		while ( shareEnum.hasMoreElements())
- 		{
- 			// Get the current shared device
- 			
- 			SharedDevice share = shareEnum.nextElement();
- 			if ( share.getContext() instanceof ContentContext)
- 			{
- 				// Found a content filesystem share
-
- 				ContentContext ctx = (ContentContext) share.getContext();
- 				
- 				// Store the share details that are used for the tenant shares
- 				
- 				m_rootPath  = ctx.getRootPath();
- 				m_storeName = ctx.getStoreName();
- 				
- 				if ( m_tenantShareName == null)
- 					m_tenantShareName = ctx.getDeviceName();
- 			}
- 		}
+	    this.m_config = config;
 	}
+	    
+	public void setTenantShareName(String shareName)
+	{
+	    m_tenantShareName = shareName;
+	}
+
+	/**
+	 * Set the quota manager to be used by multi-tenant shares
+	 * 
+	 * @param quotaManager QuotaManager
+	 */
+	public void setQuotaManager( QuotaManager quotaManager) 
+	{
+	    m_quotaManager = quotaManager;
+	}
+	
+    public void setRootPath(String m_rootPath)
+    {
+        this.m_rootPath = m_rootPath;
+    }
+
+    public String getRootPath()
+    {
+        return m_rootPath;
+    }
+
+    public void setStoreName(String m_storeName)
+    {
+        this.m_storeName = m_storeName;
+    }
+
+    public String getStoreName()
+    {
+        return m_storeName;
+    }
+
+    public void setRepoDiskInterface(DiskInterface repoDiskInterface)
+    {
+        this.repoDiskInterface = repoDiskInterface;
+    }
+
+    public DiskInterface getRepoDiskInterface()
+    {
+        return repoDiskInterface;
+    }
 }

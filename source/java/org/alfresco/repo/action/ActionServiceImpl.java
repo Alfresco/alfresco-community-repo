@@ -284,15 +284,24 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             List<ActionDefinition> result = new ArrayList<ActionDefinition>();
             for (ActionDefinition actionDefinition : getActionDefinitions())
             {
-                List<QName> appliciableTypes = actionDefinition.getApplicableTypes();
-                if (appliciableTypes != null && appliciableTypes.isEmpty() == false)
+                Set<QName> applicableTypes = actionDefinition.getApplicableTypes();
+                if (applicableTypes != null && applicableTypes.isEmpty() == false)
                 {
-                    for (QName applicableType : actionDefinition.getApplicableTypes())
+                    // First do a short-cut check directly against the type
+                    if (applicableTypes.contains(nodeType))
                     {
-                        if (this.dictionaryService.isSubClass(nodeType, applicableType))
+                        result.add(actionDefinition);
+                    }
+                    else
+                    {
+                        // Have to do a check for all subtypes of the applicable types
+                        for (QName applicableType : actionDefinition.getApplicableTypes())
                         {
-                            result.add(actionDefinition);
-                            break;
+                            if (this.dictionaryService.isSubClass(nodeType, applicableType))
+                            {
+                                result.add(actionDefinition);
+                                break;
+                            }
                         }
                     }
                 }

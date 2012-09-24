@@ -142,6 +142,12 @@ public class WikiServiceImpl implements WikiService
     {
        // The name is based on the title, but with underscores
        String name = title.replace(' ', '_');
+       name = name.replaceAll("\"", "%22");
+       name = name.replaceAll("[*]", "%2a");
+       name = name.replaceAll("<", "%3c");
+       name = name.replaceAll(">", "%3e");
+       name = name.replaceAll(":", "%3a");
+       name = name.replaceAll("([.]?[.]+$)", "%2e");
        return name;
     }
     
@@ -182,7 +188,7 @@ public class WikiServiceImpl implements WikiService
     
     
     @Override
-    public WikiPageInfo getWikiPage(String siteShortName, String pageName) 
+    public WikiPageInfo getWikiPage(String siteShortName, String pageTitle) 
     {
        NodeRef container = getSiteWikiContainer(siteShortName, false);
        if (container == null)
@@ -191,6 +197,7 @@ public class WikiServiceImpl implements WikiService
           return null;
        }
        
+       String pageName = buildName(pageTitle);
        NodeRef link = nodeService.getChildByName(container, ContentModel.ASSOC_CONTAINS, pageName);
        if (link != null)
        {

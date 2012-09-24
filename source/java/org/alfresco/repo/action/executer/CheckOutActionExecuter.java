@@ -89,7 +89,8 @@ public class CheckOutActionExecuter extends ActionExecuterAbstractBase
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
 		if (this.nodeService.exists(actionedUponNodeRef) == true &&
-			this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
+			this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == false &&
+			isApplicableType(actionedUponNodeRef) == true)
 		{
 	        // Get the destination details
 	        NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);

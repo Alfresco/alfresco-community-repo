@@ -18,9 +18,9 @@
  */
 package org.alfresco.repo.workflow.jbpm;
 
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.jbpm.job.executor.JobExecutor;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springmodules.workflow.jbpm31.JbpmTemplate;
 
 
@@ -35,7 +35,7 @@ public class JBPMScheduler extends AbstractLifecycleBean
 {
     private JobExecutor executor = null; 
     private JbpmTemplate jbpmTemplate;
-    
+    private boolean JbpmEngineEnabled = false;
     
     /**
      * @param jbpmTemplate
@@ -44,18 +44,32 @@ public class JBPMScheduler extends AbstractLifecycleBean
     {
         this.jbpmTemplate = jbpmTemplate;
     }
+    
+    /**
+     * @param jbpmEngineEnabled whether or not the JBPM-Engine is enables. Please note that we are
+     * not using the WorklfowAdminService since this is only initialized later in the sequence.
+     */
+    public void setJBPMEngineEnabled(boolean jbpmEngineEnabled) {
+		JbpmEngineEnabled = jbpmEngineEnabled;
+	}
         
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        executor = jbpmTemplate.getJbpmConfiguration().getJobExecutor();
-        executor.start();
+    	if(JbpmEngineEnabled)
+    	{
+    		executor = jbpmTemplate.getJbpmConfiguration().getJobExecutor();
+    		executor.start();
+    	}
     }
 
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-        executor.stop();
+    	if(JbpmEngineEnabled || executor.isStarted())
+    	{
+    		executor.stop();
+    	}
     }
     
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,12 +18,15 @@
 package org.alfresco.repo.model.filefolder;
 
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -48,8 +51,16 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 {
     private static Log logger = LogFactory.getLog(FilenameFilteringInterceptor.class);
 
+    private static final String XLSX_MIMETYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+    private static final String MACOS_TEMPORARY_FILE_NAME_PREFIX = "._";
+    private static final Pattern XSL_MACOS_TEMPORARY_FILENAME_FITLER = Pattern.compile("^(\\" + MACOS_TEMPORARY_FILE_NAME_PREFIX + ")?[0-9,a-f]{8}$", Pattern.CASE_INSENSITIVE
+            | Pattern.UNICODE_CASE);
+
     private NodeService nodeService;
     private PermissionService permissionService;
+    
+    private ContentService contentService;
 
     private PatternFilter temporaryFiles;
     private PatternFilter systemPaths;
@@ -110,6 +121,16 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 	{
 		this.permissionService = permissionService;
 	}
+
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
+    public ContentService getContentService()
+    {
+        return contentService;
+    }
 
     private void checkTemporaryAspect(boolean isTemporary,  FileInfo fileInfo)
     {
@@ -239,7 +260,8 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     	            	else
     	            	{
     	            	    // check whether it's a temporary or hidden file
-    			            checkTemporaryAspect(temporaryFiles.isFiltered(filename), (FileInfo)ret);
+                           FileInfo sourceInfo = (FileInfo)ret;
+    			            checkTemporaryAspect(isNameOfTmporaryObject(filename, sourceInfo.getNodeRef()), sourceInfo);
     			            hiddenAspect.checkHidden(fileInfo, false);
     	            	}
     	            }
@@ -250,7 +272,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     
                     FileInfoImpl fileInfo = (FileInfoImpl)ret;
     
-    	            checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
+    	            checkTemporaryAspect(isNameOfTmporaryObject(filename, fileInfo.getNodeRef()), fileInfo);
                 }
             }
             else if (methodName.startsWith("move"))
@@ -263,7 +285,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 {
                     // Name is changing
                     // check against all the regular expressions
-                    checkTemporaryAspect(temporaryFiles.isFiltered(newName), sourceNodeRef);
+                    checkTemporaryAspect(isNameOfTmporaryObject(newName, sourceNodeRef), sourceNodeRef);
                 }
               
                 // now do the move
@@ -287,7 +309,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 }
     
                 // check against all the regular expressions
-                checkTemporaryAspect(temporaryFiles.isFiltered(filename), fileInfo);
+                checkTemporaryAspect(isNameOfTmporaryObject(filename, fileInfo.getNodeRef()), fileInfo);
                 if(getMode() == Mode.ENHANCED)
                 {
                     hiddenAspect.checkHidden(fileInfo, true);
@@ -315,7 +337,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                     }
                   
                     // check against all the regular expressions
-                    checkTemporaryAspect(temporaryFiles.isFiltered(newName), sourceNodeRef);
+                    checkTemporaryAspect(isNameOfTmporaryObject(newName, sourceNodeRef), sourceNodeRef);
                     
                     ret = invocation.proceed();
 
@@ -346,6 +368,37 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
         // done
         return ret;
+    }
+
+    /**
+     * Determines whether specified <code>name</code> matches any pattern of temporary file names. Also it checks special case of new XLS document creation in MacOS. See <a
+     * href="https://issues.alfresco.com/jira/browse/ALF-14078">ALF-14078</a> (comment added on 04-September-12 04:11 PM) for more details
+     * 
+     * @param name - {@link String} value which contains name of node
+     * @param nodeRef - {@link NodeRef} instance of the node
+     * @return {@link Boolean} value. <code>true</code> if <code>name</code> is name of temporary object including special case of XLSX in MacOS. <code>false</code> in other case
+     */
+    private boolean isNameOfTmporaryObject(String name, NodeRef nodeRef)
+    {
+        boolean result = temporaryFiles.isFiltered(name);
+
+        if (!result)
+        {
+            // This pattern must be validated in conjunction with mimetype validation only!
+            result = XSL_MACOS_TEMPORARY_FILENAME_FITLER.matcher(name).matches();
+
+            if (result && !name.startsWith(MACOS_TEMPORARY_FILE_NAME_PREFIX))
+            {
+                ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+
+                if (null != contentReader)
+                {
+                    result = XLSX_MIMETYPE.equals(contentReader.getMimetype());
+                }
+            }
+        }
+
+        return result;
     }
 }
 

@@ -451,9 +451,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     try
                     {
                         Pair<Long, NodeRef> pair = nodeDAO.getNodePair(catRef);
-                        for (Path path : nodeDAO.getPaths(pair, false))
+                        if(pair != null)
                         {
-                            aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));   
+                            for (Path path : nodeDAO.getPaths(pair, false))
+                            {
+                                aspectPaths.add(new Pair<Path, QName>(path, aspDef.getName()));   
+                            }
                         }
                     }
                     catch (InvalidNodeRefException e)

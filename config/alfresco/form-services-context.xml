@@ -177,7 +177,7 @@
       class="org.alfresco.repo.forms.processor.workflow.TaskFormProcessor"
       parent="baseFormProcessor">
       <property name="filterRegistry" ref="taskFilterRegistry" />
-      <property name="workflowService" ref="workflowServiceImpl" />
+      <property name="workflowService" ref="WorkflowService" />
       <property name="authenticationService" ref="AuthenticationService" />
       <property name="personService" ref="PersonService" />
        <property name="behaviourFilter" ref="policyBehaviourFilter" />

@@ -320,6 +320,9 @@
         <property name="baseNodeService">
         	<ref bean="nodeService"/>
         </property>
+	<property name="dictionaryService">
+		<ref bean="dictionaryService" />
+	</property>
         <property name="trackStatus" value="false" />
     </bean>
     

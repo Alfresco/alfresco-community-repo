@@ -1704,7 +1704,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                             {
                                 logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ diskCtx.getShareName());
                             }
-                            GenericConfigElement hazelConfig = createClusterConfig(diskCtx.getShareName()); 
+                            GenericConfigElement hazelConfig = createClusterConfig("cifs.avm."+diskCtx.getShareName()); 
                             HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
                             hazel.initializeCache(hazelConfig, this);   
                             diskCtx.setStateCache(hazel);
@@ -1716,6 +1716,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                             standaloneCache.initializeCache( new GenericConfigElement( ""), this);
                             diskCtx.setStateCache(standaloneCache);                  
                         }
+                        
                         if ( diskCtx.hasStateCache()) {
                             
                             // Register the state cache with the reaper thread
@@ -1747,7 +1748,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                             {
                                 logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ filesysContext.getShareName());
                             }
-                            GenericConfigElement hazelConfig = createClusterConfig(filesysContext.getShareName()); 
+                            GenericConfigElement hazelConfig = createClusterConfig("cifs.filesys."+filesysContext.getShareName()); 
                             HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
                             hazel.initializeCache(hazelConfig, this);   
                             filesysContext.setStateCache(hazel);
@@ -1763,7 +1764,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                         if ( filesysContext.hasStateCache()) {
                             
                             // Register the state cache with the reaper thread
-                            
+                            // has many side effects including initialisation of the cache    
                             fsysConfig.addFileStateCache( filesystem.getDeviceName(), filesysContext.getStateCache());
                             
                             // Create the lock manager for the context.
@@ -1970,19 +1971,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 // Associate the share mapper
                 secConfig.setShareMapper(shareMapper);
             }
-            else
-            {
-                // Check if the tenant service is enabled
-                if (m_tenantService != null && m_tenantService.isEnabled())
-                {
-                    // Initialize the multi-tenancy share mapper
-
-                    secConfig.setShareMapper("org.alfresco.filesys.alfresco.MultiTenantShareMapper",
-                            new GenericConfigElement("shareMapper"));
-                    
-                 }
-            }
-
+     
             // Check if any domain mappings have been specified
 
             List<DomainMappingConfigBean> mappings = securityConfigBean.getDomainMappings();
@@ -2256,8 +2245,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
      * 
      * @param diskCtx
      */
-    public void initialiseRuntimeContext(AlfrescoContext diskCtx)
+    public void initialiseRuntimeContext(String uniqueName, AlfrescoContext diskCtx)
     {
+        logger.debug("initialiseRuntimeContext" + diskCtx);
+        
         if (diskCtx.getStateCache() == null) {
           
           // Set the state cache, use a hard coded standalone cache for now
@@ -2272,9 +2263,9 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                   {
                       if(logger.isDebugEnabled())
                       {
-                          logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ diskCtx.getShareName());
+                          logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", uniqueName: "+ uniqueName);
                       }
-                      GenericConfigElement hazelConfig = createClusterConfig(diskCtx.getShareName()); 
+                      GenericConfigElement hazelConfig = createClusterConfig(uniqueName); 
                       HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
                       hazel.initializeCache(hazelConfig, this);   
                       diskCtx.setStateCache(hazel);
@@ -2287,10 +2278,14 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                       filesysConfig.addFileStateCache( diskCtx.getDeviceName(), standaloneCache);
                       diskCtx.setStateCache( standaloneCache);
                   }
-                  
-                  FileStateLockManager lockMgr = new FileStateLockManager(diskCtx.getStateCache());
-                  diskCtx.setLockManager(lockMgr); 
-                  diskCtx.setOpLockManager(lockMgr); 
+                    
+                  // Register the state cache with the reaper thread
+                  // has many side effects including initialisation of the cache    
+                 filesysConfig.addFileStateCache( diskCtx.getShareName(), diskCtx.getStateCache());
+                       
+                 FileStateLockManager lockMgr = new FileStateLockManager(diskCtx.getStateCache());
+                 diskCtx.setLockManager(lockMgr); 
+                 diskCtx.setOpLockManager(lockMgr); 
               }
               catch ( InvalidConfigurationException ex) 
               {
@@ -2333,7 +2328,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     }
     
     
-    private  GenericConfigElement createClusterConfig(String topicName) throws InvalidConfigurationException 
+   private  GenericConfigElement createClusterConfig(String topicName) throws InvalidConfigurationException 
     {
         GenericConfigElement config = new GenericConfigElement("hazelcastStateCache");
         GenericConfigElement clusterNameCfg = new GenericConfigElement("clusterName");

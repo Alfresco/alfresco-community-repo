@@ -1,14 +1,18 @@
 package org.alfresco.repo.node.cleanup;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.node.db.DeletedNodeCleanupWorker;
@@ -25,14 +29,22 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.GUID;
 
+/**
+ * @author Derek Hulley
+ * @since 4.0
+ */
 public class TransactionCleanupTest
 {
+    private static Log logger = LogFactory.getLog(TransactionCleanupTest.class);
+    
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private TransactionService transactionService;
@@ -40,6 +52,7 @@ public class TransactionCleanupTest
     private SearchService searchService;
     private MutableAuthenticationService authenticationService;
     private NodeDAO nodeDAO;
+    private SimpleCache<Serializable, Serializable> nodesCache;
     private DeletedNodeCleanupWorker worker;
 
     private NodeRef nodeRef1;
@@ -49,6 +62,7 @@ public class TransactionCleanupTest
     private NodeRef nodeRef5;
     private RetryingTransactionHelper helper;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void before()
     {
@@ -59,12 +73,13 @@ public class TransactionCleanupTest
 		this.nodeService = serviceRegistry.getNodeService();
 		this.searchService = serviceRegistry.getSearchService();
 		this.nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
+		this.nodesCache = (SimpleCache<Serializable, Serializable>) ctx.getBean("node.nodesSharedCache");
         this.worker = (DeletedNodeCleanupWorker)ctx.getBean("nodeCleanup.deletedNodeCleanup");
         this.worker.setMinPurgeAgeDays(0);
 
     	this.helper = transactionService.getRetryingTransactionHelper();
         authenticationService.authenticate("admin", "admin".toCharArray());
-
+        
 		StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 		NodeRef storeRoot = nodeService.getRootNode(storeRef);
 		List<NodeRef> nodeRefs = searchService.selectNodes(
@@ -93,8 +108,8 @@ public class TransactionCleanupTest
     	UpdateNode updateNode1 = new UpdateNode(nodeRef1);
     	UpdateNode updateNode2 = new UpdateNode(nodeRef2);
     	UpdateNode updateNode3 = new UpdateNode(nodeRef3);
-    	UpdateNode updateNode4 = new UpdateNode(nodeRef4);
-    	UpdateNode updateNode5 = new UpdateNode(nodeRef5);
+    	DeleteNode deleteNode4 = new DeleteNode(nodeRef4);
+    	DeleteNode deleteNode5 = new DeleteNode(nodeRef5);
 
     	List<String> txnIds1 = new ArrayList<String>();
     	List<String> txnIds2 = new ArrayList<String>();
@@ -116,22 +131,16 @@ public class TransactionCleanupTest
     			String txnId2 = helper.doInTransaction(updateNode2, false, true);
     			txnIds2.add(txnId2);
     		}
-    		if(i == 2)
+    		if(i == 1)
     		{
     			String txnId3 = helper.doInTransaction(updateNode3, false, true);
     			txnIds3.add(txnId3);
     		}
-    		if(i == 3)
-    		{
-    			String txnId4 = helper.doInTransaction(updateNode4, false, true);
-    			txnIds4.add(txnId4);
-    		}
-    		if(i == 4)
-    		{
-    			String txnId5 = helper.doInTransaction(updateNode5, false, true);
-    			txnIds5.add(txnId5);
-    		}
     	}
+        String txnId4 = helper.doInTransaction(deleteNode4, false, true);
+        txnIds4.add(txnId4);
+        String txnId5 = helper.doInTransaction(deleteNode5, false, true);
+        txnIds5.add(txnId5);
 
 		return txnIds;
     }
@@ -165,12 +174,21 @@ public class TransactionCleanupTest
     	final List<String> txnIds1 = txnIds.get(nodeRef1);
     	final List<String> txnIds2 = txnIds.get(nodeRef2);
     	final List<String> txnIds3 = txnIds.get(nodeRef3);
-    	final List<String> txnIds4 = txnIds.get(nodeRef4);
-    	final List<String> txnIds5 = txnIds.get(nodeRef5);
+    	// Pure delete: final List<String> txnIds4 = txnIds.get(nodeRef4);
+    	// Pure delete: final List<String> txnIds5 = txnIds.get(nodeRef5);
+        
+        // Double-check that n4 and n5 are present in deleted form
+    	nodesCache.clear();
+        assertNotNull("Node 4 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef4));
+        assertNotNull("Node 5 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef5));
 
     	// run the transaction cleaner
         worker.setPurgeSize(5); // small purge size
-    	worker.doClean();
+    	List<String> reports = worker.doClean();
+    	for (String report : reports)
+        {
+            logger.debug(report);
+        }
 
     	// Get transactions committed after the test started
     	List<Transaction> txns = nodeDAO.getTxnsByCommitTimeAscending(Long.valueOf(start), Long.valueOf(Long.MAX_VALUE), Integer.MAX_VALUE, null, false);
@@ -182,8 +200,7 @@ public class TransactionCleanupTest
     	expectedUsedTxnIds.add(txnIds1.get(txnIds1.size() - 1));
     	expectedUsedTxnIds.addAll(txnIds2);
     	expectedUsedTxnIds.addAll(txnIds3);
-    	expectedUsedTxnIds.addAll(txnIds4);
-    	expectedUsedTxnIds.addAll(txnIds5);
+    	// 4 and 5 should not be in the list because they are deletes
 
     	// check that the correct transactions have been purged i.e. all except the last one to update the node
     	// i.e. in this case, all but the last one in txnIds1
@@ -211,10 +228,15 @@ public class TransactionCleanupTest
     		}
     	}
 
-    	assertEquals(5, numFoundUsedTxnIds);
+    	assertEquals(3, numFoundUsedTxnIds);
 
     	List<Long> txnsUnused = nodeDAO.getTxnsUnused(minTxnId, Long.MAX_VALUE, Integer.MAX_VALUE);
     	assertEquals(0, txnsUnused.size());
+    	
+    	// Double-check that n4 and n5 were removed as well
+        nodesCache.clear();
+    	assertNull("Node 4 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef4));
+        assertNull("Node 5 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef5));
     }
     
     @After
@@ -240,5 +262,25 @@ public class TransactionCleanupTest
 
 			return txnId;
 		}
+    };
+    
+    private class DeleteNode implements RetryingTransactionCallback<String>
+    {
+        private NodeRef nodeRef;
+
+        DeleteNode(NodeRef nodeRef)
+        {
+            this.nodeRef = nodeRef;
+        }
+
+        @Override
+        public String execute() throws Throwable
+        {
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
+            nodeService.deleteNode(nodeRef);
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+
+            return txnId;
+        }
     };
 }

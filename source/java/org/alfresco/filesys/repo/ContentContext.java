@@ -101,7 +101,7 @@ public class ContentContext extends AlfrescoContext
     /**
      * Class constructor
      * 
-     *@param filesysName
+     *@param deviceName
      *            String
      * @param storeName
      *            String
@@ -110,9 +110,9 @@ public class ContentContext extends AlfrescoContext
      * @param rootNodeRef
      *            NodeRef
      */
-    public ContentContext(String filesysName, String storeName, String rootPath, NodeRef rootNodeRef)
+    public ContentContext(String deviceName, String storeName, String rootPath, NodeRef rootNodeRef)
     {       
-        setDeviceName(filesysName);
+        setDeviceName(deviceName);
         setStoreName(storeName);
         setRootPath(rootPath);
         setRootNodeRef(rootNodeRef);

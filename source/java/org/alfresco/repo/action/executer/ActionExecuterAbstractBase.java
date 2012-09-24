@@ -18,13 +18,14 @@
  */
 package org.alfresco.repo.action.executer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.alfresco.repo.action.ActionDefinitionImpl;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -45,6 +46,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     protected ActionDefinition actionDefinition;
     private LockService lockService;
     private NodeService baseNodeService;
+    private DictionaryService dictionaryService;
     
     /** Indicate if the action status should be tracked or not (default <tt>false</tt>) */
     private boolean trackStatus = false;
@@ -53,7 +55,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     protected boolean publicAction = true;
     
     /** List of types and aspects for which this action is applicable */
-    protected List<QName> applicableTypes = new ArrayList<QName>();
+    protected Set<QName> applicableTypes = new HashSet<QName>();
     
     /**  Default queue name */
     private String queueName = "";
@@ -80,6 +82,16 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     public void setBaseNodeService(NodeService nodeService)
     {
         this.baseNodeService = nodeService;
+    }
+    
+    /**
+     * Set the dictionary service
+     * 
+     * @param dictionaryService the dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
     
     /**
@@ -122,7 +134,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     /**
      * Set the list of types for which this action is applicable
      * 
-     * @param applicableTypes   arry of applicable types
+     * @param applicableTypes   array of applicable types
      */
     public void setApplicableTypes(String[] applicableTypes)
     {
@@ -147,6 +159,40 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     public void setIgnoreLock(boolean ignoreLock)
     {
         this.ignoreLock = ignoreLock;
+    }
+    
+    /**
+     * Check if a node is a type or subtype of the of one of the applicable types
+     * 
+     * @param actionedUponNodeRef   the node to check
+     * @return                      Returns <tt>true</tt> if the node is in the list of
+     *              {@link #setApplicableTypes(String[]) applicable types} or one of the
+     *              subtypes
+     */
+    protected boolean isApplicableType(NodeRef actionedUponNodeRef)
+    {
+        if (this.baseNodeService.exists(actionedUponNodeRef) == true)
+        {
+            QName nodeType = baseNodeService.getType(actionedUponNodeRef);
+            // Quick check in the set
+            if (applicableTypes.contains(nodeType))
+            {
+                return true;
+            }
+            else
+            {
+                // Have to do a long-winded check
+                for (QName type : applicableTypes)
+                {
+                    if (this.dictionaryService.isSubClass(nodeType, type))
+                    {
+                        return true;
+                    }
+                    // Not a subtype; keep checking
+                }
+            }
+        }
+        return false;
     }
     
     /**

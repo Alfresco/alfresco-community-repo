@@ -171,6 +171,7 @@
              <ref bean="patch.db-V4.0-TenantTables" />
              <ref bean="patch.db-V4.1-NodeDeleted" />
              <ref bean="patch.db-V4.1-increase-column-size-activiti" />
+             <ref bean="patch.db-V4.1-remove-column-activiti" />
           </list>
        </property>
     </bean>
@@ -767,6 +768,9 @@
     <!-- Workflow Scheduler -->
     <bean id="workflowScheduler" class="org.alfresco.repo.workflow.jbpm.JBPMScheduler">
        <property name="JBPMTemplate" ref="jbpm_template" />
+       <property name="JBPMEngineEnabled">
+       		<value>${system.workflow.engine.jbpm.enabled}</value>
+       </property>
     </bean>
 
     <!--  Start Auditing -->

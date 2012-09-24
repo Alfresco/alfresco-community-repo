@@ -353,6 +353,52 @@
 		  <value>${nfs.mountServerDebug}</value>
 	  </property>		  
    </bean>
+   
+   <!-- Home Share Mapper -->
+   <bean id="filesystemHomeShareMapper" class="org.alfresco.filesys.alfresco.HomeShareMapper"
+      init-method="init">
+          <property name="serverConfiguration">
+             <ref bean="fileServerConfiguration" />
+          </property>
+          <property name="repoDiskInterface"> 
+             <ref bean="contentDiskDriver"/> 
+           </property> 
+          <property name="homeShareName">
+             <value>HOME</value>
+          </property>
+          <property name="nodeService">
+             <ref bean="nodeService" />
+          </property>
+          <property name="personService">
+             <ref bean="personService" />
+          </property>
+          <property name="quotaManager">
+            <ref bean="filesystemQuotaManager"/>
+          </property>
+   </bean>
+   
+   <!--  For multi-tennancy -->
+   <bean id="filesystemMTShareMapper" class="org.alfresco.filesys.alfresco.MultiTenantShareMapper"
+      init-method="init">
+          <property name="serverConfiguration">
+            <ref bean="fileServerConfiguration" />
+          </property>
+          <property name="repoDiskInterface"> 
+             <ref bean="contentDiskDriver"/> 
+           </property> 
+          <property name="quotaManager">
+            <ref bean="filesystemQuotaManager"/>
+          </property>
+          <property name="tenantShareName">
+             <value>${filesystem.name}</value>
+          </property>
+          <property name="storeName">
+             <value>${protocols.storeName}</value>
+          </property>
+          <property name="rootPath">
+             <value>${filesystem.rootPath}</value>
+          </property>
+   </bean>
 
    <!-- Alfresco Filesystem quota manager -->
    <bean id="filesystemQuotaManager" class="org.alfresco.filesys.repo.ContentQuotaManager"
@@ -524,19 +570,13 @@
       </property>
 
       <!-- Custom share mapper when multi-tenancy is enabled -->
-	  <!--      
       <property name="shareMapper">
-        <bean class="org.alfresco.filesys.alfresco.MultiTenantShareMapper">
-          <property name="serverConfiguration">
-            <ref bean="fileServerConfiguration" />
-          </property>
-          <property name="quotaManager">
-            <ref bean="filesystemQuotaManager"/>
-          </property>
-          <property name="debug">
-            <value>true</value>
-          </property>
-        </bean>
+          <ref bean="filesystemMTShareMapper" />
+      </property>
+      
+      <!--
+      <property name="shareMapper">
+          <ref bean="filesystemHomeShareMapper" />
       </property>
       -->
 

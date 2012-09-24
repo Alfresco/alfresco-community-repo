@@ -132,6 +132,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String PROPERTY_DEFAULT_BATCH_SIZE = "system.upgrade.default.batchsize";
 
     private static final String MSG_DIALECT_USED = "schema.update.msg.dialect_used";
+    private static final String MSG_DATABASE_USED = "schema.update.msg.database_used";
     private static final String MSG_BYPASSING_SCHEMA_UPDATE = "schema.update.msg.bypassing";
     private static final String MSG_NORMALIZED_SCHEMA = "schema.update.msg.normalized_schema";
     private static final String MSG_NORMALIZED_SCHEMA_PRE = "schema.update.msg.normalized_schema_pre";
@@ -1505,6 +1506,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // make sure that we AUTO-COMMIT
             connection = dataSource.getConnection();
             connection.setAutoCommit(true);
+            LogUtil.info(logger, MSG_DATABASE_USED, connection);
             
             Configuration cfg = localSessionFactory.getConfiguration();
             

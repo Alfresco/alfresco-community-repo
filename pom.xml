@@ -591,128 +591,151 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <!-- Wipe the database before starting tests -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>sql-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>wipe-database</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <sqlCommand>drop database if exists alfresco</sqlCommand>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>create-database</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <sqlCommand>create database alfresco</sqlCommand>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+    <profiles>
+        <!-- TODO: Should be activated only for testing purposes -->
+        <profile>
+            <id>integration-tests</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Wipe the database before starting tests -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>sql-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>wipe-database</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <sqlCommand>drop database if exists
+                                        alfresco</sqlCommand>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-database</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <sqlCommand>create database alfresco</sqlCommand>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
 
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <executions>
-                    <!-- Additional execution running basic test first, to fail fast if nothing works -->
-                    <execution>
-                        <id>startup-test</id>
-                        <goals> <goal>test</goal> </goals>
-                        <phase>process-test-classes</phase>
-                        <configuration>
-                            <includes> <include>**/org/alfresco/RepositoryStartupTest.*</include> </includes>
-                        </configuration>
-                    </execution>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <!-- Additional execution running basic test 
+                                first, to fail fast if nothing works -->
+                            <execution>
+                                <id>startup-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
+                                <configuration>
+                                    <includes>
+                                        <include>**/org/alfresco/RepositoryStartupTest.*</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
 
-                    <!-- Default configuration, specifying which tests to pass -->
-                    <execution>
-                        <id>default-test</id>
-                        <configuration>
-                            <forkMode>always</forkMode>
-                            <includes>
-                                <!-- Standard test names -->
-                                <include>**/*Test.*</include>
+                            <!-- Default configuration, specifying which 
+                                tests to pass -->
+                            <execution>
+                                <id>default-test</id>
+                                <configuration>
+                                    <forkMode>always</forkMode>
+                                    <includes>
+                                        <!-- Standard test names -->
+                                        <include>**/*Test.*</include>
 
-                                <!-- Additional tests with non-conventional names -->
-                                <include>**/org/alfresco/repo/avm/*TestP.*</include>
-                                <include>**/org/alfresco/repo/avm/AVMServiceTestBase.*</include>
-                            </includes>
+                                        <!-- Additional tests with non-conventional 
+                                            names -->
+                                        <include>**/org/alfresco/repo/avm/*TestP.*</include>
+                                        <include>**/org/alfresco/repo/avm/AVMServiceTestBase.*</include>
+                                    </includes>
 
-                            <excludes>
-                                <exclude>**/org/alfresco/RepositoryStartupTest.*</exclude>
+                                    <excludes>
+                                        <exclude>**/org/alfresco/RepositoryStartupTest.*</exclude>
 
-                                <!-- Failing tests which are not run with Ant - OK to exclude -->
-                                <exclude>**/org/alfresco/encryption/EncryptionTests.*</exclude>
-                                <exclude>**/org/alfresco/jcr/test/BaseJCRTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/action/evaluator/HasChildEvaluatorTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/action/scheduled/ScheduledPersistedActionServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/avm/AVMServiceRemoteSystemTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/blog/BlogIntegrationServiceSystemTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/caching/quota/StandardQuotaStrategyTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/transform/OOXMLThumbnailContentTransformerTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/domain/avm/AVMStoreDAOTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/content/transform/FailoverContentTransformerTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/domain/node/NodePropertyHelperTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/googledocs/GoogleDocumentServiceSystemTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/model/filefolder/HiddenAspectTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/publishing/PublishEventActionTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rendition/executer/AbstractRenderingEngineTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rule/BaseRuleTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/security/authority/script/ScriptAuthorityServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractPermissionTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractReadPermissionTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/AbstractActivitiComponentTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSmokeTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSpringTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiTaskComponentTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiWorkflowComponentTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/workflow/jbpm/JbpmTimerTest.*</exclude>
+                                        <!-- Failing tests which are not 
+                                            run with Ant - OK to exclude -->
+                                        <exclude>**/org/alfresco/encryption/EncryptionTests.*</exclude>
+                                        <exclude>**/org/alfresco/jcr/test/BaseJCRTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/action/evaluator/HasChildEvaluatorTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/action/scheduled/ScheduledPersistedActionServiceTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/avm/AVMServiceRemoteSystemTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/blog/BlogIntegrationServiceSystemTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/content/caching/quota/StandardQuotaStrategyTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/content/transform/OOXMLThumbnailContentTransformerTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/domain/avm/AVMStoreDAOTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/content/transform/FailoverContentTransformerTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/domain/node/NodePropertyHelperTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/googledocs/GoogleDocumentServiceSystemTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/model/filefolder/HiddenAspectTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/publishing/PublishEventActionTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/rendition/executer/AbstractRenderingEngineTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/rule/BaseRuleTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/security/authority/script/ScriptAuthorityServiceTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractPermissionTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/security/permissions/impl/AbstractReadPermissionTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/workflow/activiti/AbstractActivitiComponentTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSmokeTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiSpringTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiTaskComponentTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiWorkflowComponentTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/workflow/jbpm/JbpmTimerTest.*</exclude>
 
-                                <!-- TODO tests which pass with Ant, but not here. To investigate -->
-                                <exclude>**/org/alfresco/cmis/changelog/CMISChangeLogServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/cmis/renditions/CMISRenditionServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/filesys/FTPServerTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/avm/AVMServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/deploy/DeploymentServiceImplFSTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/deploy/DeploymentServiceTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rendition/MultiUserRenditionTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rendition/RenditionServiceIntegrationTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/rendition/RenditionServicePermissionsTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/thumbnail/ThumbnailServiceImplTest.*</exclude>
-                                <exclude>**/org/alfresco/repo/version/NodeServiceImplTest.*</exclude>
-                                <exclude>**/org/alfresco/wcm/**</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+                                        <!-- TODO tests which pass with Ant, 
+                                            but not here. To investigate -->
+                                        <exclude>**/org/alfresco/cmis/changelog/CMISChangeLogServiceTest.*</exclude>
+                                        <exclude>**/org/alfresco/cmis/renditions/CMISRenditionServiceTest.*</exclude>
+                                        <exclude>**/org/alfresco/filesys/FTPServerTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/avm/AVMServiceTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/deploy/DeploymentServiceImplFSTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/deploy/DeploymentServiceTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/rendition/MultiUserRenditionTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/rendition/RenditionServiceIntegrationTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/rendition/RenditionServicePermissionsTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/thumbnail/ThumbnailServiceImplTest.*</exclude>
+                                        <exclude>**/org/alfresco/repo/version/NodeServiceImplTest.*</exclude>
+                                        <exclude>**/org/alfresco/wcm/**</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
 
-            <!--  Create a jar of test classes, to be reused later in remote-api -->
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                 <executions>
-                    <execution>
-                        <id>create-test-jar</id>
-                        <!-- Usually bound to package phase, but set earlier so that we can trigger it in sonar.phase -->
-                        <!-- That's because this jar is used later in enterprise-repository, and Sonar hits MDEP-98 -->
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+                    <!-- Create a jar of test classes, to be reused later 
+                        in remote-api -->
+                    <plugin>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-test-jar</id>
+                                <!-- Usually bound to package phase, but 
+                                    set earlier so that we can trigger it in sonar.phase -->
+                                <!-- That's because this jar is used later 
+                                    in enterprise-repository, and Sonar hits MDEP-98 -->
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>test-jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    
+    </profiles>
 
 </project>

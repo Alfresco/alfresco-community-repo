@@ -312,6 +312,19 @@
         </properties>
     </profile>
 
+   <profile>
+        <id>imagemagick-mac</id>
+        <activation>
+            <os>
+              <family>mac</family>
+            </os>
+        </activation>
+        <properties>
+            <imagemagick.classifier>linux</imagemagick.classifier>
+            <imagemagick.exe>${imagemagick.home}/bin/.convert.bin</imagemagick.exe>
+        </properties>
+    </profile>
+
   </profiles>
 
   <properties>

@@ -35,6 +35,7 @@
                 <value>listSites</value>
                 <value>getSite</value>
                 <value>listMembers</value>
+                <value>listMembersInfo</value>
                 <value>getMembersRole</value>
                 <value>isMember</value>
                 <value>getContainer</value>

@@ -47,9 +47,9 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.getchildren.FilterPropString;
+import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
-import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -78,13 +78,14 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityService.AuthorityFilter;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PublicServiceAccessService;
-import org.alfresco.service.cmr.security.AuthorityService.AuthorityFilter;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteMemberInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -1511,36 +1512,77 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         }
     }
     
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#listMembersInfo(String,
+     *      String, String, int, boolean)
+     */
+    public List<SiteMemberInfo> listMembersInfo(String shortName, final String nameFilter, final String roleFilter, final int size, final boolean collapseGroups)
+    {
+        // MT share - for activity service system callback
+        if (tenantService.isEnabled()
+                    && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil
+                                .getRunAsUser())) && tenantService.isTenantName(shortName))
+        {
+            final String tenantDomain = tenantService.getDomain(shortName);
+            final String sName = tenantService.getBaseName(shortName, true);
+
+            return AuthenticationUtil.runAs(
+                        new AuthenticationUtil.RunAsWork<List<SiteMemberInfo>>()
+                        {
+                            public List<SiteMemberInfo> doWork() throws Exception
+                            {
+                                return listMembersInfoImpl(sName, nameFilter, roleFilter, size,
+                                            collapseGroups);
+                            }
+                        }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(),
+                                    tenantDomain));
+        }
+        else
+        {
+            return listMembersInfoImpl(shortName, nameFilter, roleFilter, size, collapseGroups);
+        }
+    }
+
     private Map<String, String> listMembersImpl(String shortName, String nameFilter, String roleFilter, int size, boolean collapseGroups)
     {
+        Map<String, String> members = new HashMap<String, String>(32);
+
+        List<SiteMemberInfo> list = listMembersInfoImpl(shortName, nameFilter, roleFilter, size,
+                    collapseGroups);
+        for (SiteMemberInfo info : list)
+            members.put(info.getMemberName(), info.getMemberRole());
+
+        return members;
+    }
+    
+    private List<SiteMemberInfo> listMembersInfoImpl(String shortName, String nameFilter,
+                String roleFilter, int size, boolean collapseGroups)
+    {
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
-        if (siteNodeRef == null)
-        {
-            throw new SiteDoesNotExistException(shortName);
-        }
-        
+        if (siteNodeRef == null) { throw new SiteDoesNotExistException(shortName); }
+
         // Build an array of name filter tokens pre lowercased to test against person properties
         // We require that matching people have at least one match against one of these on
-        //  either their firstname or last name
+        // either their firstname or last name
         String nameFilterLower = null;
         String[] nameFilters = new String[0];
         if (nameFilter != null && nameFilter.length() != 0)
         {
             StringTokenizer t = new StringTokenizer(nameFilter, " ");
             nameFilters = new String[t.countTokens()];
-            for (int i=0; t.hasMoreTokens(); i++)
+            for (int i = 0; t.hasMoreTokens(); i++)
             {
                 nameFilters[i] = t.nextToken().toLowerCase();
             }
             nameFilterLower = nameFilter.toLowerCase();
         }
-        
-        Map<String, String> members = new HashMap<String, String>(32);
+
+        List<SiteMemberInfo> members = new ArrayList<SiteMemberInfo>(32);
 
         QName siteType = directNodeService.getType(siteNodeRef);
         Set<String> permissions = this.permissionService.getSettablePermissions(siteType);
         Map<String, String> groupsToExpand = new HashMap<String, String>(32);
-        
+
         AUTHORITY_FIND: for (String permission : permissions)
         {
             if (roleFilter == null || roleFilter.length() == 0 || roleFilter.equals(permission))
@@ -1551,68 +1593,68 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 {
                     switch (AuthorityType.getAuthorityType(authority))
                     {
-                    case USER:
-                        boolean addUser = true;
-                        if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(authority))
-                        {
-                            // found a filter - does it match person first/last name?
-                            addUser = matchPerson(nameFilters, authority);
-                        }
-                        if (addUser)
-                        {
-                            // Add the user and their permission to the returned map
-                            members.put(authority, permission);
-                            
-                            // break on max size limit reached
-                            if (members.size() == size) break AUTHORITY_FIND;
-                        }
-                        break;
-                    case GROUP:
-                        if (collapseGroups)
-                        {
-                            if (!groupsToExpand.containsKey(authority))
+                        case USER:
+                            boolean addUser = true;
+                            if (nameFilter != null && nameFilter.length() != 0 && !nameFilter.equals(authority))
                             {
-                                groupsToExpand.put(authority, permission);
+                                // found a filter - does it match person first/last name?
+                                addUser = matchPerson(nameFilters, authority);
                             }
-                        }
-                        else
-                        {
-                            if (nameFilter != null && nameFilter.length() != 0)
+                            if (addUser)
                             {
-                                // found a filter - does it match Group name part?
-                                if (matchByFilter(authority.substring(GROUP_PREFIX_LENGTH).toLowerCase(), nameFilterLower))
+                                // Add the user and their permission to the returned map
+                                members.add(new SiteMemberInfoImpl(authority, permission, false));
+
+                                // break on max size limit reached
+                                if (members.size() == size) break AUTHORITY_FIND;
+                            }
+                            break;
+                        case GROUP:
+                            if (collapseGroups)
+                            {
+                                if (!groupsToExpand.containsKey(authority))
                                 {
-                                    members.put(authority, permission);
-                                }
-                                else
-                                {
-                                   // Does it match on the Group Display Name part instead?
-                                   String displayName = authorityService.getAuthorityDisplayName(authority);
-                                   if(displayName != null && matchByFilter(displayName.toLowerCase(), nameFilterLower))
-                                   {
-                                      members.put(authority, permission);
-                                   }
+                                    groupsToExpand.put(authority, permission);
                                 }
                             }
                             else
                             {
-                                // No name filter add this group
-                                members.put(authority, permission);
+                                if (nameFilter != null && nameFilter.length() != 0)
+                                {
+                                    // found a filter - does it match Group name part?
+                                    if (matchByFilter(authority.substring(GROUP_PREFIX_LENGTH).toLowerCase(), nameFilterLower))
+                                    {
+                                        members.add(new SiteMemberInfoImpl(authority, permission, false));
+                                    }
+                                    else
+                                    {
+                                        // Does it match on the Group Display Name part instead?
+                                        String displayName = authorityService.getAuthorityDisplayName(authority);
+                                        if (displayName != null && matchByFilter(displayName.toLowerCase(), nameFilterLower))
+                                        {
+                                            members.add(new SiteMemberInfoImpl(authority, permission, false));
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // No name filter add this group
+                                    members.add(new SiteMemberInfoImpl(authority, permission, false));
+                                }
+
+                                // break on max size limit reached
+                                if (members.size() == size) break AUTHORITY_FIND;
                             }
-                            
-                            // break on max size limit reached
-                            if (members.size() == size) break AUTHORITY_FIND;
-                        }
-                        break;
+                            break;
                     }
                 }
             }
         }
-        
+
         if (collapseGroups)
         {
-            for (Map.Entry<String,String> entry : groupsToExpand.entrySet())
-            {                
+            for (Map.Entry<String, String> entry : groupsToExpand.entrySet())
+            {
                 Set<String> subUsers = this.authorityService.getContainedAuthorities(AuthorityType.USER, entry.getKey(), false);
                 for (String subUser : subUsers)
                 {
@@ -1624,19 +1666,19 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                     }
                     if (addUser)
                     {
-                        // Add the collapsed user into the members list if they do not already appear in the list 
-                        if (members.containsKey(subUser) == false)
+                        SiteMemberInfo memberInfo = new SiteMemberInfoImpl(subUser,entry.getValue(), true);
+                        // Add the collapsed user into the members list if they do not already appear in the list
+                        if (members.contains(memberInfo) == false)
                         {
-                            members.put(subUser, entry.getValue());
+                            members.add(memberInfo);
                         }
-                        
+
                         // break on max size limit reached
                         if (members.size() == size) break;
                     }
                 }
-            }         
+            }
         }
-
         return members;
     }
 

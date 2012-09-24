@@ -247,6 +247,21 @@ public interface SiteService
     Map<String, String> listMembers(String shortName, String nameFilter, String roleFilter, int size, boolean collapseGroups);
     
     /**
+     * List the members of the site.  This includes both users and groups if collapseGroups is set to false, otherwise all
+     * groups that are members are collapsed into their component users and listed.
+     * 
+     * 
+     * @param shortName         site short name
+     * @param nameFilter        name filter
+     * @param roleFilter        role filter
+     * @param size          max results size crop if >0 
+     * @param collapseGroups    true if collapse member groups into user list, false otherwise    
+     * @return List of site authorities’ information objects
+     */
+    @NotAuditable
+    List<SiteMemberInfo> listMembersInfo(String shortName, String nameFilter, String roleFilter, int size, boolean collapseGroups);
+    
+    /**
      * Gets the role of the specified user.
      * 
      * @param shortName     site short name

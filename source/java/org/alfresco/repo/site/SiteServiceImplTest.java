@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteMemberInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -2178,6 +2179,61 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Execute the unit test script
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/site/script/test_siteService.js");
         this.scriptService.executeScript(location, model);
+    }
+
+    public void testListMembersInfo()
+    {
+        String siteShortName = "testMemberInfo";
+
+        // Create a site as user one
+        this.siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION,
+                    SiteVisibility.PRIVATE);
+
+        // Get the members of the site and check that user one is a manager
+        List<SiteMemberInfo> members = this.siteService.listMembersInfo(siteShortName, null, null, 0, false);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        SiteMemberInfo user = members.get(0);
+        assertNotNull(user);
+        assertTrue(user.getMemberName().equals(USER_ONE));
+        assertEquals(SiteModel.SITE_MANAGER, user.getMemberRole());
+        assertFalse("USER_ONE is NOT member of any group", user.isMemberOfGroup());
+
+        // GROUP_TWO - USER_TWO, USER_THREE
+        this.siteService.setMembership(siteShortName, this.groupTwo, SiteModel.SITE_COLLABORATOR);
+        this.siteService.setMembership(siteShortName, USER_FOUR, SiteModel.SITE_CONSUMER);
+
+        // Get the members of the site in expanded list
+        members = this.siteService.listMembersInfo(siteShortName, null, null, 0, true);
+        assertNotNull(members);
+        assertEquals(4, members.size());
+        // Get USER_TWO who is a member of group two
+        user = lookupMemberInfoByUserName(members, USER_TWO);
+        assertNotNull(user);
+        assertEquals(SiteModel.SITE_COLLABORATOR, user.getMemberRole());
+        assertTrue("USER_TWO is member of group two", user.isMemberOfGroup());
+        // Get USER_THREE who is a member of group two
+        user = lookupMemberInfoByUserName(members, USER_THREE);
+        assertNotNull(user);
+        assertEquals(SiteModel.SITE_COLLABORATOR, user.getMemberRole());
+        assertTrue("USER_THREE is member of group two", user.isMemberOfGroup());
+        // Get USER_FOUR
+        user = lookupMemberInfoByUserName(members, USER_FOUR);
+        assertNotNull(user);
+        assertEquals(SiteModel.SITE_CONSUMER, user.getMemberRole());
+        assertFalse("USER_FOUR is NOT member of any group", user.isMemberOfGroup());
+    }
+
+    private SiteMemberInfo lookupMemberInfoByUserName(List<SiteMemberInfo> members, String name)
+    {
+        for (SiteMemberInfo info : members)
+        {
+            if (name.equals(info.getMemberName())) 
+            { 
+                return info; 
+            }
+        }
+        return null;
     }
 
 }

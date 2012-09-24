@@ -195,7 +195,7 @@ public class NodesMetaDataGet extends DeclarativeWebScript
                     }
                     catch(Exception e)
                     {
-                        throw new AlfrescoRuntimeException("Problem converting to Freemarker", e);
+                        throw new AlfrescoRuntimeException("Problem converting to Freemarker using node " + nodeMetaData.getNodeRef().toString(), e); 
                     }
 
                     if(noSizeCalculated && --counter == 0)

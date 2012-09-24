@@ -141,7 +141,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
           JSONWriter activity = new JSONWriter(activityJson);
           activity.startObject();
           activity.writeValue("title", wikiPage.getTitle());
-          activity.writeValue("page", page + "?title=" + URLEncoder.encodeUriComponent(wikiPage.getSystemName()));
+          activity.writeValue("page", page + "?title=" + URLEncoder.encodeUriComponent(wikiPage.getTitle()));
           activity.endObject();
           
           activityService.postActivity(
@@ -282,15 +282,13 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
           throw new WebScriptException(Status.STATUS_NOT_FOUND, error);
        }
        
-       // Page name is optional
-       // Note - it's really the Name, even if it's called "Title"
-       String pageName = templateVars.get("pageTitle");
+       String pageTitle = templateVars.get("pageTitle");
        
        // Have the real work done
-       return executeImpl(site, pageName, req, json, status, cache); 
+       return executeImpl(site, pageTitle, req, json, status, cache); 
     }
     
     protected abstract Map<String, Object> executeImpl(SiteInfo site, 
-          String pageName, WebScriptRequest req, JSONObject json, 
+          String pageTitle, WebScriptRequest req, JSONObject json, 
           Status status, Cache cache);
 }

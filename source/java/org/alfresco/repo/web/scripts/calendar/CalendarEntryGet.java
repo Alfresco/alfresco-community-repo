@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -74,15 +74,16 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       result.put("description", entry.getDescription());
       result.put("location", entry.getLocation());
       boolean isAllDay = CalendarEntryDTO.isAllDay(entry);
-      result.put("from", removeTimeZoneIfIsAllDay(entry.getStart(),isAllDay));
-      result.put("to", removeTimeZoneIfIsAllDay(entry.getEnd(),isAllDay));
+      boolean removeTimezone = isAllDay && !entry.isOutlook();
+      result.put("from", removeTimeZoneIfRequired(entry.getStart(), isAllDay, removeTimezone));
+      result.put("to", removeTimeZoneIfRequired(entry.getEnd(), isAllDay, removeTimezone));
       
       String legacyDateFormat = "M/d/yyyy";
       String legacyTimeFormat ="HH:mm";
-      result.put("legacyDateFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyDateFormat));
-      result.put("legacyTimeFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyTimeFormat));
-      result.put("legacyDateTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyDateFormat));
-      result.put("legacyTimeTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyTimeFormat));
+      result.put("legacyDateFrom", removeTimeZoneIfRequired(entry.getStart(), isAllDay, removeTimezone, legacyDateFormat));
+      result.put("legacyTimeFrom", removeTimeZoneIfRequired(entry.getStart(), isAllDay, removeTimezone, legacyTimeFormat));
+      result.put("legacyDateTo", removeTimeZoneIfRequired(entry.getEnd(), isAllDay, removeTimezone, legacyDateFormat));
+      result.put("legacyTimeTo", removeTimeZoneIfRequired(entry.getEnd(), isAllDay, removeTimezone, legacyTimeFormat));
       
       result.put("tags", entry.getTags());
       result.put("isoutlook", entry.isOutlook());

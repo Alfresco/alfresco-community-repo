@@ -47,14 +47,14 @@ public class WikiPageMovePost extends AbstractWikiWebScript
    private static final String MSG_NOT_FOUND= "page-not-found";
    
    @Override
-   protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
+   protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
       final Map<String, Object> model = new HashMap<String, Object>();
       final ResourceBundle rb = getResources();
       
       // Try to find the page we're renaming
-      WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageName);
+      WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageTitle);
       if (page == null)
       {
          String message = "The Wiki Page could not be found";
@@ -88,7 +88,7 @@ public class WikiPageMovePost extends AbstractWikiWebScript
       
       
       // Create the "This page has been moved" entry for the old page
-      String movedContent = rb.getString(MSG_MOVED) + " [[" + page.getSystemName() + 
+      String movedContent = rb.getString(MSG_MOVED) + " [[" + page.getTitle() + 
                           "|" + rb.getString(MSG_MOVED_HERE) + "]].";
       wikiService.createWikiPage(site.getShortName(), oldTitle, movedContent); 
       
@@ -99,6 +99,7 @@ public class WikiPageMovePost extends AbstractWikiWebScript
 
       // All done
       model.put("name", page.getSystemName());
+      model.put("title", page.getTitle());
       model.put("page", page);
       model.put("siteId", site.getShortName());
       model.put("site", site);

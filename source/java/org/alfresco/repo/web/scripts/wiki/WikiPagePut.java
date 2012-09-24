@@ -54,7 +54,7 @@ public class WikiPagePut extends AbstractWikiWebScript
    }
 
    @Override
-   protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
+   protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
       Map<String, Object> model = new HashMap<String, Object>();
@@ -71,7 +71,7 @@ public class WikiPagePut extends AbstractWikiWebScript
       }
       else
       {
-         title = pageName;
+         title = pageTitle;
       }
       
       // Fetch the versioning details
@@ -103,7 +103,7 @@ public class WikiPagePut extends AbstractWikiWebScript
       }
       
       // Are we creating or editing?
-      WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageName);
+      WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageTitle);
       if (page == null)
       {
          // Create the page

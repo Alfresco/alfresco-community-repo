@@ -59,7 +59,7 @@ public class WikiPageListGet extends AbstractWikiWebScript
    }
    
    @Override
-   protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
+   protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
       // Decide on what kind of request they wanted

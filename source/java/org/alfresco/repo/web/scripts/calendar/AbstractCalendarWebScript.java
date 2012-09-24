@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,7 +34,6 @@ import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
-import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -67,6 +66,8 @@ import org.springframework.extensions.webscripts.json.JSONWriter;
  */
 public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
 {
+    private static final DateTimeFormatter ALL_DAY_DATETIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd'T00:00:00.000'");
+
     public static final String CALENDAR_SERVICE_ACTIVITY_APP_NAME = "calendar";
     
     protected static final String MSG_EVENT_NOT_FOUND = "calendar.err.event.not.found";
@@ -503,43 +504,35 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
     
        
     /**
-     * Remove the time zone for a given date if the 
-     * Calendar Entry is an all day event
+     * Removes the time zone for a given date if the Calendar Entry is an all day event
+     * 
      * @return ISO 8601 formatted date String
      */
-    protected String removeTimeZoneIfIsAllDay(Date date, Boolean isAllDay){
-    	return removeTimeZoneIfIsAllDay(date, isAllDay, null);
+    protected String removeTimeZoneIfRequired(Date date, Boolean isAllDay, Boolean removeTimezone)
+    {
+        return removeTimeZoneIfRequired(date, isAllDay, removeTimezone, null);
     }
-    
-    
+
     /**
-     * Remove the time zone for a given date if the 
-     * Calendar Entry is an all day event
+     * Removes the time zone for a given date if the Calendar Entry is an all day event
+     * 
      * @return ISO 8601 formatted date String if datePattern is null
      */
-    protected String removeTimeZoneIfIsAllDay(Date date, Boolean isAllDay, String datePattern){
-    	
-    	DateTime dt;
-    	if(isAllDay){
-    		 dt= new DateTime(date, DateTimeZone.UTC);
-    	}else{
-    		 dt = new DateTime(date);	
-    	}
-    	DateTimeFormatter fmt;
-    	if(datePattern==null){
-    		if(isAllDay){
-    			fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T00:00:00.000'");
-    		}else{
-    			fmt = ISODateTimeFormat.dateTime();
-    		}
-    		
-    	}else{
-    		//For Legacy Dates and Times.
-    		fmt = DateTimeFormat.forPattern(datePattern);
-    	}
-    	return 	dt.toString(fmt);
+    protected String removeTimeZoneIfRequired(Date date, Boolean isAllDay, Boolean removeTimezone, String datePattern)
+    {
+        DateTime dateTime = (removeTimezone) ? (new DateTime(date, DateTimeZone.UTC)) : (new DateTime(date));
+
+        if (null == datePattern)
+        {
+            return dateTime.toString((isAllDay) ? (ALL_DAY_DATETIME_FORMATTER) : (ISODateTimeFormat.dateTime()));
+        }
+        else
+        {
+            // For Legacy Dates and Times.
+            return dateTime.toString(DateTimeFormat.forPattern(datePattern));
+        }
     }
-    
+
     protected abstract Map<String, Object> executeImpl(SiteInfo site, 
           String eventName, WebScriptRequest req, JSONObject json, 
           Status status, Cache cache);

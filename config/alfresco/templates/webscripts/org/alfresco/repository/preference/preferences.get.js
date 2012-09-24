@@ -10,8 +10,7 @@ function main()
             + " could not be found");
       return;
    }
-
-   var preferences = null;
+  
    try
    {
       // Get the preferences for the person

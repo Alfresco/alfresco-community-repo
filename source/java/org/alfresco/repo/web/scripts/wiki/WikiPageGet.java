@@ -51,14 +51,14 @@ public class WikiPageGet extends AbstractWikiWebScript
    private static final Pattern LINK_PATTERN = Pattern.compile("\\[\\[([^\\|\\]]+)");
    
    @Override
-   protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
+   protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
       final ResourceBundle rb = getResources();
       Map<String, Object> model = new HashMap<String, Object>();
       
       // Try to find the page
-      WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageName);
+      WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageTitle);
       if (page == null)
       {
          String message = "The Wiki Page could not be found";
@@ -106,10 +106,10 @@ public class WikiPageGet extends AbstractWikiWebScript
       PagingRequest paging = new PagingRequest(MAX_QUERY_ENTRY_COUNT);
       PagingResults<WikiPageInfo> pages = wikiService.listWikiPages(site.getShortName(), paging);
       
-      List<String> pageNames = new ArrayList<String>();
+      List<String> pageTitles = new ArrayList<String>();
       for (WikiPageInfo p : pages.getPage())
       {
-         pageNames.add(p.getSystemName());
+         pageTitles.add(p.getTitle());
       }
       
       
@@ -118,7 +118,7 @@ public class WikiPageGet extends AbstractWikiWebScript
       model.put("node", page.getNodeRef());
       model.put("container", page.getContainerNodeRef()); 
       model.put("links", links);
-      model.put("pageList", pageNames);
+      model.put("pageList", pageTitles);
       model.put("tags", page.getTags());
       model.put("siteId", site.getShortName());
       model.put("site", site);

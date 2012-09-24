@@ -66,7 +66,7 @@ public class WikiPageVersionGet extends AbstractWikiWebScript
    }
 
    @Override
-   protected Map<String, Object> executeImpl(SiteInfo site, String pageName,
+   protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
       Map<String, Object> model = new HashMap<String, Object>();
@@ -81,7 +81,7 @@ public class WikiPageVersionGet extends AbstractWikiWebScript
       }
       
       // Try to find the page
-      WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageName);
+      WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageTitle);
       if (page == null)
       {
          String message = "The Wiki Page could not be found";

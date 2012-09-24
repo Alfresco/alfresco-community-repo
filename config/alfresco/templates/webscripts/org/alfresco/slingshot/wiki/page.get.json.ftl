@@ -27,6 +27,7 @@
       <#list node.versionHistory as record>
    {
       "name": "${record.name}",
+      "title": "${record.title}",
       "version": "${record.versionLabel}",
       "versionId": "${record.id}",
       "date": "<@dateFormat record.createdDate />",

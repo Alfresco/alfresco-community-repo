@@ -6,7 +6,7 @@
    <#escape x as jsonUtils.encodeJSONString(x)>
       <#local node = item.node>
       <#local version = "1.0">
-      <#if node.hasAspect("cm:versionable")><#local version = node.properties["cm:versionLabel"]></#if>
+      <#if node.hasAspect("cm:versionable")><#local version = node.properties["cm:versionLabel"]!""></#if>
       <#if item.createdBy??>
          <#local createdBy = item.createdBy.displayName>
          <#local createdByUser = item.createdBy.userName>

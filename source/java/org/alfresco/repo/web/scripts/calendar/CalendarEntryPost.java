@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,7 +19,6 @@
 package org.alfresco.repo.web.scripts.calendar;
 
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -93,15 +92,15 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
       result.put("desc", entry.getDescription());
       result.put("where", entry.getLocation());
       
-      result.put("from", removeTimeZoneIfIsAllDay(entry.getStart(),isAllDay));
-      result.put("to", removeTimeZoneIfIsAllDay(entry.getEnd(),isAllDay));
+      result.put("from", removeTimeZoneIfRequired(entry.getStart(), isAllDay, isAllDay));
+      result.put("to", removeTimeZoneIfRequired(entry.getEnd(), isAllDay, isAllDay));
       
       String legacyDateFormat = "yyyy-MM-dd";
       String legacyTimeFormat ="HH:mm";
-      result.put("legacyDateFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyDateFormat));
-      result.put("legacyTimeFrom", removeTimeZoneIfIsAllDay(entry.getStart(), isAllDay, legacyTimeFormat));
-      result.put("legacyDateTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyDateFormat));
-      result.put("legacyTimeTo", removeTimeZoneIfIsAllDay(entry.getEnd(), isAllDay, legacyTimeFormat));
+      result.put("legacyDateFrom", removeTimeZoneIfRequired(entry.getStart(), isAllDay, isAllDay, legacyDateFormat));
+      result.put("legacyTimeFrom", removeTimeZoneIfRequired(entry.getStart(), isAllDay, isAllDay, legacyTimeFormat));
+      result.put("legacyDateTo", removeTimeZoneIfRequired(entry.getEnd(), isAllDay, isAllDay, legacyDateFormat));
+      result.put("legacyTimeTo", removeTimeZoneIfRequired(entry.getEnd(), isAllDay, isAllDay, legacyTimeFormat));
       
       result.put("uri", "calendar/event/" + site.getShortName() + "/" +
                         entry.getSystemName() + dateOpt);

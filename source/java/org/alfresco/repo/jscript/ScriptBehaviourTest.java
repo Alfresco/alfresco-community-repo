@@ -87,7 +87,7 @@ public class ScriptBehaviourTest extends BaseSpringTest
 		this.folderNodeRef = childAssocRef.getChildRef();
 	}
 	
-	public void testEnableDiableBehaviour()
+	public void test1EnableDisableBehaviour()
 	{
 		// Register the onCreateNode behaviour script
 		ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/jscript/test_onCreateNode_cmContent.js");
@@ -124,7 +124,7 @@ public class ScriptBehaviourTest extends BaseSpringTest
 		assertTrue(this.nodeService.hasAspect(childAssoc2.getChildRef(), ContentModel.ASPECT_TITLED));		
 	}
 	
-	public void testClasspathLocationBehaviour()
+	public void test2ClasspathLocationBehaviour()
 	{
 		// Register the onCreateNode behaviour script
 		ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/jscript/test_onCreateNode_cmContent.js");
@@ -149,7 +149,7 @@ public class ScriptBehaviourTest extends BaseSpringTest
 		assertTrue(this.nodeService.hasAspect(childAssoc.getChildRef(), ContentModel.ASPECT_TITLED));
 	}
 	
-	public void testSpringConfiguredBehaviour()
+	public void test3SpringConfiguredBehaviour()
 	{
 		this.nodeService.addAspect(this.folderNodeRef, ContentModel.ASPECT_COUNTABLE, null);
 		assertTrue(this.nodeService.hasAspect(this.folderNodeRef, ContentModel.ASPECT_TITLED));

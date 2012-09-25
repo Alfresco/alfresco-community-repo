@@ -317,6 +317,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         
         String copyNodeRef = copyResult.getString("nodeRef");
         
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         assertFalse(nodeService.hasAspect(new NodeRef(copyNodeRef), QuickShareModel.ASPECT_QSHARE));
     }
     

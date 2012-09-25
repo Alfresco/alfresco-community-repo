@@ -61,6 +61,16 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         MLPropertyInterceptor.setMLAware(false);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.node.BaseNodeServiceTest#onTearDownInTransaction()
+     */
+    @Override
+    protected void onTearDownInTransaction() throws Exception
+    {
+        super.onTearDownInTransaction();
+        I18NUtil.setContentLocale(null);
+    }
+
     public void testMLTextValues() throws Exception
     {
         // Set the server default locale

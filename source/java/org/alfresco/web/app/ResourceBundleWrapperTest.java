@@ -38,11 +38,11 @@ public class ResourceBundleWrapperTest extends TestCase
 	private static final String KEY_2 = "test_key_two";
 	private static final String MSG_1 = "Test Key One";
 	private static final String MSG_2 = "Test Key Two";
-	
+    
 	/**
 	 * Test adding the bundles
 	 */
-	public void testAddingBundles()
+	public void test1AddingBundles()
 	{
 		// Check that the string's are not added to the bundle
 		ResourceBundle before = ResourceBundleWrapper.getResourceBundle("alfresco.messages.webclient", Locale.US);
@@ -76,7 +76,7 @@ public class ResourceBundleWrapperTest extends TestCase
 	/**
 	 * Test the bootstrap bean
 	 */
-	public void testBootstrap()
+	public void test2Bootstrap()
 	{
 		// Use the bootstrap bean to add the bundles
 		List<String> bundles = new ArrayList<String>(1);

@@ -158,7 +158,18 @@ public class RemoteCredentialsServicesTest
         
         // To start with, the container shouldn't be there
         NodeRef container = ((RemoteCredentialsServiceImpl)PRIVATE_REMOTE_CREDENTIALS_SERVICE).getSharedContainerNodeRef(false);
-        assertEquals(null, container);
+        if (container != null)
+        {
+            // Tidy up
+            AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+            
+            // Zap the container
+            PUBLIC_NODE_SERVICE.deleteNode(container);
+        }
+        
+        
+        // Run as a test user
+        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
         
         // Ask for the list of shared remote systems
         REMOTE_CREDENTIALS_SERVICE.listSharedRemoteSystems(new PagingRequest(10));
@@ -184,6 +195,13 @@ public class RemoteCredentialsServicesTest
         
         // Should have single node in it
         assertEquals(1, PUBLIC_NODE_SERVICE.getChildAssocs(container).size());
+        
+        
+        // Tidy up
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        
+        // Zap the container
+        PUBLIC_NODE_SERVICE.deleteNode(container);
     }
     
     /**

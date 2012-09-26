@@ -534,7 +534,7 @@ public class MultiTDemoTest extends TestCase
     }
     
     
-    public void testCreateUsers() throws Throwable
+    public void xtestCreateUsers() throws Throwable
     {
         logger.info("Create demo users");
         
@@ -618,7 +618,7 @@ public class MultiTDemoTest extends TestCase
         } 
     }
     
-    public void testLoginTenantUsers() throws Throwable
+    public void xtestLoginTenantUsers() throws Throwable
     {
         logger.info("Login tenant users");
         
@@ -772,7 +772,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testCreateCategories()
+    public void xtestCreateCategories()
     {
         logger.info("Create demo categories");
         

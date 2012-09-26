@@ -146,52 +146,54 @@ public class OAuth2CredentialsStoreServiceTest
     }
     
     @Test
-    public void testUpdateSharedOAuth2Credentials()
+    public void testUpdateSharedOAuth2CredentialsTestDeletePesonalOAuth2Credentials()
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-        //Update credentials
-        List<OAuth2CredentialsInfo> sharedCredentials = oauth2CredentialsStoreService.listSharedOAuth2Credentials(RemoteSystemId);
-        OAuth2CredentialsInfo oAuth2CredentialsInfo = sharedCredentials.get(0); 
-        OAuth2CredentialsInfo _oAuth2CredentialsInfo = oauth2CredentialsStoreService.updateSharedOAuth2Credentials(oAuth2CredentialsInfo, RemoteSystemId, UpdatedAccessToken, UpdatedRefreshToken, UpdatedExpiresAt, UpdatedIssuedAt);
-        
-        assertEquals("Expect that access tokens will match", UpdatedAccessToken, _oAuth2CredentialsInfo.getOAuthAccessToken());
-        assertEquals("Expect the refresh token will match", UpdatedRefreshToken, _oAuth2CredentialsInfo.getOAuthRefreshToken());
-        assertEquals("Expect that the expiration date will match", UpdatedExpiresAt, _oAuth2CredentialsInfo.getOAuthTicketExpiresAt());
-        assertEquals("Expect that the issued date will match", UpdatedIssuedAt, _oAuth2CredentialsInfo.getOAuthTicketIssuedAt());
-    }
-
-    @Test
-    public void testDeletePesonalOAuth2Credentials()
-    {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-        boolean deleted = oauth2CredentialsStoreService.deletePersonalOAuth2Credentials(RemoteSystemId);
-        
-        assertTrue(deleted);
-        
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
-        boolean _deleted = oauth2CredentialsStoreService.deletePersonalOAuth2Credentials(RemoteSystemId);
-        
-        assertFalse(_deleted);
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
+            //Update credentials
+            List<OAuth2CredentialsInfo> sharedCredentials = oauth2CredentialsStoreService.listSharedOAuth2Credentials(RemoteSystemId);
+            OAuth2CredentialsInfo oAuth2CredentialsInfo = sharedCredentials.get(0); 
+            OAuth2CredentialsInfo _oAuth2CredentialsInfo = oauth2CredentialsStoreService.updateSharedOAuth2Credentials(oAuth2CredentialsInfo, RemoteSystemId, UpdatedAccessToken, UpdatedRefreshToken, UpdatedExpiresAt, UpdatedIssuedAt);
+            
+            assertEquals("Expect that access tokens will match", UpdatedAccessToken, _oAuth2CredentialsInfo.getOAuthAccessToken());
+            assertEquals("Expect the refresh token will match", UpdatedRefreshToken, _oAuth2CredentialsInfo.getOAuthRefreshToken());
+            assertEquals("Expect that the expiration date will match", UpdatedExpiresAt, _oAuth2CredentialsInfo.getOAuthTicketExpiresAt());
+            assertEquals("Expect that the issued date will match", UpdatedIssuedAt, _oAuth2CredentialsInfo.getOAuthTicketIssuedAt());
+        }
+    
+        //public void testDeletePesonalOAuth2Credentials()
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
+            boolean deleted = oauth2CredentialsStoreService.deletePersonalOAuth2Credentials(RemoteSystemId);
+            
+            assertTrue(deleted);
+            
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
+            boolean _deleted = oauth2CredentialsStoreService.deletePersonalOAuth2Credentials(RemoteSystemId);
+            
+            assertFalse(_deleted);
+        }
     }
 
     @Test(expected=AccessDeniedException.class)
-    public void testSecureDeleteSharedOAuth2Credentials()
+    public void testSecureDeleteSharedOAuth2CredentialsTestDeleteSharedOAuth2Credentials()
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
-        List<OAuth2CredentialsInfo> sharedCredentials = oauth2CredentialsStoreService.listSharedOAuth2Credentials(RemoteSystemId);
-        OAuth2CredentialsInfo oAuth2CredentialsInfo = sharedCredentials.get(0);
-        oauth2CredentialsStoreService.deleteSharedOAuth2Credentials(RemoteSystemId, oAuth2CredentialsInfo);
-    }
-    
-    @Test
-    public void testDeleteSharedOAuth2Credentials()
-    {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-        List<OAuth2CredentialsInfo> sharedCredentials = oauth2CredentialsStoreService.listSharedOAuth2Credentials(RemoteSystemId);
-        OAuth2CredentialsInfo oAuth2CredentialsInfo = sharedCredentials.get(0);
-        boolean deleted = oauth2CredentialsStoreService.deleteSharedOAuth2Credentials(RemoteSystemId, oAuth2CredentialsInfo); 
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
+            List<OAuth2CredentialsInfo> sharedCredentials = oauth2CredentialsStoreService.listSharedOAuth2Credentials(RemoteSystemId);
+            OAuth2CredentialsInfo oAuth2CredentialsInfo = sharedCredentials.get(0);
+            oauth2CredentialsStoreService.deleteSharedOAuth2Credentials(RemoteSystemId, oAuth2CredentialsInfo);
+        }
         
-        assertTrue(deleted);
+        //public void testDeleteSharedOAuth2Credentials()
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
+            List<OAuth2CredentialsInfo> sharedCredentials = oauth2CredentialsStoreService.listSharedOAuth2Credentials(RemoteSystemId);
+            OAuth2CredentialsInfo oAuth2CredentialsInfo = sharedCredentials.get(0);
+            boolean deleted = oauth2CredentialsStoreService.deleteSharedOAuth2Credentials(RemoteSystemId, oAuth2CredentialsInfo); 
+            
+            assertTrue(deleted);
+        }
     }
 
     

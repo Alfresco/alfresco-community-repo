@@ -123,26 +123,27 @@ public class OAuth1CredentialsStoreServiceTest
     }
 
     @Test (expected=AccessDeniedException.class)
-    public void testSecureUpdateSharedOAuth1Credentials()
+    public void testSecureUpdateSharedOAuth1CredentialsTestUpdateSharedOAuth1Credentials()
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
-        //Update credentials
-        List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
-        OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0); 
-        oauth1CredentialsStoreService.updateSharedOAuth1Credentials(oAuth1CredentialsInfo, RemoteSystemId, UpdatedToken, UpdatedSecret);
-    }
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
+            //Update credentials
+            List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
+            OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0); 
+            oauth1CredentialsStoreService.updateSharedOAuth1Credentials(oAuth1CredentialsInfo, RemoteSystemId, UpdatedToken, UpdatedSecret);
+        }
     
-    @Test
-    public void testUpdateSharedOAuth1Credentials()
-    {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-        //Update credentials
-        List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
-        OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0); 
-        OAuth1CredentialsInfo _oAuth1CredentialsInfo = oauth1CredentialsStoreService.updateSharedOAuth1Credentials(oAuth1CredentialsInfo, RemoteSystemId, UpdatedToken, UpdatedSecret);
-        
-        assertEquals("Expect that access tokens will match", UpdatedToken, _oAuth1CredentialsInfo.getOAuthToken());
-        assertEquals("Expect the refresh token will match", UpdatedSecret, _oAuth1CredentialsInfo.getOAuthSecret());
+        //public void testUpdateSharedOAuth1Credentials()
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
+            //Update credentials
+            List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
+            OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0); 
+            OAuth1CredentialsInfo _oAuth1CredentialsInfo = oauth1CredentialsStoreService.updateSharedOAuth1Credentials(oAuth1CredentialsInfo, RemoteSystemId, UpdatedToken, UpdatedSecret);
+            
+            assertEquals("Expect that access tokens will match", UpdatedToken, _oAuth1CredentialsInfo.getOAuthToken());
+            assertEquals("Expect the refresh token will match", UpdatedSecret, _oAuth1CredentialsInfo.getOAuthSecret());
+        }
     }
 
     @Test
@@ -160,23 +161,23 @@ public class OAuth1CredentialsStoreServiceTest
     }
 
     @Test(expected=AccessDeniedException.class)
-    public void testSecureDeleteSharedOAuth1Credentials()
+    public void testSecureDeleteSharedOAuth1CredentialsTestDeleteSharedOAuth1Credentials()
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
-        List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
-        OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0);
-        oauth1CredentialsStoreService.deleteSharedOAuth1Credentials(RemoteSystemId, oAuth1CredentialsInfo);
-    }
-    
-    @Test
-    public void testDeleteSharedOAuth1Credentials()
-    {
-        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-        List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
-        OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0);
-        boolean deleted = oauth1CredentialsStoreService.deleteSharedOAuth1Credentials(RemoteSystemId, oAuth1CredentialsInfo); 
-        
-        assertTrue(deleted);
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
+            List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
+            OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0);
+            oauth1CredentialsStoreService.deleteSharedOAuth1Credentials(RemoteSystemId, oAuth1CredentialsInfo);
+        }
+        //public void testDeleteSharedOAuth1Credentials()
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
+            List<OAuth1CredentialsInfo> sharedCredentials = oauth1CredentialsStoreService.listSharedOAuth1Credentials(RemoteSystemId);
+            OAuth1CredentialsInfo oAuth1CredentialsInfo = sharedCredentials.get(0);
+            boolean deleted = oauth1CredentialsStoreService.deleteSharedOAuth1Credentials(RemoteSystemId, oAuth1CredentialsInfo); 
+            
+            assertTrue(deleted);
+        }
     }
 
     

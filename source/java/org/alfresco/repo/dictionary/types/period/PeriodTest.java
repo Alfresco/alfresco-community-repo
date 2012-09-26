@@ -30,12 +30,15 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.PeriodProvider;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.CachingDateFormat;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 /**
  * Tests for period implementations - persistence and search is tested elsewhere
  * 
  * @author andyh
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PeriodTest extends TestCase
 {
 
@@ -49,7 +52,7 @@ public class PeriodTest extends TestCase
     /**
      * "none"
      */
-    public void testNoPeriod()
+    public void test01NoPeriod()
     {
         assertTrue(Period.getProviderNames().contains(NoPeriod.PERIOD_TYPE));
         Period period = new Period(NoPeriod.PERIOD_TYPE);
@@ -69,7 +72,7 @@ public class PeriodTest extends TestCase
     /**
      * Days
      */
-    public void testDays()
+    public void test02Days()
     {
         assertTrue(Period.getProviderNames().contains(Days.PERIOD_TYPE));
         Period period = new Period(Days.PERIOD_TYPE);
@@ -112,7 +115,7 @@ public class PeriodTest extends TestCase
     /**
      * Weeks
      */
-    public void testWeeks()
+    public void test03Weeks()
     {
         assertTrue(Period.getProviderNames().contains(Weeks.PERIOD_TYPE));
         Period period = new Period(Weeks.PERIOD_TYPE);
@@ -155,7 +158,7 @@ public class PeriodTest extends TestCase
     /**
      * Months
      */
-    public void testMonths()
+    public void test04Months()
     {
         assertTrue(Period.getProviderNames().contains(Months.PERIOD_TYPE));
         Period period = new Period(Months.PERIOD_TYPE);
@@ -198,7 +201,7 @@ public class PeriodTest extends TestCase
     /**
      * Quarters
      */
-    public void testQuarters()
+    public void test05Quarters()
     {
         assertTrue(Period.getProviderNames().contains(Quarters.PERIOD_TYPE));
         Period period = new Period(Quarters.PERIOD_TYPE);
@@ -241,7 +244,7 @@ public class PeriodTest extends TestCase
     /**
      * Years
      */
-    public void testYears()
+    public void test06Years()
     {
         assertTrue(Period.getProviderNames().contains(Years.PERIOD_TYPE));
         Period period = new Period(Years.PERIOD_TYPE);
@@ -284,7 +287,7 @@ public class PeriodTest extends TestCase
     /**
      * EndOfMonth
      */
-    public void testEndOfMonth()
+    public void test07EndOfMonth()
     {
         assertTrue(Period.getProviderNames().contains(EndOfMonth.PERIOD_TYPE));
         Period period = new Period(EndOfMonth.PERIOD_TYPE);
@@ -330,7 +333,7 @@ public class PeriodTest extends TestCase
     /**
      * EndOfYear
      */
-    public void testEndOfYear()
+    public void test08EndOfYear()
     {
         assertTrue(Period.getProviderNames().contains(EndOfYear.PERIOD_TYPE));
         Period period = new Period(EndOfYear.PERIOD_TYPE);
@@ -378,7 +381,7 @@ public class PeriodTest extends TestCase
      * 
      * @throws ParseException
      */
-    public void testEndOfQuarter() throws ParseException
+    public void test09EndOfQuarter() throws ParseException
     {
         PeriodProvider provider = Period.getProvider(EndOfQuarter.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "1");
@@ -495,7 +498,7 @@ public class PeriodTest extends TestCase
     /**
      * End of F Month For 1 Oct this is the same as month
      */
-    public void xtestEndOfDefaultFinancialMonth()
+    public void test10EndOfDefaultFinancialMonth()
     {
         assertTrue(Period.getProviderNames().contains(EndOfFinancialMonth.PERIOD_TYPE));
         Period period = new Period(EndOfFinancialMonth.PERIOD_TYPE);
@@ -543,7 +546,7 @@ public class PeriodTest extends TestCase
      * 
      * @throws ParseException
      */
-    public void testEndOfDefaultFinancialYear() throws ParseException
+    public void test11EndOfDefaultFinancialYear() throws ParseException
     {
         PeriodProvider provider = Period.getProvider(EndOfFinancialYear.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "1");
@@ -577,7 +580,7 @@ public class PeriodTest extends TestCase
      * 
      * @throws ParseException
      */
-    public void xtestEndOfDefaultFinancialQuarter() throws ParseException
+    public void test12EndOfDefaultFinancialQuarter() throws ParseException
     {
         PeriodProvider provider = Period.getProvider(EndOfFinancialQuarter.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "1");
@@ -630,7 +633,7 @@ public class PeriodTest extends TestCase
      * 
      * @throws ParseException
      */
-    public void testEndOfUKTaxYear() throws ParseException
+    public void test13EndOfUKTaxYear() throws ParseException
     {
         PeriodProvider provider = Period.getProvider(EndOfFinancialYear.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "1");
@@ -667,7 +670,7 @@ public class PeriodTest extends TestCase
      * 
      * @throws ParseException
      */
-    public void testEndOfUKTaxQuarter() throws ParseException
+    public void test14EndOfUKTaxQuarter() throws ParseException
     {
         PeriodProvider provider = Period.getProvider(EndOfFinancialQuarter.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "1");
@@ -723,7 +726,7 @@ public class PeriodTest extends TestCase
      * 
      * @throws ParseException
      */
-    public void testEndOfUKTaxMonth() throws ParseException
+    public void test15EndOfUKTaxMonth() throws ParseException
     {
         PeriodProvider provider = Period.getProvider(EndOfFinancialMonth.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "1");
@@ -834,7 +837,7 @@ public class PeriodTest extends TestCase
      * Cron
      * @throws ParseException 
      */
-    public void testCron() throws ParseException
+    public void test16Cron() throws ParseException
     {
         PeriodProvider provider = Period.getProvider(Cron.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "59 59 23 * * ?");
@@ -857,7 +860,7 @@ public class PeriodTest extends TestCase
      * XMLDuration
      * @throws ParseException
      */
-    public void testXMLDuration() throws ParseException
+    public void test17XMLDuration() throws ParseException
     {
         PeriodProvider provider = Period.getProvider(XMLDuration.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "P1D");
@@ -879,7 +882,7 @@ public class PeriodTest extends TestCase
     /**
      * Test a missing expression, ensure 1 is used as the default
      */
-    public void testMissingExpression()
+    public void test18MissingExpression()
     {
         assertTrue(Period.getProviderNames().contains(Days.PERIOD_TYPE));
         Date now = new Date();

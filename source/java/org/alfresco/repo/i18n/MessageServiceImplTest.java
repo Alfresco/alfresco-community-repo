@@ -47,6 +47,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -55,6 +57,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * Message Service unit tests
  * 
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MessageServiceImplTest extends TestCase implements MessageDeployer
 {
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
@@ -198,7 +201,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     /**
      * Test the set and get methods
      */
-    public void testSetAndGet()
+    public void test1SetAndGet()
     {
         // Check that the default locale is returned 
         assertEquals(Locale.getDefault(), messageService.getLocale());
@@ -215,7 +218,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     /**
      * Test get message from repository
      */
-    public void testGetMessagesLoadedFromRepo() throws Exception
+    public void test2GetMessagesLoadedFromRepo() throws Exception
     {
     	setupRepo();
     	
@@ -233,7 +236,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     /**
      * Test getting a parameterised message from repository
      */
-    public void testGetMessagesWithParamsLoadedFromRepo() throws Exception
+    public void test3GetMessagesWithParamsLoadedFromRepo() throws Exception
     {
     	setupRepo();
     	
@@ -252,7 +255,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     /**
      * Test get message from classpath
      */
-    public void testGetMessagesLoadedFromClasspath() throws Exception
+    public void test4GetMessagesLoadedFromClasspath() throws Exception
     {
         // Check with no bundles loaded
         assertNull(messageService.getMessage(MSG_NO));        
@@ -268,7 +271,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     /**
      * Test getting a parameterised message from classpath
      */
-    public void testGetMessagesWithParamsLoadedFromClasspath() throws Exception
+    public void test5GetMessagesWithParamsLoadedFromClasspath() throws Exception
     {   	
         // Check with no bundles loaded
         assertNull(messageService.getMessage(MSG_PARAMS, new Object[]{PARAM_VALUE}));
@@ -284,7 +287,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     /**
      * Test register bundle (using a repository location) with uninitialised cache
      */
-    public void testRegisterBundleFromRepo() throws Exception
+    public void test6RegisterBundleFromRepo() throws Exception
     {  
     	setupRepo();
     	
@@ -300,7 +303,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     /**
      * Test register bundle (using a classpath location) with uninitialised cache
      */
-    public void testRegisterBundleFromClasspath() throws Exception
+    public void test7RegisterBundleFromClasspath() throws Exception
     {  
         // Register the bundle
         messageService.registerResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
@@ -314,7 +317,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     /**
      * Test forced reset
      */
-    public void xtestReset() throws Exception
+    public void test8Reset() throws Exception
     {  
         // Check with no bundles loaded
         assertNull(messageService.getMessage(MSG_YES)); 
@@ -339,7 +342,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
         messageService.registerResourceBundle(BASE_RESOURCE_CLASSPATH + BASE_BUNDLE_NAME);
     }
     
-    public void testLocaleMatching()
+    public void test9LocaleMatching()
     {
         Set<Locale> options = new HashSet<Locale>(13);
         options.add(Locale.FRENCH);                 // fr

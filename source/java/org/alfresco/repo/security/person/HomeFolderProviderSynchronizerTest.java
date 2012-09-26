@@ -60,7 +60,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ComparisonFailure;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -68,6 +70,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Alan Davis
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class HomeFolderProviderSynchronizerTest
 {
     private static final QName PROP_PARENT_PATH = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "parentPath");
@@ -601,7 +604,7 @@ public class HomeFolderProviderSynchronizerTest
     }
     
     @Test
-    public void testCorrectLocation() throws Exception
+    public void test01CorrectLocation() throws Exception
     {
         createUser("te", "tess");
         
@@ -611,7 +614,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testCreateParentFolder() throws Exception
+    public void test02CreateParentFolder() throws Exception
     {
         createUser("", "fred");
         
@@ -621,7 +624,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testNotEnabled() throws Exception
+    public void test03NotEnabled() throws Exception
     {
         createUser("", "fred");
         homeFolderProviderSynchronizer.setEnabled("false");
@@ -636,7 +639,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testHomeFolderNotYetCreated() throws Exception
+    public void test04HomeFolderNotYetCreated() throws Exception
     {
         NodeRef person = createUser("", "fred", largeHomeFolderProviderName, false);
         
@@ -653,7 +656,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testCreateMultipleParentFolders() throws Exception
+    public void test05CreateMultipleParentFolders() throws Exception
     {
         largeHomeFolderProvider.setPattern("^(.?)(.?)(.?)(.?)(.?)");
 
@@ -669,7 +672,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testMoveToRoot() throws Exception
+    public void test06MoveToRoot() throws Exception
     {
         // i.e. there are no parent folders after the sync
         largeHomeFolderProvider.setPattern("");
@@ -682,7 +685,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testRemoveEmptyParents() throws Exception
+    public void test07RemoveEmptyParents() throws Exception
     {
         createUser("a/bb/ccc", "peter");
         
@@ -693,7 +696,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testKeepEmptyParents() throws Exception
+    public void test08KeepEmptyParents() throws Exception
     {
         createUser("a/bb/ccc", "peter");
         homeFolderProviderSynchronizer.setKeepEmptyParents("true");
@@ -706,7 +709,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testKeepNonEmptyParents() throws Exception
+    public void test09KeepNonEmptyParents() throws Exception
     {
         createUser("a/bb/ccc", "peter");
         createFolder("a/bb/ddd");
@@ -719,7 +722,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testPathAlreadyInUseByFolder() throws Exception
+    public void test10PathAlreadyInUseByFolder() throws Exception
     {
         createUser("", "fred");
         createFolder("fr");
@@ -730,7 +733,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testPathAlreadyInUseByContent() throws Exception
+    public void test11PathAlreadyInUseByContent() throws Exception
     {
         System.out.println("testPathAlreadyInUseByContent: EXPECT TO SEE AN EXCEPTION IN THE LOG ======================== ");
         
@@ -745,7 +748,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testPathInUseByUser() throws Exception
+    public void test12PathInUseByUser() throws Exception
     {
         // i.e. test clash between home folder names and parent folders
         //      which requires a temporary folder to be created
@@ -765,7 +768,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testUseFirstAvailableTemporaryFolder() throws Exception
+    public void test13UseFirstAvailableTemporaryFolder() throws Exception
     {
         createUser("", "fr");
         createUser("", "fred");
@@ -785,7 +788,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testException() throws Exception
+    public void test14Exception() throws Exception
     {
         System.out.println("testException: EXPECT TO SEE AN EXCEPTION IN THE LOG ======================== ");
         
@@ -806,7 +809,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testMultipleRoots() throws Exception
+    public void test15MultipleRoots() throws Exception
     {
         createFolder("root");
         String rootPath = origRootPath + "/cm:root";
@@ -822,7 +825,7 @@ public class HomeFolderProviderSynchronizerTest
    }
     
     @Test
-    public void testPathNotUnderRoot() throws Exception
+    public void test16PathNotUnderRoot() throws Exception
     {
         System.out.println("-------------- testPathNotUnderRoot --------------");
         
@@ -840,7 +843,7 @@ public class HomeFolderProviderSynchronizerTest
     }
     
     @Test
-    public void testPathIsRoot() throws Exception
+    public void test17PathIsRoot() throws Exception
     {
         System.out.println("-------------- testPathIsRoot --------------");
         
@@ -858,7 +861,7 @@ public class HomeFolderProviderSynchronizerTest
     }
     
     @Test
-    public void testPathIsAboveRoot() throws Exception
+    public void test18PathIsAboveRoot() throws Exception
     {
         System.out.println("-------------- testPathIsAboveRoot --------------");
         
@@ -880,7 +883,7 @@ public class HomeFolderProviderSynchronizerTest
     }
     
     @Test
-    public void testMultipleUsers() throws Exception
+    public void test19MultipleUsers() throws Exception
     {
         // Tried 2000 users and the HomeFolderProviderSynchronizer.onBootstrap(null)
         // took 33 seconds. The setup and tear down takes a while too.
@@ -903,7 +906,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testOverrideProvider() throws Exception
+    public void test20OverrideProvider() throws Exception
     {
         NodeRef person = createUser("a/b/c", "fred");
         moveUserHomeFolders();
@@ -920,7 +923,7 @@ public class HomeFolderProviderSynchronizerTest
     }
 
     @Test
-    public void testNoOriginalProvider() throws Exception
+    public void test21NoOriginalProvider() throws Exception
     {
         createUser("a/b/c", "fred", null, true);
         homeFolderProviderSynchronizer.setOverrideHomeFolderProviderName(
@@ -936,7 +939,7 @@ public class HomeFolderProviderSynchronizerTest
     
     //@Test
     @SuppressWarnings("deprecation")
-    public void xtestVersion1HomeFolderProvider() throws Exception
+    public void test22Version1HomeFolderProvider() throws Exception
     {
         // Should just log a message to say it can't do anything
         final String name = "v1Provider";
@@ -965,7 +968,7 @@ public class HomeFolderProviderSynchronizerTest
     
     @Test
     @SuppressWarnings("deprecation")
-    public void testExtendsAbstractHomeFolderProvider() throws Exception
+    public void test23ExtendsAbstractHomeFolderProvider() throws Exception
     {
         // Should work through the V2Adaptor
         final String name = "v1Provider";
@@ -989,7 +992,7 @@ public class HomeFolderProviderSynchronizerTest
     }
     
     @Test
-    public void testTenantService() throws Exception
+    public void test24TenantService() throws Exception
     {
         // Only test if running multi-tenant
         if (tenantAdminService.isEnabled())
@@ -1015,7 +1018,7 @@ public class HomeFolderProviderSynchronizerTest
     
     // ALF-11535
     @Test
-    public void testChangeParentFolderCase() throws Exception
+    public void test25ChangeParentFolderCase() throws Exception
     {
         // By default, user names are case sensitive
         createUser("fr", "FRED");
@@ -1026,7 +1029,7 @@ public class HomeFolderProviderSynchronizerTest
     
     // ALF-11535
     @Test
-    public void testCaseSensitiveUsers() throws Exception
+    public void test26CaseSensitiveUsers() throws Exception
     {
         userNameMatcher.setUserNamesAreCaseSensitive(true);
         

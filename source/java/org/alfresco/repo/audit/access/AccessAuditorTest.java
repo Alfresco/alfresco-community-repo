@@ -61,7 +61,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ComparisonFailure;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
@@ -71,6 +73,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Alan Davis
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AccessAuditorTest
 {
     // Integration test environment
@@ -274,7 +277,7 @@ public class AccessAuditorTest
     }
 
     @Test
-    public final void testOnCreateNodeAndOnUpdateProperties() throws Exception
+    public final void test01OnCreateNodeAndOnUpdateProperties() throws Exception
     {
         newContent(homeFolder, "content4");
 
@@ -291,7 +294,7 @@ public class AccessAuditorTest
     }
 
     @Test
-    public final void testOnCopyComplete() throws Exception
+    public final void test02OnCopyComplete() throws Exception
     {
       serviceRegistry.getFileFolderService().copy(content2, folder1, null); // keep leaf name
 
@@ -313,7 +316,7 @@ public class AccessAuditorTest
     }
 
     @Test
-    public final void testOnCopyCompleteAndNewName() throws Exception
+    public final void test03OnCopyCompleteAndNewName() throws Exception
     {
       serviceRegistry.getFileFolderService().copy(content2, folder1, "newName1");
 
@@ -334,8 +337,8 @@ public class AccessAuditorTest
       assertEquals("cm:content", auditMap.get("type"));
     }
 
-    //@Test
-    public final void xtestOnMoveNode() throws Exception
+    @Test
+    public final void test04OnMoveNode() throws Exception
     {
         serviceRegistry.getNodeService().moveNode(content3, folder1, ContentModel.ASSOC_CONTAINS,  null);  // keep leaf name
 
@@ -353,8 +356,8 @@ public class AccessAuditorTest
         assertEquals("cm:content", auditMap.get("type"));
     }
 
-    //@Test
-    public final void xtestOnMoveNodeAndNewName() throws Exception
+    @Test
+    public final void test05OnMoveNodeAndNewName() throws Exception
     {
         serviceRegistry.getNodeService().moveNode(content3, folder1, ContentModel.ASSOC_CONTAINS,  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "newName2"));
 
@@ -371,7 +374,7 @@ public class AccessAuditorTest
     }
 
     @Test
-    public final void testBeforeDeleteNode() throws Exception
+    public final void test06BeforeDeleteNode() throws Exception
     {
         serviceRegistry.getNodeService().deleteNode(content0);
 
@@ -387,7 +390,7 @@ public class AccessAuditorTest
     }
 
     @Test
-    public final void testOnAddAspect() throws Exception
+    public final void test07OnAddAspect() throws Exception
     {
         serviceRegistry.getNodeService().addAspect(content1, ContentModel.ASPECT_AUTHOR, null);
         serviceRegistry.getNodeService().addAspect(content1, ContentModel.ASPECT_OWNABLE, null);
@@ -407,7 +410,7 @@ public class AccessAuditorTest
     }
 
     @Test
-    public final void testOnRemoveAspect() throws Exception
+    public final void test08OnRemoveAspect() throws Exception
     {
         serviceRegistry.getNodeService().removeAspect(content1, ContentModel.ASPECT_AUTHOR);
 
@@ -424,8 +427,8 @@ public class AccessAuditorTest
         assertEquals("cm:content", auditMap.get("type"));
     }
 
-    //@Test
-    public final void xtestOnContentUpdate() throws Exception
+    @Test
+    public final void test09OnContentUpdate() throws Exception
     {
         ContentWriter writer = serviceRegistry.getContentService().getWriter(content1, ContentModel.TYPE_CONTENT, true);
         writer.putContent("The cow jumped over the moon.");
@@ -443,7 +446,7 @@ public class AccessAuditorTest
     }
 
     @Test
-    public final void testOnContentRead() throws Exception
+    public final void test10OnContentRead() throws Exception
     {
         serviceRegistry.getContentService().getReader(content1, ContentModel.TYPE_CONTENT);
 
@@ -459,7 +462,7 @@ public class AccessAuditorTest
     }
 
     @Test
-    public final void testOnCreateVersion() throws Exception
+    public final void test11OnCreateVersion() throws Exception
     {
        Map<String, Serializable> versionProperties = getVersionProperties();
        serviceRegistry.getVersionService().createVersion(content1, versionProperties);
@@ -479,7 +482,7 @@ public class AccessAuditorTest
     }
 
     @Test
-    public final void testOnCheckOut() throws Exception
+    public final void test12OnCheckOut() throws Exception
     {
         workingCopyNodeRef = serviceRegistry.getCheckOutCheckInService().checkout(content1);
         
@@ -512,8 +515,8 @@ public class AccessAuditorTest
         assertEquals("cm:content", workMap.get("type"));
     }
 
-    //@Test
-    public final void xtestOnCheckIn() throws Exception
+    @Test
+    public final void test13OnCheckIn() throws Exception
     {
         Map<String, Serializable> checkinProperties = new HashMap<String, Serializable>();
         checkinProperties.put(Version.PROP_DESCRIPTION, null);
@@ -547,8 +550,8 @@ public class AccessAuditorTest
         assertEquals("cm:content", origMap.get("type"));
     }
 
-    //@Test
-    public final void xtestOnCancelCheckOut() throws Exception
+    @Test
+    public final void test14OnCancelCheckOut() throws Exception
     {
         workingCopyNodeRef = serviceRegistry.getCheckOutCheckInService().checkout(content1);
         txn.commit();

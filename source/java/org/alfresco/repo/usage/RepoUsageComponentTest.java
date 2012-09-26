@@ -33,6 +33,8 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -41,6 +43,7 @@ import org.springframework.context.ApplicationContext;
  * @author Derek Hulley
  * @since 3.5
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RepoUsageComponentTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -88,7 +91,7 @@ public class RepoUsageComponentTest extends TestCase
         }
     }
     
-    public void testSetup()
+    public void test1Setup()
     {
     }
 
@@ -124,7 +127,7 @@ public class RepoUsageComponentTest extends TestCase
         return transactionService.getRetryingTransactionHelper().doInTransaction(getCallback, false);
     }
     
-    public void testNoTxn() throws Throwable
+    public void test2NoTxn() throws Throwable
     {
         txn.commit();
         try
@@ -138,12 +141,12 @@ public class RepoUsageComponentTest extends TestCase
         }
     }
     
-    public void testGetUsage()
+    public void test3GetUsage()
     {
         getUsage();
     }
     
-    public void testFullUse() throws Exception
+    public void test4FullUse() throws Exception
     {
         // Set the restrictions
         RepoUsage restrictions = new RepoUsage(
@@ -178,7 +181,7 @@ public class RepoUsageComponentTest extends TestCase
     /**
      * Tests license code interaction.  This interaction would be done using runAs 'System'.
      */
-    public void testLicenseUse() throws Exception
+    public void test5LicenseUse() throws Exception
     {
         Long licenseUserLimit = 5L;
         Long licenseDocumentLimit = 100000L;
@@ -205,7 +208,7 @@ public class RepoUsageComponentTest extends TestCase
     /**
      * Check that concurrent updates are prevented
      */
-    public void testConcurrentUpdates() throws Exception
+    public void test6ConcurrentUpdates() throws Exception
     {
         // Firstly check that we can get an update
         assertTrue("Failed to update all usages", updateUsage(UsageType.USAGE_ALL));

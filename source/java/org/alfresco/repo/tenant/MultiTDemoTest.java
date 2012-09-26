@@ -77,6 +77,8 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -84,6 +86,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author janv
  * since 3.0
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MultiTDemoTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(MultiTDemoTest.class);
@@ -200,7 +203,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testCreateTenants() throws Throwable
+    public void test01CreateTenants() throws Throwable
     {   
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
         
@@ -295,7 +298,7 @@ public class MultiTDemoTest extends TestCase
         }, tenantName);
     }
     
-    public void testNonSharedGroupDeletion()
+    public void test02NonSharedGroupDeletion()
     {
         final String tenantDomain1 = TEST_RUN+".groupdel1";
         final String tenantDomain2 = TEST_RUN+".groupdel2";
@@ -362,7 +365,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testSharedGroupDeletion()
+    public void test03SharedGroupDeletion()
     {
         final String tenantDomain1 = TEST_RUN+".groupdel3";
         final String tenantDomain2 = TEST_RUN+".groupdel4";
@@ -499,7 +502,7 @@ public class MultiTDemoTest extends TestCase
         });
     }
     
-    public void test_ETHREEOH_2015()
+    public void test04_ETHREEOH_2015()
     {
         final String tenantDomain1 = TEST_RUN+".one.ethreeoh2015";
         final String tenantDomain2 = TEST_RUN+".two.ethreeoh2015";
@@ -534,7 +537,7 @@ public class MultiTDemoTest extends TestCase
     }
     
     
-    public void xtestCreateUsers() throws Throwable
+    public void test05CreateUsers() throws Throwable
     {
         logger.info("Create demo users");
         
@@ -618,7 +621,7 @@ public class MultiTDemoTest extends TestCase
         } 
     }
     
-    public void xtestLoginTenantUsers() throws Throwable
+    public void test06LoginTenantUsers() throws Throwable
     {
         logger.info("Login tenant users");
         
@@ -647,7 +650,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testLoginTenantGuests() throws Throwable
+    public void test07LoginTenantGuests() throws Throwable
     {
         logger.info("Login tenant guests");
         
@@ -669,7 +672,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testLoginTenantAdmin() throws Throwable
+    public void test08LoginTenantAdmin() throws Throwable
     {
         logger.info("Login tenant admins");
         
@@ -691,7 +694,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testCreateGroups()
+    public void test09CreateGroups()
     {
         logger.info("Create demo groups");
         
@@ -772,7 +775,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void xtestCreateCategories()
+    public void test10CreateCategories()
     {
         logger.info("Create demo categories");
         
@@ -883,7 +886,7 @@ public class MultiTDemoTest extends TestCase
         resultSet.close();
     }
     
-    public void testCreateFolders()
+    public void test11CreateFolders()
     {
         logger.info("Create demo folders");
         
@@ -926,7 +929,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testCreateVersionableUserContent()
+    public void test12CreateVersionableUserContent()
     {
         logger.info("Create demo content");
         
@@ -966,7 +969,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testGetStores()
+    public void test13GetStores()
     {
         logger.info("Get tenant stores");
         
@@ -1012,7 +1015,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testGetProperty()
+    public void test14GetProperty()
     {
         logger.info("Test get property");
         
@@ -1045,7 +1048,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testCOCIandSearch()
+    public void test15COCIandSearch()
     {
         logger.info("Test checkout/checkin and search");
         
@@ -1096,7 +1099,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testDeleteArchiveAndRestoreContent()
+    public void test16DeleteArchiveAndRestoreContent()
     {
         logger.info("test delete/archive & restore content");
         
@@ -1127,7 +1130,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testCustomModels()
+    public void test17CustomModels()
     {
         logger.info("test custom models");
         
@@ -1180,7 +1183,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testAddCustomWebClient()
+    public void test18AddCustomWebClient()
     {
         // note: add as demo files - need to re-start Alfresco to see custom web client config / messages 
         logger.info("test add custom web client config");
@@ -1207,7 +1210,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void testFileFolder()
+    public void test19FileFolder()
     {
         logger.info("test file/folder list");
         
@@ -1237,7 +1240,7 @@ public class MultiTDemoTest extends TestCase
     }
     
     // pseudo cleanup - if this test runs last
-    public void testDeleteAllTenants()
+    public void test20DeleteAllTenants()
     {
         logger.info("test delete tenants");
         
@@ -1250,7 +1253,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void test_ALF_12732()
+    public void test21_ALF_12732()
     {
         final String tenantDomain1 = TEST_RUN+".one.alf12732";
         
@@ -1290,7 +1293,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void test_ALF_14354()
+    public void test22_ALF_14354()
     {
         final String tenantDomain1 = TEST_RUN+".one.alf14354";
         final String tenantDomain2 = TEST_RUN+".two.alf14354";

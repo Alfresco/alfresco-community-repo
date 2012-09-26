@@ -934,9 +934,9 @@ public class HomeFolderProviderSynchronizerTest
                 exists("a/b/c"));
     }
     
-    @Test
+    //@Test
     @SuppressWarnings("deprecation")
-    public void testVersion1HomeFolderProvider() throws Exception
+    public void xtestVersion1HomeFolderProvider() throws Exception
     {
         // Should just log a message to say it can't do anything
         final String name = "v1Provider";

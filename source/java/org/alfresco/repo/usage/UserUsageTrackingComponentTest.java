@@ -197,7 +197,7 @@ public class UserUsageTrackingComponentTest extends TestCase
         return personContent;
     }
     
-    public void testEnableDisableCollapse()
+    public void test1EnableDisableCollapse()
     {
         String fileNamePrefix = "TEST";
         
@@ -288,7 +288,7 @@ public class UserUsageTrackingComponentTest extends TestCase
         checkCleared();
     }
     
-    public void testRecalculateUserUsage() throws Exception
+    public void test2RecalculateUserUsage() throws Exception
     {
         Map<String, Long> expectedResultsA = createUsersAndContent("A");
         

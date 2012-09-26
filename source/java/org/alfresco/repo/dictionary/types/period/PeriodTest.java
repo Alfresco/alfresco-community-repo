@@ -201,6 +201,7 @@ public class PeriodTest extends TestCase
     /**
      * Quarters
      */
+
     public void test05Quarters()
     {
         assertTrue(Period.getProviderNames().contains(Quarters.PERIOD_TYPE));
@@ -502,6 +503,12 @@ public class PeriodTest extends TestCase
     {
         assertTrue(Period.getProviderNames().contains(EndOfFinancialMonth.PERIOD_TYPE));
         Period period = new Period(EndOfFinancialMonth.PERIOD_TYPE);
+        
+        PeriodProvider provider = Period.getProvider(EndOfFinancialMonth.PERIOD_TYPE);
+        AbstractEndOfCalendarPeriodProvider instance = (AbstractEndOfCalendarPeriodProvider) provider;
+        instance.setStartDayOfMonth(1);
+        instance.setStartMonth(Calendar.JANUARY);
+        
         Date now = new Date();
         assertNotNull(period.getNextDate(now));
         Calendar calendar = Calendar.getInstance();
@@ -530,7 +537,6 @@ public class PeriodTest extends TestCase
             assertEquals(period.getNextDate(now), calendar.getTime());
         }
 
-        PeriodProvider provider = Period.getProvider(EndOfFinancialMonth.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "1");
         assertEquals(provider.getExpressionMutiplicity(), PeriodProvider.ExpressionMutiplicity.OPTIONAL);
         assertNotNull(provider.getNextDate(now, "0"));
@@ -588,6 +594,10 @@ public class PeriodTest extends TestCase
         assertEquals(provider.getPeriodType(), EndOfFinancialQuarter.PERIOD_TYPE);
         assertEquals(DataTypeDefinition.INT, provider.getExpressionDataType());
         assertEquals("End Of Financial Quarter", provider.getDisplayLabel());
+        
+        AbstractEndOfCalendarPeriodProvider instance = (AbstractEndOfCalendarPeriodProvider) provider;
+        instance.setStartDayOfMonth(1);
+        instance.setStartMonth(Calendar.JANUARY);
 
         SimpleDateFormat df = CachingDateFormat.getDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", true);
         Period period = new Period(EndOfFinancialQuarter.PERIOD_TYPE);

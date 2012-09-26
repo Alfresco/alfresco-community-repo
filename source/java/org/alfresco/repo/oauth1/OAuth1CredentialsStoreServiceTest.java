@@ -37,9 +37,12 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OAuth1CredentialsStoreServiceTest
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -89,7 +92,7 @@ public class OAuth1CredentialsStoreServiceTest
     }
 
     @Test
-    public void testStorePersonalOAuth1Credentials()
+    public void test1StorePersonalOAuth1Credentials()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
         //Store new credentials
@@ -108,7 +111,7 @@ public class OAuth1CredentialsStoreServiceTest
     }
 
     @Test
-    public void testStoreSharedOAuth1Credentials()
+    public void test2StoreSharedOAuth1Credentials()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
         //Store new credentials
@@ -123,7 +126,7 @@ public class OAuth1CredentialsStoreServiceTest
     }
 
     @Test (expected=AccessDeniedException.class)
-    public void testSecureUpdateSharedOAuth1CredentialsTestUpdateSharedOAuth1Credentials()
+    public void test3SecureUpdateSharedOAuth1CredentialsTestUpdateSharedOAuth1Credentials()
     {
         {
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
@@ -147,7 +150,7 @@ public class OAuth1CredentialsStoreServiceTest
     }
 
     @Test
-    public void testDeletePesonalOAuth1Credentials()
+    public void test4DeletePesonalOAuth1Credentials()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
         boolean deleted = oauth1CredentialsStoreService.deletePersonalOAuth1Credentials(RemoteSystemId);
@@ -161,7 +164,7 @@ public class OAuth1CredentialsStoreServiceTest
     }
 
     @Test(expected=AccessDeniedException.class)
-    public void testSecureDeleteSharedOAuth1CredentialsTestDeleteSharedOAuth1Credentials()
+    public void test5SecureDeleteSharedOAuth1CredentialsTestDeleteSharedOAuth1Credentials()
     {
         {
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);

@@ -314,7 +314,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     /**
      * Test forced reset
      */
-    public void testReset() throws Exception
+    public void xtestReset() throws Exception
     {  
         // Check with no bundles loaded
         assertNull(messageService.getMessage(MSG_YES)); 

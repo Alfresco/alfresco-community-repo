@@ -68,12 +68,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
+
 /**
  * Tagging service implementation unit test
  * 
  * @author Roy Wetherall
  * @author Nick Burch
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TaggingServiceImplTest extends TestCase
 {
    private static ConfigurableApplicationContext ctx = 
@@ -295,7 +299,7 @@ public class TaggingServiceImplTest extends TestCase
         });
     }
     
-    public void testTagCRUD()
+    public void test1TagCRUD()
         throws Exception
     {
         this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
@@ -362,7 +366,7 @@ public class TaggingServiceImplTest extends TestCase
         });
     }
     
-    public void testAddRemoveTag()
+    public void test2AddRemoveTag()
         throws Exception
     {
         this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
@@ -425,7 +429,7 @@ public class TaggingServiceImplTest extends TestCase
         });
     }
     
-    public void testTagScopeFindAddRemove()
+    public void test3TagScopeFindAddRemove()
         throws Exception
     {
         this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
@@ -484,7 +488,7 @@ public class TaggingServiceImplTest extends TestCase
         });
     }
     
-    public void testTagScope()
+    public void test4TagScope()
     throws Exception
     {
         this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
@@ -662,7 +666,7 @@ public class TaggingServiceImplTest extends TestCase
 }
 
     @SuppressWarnings("unchecked")
-    public void testTagScopeSummary() throws Exception
+    public void test5TagScopeSummary() throws Exception
     {
         asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
         {
@@ -762,7 +766,7 @@ public class TaggingServiceImplTest extends TestCase
         });
     }
 
-    public void testTagScopeRefresh()
+    public void test6TagScopeRefresh()
         throws Exception
     {
         this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
@@ -817,7 +821,7 @@ public class TaggingServiceImplTest extends TestCase
         });
     }
     
-    public void testTagScopeSetUpdate()
+    public void test7TagScopeSetUpdate()
         throws Exception
     {
         asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
@@ -930,7 +934,7 @@ public class TaggingServiceImplTest extends TestCase
     /* 
      * https://issues.alfresco.com/jira/browse/ETHREEOH-220 
      */
-    public void testETHREEOH_220() throws Exception
+    public void test8ETHREEOH_220() throws Exception
     {
         // Add tag scope to a folder, then add a non-ASCII (unicode)
         //  tag onto the folder
@@ -974,7 +978,7 @@ public class TaggingServiceImplTest extends TestCase
      *  when folders and content are created, updated,
      *  moved, copied and deleted.
      */
-    public void testTagScopeUpdateViaNodePolicies() throws Exception {
+    public void test9TagScopeUpdateViaNodePolicies() throws Exception {
         class TestData
         {
             public NodeRef tagFoo1;
@@ -1407,7 +1411,7 @@ public class TaggingServiceImplTest extends TestCase
      * Also checks that policies are disabled during tag scope updates,
      *  so that the auditable flags aren't incorrectly set by the change
      */
-    public void testPermissionsAndPolicies() throws Exception
+    public void test91PermissionsAndPolicies() throws Exception
     {
         class TestData
         {
@@ -1531,7 +1535,7 @@ public class TaggingServiceImplTest extends TestCase
     
     // == Test the JavaScript API ==
     
-    public void testJSAPI() throws Exception
+    public void test92JSAPI() throws Exception
     {
         asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
         {
@@ -1554,7 +1558,7 @@ public class TaggingServiceImplTest extends TestCase
         });
     }
     
-    public void testJSTagScope() throws Exception
+    public void test93JSTagScope() throws Exception
     {        
         asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
         {
@@ -1666,7 +1670,7 @@ public class TaggingServiceImplTest extends TestCase
      * Test that the scheduled task will do the right thing
      *  when it runs.
      */
-    public void testOnStartupJob() throws Exception
+    public void test93OnStartupJob() throws Exception
     {
         final UpdateTagScopesActionExecuter updateTagsAction = (UpdateTagScopesActionExecuter) ctx
                 .getBean("update-tagscope");
@@ -1800,7 +1804,7 @@ public class TaggingServiceImplTest extends TestCase
      * Test that when multiple threads do tag updates, the right thing still
      * happens
      */
-    public void testMultiThreaded() throws Exception
+    public void test94MultiThreaded() throws Exception
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {

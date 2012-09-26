@@ -209,7 +209,7 @@ public class SiteActivitySystemTest extends TestCase
         }
     }
     
-    public void testGetSiteFeedsBefore() throws Exception
+    public void xtestGetSiteFeedsBefore() throws Exception
     {
         testCreateSites();
         
@@ -316,6 +316,67 @@ public class SiteActivitySystemTest extends TestCase
         getUserFeed(null, null, ticket, false, true, false, 0);
         getUserFeed(null, null, ticket, false, false, true, 0);
         getUserFeed(null, null, ticket, false, true, true, 0);
+    
+        
+        //    public void testGetUserFeedsAfter() throws Exception
+        
+        testAddAndUpdateMembershipsWithPause();
+        testRemoveMembershipsWithPause();
+        testUserFeedControls();
+        
+        // as admin
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
+        
+        // site 1, with 4 users, each with 1 join, 1 role change = 4x2 = 8
+        // site 2, with 4 users, each with 1 join, 1 role change = 4x2 = 8
+        // site 3, with 3 users, each with 1 join, 1 role change = 3x2 = 6
+        
+        // user 1 belongs to 3 sites = (2x8)+(1x6) = 22
+        // user 2 belongs to 3 sites = (2x8)+(1x6) = 22
+        // user 3 belongs to 3 sites = (2x8)+(1x6) = 22
+        // user 4 belongs to 2 sites = (2x8) = 16
+        
+        getUserFeed(user1, ticket, true, 14);  // 14 = (22 - 8) due to feed control - exclude site 1
+        getUserFeed(user2, ticket, true, 0);   // 0 = due to feed control - exclude site membership activities (across all sites)
+        getUserFeed(user3, ticket, true, 14);  // 14 = (22 - 8) due to feed control - exclude site membership activities for site 1
+        getUserFeed(user4, ticket, true, 16);  // 16 = no feed control
+        
+        // as user1
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
+        
+        getUserFeed(user1, ticket, false, 14);
+        
+        // as user2
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
+        
+        try
+        {
+            getUserFeed(user1, ticket, true, 14);
+            
+            fail("User feed should only be accessible to user or an admin");
+        }
+        catch (IOException ioe)
+        {
+            assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
+        }
+        
+        // as user1 - with filter args ...
+        
+        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
+        
+        getUserFeed(null, site1, ticket, false, false, false, 0);
+        getUserFeed(null, site2, ticket, false, false, false, 8);
+        getUserFeed(null, site3, ticket, false, false, false, 6);
+        
+        getUserFeed(null, null, ticket, false, false, false, 14); // no filter
+        getUserFeed(null, null, ticket, false, true, false, 12);  // exclude any from user1
+        getUserFeed(null, null, ticket, false, false, true, 2);   // exclude all except user1
+        getUserFeed(null, null, ticket, false, true, true, 0);    // exclude all (NOOP)
+        
+        // TODO - add more (eg. other non-admin user activities)
     }
     
     protected void getUserFeed(String userId, String ticket, boolean isAdmin, int expectedCount) throws Exception
@@ -400,7 +461,7 @@ public class SiteActivitySystemTest extends TestCase
         }
     }
     
-    public void testGetSiteFeedsAfterAddAndUpdateMemberships() throws Exception
+    public void xtestGetSiteFeedsAfterAddAndUpdateMemberships() throws Exception
     {
         testCreateSites();
         testAddAndUpdateMembershipsWithPause();
@@ -427,6 +488,7 @@ public class SiteActivitySystemTest extends TestCase
             assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
         }
     }
+    
     public void testRemoveMembershipsWithPause() throws Exception
     {
         if (! membersRemoved)
@@ -474,7 +536,7 @@ public class SiteActivitySystemTest extends TestCase
         if (includeUser4) { removeMembership(siteId, user4, ticket); }
     }
     
-    public void testGetSiteFeedsAfterRemoveMemberships() throws Exception
+    public void xtestGetSiteFeedsAfterRemoveMemberships() throws Exception
     {
         testCreateSites();
         testAddAndUpdateMembershipsWithPause();
@@ -511,68 +573,6 @@ public class SiteActivitySystemTest extends TestCase
         {
             assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
         }
-    }
-    
-    public void testGetUserFeedsAfter() throws Exception
-    {
-        testCreateSites();
-        testAddAndUpdateMembershipsWithPause();
-        testRemoveMembershipsWithPause();
-        testUserFeedControls();
-        
-        // as admin
-        
-        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
-        
-        // site 1, with 4 users, each with 1 join, 1 role change = 4x2 = 8
-        // site 2, with 4 users, each with 1 join, 1 role change = 4x2 = 8
-        // site 3, with 3 users, each with 1 join, 1 role change = 3x2 = 6
-        
-        // user 1 belongs to 3 sites = (2x8)+(1x6) = 22
-        // user 2 belongs to 3 sites = (2x8)+(1x6) = 22
-        // user 3 belongs to 3 sites = (2x8)+(1x6) = 22
-        // user 4 belongs to 2 sites = (2x8) = 16
-        
-        getUserFeed(user1, ticket, true, 14);  // 14 = (22 - 8) due to feed control - exclude site 1
-        getUserFeed(user2, ticket, true, 0);   // 0 = due to feed control - exclude site membership activities (across all sites)
-        getUserFeed(user3, ticket, true, 14);  // 14 = (22 - 8) due to feed control - exclude site membership activities for site 1
-        getUserFeed(user4, ticket, true, 16);  // 16 = no feed control
-        
-        // as user1
-        
-        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
-        
-        getUserFeed(user1, ticket, false, 14);
-        
-        // as user2
-        
-        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user2, USER_PW);
-        
-        try
-        {
-            getUserFeed(user1, ticket, true, 14);
-            
-            fail("User feed should only be accessible to user or an admin");
-        }
-        catch (IOException ioe)
-        {
-            assertTrue(ioe.getMessage().contains("HTTP response code: 401"));
-        }
-        
-        // as user1 - with filter args ...
-        
-        ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
-        
-        getUserFeed(null, site1, ticket, false, false, false, 0);
-        getUserFeed(null, site2, ticket, false, false, false, 8);
-        getUserFeed(null, site3, ticket, false, false, false, 6);
-        
-        getUserFeed(null, null, ticket, false, false, false, 14); // no filter
-        getUserFeed(null, null, ticket, false, true, false, 12);  // exclude any from user1
-        getUserFeed(null, null, ticket, false, false, true, 2);   // exclude all except user1
-        getUserFeed(null, null, ticket, false, true, true, 0);    // exclude all (NOOP)
-        
-        // TODO - add more (eg. other non-admin user activities)
     }
     
     private void addMembership(String siteId, String userName, String ticket, String role) throws Exception

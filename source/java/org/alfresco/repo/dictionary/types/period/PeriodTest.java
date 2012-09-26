@@ -495,7 +495,7 @@ public class PeriodTest extends TestCase
     /**
      * End of F Month For 1 Oct this is the same as month
      */
-    public void testEndOfDefaultFinancialMonth()
+    public void xtestEndOfDefaultFinancialMonth()
     {
         assertTrue(Period.getProviderNames().contains(EndOfFinancialMonth.PERIOD_TYPE));
         Period period = new Period(EndOfFinancialMonth.PERIOD_TYPE);
@@ -577,7 +577,7 @@ public class PeriodTest extends TestCase
      * 
      * @throws ParseException
      */
-    public void testEndOfDefaultFinancialQuarter() throws ParseException
+    public void xtestEndOfDefaultFinancialQuarter() throws ParseException
     {
         PeriodProvider provider = Period.getProvider(EndOfFinancialQuarter.PERIOD_TYPE);
         assertEquals(provider.getDefaultExpression(), "1");

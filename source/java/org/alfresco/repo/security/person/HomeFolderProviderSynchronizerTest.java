@@ -937,7 +937,7 @@ public class HomeFolderProviderSynchronizerTest
                 exists("a/b/c"));
     }
     
-    //@Test
+    @Test
     @SuppressWarnings("deprecation")
     public void test22Version1HomeFolderProvider() throws Exception
     {

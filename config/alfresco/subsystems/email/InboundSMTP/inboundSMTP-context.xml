@@ -68,7 +68,8 @@
 
    <alias name="emailService" alias="EmailService"/>
 
-	<bean id="emailService" class="org.alfresco.email.server.EmailServiceImpl">
+	<bean id="emailService" class="org.alfresco.email.server.EmailServiceImpl"
+	    init-method="init">
 		<property name="emailInboundEnabled">
 			<value>${email.inbound.enabled}</value>
 		</property>
@@ -114,6 +115,9 @@
 		</property>
         <property name="authorityService">
             <ref bean="authorityService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
         </property>
 	</bean>
 

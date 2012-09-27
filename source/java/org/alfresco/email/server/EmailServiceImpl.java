@@ -18,6 +18,7 @@
  */
 package org.alfresco.email.server;
 
+import java.util.Collection;
 import java.util.Map;
 
 import javax.mail.internet.InternetAddress;
@@ -31,6 +32,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.email.EmailDelivery;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
@@ -45,6 +48,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -70,6 +74,7 @@ public class EmailServiceImpl implements EmailService
     private SearchService searchService;
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthorityService authorityService;
+    private DictionaryService dictionaryService;
     
     /**
      * The authority that needs to contain the users and groups 
@@ -84,6 +89,15 @@ public class EmailServiceImpl implements EmailService
     private String unknownUser;
     /** List of message handlers */
     private Map<String, EmailMessageHandler> emailMessageHandlerMap;
+    
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
+        PropertyCheck.mandatory(this, "dictionaryService", getDictionaryService());
+        PropertyCheck.mandatory(this, "searchService", searchService);
+        PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "emailMessageHandlerMap", emailMessageHandlerMap);
+    }
 
     /**
      * 
@@ -320,6 +334,38 @@ public class EmailServiceImpl implements EmailService
         QName nodeTypeQName = nodeService.getType(nodeRef);
         String prefixedNodeTypeStr = nodeTypeQName.toPrefixString(namespaceService);
         EmailMessageHandler handler = emailMessageHandlerMap.get(prefixedNodeTypeStr);
+        
+        if( handler == null)
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("did not find a handler for type:" + prefixedNodeTypeStr);
+            }
+            
+            // not a direct match on type
+            // need to check the super-types (if any) of the target node
+            TypeDefinition typeDef = dictionaryService.getType(nodeTypeQName);
+            while(typeDef != null)
+            {
+                QName parentName = typeDef.getParentName();
+                if(parentName != null)
+                {
+                    String prefixedSubTypeStr = parentName.toPrefixString(namespaceService);
+                    handler = emailMessageHandlerMap.get(prefixedSubTypeStr);
+                    if(handler != null)
+                    {
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("found a handler for a subtype:" + prefixedSubTypeStr);
+                        }
+                        return handler;
+                    }
+               } 
+               typeDef = dictionaryService.getType(parentName); 
+            }
+             
+        }
+        
         if (handler == null)
         {
             throw new EmailMessageException(ERR_HANDLER_NOT_FOUND, prefixedNodeTypeStr);
@@ -476,5 +522,15 @@ public class EmailServiceImpl implements EmailService
     public String getEmailContributorsAuthority()
     {
         return emailContributorsAuthority;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    public DictionaryService getDictionaryService()
+    {
+        return dictionaryService;
     }
 }

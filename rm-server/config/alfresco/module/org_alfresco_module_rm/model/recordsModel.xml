@@ -90,8 +90,8 @@
                  
       </type>
       
-      <type name="rma:newRecordsContainer">
-      	 <title>New Records Container</title>
+      <type name="rma:unfiledRecordContainer">
+      	 <title>Unfiled Record Container</title>
          <parent>rma:recordsManagementContainer</parent>
       </type>
 
@@ -624,14 +624,14 @@
                 </target>
             </child-association>
             
-            <child-association name="rma:newRecords">
-                <title>New Records</title>
+            <child-association name="rma:unfiledRecords">
+                <title>Unfiled Records</title>
                 <source>
                     <mandatory>true</mandatory>
                     <many>false</many>
                 </source>
                 <target>
-                    <class>rma:newRecordsContainer</class>
+                    <class>rma:unfiledRecordContainer</class>
                     <mandatory>true</mandatory>
                     <many>true</many>
                 </target>
@@ -844,13 +844,12 @@
         </mandatory-aspects>
       </aspect>      
       
-      <!--  Details used for DM-RM security mapping -->
+      <!--  Extended readers for RM object -->
       <!--  @since 2.1 -->
-      <aspect name="rma:extendedRecordSecurity">      
+      <aspect name="rma:extendedReaders">      
       	<properties>
       		<property name="rma:readers">
-      			<type>d:text</type>
-      			<multiple>true</multiple>
+      			<type>d:any</type>
       		</property>
       	</properties>      
       </aspect>

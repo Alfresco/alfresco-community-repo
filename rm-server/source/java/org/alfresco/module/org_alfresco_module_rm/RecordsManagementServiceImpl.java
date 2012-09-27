@@ -437,6 +437,15 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     }
     
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecordsManagementContainer(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public boolean isRecordsManagementContainer(NodeRef nodeRef)
+    {
+        return instanceOf(nodeRef, TYPE_RECORDS_MANAGEMENT_CONTAINER);
+    }
+    
+    /**
      * Utility method to safely and quickly determine if a node is a type (or sub-type) of the one specified.
      */
     private boolean instanceOf(NodeRef nodeRef, QName ofClassName)

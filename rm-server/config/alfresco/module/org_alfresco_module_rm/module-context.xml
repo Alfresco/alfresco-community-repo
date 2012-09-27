@@ -46,12 +46,12 @@
             <list>
                 <ref bean="ownerDynamicAuthority" />
                 <ref bean="lockOwnerDynamicAuthority" />
-                <ref bean="recordReadersDynamicAuthority" />
+                <ref bean="extendedReaderDynamicAuthority" />
             </list>
         </property>
     </bean>
    
-   <bean id="recordReadersDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.permission.RecordReadersDynamicAuthority" />
+   <bean id="extendedReaderDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority" />
    
     <!-- Bootstrap records management data -->
     <bean id="org_alfresco_module_rm_bootstrapData" 

@@ -74,6 +74,14 @@ public interface RecordsManagementService
     FilePlanComponentKind getFilePlanComponentKindFromType(QName type);
     
     /**
+     * Indicates whether the given node is a records management container or not.
+     * 
+     * @param nodeRef   node reference
+     * @return boolean  true if node is a record container, false otherwise.
+     */
+    boolean isRecordsManagementContainer(NodeRef nodeRef);
+    
+    /**
      * Indicates whether the given node is file plan node or not.
      * 
      * @param nodeRef   node reference

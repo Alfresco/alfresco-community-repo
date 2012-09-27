@@ -6,6 +6,7 @@
     <bean id="rmCreate" 
     	  parent="rmBaseCapability" 
     	  class="org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability">
+    	<property name="recordService" ref="recordService"/>
         <property name="name" value="Create"/>
     	<property name="private" value="true"/>
     </bean>

@@ -15,7 +15,7 @@
     <!--  Create record action -->
     <bean id="create-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction">    	
     	<property name="recordsManagementService" ref="RecordsManagementService"/>
-    	<property name="recordService" ref="RecordService" />
+    	<property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
     	<property name="permissionService" ref="PermissionService" />
     	<property name="nodeService" ref="NodeService" />
     	<property name="applicableTypes">

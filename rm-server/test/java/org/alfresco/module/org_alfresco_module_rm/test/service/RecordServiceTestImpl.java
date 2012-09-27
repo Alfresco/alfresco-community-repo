@@ -20,8 +20,9 @@ package org.alfresco.module.org_alfresco_module_rm.test.service;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.permission.RecordReadersDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -132,8 +133,6 @@ public class RecordServiceTestImpl extends BaseRMTestCase
         {
             public Void run()
             {
-                //assertFalse(rmService.isRecord(dmDocument));
-                
                 assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 
@@ -149,6 +148,14 @@ public class RecordServiceTestImpl extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 
                 assertTrue(rmService.isRecord(dmDocument));
+                
+                // 
+                Capability createCapability = capabilityService.getCapability("Create");
+                assertNotNull(createCapability);
+                createCapability.evaluate(dmDocument);
+                
+                
+                
             };
         }, 
         dmUserName);  

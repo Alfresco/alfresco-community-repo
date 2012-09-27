@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -104,6 +105,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected PersonService personService;
     protected TransactionService transactionService;
     protected FileFolderService fileFolderService;
+    protected PermissionService permissionService;
     
     /** RM Services */
     protected RecordsManagementService rmService;
@@ -260,6 +262,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         personService = (PersonService)this.applicationContext.getBean("PersonService");
         transactionService = (TransactionService)applicationContext.getBean("TransactionService");
         fileFolderService = (FileFolderService)applicationContext.getBean("FileFolderService");
+        permissionService = (PermissionService)applicationContext.getBean("PermissionService");
         
         // Get RM services
         rmService = (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
@@ -329,15 +332,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             	setupTestDataImpl();
             	return null;
             }
-            
-            // check that the new records container has been created for the file plan
-            public void test(Void arg0) throws Exception 
-            {
-          //  	NodeRef newRecordsContainer = recordService.getNewRecordContainer(filePlan);
-          //  	assertNotNull(newRecordsContainer);
-          //  	assertEquals(TYPE_NEW_RECORDS_CONTAINER, nodeService.getType(newRecordsContainer));
-            	
-            };
         }, 
         AuthenticationUtil.getSystemUserName());    	
     }

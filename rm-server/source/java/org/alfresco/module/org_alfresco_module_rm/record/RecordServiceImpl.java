@@ -88,7 +88,7 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
     {
         policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
-                TYPE_NEW_RECORDS_CONTAINER, 
+                TYPE_UNFILED_RECORD_CONTAINER, 
                 ContentModel.ASSOC_CONTAINS,
                 new JavaBehaviour(this, "onCreateNewRecord", NotificationFrequency.TRANSACTION_COMMIT));
     }

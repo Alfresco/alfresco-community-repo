@@ -18,19 +18,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.permission.RecordReadersDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -40,7 +35,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
@@ -56,8 +50,8 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     public static final String NAME = "create-record";
     
     private RecordsManagementService recordsManagementService;
-    
-    private RecordService recordService;
+
+    private RecordsManagementSecurityService recordsManagementSecurityService;
     
     private PermissionService permissionService;
     
@@ -68,9 +62,9 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
         this.recordsManagementService = recordsManagementService;
     }
     
-    public void setRecordService(RecordService recordService)
+    public void setRecordsManagementSecurityService(RecordsManagementSecurityService recordsManagementSecurityService)
     {
-        this.recordService = recordService;
+        this.recordsManagementSecurityService = recordsManagementSecurityService;
     }
     
     public void setPermissionService(PermissionService permissionService)
@@ -111,29 +105,15 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
                     {
                         throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
                     }
-                    
+
                     // move the document into the file plan
                     nodeService.moveNode(actionedUponNodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
                     
                     // maintain the original primary location
                     nodeService.addChild(parentAssoc.getParentRef(), actionedUponNodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
                     
-                    // add extended security information to the record
-                    Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-                    props.put(PROP_READERS, (Serializable)readers);
-                    nodeService.addAspect(actionedUponNodeRef, ASPECT_EXTENDED_RECORD_SECURITY, props);
-                    
-                    // add permission so readers can still 'see' the new record
-                    // Note: using the regular permission service as we don't want to reflect this permission up (and down) the
-                    //       hierarchy
-                    permissionService.setPermission(actionedUponNodeRef, 
-                                                    RecordReadersDynamicAuthority.RECORD_READERS, 
-                                                    RMPermissionModel.READ_RECORDS, 
-                                                    true);
-                    permissionService.setPermission(filePlan, 
-                                                    RecordReadersDynamicAuthority.RECORD_READERS, 
-                                                    RMPermissionModel.VIEW_RECORDS, 
-                                                    true);
+                    // set the readers
+                    recordsManagementSecurityService.setExtendedReaders(actionedUponNodeRef, readers);                    
                     
                     return null;
                 }
@@ -141,13 +121,13 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
         }
         else
         {
-            throw new AlfrescoRuntimeException("Unable to file file plan.");
+            throw new AlfrescoRuntimeException("Unable to find file plan.");
         }        
     }
     
     private NodeRef getNewRecordContainer(NodeRef filePlan)
     {
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_NEW_RECORDS, RegexQNamePattern.MATCH_ALL);
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_UNFILED_RECORDS, RegexQNamePattern.MATCH_ALL);
         if (assocs.size() != 1)
         {
             throw new AlfrescoRuntimeException("Error getting the new record container, because the container cannot be indentified.");

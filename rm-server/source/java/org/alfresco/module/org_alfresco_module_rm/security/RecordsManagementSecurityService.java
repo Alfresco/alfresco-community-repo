@@ -152,4 +152,31 @@ public interface RecordsManagementSecurityService
      * @param permission    permission
      */
     void deletePermission(NodeRef nodeRef, String authority, String permission);
+    
+    /**
+     * 
+     * @param nodeRef
+     * @return
+     */
+    Set<String> getExtendedReaders(NodeRef nodeRef);
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param readers
+     */
+    void setExtendedReaders(NodeRef nodeRef, Set<String> readers);
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param readers
+     */
+    void removeExtendedReaders(NodeRef nodeRef, Set<String> readers);
+    
+    /**
+     * 
+     * @param nodeRef
+     */
+    void removeAllExtendedReaders(NodeRef nodeRef);
 }

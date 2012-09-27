@@ -120,7 +120,7 @@ function itemIsAllowed(item)
    var typeShort = String(item.typeShort);
    
    // Don't show Hold and Transfer top-level containers
-   if (typeShort == "rma:hold" || typeShort == "rma:transfer")
+   if (typeShort == "rma:hold" || typeShort == "rma:transfer" || typeShort == "rma:unfiledRecordContainer")
    {
       return false;
    }

@@ -18,21 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Behaviour associated with the file plan type
@@ -82,10 +73,10 @@ public class FilePlanType implements RecordsManagementModel,
      */
     public void init()
     {
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                TYPE_FILE_PLAN,
-                new JavaBehaviour(this, "onCreateNode", NotificationFrequency.TRANSACTION_COMMIT));
+       // policyComponent.bindClassBehaviour(
+       //         NodeServicePolicies.OnCreateNodePolicy.QNAME,
+       //         TYPE_FILE_PLAN,
+       //         new JavaBehaviour(this, "onCreateNode", NotificationFrequency.TRANSACTION_COMMIT));
     }
 
     /**
@@ -94,22 +85,6 @@ public class FilePlanType implements RecordsManagementModel,
 	@Override
 	public void onCreateNode(ChildAssociationRef assoc) 
 	{
-		// grab the newly created file plan
-		NodeRef filePlan = assoc.getChildRef();
-		
-		// create the properties map
-		Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-		properties.put(ContentModel.PROP_NAME, NAME_NR_CONTAINER);
-		
-		// create the 'new records' folder
-		NodeRef container = nodeService.createNode(
-						filePlan, 
-						ASSOC_NEW_RECORDS, 
-						QName.createQName(RM_URI, NAME_NR_CONTAINER), 
-						TYPE_NEW_RECORDS_CONTAINER,
-						properties).getChildRef();
-		
-		// set inheritance to false
-		permissionService.setInheritParentPermissions(container, false);		
+	    // TODO refactor the file plan behaviours from the service code
 	} 
 }

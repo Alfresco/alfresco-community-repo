@@ -31,6 +31,9 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * @author Roy Wetherall
@@ -42,10 +45,11 @@ public class RMSecurityCommon
     
     private static Log logger = LogFactory.getLog(RMSecurityCommon.class);
     
+    private ApplicationContext applicationContext;
+    
     protected NodeService nodeService;
     protected PermissionService permissionService;
     protected RecordsManagementService rmService;
-    protected RecordService recordService;
     protected RMCaveatConfigComponent caveatConfigComponent;
     
     public void setNodeService(NodeService nodeService)
@@ -61,11 +65,6 @@ public class RMSecurityCommon
     public void setRecordsManagementService(RecordsManagementService rmService)
     {
         this.rmService = rmService;
-    }
-    
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
     }
     
     public void setCaveatConfigComponent(RMCaveatConfigComponent caveatConfigComponent)

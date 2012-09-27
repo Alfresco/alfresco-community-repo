@@ -25,6 +25,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Record Service Interface.
  * 
  * @author Roy Wetherall
  * @since 2.1

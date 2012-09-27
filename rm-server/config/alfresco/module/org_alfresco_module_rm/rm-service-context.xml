@@ -67,6 +67,7 @@
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isFilePlanComponent=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlanComponentKind=ACL_NODE.0.sys:base.ReadProperties, RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlanComponentKindFromType=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordsManagementContainer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isFilePlan=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordCategory=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordFolder=RM.Read.0
@@ -480,7 +481,12 @@
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.createRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.updateRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deleteRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW                     
+                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW    
+                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getExtendedReaders=RM_ALLOW 
+                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.setExtendedReaders=RM_ALLOW 
+				org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.removeExtendedReaders=RM_ALLOW 
+    			org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.removeAllExtendedReaders=RM_ALLOW   
+    			org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.*=RM_DENY             
                 ]]>
             </value>
         </property>

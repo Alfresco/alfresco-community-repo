@@ -270,31 +270,6 @@ public class CreateUserWizard extends BaseWizardBean
         this.sizeQuotaUnits = "";
     }
     
-    @Override
-    public String next()
-    {
-       String stepName = Application.getWizardManager().getCurrentStepName();
-       
-       if ("summary".equals(stepName))
-       {
-           FacesContext context = FacesContext.getCurrentInstance();
-           
-           if (! this.password.equals(this.confirm))
-           {
-               Utils.addErrorMessage(Application.getMessage(context, UsersDialog.ERROR_PASSWORD_MATCH));
-           }
-          
-           checkTenantUserName();
-           
-           if (context.getMessages().hasNext())
-           {
-               Application.getWizardManager().getState().setCurrentStep(Application.getWizardManager().getCurrentStep() - 1);
-           }
-       }
-       
-       return super.next();
-    }
-    
     /**
      * @return Returns the summary data for the wizard.
      */
@@ -594,16 +569,19 @@ public class CreateUserWizard extends BaseWizardBean
 
     /**
      * Validate password field data is acceptable
+     * 
+     * @deprecated Method is never used
      */
     public void validatePassword(FacesContext context, UIComponent component, Object value) throws ValidatorException
     {
         int minPasswordLength = Application.getClientConfig(context).getMinPasswordLength();
+        int maxPasswordLength = Application.getClientConfig(context).getMaxPasswordLength();
         
         String pass = (String)value;
-        if (pass.length() < minPasswordLength || pass.length() > 256)
+        if (pass.length() < minPasswordLength || pass.length() > maxPasswordLength)
         {
             String err = MessageFormat.format(Application.getMessage(context, LoginBean.MSG_PASSWORD_LENGTH),
-                    new Object[]{minPasswordLength, 256});
+                    new Object[]{minPasswordLength, maxPasswordLength});
             throw new ValidatorException(new FacesMessage(err));
         }
     }
@@ -626,6 +604,19 @@ public class CreateUserWizard extends BaseWizardBean
         {
             String err = MessageFormat.format(Application.getMessage(context, LoginBean.MSG_USER_ERR),
                     new Object[]{"\", \\"});
+            throw new ValidatorException(new FacesMessage(err));
+        }
+        
+        try
+        {
+            name = PersonServiceImpl.updateUsernameForTenancy(
+                    name, getTenantService()
+            );
+        }
+        catch(TenantDomainMismatchException e)
+        {
+            String err = MessageFormat.format(Application.getMessage(FacesContext.getCurrentInstance(),
+                    ERROR_DOMAIN_MISMATCH), e.getTenantA(), e.getTenantB());
             throw new ValidatorException(new FacesMessage(err));
         }
     }

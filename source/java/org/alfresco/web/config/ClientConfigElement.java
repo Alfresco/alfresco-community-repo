@@ -75,6 +75,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private List<QName> simpleSearchAdditionalAttributes = null;
    private int minUsernameLength = 2;
    private int minPasswordLength = 3;
+   private int maxPasswordLength = 255;
    private int minGroupNameLength = 3;
    private String breadcrumbMode = BREADCRUMB_PATH;
    private String cifsURLSuffix = null;
@@ -278,6 +279,11 @@ public class ClientConfigElement extends ConfigElementAdapter
       if (newElement.getMinPasswordLength() != combinedElement.getMinPasswordLength())
       {
          combinedElement.setMinPasswordLength(newElement.getMinPasswordLength());
+      }
+
+      if (newElement.getMaxPasswordLength() != combinedElement.getMaxPasswordLength())
+      {
+         combinedElement.setMaxPasswordLength(newElement.getMaxPasswordLength());
       }
 
       if (newElement.getMinGroupNameLength() != combinedElement.getMinGroupNameLength())
@@ -767,6 +773,22 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setMinPasswordLength(int minPasswordLength)
    {
       this.minPasswordLength = minPasswordLength;
+   }
+
+   /**
+    * @return Returns the maximum length for a password.
+    */
+   public int getMaxPasswordLength()
+   {
+       return this.maxPasswordLength;
+   }
+
+   /**
+    * @param maxPasswordLength The maximum length of a password
+    */
+   public void setMaxPasswordLength(int maxPasswordLength)
+   {
+       this.maxPasswordLength = maxPasswordLength;
    }
 
    /**

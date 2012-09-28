@@ -63,7 +63,7 @@
       <td>
          </f:verbatim>
             <h:inputSecret id="password" value="#{UsersBeanProperties.password}"
-                           size="35" maxlength="255" validator="#{LoginBean.validatePassword}"
+                           size="35" validator="#{LoginBean.validatePassword}"
                            onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>&nbsp;*
             &nbsp;</f:verbatim><h:message id="errors1" for="password" style="color:red" /><f:verbatim></td>
    </tr>
@@ -72,8 +72,10 @@
       <td>
          </f:verbatim>
             <h:inputSecret id="confirm" value="#{UsersBeanProperties.confirm}"
-                           size="35" maxlength="255" validator="#{LoginBean.validatePassword}"
-                           onkeyup="updateButtonState();" onchange="updateButtonState();" /><f:verbatim>&nbsp;*
+                           size="35" validator="#{LoginBean.validateMatch}"
+                           onkeyup="updateButtonState();" onchange="updateButtonState();" >
+               <f:attribute name="passwd1Id" value="dialog:dialog-body:password" />
+            </h:inputSecret><f:verbatim>&nbsp;*
             &nbsp;</f:verbatim><h:message id="errors2" for="confirm" style="color:red" /><f:verbatim></td>
    </tr>
 </table>

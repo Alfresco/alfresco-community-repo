@@ -98,17 +98,19 @@ function validate()
 <h:panelGrid columns="4" cellpadding="2" cellspacing="2" width="100%">
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.username}:"/>
-   <h:inputText id="userName" value="#{WizardManager.bean.userName}" size="35" maxlength="100" validator="#{LoginBean.validateUsername}" onkeyup="updateButtonState();" onchange="updateButtonState();"/>
+   <h:inputText id="userName" value="#{WizardManager.bean.userName}" size="35" maxlength="100" validator="#{WizardManager.bean.validateUsername}" onkeyup="updateButtonState();" onchange="updateButtonState();"/>
    <h:message id="errors1" for="userName" style="color:red" />
    
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.password}:"/>
-   <h:inputSecret id="password" value="#{WizardManager.bean.password}" size="35" maxlength="100" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" />
+   <h:inputSecret id="password" value="#{WizardManager.bean.password}" size="35" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" />
    <h:message id="errors2" for="password" style="color:red" />
    
    <h:graphicImage value="/images/icons/required_field.gif" alt="#{msg.required_field}" />
    <h:outputText value="#{msg.confirm}:"/>
-   <h:inputSecret id="confirm" value="#{WizardManager.bean.confirm}" size="35" maxlength="100" validator="#{LoginBean.validatePassword}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true" />
+   <h:inputSecret id="confirm" value="#{WizardManager.bean.confirm}" size="35" validator="#{LoginBean.validateMatch}" onkeyup="updateButtonState();" onchange="updateButtonState();" redisplay="true">
+      <f:attribute name="passwd1Id" value="wizard:wizard-body:password" />
+   </h:inputSecret>
    <h:message id="errors3" for="confirm" style="color:red" />
 </h:panelGrid>
 

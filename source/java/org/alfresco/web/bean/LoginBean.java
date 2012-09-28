@@ -27,6 +27,7 @@ import java.util.Map;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 
@@ -44,6 +45,7 @@ import org.alfresco.web.app.servlet.AuthenticationHelper;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.bean.users.UserPreferencesBean;
+import org.alfresco.web.bean.users.UsersDialog;
 import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
@@ -263,18 +265,42 @@ public class LoginBean implements Serializable
    // Validator methods
 
    /**
+    *  Validate that field "confirm" matches to the field "password" 
+    */
+   public void validateMatch(FacesContext context, UIComponent component, Object value)
+         throws ValidatorException
+   {
+       String confirm = (String)value;
+       
+       String field1Id = (String) component.getAttributes().get("passwd1Id");
+       UIInput passComponent = (UIInput) context.getViewRoot().findComponent(field1Id);
+       String pass = (String) passComponent.getSubmittedValue();
+       if (pass == null)
+       {
+           pass = (String) passComponent.getValue();
+       }
+       
+       if (!pass.equals(confirm))
+       {
+           String err = Application.getMessage(context, UsersDialog.ERROR_PASSWORD_MATCH);
+           throw new ValidatorException(new FacesMessage(err));
+       }
+   }
+
+   /**
     * Validate password field data is acceptable
     */
    public void validatePassword(FacesContext context, UIComponent component, Object value)
          throws ValidatorException
    {
       int minPasswordLength = Application.getClientConfig(context).getMinPasswordLength();
+      int maxPasswordLength = Application.getClientConfig(context).getMaxPasswordLength();
       
       String pass = (String)value;
-      if (pass.length() < minPasswordLength || pass.length() > 256)
+      if (pass.length() < minPasswordLength || pass.length() > maxPasswordLength)
       {
          String err = MessageFormat.format(Application.getMessage(context, MSG_PASSWORD_LENGTH),
-               new Object[]{minPasswordLength, 256});
+               new Object[]{minPasswordLength, maxPasswordLength});
          throw new ValidatorException(new FacesMessage(err));
       }
    }

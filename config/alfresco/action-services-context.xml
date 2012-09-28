@@ -94,7 +94,10 @@
         </property>        
         <property name="dictionaryService">
             <ref bean="DictionaryService" />
-        </property> 
+        </property>
+        <property name="monitor">
+            <ref bean="actionServiceMonitor"/>
+        </property>
         
         <property name="asynchronousActionExecutionQueues">
             <map>
@@ -124,6 +127,9 @@
             <ref bean="executingActionsCache" />
         </property>         
     </bean>
+    
+   <!-- Running Actions monitor -->
+   <bean id="actionServiceMonitor" class="org.alfresco.repo.action.ActionServiceMonitor"/>
 
    <!-- JavaScript API support for action tracking -->
    <bean id="actionTrackingServiceScript" parent="baseJavaScriptExtension"

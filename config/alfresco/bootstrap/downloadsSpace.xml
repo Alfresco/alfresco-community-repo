@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+   xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0"
+   xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns="">
+
+   <sys:container view:childName="${system.downloads_container.childname}">
+      <view:properties>
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <sys:node-uuid>downloads_container</sys:node-uuid>
+         <cm:name>${spaces.downloads.root.name}</cm:name>
+         <cm:title>${spaces.downloads.root.name}</cm:title>
+         <cm:description>${spaces.downloads.root.description}</cm:description>
+      </view:properties>
+
+      <!-- By default, anyone can add children (new downloads) -->
+      <!--  but not read, edit or delete other's sync sets -->
+      <view:acl view:inherit="false">
+          <view:ace view:access="ALLOWED">
+              <view:authority>GROUP_EVERYONE</view:authority>
+              <view:permission>AddChildren</view:permission>
+          </view:ace>
+          <view:ace view:access="ALLOWED">
+              <view:authority>ROLE_OWNER</view:authority>
+              <view:permission>FullControl</view:permission>
+          </view:ace>
+      </view:acl>
+   </sys:container>
+
+</view:view>
+      

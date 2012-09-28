@@ -407,6 +407,7 @@
                 <prop key="spaces.nodetemplates.childname">${spaces.nodetemplates.childname}</prop>
                 <prop key="system.remote_credentials_container.childname">${system.remote_credentials_container.childname}</prop>
                 <prop key="system.syncset_definition_container.childname">${system.syncset_definition_container.childname}</prop>
+                <prop key="system.downloads_container.childname">${system.downloads_container.childname}</prop>
             </props>
         </property>
     </bean>
@@ -699,6 +700,11 @@
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                </props>
 
+                <props>
+                    <prop key="path">/${system.system_container.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/downloadsSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
             </list>
         </property>
     </bean>

@@ -108,6 +108,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     private AuthenticationContext authenticationContext;
     private ActionTrackingService actionTrackingService;
     private PolicyComponent policyComponent;
+    private ActionServiceMonitor monitor;
 
     /**
      * The asynchronous action execution queues map of name, queue
@@ -200,6 +201,14 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
+    }
+    
+    /**
+     * @param monitor used to monitor running actions and execution times
+     */
+    public void setMonitor(ActionServiceMonitor monitor)
+    {
+        this.monitor = monitor;
     }
 
     /**
@@ -706,8 +715,22 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                             actionTrackingService.recordActionExecuting(action);
                         }
 
-                        // Execute the action
-                        directActionExecution(action, actionedUponNodeRef);
+                        RunningAction runningAction = monitor.actionStarted(action);
+
+                        try
+                        {
+                            // Execute the action
+                            directActionExecution(action, actionedUponNodeRef);
+                        }
+                        catch (Throwable e)
+                        {
+                            runningAction.setException(e);
+                            throw e;
+                        }
+                        finally
+                        {
+                            monitor.actionCompleted(runningAction);
+                        }
                         
                         if (getTrackStatus(action))
                         {

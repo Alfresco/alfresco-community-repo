@@ -95,6 +95,9 @@ Inbound settings from iBatis
         <!-- Discussions CQ -->
         <typeAlias alias="NodeWithChildrenEntity" type="org.alfresco.repo.discussion.cannedqueries.NodeWithChildrenEntity"/>
         
+        <!-- Downloads CQ -->
+        <typeAlias alias="Download" type="org.alfresco.repo.download.cannedquery.DownloadEntity"/>
+        
         <!-- Patch -->
         
         <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
@@ -222,6 +225,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-blogs-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-calendar-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-copy-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-downloads-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-discussion-common-SqlMap.xml"/>
     </mappers>
     

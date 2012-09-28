@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- Bootstrap the Sync model -->
+    <bean id="downloadDictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/downloadModel.xml</value>
+            </list>
+        </property>
+    </bean>
+ 
+   <!-- Transaction Interceptors for the Calendar Service -->
+   <bean id="downloadServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getDownloadStatus</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="downloadServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>cancelDownload</value>
+                <value>createDownload</value>
+                <value>deleteDownloads</value>
+            </list>
+        </property>
+    </bean>
+
+
+   <!-- Download Service -->
+   <bean id="DownloadService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.download.DownloadService</value>
+      </property>
+      <property name="target">
+         <ref bean="downloadService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="downloadServiceReadTxnAdvisor" />
+            <idref bean="downloadServiceWriteTxnAdvisor" />
+            <idref bean="checkTxnAdvisor" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref bean="DownloadService_security" />
+         </list>
+      </property>
+   </bean>
+   
+   <bean id="downloadCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+      <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
+
+   <bean name="downloadGetDownloadsCannedQueryFactory" class="org.alfresco.repo.download.cannedquery.GetDownloadsCannedQueryFactory">
+       <property name="registry" ref="downloadCannedQueryRegistry"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="methodSecurity" ref="DownloadService_security_deleteDownloads"/>
+   </bean>
+
+   <bean id="downloadStorage" class="org.alfresco.repo.download.DownloadStorage">
+      <property name="importerBootstrap" ref="spacesBootstrap"/>
+      <property name="repositoryHelper" ref="repositoryHelper"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="queryRegistry" ref="downloadCannedQueryRegistry"/>
+   </bean>	
+
+
+   <bean id="downloadStatusUpdateService" class="org.alfresco.repo.download.DownloadStatusUpdateServiceImpl">
+	  <property name="storage" ref="downloadStorage" />
+   </bean>
+
+   <bean id="downloadContentServiceHelper" class="org.alfresco.repo.download.LocalContentServiceHelper">
+      <property name="contentService" ref="contentService"/>
+   </bean>
+   
+   <bean id="createDownloadArchiveAction" class="org.alfresco.repo.download.CreateDownloadArchiveAction" parent="action-executer">
+      <property name="checkOutCheckInSerivce" ref="checkOutCheckInService"/>
+      <property name="contentServiceHelper" ref="downloadContentServiceHelper" />
+	  <property name="downloadStorage" ref="downloadStorage" />
+	  <property name="exporterService" ref="exporterComponent" />
+	  <property name="maximumContentSize" value="${download.maxContentSize}" />
+	  <property name="nodeService" ref="nodeService" />
+	  <property name="publicAction" value="false"/>
+      <property name="transactionHelper" ref="retryingTransactionHelper"/>
+	  <property name="updateService" ref="downloadStatusUpdateService"/>
+   </bean>
+   
+   <bean id="downloadActionServiceHelper" class="org.alfresco.repo.download.LocalActionServiceHelper">
+      <property name="localActionService" ref="actionService"/>
+   </bean>
+   
+   <bean id="downloadService" class="org.alfresco.repo.download.DownloadServiceImpl">
+      <property name="actionServiceHelper" ref="downloadActionServiceHelper"/>
+      <property name="downloadStorage" ref="downloadStorage"/>
+      <property name="transactionHelper" ref="retryingTransactionHelper"/>
+   </bean>
+   
+      <bean id="downloadCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.download.DownloadsCleanupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="downloadService" value-ref="DownloadService" />
+                <entry key="tenantAdminService" value-ref="tenantAdminService"/>
+                <entry key="maxAgeInMinutes" value="${download.cleaner.maxAgeMins}"/>
+                
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="downloadCleanerTrigger" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <ref bean="downloadCleanerJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="startDelayMinutes">
+            <value>${download.cleaner.startDelayMins}</value>
+        </property>
+        <property name="repeatIntervalMinutes">
+            <value>${download.cleaner.repeatIntervalMins}</value>
+        </property>
+    </bean>
+</beans>

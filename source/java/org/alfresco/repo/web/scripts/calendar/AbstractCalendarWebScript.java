@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts.calendar;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -66,6 +67,8 @@ import org.springframework.extensions.webscripts.json.JSONWriter;
  */
 public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
 {
+    private static final String ALL_DAY_DATETIME_PATTERN = "yyyy-MM-dd'T00:00:00.000'";
+
     private static final DateTimeFormatter ALL_DAY_DATETIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd'T00:00:00.000'");
 
     public static final String CALENDAR_SERVICE_ACTIVITY_APP_NAME = "calendar";
@@ -520,17 +523,31 @@ public abstract class AbstractCalendarWebScript extends DeclarativeWebScript
      */
     protected String removeTimeZoneIfRequired(Date date, Boolean isAllDay, Boolean removeTimezone, String datePattern)
     {
-        DateTime dateTime = (removeTimezone) ? (new DateTime(date, DateTimeZone.UTC)) : (new DateTime(date));
+        if (removeTimezone)
+        {
+            DateTime dateTime = new DateTime(date, DateTimeZone.UTC);
 
-        if (null == datePattern)
-        {
-            return dateTime.toString((isAllDay) ? (ALL_DAY_DATETIME_FORMATTER) : (ISODateTimeFormat.dateTime()));
+            if (null == datePattern)
+            {
+                return dateTime.toString((isAllDay) ? (ALL_DAY_DATETIME_FORMATTER) : (ISODateTimeFormat.dateTime()));
+            }
+            else
+            {
+                // For Legacy Dates and Times.
+                return dateTime.toString(DateTimeFormat.forPattern(datePattern));
+            }
         }
-        else
+
+        // This is for all other cases, including the case, when UTC time zone is configured
+
+        if (!isAllDay && (null == datePattern))
         {
-            // For Legacy Dates and Times.
-            return dateTime.toString(DateTimeFormat.forPattern(datePattern));
+            return ISO8601DateFormat.format(date);
         }
+
+        DateFormat simpleDateFormat = new SimpleDateFormat((null != datePattern) ? (datePattern) : (ALL_DAY_DATETIME_PATTERN));
+
+        return simpleDateFormat.format(date);
     }
 
     protected abstract Map<String, Object> executeImpl(SiteInfo site, 

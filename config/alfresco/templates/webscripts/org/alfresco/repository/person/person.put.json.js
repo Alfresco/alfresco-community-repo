@@ -34,7 +34,58 @@ function main()
    {
       person.properties["jobtitle"] = json.get("jobtitle");
    }
-   
+   if (!json.isNull("location")) 
+   { 
+      person.properties["location"] = json.get("location"); 
+   } 
+   if (!json.isNull("telephone")) 
+   { 
+      person.properties["telephone"] = json.get("telephone"); 
+   } 
+   if (!json.isNull("mobile")) 
+   { 
+      person.properties["mobile"] = json.get("mobile"); 
+   } 
+   if (!json.isNull("companyaddress1")) 
+   { 
+      person.properties["companyaddress1"] = json.get("companyaddress1"); 
+   } 
+   if (!json.isNull("companyaddress2")) 
+   { 
+      person.properties["companyaddress2"] = json.get("companyaddress2"); 
+   } 
+   if (!json.isNull("companyaddress3")) 
+   { 
+      person.properties["companyaddress3"] = json.get("companyaddress3"); 
+   } 
+   if (!json.isNull("companypostcode")) 
+   { 
+      person.properties["companypostcode"] = json.get("companypostcode"); 
+   } 
+   if (!json.isNull("companytelephone")) 
+   { 
+      person.properties["companytelephone"] = json.get("companytelephone"); 
+   } 
+   if (!json.isNull("companyfax")) 
+   { 
+      person.properties["companyfax"] = json.get("companyfax"); 
+   } 
+   if (!json.isNull("companyemail")) 
+   { 
+      person.properties["companyemail"] = json.get("companyemail"); 
+   } 
+   if (!json.isNull("skype")) 
+   { 
+      person.properties["skype"] = json.get("skype"); 
+   } 
+   if (!json.isNull("instantmsg")) 
+   { 
+      person.properties["instantmsg"] = json.get("instantmsg"); 
+   } 
+   if (!json.isNull("persondescription")) 
+   { 
+      person.properties["persondescription"] = json.get("persondescription"); 
+   } 
    // Update the person node with the modified details
    person.save();
    

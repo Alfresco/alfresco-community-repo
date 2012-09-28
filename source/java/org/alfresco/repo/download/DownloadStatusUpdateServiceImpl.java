@@ -20,7 +20,6 @@ package org.alfresco.repo.download;
 
 import org.alfresco.service.cmr.download.DownloadStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.mockito.internal.progress.SequenceNumber;
 
 /**
  * Implementation class responsible for update the status of a download node. 

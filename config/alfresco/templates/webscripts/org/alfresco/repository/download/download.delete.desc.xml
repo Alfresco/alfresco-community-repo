@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Cancel a Download</shortname>
+   <description>Cancel a Dwonload</description>
+   <url>/api/internal/downloads/{store_type}/{store_id}/{node_id}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readwrite"/>
+   <lifecycle>internal</lifecycle>
+</webscript>

@@ -1890,5 +1890,30 @@
     </bean>
     
     <!-- END: QuickShare (aka PublicView) -->
-   
+
+    <!-- BEGIN: Download -->
+
+    <bean id="org.alfresco.repository.download.abstract" class="org.alfresco.repo.web.scripts.download.AbstractDownloadWebScript" abstract="true">
+        <property name="downloadService" ref="DownloadService"/>   
+    </bean>
+
+    <!-- authenticated -->
+    <bean id="webscript.org.alfresco.repository.download.downloads.post" 
+          class="org.alfresco.repo.web.scripts.download.DownloadPost"
+          parent="org.alfresco.repository.download.abstract"> 
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.download.download.delete" 
+          class="org.alfresco.repo.web.scripts.download.DownloadDelete"
+          parent="org.alfresco.repository.download.abstract"> 
+        <property name="nodeService" ref="NodeService"/>   
+    </bean>
+
+    <bean id="webscript.org.alfresco.repository.download.downloadStatus.get" 
+          class="org.alfresco.repo.web.scripts.download.DownloadStatusGet"
+          parent="org.alfresco.repository.download.abstract"> 
+        <property name="nodeService" ref="NodeService"/>   
+    </bean>
+
+    <!-- END: Download -->
 </beans>

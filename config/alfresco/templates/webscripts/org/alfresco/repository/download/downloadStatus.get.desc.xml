@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Get Download Status</shortname>
+   <description>Get Download Status</description>
+   <url>/api/internal/downloads/{store_type}/{store_id}/{node_id}/status</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly"/>
+   <lifecycle>internal</lifecycle>
+</webscript>

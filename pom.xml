@@ -536,12 +536,12 @@
         <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-engine</artifactId>
-            <version>5.7-20120621</version>
+            <version>${dependency.activiti.version}</version>
         </dependency>
         <dependency>
             <groupId>org.activiti</groupId>
             <artifactId>activiti-spring</artifactId>
-            <version>5.7-20120621</version>
+            <version>${dependency.activiti.version}</version>
         </dependency>
 
         <!-- Test dependencies -->

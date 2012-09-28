@@ -172,6 +172,7 @@
              <ref bean="patch.db-V4.1-NodeDeleted" />
              <ref bean="patch.db-V4.1-increase-column-size-activiti" />
              <ref bean="patch.db-V4.1-remove-column-activiti" />
+             <ref bean="patch.db-V4.2-upgrade-to-activiti-5.10" />
           </list>
        </property>
     </bean>

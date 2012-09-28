@@ -787,7 +787,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         String dialectStr = dialect.getClass().getSimpleName();
 
         // Initialise Activiti DB, using an unclosable connection
-        initialiseActivitiDBSchema(new UnclosableConnection(connection));
+        if(create)
+        {
+        	// Activiti DB updates are performed as patches in alfresco, only give
+        	// control to activiti when creating new one.
+        	initialiseActivitiDBSchema(new UnclosableConnection(connection));
+        }
         
         if (create)
         {
@@ -875,8 +880,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
     
     /**
-     * Initialises the Activiti DB schema, if not present it's created, if
-     * present it is upgraded appropriately if necessary.
+     * Initialises the Activiti DB schema, if not present it's created.
      * 
      * @param connection Connection to use the initialise DB schema
      */

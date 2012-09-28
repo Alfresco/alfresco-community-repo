@@ -224,4 +224,70 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
         this.tenantService = tenantService;
     }
 
+	@Override
+	public void parseInclusiveGateway(Element inclusiveGwElement,
+			ScopeImpl scope, ActivityImpl activity) {
+		// Nothing to do here		
+	}
+
+	@Override
+	public void parseReceiveTask(Element receiveTaskElement, ScopeImpl scope,
+			ActivityImpl activity) {
+		// Nothing to do here
+	}
+
+	@Override
+	public void parseIntermediateSignalCatchEventDefinition(
+			Element signalEventDefinition, ActivityImpl signalActivity) {
+		// Nothing to do here
+	}
+
+	@Override
+	public void parseIntermediateMessageCatchEventDefinition(
+			Element messageEventDefinition, ActivityImpl nestedActivity) {
+		// Nothing to do here		
+	}
+
+	@Override
+	public void parseBoundarySignalEventDefinition(
+			Element signalEventDefinition, boolean interrupting,
+			ActivityImpl signalActivity) {
+		// Nothing to do here		
+	}
+
+	@Override
+	public void parseEventBasedGateway(Element eventBasedGwElement,
+			ScopeImpl scope, ActivityImpl activity) {
+		// Nothing to do here		
+	}
+
+	@Override
+	public void parseTransaction(Element transactionElement, ScopeImpl scope,
+			ActivityImpl activity) {
+		// Nothing to do here		
+	}
+
+	@Override
+	public void parseCompensateEventDefinition(
+			Element compensateEventDefinition, ActivityImpl compensationActivity) {
+		// Nothing to do here		
+	}
+
+	@Override
+	public void parseIntermediateThrowEvent(Element intermediateEventElement,
+			ScopeImpl scope, ActivityImpl activity) {
+		// Nothing to do here		
+	}
+
+	@Override
+	public void parseIntermediateCatchEvent(Element intermediateEventElement,
+			ScopeImpl scope, ActivityImpl activity) {
+		// Nothing to do here		
+	}
+
+	@Override
+	public void parseBoundaryEvent(Element boundaryEventElement,
+			ScopeImpl scopeElement, ActivityImpl nestedActivity) {
+		// Nothing to do here		
+	}
 }

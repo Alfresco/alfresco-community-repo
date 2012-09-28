@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.alfresco.org/repo/db-schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.alfresco.org/repo/db-schema db-schema.xsd" name="" dbprefix="act_" version="5026">
+<schema xmlns="http://www.alfresco.org/repo/db-schema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.alfresco.org/repo/db-schema db-schema.xsd" name="" dbprefix="act_" version="6019">
   <validators>
     <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
       <properties>
@@ -33,6 +33,11 @@
         </column>
         <column name="BYTES_" order="5">
           <type>longblob</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="GENERATED_" order="6">
+          <type>tinyint</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -491,43 +496,53 @@
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="CATEGORY_" order="2">
-          <type>varchar(255)</type>
-          <nullable>true</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="NAME_" order="3">
-          <type>varchar(255)</type>
-          <nullable>true</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="KEY_" order="4">
-          <type>varchar(255)</type>
-          <nullable>true</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="VERSION_" order="5">
+        <column name="REV_" order="2">
           <type>int</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="DEPLOYMENT_ID_" order="6">
+        <column name="CATEGORY_" order="3">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="NAME_" order="4">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="KEY_" order="5">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="VERSION_" order="6">
+          <type>int</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="DEPLOYMENT_ID_" order="7">
           <type>varchar(64)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="RESOURCE_NAME_" order="7">
+        <column name="RESOURCE_NAME_" order="8">
           <type>varchar(4000)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="DGRM_RESOURCE_NAME_" order="8">
+        <column name="DGRM_RESOURCE_NAME_" order="9">
           <type>varchar(4000)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="HAS_START_FORM_KEY_" order="9">
+        <column name="HAS_START_FORM_KEY_" order="10">
           <type>tinyint</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="SUSPENSION_STATE_" order="11">
+          <type>int</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -538,7 +553,87 @@
         </columnnames>
       </primarykey>
       <foreignkeys/>
-      <indexes/>
+      <indexes>
+        <index name="ACT_UNIQ_PROCDEF" unique="true">
+          <columnnames>
+            <columnname>KEY_</columnname>
+            <columnname>VERSION_</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="ACT_RU_EVENT_SUBSCR">
+      <columns>
+        <column name="ID_" order="1">
+          <type>varchar(64)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="REV_" order="2">
+          <type>int</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="EVENT_TYPE_" order="3">
+          <type>varchar(255)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="EVENT_NAME_" order="4">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="EXECUTION_ID_" order="5">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="PROC_INST_ID_" order="6">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="ACTIVITY_ID_" order="7">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="CONFIGURATION_" order="8">
+          <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="CREATED_" order="9">
+          <type>timestamp</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+      </columns>
+      <primarykey name="PRIMARY">
+        <columnnames>
+          <columnname order="1">ID_</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="ACT_FK_EVENT_EXEC">
+          <localcolumn>EXECUTION_ID_</localcolumn>
+          <targettable>act_ru_execution</targettable>
+          <targetcolumn>ID_</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="ACT_IDX_EVENT_SUBSCR_CONFIG_" unique="false">
+          <columnnames>
+            <columnname>CONFIGURATION_</columnname>
+          </columnnames>
+        </index>
+        <index name="ACT_FK_EVENT_EXEC" unique="false">
+          <columnnames>
+            <columnname>EXECUTION_ID_</columnname>
+          </columnnames>
+        </index>
+      </indexes>
     </table>
     <table name="ACT_RU_EXECUTION">
       <columns>
@@ -594,6 +689,21 @@
         </column>
         <column name="IS_SCOPE_" order="11">
           <type>tinyint</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="IS_EVENT_SCOPE_" order="12">
+          <type>tinyint</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="SUSPENSION_STATE_" order="13">
+          <type>int</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="CACHED_ENT_STATE_" order="14">
+          <type>int</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -681,6 +791,11 @@
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
+        <column name="PROC_DEF_ID_" order="7">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
       </columns>
       <primarykey name="PRIMARY">
         <columnnames>
@@ -688,6 +803,11 @@
         </columnnames>
       </primarykey>
       <foreignkeys>
+        <foreignkey name="ACT_FK_ATHRZ_PROCEDEF">
+          <localcolumn>PROC_DEF_ID_</localcolumn>
+          <targettable>act_re_procdef</targettable>
+          <targetcolumn>ID_</targetcolumn>
+        </foreignkey>
         <foreignkey name="ACT_FK_TSKASS_TASK">
           <localcolumn>TASK_ID_</localcolumn>
           <targettable>ACT_RU_TASK</targettable>
@@ -703,6 +823,11 @@
         <index name="ACT_IDX_IDENT_LNK_GROUP" unique="false">
           <columnnames>
             <columnname>GROUP_ID_</columnname>
+          </columnnames>
+        </index>
+        <index name="ACT_IDX_ATHRZ_PROCEDEF" unique="false">
+          <columnnames>
+            <columnname>PROC_DEF_ID_</columnname>
           </columnnames>
         </index>
         <index name="ACT_FK_TSKASS_TASK" unique="false">
@@ -1284,6 +1409,11 @@
         </column>
         <column name="SUPER_PROCESS_INSTANCE_ID_" order="11">
           <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="DELETE_REASON_" order="12">
+          <type>varchar(4000)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>

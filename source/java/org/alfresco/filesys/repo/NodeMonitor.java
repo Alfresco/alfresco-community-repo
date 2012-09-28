@@ -713,6 +713,10 @@ public class NodeMonitor extends TransactionListenerAdapter
 				// Mark the file/folder as no longer existing
 				
 				fState.setFileStatus(FileStatus.NotExist);
+				fState.setAllocationSize(0);
+				fState.setOpenCount(0);
+				
+				// What about oplocks that are on the deleted file?
 				
 				// DEBUG
 				

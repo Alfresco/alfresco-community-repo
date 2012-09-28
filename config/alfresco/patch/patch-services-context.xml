@@ -3372,7 +3372,7 @@
         </property>
     </bean>
     
-        <bean id="patch.db-V4.2-upgrade-to-activiti-5.10" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V4.2-upgrade-to-activiti-5.10" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V4.2-upgrade-to-activiti-5.10</value></property>
         <property name="description"><value>patch.upgradeToActiviti5-10.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>

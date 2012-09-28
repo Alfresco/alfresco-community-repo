@@ -38,6 +38,8 @@ import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.jlan.server.filesys.cache.NetworkFileStateInterface;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
+import org.alfresco.jlan.server.locking.OpLockInterface;
+import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.jlan.smb.SharingMode;
 import org.alfresco.model.ContentModel;
 import org.alfresco.util.PropertyCheck;
@@ -295,6 +297,21 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
         
         try
         {
+            if ( param.hasOpLock()) {
+                
+                // Release the oplock
+                
+                OpLockInterface flIface = (OpLockInterface) this;
+                OpLockManager oplockMgr = flIface.getOpLockManager(sess, tree);
+                
+                oplockMgr.releaseOpLock( param.getOpLock().getPath());
+
+                //  DEBUG
+                
+                if ( logger.isDebugEnabled())
+                  logger.debug("Released oplock for closed file, file=" + param.getFullName());
+            }
+
             diskInterface.closeFile(sess, tree, param);
 
             if(tctx.hasStateCache())
@@ -366,7 +383,21 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
     public void deleteFile(SrvSession sess, TreeConnection tree, String name)
             throws IOException
     {
+        ContentContext tctx = (ContentContext) tree.getContext();
+
         diskInterface.deleteFile(sess, tree, name);
+        
+        if(tctx.hasStateCache())
+        {
+            FileStateCache cache = tctx.getStateCache();
+            FileState fstate = cache.findFileState( name, false);
+            
+            if(fstate != null)
+            {
+                fstate.setFileStatus(FileStatus.NotExist);
+                fstate.setOpenCount(0);
+            }
+        }
     }
 
     @Override

@@ -69,14 +69,12 @@ public interface RepositoryDiskInterface
     /**
      * CloseFile.
      * 
-     * @param session // temp until refactor
-     * @param tree // temp until refactor
      * @param rootNode
      * @param fromPath - the source node
      * @param toPath - the target node
      * @throws FileNotFoundException 
      */
-    public void closeFile(SrvSession session, TreeConnection tree, NodeRef rootNode, String Path, NetworkFile file) throws IOException;
+    public void closeFile(NodeRef rootNode, String Path, NetworkFile file) throws IOException;
     
     /**
      * 

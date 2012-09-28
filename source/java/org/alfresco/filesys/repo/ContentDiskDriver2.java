@@ -2715,30 +2715,13 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * 
      * @exception java.io.IOException If an error occurs.
      */
-    public void closeFile(SrvSession session, TreeConnection tree, NodeRef rootNode, String path, NetworkFile file) throws IOException
+    public void closeFile(NodeRef rootNode, String path, NetworkFile file) throws IOException
     {   
         if ( logger.isDebugEnabled())
         {
             logger.debug("Close file:" + path + ", readOnly=" + file.isReadOnly() );
         }
         
-        // Check if there is an oplock on the file
-        
-        if ( file.hasOpLock()) {
-            
-            // Release the oplock
-            
-            OpLockInterface flIface = (OpLockInterface) this;
-            OpLockManager oplockMgr = flIface.getOpLockManager(session, tree);
-            
-            oplockMgr.releaseOpLock( file.getOpLock().getPath());
-
-            //  DEBUG
-            
-            if ( logger.isDebugEnabled())
-              logger.debug("Released oplock for closed file, file=" + file.getFullName());
-        }
-
         if( file instanceof PseudoNetworkFile)
         {
             file.close();

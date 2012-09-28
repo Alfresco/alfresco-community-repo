@@ -223,7 +223,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
             }
             else
             {
-                streamContentLocal(req, res, reference.getNodeRef(), attach, ContentModel.PROP_CONTENT);
+                streamContentLocal(req, res, rendition.getNodeRef(), attach, ContentModel.PROP_CONTENT);
             }
         }
         catch(CMISFilterNotValidException e)

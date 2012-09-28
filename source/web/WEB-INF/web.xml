@@ -103,9 +103,9 @@
    <!-- Activiti context param placeholder -->
 
    <context-param> 
-      <description>Sets "http://apache.org/xml/features/nonvalidating/load-external-dtd" feature on the SAXParser to false if this parameter is false</description> 
       <param-name>com.ibm.ws.jsf.loadExternalDtd</param-name> 
       <param-value>false</param-value> 
+      <description>Sets "http://apache.org/xml/features/nonvalidating/load-external-dtd" feature on the SAXParser to false if this parameter is false</description> 
    </context-param>
    
    <filter>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -104,7 +104,7 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
             {
                 // Note: Don't use the ContentService.getReader() because we don't need access to the content
                 ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-                if (contentData == null || isZeroLengthOfficeDoc(contentData))
+                if (contentData == null)
                 {
                     fail = true;
                 }
@@ -145,24 +145,4 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
             }
         }
     }
-    
-    /**
-     * Indicates whether we are dealing with a zero length office document or not
-     * 
-     * @param contentData        the content details
-     * @return boolean            true if zero length office document, false otherwise                    
-     */
-    private boolean isZeroLengthOfficeDoc(ContentData contentData)
-    {
-        boolean result = false;
-        if (contentData.getSize() == 0 &&
-            (MimetypeMap.MIMETYPE_WORD.equals(contentData.getMimetype()) == true ||
-             MimetypeMap.MIMETYPE_EXCEL.equals(contentData.getMimetype()) == true ||
-             MimetypeMap.MIMETYPE_PPT.equals(contentData.getMimetype()) == true))
-        {
-            result = true;
-        }
-        return result;
-    }
-
 }

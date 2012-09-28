@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -2560,7 +2561,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(newParentRef);
         
         Long nodeToMoveId = nodeToMovePair.getFirst();
-        QName nodeToMoveTypeQName = nodeDAO.getNodeType(nodeToMoveId);
         NodeRef oldNodeToMoveRef = nodeToMovePair.getSecond();
         Long parentNodeId = parentNodePair.getFirst();
         NodeRef parentNodeRef = parentNodePair.getSecond();
@@ -2576,64 +2576,123 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
         ChildAssociationRef oldParentAssocRef = oldParentAssocPair.getSecond();
         
-        // Get the aspects for later use
-        Set<QName> nodeToMoveAspectQNames = nodeDAO.getNodeAspects(nodeToMoveId);
-        
         boolean movingStore = !oldStoreRef.equals(newStoreRef);
-        
-        // Invoke "Before"policy behaviour
-        if (movingStore)
-        {
-            invokeBeforeDeleteNode(nodeToMoveRef);
-            invokeBeforeCreateNode(newParentRef, assocTypeQName, assocQName, nodeToMoveTypeQName);
-        }
-        else
-        {
-            invokeBeforeMoveNode(oldParentAssocRef, newParentRef);
-            invokeBeforeDeleteChildAssociation(oldParentAssocRef);
-        }
-        
-        // Move node under the new parent
-        Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveNodeResult = nodeDAO.moveNode(
-                nodeToMoveId,
-                parentNodeId,
-                assocTypeQName,
-                assocQName);
-        Pair<Long, ChildAssociationRef> newParentAssocPair = moveNodeResult.getFirst();
-        Pair<Long, NodeRef> newNodeToMovePair = moveNodeResult.getSecond();
-        ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
 
-        // Handle indexing differently if it is a store move
         if (movingStore)
         {
-            // The association existed before and the node is moving to a new store
+            // Recursively find primary children of the node to move
+            // TODO: Use NodeHierarchyWalker
+            List<ChildAssociationRef> childAssocs = new LinkedList<ChildAssociationRef>();
+            Map<NodeRef, Long> oldChildNodeIds = new HashMap<NodeRef, Long>(97);
+            findNodeChildrenToMove(nodeToMoveId, newStoreRef, childAssocs, oldChildNodeIds);
+        
+            // Invoke "Before Delete" policy behaviour
+            invokeBeforeDeleteNode(nodeToMoveRef);
+
+            // do the same to the children, preserving parents, types and qnames
+            for (ChildAssociationRef oldChildAssoc : childAssocs)
+            {
+                // Fire before delete policy. Before create policy needs the new parent ref to exist, so will be fired later
+                invokeBeforeDeleteNode(oldChildAssoc.getChildRef());
+            }
+            
+            // Now do the moving and remaining policy firing
+            Map<NodeRef, Pair<Long, NodeRef>> movedNodePairs = new HashMap<NodeRef, Pair<Long,NodeRef>>(childAssocs.size() * 2 + 2);
+            QName childNodeTypeQName = nodeDAO.getNodeType(nodeToMoveId);
+            Set<QName> childNodeAspectQNames = nodeDAO.getNodeAspects(nodeToMoveId);
+            
+            // Fire before create immediately before moving with all parents in place
+            invokeBeforeCreateNode(newParentRef, assocTypeQName, assocQName, childNodeTypeQName);
+
+            // Move node under the new parent
+            Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveNodeResult = nodeDAO.moveNode(
+                        nodeToMoveId,
+                        parentNodeId,
+                        assocTypeQName,
+                        assocQName);
+            Pair<Long, ChildAssociationRef> newParentAssocPair = moveNodeResult.getFirst();
+            movedNodePairs.put(nodeToMoveRef, moveNodeResult.getSecond());
+            ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
+            
+            // Index
             nodeIndexer.indexDeleteNode(oldParentAssocRef);
             nodeIndexer.indexCreateNode(newParentAssocRef);
-        }
-        else
-        {
-            // The node is in the same store and is just having it's child association modified
-            nodeIndexer.indexUpdateChildAssociation(oldParentAssocRef, newParentAssocRef);
-        }
-        
-        // Call behaviours
-        // TODO: Use NodeHierarchyWalker
-        if (movingStore)
-        {
+
             // Propagate timestamps
             propagateTimeStamps(oldParentAssocRef);
             propagateTimeStamps(newParentAssocRef);
 
             // The Node changes NodeRefs, so this is really the deletion of the old node and creation
             // of a node in a new store as far as the clients are concerned.
-            invokeOnDeleteNode(oldParentAssocRef, nodeToMoveTypeQName, nodeToMoveAspectQNames, true);
+            invokeOnDeleteNode(oldParentAssocRef, childNodeTypeQName, childNodeAspectQNames, true);
             invokeOnCreateNode(newParentAssocRef);
             
-            // Pull children to the new store
-            pullNodeChildrenToSameStore(newNodeToMovePair);
+            // do the same to the children, preserving parents, types and qnames
+            for (ChildAssociationRef oldChildAssoc : childAssocs)
+            {
+                NodeRef oldChildNodeRef = oldChildAssoc.getChildRef();
+                Long oldChildNodeId = oldChildNodeIds.get(oldChildNodeRef);
+                NodeRef oldParentNodeRef = oldChildAssoc.getParentRef();
+                Pair<Long, NodeRef> newParentNodePair = movedNodePairs.get(oldParentNodeRef);
+                Long newParentNodeId = newParentNodePair.getFirst();
+
+                childNodeTypeQName = nodeDAO.getNodeType(oldChildNodeId);
+                childNodeAspectQNames = nodeDAO.getNodeAspects(oldChildNodeId);
+
+                // Now that the new parent ref exists, invoke the before create policy
+                invokeBeforeCreateNode(
+                        newParentNodePair.getSecond(),
+                        oldChildAssoc.getTypeQName(),
+                        oldChildAssoc.getQName(),
+                        childNodeTypeQName);
+
+                // Move the node as this gives back the primary parent association
+                try
+                {
+                    moveNodeResult = nodeDAO.moveNode(oldChildNodeId, newParentNodeId, null,null);
+                }
+                catch (NodeExistsException e)
+                {
+                    deleteNode(e.getNodePair().getSecond());
+                    moveNodeResult = nodeDAO.moveNode(oldChildNodeId, newParentNodeId, null,null);
+                }
+                // Move the node as this gives back the primary parent association
+                newParentAssocPair = moveNodeResult.getFirst();
+                movedNodePairs.put(oldChildNodeRef, moveNodeResult.getSecond());
+                ChildAssociationRef newChildAssoc = newParentAssocPair.getSecond();
+                
+                // Index
+                nodeIndexer.indexDeleteNode(oldChildAssoc);
+                nodeIndexer.indexCreateNode(newChildAssoc);
+
+                // Propagate timestamps
+                propagateTimeStamps(newChildAssoc);
+
+                // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
+                invokeOnDeleteNode(oldChildAssoc, childNodeTypeQName, childNodeAspectQNames, true);
+                invokeOnCreateNode(newChildAssoc);
+            }
+            
+            return newParentAssocRef;
         }
         else
         {
+            invokeBeforeMoveNode(oldParentAssocRef, newParentRef);
+
+            invokeBeforeDeleteChildAssociation(oldParentAssocRef);
+
+            // Move node under the new parent
+            Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveNodeResult = nodeDAO.moveNode(
+                    nodeToMoveId,
+                    parentNodeId,
+                    assocTypeQName,
+                    assocQName);
+            Pair<Long, ChildAssociationRef> newParentAssocPair = moveNodeResult.getFirst();
+            ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
+
+            // The node is in the same store and is just having its child association modified
+            nodeIndexer.indexUpdateChildAssociation(oldParentAssocRef, newParentAssocRef);
+
             // Propagate timestamps (watch out for moves within the same folder)
             if (!oldParentAssocRef.getParentRef().equals(newParentAssocRef.getParentRef()))
             {
@@ -2648,22 +2707,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
             invokeOnCreateChildAssociation(newParentAssocRef, false);
             invokeOnDeleteChildAssociation(oldParentAssocRef);
-            invokeOnMoveNode(oldParentAssocRef, newParentAssocRef);
+            invokeOnMoveNode(oldParentAssocRef, newParentAssocRef);            
+
+            // Done
+            return newParentAssocRef;
         }
-        
-        // Done
-        return newParentAssocRef;
     }
     
-    /**
-     * This process is less invasive than the <b>move</b> method as the child associations
-     * do not need to be remade.
-     */
-    private void pullNodeChildrenToSameStore(Pair<Long, NodeRef> nodePair)
+    private void findNodeChildrenToMove(Long nodeId, final StoreRef storeRef,
+            final List<ChildAssociationRef> childAssocsToMove, final Map<NodeRef, Long> nodeIds)
     {
-        Long nodeId = nodePair.getFirst();
         // Get the node's children, but only one's that aren't in the same store
-        final List<Pair<Long, NodeRef>> childNodePairs = new ArrayList<Pair<Long, NodeRef>>(5);
+        final List<ChildAssociationRef> childAssocs = new LinkedList<ChildAssociationRef>();
         NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
         {
             public boolean preLoadNodes()
@@ -2683,8 +2738,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     Pair<Long, NodeRef> childNodePair
                     )
             {
-                // Add it
-                childNodePairs.add(childNodePair);
+                // Add it if it's not in the target store
+                NodeRef childNodeRef = childNodePair.getSecond(); 
+                if (!childNodeRef.getStoreRef().equals(storeRef))
+                {
+                    childAssocs.add(childAssocPair.getSecond());
+                    nodeIds.put(childNodeRef, childNodePair.getFirst());
+                }
                 // More results
                 return true;
             }
@@ -2693,58 +2753,23 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             {
             }                               
         };
-        // We only need to move child nodes that are not already in the same store
-        nodeDAO.getChildAssocs(nodeId, null, null, null, Boolean.TRUE, Boolean.FALSE, callback);
+        // We need to get all primary children and do the store filtering ourselves
+        nodeDAO.getChildAssocs(nodeId, null, null, null, Boolean.TRUE, null, callback);
+        
         // Each child must be moved to the same store as the parent
-        for (Pair<Long, NodeRef> oldChildNodePair : childNodePairs)
+        for (ChildAssociationRef oldChildAssoc : childAssocs)
         {
-            Long childNodeId = oldChildNodePair.getFirst();
-            NodeRef childNodeRef = oldChildNodePair.getSecond();
+            NodeRef childNodeRef = oldChildAssoc.getChildRef();
+            Long childNodeId = nodeIds.get(childNodeRef);
             NodeRef.Status childNodeStatus = nodeDAO.getNodeRefStatus(childNodeRef);
             if (childNodeStatus == null || childNodeStatus.isDeleted())
             {
                 // Node has already been deleted.
                 continue;
             } 
-            
-            QName childNodeTypeQName = nodeDAO.getNodeType(childNodeId);
-            Set<QName> childNodeAspectQNames = nodeDAO.getNodeAspects(childNodeId);
-            Pair<Long, ChildAssociationRef> oldParentAssocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
-            ChildAssociationRef oldParentAssocRef = oldParentAssocPair.getSecond();
-            
-            // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
-            invokeBeforeDeleteNode(childNodeRef);
-            invokeBeforeCreateNode(
-                        oldParentAssocPair.getSecond().getParentRef(),
-                        oldParentAssocPair.getSecond().getTypeQName(),
-                        oldParentAssocPair.getSecond().getQName(),
-                        childNodeTypeQName);
-            // Move the node as this gives back the primary parent association
-            Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveResult;
-            try
-            {
-                moveResult = nodeDAO.moveNode(childNodeId, nodeId, null,null);
-            }
-            catch (NodeExistsException e)
-            {
-                deleteNode(e.getNodePair().getSecond());
-                moveResult = nodeDAO.moveNode(childNodeId, nodeId, null,null);
-            }
-            // Move the node as this gives back the primary parent association
-            Pair<Long, ChildAssociationRef> newParentAssocPair = moveResult.getFirst();
-            Pair<Long, NodeRef> newChildNodePair = moveResult.getSecond();
-            ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
-            // Index
-            nodeIndexer.indexDeleteNode(oldParentAssocPair.getSecond());
-            nodeIndexer.indexCreateNode(newParentAssocPair.getSecond());
-            // Propagate timestamps
-            propagateTimeStamps(oldParentAssocRef);
-            propagateTimeStamps(newParentAssocRef);
-            // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
-            invokeOnDeleteNode(oldParentAssocRef, childNodeTypeQName, childNodeAspectQNames, true);
-            invokeOnCreateNode(newParentAssocRef);
+            childAssocsToMove.add(oldChildAssoc);
             // Cascade
-            pullNodeChildrenToSameStore(newChildNodePair);
+            findNodeChildrenToMove(childNodeId, storeRef, childAssocsToMove, nodeIds);
         }
     }
     

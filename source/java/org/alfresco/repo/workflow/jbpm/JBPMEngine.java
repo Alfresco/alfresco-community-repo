@@ -151,6 +151,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     protected StoreRef companyHomeStore;
     protected String companyHomePath;
 
+    private Map<String, QName> ignoredProperties = new HashMap<String, QName>(3);
     // Note: jBPM query which is not provided out-of-the-box
     // TODO: Check jBPM 3.2 and get this implemented in jBPM
     private final static String COMPLETED_TASKS_QUERY = "select ti " + "from org.jbpm.taskmgmt.exe.TaskInstance as ti "
@@ -217,7 +218,14 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     
     // engine ID
     public static final String ENGINE_ID = "jbpm";
-    
+
+    public JBPMEngine()
+    {
+        super();
+        ignoredProperties.put(WorkflowModel.PROP_STATUS.getLocalName(), WorkflowModel.PROP_STATUS);
+        ignoredProperties.put(WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP.getLocalName(), WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP);
+        ignoredProperties.put(WorkflowModel.PROP_PACKAGE_ACTION_GROUP.getLocalName(), WorkflowModel.PROP_PACKAGE_ACTION_GROUP);
+    }
     /**
      * Sets the JBPM Template used for accessing JBoss JBPM in the correct
      * context
@@ -3150,7 +3158,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      */
     protected void setDefaultTaskProperties(TaskInstance instance)
     {
-        Map<QName, Serializable> existingValues = getTaskProperties(instance, true);
+        Map<QName, Serializable> existingValues = getTaskProperties(instance, false);
         Map<QName, Serializable> defaultValues = new HashMap<QName, Serializable>();
 
         // construct an anonymous type that flattens all mandatory aspects
@@ -3163,7 +3171,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
             String defaultValue = entry.getValue().getDefaultValue();
             if (defaultValue != null)
             {
-                if (existingValues.get(entry.getKey()) == null)
+                if (existingValues.get(entry.getKey()) == null || ignoredProperties.containsValue(entry.getKey()))
                 {
                     defaultValues.put(entry.getKey(), defaultValue);
                 }

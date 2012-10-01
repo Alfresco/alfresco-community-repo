@@ -19,39 +19,35 @@
 package org.alfresco.repo.cache;
 
 import java.io.Serializable;
+import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.InitializingBean;
+
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.Weighers;
 
 /**
- * {@link SimpleCache} implementation backed by a {@link LinkedHashMap}.
+ * {@link SimpleCache} implementation backed by a {@link ConcurrentLinkedHashMap}.
  * 
  * @author Matt Ward
  */
 public final class DefaultSimpleCache<K extends Serializable, V extends Object>
-    implements SimpleCache<K, V>, BeanNameAware
+    implements SimpleCache<K, V>, BeanNameAware, InitializingBean
 {
-    private final Map<K, V> map;
-    private int maxItems = 0;
+    private Map<K, AbstractMap.SimpleImmutableEntry<K, V>> map;
+    private int maxItems = 1000000;
     private String cacheName;
     
+    /**
+     * Default constructor. {@link #afterPropertiesSet()} MUST be called before the cache
+     * may be used when the cache is constructed using the default constructor.
+     */
     public DefaultSimpleCache()
     {
-        // Create a LinkedHashMap with accessOrder true, i.e. iteration order
-        // will be least recently accessed first. Eviction policy will therefore be LRU.
-        // The map will have a bounded size determined by the maxItems member variable.
-        map = (Map<K, V>) Collections.synchronizedMap(new LinkedHashMap<K, V>(16, 0.75f, true) {
-            private static final long serialVersionUID = 1L;
-            @Override
-            protected boolean removeEldestEntry(Entry<K, V> eldest)
-            {
-                return maxItems > 0 && size() > maxItems;
-            }
-        });
     }
     
     @Override
@@ -69,13 +65,19 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     @Override
     public V get(K key)
     {
-        return map.get(key);
+        AbstractMap.SimpleImmutableEntry<K, V> kvp = map.get(key);
+        if (kvp == null)
+        {
+            return null;
+        }
+        return kvp.getValue();
     }
 
     @Override
     public void put(K key, V value)
     {
-        map.put(key, value);
+        AbstractMap.SimpleImmutableEntry<K, V> kvp = new AbstractMap.SimpleImmutableEntry<K, V>(key, value);
+        map.put(key, kvp);
     }
 
     @Override
@@ -97,19 +99,14 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     }
 
     /**
-     * Sets the maximum number of items that the cache will hold. Setting
-     * this value will cause the cache to be emptied. A value of zero
-     * will allow the cache to grow unbounded.
+     * Sets the maximum number of items that the cache will hold. The cache
+     * must be re-initialised if already in existence using {@link #afterPropertiesSet()}.
      * 
      * @param maxItems
      */
-    public void setMaxItems(int maxItems)
+    public synchronized void setMaxItems(int maxItems)
     {
-        synchronized(map)
-        {
-            map.clear();
-            this.maxItems = maxItems;
-        }
+        this.maxItems = maxItems;
     }
 
     /**
@@ -122,5 +119,27 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     public void setBeanName(String cacheName)
     {
         this.cacheName = cacheName;
+    }
+
+    
+    /**
+     * Initialise the cache.
+     * 
+     * @throws Exception
+     */
+    @Override
+    public synchronized void afterPropertiesSet() throws Exception
+    {
+        if (maxItems < 1)
+        {
+            throw new IllegalArgumentException("maxItems property must be a positive integer.");
+        }
+        
+        // The map will have a bounded size determined by the maxItems member variable.
+        map = new ConcurrentLinkedHashMap.Builder<K, AbstractMap.SimpleImmutableEntry<K, V>>()
+                    .maximumWeightedCapacity(maxItems)
+                    .concurrencyLevel(32)
+                    .weigher(Weighers.singleton())
+                    .build();
     }
 }

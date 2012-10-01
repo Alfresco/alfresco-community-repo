@@ -23,7 +23,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,32 +41,19 @@ public class DefaultSimpleCacheTest
     private DefaultSimpleCache<Integer, String> cache;
     
     @Before
-    public void setUp()
+    public void setUp() throws Exception
     {
         cache = new DefaultSimpleCache<Integer, String>();
+        cache.setMaxItems(100);
+        cache.afterPropertiesSet();
     }
     
     @Test
-    public void unboundedSizeCache()
-    {
-        cache.put(1, "1");
-        cache.put(2, "2");
-        cache.put(3, "3");
-        cache.put(4, "4");
-        cache.put(5, "5");
-     
-        assertEquals("1", cache.get(1));
-        assertEquals("2", cache.get(2));
-        assertEquals("3", cache.get(3));
-        assertEquals("4", cache.get(4));
-        assertEquals("5", cache.get(5));
-    }
-    
-    @Test
-    public void boundedSizeCache()
+    public void boundedSizeCache() throws Exception
     {
         // We'll only keep the LAST 3 items
         cache.setMaxItems(3);
+        cache.afterPropertiesSet();
         
         cache.put(1, "1");
         cache.put(2, "2");
@@ -136,7 +126,10 @@ public class DefaultSimpleCacheTest
         cache.put(12, "red");
         cache.put(43, "olive");
         
-        Iterator<Integer> it = cache.getKeys().iterator();
+        List<Integer> keys = new ArrayList<Integer>(cache.getKeys());
+        Collections.sort(keys);
+        
+        Iterator<Integer> it = keys.iterator();
         assertEquals(3, it.next().intValue());
         assertEquals(12, it.next().intValue());
         assertEquals(43, it.next().intValue());
@@ -144,14 +137,20 @@ public class DefaultSimpleCacheTest
     }
     
     @Test
-    public void clearUponSetMaxItems()
+    public void noConcurrentModificationException()
     {
         cache.put(1, "1");
-        assertTrue(cache.contains(1));
+        cache.put(2, "2");
+        cache.put(3, "3");
+        cache.put(4, "4");
+
+        Iterator<Integer> i = cache.getKeys().iterator();
+        i.next();
+        i.next();
         
-        cache.setMaxItems(10);
+        cache.put(5, "5");
         
-        // The item should have gone.
-        assertFalse(cache.contains(1));
+        // Causes a ConcurrentModificationException with a java.util.LinkedHashMap
+        i.next();
     }
 }

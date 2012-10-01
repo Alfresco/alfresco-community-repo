@@ -18,13 +18,9 @@
  */
 package org.alfresco.repo.remoteticket;
 
-import org.alfresco.service.cmr.remoteticket.NoCredentialsFoundException;
-import org.alfresco.service.cmr.remoteticket.NoSuchSystemException;
-import org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketInfo;
-import org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService;
-import org.alfresco.repo.remoteconnector.LocalWebScriptConnectorServiceImpl;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.remoteconnector.LocalWebScriptConnectorServiceImpl;
 import org.alfresco.repo.remotecredentials.PasswordCredentialsInfoImpl;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -33,6 +29,10 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.remotecredentials.BaseCredentialsInfo;
 import org.alfresco.service.cmr.remotecredentials.RemoteCredentialsService;
+import org.alfresco.service.cmr.remoteticket.NoCredentialsFoundException;
+import org.alfresco.service.cmr.remoteticket.NoSuchSystemException;
+import org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketInfo;
+import org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
@@ -58,7 +58,7 @@ public class RemoteAlfrescoTicketServiceTest extends BaseWebScriptTest
     
     private RemoteAlfrescoTicketService remoteAlfrescoTicketService;
     private RemoteCredentialsService remoteCredentialsService;
-    private EhCacheAdapter<String, String> ticketsCache;
+    private SimpleCache<String, String> ticketsCache;
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
@@ -78,7 +78,7 @@ public class RemoteAlfrescoTicketServiceTest extends BaseWebScriptTest
         
         this.remoteAlfrescoTicketService = (RemoteAlfrescoTicketService)getServer().getApplicationContext().getBean("remoteAlfrescoTicketService");
         this.remoteCredentialsService = (RemoteCredentialsService)getServer().getApplicationContext().getBean("RemoteCredentialsService");
-        this.ticketsCache = (EhCacheAdapter<String, String>)getServer().getApplicationContext().getBean("remoteAlfrescoTicketService.ticketsCache");
+        this.ticketsCache = (SimpleCache<String, String>)getServer().getApplicationContext().getBean("remoteAlfrescoTicketService.ticketsCache");
         
         // Do the setup as admin
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();

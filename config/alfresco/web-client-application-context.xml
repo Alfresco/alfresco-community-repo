@@ -43,21 +43,11 @@
 
    <!-- The cross-transaction shared cache for in-memory GlobalConfig -->
    
-   <bean name="globalConfigSharedCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-      <property name="cache">
-         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-            <property name="cacheManager">
-               <ref bean="internalEHCacheManager" />
-            </property>
-            <property name="cacheName">
-               <value>org.alfresco.cache.globalConfigCache</value>
-            </property>
-         </bean>
-      </property>
-   </bean>
+   <!-- TODO: globalConfigShareCache moved into cache-context.xml files,
+        may need a way of defining caches alongside related beans as it was previously. -->
    
    <!-- The transactional cache for in-memory GlobalConfig -->
-   
+   <!-- TODO: should this move to tx-cache-context.xml -->
    <bean name="globalConfigCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache">
          <ref bean="globalConfigSharedCache" />

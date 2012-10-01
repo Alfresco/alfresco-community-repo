@@ -396,6 +396,8 @@ public class DownloadServiceIntegrationTest
         try
         {
             final NodeRef downloadNode = DOWNLOAD_SERVICE.createDownload(new NodeRef[] {folder},  true);
+            testNodes.addNodeRef(downloadNode);
+            
             waitForDownload(downloadNode);
             
             validateEntries(getEntries(downloadNode), expectedEntries, true);

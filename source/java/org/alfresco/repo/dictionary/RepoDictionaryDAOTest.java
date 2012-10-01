@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.DefaultSimpleCache;
+import org.alfresco.repo.cache.NullCache;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl.NamespaceRegistry;
 import org.alfresco.repo.dictionary.constraint.AbstractConstraint;
@@ -116,25 +116,13 @@ public class RepoDictionaryDAOTest extends TestCase
     
     private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
     {
-        CacheManager cacheManager = new CacheManager();
-        
-        Cache dictionaryEhCache = new Cache("dictionaryCache", 50, false, true, 0L, 0L);
-        cacheManager.addCache(dictionaryEhCache);
-        EhCacheAdapter<String, DictionaryRegistry> dictionaryCache = new EhCacheAdapter<String, DictionaryRegistry>();
-        dictionaryCache.setCache(dictionaryEhCache);
-        
+        SimpleCache<String,DictionaryRegistry> dictionaryCache = new DefaultSimpleCache<String, DictionaryRegistry>();   
         dictionaryDAO.setDictionaryRegistryCache(dictionaryCache);
     }
     
     private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
     {
-        CacheManager cacheManager = new CacheManager();
-        
-        Cache namespaceEhCache = new Cache("namespaceCache", 50, false, true, 0L, 0L);
-        cacheManager.addCache(namespaceEhCache);
-        EhCacheAdapter<String, NamespaceRegistry> namespaceCache = new EhCacheAdapter<String, NamespaceRegistry>();
-        namespaceCache.setCache(namespaceEhCache);
-        
+        SimpleCache<String, NamespaceRegistry> namespaceCache = new NullCache<String, NamespaceRegistry>();   
         namespaceDAO.setNamespaceRegistryCache(namespaceCache);
     }
     

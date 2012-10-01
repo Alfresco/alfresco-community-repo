@@ -62,27 +62,9 @@
     <bean id="unlimitedQuotaManager" class="org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy"/>        
 
 
-    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-        <property name="cache">
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-                <property name="cacheManager">
-                    <ref bean="internalEHCacheManager" />
-                </property>
-                <property name="cacheName">
-                    <value>org.alfresco.cache.cachingContentStoreCache</value>
-                </property>
-                <property name="eternal" value="false"/>
-                <property name="timeToLive" value="${system.content.caching.timeToLiveSeconds}"/>
-                <property name="timeToIdle" value="${system.content.caching.timeToIdleSeconds}"/>
-                <property name="maxElementsInMemory" value="${system.content.caching.maxElementsInMemory}"/>
-                <property name="maxElementsOnDisk" value="${system.content.caching.maxElementsOnDisk}"/>
-                <property name="overflowToDisk" value="true"/>
-                <property name="diskPersistent" value="true"/>
-            </bean>
-        </property>
-    </bean>
-    
-    
+    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
+
+
     <bean id="cachingContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.content.caching.cleanup.CachedContentCleanupJob</value>

@@ -3,7 +3,10 @@
     "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 
-   <bean id="fileServerConfiguration" class="org.alfresco.filesys.config.ServerConfigurationBean" parent="fileServerConfigurationBase">
+   <bean id="fileServerConfiguration"
+         parent="fileServerConfigurationBase"
+         factory-bean="fileServerConfigurationFactory"
+         factory-method="createFileServerConfiguration">
       <property name="cifsConfigBean">
          <ref bean="cifsServerConfig" />
       </property>
@@ -287,8 +290,7 @@
    </bean>
    
    <!-- Cluster Configuration -->
-   <bean id="fileSystemClusterConfig" class="org.alfresco.filesys.config.ClusterConfigBean">
-      <property name="hazelcastInstanceFactory" ref="hazelcastInstanceFactory"/>
+   <bean id="fileSystemClusterConfig" factory-bean="fileServerConfigurationFactory" factory-method="createClusterConfigBean">
       <property name="debugFlags">
           <value>${filesystem.cluster.debugFlags}</value>
       </property>

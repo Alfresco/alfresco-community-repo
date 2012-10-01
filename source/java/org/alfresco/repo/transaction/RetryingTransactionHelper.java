@@ -21,6 +21,9 @@ package org.alfresco.repo.transaction;
 import java.lang.reflect.Method;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -30,8 +33,6 @@ import java.util.TreeMap;
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
-
-import net.sf.ehcache.distribution.RemoteCacheException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;
@@ -89,24 +90,68 @@ public class RetryingTransactionHelper
     public static final Class[] RETRY_EXCEPTIONS;
     static
     {
-        RETRY_EXCEPTIONS = new Class[] {
-                ConcurrencyFailureException.class,
-                DeadlockLoserDataAccessException.class,
-                StaleObjectStateException.class,
-                JdbcUpdateAffectedIncorrectNumberOfRowsException.class,     // Similar to StaleObjectState
-                LockAcquisitionException.class,
-                ConstraintViolationException.class,
-                UncategorizedSQLException.class,
-                SQLException.class,
-                BatchUpdateException.class,
-                DataIntegrityViolationException.class,
-                StaleStateException.class,
-                TooManyResultsException.class,              // Expected one result but found multiple (bad key alert)
-                ObjectNotFoundException.class,
-                CacheException.class,                       // Usually a cache replication issue
-                RemoteCacheException.class,                 // A cache replication issue
-                SQLGrammarException.class // Actually specific to MS SQL Server 2005 - we check for this
-                };
+        Class<?>[] coreClasses = new Class[] {
+                    ConcurrencyFailureException.class,
+                    DeadlockLoserDataAccessException.class,
+                    StaleObjectStateException.class,
+                    JdbcUpdateAffectedIncorrectNumberOfRowsException.class,     // Similar to StaleObjectState
+                    LockAcquisitionException.class,
+                    ConstraintViolationException.class,
+                    UncategorizedSQLException.class,
+                    SQLException.class,
+                    BatchUpdateException.class,
+                    DataIntegrityViolationException.class,
+                    StaleStateException.class,
+                    TooManyResultsException.class,              // Expected one result but found multiple (bad key alert)
+                    ObjectNotFoundException.class,
+                    CacheException.class,                       // Usually a cache replication issue
+                    SQLGrammarException.class // Actually specific to MS SQL Server 2005 - we check for this
+                    };
+     
+        List<Class<?>> retryExceptions = new ArrayList<Class<?>>();
+        // Add core classes to the list.
+        retryExceptions.addAll(Arrays.asList(coreClasses));
+        // Add enterprise-specific classes to the list
+        retryExceptions.addAll(enterpriseRetryExceptions());
+        
+        RETRY_EXCEPTIONS = retryExceptions.toArray(new Class[] {});
+    }
+
+    /**
+     * Use reflection to load a list of enterprise-specific exception classes to add to the
+     * core list specified in this class.
+     * <p>
+     * This is used to decouple this class from enterprise-specific libraries.
+     * 
+     * @return List of enterprise exception classes or empty list if not available.
+     */
+    private static List<Class<?>> enterpriseRetryExceptions()
+    {
+        List<Class<?>> retryExceptions = null;
+        try
+        {
+            Class<?> c = Class.forName("org.alfresco.enterprise.repo.transaction.RetryExceptions");
+            retryExceptions = (List<Class<?>>) c.newInstance();
+        }
+        catch (ClassNotFoundException error)
+        {
+            // It's ok not to have the enterprise class available.
+        }
+        catch (InstantiationException error)
+        {
+            throw new AlfrescoRuntimeException("Unable to instantiate enterprise RetryExceptions.");
+        }
+        catch (IllegalAccessException error)
+        {
+            throw new AlfrescoRuntimeException("Unable to instantiate enterprise RetryExceptions.");
+        }
+        
+        // If no enterprise class found then create an empty list.
+        if (retryExceptions == null)
+        {
+            retryExceptions = Collections.emptyList();
+        }
+        return retryExceptions;
     }
 
     /**

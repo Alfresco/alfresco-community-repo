@@ -20,9 +20,8 @@ package org.alfresco.repo.content.caching;
 
 import java.io.File;
 
-import net.sf.ehcache.CacheManager;
-
-import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.DefaultSimpleCache;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -42,8 +41,6 @@ import org.junit.runner.RunWith;
 @RunWith(JUnit38ClassRunner.class)
 public class CachingContentStoreSpringTest extends AbstractWritableContentStoreTest
 {
-    private static final String EHCACHE_NAME = "cache.test.cachingContentStoreCache";
-    private static final int T24_HOURS = 86400;
     private CachingContentStore store;
     private FileContentStore backingStore;
     private ContentCacheImpl cache;
@@ -67,22 +64,9 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
         store = new CachingContentStore(backingStore, cache, false);
     }
     
-    private EhCacheAdapter<Key, String> createMemoryStore()
+    private SimpleCache<Key, String> createMemoryStore()
     {
-        CacheManager manager = CacheManager.getInstance();
-        
-        // Create the cache if it hasn't already been created.
-        if (!manager.cacheExists(EHCACHE_NAME))
-        {
-            net.sf.ehcache.Cache memoryOnlyCache = 
-                new net.sf.ehcache.Cache(EHCACHE_NAME, 50, false, false, T24_HOURS, T24_HOURS);
-            
-            manager.addCache(memoryOnlyCache);
-        }
-        
-        EhCacheAdapter<Key, String> memoryStore = new EhCacheAdapter<Key, String>();
-        memoryStore.setCache(manager.getCache(EHCACHE_NAME));
-        
+        SimpleCache<Key, String> memoryStore = new DefaultSimpleCache<Key, String>();
         return memoryStore;
     }
 

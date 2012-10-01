@@ -16,29 +16,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.cluster;
+package org.alfresco.filesys.config;
 
 /**
- * Static container for MessengerFactory. This allows code to obtain the correct
- * {@link MessengerFactory} implementation where dependency injection is not available.
+ * Factory to provide community versions of key fileserver configuration beans.
  * 
  * @author Matt Ward
  */
-public class MessengerFactoryProvider
+public class FileServerConfigurationFactory
 {
-    private static MessengerFactory instance;
-    
-    public void setInstance(MessengerFactory messengerFactory)
+    public ServerConfigurationBean createFileServerConfiguration()
     {
-        instance = messengerFactory;
+        return new ServerConfigurationBean();
     }
     
-    public static MessengerFactory getInstance()
+    public ClusterConfigBean createClusterConfigBean()
     {
-        if (instance == null)
-        {
-            throw new IllegalStateException("MessengerFactory instance not configured yet.");
-        }
-        return instance;
+        return new ClusterConfigBean();
     }
 }

@@ -25,8 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.ehcache.CacheException;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -734,7 +732,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 logger.debug("Pre-commit called for " + keys.size() + " values.");
             }
         }
-        catch (CacheException e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Failed to transfer updates to shared cache", e);
         }
@@ -795,7 +793,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 logger.debug("Post-commit called for " + keys.size() + " values.");
             }
         }
-        catch (CacheException e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Failed to transfer updates to shared cache", e);
         }
@@ -837,7 +835,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 }
             }
         }
-        catch (CacheException e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Failed to transfer updates to shared cache", e);
         }

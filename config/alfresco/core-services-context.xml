@@ -126,43 +126,6 @@
             <value>false</value>
         </property>
     </bean>
-    
-    <bean id="clusterPropertySetter" class="org.alfresco.config.SystemPropertiesSetterBean" init-method="init">
-        <property name="propertyMap">
-            <map>
-                <entry key="alfresco.ehcache.rmi.hostname">
-                    <value>${alfresco.ehcache.rmi.hostname}</value>
-                </entry>
-                <entry key="alfresco.ehcache.rmi.remoteObjectPort">
-                    <value>${alfresco.ehcache.rmi.remoteObjectPort}</value>
-                </entry>
-                <entry key="alfresco.ehcache.rmi.port">
-                    <value>${alfresco.ehcache.rmi.port}</value>
-                </entry>
-                <entry key="alfresco.ehcache.rmi.socketTimeoutMillis">
-                    <value>${alfresco.ehcache.rmi.socketTimeoutMillis}</value>
-                </entry>
-                <entry key="alfresco.tcp.start_port">
-                    <value>${alfresco.tcp.start_port}</value>
-                </entry>
-                <entry key="alfresco.tcp.initial_hosts">
-                    <value>${alfresco.tcp.initial_hosts}</value>
-                </entry>
-                <entry key="alfresco.tcp.port_range">
-                    <value>${alfresco.tcp.port_range}</value>
-                </entry>
-                <entry key="alfresco.udp.mcast_addr">
-                    <value>${alfresco.udp.mcast_addr}</value>
-                </entry>
-                <entry key="alfresco.udp.mcast_port">
-                    <value>${alfresco.udp.mcast_port}</value>
-                </entry>
-                <entry key="alfresco.fping.shared.dir">
-                    <value>${alfresco.fping.shared.dir}</value>
-                </entry>
-            </map>
-        </property>
-    </bean>
 
     <!-- Custom MBeanServer -->
     <bean id="alfrescoMBeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">

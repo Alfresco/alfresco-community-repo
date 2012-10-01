@@ -86,20 +86,4 @@
         <property name="remoteConnectorService" ref="RemoteConnectorService" />
         <property name="ticketsCache" ref="remoteAlfrescoTicketService.ticketsCache" />
 	</bean>
-
-
-   <!-- Remote Alfresco Ticket Cache, cross-transaction shared cache -->
-   <bean name="remoteAlfrescoTicketService.ticketsCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-      <property name="cache">
-         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-            <property name="cacheManager">
-               <ref bean="internalEHCacheManager" />
-            </property>
-            <property name="cacheName">
-               <value>org.alfresco.cache.remote.auth.ticketCache</value>
-            </property>
-         </bean>
-      </property>
-   </bean>
-
 </beans>

@@ -111,20 +111,10 @@
         </property>
     </bean>
     
-    <bean name="contentDiskDriver.fileInfoCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-      <property name="cache">
-         <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean" >
-            <property name="cacheManager">
-               <ref bean="internalEHCacheManager" />
-            </property>
-            <property name="cacheName">
-               <value>org.alfresco.cache.filesys.fileInfo</value>
-            </property>
-         </bean>
-      </property>
-   </bean>
-   
-
+    <!--
+        TODO: contentDiskDriver.fileInfoCache bean definition moved from here into cache-context.xml files,
+        come up with a better scheme for configuring subsystem caches.
+     -->
     
    <!-- Buffered Content Disk Driver - adds performance buffering -->
    <bean id="contentDiskDriver" class="org.alfresco.filesys.repo.BufferedContentDiskDriver" 

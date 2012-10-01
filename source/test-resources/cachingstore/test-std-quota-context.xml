@@ -35,24 +35,8 @@
     </bean>
     
 
-    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-        <property name="cache">
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-                <property name="cacheManager">
-                    <ref bean="internalEHCacheManager" />
-                </property>
-                <property name="cacheName">
-                    <value>org.alfresco.cache.cachingContentStoreCache</value>
-                </property>
-                <property name="eternal" value="false"/>
-                <property name="timeToLive" value="0"/>
-                <property name="timeToIdle" value="0"/>
-                <property name="maxElementsInMemory" value="12"/>
-                <property name="maxElementsOnDisk" value="0"/>
-                <property name="overflowToDisk" value="false"/>
-                <property name="diskPersistent" value="false"/>
-            </bean>
-        </property>
+    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+        <property name="maxItems" value="12"/>
     </bean>
     
     

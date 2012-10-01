@@ -16,15 +16,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.cluster;
+package org.alfresco.repo.webdav;
 
 /**
- * Implementing classes can react to members joining or leaving the cluster.
+ * LockStoreFactory that always returns a new {@link SimpleLockStore} instance.
  * 
  * @author Matt Ward
  */
-public interface ClusterMembershipListener
+public class SimpleLockStoreFactory implements LockStoreFactory
 {
-    void memberJoined(String member, String[] cluster);
-    void memberLeft(String member, String[] cluster);
+    @Override
+    public LockStore createLockStore()
+    {
+        return new SimpleLockStore();
+    }
 }

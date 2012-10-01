@@ -5,19 +5,7 @@
 
     <import resource="classpath:alfresco/application-context.xml" />
     
-    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.EhCacheAdapter">
-        <property name="cache">
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-                <property name="cacheManager">
-                    <ref bean="internalEHCacheManager" />
-                </property>
-                <property name="cacheName">
-                    <value>org.alfresco.cache.cachingContentStoreCache</value>
-                </property>
-            </bean>
-        </property>
-    </bean>
-
+    <bean id="cachingContentStoreCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
 
     <bean id="backingStore" class="org.alfresco.repo.content.filestore.FileContentStore">
         <constructor-arg>

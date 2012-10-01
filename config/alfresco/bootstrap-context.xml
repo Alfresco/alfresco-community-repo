@@ -176,23 +176,6 @@
           </list>
        </property>
     </bean>
-
-    <bean id="messengerFactory" class="org.alfresco.repo.cluster.HazelcastMessengerFactory">
-        <property name="hazelcastInstanceFactory" ref="hazelcastInstanceFactory"/>
-    </bean>
-    
-    <!-- Set up this class for static access, don't use this for DI - use messengerFactory instead -->
-    <bean id="staticMessengerFactoryProvider" class="org.alfresco.repo.cluster.MessengerFactoryProvider">    
-        <property name="instance" ref="messengerFactory"/>
-    </bean>
-
-    <bean id="clusterChecker" class="org.alfresco.repo.cluster.ClusterChecker" init-method="init" destroy-method="shutdown">
-       <property name="authenticationService" ref="authenticationService"/>
-       <property name="jobLockService" ref="jobLockService"/>
-       <property name="transactionService" ref="transactionService"/>
-       <property name="messengerFactory" ref="messengerFactory"/>
-       <property name="timeout" value="${alfresco.clusterCheck.timeout}"/>
-    </bean>
         
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">
        <property name="transactionService" ref="transactionService"/>
@@ -830,6 +813,8 @@
           <ref bean="webdavRootNode"/>
        </property>
     </bean>
+    
+    <bean id="fileServerConfigurationFactory" class="org.alfresco.filesys.config.FileServerConfigurationFactory"/>
 
     <!-- Startup Message -->
 

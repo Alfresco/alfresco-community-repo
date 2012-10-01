@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.remotecredentials.PasswordCredentialsInfoImpl;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -67,7 +67,7 @@ public class RemoteAlfrescoTicketServiceImpl implements RemoteAlfrescoTicketServ
     private RetryingTransactionHelper retryingTransactionHelper;
     private RemoteCredentialsService remoteCredentialsService;
     private RemoteConnectorService remoteConnectorService;
-    private EhCacheAdapter<String, String> ticketsCache;
+    private SimpleCache<String, String> ticketsCache;
     
     private Map<String,String> remoteSystemsUrls = new HashMap<String, String>();
     private Map<String,Map<String,String>> remoteSystemsReqHeaders = new HashMap<String, Map<String,String>>();
@@ -89,9 +89,9 @@ public class RemoteAlfrescoTicketServiceImpl implements RemoteAlfrescoTicketServ
     }
 
     /**
-     * Sets the EhCache to be used to cache remote tickets in
+     * Sets the SimpleCache to be used to cache remote tickets in
      */
-    public void setTicketsCache(EhCacheAdapter<String, String> ticketsCache)
+    public void setTicketsCache(SimpleCache<String, String> ticketsCache)
     {
         this.ticketsCache = ticketsCache;
     }

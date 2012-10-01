@@ -82,12 +82,10 @@ import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.Platform;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.X64;
-import org.alfresco.repo.cluster.HazelcastInstanceFactory;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.extensions.config.element.GenericConfigElement;
 
-import com.hazelcast.core.HazelcastInstance;
 
 /**
  * Alfresco File Server Configuration Bean Class
@@ -112,7 +110,7 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     private CoreServerConfigBean coreServerConfigBean;
 
     private ThreadRequestPool threadPool;
-    private ClusterConfigBean clusterConfigBean;
+    protected ClusterConfigBean clusterConfigBean;
 
     /**
      * Default constructor
@@ -2321,10 +2319,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 
         // Create a ClusterConfigSection and attach it to 'this'.
         ClusterConfigSection clusterConf = new ClusterConfigSection(this);
-        HazelcastInstanceFactory hazelcastInstanceFactory = clusterConfigBean.getHazelcastInstanceFactory();
-        // Clustering is enabled, so we can safely request the hazelcast instance.
-        HazelcastInstance hazelcast = hazelcastInstanceFactory.getInstance();
-        clusterConf.setHazelcastInstance(hazelcast);
     }
     
     

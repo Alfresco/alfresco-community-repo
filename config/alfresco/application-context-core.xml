@@ -4,6 +4,7 @@
 <!-- These are the XML files of the "core" of the context -->
 <!-- This includes bootstrap-context.xml, so subsystems are "core" too -->
 <beans>
+    <import resource="classpath:alfresco/tx-cache-context.xml" />
     <import resource="classpath:alfresco/cache-context.xml" />
     <import resource="classpath:alfresco/st-context.xml"/>
     <import resource="classpath*:alfresco/extension/mt/mt-context.xml"/>
@@ -43,7 +44,6 @@
     <import resource="classpath:alfresco/activities/activities-feed-context.xml" />
     <import resource="classpath:alfresco/tagging-services-context.xml"/>
     <import resource="classpath:alfresco/invitation-service-context.xml"/>
-    <import resource="classpath:alfresco/cluster-context.xml"/>
     <import resource="classpath:alfresco/webdav-context.xml"/>
     <import resource="classpath*:alfresco/patch/*-context.xml" />
 </beans>

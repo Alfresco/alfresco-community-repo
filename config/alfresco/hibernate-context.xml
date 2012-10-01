@@ -9,6 +9,7 @@
         <property name="locations">
             <list>
                 <value>classpath:alfresco/domain/hibernate-cfg.properties</value>
+                <value>classpath*:alfresco/enterprise/cache/hibernate-cfg.properties</value>
             </list>
         </property>
         <!-- Allow global properties to override default settings -->

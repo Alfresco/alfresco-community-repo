@@ -20,8 +20,6 @@ package org.alfresco;
 
 import java.lang.reflect.Field;
 
-import net.sf.ehcache.CacheManager;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -82,17 +80,6 @@ public class RepositoryStartStopTest extends TestCase
        );
     }
     
-    /**
-     * Checks that all our EHCache instances have been shutdown
-     */
-    public static void assertAllCachesShutdown() throws Exception {
-       assertEquals(
-             "All Caches should have been shut down, but some remained",
-             0,
-             CacheManager.ALL_CACHE_MANAGERS.size()
-       );
-    }
-    
     private ApplicationContext getMinimalContext() {
        ApplicationContextHelper.setUseLazyLoading(false);
        ApplicationContextHelper.setNoAutoStart(true);
@@ -124,7 +111,6 @@ public class RepositoryStartStopTest extends TestCase
        ApplicationContextHelper.closeApplicationContext();
        
        assertNoCachedApplicationContext();
-       assertAllCachesShutdown();
     }
     
     /**
@@ -145,7 +131,6 @@ public class RepositoryStartStopTest extends TestCase
        // Close it down
        ApplicationContextHelper.closeApplicationContext();
        assertNoCachedApplicationContext();
-       assertAllCachesShutdown();
        
        // Re-open it, we get a fresh copy
        ApplicationContext ctx2 = getMinimalContext();
@@ -160,7 +145,6 @@ public class RepositoryStartStopTest extends TestCase
        // And finally close it
        ApplicationContextHelper.closeApplicationContext();
        assertNoCachedApplicationContext();
-       assertAllCachesShutdown();
     }
     
     /**
@@ -181,7 +165,6 @@ public class RepositoryStartStopTest extends TestCase
        // Close it down
        ApplicationContextHelper.closeApplicationContext();
        assertNoCachedApplicationContext();
-       assertAllCachesShutdown();
        
        // Re-open it, we get a fresh copy
        ApplicationContext ctx2 = getFullContext();
@@ -198,7 +181,6 @@ public class RepositoryStartStopTest extends TestCase
        // And finally close it
        ApplicationContextHelper.closeApplicationContext();
        assertNoCachedApplicationContext();
-       assertAllCachesShutdown();
     }
     
     /**
@@ -219,7 +201,6 @@ public class RepositoryStartStopTest extends TestCase
        // Close
        ApplicationContextHelper.closeApplicationContext();
        assertNoCachedApplicationContext();
-       assertAllCachesShutdown();
        
        
        // Now open the full one
@@ -235,7 +216,6 @@ public class RepositoryStartStopTest extends TestCase
        // Close it
        ApplicationContextHelper.closeApplicationContext();
        assertNoCachedApplicationContext();
-       assertAllCachesShutdown();
        
        
        // Back to the minimal one
@@ -246,7 +226,6 @@ public class RepositoryStartStopTest extends TestCase
        // Close
        ApplicationContextHelper.closeApplicationContext();
        assertNoCachedApplicationContext();
-       assertAllCachesShutdown();
        
        
        // And finally we want the full one again
@@ -257,7 +236,6 @@ public class RepositoryStartStopTest extends TestCase
        // Close and we're done
        ApplicationContextHelper.closeApplicationContext();
        assertNoCachedApplicationContext();
-       assertAllCachesShutdown();
     }
     
     public void doTestBasicWriteOperations(ApplicationContext ctx) throws Exception

@@ -123,25 +123,23 @@
       </property>
    </bean>
 
+    <bean id="search.baseAdmIndexJobDetail" abstract="true" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="indexRecoveryComponent">
+                    <ref bean="search.admIndexTrackerComponent" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="search.admIndexJobDetail" parent="search.baseAdmIndexJobDetail"/>
+
     <!-- Schedule index tracking for ADM -->
     <bean id="search.admIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
-        <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
-                </property>
-                <property name="jobDataAsMap">
-                    <map>
-                        <entry key="indexRecoveryComponent">
-                            <ref bean="search.admIndexTrackerComponent" />
-                        </entry>
-                        <entry key="clusterName">
-                            <value>${alfresco.cluster.name}</value>
-                        </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
+        <property name="jobDetail" ref="search.admIndexJobDetail"/>
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
@@ -166,25 +164,23 @@
       </property>
     </bean>
 
+    <bean id="search.baseAvmIndexJobDetail" abstract="true" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="indexRecoveryComponent">
+                    <ref bean="search.avmIndexTrackerComponent" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="search.avmIndexJobDetail" parent="search.baseAvmIndexJobDetail"/>
+    
     <!-- Schedule index tracking for AVM -->
     <bean id="search.avmIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
-        <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
-                </property>
-                <property name="jobDataAsMap">
-                    <map>
-                        <entry key="indexRecoveryComponent">
-                            <ref bean="search.avmIndexTrackerComponent" />
-                        </entry>
-                        <entry key="clusterName">
-                            <value>${alfresco.cluster.name}</value>
-                        </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
+        <property name="jobDetail" ref="search.avmIndexJobDetail"/>
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
@@ -207,27 +203,25 @@
    </bean>
    
    
+   <bean id="search.baseMissingFullTextReindexJobDetail" abstract="true" class="org.springframework.scheduling.quartz.JobDetailBean">
+       <property name="jobClass">
+           <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
+       </property>
+       <property name="jobDataAsMap">
+            <map>
+                <entry key="indexRecoveryComponent">
+                    <ref bean="search.missingFullTextReindexComponent" />
+                </entry>
+            </map>
+        </property>
+   </bean>
+   <bean id="search.missingFullTextReindexJobDetail" parent="search.baseMissingFullTextReindexJobDetail"/>
+
    <!-- This JobDetail and its associated Trigger bean will in practice not be run due to the cron
         expression used. In order to activate the missing content reindexing, the cron expression
         can be changed in the properties file or via JMX (Enterprise-only) -->
     <bean id="search.missingFullTextReindexTrigger" class="org.alfresco.util.CronTriggerBean">
-        <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.node.index.IndexRecoveryJob</value>
-                </property>
-                <property name="jobDataAsMap">
-                    <map>
-                        <entry key="indexRecoveryComponent">
-                            <ref bean="search.missingFullTextReindexComponent" />
-                        </entry>
-                        <entry key="clusterName">
-                            <value>${alfresco.cluster.name}</value>
-                        </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
+        <property name="jobDetail" ref="search.missingFullTextReindexJobDetail"/>
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
@@ -235,4 +229,7 @@
             <value>${index.reindexMissingContent.cronExpression}</value>
         </property>
     </bean>
+    
+    <!-- Add enterprise clustering configuration when available. -->
+    <import resource="classpath*:alfresco/enterprise/cluster/index-recovery-overrides.xml"/>
 </beans>

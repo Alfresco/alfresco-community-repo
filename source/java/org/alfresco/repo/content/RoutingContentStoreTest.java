@@ -24,10 +24,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-
-import org.alfresco.repo.cache.EhCacheAdapter;
+import org.alfresco.repo.cache.DefaultSimpleCache;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -158,11 +156,7 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
             {
                 this.stores.add(store);
             }
-            Cache ehCache = new Cache("RandomRoutingContentStore", 50, false, true, 0L, 0L);
-            CacheManager cacheManager = new CacheManager();
-            cacheManager.addCache(ehCache);
-            EhCacheAdapter<Pair<String,String>, ContentStore> cache = new EhCacheAdapter<Pair<String,String>, ContentStore>();
-            cache.setCache(ehCache);
+            SimpleCache<Pair<String,String>, ContentStore> cache = new DefaultSimpleCache<Pair<String,String>, ContentStore>();
             super.setStoresCache(cache);
         }
         

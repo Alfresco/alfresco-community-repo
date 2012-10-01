@@ -18,8 +18,6 @@
  */
 package org.alfresco.filesys.config;
 
-import org.alfresco.repo.cluster.HazelcastInstanceFactory;
-
 /**
  * The Class ClusterConfigBean.
  * 
@@ -28,29 +26,19 @@ import org.alfresco.repo.cluster.HazelcastInstanceFactory;
  */
 public class ClusterConfigBean
 {
-    private HazelcastInstanceFactory hazelcastInstanceFactory;
     private String debugFlags;
     private int nearCacheTimeout;
-    
-    
-    public void setHazelcastInstanceFactory(HazelcastInstanceFactory hazelcastInstanceFactory)
-    {
-        this.hazelcastInstanceFactory = hazelcastInstanceFactory;
-    }
-    
-    public HazelcastInstanceFactory getHazelcastInstanceFactory()
-    {
-        return this.hazelcastInstanceFactory;
-    }
 
     public boolean getClusterEnabled()
     {
-       return hazelcastInstanceFactory.isClusteringEnabled();
+       // No clustering support in community edition.
+       return false;
     }
     
     public String getClusterName()
     {
-        return hazelcastInstanceFactory.getClusterName();
+        // No clustering support in community edition.
+        return null;
     }
 
     public void setDebugFlags(String debugFlags)

@@ -376,6 +376,11 @@
             <artifactId>jgroups</artifactId>
             <version>2.11.1.Final</version>
         </dependency>
+        <dependency>
+            <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+            <artifactId>concurrentlinkedhashmap-lru</artifactId>
+            <version>1.2</version>
+        </dependency>
 
         <!-- OpenOffice -->
         <dependency>

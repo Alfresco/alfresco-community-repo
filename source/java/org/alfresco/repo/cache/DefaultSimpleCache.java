@@ -20,6 +20,7 @@ package org.alfresco.repo.cache;
 
 import java.io.Serializable;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -50,6 +51,20 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     {
     }
     
+    /**
+     * Constructor for programmatic use.
+     * @param maxItems
+     * @param cacheName
+     */
+    public DefaultSimpleCache(int maxItems, String cacheName)
+    {
+        setMaxItems(maxItems);
+        setBeanName(cacheName);
+        afterPropertiesSet();
+    }
+
+
+
     @Override
     public boolean contains(K key)
     {
@@ -128,7 +143,7 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
      * @throws Exception
      */
     @Override
-    public synchronized void afterPropertiesSet() throws Exception
+    public synchronized void afterPropertiesSet()
     {
         if (maxItems < 1)
         {

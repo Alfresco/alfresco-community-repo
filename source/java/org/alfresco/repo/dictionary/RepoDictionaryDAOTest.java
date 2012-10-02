@@ -116,7 +116,7 @@ public class RepoDictionaryDAOTest extends TestCase
     
     private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
     {
-        SimpleCache<String,DictionaryRegistry> dictionaryCache = new DefaultSimpleCache<String, DictionaryRegistry>();   
+        SimpleCache<String,DictionaryRegistry> dictionaryCache = new DefaultSimpleCache<String, DictionaryRegistry>(11, getClass().getName());   
         dictionaryDAO.setDictionaryRegistryCache(dictionaryCache);
     }
     

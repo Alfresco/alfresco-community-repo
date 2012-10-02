@@ -156,7 +156,7 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
             {
                 this.stores.add(store);
             }
-            SimpleCache<Pair<String,String>, ContentStore> cache = new DefaultSimpleCache<Pair<String,String>, ContentStore>();
+            SimpleCache<Pair<String,String>, ContentStore> cache = new DefaultSimpleCache<Pair<String,String>, ContentStore>(11, getClass().getName());
             super.setStoresCache(cache);
         }
         

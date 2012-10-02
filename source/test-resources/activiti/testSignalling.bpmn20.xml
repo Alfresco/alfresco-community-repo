@@ -5,7 +5,7 @@
     xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:activiti="http://activiti.org/bpmn">
 
-    <process id="testSignalling" name="Process to Test Signalling">
+    <process isExecutable="true" id="testSignalling" name="Process to Test Signalling">
 
         <startEvent id="start" activiti:formKey="wf:submitAdhocTask" />
 

@@ -8,7 +8,7 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xmlns:activiti="http://activiti.org/bpmn">
 
-    <process id="adhoc" name="Adhoc Process">
+    <process isExecutable="true" id="adhoc" name="Adhoc Process">
 
         <startEvent id="start"
             activiti:formKey="adhocStart.form" />

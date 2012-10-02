@@ -21,7 +21,9 @@ package org.alfresco.repo.workflow.activiti;
 
 import java.util.List;
 
+import org.activiti.engine.impl.jobexecutor.AsyncContinuationJobHandler;
 import org.activiti.engine.impl.jobexecutor.JobHandler;
+import org.activiti.engine.impl.jobexecutor.TimerCatchIntermediateEventJobHandler;
 import org.activiti.engine.impl.jobexecutor.TimerExecuteNestedActivityJobHandler;
 import org.activiti.engine.impl.variable.SerializableType;
 import org.activiti.engine.impl.variable.VariableType;
@@ -56,12 +58,21 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
     {
         super.initJobExecutor();
 
-        // Get the existing timer-job handler and wrap
-        // with one that is alfresco-authentication aware
-        JobHandler jobHandler = jobHandlers.get(TimerExecuteNestedActivityJobHandler.TYPE);
-        JobHandler wrappingJobHandler = new AuthenticatedTimerJobHandler(jobHandler);
-
-        jobHandlers.put(TimerExecuteNestedActivityJobHandler.TYPE, wrappingJobHandler);
+        // Wrap timer-job handler to handle authentication
+        JobHandler timerJobHandler = jobHandlers.get(TimerExecuteNestedActivityJobHandler.TYPE);
+        JobHandler wrappingTimerJobHandler = new AuthenticatedTimerJobHandler(timerJobHandler);
+        jobHandlers.put(TimerExecuteNestedActivityJobHandler.TYPE, wrappingTimerJobHandler);
+        
+        // Wrap async-job handler to handle authentication
+        JobHandler asyncJobHandler = jobHandlers.get(AsyncContinuationJobHandler.TYPE);
+        JobHandler wrappingAsyncJobHandler = new AuthenticatedAsyncJobHandler(asyncJobHandler);
+        jobHandlers.put(AsyncContinuationJobHandler.TYPE, wrappingAsyncJobHandler);
+        
+        // Wrap intermediate-timer-job handler to handle authentication
+        JobHandler intermediateJobHandler = jobHandlers.get(TimerCatchIntermediateEventJobHandler.TYPE);
+        JobHandler wrappingIntermediateJobHandler = new AuthenticatedAsyncJobHandler(intermediateJobHandler);
+        jobHandlers.put(TimerCatchIntermediateEventJobHandler.TYPE, wrappingIntermediateJobHandler);
+        
     }
     
     public void setCustomTypes(List<VariableType> customTypes)

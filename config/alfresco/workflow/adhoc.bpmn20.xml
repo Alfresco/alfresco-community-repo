@@ -6,7 +6,7 @@
    xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema"
    expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://alfresco.org">
 
-    <process id="activitiAdhoc" name="Adhoc Activiti Process">
+    <process isExecutable="true" id="activitiAdhoc" name="Adhoc Activiti Process">
 
         <startEvent id="start"
             activiti:formKey="wf:submitAdhocTask" />
@@ -15,7 +15,7 @@
             targetRef='adhocTask' />
 
         <userTask id="adhocTask" name="Adhoc Task"
-            activiti:formKey="wf:adhocTask">
+            activiti:formKey="wf:adhocTask" activiti:async="true">
            <extensionElements>
                <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
                   <activiti:field name="script">

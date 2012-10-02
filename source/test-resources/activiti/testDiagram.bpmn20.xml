@@ -6,7 +6,7 @@
    xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema"
    expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
 
-    <process id="testDiagram" name="Test Process Diagram">
+    <process isExecutable="true" id="testDiagram" name="Test Process Diagram">
         <startEvent id="start" activiti:formKey="bpm_foo" />
         <sequenceFlow id='flow2' sourceRef='start'
             targetRef='firstTask' />

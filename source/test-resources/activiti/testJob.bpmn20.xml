@@ -5,7 +5,7 @@
     xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:activiti="http://activiti.org/bpmn">
 
-    <process id="testJob" name="Test Timer Job Process">
+    <process isExecutable="true" id="testJob" name="Test Timer Job Process">
 
         <startEvent id="start" activiti:formKey="bpm_foo" />
 

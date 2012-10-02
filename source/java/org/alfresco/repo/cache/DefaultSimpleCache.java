@@ -20,13 +20,9 @@ package org.alfresco.repo.cache;
 
 import java.io.Serializable;
 import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.InitializingBean;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weighers;
@@ -37,34 +33,43 @@ import com.googlecode.concurrentlinkedhashmap.Weighers;
  * @author Matt Ward
  */
 public final class DefaultSimpleCache<K extends Serializable, V extends Object>
-    implements SimpleCache<K, V>, BeanNameAware, InitializingBean
+    implements SimpleCache<K, V>, BeanNameAware
 {
-    private Map<K, AbstractMap.SimpleImmutableEntry<K, V>> map;
-    private int maxItems = 1000000;
+    private static final int DEFAULT_CAPACITY = 200000;
+    private ConcurrentLinkedHashMap<K, AbstractMap.SimpleImmutableEntry<K, V>> map;
     private String cacheName;
     
     /**
-     * Default constructor. {@link #afterPropertiesSet()} MUST be called before the cache
-     * may be used when the cache is constructed using the default constructor.
-     */
-    public DefaultSimpleCache()
-    {
-    }
-    
-    /**
-     * Constructor for programmatic use.
-     * @param maxItems
-     * @param cacheName
+     * Construct a cache using the specified capacity and name.
+     * 
+     * @param maxItems The cache capacity.
      */
     public DefaultSimpleCache(int maxItems, String cacheName)
     {
-        setMaxItems(maxItems);
+        if (maxItems < 1)
+        {
+            throw new IllegalArgumentException("maxItems must be a positive integer, but was " + maxItems);
+        }
+        
         setBeanName(cacheName);
-        afterPropertiesSet();
+        
+        // The map will have a bounded size determined by the maxItems member variable.
+        map = new ConcurrentLinkedHashMap.Builder<K, AbstractMap.SimpleImmutableEntry<K, V>>()
+                    .maximumWeightedCapacity(maxItems)
+                    .concurrencyLevel(32)
+                    .weigher(Weighers.singleton())
+                    .build();
     }
-
-
-
+    
+    /**
+     * Default constructor. Initialises the cache with a default capacity {@link #DEFAULT_CAPACITY}
+     * and no name.
+     */
+    public DefaultSimpleCache()
+    {
+        this(DEFAULT_CAPACITY, null);
+    }
+    
     @Override
     public boolean contains(K key)
     {
@@ -110,18 +115,17 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     @Override
     public String toString()
     {
-        return "DefaultSimpleCache[maxItems=" + maxItems + ", cacheName=" + cacheName + "]";
+        return "DefaultSimpleCache[maxItems=" + map.capacity() + ", cacheName=" + cacheName + "]";
     }
 
     /**
-     * Sets the maximum number of items that the cache will hold. The cache
-     * must be re-initialised if already in existence using {@link #afterPropertiesSet()}.
+     * Sets the maximum number of items that the cache will hold.
      * 
      * @param maxItems
      */
-    public synchronized void setMaxItems(int maxItems)
+    public void setMaxItems(int maxItems)
     {
-        this.maxItems = maxItems;
+        map.setCapacity(maxItems);
     }
 
     /**
@@ -134,27 +138,5 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     public void setBeanName(String cacheName)
     {
         this.cacheName = cacheName;
-    }
-
-    
-    /**
-     * Initialise the cache.
-     * 
-     * @throws Exception
-     */
-    @Override
-    public synchronized void afterPropertiesSet()
-    {
-        if (maxItems < 1)
-        {
-            throw new IllegalArgumentException("maxItems property must be a positive integer.");
-        }
-        
-        // The map will have a bounded size determined by the maxItems member variable.
-        map = new ConcurrentLinkedHashMap.Builder<K, AbstractMap.SimpleImmutableEntry<K, V>>()
-                    .maximumWeightedCapacity(maxItems)
-                    .concurrencyLevel(32)
-                    .weigher(Weighers.singleton())
-                    .build();
     }
 }

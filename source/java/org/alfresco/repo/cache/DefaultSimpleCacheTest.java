@@ -43,9 +43,7 @@ public class DefaultSimpleCacheTest
     @Before
     public void setUp() throws Exception
     {
-        cache = new DefaultSimpleCache<Integer, String>();
-        cache.setMaxItems(100);
-        cache.afterPropertiesSet();
+        cache = new DefaultSimpleCache<Integer, String>(100, getClass().getName());
     }
     
     @Test
@@ -53,7 +51,6 @@ public class DefaultSimpleCacheTest
     {
         // We'll only keep the LAST 3 items
         cache.setMaxItems(3);
-        cache.afterPropertiesSet();
         
         cache.put(1, "1");
         cache.put(2, "2");

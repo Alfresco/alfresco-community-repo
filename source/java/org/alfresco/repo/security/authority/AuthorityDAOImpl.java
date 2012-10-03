@@ -251,7 +251,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 throw new AlfrescoRuntimeException("Authorities of the type " + authorityType
                         + " may not be added to other authorities");
             }
-            childAuthorityCache.remove(parentRef);
+            removeCachedChildAuthorities(parentRef);
             parentRefs.add(parentRef);
         }
         NodeRef childRef = getAuthorityOrNull(childName);
@@ -303,6 +303,11 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         authorityLookupCache.put(cacheKey(name), childRef);
     }
 
+    private NodeRef cacheKey(NodeRef nodeRef) 
+    {
+        return tenantService.getName(nodeRef);
+    }
+    
     private Pair<String, String> cacheKey(String authorityName)
     {
         String tenantDomain = AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER ? tenantService.getDomain(authorityName) : tenantService.getCurrentUserDomain();
@@ -699,7 +704,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             throw new UnknownAuthorityException("An authority was not found for " + childName);
         }
         nodeService.removeChild(parentRef, childRef);
-        childAuthorityCache.remove(parentRef);
+        removeCachedChildAuthorities(parentRef);
         if (AuthorityType.getAuthorityType(childName) == AuthorityType.USER)
         {
             userAuthorityCache.remove(childName);
@@ -962,14 +967,14 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             }
             else
             {
-                List<ChildAssociationRef> cars = childAuthorityCache.get(nodeRef);
+                List<ChildAssociationRef> cars = getCachedChildAuthorities(nodeRef);
                 if (cars == null)
                 {
                     cars = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL,
                             RegexQNamePattern.MATCH_ALL, false);
                     if (!cars.isEmpty() && cars.get(0).getTypeQName().equals(ContentModel.ASSOC_MEMBER))
                     {
-                        childAuthorityCache.put(nodeRef, cars);
+                        putCachedChildAuthorities(nodeRef, cars);
                     }
                 }
                 
@@ -992,12 +997,12 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     // Take advantage of the fact that the authority name is on the child association
     public boolean isAuthorityContained(NodeRef authorityNodeRef, String authorityToFind)
     {
-        List<ChildAssociationRef> cars = childAuthorityCache.get(authorityNodeRef);
+      List<ChildAssociationRef> cars = getCachedChildAuthorities(authorityNodeRef);
         if (cars == null)
         {
             cars = nodeService.getChildAssocs(authorityNodeRef, RegexQNamePattern.MATCH_ALL,
                     RegexQNamePattern.MATCH_ALL, false);
-            childAuthorityCache.put(authorityNodeRef, cars);
+            putCachedChildAuthorities(authorityNodeRef, cars);
         }
         
         // Loop over children recursively to find authorityToFind
@@ -1021,7 +1026,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             NodeRef parentRef = car.getParentRef();
             if (dictionaryService.isSubClass(nodeService.getType(parentRef), ContentModel.TYPE_AUTHORITY_CONTAINER))
             {
-                childAuthorityCache.remove(parentRef);
+               removeCachedChildAuthorities(parentRef);
             }
         }
     }
@@ -1369,4 +1374,19 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.TYPE_AUTHORITY, new JavaBehaviour(
                 this, "onUpdateProperties"));
     }
+    
+   private List<ChildAssociationRef> getCachedChildAuthorities(NodeRef parentNodeRef) 
+   {
+       return childAuthorityCache.get(cacheKey(parentNodeRef));
+   }
+   
+   private void removeCachedChildAuthorities(NodeRef parentNodeRef)
+   {
+       childAuthorityCache.remove(cacheKey(parentNodeRef));
+   }
+   
+   private void putCachedChildAuthorities(NodeRef parentNodeRef, List<ChildAssociationRef> children)
+   {
+       childAuthorityCache.put(cacheKey(parentNodeRef), children);
+   }
 }

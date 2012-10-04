@@ -262,4 +262,28 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <!-- Profile to build alfresco-enterprise -->
+        <profile>
+            <id>enterprise</id>
+            <activation>
+                <property>
+                    <name>alfresco.enterprise</name>
+                    <value>true</value>    
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>alfresco-enterprise-repository</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>alfresco-enterprise-remote-api</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

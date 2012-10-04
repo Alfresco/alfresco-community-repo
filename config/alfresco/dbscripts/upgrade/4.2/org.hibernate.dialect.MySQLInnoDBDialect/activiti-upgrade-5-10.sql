@@ -89,7 +89,7 @@ UPDATE ACT_GE_PROPERTY SET VALUE_ = 'create(5.7) upgrade(5.10)' WHERE NAME_ = 's
 --
 -- Record script finish
 --
-DELETE FROM alf_applied_patch WHERE id = 'patch.db-V4.1-upgrade-to-activiti-5.10';
+DELETE FROM alf_applied_patch WHERE id = 'patch.db-V4.2-upgrade-to-activiti-5.10';
 INSERT INTO alf_applied_patch
   (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
   VALUES

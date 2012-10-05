@@ -154,16 +154,30 @@ public interface RecordsManagementSecurityService
     void deletePermission(NodeRef nodeRef, String authority, String permission);
     
     /**
+     * Indicates whether the node has any extended readers set or not.
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef   node reference
+     * @return boolean  true if the node has extended readers set, false otherwise
+     * @since 2.1
+     */
+    boolean hasExtendedReaders(NodeRef nodeRef);
+    
+    /**
+     * Gets the set authorities that are extended readers for the given node.
+     * 
+     * @param nodeRef   node reference
+     * @return {@link Set}<{@link String}>  extended readers
+     * @since 2.1
      */
     Set<String> getExtendedReaders(NodeRef nodeRef);
     
     /**
+     * Set the authorities that are extended readers on the node.  Applies extended readers to
+     * file plan parent hierarchy.
      * 
-     * @param nodeRef
-     * @param readers
+     * @param nodeRef   node reference
+     * @param readers   extended readers
+     * @since 2.1
      */
     void setExtendedReaders(NodeRef nodeRef, Set<String> readers);
     
@@ -171,12 +185,23 @@ public interface RecordsManagementSecurityService
      * 
      * @param nodeRef
      * @param readers
+     * @param applyToParents
+     * @since 2.1
+     */
+    void setExtendedReaders(NodeRef nodeRef, Set<String> readers, boolean applyToParents);
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param readers
+     * @since 2.1
      */
     void removeExtendedReaders(NodeRef nodeRef, Set<String> readers);
     
     /**
      * 
      * @param nodeRef
+     * @since 2.1
      */
     void removeAllExtendedReaders(NodeRef nodeRef);
 }

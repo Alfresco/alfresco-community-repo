@@ -19,23 +19,18 @@
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Creates a new record from an existing content object.
@@ -47,29 +42,31 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 public class CreateRecordAction extends ActionExecuterAbstractBase
                                 implements RecordsManagementModel
 {
+    /** Action name */
     public static final String NAME = "create-record";
     
+    /** Records management service */
     private RecordsManagementService recordsManagementService;
-
-    private RecordsManagementSecurityService recordsManagementSecurityService;
     
-    private PermissionService permissionService;
+    /** Record service */
+    private RecordService recordService;
     
     private NodeService nodeService;
     
+    /**
+     * @param recordsManagementService  records management service
+     */
     public void setRecordsManagementService(RecordsManagementService recordsManagementService)
     {
         this.recordsManagementService = recordsManagementService;
     }
     
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService recordsManagementSecurityService)
+    /**
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
     {
-        this.recordsManagementSecurityService = recordsManagementSecurityService;
-    }
-    
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
+        this.recordService = recordService;
     }
     
     public void setNodeService(NodeService nodeService)
@@ -77,64 +74,46 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
         this.nodeService = nodeService;
     }
     
+    /**
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     protected void executeImpl(Action action, final NodeRef actionedUponNodeRef)
     {
-        // TODO we should use the file plan passed as a parameter
-        // grab the file plan
-        List<NodeRef> filePlans = recordsManagementService.getFilePlans();
-        if (filePlans.size() == 1)
+        // skip everything if the actioned upon node reference is already a record
+        if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == false)
         {
-            final NodeRef filePlan = filePlans.get(0);
-
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            // TODO we should use the file plan passed as a parameter
+            // grab the file plan
+            List<NodeRef> filePlans = recordsManagementService.getFilePlans();
+            if (filePlans.size() == 1)
             {
-                @Override
-                public Void doWork() throws Exception
-                {
-                    // get the documents readers
-                    Long aclId = nodeService.getNodeAclId(actionedUponNodeRef);
-                    Set<String> readers = permissionService.getReaders(aclId);         
-                    
-                    // get the documents primary parent assoc
-                    ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
-                    
-                    /// get the new record container for the file plan
-                    NodeRef newRecordContainer = getNewRecordContainer(filePlan);
-                    if (newRecordContainer == null)
-                    {
-                        throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
-                    }
-
-                    // move the document into the file plan
-                    nodeService.moveNode(actionedUponNodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-                    
-                    // maintain the original primary location
-                    nodeService.addChild(parentAssoc.getParentRef(), actionedUponNodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
-                    
-                    // set the readers
-                    recordsManagementSecurityService.setExtendedReaders(actionedUponNodeRef, readers);                    
-                    
-                    return null;
-                }
-            });            
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("Unable to find file plan.");
-        }        
-    }
+                // TODO parameterise the action with the file plan
+                final NodeRef filePlan = filePlans.get(0);
     
-    private NodeRef getNewRecordContainer(NodeRef filePlan)
-    {
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_UNFILED_RECORDS, RegexQNamePattern.MATCH_ALL);
-        if (assocs.size() != 1)
-        {
-            throw new AlfrescoRuntimeException("Error getting the new record container, because the container cannot be indentified.");
+                // run record creation as system
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        // create record from existing document
+                        recordService.createRecordFromDocument(filePlan, actionedUponNodeRef);
+                        
+                        return null;
+                    }
+                });            
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("Unable to find file plan.");
+            }       
         }
-        return assocs.get(0).getChildRef();        
-    } 
+    }
 
+    /**
+     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+     */
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> params)
     {

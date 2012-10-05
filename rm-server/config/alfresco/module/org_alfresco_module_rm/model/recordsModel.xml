@@ -726,7 +726,6 @@
             <property name="rma:dateFiled">
                <title>Date Filed</title>
                <type>d:date</type>
-               <mandatory>true</mandatory>
             </property>
 
             <property name="rma:publicationDate">

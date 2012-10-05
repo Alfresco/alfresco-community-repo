@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -27,20 +28,20 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
+ * Record service implementation
+ * 
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -55,6 +56,10 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
     private DictionaryService dictionaryService;
     
     private PolicyComponent policyComponent;
+    
+    private PermissionService permissionService;
+    
+    private RecordsManagementSecurityService recordsManagementSecurityService;
     
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;
@@ -84,41 +89,51 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
         this.policyComponent = policyComponent;
     }
     
-    public void init()
+    public void setPermissionService(PermissionService permissionService)
     {
-        policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
-                TYPE_UNFILED_RECORD_CONTAINER, 
-                ContentModel.ASSOC_CONTAINS,
-                new JavaBehaviour(this, "onCreateNewRecord", NotificationFrequency.TRANSACTION_COMMIT));
+        this.permissionService = permissionService;
     }
     
-    public void onCreateNewRecord(final ChildAssociationRef childAssocRef, boolean bNew)
+    public void setRecordsManagementSecurityService(RecordsManagementSecurityService recordsManagementSecurityService)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                NodeRef nodeRef = childAssocRef.getChildRef();
-                if (nodeService.exists(nodeRef) == true)
-                {
-                    QName type = nodeService.getType(nodeRef);
-                    if (ContentModel.TYPE_CONTENT.equals(type) == true ||
-                        dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) == true)
-                    {
-                        makeRecord(nodeRef);
-                    }
-                    else
-                    {
-                        throw new AlfrescoRuntimeException("Only content can be created as a record.");
-                    }        
-                }
-                
-                return null;
-            }           
-        });
+        this.recordsManagementSecurityService = recordsManagementSecurityService;
     }
+    
+    public void init()
+    {
+       // policyComponent.bindAssociationBehaviour(
+       //         QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
+       //         TYPE_UNFILED_RECORD_CONTAINER, 
+       //         ContentModel.ASSOC_CONTAINS,
+       //         new JavaBehaviour(this, "onCreateNewRecord", NotificationFrequency.TRANSACTION_COMMIT));
+    }
+    
+//    public void onCreateNewRecord(final ChildAssociationRef childAssocRef, boolean bNew)
+//    {
+//        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+//        {
+//            @Override
+//            public Void doWork() throws Exception
+//            {
+//                NodeRef nodeRef = childAssocRef.getChildRef();
+//                if (nodeService.exists(nodeRef) == true)
+//                {
+//                    QName type = nodeService.getType(nodeRef);
+//                    if (ContentModel.TYPE_CONTENT.equals(type) == true ||
+//                        dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) == true)
+//                    {
+//                        makeRecord(nodeRef);
+//                    }
+//                    else
+//                    {
+//                        throw new AlfrescoRuntimeException("Only content can be created as a record.");
+//                    }        
+//                }
+//                
+//                return null;
+//            }           
+//        });
+//    }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects()
@@ -153,47 +168,39 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
         return (nodeService.hasAspect(record, ASPECT_DECLARED_RECORD));
     } 
     
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getNewRecordContainer(org.alfresco.service.cmr.repository.NodeRef)
-     */
-//    public NodeRef getNewRecordContainer(NodeRef filePlan) 
-//    {
-//        NodeRef result = null;      
-//        
-//        if (recordsManagementService.isFilePlan(filePlan) == true)
-//        {
-//            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_NEW_RECORDS, RegexQNamePattern.MATCH_ALL);
-//            if (assocs.size() != 1)
-//            {
-//                throw new AlfrescoRuntimeException("Error getting the new record container, because the container cannot be indentified.");
-//            }
-//            result = assocs.get(0).getChildRef();
-//        }       
-//        
-//        return result;
-//    }
+    @Override
+    public void createRecordFromDocument(NodeRef filePlan, NodeRef document)
+    {
+        // skip everything if the document is already a record
+        if (nodeService.hasAspect(document, ASPECT_RECORD) == false)
+        {
+            // get the documents readers
+            Long aclId = nodeService.getNodeAclId(document);
+            Set<String> readers = permissionService.getReaders(aclId);         
+            
+            // get the documents primary parent assoc
+            ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(document);
+            
+            /// get the new record container for the file plan
+            NodeRef newRecordContainer = getNewRecordContainer(filePlan);
+            if (newRecordContainer == null)
+            {
+                throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
+            }
     
-//    @Override
-//    public NodeRef createRecord(NodeRef filePlan, NodeRef document) 
-//    {
-//        // get the documents primary parent assoc
-//        ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(document);
-//        
-//        /// get the new record container for the file plan
-//        NodeRef newRecordContainer = getNewRecordContainer(filePlan);
-//        if (newRecordContainer == null)
-//        {
-//            throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
-//        }
-//        
-//        // move the document into the file plan
-//        nodeService.moveNode(document, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-//        
-//        // maintain the original primary location
-//        nodeService.addChild(parentAssoc.getParentRef(), document, parentAssoc.getTypeQName(), parentAssoc.getQName());
-//
-//        return document;
-//    }
+            // move the document into the file plan
+            nodeService.moveNode(document, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
+            
+            // maintain the original primary location
+            nodeService.addChild(parentAssoc.getParentRef(), document, parentAssoc.getTypeQName(), parentAssoc.getQName());
+            
+            // make the document a record
+            makeRecord(document);
+            
+            // set the readers
+            recordsManagementSecurityService.setExtendedReaders(document, readers);  
+        }
+    }
     
     /**
      * 
@@ -206,5 +213,20 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
         String recordId = identifierService.generateIdentifier(ASPECT_RECORD, nodeService.getPrimaryParent(document).getParentRef());        
         nodeService.setProperty(document, PROP_IDENTIFIER, recordId);
     }
+    
+    /**
+     * 
+     * @param filePlan
+     * @return
+     */
+    private NodeRef getNewRecordContainer(NodeRef filePlan)
+    {
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_UNFILED_RECORDS, RegexQNamePattern.MATCH_ALL);
+        if (assocs.size() != 1)
+        {
+            throw new AlfrescoRuntimeException("Error getting the new record container, because the container cannot be indentified.");
+        }
+        return assocs.get(0).getChildRef();        
+    } 
 
 }

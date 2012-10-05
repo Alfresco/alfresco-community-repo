@@ -33,6 +33,7 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -284,7 +285,17 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
         NodeRef thumbnail = childAssocRef.getChildRef();
         if (nodeService.exists(thumbnail) == true)
         {
+            // apply file plan component aspect to thumbnail
             nodeService.addAspect(thumbnail, ASPECT_FILE_PLAN_COMPONENT, null);
+            
+            // manage any extended readers
+            RecordsManagementSecurityService securityService = serviceRegistry.getRecordsManagementSecurityService();            
+            NodeRef parent = childAssocRef.getParentRef();            
+            Set<String> readers = securityService.getExtendedReaders(parent);
+            if (readers != null && readers.size() != 0)
+            {
+                securityService.setExtendedReaders(thumbnail, readers, false);
+            }
         }
     }
     

@@ -47,6 +47,14 @@ public interface RecordService
      */
     boolean isDeclared(NodeRef nodeRef);  
     
+    /**
+     * Create a new record from an existing document.
+     * 
+     * @param filePlan
+     * @param document
+     */
+    void createRecordFromDocument(NodeRef filePlan, NodeRef document);
+    
     // TODO boolean isRecordFiled(NodeRef record);
     // TODO boolean isRecordClassified(NodeRef record);
     

@@ -481,7 +481,8 @@
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.createRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.updateRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deleteRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW    
+                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW  
+                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.hasExtendedReaders=RM_ALLOW  
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getExtendedReaders=RM_ALLOW 
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.setExtendedReaders=RM_ALLOW 
 				org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.removeExtendedReaders=RM_ALLOW 
@@ -801,6 +802,8 @@
         <property name="policyComponent" ref="policyComponent"/>
     	<property name="dictionaryService" ref="DictionaryService"/>
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
     </bean>
     
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -845,6 +848,7 @@
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromDocument=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>

@@ -263,7 +263,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     public boolean isThumbnailDefinitionAvailable(String sourceUrl, String sourceMimetype, long sourceSize, NodeRef sourceNodeRef, ThumbnailDefinition thumbnailDefinition)
     {
         // Copy the thumbnail's TransformationOptions and set the sourceNodeRef, for use by transformers and debug. 
-        TransformationOptions options = new TransformationOptions(thumbnailDefinition.getTransformationOptions());
+        TransformationOptions options = thumbnailDefinition.getTransformationOptions().deepCopy();
         options.setSourceNodeRef(sourceNodeRef);
 
         // Log the following getTransform() as trace so we can see the wood for the trees

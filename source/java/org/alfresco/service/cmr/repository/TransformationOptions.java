@@ -35,7 +35,7 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 3.0.0
  */
-public class TransformationOptions
+public class TransformationOptions implements Cloneable
 {
     /** Option map names to preserve backward compatibility */
     public static final String OPT_SOURCE_NODEREF = "contentReaderNodeRef";
@@ -104,6 +104,28 @@ public class TransformationOptions
     public TransformationOptions(Map<String, Object> optionsMap)
     {
         set(optionsMap);
+    }
+    
+    @Override
+    protected TransformationOptions clone() throws CloneNotSupportedException
+    {
+        TransformationOptions clone = (TransformationOptions) super.clone();
+        clone.limits = new TransformationOptionLimits();
+        clone.set(toMap());
+        return clone;
+    }    
+
+    public TransformationOptions deepCopy()
+    {
+        try
+        {
+            return clone();
+        }
+        catch (CloneNotSupportedException e)
+        {
+            // Not thrown
+        }
+        return null;
     }
     
     /**

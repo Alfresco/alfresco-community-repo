@@ -111,10 +111,26 @@ public class TransformationOptions implements Cloneable
     {
         TransformationOptions clone = (TransformationOptions) super.clone();
         clone.limits = new TransformationOptionLimits();
-        clone.set(toMap());
+        clone.copyFrom(this);
         return clone;
     }    
 
+    /**
+     * Does the work of copying the given other TransformationOptions
+     * values to this one
+     * 
+     * @param otherOptions   the options to copy
+     */
+    public void copyFrom(TransformationOptions otherOptions)
+    {
+        this.set(otherOptions.toMap());
+    }
+    
+    /**
+     * Creates a clone of the TransformationOptions
+     * 
+     * @return a copy of the options
+     */
     public TransformationOptions deepCopy()
     {
         try

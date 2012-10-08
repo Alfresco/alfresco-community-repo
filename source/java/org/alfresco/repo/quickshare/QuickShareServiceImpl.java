@@ -234,7 +234,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     {
         checkEnabled();
         
-        Map<QName, Serializable> nodeProps = getNodeProperties(nodeRef);
+        Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
         ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         
         String modifierUserName = (String)nodeProps.get(ContentModel.PROP_MODIFIER);
@@ -316,18 +316,6 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         Map<String, Object> model = new HashMap<String, Object>(1);
         model.put("item", metadata);
         return model;
-    }
-
-    private Map<QName, Serializable> getNodeProperties(NodeRef nodeRef)
-    {
-        QName typeQName = nodeService.getType(nodeRef);
-        if (! typeQName.equals(ContentModel.TYPE_CONTENT))
-        {
-            throw new InvalidNodeRefException(nodeRef);
-        }
-        
-        Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
-        return nodeProps;
     }
 
     @Override

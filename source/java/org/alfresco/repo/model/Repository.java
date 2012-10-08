@@ -76,9 +76,8 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     // company home
     private StoreRef companyHomeStore;
     private String companyHomePath;
-    private Map<String, NodeRef> companyHomeRefs;
-    
-    private Map<String, NodeRef> rootRefs;
+    final private Map<String, NodeRef> companyHomeRefs = new ConcurrentHashMap<String, NodeRef>();
+    final private Map<String, NodeRef> rootRefs = new ConcurrentHashMap<String, NodeRef>();
     
     
     /**
@@ -199,20 +198,9 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     {
         tenantAdminService.register(this);
         
-        if (companyHomeRefs == null)
-        {
-            companyHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
-        }
-        
-        if (rootRefs == null)
-        {
-            rootRefs = new ConcurrentHashMap<String, NodeRef>(4);
-        }
-        
         getCompanyHome();
     }
     
-
     /**
      * Gets the root home of the company home store
      * 

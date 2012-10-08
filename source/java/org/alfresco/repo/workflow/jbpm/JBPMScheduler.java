@@ -66,7 +66,7 @@ public class JBPMScheduler extends AbstractLifecycleBean
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-    	if(JbpmEngineEnabled || executor.isStarted())
+    	if(JbpmEngineEnabled && executor.isStarted())
     	{
     		executor.stop();
     	}

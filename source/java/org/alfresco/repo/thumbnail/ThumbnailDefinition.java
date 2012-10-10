@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,9 @@
  */
 package org.alfresco.repo.thumbnail;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
@@ -27,6 +30,9 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  */
 public class ThumbnailDefinition
 {
+
+    private static final Log logger = LogFactory.getLog(ThumbnailDefinition.class);
+
     /** Name of the thumbnail */
     private String name;
     
@@ -49,6 +55,9 @@ public class ThumbnailDefinition
     
     /** Username to run the thumbnailrendition as */
     private String runAs;
+    
+    /** The thumbnail registry */
+    private ThumbnailRegistry thumbnailRegistry;
     
     /**
      * Default constructor
@@ -224,5 +233,41 @@ public class ThumbnailDefinition
     public String getMimeAwarePlaceHolderResourcePath()
     {   
         return mimeAwarePlaceHolderResourcePath;
+    }
+
+    /**
+     * Gets the thumbnail registry
+     * 
+     * @return the thumbnail registry
+     */
+    public ThumbnailRegistry getThumbnailRegistry()
+    {
+        return thumbnailRegistry;
+    }
+
+    /**
+     * Sets the thumbnail registry
+     * 
+     * @param thumbnailRegistry
+     */
+    public void setThumbnailRegistry(ThumbnailRegistry thumbnailRegistry)
+    {
+        this.thumbnailRegistry = thumbnailRegistry;
+    }
+    
+    /**
+     * Registers the thumbnail definition with the thumbnail registry.
+     * 
+     * @see #setThumbnailRegistry(ThumbnailRegistry)
+     */
+    public void register()
+    {
+        if (thumbnailRegistry == null)
+        {
+            logger.warn("Property 'thumbnailRegistry' has not been set.  Ignoring auto-registration: \n" +
+                    "   extracter: " + this);
+            return;
+        }
+        thumbnailRegistry.addThumbnailDefinition(this);
     }
 }

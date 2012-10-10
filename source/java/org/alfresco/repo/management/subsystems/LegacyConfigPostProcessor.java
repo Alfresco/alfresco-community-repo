@@ -113,7 +113,8 @@ public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, Prio
             MutablePropertyValues hibernateProperties = processLocations(beanFactory, globalPropertyLocations,
                     LegacyConfigPostProcessor.BEAN_NAME_HIBERNATE_PROPERTIES, new String[]
                     {
-                        "classpath:alfresco/domain/hibernate-cfg.properties"
+                        "classpath:alfresco/domain/hibernate-cfg.properties",
+                        "classpath*:alfresco/enterprise/cache/hibernate-cfg.properties"
                     });
             // Fix up additional properties to enforce correct order of precedence
             hibernateProperties.addPropertyValue("localOverride", Boolean.TRUE);

@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.event;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -121,6 +122,23 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     {
         return getEventMap().containsKey(eventName);
     }
+    
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#existsEventDisplayLabel(java.lang.String)
+    */
+   @SuppressWarnings("rawtypes")
+   public boolean existsEventDisplayLabel(String eventDisplayLabel)
+   {
+      for (Iterator iterator = getEventMap().values().iterator(); iterator.hasNext();)
+      {
+         RecordsManagementEvent recordsManagementEvent = (RecordsManagementEvent) iterator.next();
+         if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#addEvent(java.lang.String, java.lang.String, java.lang.String)

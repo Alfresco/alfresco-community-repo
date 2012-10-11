@@ -606,6 +606,7 @@
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.addEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.removeEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.existsEvent=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.existsEventDisplayLabel=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.*=RM_DENY
                 ]]>
             </value>

@@ -90,6 +90,12 @@ public class RmEventPut extends DeclarativeWebScript
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST, "No event display label provided.");
             }
+            if (rmEventService.existsEventDisplayLabel(eventDisplayLabel))
+            {
+               throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                     "Cannot edit event. The event display label '"
+                           + eventDisplayLabel + "' already exists.");
+            }
             
             String eventType = null;
             if (json.has("eventType") == true)

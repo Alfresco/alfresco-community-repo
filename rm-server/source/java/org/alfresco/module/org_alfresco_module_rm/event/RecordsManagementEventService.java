@@ -74,6 +74,14 @@ public interface RecordsManagementEventService
     boolean existsEvent(String eventName);
     
     /**
+     * Indicates whether a particular event display label exists. Returns true if it does, false otherwise.
+     * 
+     * @param eventDisplayLabel event display label
+     * @return true if event display label exists, false otherwise
+     */
+    boolean existsEventDisplayLabel(String eventDisplayLabel);
+    
+    /**
      * Add an event
      * 
      * @param eventType             event type

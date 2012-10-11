@@ -96,13 +96,13 @@ public class LinksDeletePost extends AbstractLinksWebScript
          }
          catch (AccessDeniedException e)
          {
-            String message = "You don't have permission to delete the link with name '" + link.getSystemName() + "'";
+            String message = "You don't have permission to delete the link with name '" + link.getTitle() + "'";
             
             status.setCode(Status.STATUS_FORBIDDEN);
             status.setMessage(message);
             
             message = rb.getString(MSG_ACCESS_DENIED);
-            model.put(PARAM_MESSAGE, MessageFormat.format(message, link.getSystemName()));
+            model.put(PARAM_MESSAGE, MessageFormat.format(message, link.getTitle()));
             return model;
          }
          

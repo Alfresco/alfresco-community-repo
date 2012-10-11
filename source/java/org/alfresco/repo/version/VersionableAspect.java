@@ -357,7 +357,9 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (this.nodeService.exists(nodeRef) == true && aspectTypeQName.equals(ContentModel.ASPECT_VERSIONABLE) == true)
+        if (this.nodeService.exists(nodeRef) == true 
+        		&& this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true 
+        		&& aspectTypeQName.equals(ContentModel.ASPECT_VERSIONABLE) == true)
         {
             boolean initialVersion = true;
             Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_INITIAL_VERSION);

@@ -48,7 +48,6 @@ import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -129,9 +128,11 @@ public class RuleServiceIntegrationTest
     
     
 
-    @Ignore("Failing test, reproducing bug described by ALF-14964. " +
-    		"Queued Policies (TRANSACTION_COMMIT) are causing the " +
-    		"Versionable aspect to be re-added after the rules have fired.")
+    /**
+     * Test that inherited rules with inverted actions behave correctly. 
+     * Specifically that the VERSIONABLE aspect is correctly removed after
+     * being adding by an inherited parent rule.
+     */
     @Test public void testInheritedInvertedRule() throws Exception
     {
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
@@ -177,10 +178,6 @@ public class RuleServiceIntegrationTest
         assertTrue("Versionable Aspect was not removed", ! NODE_SERVICE.hasAspect(childContent, ContentModel.ASPECT_VERSIONABLE));
         
     }
-    
-    
-    
-    @Test public void noOp() { /* Intentionally empty. */ }
     
     
     

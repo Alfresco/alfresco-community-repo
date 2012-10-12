@@ -41,5 +41,6 @@ public interface ActivityPoster
                 String siteId,
                 String tenantDomain,
                 String parentPath,
+                FileInfo parentNodeInfo,
                 FileInfo contentNodeInfo) throws WebDAVServerException;
 }

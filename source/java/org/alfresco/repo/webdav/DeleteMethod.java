@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -146,7 +146,7 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
             String parentPath = "/";
             try
             {
-                parentPath = getDAVHelper().getPathFromNode(documentLibrary, parent.getNodeRef());        
+                parentPath = getDAVHelper().getPathFromNode(documentLibrary, parent.getNodeRef());
             }
             catch (FileNotFoundException error)
             {
@@ -156,7 +156,7 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
                 }
             }
             
-            activityPoster.postFileDeleted(siteId, tenantDomain, parentPath, deletedFile);
+            activityPoster.postFileDeleted(siteId, tenantDomain, parentPath, parent, deletedFile);
         }  
     }
     

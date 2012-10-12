@@ -20,15 +20,11 @@ package org.alfresco.repo.webdav;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,13 +36,8 @@ import org.json.JSONObject;
  */
 public class ActivityPosterImpl implements ActivityPoster
 {
-    private static final String FILE_ADDED = "org.alfresco.documentlibrary.file-added";
-    private static final String FILE_UPDATED = "org.alfresco.documentlibrary.file-updated";
-    private static final String FILE_DELETED = "org.alfresco.documentlibrary.file-deleted";
     private String appTool;
     private ActivityService activityService;
-    private NodeService nodeService;
-    private PersonService personService;
     
     
     /**
@@ -64,12 +55,10 @@ public class ActivityPosterImpl implements ActivityPoster
      * @param nodeService
      * @param personService
      */
-    public ActivityPosterImpl(String appTool, ActivityService activityService, NodeService nodeService, PersonService personService)
+    public ActivityPosterImpl(String appTool, ActivityService activityService)
     {
         this.appTool = appTool;
         this.activityService = activityService;
-        this.nodeService = nodeService;
-        this.personService = personService;
     }
 
     
@@ -82,7 +71,7 @@ public class ActivityPosterImpl implements ActivityPoster
                 String tenantDomain,
                 FileInfo contentNodeInfo) throws WebDAVServerException
     {
-        postFileActivity(FILE_ADDED, siteId, tenantDomain, null, contentNodeInfo);
+        postFileActivity(ActivityType.FILE_ADDED, siteId, tenantDomain, null, null, contentNodeInfo);
     }
 
     /**
@@ -94,7 +83,7 @@ public class ActivityPosterImpl implements ActivityPoster
                 String tenantDomain,
                 FileInfo contentNodeInfo) throws WebDAVServerException
     {
-        postFileActivity(FILE_UPDATED, siteId, tenantDomain, null, contentNodeInfo);
+        postFileActivity(ActivityType.FILE_UPDATED, siteId, tenantDomain, null, null, contentNodeInfo);
     }
     
     /**
@@ -105,9 +94,10 @@ public class ActivityPosterImpl implements ActivityPoster
                 String siteId,
                 String tenantDomain,
                 String parentPath,
+                FileInfo parentNodeInfo,
                 FileInfo contentNodeInfo) throws WebDAVServerException
     {
-        postFileActivity(FILE_DELETED, siteId, tenantDomain, parentPath, contentNodeInfo);
+        postFileActivity(ActivityType.FILE_DELETED, siteId, tenantDomain, parentPath, parentNodeInfo.getNodeRef(), contentNodeInfo);
     }
     
     
@@ -116,14 +106,13 @@ public class ActivityPosterImpl implements ActivityPoster
                 String siteId,
                 String tenantDomain,
                 String parentPath,
+                NodeRef parentNodeRef,
                 FileInfo contentNodeInfo) throws WebDAVServerException
     {
-        Pair<String, String> personName = getPersonName();
-        final String firstName = personName.getFirst();
-        final String lastName = personName.getSecond();
-        final String fileName = contentNodeInfo.getName();
-        final NodeRef nodeRef = contentNodeInfo.getNodeRef();
-        JSONObject json = createActivityJSON(tenantDomain, parentPath, nodeRef, firstName, lastName, fileName);
+        String fileName = contentNodeInfo.getName();
+        NodeRef nodeRef = contentNodeInfo.getNodeRef();
+        
+        JSONObject json = createActivityJSON(tenantDomain, parentPath, parentNodeRef, nodeRef, fileName);
         
         activityService.postActivity(
                     activityType,
@@ -138,8 +127,6 @@ public class ActivityPosterImpl implements ActivityPoster
      * 
      * @param tenantDomain
      * @param nodeRef
-     * @param firstName
-     * @param lastName
      * @param fileName
      * @throws WebDAVServerException
      * @return JSONObject
@@ -147,19 +134,25 @@ public class ActivityPosterImpl implements ActivityPoster
     private JSONObject createActivityJSON(
                 String tenantDomain,
                 String parentPath,
+                NodeRef parentNodeRef,
                 NodeRef nodeRef,
-                String firstName,
-                String lastName,
                 String fileName) throws WebDAVServerException
     {
         JSONObject json = new JSONObject();
         try
         {
             json.put("nodeRef", nodeRef);
+            
+            if (parentNodeRef != null)
+            {
+                // Used for deleted files.
+                json.put("parentNodeRef", parentNodeRef);
+            }
+            
             if (parentPath != null)
             {
                 // Used for deleted files.
-                json.put("page", "documentlibrary?path=" + parentPath);                
+                json.put("page", "documentlibrary?path=" + parentPath);
             }
             else
             {
@@ -167,8 +160,7 @@ public class ActivityPosterImpl implements ActivityPoster
                 json.put("page", "document-details?nodeRef=" + nodeRef);
             }
             json.put("title", fileName);
-            json.put("firstName", firstName);
-            json.put("lastName", lastName);
+            
             if (!tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
             {
                 // Only used in multi-tenant setups.
@@ -183,26 +175,6 @@ public class ActivityPosterImpl implements ActivityPoster
         return json;
     }
 
-    /**
-     * Creates the tuple (firstName, lastName) for the current user.
-     * 
-     * @return Pair&lt;String, String&gt;
-     */
-    private Pair<String, String> getPersonName()
-    {
-        String firstName = "";
-        String lastName = "";
-        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
-        NodeRef person = personService.getPerson(userName);
-        if (person != null)
-        {
-            firstName = (String) nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME);
-            lastName = (String) nodeService.getProperty(person, ContentModel.PROP_LASTNAME);
-        }
-        
-        return new Pair<String, String>(firstName, lastName);
-    }
-
     public void setAppTool(String appTool)
     {
         this.appTool = appTool;
@@ -211,15 +183,5 @@ public class ActivityPosterImpl implements ActivityPoster
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    public void setPersonService(PersonService personService)
-    {
-        this.personService = personService;
     }
 }

@@ -498,15 +498,16 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     {
         if (nodeService.exists(nodeRef) == true)
         {
-            // Initialise the search parameteres as required
+            // Initialise the search parameters as required
             setVitalRecordDefintionDetails(nodeRef);
         }        
     }
 
     public void vitalRecordDefintionAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        // Only care about record folders
-        if (recordsManagementService.isRecordFolder(nodeRef) == true)
+        // Only care about record folders or record categories
+        if (recordsManagementService.isRecordFolder(nodeRef) == true ||
+            recordsManagementService.isRecordCategory(nodeRef) == true)
         {
             updateVitalRecordDefinitionValues(nodeRef);         
         }
@@ -514,8 +515,9 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     
     public void vitalRecordDefintionUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        // Only care about record folders
-        if (recordsManagementService.isRecordFolder(nodeRef) == true)
+        // Only care about record folders or record categories
+        if (recordsManagementService.isRecordFolder(nodeRef) == true ||
+            recordsManagementService.isRecordCategory(nodeRef) == true)
         {
             Set<QName> props = new HashSet<QName>(1);
             props.add(PROP_REVIEW_PERIOD);
@@ -535,14 +537,17 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         applySearchAspect(nodeRef);
         setVitalRecordDefintionDetails(nodeRef);
         
-        List<NodeRef> records = recordsManagementService.getRecords(nodeRef);
-        for (NodeRef record : records)
-        {
-            // Apply the search aspect
-            applySearchAspect(record);
-            
-            // Set the vital record definition details
-            setVitalRecordDefintionDetails(record);
+        if (recordsManagementService.isRecordFolder(nodeRef) == true)
+        {        
+            List<NodeRef> records = recordsManagementService.getRecords(nodeRef);
+            for (NodeRef record : records)
+            {
+                // Apply the search aspect
+                applySearchAspect(record);
+                
+                // Set the vital record definition details
+                setVitalRecordDefintionDetails(record);
+            }
         }
     }
     

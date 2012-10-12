@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,8 @@
 package org.alfresco.repo.domain.activities;
 
 import java.util.Date;
+
+import org.alfresco.service.cmr.repository.NodeRef;
   
 /**
  * Activity Post DAO
@@ -37,6 +39,10 @@ public class ActivityPostEntity
     private String status;
     private Date postDate;
     private Date lastModified; // for debug
+    
+    // derived
+    private String tenantDomain;
+    private NodeRef parentNodeRef;
     
     // for selector
     private long minId = -1;
@@ -159,6 +165,26 @@ public class ActivityPostEntity
     public void setAppTool(String appTool)
     {
         this.appTool = appTool;
+    }
+    
+    public String getTenantDomain()
+    {
+        return tenantDomain;
+    }
+    
+    public void setTenantDomain(String tenantDomain)
+    {
+        this.tenantDomain = tenantDomain;
+    }
+    
+    public NodeRef getParentNodeRef()
+    {
+        return parentNodeRef;
+    }
+    
+    public void setParentNodeRef(NodeRef parentNodeRef)
+    {
+        this.parentNodeRef = parentNodeRef;
     }
     
     // for debug only

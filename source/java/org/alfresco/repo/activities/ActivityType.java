@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,17 +21,25 @@ package org.alfresco.repo.activities;
 public interface ActivityType
 {
     // pre-defined alfresco activity types
-
+    
     // generic fallback (if specific template is missing)
-    public final String GENERIC_FALLBACK = "org.alfresco.generic";
-
+    public static final String GENERIC_FALLBACK = "org.alfresco.generic";
+    
     // site membership
-    public final String SITE_USER_JOINED = "org.alfresco.site.user-joined";
-    public final String SITE_USER_REMOVED = "org.alfresco.site.user-left";
-    public final String SITE_USER_ROLE_UPDATE = "org.alfresco.site.user-role-changed";
-    public final String SITE_GROUP_ADDED = "org.alfresco.site.group-added";
-    public final String SITE_GROUP_REMOVED = "org.alfresco.site.group-removed";
-    public final String SITE_GROUP_ROLE_UPDATE = "org.alfresco.site.group-role-changed";
-    public final String SUBSCRIPTIONS_SUBSCRIBE = "org.alfresco.subscriptions.subscribed";
-    public final String SUBSCRIPTIONS_FOLLOW = "org.alfresco.subscriptions.followed";
+    public static final String SITE_USER_JOINED = "org.alfresco.site.user-joined";
+    public static final String SITE_USER_REMOVED = "org.alfresco.site.user-left";
+    public static final String SITE_USER_ROLE_UPDATE = "org.alfresco.site.user-role-changed";
+    public static final String SITE_GROUP_ADDED = "org.alfresco.site.group-added";
+    public static final String SITE_GROUP_REMOVED = "org.alfresco.site.group-removed";
+    public static final String SITE_GROUP_ROLE_UPDATE = "org.alfresco.site.group-role-changed";
+    public static final String SUBSCRIPTIONS_SUBSCRIBE = "org.alfresco.subscriptions.subscribed";
+    public static final String SUBSCRIPTIONS_FOLLOW = "org.alfresco.subscriptions.followed";
+    
+    public static final String FILE_ADDED = "org.alfresco.documentlibrary.file-added";
+    public static final String FILE_UPDATED = "org.alfresco.documentlibrary.file-updated";
+    public static final String FILE_DELETED = "org.alfresco.documentlibrary.file-deleted";
+    
+    public static final String FILES_ADDED = "org.alfresco.documentlibrary.files-added";
+    public static final String FILES_UPDATED = "org.alfresco.documentlibrary.files-updated";
+    public static final String FILES_DELETED = "org.alfresco.documentlibrary.files-deleted";
 }

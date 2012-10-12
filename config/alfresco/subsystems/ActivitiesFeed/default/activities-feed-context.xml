@@ -60,6 +60,7 @@
       <property name="transactionService" ref="transactionService"/>
       <property name="personService" ref="personService"/>
       <property name="tenantService" ref="tenantService"/>
+      <property name="siteService" ref="SiteService"/>
    </bean>
     
    <bean id="baseFeedGenerator" class="org.alfresco.repo.activities.feed.AbstractFeedGenerator" abstract="true" init-method="init">

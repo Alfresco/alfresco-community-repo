@@ -520,29 +520,36 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
             // All permission checks must pass
             inclusionMask.set(i, true);
-
-            int parentCheckRead = checkRead(returnedObject.getChildAssocRef(i).getParentRef());
-            int childCheckRead = checkRead(returnedObject.getNodeRef(i));
             
-            for (ConfigAttributeDefintion cad : supportedDefinitions)
+            if (nodeService.exists(returnedObject.getNodeRef(i)) == false)
             {
-                NodeRef testNodeRef = returnedObject.getNodeRef(i);
-                int checkRead = childCheckRead; 
-                if (cad.parent)
-                {
-                    testNodeRef = returnedObject.getChildAssocRef(i).getParentRef();
-                    checkRead = parentCheckRead;
-                }
-
-                if (isUnfiltered(testNodeRef))
-                {
-                    continue;
-                }
-
-                if (inclusionMask.get(i) && (testNodeRef != null) && (checkRead != AccessDecisionVoter.ACCESS_GRANTED))
-                {
-                    inclusionMask.set(i, false);
-                }
+            	inclusionMask.set(i, false);
+            }
+            else
+            {
+	            int parentCheckRead = checkRead(returnedObject.getChildAssocRef(i).getParentRef());
+	            int childCheckRead = checkRead(returnedObject.getNodeRef(i));
+	            
+	            for (ConfigAttributeDefintion cad : supportedDefinitions)
+	            {
+	                NodeRef testNodeRef = returnedObject.getNodeRef(i);
+	                int checkRead = childCheckRead; 
+	                if (cad.parent)
+	                {
+	                    testNodeRef = returnedObject.getChildAssocRef(i).getParentRef();
+	                    checkRead = parentCheckRead;
+	                }
+	
+	                if (isUnfiltered(testNodeRef))
+	                {
+	                    continue;
+	                }
+	
+	                if (inclusionMask.get(i) && (testNodeRef != null) && (checkRead != AccessDecisionVoter.ACCESS_GRANTED))
+	                {
+	                    inclusionMask.set(i, false);
+	                }
+	            }
             }
 
             // Bug out if we are limiting by size

@@ -971,6 +971,6 @@ public class WebDAVHelper
      */
     public boolean isLockedOrReadOnly(final NodeRef nodeRef)
     {
-        return LockUtils.isLockedOrReadOnly(nodeRef, m_serviceRegistry.getLockService());
+        return LockUtils.isLockedAndReadOnly(nodeRef, m_serviceRegistry.getLockService());
     }
 }

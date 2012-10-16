@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.links.LinksService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -209,17 +210,20 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        res.put("tags", link.getTags());
        res.put("internal", link.isInternal());
        
-       // FTL needs a script node of the person
+       // FTL needs a script node of the person, if available
        String creator = link.getCreator();
-       Object creatorO;
-       if (creator == null)
+       Object creatorO = "";
+       if (creator != null)
        {
-          creatorO = "";
-       }
-       else
-       {
-          NodeRef person = personService.getPerson(creator);
-          creatorO = person;
+           try
+           {
+               NodeRef person = personService.getPerson(creator);
+               creatorO = person;
+           }
+           catch (NoSuchPersonException ignored)
+           {
+               // Intentionally empty - treat deleted users as no user.
+           }
        }
        res.put("creator", creatorO);
        

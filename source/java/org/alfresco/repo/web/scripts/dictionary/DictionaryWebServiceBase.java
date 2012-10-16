@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,8 +19,6 @@
 package org.alfresco.repo.web.scripts.dictionary;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.InvalidQNameException;
@@ -38,9 +36,6 @@ import org.springframework.extensions.webscripts.WebScriptException;
 public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
 {
     private static final String NAME_DELIMITER = "_";
-    
-    private Map<String, String> prefixesAndUrlsMap;
-    private Map<String, String> urlsAndPrefixesMap;
     
     /** Namespace service */
     protected NamespaceService namespaceService;
@@ -76,22 +71,6 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     {
         this.dictionaryservice = dictionaryService; 
     }
-    
-    /**
-     * Init method.
-     */
-    public void init()
-    {
-    	Collection<String> prefixes = this.namespaceService.getPrefixes();
-        this.prefixesAndUrlsMap = new HashMap<String, String>(prefixes.size());
-        this.urlsAndPrefixesMap = new HashMap<String, String>(prefixes.size());
-        for (String prefix : prefixes)
-        {
-        	String url = this.namespaceService.getNamespaceURI(prefix);
-        	this.prefixesAndUrlsMap.put(prefix, url);
-            this.urlsAndPrefixesMap.put(url, prefix);           
-        }
-	 }
     
     protected QName createClassQName(String className)
     {
@@ -136,7 +115,7 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
        	{
 			String result = null;
 		   	String prefix = this.getPrefix(classname);
-			String url = this.prefixesAndUrlsMap.get(prefix);
+		   	String url = this.namespaceService.getNamespaceURI(prefix);
 			String name = this.getShortName(classname);
 			result = "{" + url + "}"+ name;
 			return result;
@@ -177,7 +156,11 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
         {
              if(qnameObj.getLocalName().equals(modelname))
              {
-            	 namespaceprefix = this.getUrlsAndPrefixesMap().get(qnameObj.getNamespaceURI());
+                 Collection<String> prefixes = this.namespaceService.getPrefixes(qnameObj.getNamespaceURI());
+                 if (!prefixes.isEmpty())
+                 {
+                     namespaceprefix = prefixes.iterator().next();
+                 }
             	 break;
              }
         }
@@ -286,19 +269,4 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
           	    classfilter.equals(CLASS_FILTER_OPTION_TYPE3));
     }
    
-    /**
-     * @return a string map or prefixes and urls - with prefix as the key
-     */
-    public Map<String, String> getPrefixesAndUrlsMap()
-    {
-    	return prefixesAndUrlsMap;
-    }
-    
-    /**
-     * @return a string map of urls and prefixes - with url as the key
-     */
-    public Map<String, String> getUrlsAndPrefixesMap()
-    {
-    	return urlsAndPrefixesMap;
-    }
 }

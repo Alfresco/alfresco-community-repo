@@ -73,7 +73,7 @@ public class DataListDownloadWebScript extends DeclarativeSpreadsheetWebScript
     // Logger
     private static final Log logger = LogFactory.getLog(DataListDownloadWebScript.class);
     
-    private static final QName DATA_LIST_ITEM_TYPE = DataListModel.TYPE_DATALIST_ITEM; 
+    private static final QName DATA_LIST_ITEM_TYPE = DataListModel.PROP_DATALIST_ITEM_TYPE; 
     
     private NodeService nodeService;
     private SiteService siteService;

@@ -32,7 +32,7 @@
         "iso8601": "${xmldate(item.createdOn)}",
         "legacyDate": "${xmldate(item.createdOn)}"
    },
-   <#if item.creator??>
+   <#if item.creator?has_content>
    <@renderPerson person=item.creator fieldName="author" />
    <#else>
    "author":

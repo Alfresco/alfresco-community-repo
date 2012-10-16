@@ -811,7 +811,7 @@
    <!-- DICTIONARY Service REST API -->
    <!--                             -->
    
-   <bean id="webscript.dictionary" abstract="true" parent="webscript" init-method="init">
+   <bean id="webscript.dictionary" abstract="true" parent="webscript">
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="namespaceService" ref="NamespaceService"/>
    </bean>

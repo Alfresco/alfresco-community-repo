@@ -1,6 +1,95 @@
 const REQUEST_MAX = 1000;
 
 /**
+ * Method that performs the actual loading of the nodes.
+ *
+ * Note!
+ * Will optimize performance by using ScriptNode.childFileFolders for directory listings
+ * In other words when the "path" filter is used.
+ *
+ * @method doclist_getAllNodes
+ * @param parsedArgs {Object}
+ * @param filterParams {Object}
+ * @param query {String}
+ * @param totalItemCount {int}
+ * @return {object} Returns the node and corresponding pagination metadata
+ * {
+ *    allNodes: {Array}
+ *    totalRecords: {int}
+ *    requestTotalCountMax: {int}
+ *    paged: {boolean}
+ *    query: {String}
+ * }
+ */
+function doclist_getAllNodes(parsedArgs, filterParams, query, totalItemCount)
+{
+   var filter = args.filter,
+      totalRecords = 0,
+      requestTotalCountMax = 0,
+      paged = false,
+      allNodes = [];
+   if ((filter || "path") == "path")
+   {
+      // TODO also add DB filter by "node" (in addition to "path")
+      var parentNode = parsedArgs.pathNode;
+      if (parentNode !== null)
+      {
+         var skip = -1,
+               max = -1;
+
+         if (args.size != null)
+         {
+            max = args.size;
+
+            if (args.pos > 0)
+            {
+               skip = (args.pos - 1) * max;
+            }
+         }
+
+         var sortField = (args.sortField == null ? "cm:name" : args.sortField),
+            sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
+
+         // Get paged set
+         requestTotalCountMax = skip + REQUEST_MAX;
+         var pagedResult = parentNode.childFileFolders(true, true, filterParams.ignoreTypes, skip, max, requestTotalCountMax, sortField, sortAsc, "TODO");
+
+         allNodes = pagedResult.page;
+         totalRecords = pagedResult.totalResultCountUpper;
+         paged = true;
+      }
+   }
+   else
+   {
+      // Query the nodes - passing in sort and result limit parameters
+      if (query !== "")
+      {
+         allNodes = search.query(
+         {
+            query: query,
+            language: filterParams.language,
+            page:
+            {
+               maxItems: totalItemCount
+            },
+            sort: filterParams.sort,
+            templates: filterParams.templates,
+            namespace: (filterParams.namespace ? filterParams.namespace : null)
+         });
+
+         totalRecords = allNodes.length;
+      }
+   }
+   return {
+      allNodes: allNodes,
+      totalRecords: totalRecords,
+      requestTotalCountMax: requestTotalCountMax,
+      paged: paged,
+      query: query
+   };
+}
+
+/**
  * Main entry point: Create collection of documents and folders in the given space
  *
  * @method doclist_main
@@ -37,59 +126,16 @@ function doclist_main()
    // For all sites documentLibrary query we pull in all available results and post filter
    if (totalItemCount === 0) totalItemCount = -1;
    else if (allSites) totalItemCount = (totalItemCount > 0 ? totalItemCount * 10 : 500);
-   
-   if ((filter || "path") == "path")
-   {
-      // TODO also add DB filter by "node" (in addition to "path")
-      var parentNode = parsedArgs.pathNode;
-      if (parentNode !== null)
-      {
-         var skip = -1,
-            max = -1;
-          
-         if (args.size != null)
-         {
-            max = args.size;
-            
-            if (args.pos > 0)
-            {
-               skip = (args.pos - 1) * max;
-            }
-         }
-          
-         var sortField = (args.sortField == null ? "cm:name" : args.sortField),
-            sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
 
-         // Get paged set
-         requestTotalCountMax = skip + REQUEST_MAX;
-         var pagedResult = parentNode.childFileFolders(true, true, filterParams.ignoreTypes, skip, max, requestTotalCountMax, sortField, sortAsc, "TODO");
 
-         allNodes = pagedResult.page;
-         totalRecords = pagedResult.totalResultCountUpper;
-         paged = true;
-      }
-   }
-   else
-   {
-      // Query the nodes - passing in sort and result limit parameters
-      if (query !== "")
-      {
-         allNodes = search.query(
-         {
-            query: query,
-            language: filterParams.language,
-            page:
-            {
-               maxItems: totalItemCount
-            },
-            sort: filterParams.sort,
-            templates: filterParams.templates,
-            namespace: (filterParams.namespace ? filterParams.namespace : null)
-         });
-         
-         totalRecords = allNodes.length;
-      }
-   }
+   var allNodesResult = doclist_getAllNodes(parsedArgs, filterParams, query, totalItemCount);
+   allNodes = allNodesResult.allNodes;
+   totalRecords = allNodesResult.totalRecords;
+   requestTotalCountMax = allNodesResult.requestTotalCountMax;
+   paged = allNodesResult.paged;
+   query = allNodesResult.query;
+
+
    if (logger.isLoggingEnabled())
       logger.log("doclist.lib.js - query results: " + allNodes.length);
    // Generate the qname path match regex required for all sites 'documentLibrary' results match

@@ -23,13 +23,11 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  */
 public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase 
-                                        implements ContentServicePolicies.OnContentUpdatePolicy
+                                        implements ContentServicePolicies.OnContentPropertyUpdatePolicy
 {
     /**
      * The logger
@@ -78,53 +76,65 @@ public class OnContentUpdateRuleTrigger extends RuleTriggerAbstractBase
     {
         // Bind behaviour
         this.policyComponent.bindClassBehaviour(
-                ContentServicePolicies.OnContentUpdatePolicy.QNAME, 
+                ContentServicePolicies.OnContentPropertyUpdatePolicy.QNAME, 
                 this, 
-                new JavaBehaviour(this, "onContentUpdate"));
+                new JavaBehaviour(this, "onContentPropertyUpdate"));
     }
 
+    
+    
     /**
-     * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * @see org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy#onContentPropertyUpdate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.ContentData, org.alfresco.service.cmr.repository.ContentData)
      */
-    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
+    @Override
+    public void onContentPropertyUpdate(NodeRef nodeRef, QName propertyQName, ContentData beforeValue,
+            ContentData afterValue)
     {
         // Break out early if rules are not enabled
         if (!areRulesEnabled())
         {
             return;
         }
-        
-        // Check the new content and make sure that we do indeed want to trigger the rule
-        boolean fail = false;
-        if (newContent == true)
+    	
+    	// Check the new content and make sure that we do indeed want to trigger the rule
+        if (propertyQName.equals(ContentModel.PROP_PREFERENCE_VALUES))
         {
-            fail = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT);
-            
-            if (fail == false)
-            {
-                // Note: Don't use the ContentService.getReader() because we don't need access to the content
-                ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-                if (contentData == null)
-                {
-                    fail = true;
-                }
-            }
+            return;
         }
-        
-        // Double check for content created in this transaction
-        if (fail == false && !newContent)
+    	    
+        // Check for new content
+        boolean newContent = beforeValue == null && afterValue != null;
+
+    	// Check the new content and make sure that we do indeed want to trigger the rule
+        if (newContent)
+        {
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
+            {
+                return;
+            }
+
+            // Note: Don't use the ContentService.getReader() because we don't need access to the content
+            if (!ContentData.hasContent(afterValue))
+            {
+                return;
+            }
+    	}
+        // An update, but double check for content created in this transaction
+        else
         {
             Set<NodeRef> newNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_NEW_NODES);
-            boolean wasCreatedInTxn = newNodeRefSet.contains(nodeRef);
-            if (logger.isDebugEnabled() && wasCreatedInTxn)
+            if (newNodeRefSet.contains(nodeRef))
             {
-                logger.debug("Receiving content property update for node created in transaction: " + nodeRef);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Receiving content property update for node created in transaction: " + nodeRef);
+                }
+                return;
             }
-            fail = wasCreatedInTxn;
         }
         
         // Trigger the rules in the appropriate way
-        if (fail == false && newContent == this.onNewContent)
+        if (newContent == this.onNewContent)
         {
             if (triggerParentRules == true)
             {

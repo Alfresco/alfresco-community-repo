@@ -81,7 +81,9 @@ public interface CheckOutCheckInService
 	 * When a working copy is checked in the current state of the working copy is copied to the 
 	 * original node.  This will include any content updated in the working node.
 	 * <p>
-	 * If version properties are provided the original node will be versioned and updated accordingly.
+	 * If versioning is not enabled on a node (the versionable aspect is not present on the node), the 
+	 * check in overwrites the existing node and releases the lock unless the keepCheckedOut flag is used.
+	 * With versioning enabled on the node, a new version is always created.
 	 * <p>
 	 * If a content Url is provided it will be used to update the content of the working node before the
 	 * checkin operation takes place.

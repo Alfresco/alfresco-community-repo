@@ -28,9 +28,9 @@
 
     <PathMappings>
         <PathMap source="/alfresco-access" target="/alfresco-access" />
-        <PathMap source="/alfresco-api/post/ticketComponent/validateTicket/no-error" target="/alfresco-access/login"/>
-        <PathMap source="/alfresco-api/post/ticketComponent/validateTicket/error" target="/alfresco-access/loginFailure"/>
-        <PathMap source="/alfresco-api/post/ticketComponent/validateTicket/args/userName" target="/alfresco-access/loginUser"/>
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate/no-error" target="/alfresco-access/login"/>
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate/error" target="/alfresco-access/loginFailure"/>
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate/args/userName" target="/alfresco-access/loginUser"/>
         <PathMap source="/alfresco-api/pre/ticketComponent/invalidateTicketById/args" target="/alfresco-access/logout"/>
         <PathMap source="/alfresco-access/transaction/properties/add/cm:versionLabel" target="/alfresco-access/transaction/cm:versionLabel"/>
         <PathMap source="/alfresco-access/transaction/properties/to/cm:versionLabel" target="/alfresco-access/transaction/cm:versionLabel"/>

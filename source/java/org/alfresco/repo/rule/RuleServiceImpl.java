@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1205,8 +1205,8 @@ public class RuleServiceImpl
                     if (subAction.getActionDefinitionName().equals(MailActionExecuter.NAME))
                     {
                         subAction.setParameterValue(MailActionExecuter.PARAM_SEND_AFTER_COMMIT, true);
-        }
-    }
+                    }
+                }
             }
             else if (action.getActionDefinitionName().equals(MailActionExecuter.NAME))
             {

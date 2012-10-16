@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -127,22 +127,34 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
                     true,
                     this.name);
             
+            String ruleContext = null;
+            if (logger.isDebugEnabled() == true)
+            {
+                if (actionedUponNodeRef != null)
+                {
+                    ruleContext = (executeRuleImmediately ? " now" : "    ") + " on " + nodeService.getPath(actionedUponNodeRef).toString().replaceAll("\\{[^}]*}", "");
+                }
+            }
+            
             if (rules.size() != 0)
             {
                for (Rule rule : rules)
-                {   
+               {   
                     if (logger.isDebugEnabled() == true)
                     {
-                        NodeRef ruleNodeRef = rule.getNodeRef();
                         if (nodeRef != null)
                         {
-                            logger.debug("Triggering rule " + ruleNodeRef.toString());
+                            ruleContext = " " + rule.getTitle() + ruleContext;
                         }
                     }
                     
                     // Only queue if the rule is not disabled
-                    if (rule.getRuleDisabled() == false)
+                    if (rule.getRuleDisabled() == false && ruleService.rulesEnabled(ruleService.getOwningNodeRef(rule)))
                     {
+                        if (logger.isDebugEnabled() == true)
+                        {
+                            logger.debug("Triggering rule" + ruleContext);
+                        }
                         if (executeRuleImmediately == false)
                         {
                             // Queue the rule to be executed at the end of the transaction (but still in the transaction)
@@ -154,13 +166,17 @@ public class RuleTypeImpl extends CommonResourceAbstractBase implements RuleType
                             ((RuntimeRuleService)ruleService).executeRule(rule, actionedUponNodeRef, null);
                         }
                     }
+                    else if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Disabled rule" + ruleContext);
+                    }
                 }
             }
             else
             {
                 if (logger.isDebugEnabled() == true)
                 {
-                    logger.debug("This node has no rules to trigger.");
+                    logger.debug("No rules to trigger" + ruleContext);
                 }
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,9 +18,14 @@
  */
 package org.alfresco.repo.activities;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import junit.framework.TestCase;
+
+import org.alfresco.repo.domain.activities.ActivityPostDAO;
+import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -31,58 +36,66 @@ import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.ApplicationContextHelper;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Activity Service Implementation unit test
  * 
  * @author janv
+ * @since 3.0
  */
-public class ActivityServiceImplTest extends BaseSpringTest 
+public class ActivityServiceImplTest extends TestCase 
 {
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    
     private ActivityService activityService;
     private ScriptService scriptService;
     private MutableAuthenticationService authenticationService;
     private SiteService siteService;
+    private ActivityPostDAO postDAO;
     
     private static final String ADMIN_PW = "admin";
     
     private static final String USER_UN = "bob";
     private static final String USER_PW = "bob";
     
-    protected void onSetUpInTransaction() throws Exception
+    private static final String TEST_RUN_ID = ""+System.currentTimeMillis();
+    
+    @Override
+    protected void setUp() throws Exception
     {
-        super.onSetUpInTransaction();
+        activityService = (ActivityService)ctx.getBean("activityService");
+        scriptService = (ScriptService)ctx.getBean("ScriptService");
+        siteService = (SiteService)ctx.getBean("SiteService");
         
-        // Get the required services
-        this.activityService = (ActivityService)this.applicationContext.getBean("activityService");
-        this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
-        this.siteService = (SiteService)this.applicationContext.getBean("SiteService");
+        postDAO = (ActivityPostDAO)ctx.getBean("postDAO");
         
-        this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
+        authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
         
         authenticationService.authenticate(AuthenticationUtil.getAdminUserName(), ADMIN_PW.toCharArray());
     }
     
-    protected void onTearDownInTransaction() throws Exception
+    @Override
+    protected void tearDown() throws Exception
     {
         authenticationService.clearCurrentSecurityContext();
     }
-	
+    
     public void testPostValidActivities() throws Exception
     {
-        this.activityService.postActivity("org.alfresco.testActivityType1", null, null, "");
+        activityService.postActivity("org.alfresco.testActivityType1", null, null, "");
         
-        this.activityService.postActivity("org.alfresco.testActivityType2", "", "", "");
+        activityService.postActivity("org.alfresco.testActivityType2", "", "", "");
         
-        this.activityService.postActivity("org.alfresco.testActivityType3", "site1", "appToolA", "{ \"var1\" : \"val1\" }");
+        activityService.postActivity("org.alfresco.testActivityType3", "site1", "appToolA", "{ \"var1\" : \"val1\" }");
     }
     
     public void testPostInvalidActivities() throws Exception
     {
         try
         {
-            this.activityService.postActivity("", "", "",(NodeRef) null, "");
+            activityService.postActivity("", "", "",(NodeRef) null, "");
             fail("invalid post activity");
         }
         catch (IllegalArgumentException iae)
@@ -92,7 +105,7 @@ public class ActivityServiceImplTest extends BaseSpringTest
         
         try
         {
-            this.activityService.postActivity("", "", "", "");
+            activityService.postActivity("", "", "", "");
             fail("invalid post activity");
         }
         catch (IllegalArgumentException iae)
@@ -102,56 +115,59 @@ public class ActivityServiceImplTest extends BaseSpringTest
         
         try
         {
-            this.activityService.postActivity("org.alfresco.testActivityType1", "", "", "{ \"nodeRef\" : \"notfound\" }");
+            activityService.postActivity("org.alfresco.testActivityType1", "", "", "{ \"nodeRef\" : \"notfound\" }");
             fail("invalid post activity: bad nodeRef");
         }
         catch (IllegalArgumentException iae)
         {
             assertTrue(iae.getMessage().contains("Invalid node ref: notfound"));
         }
-    }   
-        
+    }
+    
     public void testGetEmptySiteFeed() throws Exception
     {
-        authenticationService.clearCurrentSecurityContext();
-        
         if(! authenticationService.authenticationExists(USER_UN))
         {
             authenticationService.createAuthentication(USER_UN, USER_PW.toCharArray());
         }
+        
+        authenticationService.clearCurrentSecurityContext();
+        
         authenticationService.authenticate(USER_UN, USER_PW.toCharArray());
         
-        siteService.createSite("mypreset", "emptySite", "empty site title", "empty site description", SiteVisibility.PUBLIC);
+        String siteId = "emptySite-"+TEST_RUN_ID;
+        siteService.createSite("mypreset", siteId, "empty site title", "empty site description", SiteVisibility.PUBLIC);
         
-        List<String> siteFeedEntries = this.activityService.getSiteFeedEntries("emptySite", "json");
+        List<String> siteFeedEntries = activityService.getSiteFeedEntries(siteId, "json");
         
         assertNotNull(siteFeedEntries);
         assertTrue(siteFeedEntries.isEmpty());
+        siteService.deleteSite(siteId);
     }
     
     public void testGetEmptyUserFeed() throws Exception
     {
-        List<String> userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", null);
+        List<String> userFeedEntries = activityService.getUserFeedEntries("unknown user", "a format", null);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site");
+        userFeedEntries = activityService.getUserFeedEntries("unknown user", "a format", "some site");
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", true, false, null, null);
+        userFeedEntries = activityService.getUserFeedEntries("unknown user", "a format", "some site", true, false, null, null);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", false, true, null, null);
+        userFeedEntries = activityService.getUserFeedEntries("unknown user", "a format", "some site", false, true, null, null);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
         
-        userFeedEntries = this.activityService.getUserFeedEntries("unknown user", "a format", "some site", true, true, null, null);
+        userFeedEntries = activityService.getUserFeedEntries("unknown user", "a format", "some site", true, true, null, null);
         
         assertNotNull(userFeedEntries);
         assertTrue(userFeedEntries.isEmpty());
@@ -171,47 +187,63 @@ public class ActivityServiceImplTest extends BaseSpringTest
     
     public void testFeedControls() throws Exception
     {
-        List<FeedControl> feedControls = this.activityService.getFeedControls(USER_UN);
+        List<FeedControl> feedControls = activityService.getFeedControls(USER_UN);
         assertNotNull(feedControls);
         assertTrue(feedControls.isEmpty());
-
-        authenticationService.clearCurrentSecurityContext();
         
         if(! authenticationService.authenticationExists(USER_UN))
         {
             authenticationService.createAuthentication(USER_UN, USER_PW.toCharArray());
         }
+        
+        authenticationService.clearCurrentSecurityContext();
+        
         authenticationService.authenticate(USER_UN, USER_PW.toCharArray());
         
-        feedControls = this.activityService.getFeedControls();
+        feedControls = activityService.getFeedControls();
         assertNotNull(feedControls);
         assertTrue(feedControls.isEmpty());
         
-        assertFalse(this.activityService.existsFeedControl(new FeedControl("mySite1", "appTool1")));
+        assertFalse(activityService.existsFeedControl(new FeedControl("mySite1", "appTool1")));
         
-        this.activityService.setFeedControl(new FeedControl("mySite1", null));
-        this.activityService.setFeedControl(new FeedControl("mySite1", "appTool1"));
-        this.activityService.setFeedControl(new FeedControl(null, "appTool2"));
+        activityService.setFeedControl(new FeedControl("mySite1", null));
+        activityService.setFeedControl(new FeedControl("mySite1", "appTool1"));
+        activityService.setFeedControl(new FeedControl(null, "appTool2"));
         
-        feedControls = this.activityService.getFeedControls();
+        feedControls = activityService.getFeedControls();
         assertEquals(3, feedControls.size());
         
-        feedControls = this.activityService.getFeedControls(USER_UN);
+        feedControls = activityService.getFeedControls(USER_UN);
         assertEquals(3, feedControls.size());
         
-        assertTrue(this.activityService.existsFeedControl(new FeedControl("mySite1", "appTool1")));
+        assertTrue(activityService.existsFeedControl(new FeedControl("mySite1", "appTool1")));
         
-        this.activityService.unsetFeedControl(new FeedControl("mySite1", "appTool1"));
+        activityService.unsetFeedControl(new FeedControl("mySite1", "appTool1"));
         
-        assertFalse(this.activityService.existsFeedControl(new FeedControl("mySite1", "appTool1")));
+        assertFalse(activityService.existsFeedControl(new FeedControl("mySite1", "appTool1")));
         
-        feedControls = this.activityService.getFeedControls();
+        feedControls = activityService.getFeedControls();
         assertEquals(2, feedControls.size());
         
-        this.activityService.unsetFeedControl(new FeedControl("mySite1", null));
-        this.activityService.unsetFeedControl(new FeedControl(null, "appTool2"));
+        activityService.unsetFeedControl(new FeedControl("mySite1", null));
+        activityService.unsetFeedControl(new FeedControl(null, "appTool2"));
         
-        feedControls = this.activityService.getFeedControls();
+        feedControls = activityService.getFeedControls();
         assertEquals(0, feedControls.size());
+    }
+    
+    public void testLongName_ALF_10362() throws Exception
+    { 
+        byte [] namePattern = new byte[1024]; 
+        Arrays.fill(namePattern, (byte) 'A');
+        
+        ActivityPostEntity params = new ActivityPostEntity();
+        params.setStatus(ActivityPostEntity.STATUS.PENDING.toString());
+        
+        int cnt = postDAO.selectPosts(params).size();
+        
+        activityService.postActivity("org.alfresco.testActivityType4", "site2", "appToolA", "{\"title\":\"" + new String(namePattern, "UTF-8") + "\"}");
+        
+        assertEquals(cnt+1, postDAO.selectPosts(params).size());
     }
 }

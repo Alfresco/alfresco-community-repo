@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.sf.acegisecurity.Authentication;
 
+import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
@@ -500,14 +501,24 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 for (int i = 0; i < len; i++)
                 {
                     String[] sort = parts[i].split(" +");
-
+                    
                     if (sort.length > 0)
                     {
                         PropertyDefinitionWrapper propDef = connector.getOpenCMISDictionaryService()
                                 .findPropertyByQueryName(sort[0]);
                         if (propDef != null)
                         {
-                            QName sortProp = propDef.getPropertyAccessor().getMappedProperty();
+                            QName sortProp = null;
+                            if (propDef.getPropertyId().equals(CMISDictionaryModel.PROP_BASE_TYPE_ID))
+                            {
+                                // special-case (see also ALF-13968) - for getChildren, using "cmis:baseTypeId" allows sorting of folders first and vice-versa (cmis:folder <-> cmis:document)
+                                sortProp = GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER;
+                            }
+                            else
+                            {
+                                sortProp = propDef.getPropertyAccessor().getMappedProperty();
+                            }
+                            
                             if (sortProp != null)
                             {
                                 boolean sortAsc = (sort.length == 1) || sort[1].equalsIgnoreCase("asc");

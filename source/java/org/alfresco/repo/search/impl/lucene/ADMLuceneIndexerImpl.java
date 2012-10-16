@@ -371,6 +371,13 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             {
                                 return false;
                             }
+
+                            // Don't worry about the cascade reindex impact of nodes that aren't containers 
+                            if (!mayHaveChildren(childRef))
+                            {
+                                return false;
+                            }
+                            
                             // Otherwise, if the parent has less children than the child has parents, then cascade
                             // reindex the parent
                             int childCount = nodeService.getChildAssocs(parentRef, RegexQNamePattern.MATCH_ALL,
@@ -603,6 +610,59 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         }
     }
 
+    protected boolean deleteLeafOnly(String nodeRef, IndexReader reader, boolean delete) throws LuceneIndexException
+    {
+        boolean found = false;
+        try
+        {
+            TermDocs td = reader.termDocs(new Term("LEAFID", nodeRef));
+            while (td.next())
+            {
+                found = true;
+                if (delete)
+                {
+                    reader.deleteDocument(td.doc());
+                }
+                else
+                {
+                    break;
+                }
+            }
+            td.close();
+            if (found)
+            {
+                return true;
+            }
+            // For backward compatibility, use old method of locating non-container docs
+            td = reader.termDocs(new Term("ID", nodeRef));
+            while (td.next())
+            {
+                int doc = td.doc();
+                Document document = reader.document(doc);
+                // Exclude all containers except the root (which is also a node!)
+                Field path = document.getField("PATH");
+                if (path == null || path.stringValue().length() == 0)
+                {
+                    found = true;
+                    if (delete)
+                    {
+                        reader.deleteDocument(doc);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            td.close();
+        }
+        catch (IOException e)
+        {
+            throw new LuceneIndexException("Failed to delete container and below for " + nodeRef, e);
+        }
+        return found;
+    }
+
     protected Set<String> deleteImpl(String nodeRef, IndexReader deltaReader, IndexReader mainReader)
             throws LuceneIndexException, IOException
     {
@@ -786,7 +846,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     }
                     
                     // Now regenerate the containers for this node if necessary
-                    if (cascade || isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
+                    if (cascade && mayHaveChildren(nodeRef)
+                            && !getCachedChildren(childAssociationsSinceFlush, nodeRef, cascade).isEmpty()
+                            || isCategory(getDictionaryService().getType(nodeService.getType(nodeRef))))
                     {
                         generateContainersAndBelow(nodeService.getPaths(nodeRef, false), docs, cascade,
                                 pathsToRegenerate, childAssociationsSinceFlush);
@@ -830,6 +892,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         Document xdoc = new Document();
         xdoc.add(new Field("ID", stringNodeRef, Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
         xdoc.add(new Field("TX", nodeStatus.getChangeTxnId(), Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));
+        xdoc.add(new Field("LEAFID", stringNodeRef, Field.Store.YES, Field.Index.NO_NORMS, Field.TermVector.NO));        
         boolean isAtomic = true;
         for (QName propertyName : properties.keySet())
         {
@@ -1049,13 +1112,11 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                     break;
                 case REINDEX:
                     // Remove from delta if present
-                    deleteLeafOnly(nodeRef, deltaReader, true);
-                    
-                    // Only mask out the node if it is present in the main index
-                    if (deleteLeafOnly(nodeRef, mainReader, false));
-                    {
+                    if (!deleteLeafOnly(nodeRef, deltaReader, true))
+                    {                    
+                        // Only mask out the node if it is present in the main index
                         deletions.add(nodeRef);
-                    }                    
+                    }
                     if (!nodeActionMap.containsKey(nodeRef))
                     {
                         nodeActionMap.put(nodeRef, Action.REINDEX);
@@ -1990,13 +2051,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     }
 
     public int updateFullTextSearch(int size) throws LuceneIndexException
-    {
+    {   
+        checkAbleToDoWork(IndexUpdateStatus.ASYNCHRONOUS);
+        
         if(getLuceneConfig().isContentIndexingEnabled() == false)
         {
             return 0;
         }
         
-        checkAbleToDoWork(IndexUpdateStatus.ASYNCHRONOUS);
         // if (!mainIndexExists())
         // {
         // remainingCount = size;

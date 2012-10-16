@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -85,6 +85,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     public static final QName SORT_QNAME_CONTENT_SIZE = QName.createQName("http://www.alfresco.org/model/content/1.0", "content.size");
     public static final QName SORT_QNAME_CONTENT_MIMETYPE = QName.createQName("http://www.alfresco.org/model/content/1.0", "content.mimetype");
     public static final QName SORT_QNAME_NODE_TYPE = QName.createQName("", "TYPE");
+    public static final QName SORT_QNAME_NODE_IS_FOLDER = QName.createQName("", "IS_FOLDER"); // ALF-13968
     
     
     private NodeDAO nodeDAO;
@@ -285,6 +286,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     private int setFilterSortParams(List<QName> filterSortProps, FilterSortNodeEntity params)
     {
         int cnt = 0;
+        int propCnt = 0;
         
         for (QName filterSortProp : filterSortProps)
         {
@@ -292,7 +294,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             {
                 params.setAuditableProps(true);
             }
-            else if (filterSortProp.equals(SORT_QNAME_NODE_TYPE))
+            else if (filterSortProp.equals(SORT_QNAME_NODE_TYPE) || filterSortProp.equals(SORT_QNAME_NODE_IS_FOLDER))
             {
                 params.setNodeType(true);
             }
@@ -301,15 +303,15 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 Long sortQNameId = getQNameId(filterSortProp);
                 if (sortQNameId != null)
                 {
-                    if (cnt == 0)
+                    if (propCnt == 0)
                     {
                         params.setProp1qnameId(sortQNameId);
                     }
-                    else if (cnt == 1)
+                    else if (propCnt == 1)
                     {
                         params.setProp2qnameId(sortQNameId);
                     }
-                    else if (cnt == 2)
+                    else if (propCnt == 2)
                     {
                         params.setProp3qnameId(sortQNameId);
                     }
@@ -318,6 +320,8 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                         // belts and braces
                         throw new AlfrescoRuntimeException("GetChildren: unexpected - cannot set sort parameter: "+cnt);
                     }
+                    
+                    propCnt++;
                 }
                 else
                 {
@@ -416,6 +420,10 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             else if (pv1 instanceof QName)
             {
                 result = (((QName)pv1).compareTo((QName)pv2));
+            }
+            else if (pv1 instanceof Boolean)
+            {
+                result = (((Boolean)pv1).compareTo((Boolean)pv2));
             }
             else
             {

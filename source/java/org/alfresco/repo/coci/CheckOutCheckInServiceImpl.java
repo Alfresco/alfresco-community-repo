@@ -34,7 +34,6 @@ import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCancelCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
-import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -42,6 +41,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
@@ -377,7 +377,8 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         
         // It is not enough to check LockUtils.isLockedOrReadOnly in case when the same user does offline and online edit (for instance in two open browsers). In this case we get
         // set ContentModel.ASPECT_LOCKABLE and LockType.WRITE_LOCK. So, here we have to check following
-        if (lockService.getLockType(nodeRef) == LockType.WRITE_LOCK)
+        LockStatus lockStatus = lockService.getLockStatus(nodeRef);
+        if (lockStatus != LockStatus.NO_LOCK && lockStatus != LockStatus.LOCK_EXPIRED)
         {
             throw new NodeLockedException(nodeRef);
         }

@@ -396,6 +396,7 @@
                 <prop key="spaces.transfer_groups.childname">${spaces.transfer_groups.childname}</prop>
                 <prop key="spaces.transfer_temp.childname">${spaces.transfer_temp.childname}</prop>
                 <prop key="spaces.inbound_transfer_records.childname">${spaces.inbound_transfer_records.childname}</prop>
+                <prop key="spaces.imap_attachments.childname">${spaces.imap_attachments.childname}</prop>
                 <prop key="spaces.imap_templates.childname">${spaces.imap_templates.childname}</prop>
                 <prop key="spaces.emailActions.childname">${spaces.emailActions.childname}</prop>
                 <prop key="spaces.searchAction.childname">${spaces.searchAction.childname}</prop>
@@ -684,16 +685,14 @@
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                </props>
 
-               <!-- imapSpacesTemplates.acp depends on the above imapSpaces.acp being bootstrapped as it imports
+               <!-- imapSpacesTemplates.xml depends on the above imapSpaces.acp being bootstrapped as it imports
                     into folders defined in that acp.  -->
                <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
-                    <prop key="location">alfresco/bootstrap/imapSpacesTemplates.acp</prop>
+                    <prop key="location">alfresco/bootstrap/imapSpacesTemplates.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                </props>
 
-               <!-- imapSpacesTemplates.acp depends on the above imapSpaces.acp being bootstrapped as it imports
-                    into folders defined in that acp.  -->
                <props>
                     <prop key="path">${publishing.root.path}</prop>
                     <prop key="location">alfresco/bootstrap/publishingRootFolder.xml</prop>

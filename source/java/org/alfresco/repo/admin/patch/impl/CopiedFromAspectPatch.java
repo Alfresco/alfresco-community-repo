@@ -448,13 +448,26 @@ public class CopiedFromAspectPatch extends AbstractPatch
                 }
                 else
                 {
-                    if (logger.isDebugEnabled())
+                    QName sourceTypeQName = nodeService.getType(sourceNodeRef);
+                    // cm:copiedfrom target must be a cm:object
+                    if (dictionaryService.isSubClass(sourceTypeQName, ContentModel.TYPE_CMOBJECT))
                     {
-                        logger.debug("\tP: Adding association cm:original: " + nodePair);
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("\tP: Adding association cm:original: " + nodePair);
+                        }
+                        writeLine(file, "Adding association cm:original: " + nodePair);
+                        nodeService.createAssociation(nodeRef, sourceNodeRef, ContentModel.ASSOC_ORIGINAL);
+                    } 
+                    else 
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("\tP: Removing incompatible aspect cm:copiedfrom " + nodePair);
+                        }
+                        writeLine(file, "Removing incompatible aspect cm:copiedfrom " + nodePair);
+                        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_COPIEDFROM);
                     }
-                    writeLine(file, "Adding association cm:original: " + nodePair);
-                    // Create the association
-                    nodeService.createAssociation(nodeRef, sourceNodeRef, ContentModel.ASSOC_ORIGINAL);
                 }
             }
             if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))

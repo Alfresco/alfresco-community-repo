@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -48,6 +48,8 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.model.filefolder.GetChildrenCannedQueryFactory;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
@@ -89,6 +91,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     
     private Repository repositoryHelper;
     private NodeService nodeService;
+    private DictionaryService dictionaryService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
     
@@ -114,13 +117,20 @@ public class GetChildrenCannedQueryTest extends TestCase
     private static QName TEST_CONTENT_SUBTYPE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "savedquery");
     private static QName TEST_FOLDER_SUBTYPE = ContentModel.TYPE_SYSTEM_FOLDER;
     
+    private static final String TEST_RUN_ID = ""+System.currentTimeMillis();
+    
+    private static final String FOLDER_1 = "aaa-folder";
+    private static final String FOLDER_2 = "bbb-folder";
+    private static final String FOLDER_3 = "emptySystemFolder"; // note: using FileFolderService directly will auto-hide this folder
+    private static final String FOLDER_4 = "yyy-folder";
+    private static final String FOLDER_5 = "zzz-folder";
+    
     private Set<NodeRef> permHits = new HashSet<NodeRef>(100);
     private Set<NodeRef> permMisses = new HashSet<NodeRef>(100);
     
-    private NodeRef testFolder;
-    
     @SuppressWarnings({ "rawtypes" })
     private NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry;
+    private static final String CQ_FACTORY_NAME = "fileFolderGetChildrenCannedQueryFactory";
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
@@ -131,12 +141,13 @@ public class GetChildrenCannedQueryTest extends TestCase
         nodeService = (NodeService)ctx.getBean("NodeService");
         contentService = (ContentService)ctx.getBean("ContentService");
         mimetypeService = (MimetypeService)ctx.getBean("MimetypeService");
+        dictionaryService = (DictionaryService)ctx.getBean("DictionaryService");
         
         personService = (PersonService)ctx.getBean("PersonService");
         authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
         permissionService = (PermissionService)ctx.getBean("PermissionService");
         ratingService = (RatingService)ctx.getBean("RatingService");
-
+        
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         tenantService = (TenantService) ctx.getBean("tenantService");
         
@@ -145,7 +156,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = new GetChildrenCannedQueryFactory();
         
-        getChildrenCannedQueryFactory.setBeanName("getChildrenCannedQueryFactory");
+        getChildrenCannedQueryFactory.setBeanName("fileFolderGetChildrenCannedQueryFactory");
         getChildrenCannedQueryFactory.setRegistry(cannedQueryRegistry);
         
         getChildrenCannedQueryFactory.setCannedQueryDAO((CannedQueryDAO)ctx.getBean("cannedQueryDAO"));
@@ -155,16 +166,17 @@ public class GetChildrenCannedQueryTest extends TestCase
         getChildrenCannedQueryFactory.setLocaleDAO((LocaleDAO)ctx.getBean("localeDAO"));
         getChildrenCannedQueryFactory.setNodeDAO((NodeDAO)ctx.getBean("nodeDAO"));
         getChildrenCannedQueryFactory.setQnameDAO((QNameDAO)ctx.getBean("qnameDAO"));
+        getChildrenCannedQueryFactory.setHiddenAspect((HiddenAspect)ctx.getBean("hiddenAspect"));
         
         getChildrenCannedQueryFactory.setMethodSecurity((MethodSecurityBean<NodeRef>)ctx.getBean("FileFolderService_security_list"));
         
         getChildrenCannedQueryFactory.afterPropertiesSet();
-
+        
         fiveStarRatingScheme = ratingService.getRatingScheme("fiveStarRatingScheme");
         assertNotNull(fiveStarRatingScheme);
         likesRatingScheme = ratingService.getRatingScheme("likesRatingScheme");
         assertNotNull(likesRatingScheme);
-
+        
         if (! setupTestData)
         {
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -179,7 +191,7 @@ public class GetChildrenCannedQueryTest extends TestCase
             bootstrap.setDictionaryDAO(dictionaryDAO);
             bootstrap.setTenantService(tenantService);
             bootstrap.bootstrap();
-
+            
             createUser(TEST_USER_PREFIX, TEST_USER, TEST_USER);
             
             createUser(TEST_USER_PREFIX+"aaaa", TEST_USER_PREFIX+"bbbb", TEST_USER_PREFIX+"cccc");
@@ -187,13 +199,16 @@ public class GetChildrenCannedQueryTest extends TestCase
             createUser(TEST_USER_PREFIX+"dddd", TEST_USER_PREFIX+"ffff", TEST_USER_PREFIX+"gggg");
             createUser(TEST_USER_PREFIX+"hhhh", TEST_USER_PREFIX+"cccc", TEST_USER_PREFIX+"jjjj");
             
-            NodeRef testParentFolder = repositoryHelper.getCompanyHome();
+            NodeRef testParentFolder = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);
             
-            // create folder subtype
-            createFolder(testParentFolder, "emptySystemFolder", ContentModel.TYPE_SYSTEM_FOLDER);
+            // create folder subtype (note: system folder here)
+            createFolder(testParentFolder, FOLDER_3, TEST_FOLDER_SUBTYPE);
             
             // create content subtype (note: no pun intended ... "cm:savedquery" already exists in content model ... but is NOT related to canned queries !)
-            createContent(testParentFolder, "textContent", QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "savedquery"));
+            createContent(testParentFolder, "textContent", TEST_CONTENT_SUBTYPE);
+            
+            createFolder(testParentFolder, FOLDER_5, ContentModel.TYPE_FOLDER);
+            createFolder(testParentFolder, FOLDER_4, ContentModel.TYPE_FOLDER);
             
             boolean canRead = true;
             
@@ -210,8 +225,11 @@ public class GetChildrenCannedQueryTest extends TestCase
             loadContent(testParentFolder, "quick.gif", "YY title "+TEST_RUN, "BB description", canRead, permMisses);
             loadContent(testParentFolder, "quick.xml", "ZZ title" +TEST_RUN, "BB description", canRead, permMisses);
             
+            createFolder(testParentFolder, FOLDER_2, ContentModel.TYPE_FOLDER);
+            createFolder(testParentFolder, FOLDER_1, ContentModel.TYPE_FOLDER);
+            
             setupTestData = true;
-
+            
             // double-check permissions - see testPermissions
             
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
@@ -241,18 +259,29 @@ public class GetChildrenCannedQueryTest extends TestCase
                 assertTrue(permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
             }
         }
-
+        
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        testFolder = createFolder(repositoryHelper.getCompanyHome(), "testFolder1", QName.createQName("http://www.alfresco.org/test/getchildrentest/1.0", "folder"));
+        
+        NodeRef testFolder = createFolder(repositoryHelper.getCompanyHome(), "GetChildrenCannedQueryTest-testFolder-"+TEST_RUN_ID, QName.createQName("http://www.alfresco.org/test/getchildrentest/1.0", "folder"));
         createContent(testFolder, "textContent1", ContentModel.TYPE_CONTENT);
         createContent(testFolder, QName.createQName("http://www.alfresco.org/test/getchildrentest/1.0", "contains1"), "textContent2", ContentModel.TYPE_CONTENT);
-
+        
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+    }
+    
+    private NodeRef getOrCreateParentTestFolder(String name) throws Exception
+    {
+        NodeRef testFolder = nodeService.getChildByName(repositoryHelper.getCompanyHome(), ContentModel.ASSOC_CONTAINS, name);
+        if (testFolder == null)
+        {
+            testFolder = createFolder(repositoryHelper.getCompanyHome(), name, ContentModel.TYPE_FOLDER);
+        }
+        return testFolder;
     }
     
     public void testSetup() throws Exception
     {
-        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);
         
         PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0);
         assertTrue(results.getPage().size() > 3);
@@ -260,7 +289,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     
     public void testMaxItems() throws Exception
     {
-        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);
         
         PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0);
         assertFalse(results.hasMoreItems());
@@ -285,7 +314,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     
     public void testPaging() throws Exception
     {
-        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);
         
         PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0);
         assertFalse(results.hasMoreItems());
@@ -339,7 +368,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     
     public void testTypeFiltering() throws Exception
     {
-        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);
         
         // note: parent should contain test example(s) of each type
         
@@ -395,7 +424,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     
     public void testPropertyStringFiltering() throws Exception
     {
-        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);
         
         filterByPropAndCheck(parentNodeRef, ContentModel.PROP_NAME, "GC-CQ-File-"+TEST_RUN+"-", FilterTypeString.STARTSWITH, 5);
         filterByPropAndCheck(parentNodeRef, ContentModel.PROP_NAME, "gc-CQ-File-"+TEST_RUN+"-", FilterTypeString.STARTSWITH, 0);
@@ -477,7 +506,8 @@ public class GetChildrenCannedQueryTest extends TestCase
 
     public void testPropertySorting() throws Exception
     {
-        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);
+        
         NodeRef nodeRef1 = null;
         NodeRef nodeRef2 = null;
         NodeRef nodeRef3 = null;
@@ -494,17 +524,17 @@ public class GetChildrenCannedQueryTest extends TestCase
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         try
         {
-	        nodeRef1 = createContent(parentNodeRef, "rating1", ContentModel.TYPE_CONTENT);
-	        nodeRef2 = createContent(parentNodeRef, "rating2", ContentModel.TYPE_CONTENT);
-	        nodeRef3 = createContent(parentNodeRef, "rating3", ContentModel.TYPE_CONTENT);
-	        nodeRef4 = createContent(parentNodeRef, "rating4", ContentModel.TYPE_CONTENT);
-	        nodeRef5 = createContent(parentNodeRef, "rating5", ContentModel.TYPE_CONTENT);
-	        
-	        nodeRef6 = createContent(parentNodeRef, "rating6", ContentModel.TYPE_CONTENT);
-	        nodeRef7 = createContent(parentNodeRef, "rating7", ContentModel.TYPE_CONTENT);
-	        nodeRef8 = createContent(parentNodeRef, "rating8", ContentModel.TYPE_CONTENT);
-	        nodeRef9 = createContent(parentNodeRef, "rating9", ContentModel.TYPE_CONTENT);
-	        nodeRef10 = createContent(parentNodeRef, "rating10", ContentModel.TYPE_CONTENT);
+            nodeRef1 = createContent(parentNodeRef, "rating1", ContentModel.TYPE_CONTENT);
+            nodeRef2 = createContent(parentNodeRef, "rating2", ContentModel.TYPE_CONTENT);
+            nodeRef3 = createContent(parentNodeRef, "rating3", ContentModel.TYPE_CONTENT);
+            nodeRef4 = createContent(parentNodeRef, "rating4", ContentModel.TYPE_CONTENT);
+            nodeRef5 = createContent(parentNodeRef, "rating5", ContentModel.TYPE_CONTENT);
+            
+            nodeRef6 = createContent(parentNodeRef, "rating6", ContentModel.TYPE_CONTENT);
+            nodeRef7 = createContent(parentNodeRef, "rating7", ContentModel.TYPE_CONTENT);
+            nodeRef8 = createContent(parentNodeRef, "rating8", ContentModel.TYPE_CONTENT);
+            nodeRef9 = createContent(parentNodeRef, "rating9", ContentModel.TYPE_CONTENT);
+            nodeRef10 = createContent(parentNodeRef, "rating10", ContentModel.TYPE_CONTENT);
         }
         finally
         {
@@ -523,7 +553,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         ratingService.applyRating(nodeRef8, 1.0f, "likesRatingScheme");
         ratingService.applyRating(nodeRef9, 1.0f, "likesRatingScheme");
         ratingService.applyRating(nodeRef10, 1.0f, "likesRatingScheme");
-
+        
         // do children canned query
         PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0);
         
@@ -538,10 +568,13 @@ public class GetChildrenCannedQueryTest extends TestCase
         sortQNames.add(ContentModel.PROP_CREATOR);
         sortQNames.add(ContentModel.PROP_MODIFIED);
         sortQNames.add(ContentModel.PROP_MODIFIER);
+        
+        // special (pseudo) content/node props
         sortQNames.add(GetChildrenCannedQuery.SORT_QNAME_CONTENT_SIZE);
         sortQNames.add(GetChildrenCannedQuery.SORT_QNAME_CONTENT_MIMETYPE);
         sortQNames.add(GetChildrenCannedQuery.SORT_QNAME_NODE_TYPE);
-
+        sortQNames.add(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER);
+        
         // Add in the ratings properties on which to sort
         sortQNames.add(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "fiveStarRatingSchemeCount"));
         sortQNames.add(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "likesRatingSchemeCount"));
@@ -553,7 +586,7 @@ public class GetChildrenCannedQueryTest extends TestCase
             sortAndCheck(parentNodeRef, sortQName, true);  // ascending
         }
         
-        // sort with two props
+        // sort with two props - title first, then description
         List<Pair<QName, Boolean>> sortPairs = new ArrayList<Pair<QName, Boolean>>(3);
         sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_TITLE, false));
         sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_DESCRIPTION, false));
@@ -562,12 +595,40 @@ public class GetChildrenCannedQueryTest extends TestCase
         assertEquals(TEST_FILE_PREFIX+"quick.pdf", nodeService.getProperty(results.getPage().get(0), ContentModel.PROP_NAME)); // ZZ title + YY description
         assertEquals(TEST_FILE_PREFIX+"quick.txt", nodeService.getProperty(results.getPage().get(1), ContentModel.PROP_NAME)); // ZZ title + XX description
         
+        // sort with two props - folders first (ALF-13968) then by name
+        sortPairs = new ArrayList<Pair<QName, Boolean>>(3);
+        sortPairs.add(new Pair<QName, Boolean>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, false));
+        sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME, true));
+        
+        results = list(parentNodeRef, -1, -1, 0, null, null, sortPairs);
+        
+        assertEquals(FOLDER_1, nodeService.getProperty(results.getPage().get(0), ContentModel.PROP_NAME));
+        assertEquals(FOLDER_2, nodeService.getProperty(results.getPage().get(1), ContentModel.PROP_NAME));
+        assertEquals(FOLDER_3, nodeService.getProperty(results.getPage().get(2), ContentModel.PROP_NAME));
+        assertEquals(FOLDER_4, nodeService.getProperty(results.getPage().get(3), ContentModel.PROP_NAME));
+        assertEquals(FOLDER_5, nodeService.getProperty(results.getPage().get(4), ContentModel.PROP_NAME));
+        
+        assertEquals(TEST_FILE_PREFIX+"quick.bmp", nodeService.getProperty(results.getPage().get(5), ContentModel.PROP_NAME));
+        assertEquals(TEST_FILE_PREFIX+"quick.doc", nodeService.getProperty(results.getPage().get(6), ContentModel.PROP_NAME));
         
         sortPairs = new ArrayList<Pair<QName, Boolean>>(3);
-        sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME, true));
-        sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_TITLE, true));
-        sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_DESCRIPTION, true));
-        sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_MODIFIED, true));
+        sortPairs.add(new Pair<QName, Boolean>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, true));
+        sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME, false));
+        
+        results = list(parentNodeRef, -1, -1, 0, null, null, sortPairs);
+        
+        // note: this test assumes that children fit on one page
+        int len = results.getPage().size();
+        
+        assertEquals("textContent", nodeService.getProperty(results.getPage().get(0), ContentModel.PROP_NAME));
+        assertEquals("rating9", nodeService.getProperty(results.getPage().get(1), ContentModel.PROP_NAME));
+        
+        assertEquals(FOLDER_5, nodeService.getProperty(results.getPage().get(len-5), ContentModel.PROP_NAME));
+        assertEquals(FOLDER_4, nodeService.getProperty(results.getPage().get(len-4), ContentModel.PROP_NAME));
+        assertEquals(FOLDER_3, nodeService.getProperty(results.getPage().get(len-3), ContentModel.PROP_NAME));
+        assertEquals(FOLDER_2, nodeService.getProperty(results.getPage().get(len-2), ContentModel.PROP_NAME));
+        assertEquals(FOLDER_1, nodeService.getProperty(results.getPage().get(len-1), ContentModel.PROP_NAME));
+        
         
         // TODO - sort with three props
         
@@ -575,6 +636,12 @@ public class GetChildrenCannedQueryTest extends TestCase
         try
         {
             // -ve test
+            sortPairs = new ArrayList<Pair<QName, Boolean>>(3);
+            sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME, true));
+            sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_TITLE, true));
+            sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_DESCRIPTION, true));
+            sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_MODIFIED, true));
+            
             results = list(parentNodeRef, -1, -1, 0, null, null, sortPairs);
             fail("Unexpected - cannot sort with more than three props");
         }
@@ -588,7 +655,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     {
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
         
-        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);
         
         PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0);
         assertFalse(results.hasMoreItems());
@@ -627,7 +694,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-
+        
         NodeRef parentNodeRef = nodeService.createNode(
         		repositoryHelper.getCompanyHome(),
                 ContentModel.ASSOC_CONTAINS,
@@ -714,8 +781,10 @@ public class GetChildrenCannedQueryTest extends TestCase
         assertEquals("", 0, totalCnt);
     }
     
-    public void testRestrictByAssocType()
+    public void testRestrictByAssocType() throws Exception
     {
+        NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-testFolder-"+TEST_RUN_ID);
+        
         Set<QName> assocTypeQNames = new HashSet<QName>(3);
         Set<QName> childTypeQNames = new HashSet<QName>(3);
         
@@ -723,14 +792,14 @@ public class GetChildrenCannedQueryTest extends TestCase
         assocTypeQNames.add(ContentModel.ASSOC_CONTAINS);
         childTypeQNames.clear();
         childTypeQNames.add(ContentModel.TYPE_CONTENT);
-        List<NodeRef> children = filterByAssocTypeAndCheck(testFolder, assocTypeQNames, childTypeQNames);
+        List<NodeRef> children = filterByAssocTypeAndCheck(parentNodeRef, assocTypeQNames, childTypeQNames);
         assertEquals(1, children.size());
         
         assocTypeQNames.clear();
         assocTypeQNames.add(QName.createQName("http://www.alfresco.org/test/getchildrentest/1.0", "contains1"));
         childTypeQNames.clear();
         childTypeQNames.add(ContentModel.TYPE_CONTENT);
-        children = filterByAssocTypeAndCheck(testFolder, assocTypeQNames, childTypeQNames);
+        children = filterByAssocTypeAndCheck(parentNodeRef, assocTypeQNames, childTypeQNames);
         assertEquals(1, children.size());
         
         assocTypeQNames.clear();
@@ -738,7 +807,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         assocTypeQNames.add(ContentModel.ASSOC_CONTAINS);
         childTypeQNames.clear();
         childTypeQNames.add(ContentModel.TYPE_CONTENT);
-        children = filterByAssocTypeAndCheck(testFolder, assocTypeQNames, childTypeQNames);
+        children = filterByAssocTypeAndCheck(parentNodeRef, assocTypeQNames, childTypeQNames);
         assertEquals(2, children.size());
     }
 
@@ -749,7 +818,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         pagingRequest.setRequestTotalCountMax(requestTotalCountMax);
         
         // get canned query
-        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CQ_FACTORY_NAME);
         GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, pattern, null, null, null, sortProps, pagingRequest);
         
         // execute canned query
@@ -925,6 +994,10 @@ public class GetChildrenCannedQueryTest extends TestCase
             {
                 val = nodeService.getType(nodeRef);
             }
+            else if (sortPropQName.equals(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER))
+            {
+                val = dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_FOLDER);
+            }
             else
             {
                 val = nodeService.getProperty(nodeRef, sortPropQName);
@@ -972,27 +1045,34 @@ public class GetChildrenCannedQueryTest extends TestCase
                 {
                     result = ((QName)val).compareTo((QName)prevVal);
                 }
+                else if (val instanceof Boolean)
+                {
+                    result = ((Boolean)val).compareTo((Boolean)prevVal);
+                }
                 else
                 {
                     fail("Unsupported sort type ("+nodeRef+"): "+val.getClass().getName());
                 }
                 
+                String prevName = (String)nodeService.getProperty(prevNodeRef, ContentModel.PROP_NAME);
+                String currName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                
                 if (! sortAscending)
                 {
                     assertTrue(
-                            "Not descending: \n" +
+                            "Not descending: "+result+"\n" +
                             "   Iteration: " + currentIteration + " out of " + count + "\n" +
-                            "   Previous:  " + prevNodeRef + " had " + prevVal + "\n" +
-                            "   Current :  " + nodeRef     + " had " + val,
+                            "   Previous:  " + prevNodeRef + " had " + prevVal + " ("+prevName+")\n" +
+                            "   Current :  " + nodeRef     + " had " + val + " ("+currName+")",
                             result <= 0);
                 }
                 else
                 {
                     assertTrue(
-                            "Not ascending: \n" +
+                            "Not ascending: "+result+"\n" +
                             "   Iteration: " + currentIteration + " out of " + count + "\n" +
-                            "   Previous:  " + prevNodeRef + " had " + prevVal + "\n" +
-                            "   Current :  " + nodeRef     + " had " + val,
+                            "   Previous:  " + prevNodeRef + " had " + prevVal + " ("+prevName+")\n" +
+                            "   Current :  " + nodeRef     + " had " + val + " ("+currName+")",
                             result >= 0);
                 }
             }
@@ -1015,8 +1095,8 @@ public class GetChildrenCannedQueryTest extends TestCase
         PagingRequest pagingRequest = new PagingRequest(skipCount, maxItems, null);
         pagingRequest.setRequestTotalCountMax(requestTotalCountMax);
         
-        // get canned query
-        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
+        // get canned query (note: test the fileFolder extension - including support for sorting folders first)
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CQ_FACTORY_NAME);
         GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, null, childTypeQNames, filterProps, sortProps, pagingRequest);
         
         // execute canned query
@@ -1040,7 +1120,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         pagingRequest.setRequestTotalCountMax(requestTotalCountMax);
         
         // get canned query
-        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject("getChildrenCannedQueryFactory");
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CQ_FACTORY_NAME);
         GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, assocTypeQNames, childTypeQNames, filterProps, sortProps, pagingRequest);
         
         // execute canned query

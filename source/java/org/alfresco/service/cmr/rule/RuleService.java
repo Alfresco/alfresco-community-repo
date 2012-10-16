@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -77,7 +77,7 @@ public interface RuleService
     public boolean isEnabled();
     
     /**
-     * Indicates wether the rules for a given node are enabled or not.  If the 
+     * Indicates whether the rules for a given node are enabled or not.  If the 
      * rules are not enabled then they will not be executed.
      * 
      * @param nodeRef       the node reference

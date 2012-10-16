@@ -134,6 +134,13 @@
             <cm:title>${spaces.user_homes.name}</cm:title>
             <cm:description>${spaces.user_homes.description}</cm:description>
          </cm:folder>
+         <cm:folder view:childName="${spaces.imap_attachments.childname}">
+            <app:uifacets/>
+            <cm:name>${spaces.imap_attachments.name}</cm:name>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.imap_attachments.name}</cm:title>
+            <cm:description>${spaces.imap_attachments.description}</cm:description>
+         </cm:folder>
       </cm:contains>
    </cm:folder>
 </view:view>

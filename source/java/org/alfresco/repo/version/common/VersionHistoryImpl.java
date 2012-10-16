@@ -26,16 +26,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionDoesNotExistException;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -242,22 +241,25 @@ public class VersionHistoryImpl implements VersionHistory
 
         public int compare(Version v1, Version v2)
         {
-            Date v1Date = v1.getFrozenModifiedDate();
-            Date v2Date = v2.getFrozenModifiedDate();
             int result = 0;
-            if ((v1Date != null) && (v2Date != null))
+
+            if ((null != v1) && (null != v2))
             {
-                result = v2.getFrozenModifiedDate().compareTo(v1.getFrozenModifiedDate());
+                Serializable dbIdV1 = (null != v1.getVersionProperties()) ? (v1.getVersionProperties().get(ContentModel.PROP_NODE_DBID.getLocalName())) : (null);
+                Serializable dbIdV2 = (null != v2.getVersionProperties()) ? (v2.getVersionProperties().get(ContentModel.PROP_NODE_DBID.getLocalName())) : (null);
+
+                if ((null != dbIdV1) && (null != dbIdV2))
+                {
+                    Long id1 = (dbIdV1 instanceof Integer) ? ((Integer) dbIdV1) : ((Long) dbIdV1);
+                    Long id2 = (dbIdV2 instanceof Integer) ? ((Integer) dbIdV2) : ((Long) dbIdV2);
+                    result = (id2).compareTo(id1);
+                }
+                else
+                {
+                    logger.warn("DB Id of versioned node is missing!");
+                }
             }
-            else
-            {
-                logger.warn("Missing frozen modified date");
-            }
-            
-            if (result == 0)
-            {
-                result = new VersionNumber(v2.getVersionLabel()).compareTo(new VersionNumber(v1.getVersionLabel()));
-            }
+
             return result;
         }
     }
@@ -273,22 +275,25 @@ public class VersionHistoryImpl implements VersionHistory
 
         public int compare(Version v1, Version v2)
         {
-            Date v1Date = v1.getFrozenModifiedDate();
-            Date v2Date = v2.getFrozenModifiedDate();
             int result = 0;
-            if ((v1Date != null) && (v2Date != null))
+
+            if ((null != v1) && (null != v2))
             {
-                result = v1.getFrozenModifiedDate().compareTo(v2.getFrozenModifiedDate());
+                Serializable dbIdV1 = (null != v1.getVersionProperties()) ? (v1.getVersionProperties().get(ContentModel.PROP_NODE_DBID.getLocalName())) : (null);
+                Serializable dbIdV2 = (null != v2.getVersionProperties()) ? (v2.getVersionProperties().get(ContentModel.PROP_NODE_DBID.getLocalName())) : (null);
+
+                if ((null != dbIdV1) && (null != dbIdV2))
+                {
+                    Long id1 = (dbIdV1 instanceof Integer) ? ((Integer) dbIdV1) : ((Long) dbIdV1);
+                    Long id2 = (dbIdV2 instanceof Integer) ? ((Integer) dbIdV2) : ((Long) dbIdV2);
+                    result = (id1).compareTo(id2);
+                }
+                else
+                {
+                    logger.warn("DB Id of versioned node is missing!");
+                }
             }
-            else
-            {
-                logger.warn("Missing frozen modified date");
-            }
-            
-            if (result == 0)
-            {
-                result = new VersionNumber(v1.getVersionLabel()).compareTo(new VersionNumber(v2.getVersionLabel()));
-            }
+
             return result;
         }
     }

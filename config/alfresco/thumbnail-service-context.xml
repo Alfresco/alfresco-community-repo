@@ -131,8 +131,8 @@
             <bean parent="defaultImageTransformationOptions">
                 <property name="resizeOptions">
                     <bean parent="defaultImageResizeOptions">
-                        <property name="width" value="960"/>
-                        <property name="height" value="960"/>
+                        <property name="width" value="480"/>
+                        <property name="height" value="480"/>
                         <property name="allowEnlargement" value="false" />
                     </bean> 
                 </property>

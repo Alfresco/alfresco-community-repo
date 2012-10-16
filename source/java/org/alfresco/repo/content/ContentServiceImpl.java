@@ -295,7 +295,17 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 }
                 
                 // Check for new content
-                isNewContent = !hasContentBefore && hasContentAfter;
+                isNewContent = isNewContent || !hasContentBefore && hasContentAfter;
+                
+                // Make it clear when there's no content before or after
+                if (!hasContentBefore)
+                {
+                    beforeValue = null;
+                }
+                if (!hasContentAfter)
+                {
+                    afterValue = null;
+                }
 
                 // So debug ...
                 if (logger.isDebugEnabled())

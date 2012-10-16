@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.rule;
 
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -47,7 +48,8 @@ public class RulesAspect implements
                  CopyServicePolicies.OnCopyNodePolicy,
                  CopyServicePolicies.OnCopyCompletePolicy,
                  NodeServicePolicies.OnAddAspectPolicy,
-                 NodeServicePolicies.BeforeDeleteChildAssociationPolicy
+                 NodeServicePolicies.BeforeRemoveAspectPolicy,
+                 NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
@@ -95,11 +97,14 @@ public class RulesAspect implements
                 NodeServicePolicies.OnAddAspectPolicy.QNAME, 
                 RuleModel.ASPECT_RULES, 
                 new JavaBehaviour(this, "onAddAspect"));
-        this.policyComponent.bindAssociationBehaviour(
-                NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.BeforeRemoveAspectPolicy.QNAME, 
                 RuleModel.ASPECT_RULES, 
-                RuleModel.ASSOC_RULE_FOLDER,
-                new JavaBehaviour(this, "beforeDeleteChildAssociation"));
+                new JavaBehaviour(this, "beforeRemoveAspect"));
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
+                RuleModel.ASPECT_RULES, 
+                new JavaBehaviour(this, "beforeDeleteNode"));
     }
     
     /**
@@ -130,25 +135,64 @@ public class RulesAspect implements
         }
     }
     
+    
     /**
-     * ALF-11923
-     * @since 4.1.1
-     * @author Derek Hulley
+     * The rule folder & below will be deleted automatically in the normal way, so we don't need to worry about them.
+     * But we need additional handling for any other folders which have rules linked to this folder's rules. See
+     * ALF-11923, ALF-15262.
+     * 
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeRemoveAspectPolicy#beforeRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    public void beforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        NodeRef nodeRef = childAssocRef.getParentRef();
+        if (!aspectTypeQName.equals(RuleModel.ASPECT_RULES))
+        {
+            return;
+        }
+
         this.ruleService.disableRules(nodeRef);
         try
         {
-            // Just remove the aspect for the association
-            nodeService.removeAspect(nodeRef, RuleModel.ASPECT_RULES);
+            for (ChildAssociationRef childAssocRef : nodeService.getChildAssocs(nodeRef, RuleModel.ASSOC_RULE_FOLDER,
+                    RuleModel.ASSOC_RULE_FOLDER, false))
+            {
+                // We are only interested in the deletion of primary associations to a rule folder, which usually
+                // happens when all rules in a folder are deleted and the ASPECT_RULES aspect is removed
+                if (!childAssocRef.isPrimary())
+                {
+                    continue;
+                }
+                NodeRef savedRuleFolderRef = childAssocRef.getChildRef();
+                // Cascade the removal to all secondary (linked) parents
+                List<ChildAssociationRef> linkedAssocs = nodeService.getParentAssocs(savedRuleFolderRef);
+                for (ChildAssociationRef linkAssoc : linkedAssocs)
+                {
+                    if (!linkAssoc.isPrimary())
+                    {
+                        // Remove the aspect from linked parents; this will also delete the linking secondary
+                        // association
+                        nodeService.removeAspect(linkAssoc.getParentRef(), RuleModel.ASPECT_RULES);
+                    }
+                }
+            }
         }
         finally
         {
-            ruleService.enableRules(nodeRef);
+            this.ruleService.enableRules(nodeRef);
         }
+    }
+
+    /**
+     * @since 3.4.11
+     * @author Neil McErlean
+     */
+    @Override
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        // In case the event isn't triggered automatically by node service (e.g. on a cascaded node tree deletion),
+        // trigger handling removal of the rules aspect.
+        beforeRemoveAspect(nodeRef, RuleModel.ASPECT_RULES);
     }
     
     /**

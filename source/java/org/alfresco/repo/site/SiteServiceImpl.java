@@ -561,15 +561,17 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 }
                 
                 // Create the site's groups
-                String siteGroup = authorityService.createAuthority(
-                        AuthorityType.GROUP, getSiteGroup(shortName, false), shortName, shareZones);
+                String siteGroupShortName = getSiteGroup(shortName, false);
+                String siteGroup = authorityService.createAuthority(AuthorityType.GROUP, siteGroupShortName,
+                        siteGroupShortName, shareZones);
                 QName siteType = directNodeService.getType(siteNodeRef);
                 Set<String> permissions = permissionService.getSettablePermissions(siteType);
                 for (String permission : permissions)
                 {
                     // Create a group for the permission
-                    String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP, getSiteRoleGroup(
-                            shortName, permission, false), shortName, shareZones);
+                    String permissionGroupShortName = getSiteRoleGroup(shortName, permission, false);
+                    String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP,
+                            permissionGroupShortName, permissionGroupShortName, shareZones);
                     authorityService.addAuthority(siteGroup, permissionGroup);
                     
                     // add any supplied memberships to it

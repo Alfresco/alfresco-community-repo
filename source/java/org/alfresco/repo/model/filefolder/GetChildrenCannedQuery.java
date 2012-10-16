@@ -18,8 +18,12 @@
  */
 package org.alfresco.repo.model.filefolder;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodePropertyHelper;
@@ -30,7 +34,9 @@ import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.FileFilterMode.Client;
 
@@ -43,13 +49,14 @@ import org.alfresco.util.FileFilterMode.Client;
  * This is the same as the nodes getchildren canned query, except it takes into account hidden files and folders.
  * 
  * @since 4.1.1
- * @author steveglover
+ * @author steveglover, janv
  *
  */
 public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.GetChildrenCannedQuery
 {
     private HiddenAspect hiddenAspect;
-
+    private DictionaryService dictionaryService;
+    
     public GetChildrenCannedQuery(
             NodeDAO nodeDAO,
             QNameDAO qnameDAO,
@@ -58,12 +65,15 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
             TenantService tenantService,
             MethodSecurityBean<NodeRef> methodSecurity,
             CannedQueryParameters params,
-            HiddenAspect hiddenAspect)
+            HiddenAspect hiddenAspect,
+            DictionaryService dictionaryService)
     {
-    	super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurity, params);
-    	this.hiddenAspect = hiddenAspect;
+        super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurity, params);
+        
+        this.hiddenAspect = hiddenAspect;
+        this.dictionaryService = dictionaryService;
     }
-
+    
     @Override
     protected UnsortedChildQueryCallback getUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount)
     {
@@ -80,29 +90,54 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
 
     private class FileFolderFilterSortChildQueryCallback extends DefaultFilterSortChildQueryCallback
     {
-		public FileFolderFilterSortChildQueryCallback(List<FilterSortNode> children, List<FilterProp> filterProps)
-		{
-			super(children, filterProps);
-		}
-
-		@Override
-		protected boolean include(FilterSortNode node)
-		{
-			boolean ret = super.include(node);
-
+        private Map<QName, Boolean> isTypeFolderMap = new HashMap<QName, Boolean>(10);
+        
+        public FileFolderFilterSortChildQueryCallback(List<FilterSortNode> children, List<FilterProp> filterProps)
+        {
+            super(children, filterProps);
+        }
+        
+        @Override
+        protected boolean include(FilterSortNode node)
+        {
+            boolean ret = super.include(node);
+            
             // only visible files are returned, relative to the client type.
-			try
-			{
-	            final Client client = FileFilterMode.getClient();
-	        	return ret && hiddenAspect.getVisibility(client, node.getNodeRef()) != Visibility.NotVisible;
+            try
+            {
+                final Client client = FileFilterMode.getClient();
+                return ret && hiddenAspect.getVisibility(client, node.getNodeRef()) != Visibility.NotVisible;
             }
             catch(AccessDeniedException e)
             {
-            	// user may not have permission to determine the visibility of the node
-            	return ret;
+                // user may not have permission to determine the visibility of the node
+                return ret;
             }
-		}
-    	
+        }
+        
+        @Override
+        public boolean handle(FilterSortNode node)
+        {
+            super.handle(node);
+            
+            Map<QName, Serializable> propVals = node.getPropVals();
+            QName nodeTypeQName = (QName)propVals.get(GetChildrenCannedQuery.SORT_QNAME_NODE_TYPE);
+            
+            if (nodeTypeQName != null)
+            {
+                // ALF-13968
+                Boolean isFolder = isTypeFolderMap.get(nodeTypeQName);
+                if (isFolder == null)
+                {
+                    isFolder = dictionaryService.isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER);
+                    isTypeFolderMap.put(nodeTypeQName, isFolder);
+                }
+                
+                propVals.put(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, isFolder);
+            }
+            
+            return true;
+        }
     }
 
     private class FileFolderUnsortedChildQueryCallback extends DefaultUnsortedChildQueryCallback

@@ -27,17 +27,25 @@ public class LockUtils
 {
 
     /**
-     * Indicates if the node is unlocked or the current user has a WRITE_LOCK<p>
+     * Indicates if the node is locked AND it's not a WRITE_LOCK for the current user.<p>
      * 
      * Ideally this would be a new method on the lockService, but cannot do this at the moment,
      * as this method is being added as part of a hot fix, so a public service cannot change
      * as the RM AMP might be installed and it has its own security context which would also need
      * to reflect this change.
      */
-    public static boolean isLockedOrReadOnly(NodeRef nodeRef, LockService lockService)
+    public static boolean isLockedAndReadOnly(NodeRef nodeRef, LockService lockService)
     {
         LockStatus lockStatus = lockService.getLockStatus(nodeRef);
-        LockType lockType = lockService.getLockType(nodeRef);
-        return ! (lockStatus == LockStatus.NO_LOCK || (lockStatus == LockStatus.LOCK_OWNER && lockType == LockType.WRITE_LOCK));
+        switch (lockStatus)
+        {
+        case NO_LOCK:
+        case LOCK_EXPIRED:
+            return false;
+        case LOCK_OWNER:
+            return lockService.getLockType(nodeRef) != LockType.WRITE_LOCK;
+        default:
+            return true;
+        }
     }
 }

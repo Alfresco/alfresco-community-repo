@@ -51,6 +51,7 @@ import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -680,10 +681,14 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             ignoreTypeQNames.add(createQName(ignoreTypes.toString()));
         }
         
-        List<Pair<QName, Boolean>> sortProps = null; // note: null sortProps => get all in default sort order
+        // ALF-13968 - sort folders before files (for Share) - TODO should be optional sort param
+        List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>(2);
+        if ((sortProp == null) || (! sortProp.equals(GetChildrenCannedQuery.SORT_QNAME_NODE_TYPE.getLocalName())))
+        {
+            sortProps.add(new Pair<QName, Boolean>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, false));
+        }
         if (sortProp != null)
         {
-            sortProps = new ArrayList<Pair<QName, Boolean>>(1);
             sortProps.add(new Pair<QName, Boolean>(createQName(sortProp), sortAsc));
         }
         

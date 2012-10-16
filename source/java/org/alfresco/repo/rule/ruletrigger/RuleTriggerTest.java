@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,194 +37,195 @@ import org.alfresco.util.BaseSpringTest;
  */
 public class RuleTriggerTest extends BaseSpringTest
 {
-	private static final String ON_CREATE_NODE_TRIGGER = "on-create-node-trigger";
-	private static final String ON_UPDATE_NODE_TRIGGER = "on-update-node-trigger";
-	private static final String ON_CREATE_CHILD_ASSOCIATION_TRIGGER = "on-create-child-association-trigger";
-	private static final String ON_DELETE_CHILD_ASSOCIATION_TRIGGER = "on-delete-child-association-trigger";
-	private static final String ON_CREATE_ASSOCIATION_TRIGGER = "on-create-association-trigger";
-	private static final String ON_DELETE_ASSOCIATION_TRIGGER = "on-delete-association-trigger";
-	private static final String ON_CONTENT_UPDATE_TRIGGER = "on-content-update-trigger";
+    private static final String ON_CREATE_NODE_TRIGGER = "on-create-node-trigger";
+    private static final String ON_UPDATE_NODE_TRIGGER = "on-update-node-trigger";
+    private static final String ON_MOVE_NODE_TRIGGER = "on-move-node-trigger";
+    private static final String ON_CREATE_CHILD_ASSOCIATION_TRIGGER = "on-create-child-association-trigger";
+    private static final String ON_DELETE_CHILD_ASSOCIATION_TRIGGER = "on-delete-child-association-trigger";
+    private static final String ON_CREATE_ASSOCIATION_TRIGGER = "on-create-association-trigger";
+    private static final String ON_DELETE_ASSOCIATION_TRIGGER = "on-delete-association-trigger";
+    private static final String ON_CONTENT_UPDATE_TRIGGER = "on-content-update-trigger";
     private static final String ON_CONTENT_CREATE_TRIGGER = "on-content-create-trigger";
 
-	private NodeService nodeService;
-	private ContentService contentService;
-	
-	private StoreRef testStoreRef;
-	private NodeRef rootNodeRef;
-	
-	@Override
-	protected void onSetUpInTransaction() throws Exception
-	{
-	    ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-		this.nodeService = serviceRegistry.getNodeService();
-		this.contentService = serviceRegistry.getContentService();
+    private NodeService nodeService;
+    private ContentService contentService;
+    
+    private StoreRef testStoreRef;
+    private NodeRef rootNodeRef;
+    
+    @Override
+    protected void onSetUpInTransaction() throws Exception
+    {
+        ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        this.nodeService = serviceRegistry.getNodeService();
+        this.contentService = serviceRegistry.getContentService();
         
         AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
-		
-		this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        
+        this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
-	}
-	
-	@Override
+    }
+    
+    @Override
     protected void onTearDownInTransaction() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
     public void testOnCreateNodeTrigger()
-	{
-		TestRuleType ruleType = createTestRuleType(ON_CREATE_NODE_TRIGGER);
-		assertFalse(ruleType.rulesTriggered);
-		
-		// Try and trigger the type
+    {
+        TestRuleType ruleType = createTestRuleType(ON_CREATE_NODE_TRIGGER);
+        assertFalse(ruleType.rulesTriggered);
+        
+        // Try and trigger the type
         this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER);
-		
-		// Check to see if the rule type has been triggered
+        
+        // Check to see if the rule type has been triggered
         assertTrue(ruleType.rulesTriggered);
-	}
-	
-	public void testOnUpdateNodeTrigger()
-	{
-		NodeRef nodeRef = this.nodeService.createNode(
+    }
+    
+    public void testOnUpdateNodeTrigger()
+    {
+        NodeRef nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-		
-		TestRuleType ruleType = createTestRuleType(ON_UPDATE_NODE_TRIGGER);
-		assertFalse(ruleType.rulesTriggered);
-		
-		// Try and trigger the type
-		this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, "nameChanged");
-		
-		// Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);		
-	}
-	
-//	public void testOnDeleteNodeTrigger()
-//	{
-//		NodeRef nodeRef = this.nodeService.createNode(
+        
+        TestRuleType ruleType = createTestRuleType(ON_UPDATE_NODE_TRIGGER);
+        assertFalse(ruleType.rulesTriggered);
+        
+        // Try and trigger the type
+        this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, "nameChanged");
+        
+        // Check to see if the rule type has been triggered
+        assertTrue(ruleType.rulesTriggered);        
+    }
+    
+//    public void testOnDeleteNodeTrigger()
+//    {
+//        NodeRef nodeRef = this.nodeService.createNode(
 //                this.rootNodeRef,
-//				ContentModel.ASSOC_CHILDREN,
+//                ContentModel.ASSOC_CHILDREN,
 //                ContentModel.ASSOC_CHILDREN,
 //                ContentModel.TYPE_CONTAINER).getChildRef();
-//		
-//		TestRuleType ruleType = createTestRuleType(ON_DELETE_NODE_TRIGGER);
-//		assertFalse(ruleType.rulesTriggered);
-//		
-//		// Try and trigger the type
-//		this.nodeService.deleteNode(nodeRef);
-//		
-//		// Check to see if the rule type has been triggered
-//        assertTrue(ruleType.rulesTriggered);		
-//	}
-	
-	public void testOnCreateChildAssociationTrigger()
-	{
-		NodeRef nodeRef = this.nodeService.createNode(
+//        
+//        TestRuleType ruleType = createTestRuleType(ON_DELETE_NODE_TRIGGER);
+//        assertFalse(ruleType.rulesTriggered);
+//        
+//        // Try and trigger the type
+//        this.nodeService.deleteNode(nodeRef);
+//        
+//        // Check to see if the rule type has been triggered
+//        assertTrue(ruleType.rulesTriggered);        
+//    }
+    
+    public void testOnCreateChildAssociationTrigger()
+    {
+        NodeRef nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-		NodeRef nodeRef2 = this.nodeService.createNode(
+        NodeRef nodeRef2 = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-		
-		TestRuleType ruleType = createTestRuleType(ON_CREATE_CHILD_ASSOCIATION_TRIGGER);
-		assertFalse(ruleType.rulesTriggered);
-		
-		// Try and trigger the type
-		this.nodeService.addChild(
-				nodeRef, 
-				nodeRef2,
-				ContentModel.ASSOC_CHILDREN,
+        
+        TestRuleType ruleType = createTestRuleType(ON_CREATE_CHILD_ASSOCIATION_TRIGGER);
+        assertFalse(ruleType.rulesTriggered);
+        
+        // Try and trigger the type
+        this.nodeService.addChild(
+                nodeRef, 
+                nodeRef2,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN);
-		
-		// Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);		
-	}
-	
-	public void testOnDeleteChildAssociationTrigger()
-	{
-		NodeRef nodeRef = this.nodeService.createNode(
+        
+        // Check to see if the rule type has been triggered
+        assertTrue(ruleType.rulesTriggered);        
+    }
+    
+    public void testOnDeleteChildAssociationTrigger()
+    {
+        NodeRef nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-		NodeRef nodeRef2 = this.nodeService.createNode(
+        NodeRef nodeRef2 = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-		this.nodeService.addChild(
-				nodeRef, 
-				nodeRef2,
-				ContentModel.ASSOC_CHILDREN,
+        this.nodeService.addChild(
+                nodeRef, 
+                nodeRef2,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN);
-		
-		TestRuleType ruleType = createTestRuleType(ON_DELETE_CHILD_ASSOCIATION_TRIGGER);
-		assertFalse(ruleType.rulesTriggered);
-		
-		// Try and trigger the type
-		this.nodeService.removeChild(nodeRef, nodeRef2);
-		
-		// Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);		
-	}
-	
-	public void testOnCreateAssociationTrigger()
-	{
-		NodeRef nodeRef = this.nodeService.createNode(
+        
+        TestRuleType ruleType = createTestRuleType(ON_DELETE_CHILD_ASSOCIATION_TRIGGER);
+        assertFalse(ruleType.rulesTriggered);
+        
+        // Try and trigger the type
+        this.nodeService.removeChild(nodeRef, nodeRef2);
+        
+        // Check to see if the rule type has been triggered
+        assertTrue(ruleType.rulesTriggered);        
+    }
+    
+    public void testOnCreateAssociationTrigger()
+    {
+        NodeRef nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-		NodeRef nodeRef2 = this.nodeService.createNode(
+        NodeRef nodeRef2 = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-		
-		TestRuleType ruleType = createTestRuleType(ON_CREATE_ASSOCIATION_TRIGGER);
-		assertFalse(ruleType.rulesTriggered);
-		
-		// Try and trigger the type
-		this.nodeService.createAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
-		
-		// Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);		
-	}
-	
-	public void testOnDeleteAssociationTrigger()
-	{
-		NodeRef nodeRef = this.nodeService.createNode(
+        
+        TestRuleType ruleType = createTestRuleType(ON_CREATE_ASSOCIATION_TRIGGER);
+        assertFalse(ruleType.rulesTriggered);
+        
+        // Try and trigger the type
+        this.nodeService.createAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
+        
+        // Check to see if the rule type has been triggered
+        assertTrue(ruleType.rulesTriggered);        
+    }
+    
+    public void testOnDeleteAssociationTrigger()
+    {
+        NodeRef nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-		NodeRef nodeRef2 = this.nodeService.createNode(
+        NodeRef nodeRef2 = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();
-		this.nodeService.createAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
-		
-		TestRuleType ruleType = createTestRuleType(ON_DELETE_ASSOCIATION_TRIGGER);
-		assertFalse(ruleType.rulesTriggered);
-		
-		// Try and trigger the type
-		this.nodeService.removeAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
-		
-		// Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);		
-	}
-	
+        this.nodeService.createAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
+        
+        TestRuleType ruleType = createTestRuleType(ON_DELETE_ASSOCIATION_TRIGGER);
+        assertFalse(ruleType.rulesTriggered);
+        
+        // Try and trigger the type
+        this.nodeService.removeAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
+        
+        // Check to see if the rule type has been triggered
+        assertTrue(ruleType.rulesTriggered);        
+    }
+    
     public void testOnContentCreateTrigger()
     {
         NodeRef nodeRef = this.nodeService.createNode(
@@ -257,25 +258,25 @@ public class RuleTriggerTest extends BaseSpringTest
         assertFalse(contentCreate.rulesTriggered);
     }
     
-	public void testOnContentUpdateTrigger()
-	{
-		NodeRef nodeRef = this.nodeService.createNode(
+    public void testOnContentUpdateTrigger()
+    {
+         NodeRef nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
-				ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTENT).getChildRef();
-		
+        
         TestRuleType contentCreate = createTestRuleType(ON_CONTENT_CREATE_TRIGGER);
-		TestRuleType contentUpdate = createTestRuleType(ON_CONTENT_UPDATE_TRIGGER);
+        TestRuleType contentUpdate = createTestRuleType(ON_CONTENT_UPDATE_TRIGGER);
         assertFalse(contentCreate.rulesTriggered);
         assertFalse(contentUpdate.rulesTriggered);
-		
-		// Try and trigger the type
-		ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        
+        // Try and trigger the type
+        ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         contentWriter.setEncoding("UTF-8");
-		contentWriter.putContent("some content");
-		
+        contentWriter.putContent("some content");
+        
         // Check to see if the rule type has been triggered
         assertTrue(contentCreate.rulesTriggered);
         assertFalse(contentUpdate.rulesTriggered);
@@ -311,35 +312,67 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(
                 "Content update must not fire if the content was created in the same txn.",
                 contentUpdate.rulesTriggered);
-	}
-	
-	private TestRuleType createTestRuleType(String ruleTriggerName)
-	{
-		RuleTrigger ruleTrigger = (RuleTrigger)this.applicationContext.getBean(ruleTriggerName);
-		assertNotNull(ruleTrigger);
-		TestRuleType ruleType = new TestRuleType();
-		ruleTrigger.registerRuleType(ruleType);
-		return ruleType;
-	}
-	
-	private class TestRuleType implements RuleType
-	{
-		public boolean rulesTriggered = false;
+    }
+    
+    public void testOnMoveNodeTrigger()
+    {
+        NodeRef nodeRef1 = this.nodeService.createNode(this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER).getChildRef();
 
-		public String getName()
-		{
-			return "testRuleType";
-		}
+        NodeRef nodeRef2 = this.nodeService.createNode(this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER).getChildRef();
 
-		public String getDisplayLabel()
-		{
-			return "displayLabel";
-		}
+        this.nodeService.createNode(nodeRef2,
+                ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER).getChildRef();
 
-		public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately)
-		{
-			// Indicate that the rules have been triggered
-			this.rulesTriggered = true;
-		}
-	}
+        this.nodeService.createNode(nodeRef2,
+                ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER).getChildRef();
+
+        
+        TestRuleType ruleType = createTestRuleType(ON_MOVE_NODE_TRIGGER);
+        assertFalse(ruleType.rulesTriggered);
+
+        // Try and trigger the type
+        this.nodeService.moveNode(nodeRef2, nodeRef1, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN);
+
+        // Check to see if the rule type has been triggered
+        assertTrue(ruleType.rulesTriggered);
+        assertEquals(3, ruleType.triggerCount);
+    }        
+
+    private TestRuleType createTestRuleType(String ruleTriggerName)
+    {
+        RuleTrigger ruleTrigger = (RuleTrigger)this.applicationContext.getBean(ruleTriggerName);
+        assertNotNull(ruleTrigger);
+        TestRuleType ruleType = new TestRuleType();
+        ruleTrigger.registerRuleType(ruleType);
+        return ruleType;
+    }
+    
+    private class TestRuleType implements RuleType
+    {
+        public boolean rulesTriggered = false;
+        public int triggerCount = 0;
+
+        public String getName()
+        {
+            return "testRuleType";
+        }
+
+        public String getDisplayLabel()
+        {
+            return "displayLabel";
+        }
+
+        public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately)
+        {
+            // Indicate that the rules have been triggered
+            this.rulesTriggered = true;
+            triggerCount++;
+        }
+    }
 }

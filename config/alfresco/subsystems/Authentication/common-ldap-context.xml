@@ -111,6 +111,11 @@
                <value>${ldap.authentication.java.naming.security.authentication}</value>
             </entry>
 
+            <!-- Requests timeout, in miliseconds, use 0 for none (default) -->
+            <entry key="com.sun.jndi.ldap.read.timeout">
+               <value>${ldap.authentication.java.naming.read.timeout}</value>
+            </entry>
+
             <!-- Automatically follow referrals -->
             <entry key="java.naming.referral">
                <value>follow</value>
@@ -158,6 +163,11 @@
             <!-- Pool the default connection -->
             <entry key="com.sun.jndi.ldap.connect.pool">
                <value>true</value>
+            </entry>
+
+            <!-- Requests timeout, in miliseconds, use 0 for none (default) -->
+            <entry key="com.sun.jndi.ldap.read.timeout">
+               <value>${ldap.authentication.java.naming.read.timeout}</value>
             </entry>
 
             <!-- Automatically follow referrals -->

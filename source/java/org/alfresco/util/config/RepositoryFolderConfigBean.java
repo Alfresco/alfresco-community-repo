@@ -18,21 +18,20 @@
  */
 package org.alfresco.util.config;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.PropertyCheck;
 
 /**
@@ -45,45 +44,28 @@ import org.alfresco.util.PropertyCheck;
  */
 public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
 {
-    private List<String> folderPath;
+    private String folderPath;
     
     public RepositoryFolderConfigBean()
     {
-        folderPath = Collections.emptyList();
+        folderPath = "";
     }
 
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(128);
-        sb.append("Folder Path: ").append(super.getStoreRef()).append(super.getRootPath());
-        for (String folder : folderPath)
-        {   
-            sb.append("/").append(folder);
-        }
+        sb.append("Folder Path: ").append(super.getStoreRef()).append(super.getRootPath()).append("/").append(folderPath);
         return sb.toString();
     }
 
-    /**
-     * Get the folder name path
-     */
-    public List<String> getFolderNames()
-    {
-        return folderPath;
-    }
-    
     /**
      * 
      * @return          Returns the string representation of the folder path
      */
     public String getFolderPath()
     {
-        StringBuilder sb = new StringBuilder(56);
-        for (String pathElement : folderPath)
-        {
-            sb.append("/").append(pathElement);
-        }
-        return sb.toString();
+        return folderPath;
     }
 
     /**
@@ -95,10 +77,10 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
     {
         if (!PropertyCheck.isValidPropertyString(folderPath))
         {
-            folderPath = "";
+            throw new IllegalArgumentException("Invalid folder name path for property 'folderPath': " + folderPath);
         }
-        this.folderPath = new ArrayList<String>(5);
         StringTokenizer tokenizer = new StringTokenizer(folderPath, "/");
+        StringBuilder pathBuff = new StringBuilder(folderPath.length());
         while (tokenizer.hasMoreTokens())
         {
             String folderName = tokenizer.nextToken();
@@ -106,8 +88,13 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
             {
                 throw new IllegalArgumentException("Invalid folder name path for property 'folderPath': " + folderPath);
             }
-            this.folderPath.add(folderName);
+            pathBuff.append(folderName);
+            if (tokenizer.hasMoreTokens())
+            {
+                pathBuff.append('/');
+            }
         }
+        this.folderPath = pathBuff.toString();
     }
     
     /**
@@ -133,24 +120,26 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
                     "   Base path: " + getRootPath());
         }
         // Just choose the root path if the folder path is empty
-        if (folderPath.size() == 0)
+        if (folderPath.length() == 0)
         {
             return pathStartNodeRef;
         }
         else
         {
-            try
+            List<NodeRef> nodeRefs = searchService.selectNodes(pathStartNodeRef, folderPath, null, namespaceService, true);
+            if (nodeRefs.size() == 0)
             {
-                FileInfo folderInfo = fileFolderService.resolveNamePath(pathStartNodeRef, folderPath);
+                throw new AlfrescoRuntimeException("Folder not found: " + this);
+            }
+            else
+            {
+                NodeRef nodeRef = nodeRefs.get(0);
+                FileInfo folderInfo = fileFolderService.getFileInfo(nodeRef);
                 if (!folderInfo.isFolder())
                 {
                     throw new AlfrescoRuntimeException("Not a folder: " + this);
                 }
-                return folderInfo.getNodeRef();
-            }
-            catch (FileNotFoundException e)
-            {
-                throw new AlfrescoRuntimeException("Folder not found: " + this);
+                return nodeRef;
             }
         }
         // Done
@@ -179,18 +168,28 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
                     "   Base path: " + getRootPath());
         }
         // Just choose the root path if the folder path is empty
-        if (folderPath.size() == 0)
+        if (folderPath.length() == 0)
         {
             return pathStartNodeRef;
         }
         else
         {
-            FileInfo folderInfo = FileFolderServiceImpl.makeFolders(
-                    fileFolderService,
-                    pathStartNodeRef,
-                    folderPath,
-                    ContentModel.TYPE_FOLDER);
-            return folderInfo.getNodeRef();
+            StringTokenizer folders = new StringTokenizer(folderPath, "/");
+            NodeRef nodeRef = pathStartNodeRef;
+            while (folders.hasMoreTokens())
+            {
+                QName folderQName = QName.createQName(folders.nextToken(), namespaceService);
+                List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, folderQName); 
+                if (children.isEmpty())
+                {
+                    nodeRef = fileFolderService.create(nodeRef, folderQName.getLocalName(), ContentModel.TYPE_FOLDER, folderQName).getNodeRef();
+                }
+                else
+                {
+                    nodeRef = children.get(0).getChildRef();
+                }
+            }
+            return nodeRef;
         }
         // Done
     }

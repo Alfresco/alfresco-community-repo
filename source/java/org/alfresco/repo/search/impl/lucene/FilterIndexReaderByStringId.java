@@ -120,20 +120,32 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
                 }
                 else
                 {
-                    TermQuery query = new TermQuery(new Term("ID", stringRef));
-                    Hits hits = searcher.search(query);
-                    if (hits.length() > 0)
+                    boolean found = false;
+                    TermDocs td = in.termDocs(new Term("LEAFID", stringRef));
+                    while (td.next())
                     {
-                        for (int i = 0; i < hits.length(); i++)
+                        deletedDocuments.set(td.doc());
+                        found = true;
+                    }
+                    td.close();
+                    // For backward compatibility, use old method of locating non-container docs
+                    if (!found)
+                    {
+                        TermQuery query = new TermQuery(new Term("ID", stringRef));
+                        Hits hits = searcher.search(query);
+                        if (hits.length() > 0)
                         {
-                            Document doc = hits.doc(i);
-                            // Exclude all containers except the root (which is also a node!)
-                            Field path = doc.getField("PATH");
-                            if (path == null || path.stringValue().length() == 0)
+                            for (int i = 0; i < hits.length(); i++)
                             {
-                                deletedDocuments.set(hits.id(i));
-                                // There should only be one thing to delete
-                                // break;
+                                Document doc = hits.doc(i);
+                                // Exclude all containers except the root (which is also a node!)
+                                Field path = doc.getField("PATH");
+                                if (path == null || path.stringValue().length() == 0)
+                                {
+                                    deletedDocuments.set(hits.id(i));
+                                    // There should only be one thing to delete
+                                    // break;
+                                }
                             }
                         }
                     }

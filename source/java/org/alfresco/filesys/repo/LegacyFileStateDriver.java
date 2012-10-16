@@ -327,6 +327,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                         logger.debug("close file, release access token:" + token);
                     }
                     cache.releaseFileAccess(fstate, token);
+                    
                 }
                 
                 if(fstate.getOpenCount() == 0 )
@@ -337,6 +338,10 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.updateChangeDateTime(0);
                     fstate.updateModifyDateTime(0);    
                 }
+                
+                // Clear the access token
+                
+                param.setAccessToken( null);
             }
         }
         catch(IOException ie)

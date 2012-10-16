@@ -48,7 +48,7 @@ public class NodeParametersEntity extends NodeParameters
      */
     public NodeParametersEntity(QNameDAO qnameDAO)
     {
-        Pair<Long, QName> qnamePair = qnameDAO.getOrCreateQName(ContentModel.PROP_ORIGINAL_ID);
+        Pair<Long, QName> qnamePair = qnameDAO.getQName(ContentModel.PROP_ORIGINAL_ID);
         this.setOriginalIdPropQNameId(qnamePair == null ? -1 : qnamePair.getFirst());        
     }
     

@@ -200,7 +200,7 @@ public class ImapMessageTest extends TestCase
         RepositoryFolderConfigBean imapHome = new RepositoryFolderConfigBean();
         imapHome.setStore(storePath);
         imapHome.setRootPath(companyHomePathInStore);
-        imapHome.setFolderPath(IMAP_FOLDER_NAME);
+        imapHome.setFolderPath(NamespaceService.CONTENT_MODEL_PREFIX + ":" + IMAP_FOLDER_NAME);
         imapServiceImpl.setImapHome(imapHome);
 
 

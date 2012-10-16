@@ -40,7 +40,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
@@ -314,40 +313,6 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase im
             throw new LuceneIndexException("Failed to delete container and below for " + nodeRef, e);
         }
         return found;        
-    }
-
-    protected boolean deleteLeafOnly(String nodeRef, IndexReader reader, boolean delete) throws LuceneIndexException
-    {
-        boolean found = false;
-        try
-        {
-            TermDocs td = reader.termDocs(new Term("ID", nodeRef));
-            while (td.next())
-            {
-                int doc = td.doc();
-                Document document = reader.document(doc);
-                // Exclude all containers except the root (which is also a node!)
-                Field path = document.getField("PATH");
-                if (path == null || path.stringValue().length() == 0)
-                {   
-                    found = true;
-                    if (delete)
-                    {
-                        reader.deleteDocument(doc);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            td.close();
-        }
-        catch (IOException e)
-        {
-            throw new LuceneIndexException("Failed to delete container and below for " + nodeRef, e);
-        }
-        return found;
     }
 
     /** the maximum transformation time to allow atomically, defaulting to 20ms */

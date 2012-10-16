@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -41,6 +41,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * Activity Post Service Implementation
  * 
  * @author janv
+ * @since 3.0
  */
 public class ActivityPostServiceImpl implements ActivityPostService
 {
@@ -188,6 +189,17 @@ public class ActivityPostServiceImpl implements ActivityPostService
                         activityData = jo.toString();
                     }
                     checkNodeRef(jo);
+                    
+                    // ALF-10362 - belts-and-braces (note: Share sets "title" from cm:name)
+                    if (jo.has(PostLookup.JSON_TITLE))
+                    {
+                        String title = jo.getString(PostLookup.JSON_TITLE);
+                        if (title.length() > ActivityPostDAO.MAX_LEN_NAME)
+                        {
+                            jo.put(PostLookup.JSON_TITLE, title.substring(0, 255));
+                            activityData = jo.toString();
+                        }
+                    }
                 }
             }
             catch (JSONException e)
@@ -196,7 +208,6 @@ public class ActivityPostServiceImpl implements ActivityPostService
                 // According to test data in org/alfresco/repo/activities/script/test_activityService.js
                 // invalid JSON should be OK.
             }
-
             
             if (activityData.length() > ActivityPostDAO.MAX_LEN_ACTIVITY_DATA)
             {

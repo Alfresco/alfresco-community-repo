@@ -44,5 +44,15 @@ public interface WarHelper
      * @param installingModuleDetails
      */
     public void checkCompatibleEdition(TFile war, ModuleDetails installingModuleDetails);
+
+    /**
+     * Indicates if the war file specified is a "Share" war.  The default is FALSE
+     * Returns true if the Share war manifest states its a share war.
+     * @since 3.4.11,4.1.1,Community 4.2
+     * 
+     * @param war
+     * @return boolean - true if it is a share war
+     */
+	public boolean isShareWar(TFile war);
     
 }

@@ -1,8 +1,6 @@
 package org.alfresco.repo.module.tool;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,9 +14,8 @@ import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VersionNumber;
 import org.junit.Test;
-import org.springframework.util.FileCopyUtils;
-
 import de.schlichtherle.truezip.file.TFile;
+import org.springframework.util.FileCopyUtils;
 
 /**
  * Tests the war helper. 
@@ -54,7 +51,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().endsWith("must be installed on a repo version greater than 10.1"));
+            assertTrue(exception.getMessage().endsWith("must be installed on a war version greater than 10.1"));
         }
 
         installingModuleDetails.setRepoVersionMin(new VersionNumber("1.1"));
@@ -68,7 +65,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().endsWith("cannot be installed on a repo version greater than 3.0"));
+            assertTrue(exception.getMessage().endsWith("cannot be installed on a war version greater than 3.0"));
         }        
 
         installingModuleDetails.setRepoVersionMax(new VersionNumber("99"));
@@ -91,18 +88,82 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().endsWith("cannot be installed on a repo version greater than 4.0.999"));
+            assertTrue(exception.getMessage().endsWith("cannot be installed on a war version greater than 4.0.999"));
         }
+    }
+    
+    @Test
+    public void testCheckCompatibleVersionUsingManifest()
+    {
+        //Now check the compatible versions using the manifest
+    	TFile theWar = getFile(".war", "module/share-3.4.11.war");
+    	ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
+        try
+        {
+            this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails);
+            fail(); //should never get here
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("must be installed on a war version greater than 10.1"));
+        }
+
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("1.1"));
+        this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails); //does not throw exception     
+     
+        installingModuleDetails.setRepoVersionMax(new VersionNumber("3.0"));
+        try
+        {
+            this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails);
+            fail(); //should never get here
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("cannot be installed on a war version greater than 3.0"));
+        }        
+
+        installingModuleDetails.setRepoVersionMax(new VersionNumber("99"));
+        this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails); //does not throw exception
+        
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("3.4.11"));  //current war version
+        installingModuleDetails.setRepoVersionMax(new VersionNumber("3.4.11"));  //current war version
+        this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails); //does not throw exception  
+        
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("3.4.7"));  //current war version
+        installingModuleDetails.setRepoVersionMax(new VersionNumber("3.4.11"));  //current war version
+        this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails); //does not throw exception  
+        
+        try
+        {
+            installingModuleDetails.setRepoVersionMin(new VersionNumber("3.4.0"));  //current war version
+            installingModuleDetails.setRepoVersionMax(new VersionNumber("3.4.10"));  //current war version
+            this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails); //does not throw exception
+            fail("Should not pass as current version is 3.4.11 and the max value is 3.4.10"); //should never get here
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("cannot be installed on a war version greater than 3.4.10"));
+        }
+        
+    	theWar = getFile(".war", "module/share-4.2.a.war");
+    	installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
+        installingModuleDetails.setRepoVersionMin(new VersionNumber("101.1"));
+        //this should fail BUT we are using a non-numeric version number so instead it passes without validation
+        this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails);
+        
+        
+    	theWar = getFile(".war", "module/alfresco-4.2.a.war");
+        //this should fail BUT we are using a non-numeric version number so instead it passes without validation
+    	this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails);
+        
+
     }
 
     @Test
     public void testCheckCompatibleEdition()
     {
-        Properties props = new Properties();
-        props.setProperty(ModuleDetails.PROP_ID, "TestComp");
-        props.setProperty(ModuleDetails.PROP_VERSION, "9999");
-        props.setProperty(ModuleDetails.PROP_TITLE, "Test for Compatiblity");
-        props.setProperty(ModuleDetails.PROP_DESCRIPTION, "Test for Compatible Editions");
+        Properties props = dummyModuleProperties();
         ModuleDetails installingModuleDetails = new ModuleDetailsImpl(props);
         TFile theWar = getFile(".war", "module/test.war");   //Community Edition
         
@@ -137,6 +198,59 @@ public class WarHelperImplTest extends WarHelperImpl
     }
     
     @Test
+    public void testCheckCompatibleEditionUsingManifest()
+    {
+        Properties props = dummyModuleProperties();
+        ModuleDetails installingModuleDetails = new ModuleDetailsImpl(props);
+        TFile theWar = getFile(".war", "module/share-3.4.11.war"); //enterprise edition
+        
+        //Test for no edition specified
+        this.checkCompatibleEditionUsingManifest(theWar, installingModuleDetails); //does not throw exception 
+        
+        //Test for invalid edition
+        props.setProperty(ModuleDetails.PROP_EDITIONS, "CommuniT");
+        installingModuleDetails = new ModuleDetailsImpl(props);
+        try
+        {
+            this.checkCompatibleEditionUsingManifest(theWar, installingModuleDetails);
+            fail(); //should never get here
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("can only be installed in one of the following editions[CommuniT]"));
+        }
+        
+        props.setProperty(ModuleDetails.PROP_EDITIONS, ("Enterprise"));  //should ignore case
+        installingModuleDetails = new ModuleDetailsImpl(props);      
+        this.checkCompatibleEditionUsingManifest(theWar, installingModuleDetails); //does not throw exception 
+        
+        props.setProperty(ModuleDetails.PROP_EDITIONS, ("Community"));  //should ignore case
+        installingModuleDetails = new ModuleDetailsImpl(props);    
+        try
+        {
+            this.checkCompatibleEditionUsingManifest(theWar, installingModuleDetails);
+            fail(); //should never get here
+        }
+        catch (ModuleManagementToolException exception)
+        {
+            assertTrue(exception.getMessage().endsWith("can only be installed in one of the following editions[Community]"));
+        }
+        
+    	theWar = getFile(".war", "module/share-4.2.a.war");
+        this.checkCompatibleEditionUsingManifest(theWar, installingModuleDetails);
+    }
+    
+
+	private Properties dummyModuleProperties() {
+		Properties props = new Properties();
+        props.setProperty(ModuleDetails.PROP_ID, "TestComp");
+        props.setProperty(ModuleDetails.PROP_VERSION, "9999");
+        props.setProperty(ModuleDetails.PROP_TITLE, "Test for Compatiblity");
+        props.setProperty(ModuleDetails.PROP_DESCRIPTION, "Test for Compatible Editions");
+		return props;
+	}
+    
+    @Test
     public void testNoVersionProperties()
     {
         TFile theWar = getFile(".war", "module/empty.war");  
@@ -147,6 +261,29 @@ public class WarHelperImplTest extends WarHelperImpl
         this.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception 
         
     }
+    
+    /**
+     * Tests to see if the war is a share war.
+     * @throws Exception
+     */
+    @Test
+    public void testIsShareWar()
+    {
+    	TFile theWar = getFile(".war", "module/test.war");   //Version 4.1.0
+    	assertFalse(this.isShareWar(theWar));
+
+    	theWar = getFile(".war", "module/empty.war");  
+    	assertFalse(this.isShareWar(theWar));
+    	
+    	theWar = getFile(".war", "module/alfresco-4.2.a.war");
+    	assertFalse(this.isShareWar(theWar));
+    	
+    	theWar = getFile(".war", "module/share-4.2.a.war");
+    	assertTrue(this.isShareWar(theWar));
+    	
+    	
+    }
+    
     private TFile getFile(String extension, String location) 
     {
         File file = TempFileProvider.createTempFile("moduleManagementToolTest-", extension);        

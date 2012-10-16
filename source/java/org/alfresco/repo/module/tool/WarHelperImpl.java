@@ -5,11 +5,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.alfresco.repo.module.ModuleDetailsImpl;
 import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.util.VersionNumber;
+import org.apache.commons.lang.StringUtils;
 
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
@@ -24,6 +28,15 @@ public class WarHelperImpl implements WarHelper
 {
 
     public static final String VERSION_PROPERTIES = "/WEB-INF/classes/alfresco/version.properties";
+    
+    //see http://docs.oracle.com/javase/6/docs/technotes/guides/jar/jar.html#Main%20Attributes
+    public static final String MANIFEST_SPECIFICATION_TITLE = "Specification-Title";
+    public static final String MANIFEST_SPECIFICATION_VERSION = "Specification-Version";
+    public static final String MANIFEST_IMPLEMENTATION_TITLE = "Implementation-Title";
+
+    public static final String MANIFEST_SHARE = "Alfresco Share";
+    public static final String MANIFEST_COMMUNITY = "Community";
+    
     private LogOutput log = null;
     
   
@@ -42,18 +55,84 @@ public class WarHelperImpl implements WarHelper
         {
             Properties warVers = loadProperties(propsFile);
             VersionNumber warVersion = new VersionNumber(warVers.getProperty("version.major")+"."+warVers.getProperty("version.minor")+"."+warVers.getProperty("version.revision"));
-            if(warVersion.compareTo(installingModuleDetails.getRepoVersionMin())==-1) {
-                throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") must be installed on a repo version greater than "+installingModuleDetails.getRepoVersionMin());
-            }
-            if(warVersion.compareTo(installingModuleDetails.getRepoVersionMax())==1) {
-                throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") cannot be installed on a repo version greater than "+installingModuleDetails.getRepoVersionMax());
-            }
+            checkVersions(warVersion, installingModuleDetails);
         }
         else 
         {
-            log.info("No valid version found, is this a share war?");
+        	checkCompatibleVersionUsingManifest(war,installingModuleDetails);
         }
     }
+    
+    /**
+     * Checks if the module is compatible using the entry in the manifest. This is more accurate and works for both alfresco.war and share.war, however
+     * valid manifest entries weren't added until 3.4.11, 4.1.1 and Community 4.2 
+     * @param war
+     * @param installingModuleDetails
+     */
+    protected void checkCompatibleVersionUsingManifest(TFile war, ModuleDetails installingModuleDetails)
+    {
+			String version = findManifestArtibute(war, MANIFEST_SPECIFICATION_VERSION);
+	        if (StringUtils.isNotBlank(version))
+	        {
+	        	if (StringUtils.containsOnly(version, "0123456789.")) {
+			        VersionNumber warVersion = new VersionNumber(version);
+		            checkVersions(warVersion, installingModuleDetails);	        		
+	        	}
+	        	else 
+	        	{
+	        		//A non-numeric version number.  Currently our VersionNumber class doesn't support Strings in the version
+	        		String edition = findManifestArtibute(war, MANIFEST_IMPLEMENTATION_TITLE);
+	        		if (edition.endsWith(MANIFEST_COMMUNITY))
+	        		{
+	        			//If it's a community version, so don't worry about it
+	                    log.info("Community edition war detected, the version number is non-numeric so we will not validate it.");
+	        		}
+	        		else
+	        		{
+	        			throw new ModuleManagementToolException("Invalid version number specified: "+ version);  
+	        		}
+	        	}
+
+	        }    	
+    }
+
+    /**
+     * Finds a single attribute from a war manifest file.
+     * @param war the war
+     * @param attributeName key name of attribute
+     * @return attribute value
+     * @throws ModuleManagementToolException
+     */
+	protected String findManifestArtibute(TFile war, String attributeName) throws ModuleManagementToolException {
+		try 
+		{
+			JarFile warAsJar = new JarFile(war);
+			Manifest manifest = warAsJar.getManifest();
+			Attributes attribs = manifest.getMainAttributes();
+			return attribs.getValue(attributeName);
+		} 
+			catch (IOException e) 
+		{
+            throw new ModuleManagementToolException("Unabled to read a manifest for the war file: "+ war);     
+		}
+	}
+
+
+	/**
+	 * Compares the version information with the module details to see if their valid.  If they are invalid then it throws an exception.
+	 * @param warVersion
+	 * @param installingModuleDetails
+	 * @throws ModuleManagementToolException
+	 */
+	private void checkVersions(VersionNumber warVersion, ModuleDetails installingModuleDetails) throws ModuleManagementToolException
+	{
+		if(warVersion.compareTo(installingModuleDetails.getRepoVersionMin())==-1) {
+		    throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") must be installed on a war version greater than "+installingModuleDetails.getRepoVersionMin());
+		}
+		if(warVersion.compareTo(installingModuleDetails.getRepoVersionMax())==1) {
+		    throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") cannot be installed on a war version greater than "+installingModuleDetails.getRepoVersionMax());
+		}
+	}
 
     @Override
     public void checkCompatibleEdition(TFile war, ModuleDetails installingModuleDetails)
@@ -84,6 +163,38 @@ public class WarHelperImpl implements WarHelper
         }
     }
 
+    /**
+     * Checks to see if the module that is being installed is compatible with the war, (using the entry in the manifest).
+     * This is more accurate and works for both alfresco.war and share.war, however
+     * valid manifest entries weren't added until 3.4.11, 4.1.1 and Community 4.2 
+     * @param war
+     * @param installingModuleDetails
+     */
+    public void checkCompatibleEditionUsingManifest(TFile war, ModuleDetails installingModuleDetails)
+    {
+        List<String> installableEditions = installingModuleDetails.getEditions();
+
+        if (installableEditions != null && installableEditions.size() > 0) {
+            
+    		String warEdition = findManifestArtibute(war, MANIFEST_IMPLEMENTATION_TITLE);
+    		if (StringUtils.isNotBlank(warEdition))
+    		{
+    			warEdition = warEdition.toLowerCase();
+                for (String edition : installableEditions)
+                {
+                    if (warEdition.endsWith(edition.toLowerCase()))
+                    {
+                        return;  //successful match.
+                    }
+                }
+                throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()
+                            +") can only be installed in one of the following editions"+installableEditions);
+            } else {
+                log.info("No valid editions found in the manifest. Is this war prior to 3.4.11, 4.1.1 and Community 4.2 ?");
+            }
+        }	
+    }
+    
     @Override
     public void checkModuleDependencies(TFile war, ModuleDetails installingModuleDetails)
     {
@@ -130,6 +241,21 @@ public class WarHelperImpl implements WarHelper
             }
         }
         return installedModuleDetails;
+    }
+
+
+    @Override
+    public boolean isShareWar(TFile warFile)
+    {
+        if (!warFile.exists())
+        {
+            throw new ModuleManagementToolException("The war file '" + warFile + "' does not exist.");     
+        }
+        
+        String title = findManifestArtibute(warFile, MANIFEST_SPECIFICATION_TITLE);
+        if (MANIFEST_SHARE.equals(title)) return true;  //It is share
+        
+        return false; //default
     }
 
     /**

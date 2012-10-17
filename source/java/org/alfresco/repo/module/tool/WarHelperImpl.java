@@ -13,7 +13,6 @@ import org.alfresco.repo.module.ModuleDetailsImpl;
 import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.util.VersionNumber;
-import org.apache.commons.lang.StringUtils;
 
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
@@ -36,6 +35,7 @@ public class WarHelperImpl implements WarHelper
 
     public static final String MANIFEST_SHARE = "Alfresco Share";
     public static final String MANIFEST_COMMUNITY = "Community";
+    protected static final String REGEX_NUMBER_OR_DOT = "[0-9\\.]*";
     
     private LogOutput log = null;
     
@@ -72,9 +72,9 @@ public class WarHelperImpl implements WarHelper
     protected void checkCompatibleVersionUsingManifest(TFile war, ModuleDetails installingModuleDetails)
     {
 			String version = findManifestArtibute(war, MANIFEST_SPECIFICATION_VERSION);
-	        if (StringUtils.isNotBlank(version))
-	        {
-	        	if (StringUtils.containsOnly(version, "0123456789.")) {
+	        if (version != null && version.length() > 0)
+	        {	        	
+	        	if (version.matches(REGEX_NUMBER_OR_DOT)) {
 			        VersionNumber warVersion = new VersionNumber(version);
 		            checkVersions(warVersion, installingModuleDetails);	        		
 	        	}
@@ -93,7 +93,11 @@ public class WarHelperImpl implements WarHelper
 	        		}
 	        	}
 
-	        }    	
+	        }
+	        else
+	        {
+                log.info("WARNING: No version information detected in war, therefore version validation is disabled, continuing anyway.  Is this war prior to 3.4.11, 4.1.1 and Community 4.2 ?");    	
+	        }
     }
 
     /**
@@ -158,7 +162,7 @@ public class WarHelperImpl implements WarHelper
                 throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()
                             +") can only be installed in one of the following editions"+installableEditions);
             } else {
-                log.info("No valid editions found, is this a share war?");
+            	checkCompatibleEditionUsingManifest(war,installingModuleDetails);
             }
         }
     }
@@ -177,7 +181,7 @@ public class WarHelperImpl implements WarHelper
         if (installableEditions != null && installableEditions.size() > 0) {
             
     		String warEdition = findManifestArtibute(war, MANIFEST_IMPLEMENTATION_TITLE);
-    		if (StringUtils.isNotBlank(warEdition))
+    		if (warEdition != null && warEdition.length() > 0)
     		{
     			warEdition = warEdition.toLowerCase();
                 for (String edition : installableEditions)
@@ -190,7 +194,7 @@ public class WarHelperImpl implements WarHelper
                 throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()
                             +") can only be installed in one of the following editions"+installableEditions);
             } else {
-                log.info("No valid editions found in the manifest. Is this war prior to 3.4.11, 4.1.1 and Community 4.2 ?");
+                log.info("WARNING: No edition information detected in war, edition validation is disabled, continuing anyway. Is this war prior to 3.4.11, 4.1.1 and Community 4.2 ?");
             }
         }	
     }

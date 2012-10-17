@@ -38,6 +38,27 @@ public class WarHelperImplTest extends WarHelperImpl
     }
     
     @Test
+    public void testRegEx()
+    {
+    	String x = "1";
+    	assertTrue(x.matches(REGEX_NUMBER_OR_DOT));
+    	x = "king";
+    	assertFalse(x.matches(REGEX_NUMBER_OR_DOT));
+    	x = "2.5.a";
+    	assertFalse(x.matches(REGEX_NUMBER_OR_DOT));
+    	x = "1.2.5";
+    	assertTrue(x.matches(REGEX_NUMBER_OR_DOT));
+    	x = "123";
+    	assertTrue(x.matches(REGEX_NUMBER_OR_DOT));
+    	x = "3.4.11";
+    	assertTrue(x.matches(REGEX_NUMBER_OR_DOT));
+    	x = "4.1.1";
+    	assertTrue(x.matches(REGEX_NUMBER_OR_DOT));
+    	x = "4.2.b";
+    	assertFalse(x.matches(REGEX_NUMBER_OR_DOT));
+    	
+    }
+    @Test
     public void testCheckCompatibleVersion()
     {
         TFile theWar = getFile(".war", "module/test.war");   //Version 4.1.0

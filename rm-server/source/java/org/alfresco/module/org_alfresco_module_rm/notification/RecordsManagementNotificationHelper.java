@@ -28,13 +28,16 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.Role;
-import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.notification.EMailNotificationProvider;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.service.cmr.notification.NotificationContext;
 import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -68,11 +71,12 @@ public class RecordsManagementNotificationHelper
     private NotificationService notificationService;
     private RecordsManagementService recordsManagementService;
     private RecordsManagementSecurityService securityService;
-    private Repository repositoryHelper;
     private SearchService searchService;
     private NamespaceService namespaceService;
     private SiteService siteService;
     private AuthorityService authorityService;
+    private TenantAdminService tenantAdminService;
+    private NodeService nodeService;
     
     /** Notification role */
     private String notificationRole;
@@ -114,15 +118,6 @@ public class RecordsManagementNotificationHelper
     }
     
     /**
-     * 
-     * @param repositoryHelper  repository helper
-     */
-    public void setRepositoryHelper(Repository repositoryHelper)
-    {
-        this.repositoryHelper = repositoryHelper;
-    }
-    
-    /**
      * @param searchService search service
      */
     public void setSearchService(SearchService searchService)
@@ -155,6 +150,22 @@ public class RecordsManagementNotificationHelper
     }
     
     /**
+     * @param nodeService   node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /**
+     * @param tenantAdminService    tenant admin service
+     */
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
+    {
+        this.tenantAdminService = tenantAdminService;
+    }
+    
+    /**
      * @return  superseded email template
      */
     public NodeRef getSupersededTemplate()
@@ -171,7 +182,7 @@ public class RecordsManagementNotificationHelper
         {
             List<NodeRef> nodeRefs = 
                 searchService.selectNodes(
-                        repositoryHelper.getRootHome(), 
+                        getRootNode(), 
                         "app:company_home/app:dictionary/cm:records_management/cm:records_management_email_templates/cm:notify-records-due-for-review-email.ftl", null, 
                         namespaceService, 
                         false);
@@ -181,6 +192,23 @@ public class RecordsManagementNotificationHelper
             }
         }
         return dueForReviewTemplate;
+    }
+    
+    /**
+     * Helper method to get root node in a tenant safe way.
+     * 
+     * @return  NodeRef root node of spaces store
+     */
+    private NodeRef getRootNode()
+    {
+        String tenantDomain = tenantAdminService.getCurrentUserDomain();
+        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
+        {
+            public NodeRef doWork() throws Exception
+            {                
+                return nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+            }
+        }, tenantDomain);
     }
     
     /**

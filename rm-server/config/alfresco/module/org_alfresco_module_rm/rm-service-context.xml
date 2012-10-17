@@ -862,7 +862,8 @@
         <property name="securityService" ref="RecordsManagementSecurityService"/>
     	<property name="notificationService" ref="NotificationService"/>
     	<property name="recordsManagementService" ref="RecordsManagementService"/>
-    	<property name="repositoryHelper" ref="repositoryHelper" />
+  		<property name="nodeService" ref="nodeService"/>
+  		<property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="namespaceService" ref="namespaceService"/>
         <property name="searchService" ref="searchService"/>
         <property name="siteService" ref="SiteService" />

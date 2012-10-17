@@ -4208,6 +4208,7 @@ alfresco.xforms.Repeat = alfresco.xforms.VGroup.extend({
                     "src": alfresco.constants.WEBAPP_CONTEXT + "/images/icons/plus.gif",
                     "styles": { "margin-left": "5px", "width": "16px", "height": "16px" },
                     "title": alfresco.resources["add_item_title"],
+                    "tabIndex": ((this.isInsertRepeatItemEnabled()) ? (0) : (-1)),
                     "alt": imageTitle
                   });
 

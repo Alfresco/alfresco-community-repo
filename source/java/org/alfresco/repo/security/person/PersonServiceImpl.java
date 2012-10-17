@@ -20,7 +20,6 @@ package org.alfresco.repo.security.person;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -29,12 +28,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
@@ -81,9 +78,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.search.LimitBy;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -115,7 +109,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 {
     private static Log logger = LogFactory.getLog(PersonServiceImpl.class);
     
-    private static final String CANNED_QUERY_PEOPLE_LIST = "peopleGetChildrenCannedQueryFactory";
+    private static final String CANNED_QUERY_PEOPLE_LIST = "getPeopleCannedQueryFactory";
+    private static final String CANNED_QUERY_PEOPLE_LIST_DEPRECATED = "peopleGetChildrenCannedQueryFactory";
 
     private static final String DELETE = "DELETE";
     private static final String SPLIT = "SPLIT";
@@ -1190,71 +1185,65 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         return refs;
     }
     
+    private List<FilterProp> getFilterProps(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase)
+    {
+        List<FilterProp> filterProps = null;
+        if (stringPropFilters != null)
+        {
+            filterProps = new ArrayList<FilterProp>(stringPropFilters.size());
+            for (Pair<QName, String> filterProp : stringPropFilters)
+            {
+                String filterStr = filterProp.getSecond();
+                if ((filterStr == null) || (filterStr.equals("")) || (filterStr.equals("*")))
+                {
+                    // The wildcard means no filtering is needed on this property
+                    continue;
+                }
+                else if (filterStr.endsWith("*"))
+                {
+                    // The trailing * is implicit
+                    filterStr = filterStr.substring(0, filterStr.length()-1);
+                }
+                
+                // Turn this into a canned query filter
+                filterProps.add(new FilterPropString(filterProp.getFirst(), filterStr, (filterIgnoreCase ? FilterTypeString.STARTSWITH_IGNORECASE : FilterTypeString.STARTSWITH)));
+            }
+        }
+        
+        return filterProps;
+    }
+    
     /**
      * {@inheritDoc}
      */
-    public PagingResults<PersonInfo> getPeople(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    public PagingResults<PersonInfo> getPeople(String pattern, List<QName> filterStringProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-
-        // TODO Remove this ALF-14127 hot fix code (calling nonCannedGetPeopleQuery(...) once this canned query does not fetch all rows from the database,
-        //      which is very slow when there are a lot of users. 10,000 user takes about 4 seconds. The customer has 90,000.
+        
         CannedQueryResults<NodeRef> cqResults = null;
-        String searchValue = null;
-        if (filterIgnoreCase && pagingRequest != null && pagingRequest.getQueryExecutionId() == null && pagingRequest.getSkipCount() == 0)
-        {
-            searchValue = getSearchOnNameValue(stringPropFilters);
-        }
-        if (searchValue != null)
-        {
-            cqResults = nonCannedGetPeopleQuery(searchValue, pagingRequest);
-        }
-        else
-        {
-            NodeRef contextNodeRef = getPeopleContainer();
         
-            Set<QName> childTypeQNames = new HashSet<QName>(1);
-            childTypeQNames.add(ContentModel.TYPE_PERSON);
+        NodeRef contextNodeRef = getPeopleContainer();
         
-            // get canned query
-            GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST);
+        // get canned query
+        GetPeopleCannedQueryFactory getPeopleCannedQueryFactory = (GetPeopleCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST);
         
-            List<FilterProp> filterProps = null;
-            if (stringPropFilters != null)
-            {
-                filterProps = new ArrayList<FilterProp>(stringPropFilters.size());
-                for (Pair<QName, String> filterProp : stringPropFilters)
-                {
-                    String filterStr = filterProp.getSecond();
-                    if ((filterStr == null) || (filterStr.equals("")) || (filterStr.equals("*")))
-                    {
-                        // The wildcard means no filtering is needed on this property
-                        continue;
-                    }
-                    else if (filterStr.endsWith("*"))
-                    {
-                        // The trailing * is implicit
-                        filterStr = filterStr.substring(0, filterStr.length()-1);
-                    }
-                
-                    // Turn this into a canned query filter
-                    filterProps.add(new FilterPropString(filterProp.getFirst(), filterStr, (filterIgnoreCase ? FilterTypeString.STARTSWITH_IGNORECASE : FilterTypeString.STARTSWITH)));
-                }
-            }
+        GetPeopleCannedQuery cq = (GetPeopleCannedQuery)getPeopleCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, filterStringProps, sortProps, pagingRequest);
         
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, null, null, childTypeQNames, filterProps, sortProps, pagingRequest);
-        
-            // execute canned query
-            cqResults = cq.execute();
-        }
+        // execute canned query
+        cqResults = cq.execute();
         
         final CannedQueryResults<NodeRef> results = cqResults;
-        final List<NodeRef> nodeRefs;
+        List<NodeRef> nodeRefs;
         if (results.getPageCount() > 0)
         {
             nodeRefs = results.getPages().get(0);
+            if (nodeRefs.size() > pagingRequest.getMaxItems())
+            {
+                // eg. since hasMoreItems added one (for a pre-paged result)
+                nodeRefs = nodeRefs.subList(0, pagingRequest.getMaxItems());
+            }
         }
         else
         {
@@ -1284,9 +1273,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 logger.debug(
                         "getPeople: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs " +
-                        		"[pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+
-                        		",totalCount="+totalCount+",filters="+stringPropFilters+
-                        		",filtersIgnoreCase="+filterIgnoreCase+"]");
+                                "[pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+
+                                ",totalCount="+totalCount+",pattern="+pattern+",filterStringProps="+filterStringProps+
+                                ",sortProps="+sortProps+"]");
             }
         }
         
@@ -1326,255 +1315,104 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     }
     
     /**
-     * If the search is on first, last and user name only with the same value, return that value,
-     * otherwise return null. 
+     * {@inheritDoc}
      */
-    // TODO Remove this ALF-14127 hot fix code once this canned query does not fetch all rows from the database.
-    private String getSearchOnNameValue(List<Pair<QName, String>> stringPropFilters)
+    public PagingResults<PersonInfo> getPeople(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
-        String filter = null;
-        if (stringPropFilters != null && stringPropFilters.size() == 3)
-        {
-            // Does not check we don't have duplicates.
-            for (int i=0; i < 3; i++)
-            {
-                Pair<QName, String> pair = stringPropFilters.get(i);
-                if (i == 0)
-                {
-                    filter = pair.getSecond().trim();
-                    if (filter == null || filter.length() == 0)
-                    {
-                        filter = null;
-                        break;
-                    }
-                }
-                
-                if ((i != 0 && !filter.equals(pair.getSecond().trim()) || !NAME_SEARCH_NAMES.contains(pair.getFirst())))
-                {
-                    filter = null;
-                    break;
-                }
-            }
-        }
-        return filter;
-    }
-    
-    // TODO Remove this ALF-14127 hot fix code once this canned query does not fetch all rows from the database.
-    private static final List<QName> NAME_SEARCH_NAMES = Arrays.asList(new QName[] {
-            ContentModel.PROP_FIRSTNAME, ContentModel.PROP_LASTNAME, ContentModel.PROP_USERNAME});
-
-    /**
-     * Use Solr search based on code in org.alfresco.repo.jscript.People.getPeople(String, int)
-     */
-    // TODO Remove this ALF-14127 hot fix code once this canned query does not fetch all rows from the database.
-    private CannedQueryResults<NodeRef> nonCannedGetPeopleQuery(String filter, PagingRequest pagingRequest)
-    {
+        ParameterCheck.mandatory("pagingRequest", pagingRequest);
+        
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-        int maxResults = pagingRequest != null ? pagingRequest.getMaxItems() : Integer.MAX_VALUE;
-        if (maxResults <= 0)
+        
+        CannedQueryResults<NodeRef> cqResults = null;
+        
+        NodeRef contextNodeRef = getPeopleContainer();
+        
+        Set<QName> childTypeQNames = new HashSet<QName>(1);
+        childTypeQNames.add(ContentModel.TYPE_PERSON);
+        
+        // get canned query
+        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST_DEPRECATED);
+        
+        List<FilterProp> filterProps = getFilterProps(stringPropFilters, filterIgnoreCase);
+        
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, null, null, childTypeQNames, filterProps, sortProps, pagingRequest);
+        
+        // execute canned query
+        cqResults = cq.execute();
+        
+        final CannedQueryResults<NodeRef> results = cqResults;
+        final List<NodeRef> nodeRefs;
+        if (results.getPageCount() > 0)
         {
-            maxResults = Integer.MAX_VALUE;
-        }
-
-        String term = filter.replace("\\", "").replace("\"", "");
-        StringTokenizer t = new StringTokenizer(term, " ");
-        int propIndex = term.indexOf(':');
-
-        SearchParameters params = new SearchParameters();
-        params.addQueryTemplate("_PERSON", "|%firstName OR |%lastName OR |%userName");
-        params.setDefaultFieldName("_PERSON");
-
-        StringBuilder query = new StringBuilder(256);
-
-        query.append("TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" AND (");
-
-        if (t.countTokens() == 1)
-        {
-            // single word with no field will go against _PERSON and expand
-
-            // fts-alfresco property search i.e. location:"maidenhead"
-            query.append(term.substring(0, propIndex + 1)).append('"')
-                    .append(term.substring(propIndex + 1));
-            if (propIndex > 0)
-            {
-                query.append('"');
-            }
-            else
-            {
-                query.append("*\"");
-            }
+            nodeRefs = results.getPages().get(0);
         }
         else
         {
-            // scan for non-fts-alfresco property search tokens
-            int nonFtsTokens = 0;
-            while (t.hasMoreTokens())
-            {
-                if (t.nextToken().indexOf(':') == -1)
-                    nonFtsTokens++;
-            }
-            t = new StringTokenizer(term, " ");
-
-            // multiple terms supplied - look for first and second name etc.
-            // assume first term is first name, any more are second i.e.
-            // "Fraun van de Wiels"
-            // also allow fts-alfresco property search to reduce results
-            params.setDefaultOperator(SearchParameters.Operator.AND);
-            boolean firstToken = true;
-            boolean tokenSurname = false;
-            boolean propertySearch = false;
-            while (t.hasMoreTokens())
-            {
-                term = t.nextToken();
-                if (!propertySearch && term.indexOf(':') == -1)
-                {
-                    if (nonFtsTokens == 1)
-                    {
-                        // simple search: first name, last name and username
-                        // starting with term
-                        query.append("_PERSON:\"");
-                        query.append(term);
-                        query.append("*\" ");
-                    }
-                    else
-                    {
-                        if (firstToken)
-                        {
-                            query.append("firstName:\"");
-                            query.append(term);
-                            query.append("*\" ");
-
-                            firstToken = false;
-                        }
-                        else
-                        {
-                            if (tokenSurname)
-                            {
-                                query.append("OR ");
-                            }
-                            query.append("lastName:\"");
-                            query.append(term);
-                            query.append("*\" ");
-
-                            tokenSurname = true;
-                        }
-                    }
-                }
-                else
-                {
-                    // fts-alfresco property search i.e. "location:maidenhead"
-                    propIndex = term.indexOf(':');
-                    query.append(term.substring(0, propIndex + 1)).append('"')
-                            .append(term.substring(propIndex + 1)).append('"');
-
-                    propertySearch = true;
-                }
-            }
+            nodeRefs = Collections.emptyList();
         }
-        query.append(")");
-
-        // define the search parameters
-        params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-        params.addStore(this.storeRef);
-        params.setQuery(query.toString());
-        if (maxResults > 0)
+        
+        // set total count
+        final Pair<Integer, Integer> totalCount;
+        if (pagingRequest.getRequestTotalCountMax() > 0)
         {
-            params.setLimitBy(LimitBy.FINAL_SIZE);
-            params.setLimit(maxResults);
+            totalCount = results.getTotalResultCount();
         }
-
-        ResultSet results = null;
-        List<NodeRef> resultNodeRefs = null;
-        try
+        else
         {
-            results = searchService.query(params);
-            resultNodeRefs = results.getNodeRefs();
+            totalCount = null;
         }
-        catch (Throwable err)
+        
+        if (start != null)
         {
-            resultNodeRefs = Collections.emptyList();
+            int cnt = results.getPagedResultCount();
+            int skipCount = pagingRequest.getSkipCount();
+            int maxItems = pagingRequest.getMaxItems();
+            boolean hasMoreItems = results.hasMoreItems();
+            int pageNum = (skipCount / maxItems) + 1;
             
-            // hide query parse error from users
             if (logger.isDebugEnabled())
-                logger.debug("Failed to execute people search: " + query.toString(), err);
-        }
-        finally
-        {
-            if (results != null)
             {
-                results.close();
+                logger.debug(
+                        "getPeople: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs " +
+                        		"[pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+
+                        		",totalCount="+totalCount+",filters="+stringPropFilters+
+                        		",filtersIgnoreCase="+filterIgnoreCase+",sortProps="+sortProps+"]");
             }
         }
-
-        // Turn NodeRefs into a single page of results.
-        final List<NodeRef> nodRefs = resultNodeRefs;
-        CannedQueryResults<NodeRef> cqResults = new CannedQueryResults<NodeRef>()
+        
+        final List<PersonInfo> personInfos = new ArrayList<PersonInfo>(nodeRefs.size());
+        for (NodeRef nodeRef : nodeRefs)
         {
-            @Override
-            public CannedQuery<NodeRef> getOriginatingQuery()
-            {
-                return null;
-            }
-
+            Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+            personInfos.add(new PersonInfo(nodeRef, 
+                                           (String)props.get(ContentModel.PROP_USERNAME), 
+                                           (String)props.get(ContentModel.PROP_FIRSTNAME),
+                                           (String)props.get(ContentModel.PROP_LASTNAME)));
+        }
+        
+        return new PagingResults<PersonInfo>()
+        {
             @Override
             public String getQueryExecutionId()
             {
-                return null;
+                return results.getQueryExecutionId();
             }
-
             @Override
-            public Pair<Integer, Integer> getTotalResultCount()
+            public List<PersonInfo> getPage()
             {
-                int size = nodRefs.size();
-                return new Pair<Integer, Integer>(size, size);
+                return personInfos;
             }
-
-            @Override
-            public int getPagedResultCount()
-            {
-                return nodRefs.size();
-            }
-
-            @Override
-            public int getPageCount()
-            {
-                return 1;
-            }
-
-            @Override
-            public NodeRef getSingleResult()
-            {
-                if (nodRefs.size() != 1)
-                {
-                    throw new IllegalStateException(
-                            "There must be exactly one page of one result available.");
-                }
-                return nodRefs.get(0);
-            }
-
-            @Override
-            public List<NodeRef> getPage()
-            {
-                return nodRefs;
-            }
-
-            @Override
-            public List<List<NodeRef>> getPages()
-            {
-                return Collections.singletonList(getPage());
-            }
-
             @Override
             public boolean hasMoreItems()
             {
-                return false;
+                return results.hasMoreItems();
+            }
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return totalCount;
             }
         };
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("nonCannedGetPeopleQuery(\""+filter+"\", "+maxResults+") "+cqResults.getTotalResultCount()+" in "+(System.currentTimeMillis()-start)+" msecs ");
-        }
-        return cqResults;
     }
     
     /**

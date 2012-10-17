@@ -72,12 +72,15 @@ Inbound settings from iBatis
         <typeAlias alias="ChildProperty" type="org.alfresco.repo.domain.node.ChildPropertyEntity"/>
         <typeAlias alias="PrimaryChildrenAclUpdate" type="org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity"/>
         
-        <!--GetChildren CQ (currently used by FileFolderService.list / PersonService.getPeople) -->
+        <!--GetChildren CQ (currently used by FileFolderService.list) -->
         <typeAlias alias="FilterSortNode" type="org.alfresco.repo.node.getchildren.FilterSortNodeEntity"/>
         
         <!--GetChildren by Auditable CQ -->
         <typeAlias alias="NodeBackedEntity" type="org.alfresco.repo.query.NodeBackedEntity"/>
         <typeAlias alias="NodeWithTargetsEntity" type="org.alfresco.repo.query.NodeWithTargetsEntity"/>
+        
+        <!--GetPeople CQ (currently used by PersonService.getPeople) -->
+        <typeAlias alias="FilterSortPerson" type="org.alfresco.repo.security.person.FilterSortPersonEntity"/>
         
         <!-- Authority CQ -->
         <typeAlias alias="AuthorityInfo" type="org.alfresco.repo.security.authority.AuthorityInfoEntity"/>
@@ -223,6 +226,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-auditable-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-authorities-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-blogs-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-people-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-calendar-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-copy-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-downloads-common-SqlMap.xml"/>

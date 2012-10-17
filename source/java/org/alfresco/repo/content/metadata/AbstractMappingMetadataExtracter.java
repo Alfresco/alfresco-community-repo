@@ -969,6 +969,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
             else
             {
+                if(valueStr.indexOf("\u0000") != -1)
+                {
+                    valueStr = valueStr.replaceAll("\u0000", "");
+                }
                 // Keep the trimmed value
                 value = valueStr;
             }

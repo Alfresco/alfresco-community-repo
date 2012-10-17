@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -274,7 +274,25 @@ public interface PersonService
     
     /**
      * Get paged list of people optionally filtered and/or sorted
-     
+     * 
+     * Note: the pattern is applied to filter props (0 to 3) as startsWithIgnoreCase, which are OR'ed together, for example: cm:userName or cm:firstName or cm:lastName
+     * 
+     * @param pattern         pattern to apply to filter props - "startsWith" and "ignoreCase"
+     * @param filterProps     list of filter properties (these are OR'ed)
+     * @param sortProps       sort property, eg. cm:username ascending
+     * @param pagingRequest   skip, max + optional query execution id
+     * @return
+     * 
+     * @author janv
+     * @since 4.1.2
+     */
+    @Auditable(parameters = {"pattern", "filterProps", "sortProps", "pagingRequest"})
+    public PagingResults<PersonInfo> getPeople(String pattern, List<QName> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
+    
+    
+    /**
+     * Get paged list of people optionally filtered and/or sorted
+     *
      * @param filterProps       list of filter properties (with "startsWith" values), eg. cm:username "al" might match "alex", "alice", ...
      * @param filterIgnoreCase  true to ignore case when filtering, false to be case-sensitive when filtering
      * @param sortProps         sort property, eg. cm:username ascending
@@ -282,6 +300,7 @@ public interface PersonService
      * 
      * @author janv
      * @since 4.0
+     * @deprecated see getPeople(String pattern, List<QName> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
      */
     @Auditable(parameters = {"stringPropFilters", "filterIgnoreCase", "sortProps", "pagingRequest"})
     public PagingResults<PersonInfo> getPeople(List<Pair<QName,String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);

@@ -1831,6 +1831,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // The node's version has moved on so no need to invalidate caches
         }
 
+        // ALF-16366: Ensure index impact is accounted for. If the node is being deleted we would expect the
+        // appropriate events to be fired manually
+        if (!nodeUpdate.isUpdateTypeQNameId() || !getNodeNotNull(nodeId, false).getDeleted(qnameDAO))
+        {
+            nodeIndexer.indexUpdateNode(oldNode.getNodeRef());
+        }
+
         // Done
         if (isDebugEnabled)
         {

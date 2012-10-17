@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -63,8 +63,6 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     private boolean userNamesAreCaseSensitive = false;
     
     private RepoCtx ctx = null;
-    
-    private volatile boolean busy;
     
     public void setActivityPostServiceImpl(ActivityPostServiceImpl activityPostServiceImpl)
     {
@@ -135,8 +133,6 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     {
         ctx = new RepoCtx(sysAdminParams, repoEndPoint);
         ctx.setUserNamesAreCaseSensitive(userNamesAreCaseSensitive);
-        
-        busy = false;
     }
     
     /**
@@ -150,11 +146,6 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     }
      
     abstract public int getEstimatedGridSize();
-    
-    protected boolean isActive()
-    {
-        return busy;
-    }
     
     public void execute() throws JobExecutionException
     {
@@ -171,10 +162,11 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         }
 
         String lockToken = null;
+        LockCallback lockCallback = null;
 
         try
         {
-            JobLockRefreshCallback lockCallback = new LockCallback();
+            lockCallback = new LockCallback();
             lockToken = acquireLock(lockCallback);
 
             
@@ -213,7 +205,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         }
         finally
         {
-            releaseLock(lockToken);
+            releaseLock(lockCallback, lockToken);
         }
     }
     
@@ -221,6 +213,8 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
 
     private class LockCallback implements JobLockRefreshCallback
     {
+        private volatile boolean busy = false;
+        
         @Override
         public boolean isActive()
         {
@@ -251,7 +245,7 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         // Got the lock - now register the refresh callback which will keep the lock alive
         jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, lockCallback);
         
-        busy = true;
+        ((LockCallback)lockCallback).busy = true;
         
         if (logger.isDebugEnabled())
         {
@@ -261,11 +255,11 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         return lockToken;
     }
     
-    private void releaseLock(String lockToken)
+    private void releaseLock(LockCallback lockCallback, String lockToken)
     {
-        if (lockToken != null)
+        if (lockCallback != null && lockToken != null)
         {
-            busy = false;
+            ((LockCallback)lockCallback).busy = false;
             
             jobLockService.releaseLock(lockToken, LOCK_QNAME);
             

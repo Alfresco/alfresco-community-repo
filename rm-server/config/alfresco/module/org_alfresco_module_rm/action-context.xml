@@ -22,6 +22,16 @@
                 <value>{http://www.alfresco.org/model/content/1.0}content</value>
             </list>
         </property>
-    </bean>      
+    </bean>     
+    
+     <!--  File record action -->
+    <bean id="file-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.FileRecordAction">    	
+    	<property name="fileFolderService" ref="FileFolderService"/>
+    <!-- <property name="applicableTypes">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
+        </property> -->
+    </bean>  
     
 </beans>    

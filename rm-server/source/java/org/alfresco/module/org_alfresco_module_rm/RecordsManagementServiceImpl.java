@@ -526,6 +526,10 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
             {
                 result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
             }
+            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER) == true)
+            {
+                result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
+            }
         }
         
         return result;

@@ -47,18 +47,25 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 public class RecordServiceImpl implements RecordService, RecordsManagementModel
 {
+    /** Node service **/
     private NodeService nodeService;
     
+    /** Indentiy service */
     private IdentifierService identifierService;
     
+    /** Records management service */
     private RecordsManagementService recordsManagementService;
     
+    /** Dictionary service */
     private DictionaryService dictionaryService;
     
+    /** Policy component */
     private PolicyComponent policyComponent;
     
+    /** Permission service */
     private PermissionService permissionService;
     
+    /** Records management security service */
     private RecordsManagementSecurityService recordsManagementSecurityService;
     
     /** List of available record meta-data aspects */
@@ -182,7 +189,7 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
             ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(document);
             
             /// get the new record container for the file plan
-            NodeRef newRecordContainer = getNewRecordContainer(filePlan);
+            NodeRef newRecordContainer = getUnfiledRecordContainer(filePlan);
             if (newRecordContainer == null)
             {
                 throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
@@ -219,12 +226,12 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
      * @param filePlan
      * @return
      */
-    private NodeRef getNewRecordContainer(NodeRef filePlan)
+    public NodeRef getUnfiledRecordContainer(NodeRef filePlan)
     {
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_UNFILED_RECORDS, RegexQNamePattern.MATCH_ALL);
         if (assocs.size() != 1)
         {
-            throw new AlfrescoRuntimeException("Error getting the new record container, because the container cannot be indentified.");
+            throw new AlfrescoRuntimeException("Error getting the unfiled container, because the container cannot be indentified.");
         }
         return assocs.get(0).getChildRef();        
     } 

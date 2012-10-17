@@ -64,5 +64,7 @@ public interface RecordService
     
     // TODO NodeRef createAndFileRecord(NodeRef recordFolder, NodeRef document);
     
-    // TODO void fileRecord(NodeRef recordFolder, NodeRef record);   
+    // TODO void fileRecord(NodeRef recordFolder, NodeRef record);  
+    
+    public NodeRef getUnfiledRecordContainer(NodeRef filePlan);
 }

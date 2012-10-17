@@ -140,7 +140,11 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         rmNodeValues.put("kind", kind.toString());        
         
         // File plan node reference
-        rmNodeValues.put("filePlan", recordsManagementService.getFilePlan(nodeRef).toString());
+        NodeRef filePlan = recordsManagementService.getFilePlan(nodeRef);
+        rmNodeValues.put("filePlan", filePlan.toString());
+        
+        // Unfiled container node reference
+        rmNodeValues.put("unfiledRecordContainer", recordService.getUnfiledRecordContainer(filePlan).toString());
         
         // Set the indicators array
         setIndicators(rmNodeValues, nodeRef);

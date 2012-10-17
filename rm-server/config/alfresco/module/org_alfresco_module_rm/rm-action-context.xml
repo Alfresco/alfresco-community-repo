@@ -33,7 +33,10 @@
         <property name="ownableService" ref="ownableService"/>
     </bean>
     
-    <bean id="rmProxyAction" init-method="registerAction" abstract="true">
+    <bean id="rmProxyAction" 
+          class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" 
+          init-method="registerAction" 
+          abstract="true">
         <property name="runtimeActionService" ref="actionService"/>
         <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
         <property name="proxyInterfaces">
@@ -64,7 +67,7 @@
     <!-- Bound to policy: allow -->
 
     
-    <bean id="file_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+    <bean id="file_proxy" parent="rmProxyAction">
         <property name="target">
             <ref bean="file"/>
         </property>
@@ -94,7 +97,7 @@
     <!-- Cutoff action -->
     
     
-    <bean id="cutoff_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+    <bean id="cutoff_proxy" parent="rmProxyAction" >
         <property name="target">
             <ref bean="cutoff"/>
         </property>

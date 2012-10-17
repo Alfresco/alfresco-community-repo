@@ -282,10 +282,21 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         PropertyCheck.mandatory(this, "recordsManagementService", recordsManagementService);
         PropertyCheck.mandatory(this, "recordsManagementAdminService", recordsManagementAdminService);
         PropertyCheck.mandatory(this, "recordsManagementEventService", recordsManagementEventService);
+        
         for(AbstractCapability capability : capabilities)
         {
             capability.registerAction(this);
         }
+    }
+    
+    /**
+     * Indicates whether this records management action is public or not
+     * 
+     * @return  boolean true if public, false otherwise
+     */
+    public boolean isPublicAction()
+    {
+        return publicAction;
     }
     
     /**

@@ -522,7 +522,14 @@
 	<bean id="jsonConversionComponent.import"
 	      parent="jsonConversionComponent.baseAction">
 		<property name="name" value="import"/>
-		<property name="capability" value="FileRecords"/>
+		<property name="kinds">
+			<set>
+				<value>FILE_PLAN</value>				
+				<value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+			</set>
+		</property>
+		<property name="capability" value="Import"/>
 	</bean>	
 	
 	<bean id="jsonConversionComponent.export"

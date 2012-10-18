@@ -1152,8 +1152,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         final File tempFile = copyToTempFile(contentStream);
         final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
 
-        NodeRef nodeRef = connector.getFileFolderService().create(
-                parentInfo.getNodeRef(), name, type.getAlfrescoClass()).getNodeRef();
+        FileInfo fileInfo = connector.getFileFolderService().create(
+                parentInfo.getNodeRef(), name, type.getAlfrescoClass());
+        NodeRef nodeRef = fileInfo.getNodeRef();
         connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
         connector.applyPolicies(nodeRef, type, policies);
         connector.applyACL(nodeRef, type, addAces, removeAces);
@@ -1172,7 +1173,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         removeTempFile(tempFile);
 
-        return connector.createObjectId(nodeRef);
+        String objectId = connector.createObjectId(nodeRef);
+
+        connector.getActivityPoster().postFileAdded(fileInfo);
+
+        return objectId;
     }
 
     @Override
@@ -1209,14 +1214,17 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         try
         {
-            NodeRef nodeRef = connector.getFileFolderService().copy(
-                    sourceNodeRef, parentInfo.getNodeRef(), name).getNodeRef();
+            FileInfo fileInfo = connector.getFileFolderService().copy(
+                    sourceNodeRef, parentInfo.getNodeRef(), name);
+            NodeRef nodeRef = fileInfo.getNodeRef();
             connector.setProperties(nodeRef, type, properties, new String[] {
                     PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
             connector.applyPolicies(nodeRef, type, policies);
             connector.applyACL(nodeRef, type, addAces, removeAces);
             connector.applyVersioningState(nodeRef, versioningState);
-    
+
+            connector.getActivityPoster().postFileAdded(fileInfo);
+
             return connector.createObjectId(nodeRef);
         }
         catch (FileNotFoundException e)
@@ -1360,6 +1368,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
 
         objectId.setValue(connector.createObjectId(nodeRef));
+
+        connector.getActivityPoster().postFileUpdated(nodeRef);
     }
 
     @Override
@@ -1384,6 +1394,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
 
         connector.getNodeService().setProperty(nodeRef, ContentModel.PROP_CONTENT, null);
+
+        connector.getActivityPoster().postFileUpdated(nodeRef);
 
         objectId.setValue(connector.createObjectId(nodeRef));
     }
@@ -1467,6 +1479,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             {
                 getObjectInfo(repositoryId, objectId.getValue(), "*", IncludeRelationships.NONE);
             }
+
+            connector.getActivityPoster().postFileUpdated(nodeRef);
         }
     }
 
@@ -1517,7 +1531,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                             "Could not delete folder with at least one child!");
                 }
 
-                connector.getNodeService().deleteNode(nodeRef);
+                connector.deleteNode(nodeRef, false);
                 break;      // Reason for do-while
             }
 
@@ -1545,7 +1559,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             // attempt to delete the node
             if (allVersions)
             {
-                connector.getNodeService().deleteNode(nodeRef);
+                connector.deleteNode(nodeRef, true);
             }
             else
             {
@@ -1554,7 +1568,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
                 if (infoImpl.getVersionHistory().getPredecessor(version) == null)
                 {
-                    connector.getNodeService().deleteNode(nodeRef);
+                    connector.deleteNode(nodeRef, true);
                 }
                 else
                 {
@@ -1628,7 +1642,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
 
             // attempt to delete the node
-            connector.getNodeService().deleteNode(nodeRef);
+            connector.deleteNode(nodeRef, false);
         }
         catch (Exception e)
         {

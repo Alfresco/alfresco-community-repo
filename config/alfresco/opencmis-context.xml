@@ -59,6 +59,16 @@
 
     <bean id="CMISService_Control" class="org.alfresco.opencmis.AlfrescoCmisServiceInterceptor" />
 
+    <bean id="cmisActivityPoster" class="org.alfresco.opencmis.ActivityPosterImpl">
+        <property name="activityService"        ref="activityService" />
+        <property name="siteService"            ref="SiteService" />
+        <property name="tenantService"          ref="tenantService" />
+        <property name="nodeService"            ref="NodeService" />
+        <property name="fileFolderService"      ref="FileFolderService" />
+        <property name="hiddenAspect"           ref="hiddenAspect" />
+        <property name="activitiesEnabled"      value="${opencmis.activities.enabled}" />
+    </bean>
+
     <bean id="CMISConnector" class="org.alfresco.opencmis.CMISConnector">
         <property name="store"                  value="${opencmis.connector.default.store}" />
         <property name="rootPath"               value="${opencmis.connector.default.rootPath}" />
@@ -86,7 +96,10 @@
     
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService" />
         <property name="OpenCMISQueryService"   ref="OpenCMISQueryService" />     
-            
+
+        <property name="activityPoster"         ref="cmisActivityPoster" />
+        <property name="hiddenAspect"           ref="hiddenAspect" />
+        <property name="siteService"            ref="SiteService" />
         <property name="descriptorService"      ref="DescriptorService" />
         <property name="nodeService"            ref="NodeService" />
         <property name="fileFolderService"      ref="FileFolderService" />

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -58,6 +58,8 @@ import org.alfresco.opencmis.search.CMISResultSet;
 import org.alfresco.opencmis.search.CMISResultSetColumn;
 import org.alfresco.opencmis.search.CMISResultSetRow;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
+import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -99,6 +101,8 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.descriptor.Descriptor;
@@ -107,6 +111,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.apache.chemistry.opencmis.commons.BasicPermissions;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
@@ -250,7 +256,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private NamespaceService namespaceService;
     private SearchService searchService;
     private DictionaryService dictionaryService;
+    private SiteService siteService;
+
+    private ActivityPoster activityPoster;
+
     private BehaviourFilter behaviourFilter;
+
+    private HiddenAspect hiddenAspect;
 
     private StoreRef storeRef;
     private String rootPath;
@@ -277,7 +289,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     // --------------------------------------------------------------
     // Configuration
     // --------------------------------------------------------------
-
     /**
      * Sets the root store.
      * 
@@ -287,6 +298,32 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public void setStore(String store)
     {
         this.storeRef = new StoreRef(store);
+    }
+
+    public void setSiteService(SiteService siteService)
+    {
+		this.siteService = siteService;
+	}
+
+	public void setActivityPoster(ActivityPoster activityPoster)
+    {
+		this.activityPoster = activityPoster;
+	}
+    
+	public ActivityPoster getActivityPoster()
+	{
+		return activityPoster;
+	}
+
+	public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
+		this.hiddenAspect = hiddenAspect;
+	}
+
+    public boolean isHidden(NodeRef nodeRef)
+    {
+        final Client client = FileFilterMode.getClient();
+    	return (hiddenAspect.getVisibility(client, nodeRef) == Visibility.NotVisible);
     }
 
     /**
@@ -669,6 +706,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     // Alfresco methods
     // --------------------------------------------------------------
 
+    public SiteInfo getSite(NodeRef nodeRef)
+    {
+    	return siteService.getSite(nodeRef);
+    }
+    
     public boolean disableBehaviour(QName className, NodeRef nodeRef)
     {
         boolean wasEnabled = behaviourFilter.isEnabled(nodeRef, className);
@@ -692,6 +734,35 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public StoreRef getRootStoreRef()
     {
         return getRootNodeRef().getStoreRef();
+    }
+
+    public void deleteNode(NodeRef nodeRef, boolean postActivity)
+    {
+        // post activity after removal of the node
+        postActivity &= hiddenAspect.getVisibility(Client.cmis, nodeRef) == Visibility.Visible;
+        String parentPath = null;
+    	NodeRef parentNodeRef = null;
+    	SiteInfo siteInfo = null;
+    	String siteId = null;
+    	String fileName = null;
+
+    	// get this information before the node is deleted
+    	if(postActivity)
+    	{
+	    	parentPath = activityPoster.getParentPath(nodeRef);
+	    	parentNodeRef = getNodeService().getPrimaryParent(nodeRef).getParentRef();
+	    	siteInfo = siteService.getSite(nodeRef);
+	    	siteId = (siteInfo != null ? siteInfo.getShortName() : null);
+	    	fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+    	}
+
+        getNodeService().deleteNode(nodeRef);
+
+        // post activity after removal of the node
+        if(postActivity)
+        {
+        	activityPoster.postFileDeleted(parentPath, parentNodeRef, nodeRef, siteId, fileName);
+        }
     }
 
     /**

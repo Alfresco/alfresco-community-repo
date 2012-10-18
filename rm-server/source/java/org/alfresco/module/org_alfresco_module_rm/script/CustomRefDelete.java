@@ -104,6 +104,7 @@ public class CustomRefDelete extends AbstractRmWebScript
         }
         
         rmAdminService.removeCustomReference(fromNodeRef, toNodeRef, qn);
+        rmAdminService.removeCustomReference(toNodeRef, fromNodeRef, qn);
         
         result.put("success", true);
 

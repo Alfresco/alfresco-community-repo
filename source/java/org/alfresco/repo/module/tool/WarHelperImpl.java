@@ -85,7 +85,7 @@ public class WarHelperImpl implements WarHelper
 	        		if (edition.endsWith(MANIFEST_COMMUNITY))
 	        		{
 	        			//If it's a community version, so don't worry about it
-	                    log.info("Community edition war detected, the version number is non-numeric so we will not validate it.");
+	                    log.info("WARNING: Community edition war detected, the version number is non-numeric so we will not validate it.");
 	        		}
 	        		else
 	        		{

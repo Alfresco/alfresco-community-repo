@@ -1,8 +1,12 @@
 package org.alfresco.repo.module.tool;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +18,14 @@ import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VersionNumber;
 import org.junit.Test;
-import de.schlichtherle.truezip.file.TFile;
 import org.springframework.util.FileCopyUtils;
+
+import de.schlichtherle.truezip.file.TArchiveDetector;
+import de.schlichtherle.truezip.file.TConfig;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.fs.archive.zip.ZipDriver;
+import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 
 /**
  * Tests the war helper. 
@@ -35,6 +45,9 @@ public class WarHelperImplTest extends WarHelperImpl
                 System.out.println(message);
             }
         });
+        
+        TConfig config = TConfig.get();
+        config.setArchiveDetector(new TArchiveDetector("war|amp", new ZipDriver(IOPoolLocator.SINGLETON)));
     }
     
     @Test
@@ -114,7 +127,7 @@ public class WarHelperImplTest extends WarHelperImpl
     }
     
     @Test
-    public void testCheckCompatibleVersionUsingManifest()
+    public void testCheckCompatibleVersionUsingManifest() throws IOException
     {
         //Now check the compatible versions using the manifest
     	TFile theWar = getFile(".war", "module/share-3.4.11.war");
@@ -177,9 +190,9 @@ public class WarHelperImplTest extends WarHelperImpl
     	theWar = getFile(".war", "module/alfresco-4.2.a.war");
         //this should fail BUT we are using a non-numeric version number so instead it passes without validation
     	this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails);
-        
+    	
 
-    }
+	}
 
     @Test
     public void testCheckCompatibleEdition()
@@ -216,10 +229,11 @@ public class WarHelperImplTest extends WarHelperImpl
         props.setProperty(ModuleDetails.PROP_EDITIONS, ("enterprise,Community"));  //should ignore case
         installingModuleDetails = new ModuleDetailsImpl(props);      
         this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception 
+
     }
     
     @Test
-    public void testCheckCompatibleEditionUsingManifest()
+    public void testCheckCompatibleEditionUsingManifest() throws IOException
     {
         Properties props = dummyModuleProperties();
         ModuleDetails installingModuleDetails = new ModuleDetailsImpl(props);
@@ -259,6 +273,28 @@ public class WarHelperImplTest extends WarHelperImpl
         
     	theWar = getFile(".war", "module/share-4.2.a.war");
         this.checkCompatibleEditionUsingManifest(theWar, installingModuleDetails);
+        
+		String propertiesLocation = getFile(".amp", "module/test_v5.amp") + "/module.properties";
+		installingModuleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertyLocation(propertiesLocation);
+		
+		try {
+			this.checkCompatibleEdition(theWar, installingModuleDetails);
+			fail(); //should never get here
+		} catch (ModuleManagementToolException exception) {
+			assertTrue(exception.getMessage().endsWith("can only be installed in one of the following editions[Enterprise]"));
+		}
+		
+        theWar = getFile(".war", "module/share-3.4.11.war");
+        this.checkCompatibleEdition(theWar, installingModuleDetails);//should succeed
+        
+		try {
+			theWar = getFile(".war", "module/share-4.2.a.war");
+			this.checkCompatibleEdition(theWar, installingModuleDetails);
+			fail(); //should never get here
+		} catch (ModuleManagementToolException exception) {
+			assertTrue(exception.getMessage().endsWith("can only be installed in one of the following editions[Enterprise]"));
+		}
+        
     }
     
 

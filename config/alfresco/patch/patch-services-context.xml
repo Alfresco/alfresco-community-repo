@@ -3382,5 +3382,28 @@
             <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/activiti-upgrade-5-10.sql</value>
         </property>
     </bean>
+      
+    <bean id="patch.emailAliasableAspect" class="org.alfresco.repo.admin.patch.impl.AliasableAspectPatch" parent="basePatch">
+        <property name="id"><value>patch.emailAliasableAspect</value></property>
+        <property name="description"><value>patch.emailAliasableAspect.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6019</value></property>
+        <property name="targetSchema"><value>6020</value></property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO"/>
+        </property>
+        <property name="behaviourFilter" >
+            <ref bean="policyBehaviourFilter"/>
+        </property>
+    </bean>
     
 </beans>

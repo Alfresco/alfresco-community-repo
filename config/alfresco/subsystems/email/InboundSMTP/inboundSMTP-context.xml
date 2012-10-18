@@ -110,6 +110,9 @@
 		<property name="searchService">
 			<ref bean="SearchService" />
 		</property>
+	    <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
 		<property name="retryingTransactionHelper">
 			<ref bean="retryingTransactionHelper" />
 		</property>
@@ -159,12 +162,12 @@
 
 	<bean id="aliasableAspect"
 		class="org.alfresco.email.server.AliasableAspect"
-		init-method="initialise">
+		init-method="init">
 		<property name="nodeService">
 			<ref bean="nodeService" />
 		</property>
-		<property name="searchService">
-			<ref bean="searchService" />
+		<property name="attributeService">
+			<ref bean="attributeService" />
 		</property>
 		<property name="policyComponent">
 			<ref bean="policyComponent" />

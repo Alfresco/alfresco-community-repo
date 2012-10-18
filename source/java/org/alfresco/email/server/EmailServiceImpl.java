@@ -32,6 +32,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.email.EmailDelivery;
@@ -75,6 +76,7 @@ public class EmailServiceImpl implements EmailService
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthorityService authorityService;
     private DictionaryService dictionaryService;
+    private AttributeService attributeService;
     
     /**
      * The authority that needs to contain the users and groups 
@@ -97,6 +99,7 @@ public class EmailServiceImpl implements EmailService
         PropertyCheck.mandatory(this, "searchService", searchService);
         PropertyCheck.mandatory(this, "authorityService", authorityService);
         PropertyCheck.mandatory(this, "emailMessageHandlerMap", emailMessageHandlerMap);
+        PropertyCheck.mandatory(this, "attributeService", getAttributeService());
     }
 
     /**
@@ -395,34 +398,56 @@ public class EmailServiceImpl implements EmailService
         {
             throw new EmailMessageException(ERR_INVALID_NODE_ADDRESS, recipient);
         }
-
-        // Ok, address looks well, let's try to find related alias
-        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        String query = String.format(AliasableAspect.SEARCH_TEMPLATE, parts[0]);
-        ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
-        try
+        
+        String alias = parts[0];
+        
+        /*
+         * First lookup via the attributes service
+         * 
+         * Then lookup by search service - may be old data prior to attributes service
+         * 
+         * Then see if we can find a node by dbid
+         */
+        
+        // Lookup via the attributes service
+        NodeRef ref = (NodeRef)getAttributeService().getAttribute(AliasableAspect.ALIASABLE_ATTRIBUTE_KEY_1, AliasableAspect.ALIASABLE_ATTRIBUTE_KEY_2, AliasableAspect.normaliseAlias(alias));
+        
+        if(ref != null)
         {
-            // Sometimes result contains trash. For example if we look for node with alias='target' after searching,
-            // we will get all nodes wich contain word 'target' in them alias property.
-            for (int i = 0; i < resultSet.length(); i++)
+            if(logger.isDebugEnabled())
             {
-                NodeRef resRef = resultSet.getNodeRef(i);
-                String alias = (String)nodeService.getProperty(resRef, EmailServerModel.PROP_ALIAS);
-                if (parts[0].equalsIgnoreCase(alias))
-                {
-                    return resRef;
-                }
+                logger.debug("found email alias via attribute service alias =" + alias);
             }
+            return ref;
         }
-        finally
-        {
-            resultSet.close();
-        }
+
+        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+        
+//        // Ok, alias wasn't found, let's try to interpret recipient address as 'node-bdid' value
+//        try 
+//        {
+//            Long nodeId = Long.parseLong(parts[0]);
+//       
+//            NodeRef byNodeId = nodeService.getNodeRef(nodeId);
+//            
+//            if(byNodeId != null)
+//            {
+//                if(logger.isDebugEnabled())
+//                {
+//                    logger.debug("found email alias via node service =" + alias);
+//                }
+//                return byNodeId;
+//            }
+//        }
+//        catch (NumberFormatException ne)
+//        {
+//        }
 
         // Ok, alias wasn't found, let's try to interpret recipient address as 'node-bdid' value
-        query = "@sys\\:node-dbid:" + parts[0];
+        ResultSet resultSet = null;
         try
         {
+            String query = "@sys\\:node-dbid:" + parts[0];
             resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
             if (resultSet.length() > 0)
             {
@@ -431,7 +456,10 @@ public class EmailServiceImpl implements EmailService
         }
         finally
         {
-            resultSet.close();
+            if(resultSet != null)
+            {
+                resultSet.close();
+            }
         }
         throw new EmailMessageException(ERR_INVALID_NODE_ADDRESS, recipient);
     }
@@ -532,5 +560,15 @@ public class EmailServiceImpl implements EmailService
     public DictionaryService getDictionaryService()
     {
         return dictionaryService;
+    }
+
+    public void setAttributeService(AttributeService attributeService)
+    {
+        this.attributeService = attributeService;
+    }
+
+    public AttributeService getAttributeService()
+    {
+        return attributeService;
     }
 }

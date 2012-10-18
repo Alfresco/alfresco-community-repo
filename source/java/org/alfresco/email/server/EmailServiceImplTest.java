@@ -209,7 +209,7 @@ public class EmailServiceImplTest extends TestCase
        catch (EmailMessageException e)
        {
            // Check the exception is for the anonymous user.
-           assertTrue(e.getMessage().contains("anonymous"));
+           assertTrue("Message is not for anonymous", e.getMessage().contains("anonymous"));
        }
        
        /**

@@ -478,7 +478,7 @@ public class ModuleManagementTool implements LogOutput
                TFile modified = new TFile(warFileLocation + update.getKey());
                TFile backup = new TFile(warFileLocation + update.getValue());
                backup.cp_rp(modified);
-               backup.deleteOnExit();
+               backup.rm();
             }
             
             outputVerboseMessage("Recovering file '" + update.getKey() + "' from backup '" + update.getValue() + "'", true);

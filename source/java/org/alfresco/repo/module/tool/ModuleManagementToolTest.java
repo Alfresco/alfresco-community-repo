@@ -241,11 +241,20 @@ public class ModuleManagementToolTest extends TestCase
         manager.setVerbose(true);
         
         String warLocation = getFileLocation(".war", "module/test.war");
-        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
-        
-        // Initial install of module
-        this.manager.installModule(ampLocation, warLocation, false, false, false);
-        this.manager.installModule(ampLocation, warLocation, false, true, false);
+        String ampLocation = getFileLocation(".amp", "module/test_v4.amp");
+
+        try
+        {
+            // Initial install of module
+            this.manager.installModule(ampLocation, warLocation, false, false, false); //not forced
+            fail("Failed to detect existing files in the amp");
+        }
+        catch (ModuleManagementToolException e)
+        {
+        	assertTrue(e.getMessage().contains("The amp will overwrite an existing file"));
+        }
+        this.manager.installModule(ampLocation, warLocation, false, true, false); //install it again
+        this.manager.installModule(ampLocation, warLocation, false, true, false); //install it again, just to be sure
     }
     
     public void testInstallFromDir()
@@ -281,7 +290,7 @@ public class ModuleManagementToolTest extends TestCase
         
         try
         {
-          this.manager.installModule(ampLocation, warLocation, false, false, true); 
+          this.manager.installModule(ampLocation, warLocation, false, false, true);
         }
         catch(ModuleManagementToolException exception)
         {
@@ -291,6 +300,7 @@ public class ModuleManagementToolTest extends TestCase
         this.manager.installModule(ampLocation, warLocation, false, true, true);  //Now force it
         checkContentsOfFile(warLocation + "/jsp/relogin.jsp", "VERSIONONE");
         checkContentsOfFile(warLocation + "/css/main.css", "p{margin-bottom:1em;}");
+        this.manager.installModule(ampLocation, warLocation, false, true, false); //install it again
 
     }
     

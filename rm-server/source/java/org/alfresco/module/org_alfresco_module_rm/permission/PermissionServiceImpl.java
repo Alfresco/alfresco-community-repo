@@ -32,6 +32,7 @@ import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.cache.SimpleCache;
@@ -82,6 +83,10 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
+ * Currently required to re-implement the permission service.
+ * 
+ * As of V4.2 this will no longer be required.
+ * 
  * @author Roy Wetherall
  */
 public class PermissionServiceImpl extends AbstractLifecycleBean implements PermissionServiceSPI
@@ -1037,9 +1042,31 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         deletePermission(nodeRef, authority, getPermissionReference(perm));
     }
 
-    public AccessStatus hasPermission(NodeRef nodeRef, String perm)
+    public AccessStatus hasPermission(final NodeRef nodeRef, final String perm)
     {
-        return hasPermission(nodeRef, getPermissionReference(perm));
+    	// NOTE:  this is a work around fix for the specific case when we are asking if a filePlan node has
+    	//        READ permission, but in fact this makes no sense and we mean ReadRecord
+    	// 
+        //        For now we will restrict this change to only this form of the method to limit the 
+    	//        potential effects.  When this is refactored to extend the updated PermissionService post 4.2
+    	//        it can be readdressed and determined if there is a better place for this.
+    	String updatedPerm = AuthenticationUtil.runAsSystem(new RunAsWork<String>()
+        {
+			@Override
+			public String doWork() throws Exception 
+			{
+				String result = perm;
+				if ("Read".equals(perm) == true  && 
+					nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
+				{
+					result = "ReadRecords";
+				}				
+				return result;
+			}    		
+        });
+    	
+    	
+        return hasPermission(nodeRef, getPermissionReference(updatedPerm));
     }
 
     public void setPermission(NodeRef nodeRef, String authority, String perm, boolean allow)

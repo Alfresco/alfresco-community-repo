@@ -30,13 +30,13 @@
             <if test="prop1qnameId != null">
             and 
             (
-               prop1.string_value like #{pattern} <include refid="alfresco.util.escape"/>
+               lower(prop1.string_value) like lower(#{pattern}) <include refid="alfresco.util.escape"/>
             </if>
             <if test="prop2qnameId != null">
-            or prop2.string_value like #{pattern} <include refid="alfresco.util.escape"/>
+            or lower(prop2.string_value) like lower(#{pattern})  <include refid="alfresco.util.escape"/>
             </if>
             <if test="prop3qnameId != null">
-            or prop3.string_value like #{pattern} <include refid="alfresco.util.escape"/>
+            or lower(prop3.string_value) like lower(#{pattern})  <include refid="alfresco.util.escape"/>
             </if>
             <if test="prop1qnameId != null">
             )

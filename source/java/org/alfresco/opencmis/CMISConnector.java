@@ -2376,13 +2376,23 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             for (String aspect : aspectsToRemove)
             {
                 aspectType = aspect;
-                nodeService.removeAspect(nodeRef, getType(aspect).getAlfrescoName());
+                TypeDefinitionWrapper type = getType(aspect);
+                if (type == null)
+                {
+                    throw new CmisInvalidArgumentException("Invalid aspect: " + aspectType);
+                }
+                nodeService.removeAspect(nodeRef, type.getAlfrescoName());
             }
 
             for (String aspect : aspectsToAdd)
             {
                 aspectType = aspect;
-                nodeService.addAspect(nodeRef, getType(aspect).getAlfrescoName(),
+                TypeDefinitionWrapper type = getType(aspect);
+                if (type == null)
+                {
+                    throw new CmisInvalidArgumentException("Invalid aspect: " + aspectType);
+                }
+                nodeService.addAspect(nodeRef, type.getAlfrescoName(),
                         Collections.<QName, Serializable> emptyMap());
             }
         }

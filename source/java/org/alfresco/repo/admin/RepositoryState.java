@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.admin;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 /**
  * @author Andy
  *
@@ -25,16 +27,32 @@ package org.alfresco.repo.admin;
 public class RepositoryState
 {
     private boolean bootstrapping;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public boolean isBootstrapping()
     {
-        return bootstrapping;
+        this.lock.readLock().lock();
+        try
+        {
+            return bootstrapping;
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }
     }
 
     public void setBootstrapping(boolean bootstrapping)
     {
-        this.bootstrapping = bootstrapping;
+        this.lock.writeLock().lock();
+        try
+        {
+            this.bootstrapping = bootstrapping;
+        }
+        finally
+        {
+            this.lock.writeLock().unlock();
+        }
     }
-    
     
 }

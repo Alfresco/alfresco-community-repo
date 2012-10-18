@@ -1367,9 +1367,14 @@ public class FileFolderServiceImpl implements FileFolderService
             NodeRef folderNodeRef = searchSimple(parentNodeRef, pathElement);
             if (folderNodeRef == null)
             {
-                StringBuilder sb = new StringBuilder(128);
-                sb.append("Folder not found: " + currentPath);
-                throw new FileNotFoundException(sb.toString());
+                if (mustExist)
+                {
+                    throw new FileNotFoundException("Folder not found: " + currentPath);
+                }
+                else
+                {
+                    return null;
+                }
             }
             parentNodeRef = folderNodeRef;
         }

@@ -53,6 +53,7 @@ import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.node.db.NodeHierarchyWalker;
 import org.alfresco.repo.node.db.NodeHierarchyWalker.VisitedNode;
+import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.Policy;
@@ -101,6 +102,7 @@ public class NodeServiceTest extends TestCase
     
     protected ServiceRegistry serviceRegistry;
     protected NodeService nodeService;
+    protected NodeIndexer nodeIndexer;
     protected NodeDAO nodeDAO;
     private TransactionService txnService;
     private PolicyComponent policyComponent;
@@ -120,6 +122,7 @@ public class NodeServiceTest extends TestCase
 
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
+        nodeIndexer = (NodeIndexer) ctx.getBean("nodeIndexer");
         nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         txnService = serviceRegistry.getTransactionService();
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
@@ -1245,16 +1248,25 @@ public class NodeServiceTest extends TestCase
             
             // forcefully remove the primary parent assoc
             final Long childNodeId = (Long)nodeService.getProperty(childNodeRef, ContentModel.PROP_NODE_DBID);
-            txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            // We'll need to disable indexing to do this or the transaction will be thrown out
+            nodeIndexer.setDisabled(true);
+            try
             {
-                @Override
-                public Void execute() throws Throwable
+                txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
                 {
-                    Pair<Long, ChildAssociationRef> assocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
-                    nodeDAO.deleteChildAssoc(assocPair.getFirst());
-                    return null;
-                }
-            });
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                        Pair<Long, ChildAssociationRef> assocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
+                        nodeDAO.deleteChildAssoc(assocPair.getFirst());
+                        return null;
+                    }
+                });
+            }
+            finally
+            {
+                nodeIndexer.setDisabled(false);
+            }
         }
         
         // Now need to identify the problem nodes

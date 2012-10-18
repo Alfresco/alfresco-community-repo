@@ -3867,30 +3867,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             completedPaths.add(pathToSave);
         }
 
-        if (!hasParents && !parentAssocInfo.isStoreRoot())
-        {
-            // We appear to have an orphaned node. But we may just have a temporarily out of sync clustered cache or a
-            // transaction that started ages before the one that committed the cache content!. So double check the node
-            // isn't actually deleted.
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Stale cache detected for Node #" + currentNodeId + ": removing from cache.");
-            }
-            invalidateNodeCaches(currentNodeId);
-            
-            Status currentNodeStatus = getNodeRefStatus(currentNodeRef);
-            if (currentNodeStatus == null || currentNodeStatus.isDeleted())
-            {
-                // Force a retry. The cached node was stale
-                throw new DataIntegrityViolationException("Stale cache detected for Node #" + currentNodeId);
-            }
-            
-            // We have a corrupt repository - non-root node has a missing parent ?!
-            bindFixAssocAndCollectLostAndFound(currentNodePair, "nonRootNodeWithoutParents", null, false);
-            
-            // throw - error will be logged and then bound txn listener (afterRollback) will be called
-            throw new NonRootNodeWithoutParentsException(currentNodePair);
-        }
         // walk up each parent association
         for (Map.Entry<Long, ChildAssocEntity> entry : parentAssocInfo.getParentAssocs().entrySet())
         {
@@ -4113,6 +4089,19 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             value = loadParentAssocs(node.getNodeVersionKey());
             parentAssocsCache.put(cacheKey, value);
         }
+        
+        // We have already validated on loading that we have a list in sync with the child node, so if the list is still
+        // empty we have an integrity problem
+        if (value.getPrimaryParentAssoc() == null && !value.isStoreRoot())
+        {
+            Pair<Long, NodeRef> currentNodePair = node.getNodePair();
+            // We have a corrupt repository - non-root node has a missing parent ?!
+            bindFixAssocAndCollectLostAndFound(currentNodePair, "nonRootNodeWithoutParents", null, false);
+
+            // throw - error will be logged and then bound txn listener (afterRollback) will be called
+            throw new NonRootNodeWithoutParentsException(currentNodePair);
+        }
+        
         return value;
     }
     
@@ -4185,7 +4174,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             // and the lack of parent associations will be cached, anyway.
             // But to match earlier fixes of ALF-12393, we do a double-check of the node's details
             NodeEntity nodeCheckFromDb = selectNodeById(nodeId);
-            if (nodeCheckFromDb == null || !nodeCheckFromDb.getNodeVersionKey().equals(nodeVersionKey))
+            if (nodeCheckFromDb == null || nodeCheckFromDb.getDeleted(qnameDAO) || !nodeCheckFromDb.getNodeVersionKey().equals(nodeVersionKey))
             {
                 // The node is gone or has moved on in version
                 invalidateNodeCaches(nodeId);

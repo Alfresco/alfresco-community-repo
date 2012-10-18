@@ -449,6 +449,8 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         final String tenantDomain = getTenantDomain(tenantDomainIn);
         
+        AuthenticationUtil.setMtEnabled(true); // in case this is the 1st tenant
+        
         initTenant(tenantDomain, contentRoot);
         
         try

@@ -27,6 +27,7 @@ public class WarHelperImpl implements WarHelper
 {
 
     public static final String VERSION_PROPERTIES = "/WEB-INF/classes/alfresco/version.properties";
+    public static final String MANIFEST_FILE = "/META-INF/MANIFEST.MF";
     
     //see http://docs.oracle.com/javase/6/docs/technotes/guides/jar/jar.html#Main%20Attributes
     public static final String MANIFEST_SPECIFICATION_TITLE = "Specification-Title";
@@ -110,8 +111,8 @@ public class WarHelperImpl implements WarHelper
 	protected String findManifestArtibute(TFile war, String attributeName) throws ModuleManagementToolException {
 		try 
 		{
-			JarFile warAsJar = new JarFile(war);
-			Manifest manifest = warAsJar.getManifest();
+			InputStream is = new TFileInputStream(war+MANIFEST_FILE);
+			Manifest manifest = new Manifest(is);
 			Attributes attribs = manifest.getMainAttributes();
 			return attribs.getValue(attributeName);
 		} 

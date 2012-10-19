@@ -162,6 +162,12 @@ public class ModuleManagementToolTest extends TestCase
         assertNotNull(ampDirectory);  
         assertNotNull(ampV2Directory);         
         installerSharedTests(warDirectory, ampDirectory, ampV2Directory);
+        
+        //Now try it on share
+        warDirectory = extractToDir(".war", "module/share-3.4.11.war");
+        assertNotNull(warDirectory);
+        assertNotNull(ampDirectory);  
+        this.manager.installModule(ampDirectory, warDirectory);
 
     }
     

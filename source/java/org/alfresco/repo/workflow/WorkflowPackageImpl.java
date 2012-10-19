@@ -27,6 +27,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.SystemNodeUtils;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -60,6 +61,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     private NodeRef systemWorkflowContainer = null;
     private TenantService tenantService;
     private MessageService messageService;
+    private BehaviourFilter policyBehaviourFilter;
     
     /**
      * @param bootstrap the importer bootstrap for the store to place workflow
@@ -114,6 +116,13 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     {
         this.messageService = messageService;
     }
+    
+    /**
+     * @param policyBehaviourFilter the behaviourFilter to set
+     */
+    public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter) {
+		this.policyBehaviourFilter = policyBehaviourFilter;
+	}
 
     /**
     * {@inheritDoc}
@@ -146,13 +155,21 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         NodeRef packages = findOrCreatePackagesFolder();
         String packageId = "pkg_" + GUID.generate();
         QName packageName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, packageId);
-        ChildAssociationRef packageAssoc = nodeService.createNode(packages, ContentModel.ASSOC_CONTAINS, packageName,
-                    WorkflowModel.TYPE_PACKAGE);
-        NodeRef packageContainer = packageAssoc.getChildRef();
-        // TODO: For now, grant full access to everyone
-        permissionService.setPermission(packageContainer, PermissionService.ALL_AUTHORITIES,
-                    PermissionService.ALL_PERMISSIONS, true);
-        return packageContainer;
+        
+        try {
+        	policyBehaviourFilter.disableBehaviour(packages, ContentModel.ASPECT_AUDITABLE); 
+        	ChildAssociationRef packageAssoc = nodeService.createNode(packages, ContentModel.ASSOC_CONTAINS, packageName,
+        			WorkflowModel.TYPE_PACKAGE);
+        	NodeRef packageContainer = packageAssoc.getChildRef();
+        	// TODO: For now, grant full access to everyone
+        	permissionService.setPermission(packageContainer, PermissionService.ALL_AUTHORITIES,
+        			PermissionService.ALL_PERMISSIONS, true);
+        	return packageContainer;
+        }
+        finally
+        {
+        	 policyBehaviourFilter.enableBehaviour(packages, ContentModel.ASPECT_AUDITABLE); 
+        }
     }
 
     /**

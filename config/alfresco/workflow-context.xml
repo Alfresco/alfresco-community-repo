@@ -41,6 +41,7 @@
       <property name="namespaceService" ref="namespaceService"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="messageService" ref="messageService"/>
+      <property name="policyBehaviourFilter" ref="policyBehaviourFilter"/>
    </bean>
 
    <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter" parent="interpreterBase">

@@ -108,14 +108,14 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
             String siteId = getSiteId();
             NodeRef deletedNodeRef = fileInfo.getNodeRef();
             FileInfo parentFile = getDAVHelper().getParentNodeForPath(getRootNodeRef(), getPath(), getServletPath());
-            boolean hidden = getNodeService().hasAspect(deletedNodeRef, ContentModel.ASPECT_HIDDEN);
+            boolean hidden = fileInfo.isHidden();
             // Delete it
             fileFolderService.delete(deletedNodeRef);
             // Don't post activity data for hidden files, resource forks etc.
             if (!hidden)
             {
                  postActivity(parentFile, fileInfo, siteId);
-            }   
+            }
         }
     }
 
@@ -156,7 +156,7 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
                 }
             }
             
-            activityPoster.postFileDeleted(siteId, tenantDomain, parentPath, parent, deletedFile);
+            activityPoster.postFileFolderDeleted(siteId, tenantDomain, parentPath, parent, deletedFile);
         }  
     }
     

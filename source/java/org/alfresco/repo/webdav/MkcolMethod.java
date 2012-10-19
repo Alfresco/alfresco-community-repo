@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,14 +25,18 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.webdav.WebDavService;
 
 /**
  * Implements the WebDAV MKCOL method
  * 
  * @author gavinc
  */
-public class MkcolMethod extends WebDAVMethod
+public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
 {
+    private ActivityPoster activityPoster;
+    
     /**
      * Default constructor
      */
@@ -124,9 +128,60 @@ public class MkcolMethod extends WebDAVMethod
         String folderName = getPath().substring(lastPos + 1);
 
         // Create the new folder node
-        fileFolderService.create(parentNodeRef, folderName, ContentModel.TYPE_FOLDER);
-
+        FileInfo fileInfo = fileFolderService.create(parentNodeRef, folderName, ContentModel.TYPE_FOLDER);
+        
+        // Don't post activity data for hidden folder
+        if (!fileInfo.isHidden())
+        {
+             postActivity(fileInfo);
+        }
+        
         // Return a success status
         m_response.setStatus(HttpServletResponse.SC_CREATED);
+    }
+    
+    /**
+     * Create a folder added activity post.
+     * 
+     * @throws WebDAVServerException 
+     */
+    private void postActivity(FileInfo fileInfo) throws WebDAVServerException
+    {
+        WebDavService davService = getDAVHelper().getServiceRegistry().getWebDavService();
+        if (!davService.activitiesEnabled())
+        {
+            // Don't post activities if this behaviour is disabled.
+            return;
+        }
+        
+        String siteId = getSiteId();
+        String tenantDomain = getTenantDomain();
+        
+        // Check there is enough information to publish site activity.
+        if (!siteId.equals(WebDAVHelper.EMPTY_SITE_ID))
+        {
+            SiteService siteService = getServiceRegistry().getSiteService();
+            NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
+            String path = "/";
+            try
+            {
+                path = getDAVHelper().getPathFromNode(documentLibrary, fileInfo.getNodeRef());
+            }
+            catch (FileNotFoundException error)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("No " + SiteService.DOCUMENT_LIBRARY + " container found.");
+                }
+            }
+            
+            activityPoster.postFileFolderAdded(siteId, tenantDomain, path, fileInfo);
+        }
+    }
+    
+    @Override
+    public void setActivityPoster(ActivityPoster activityPoster)
+    {
+        this.activityPoster = activityPoster;
     }
 }

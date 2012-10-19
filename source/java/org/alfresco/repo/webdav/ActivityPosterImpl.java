@@ -34,6 +34,7 @@ import org.json.JSONObject;
  * @see ActivityPoster
  * @author Matt Ward
  */
+// TODO consolidate with ActivityPost for OpenCMIS
 public class ActivityPosterImpl implements ActivityPoster
 {
     private String appTool;
@@ -66,53 +67,57 @@ public class ActivityPosterImpl implements ActivityPoster
      * {@inheritDoc}
      */
     @Override
-    public void postFileAdded(
+    public void postFileFolderAdded(
                 String siteId,
                 String tenantDomain,
-                FileInfo contentNodeInfo) throws WebDAVServerException
+                String path,
+                FileInfo nodeInfo) throws WebDAVServerException
     {
-        postFileActivity(ActivityType.FILE_ADDED, siteId, tenantDomain, null, null, contentNodeInfo);
+        postFileFolderActivity(nodeInfo.isFolder() ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED, siteId, tenantDomain, path, null, nodeInfo);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void postFileUpdated(
+    public void postFileFolderUpdated(
                 String siteId,
                 String tenantDomain,
-                FileInfo contentNodeInfo) throws WebDAVServerException
+                FileInfo nodeInfo) throws WebDAVServerException
     {
-        postFileActivity(ActivityType.FILE_UPDATED, siteId, tenantDomain, null, null, contentNodeInfo);
+        if (! nodeInfo.isFolder())
+        {
+            postFileFolderActivity(ActivityType.FILE_UPDATED, siteId, tenantDomain, null, null, nodeInfo);
+        }
     }
     
     /**
      * {@inheritDoc}
      */
     @Override
-    public void postFileDeleted(
+    public void postFileFolderDeleted(
                 String siteId,
                 String tenantDomain,
                 String parentPath,
                 FileInfo parentNodeInfo,
-                FileInfo contentNodeInfo) throws WebDAVServerException
+                FileInfo nodeInfo) throws WebDAVServerException
     {
-        postFileActivity(ActivityType.FILE_DELETED, siteId, tenantDomain, parentPath, parentNodeInfo.getNodeRef(), contentNodeInfo);
+        postFileFolderActivity(nodeInfo.isFolder() ? ActivityType.FOLDER_DELETED : ActivityType.FILE_DELETED, siteId, tenantDomain, parentPath, parentNodeInfo.getNodeRef(), nodeInfo);
     }
     
     
-    private void postFileActivity(
+    private void postFileFolderActivity(
                 String activityType,
                 String siteId,
                 String tenantDomain,
-                String parentPath,
+                String path,
                 NodeRef parentNodeRef,
                 FileInfo contentNodeInfo) throws WebDAVServerException
     {
         String fileName = contentNodeInfo.getName();
         NodeRef nodeRef = contentNodeInfo.getNodeRef();
         
-        JSONObject json = createActivityJSON(tenantDomain, parentPath, parentNodeRef, nodeRef, fileName);
+        JSONObject json = createActivityJSON(tenantDomain, path, parentNodeRef, nodeRef, fileName);
         
         activityService.postActivity(
                     activityType,
@@ -133,7 +138,7 @@ public class ActivityPosterImpl implements ActivityPoster
      */
     private JSONObject createActivityJSON(
                 String tenantDomain,
-                String parentPath,
+                String path,
                 NodeRef parentNodeRef,
                 NodeRef nodeRef,
                 String fileName) throws WebDAVServerException
@@ -149,10 +154,10 @@ public class ActivityPosterImpl implements ActivityPoster
                 json.put("parentNodeRef", parentNodeRef);
             }
             
-            if (parentPath != null)
+            if (path != null)
             {
-                // Used for deleted files.
-                json.put("page", "documentlibrary?path=" + parentPath);
+                // Used for deleted files and folders (added or deleted)
+                json.put("page", "documentlibrary?path=" + path);
             }
             else
             {

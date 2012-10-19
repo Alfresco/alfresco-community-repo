@@ -363,12 +363,14 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             if (!getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
             {
                 if (isCreated())
-                {                    
-                    activityPoster.postFileAdded(siteId, tenantDomain, contentNodeInfo);
+                {
+                    // file added
+                    activityPoster.postFileFolderAdded(siteId, tenantDomain, null, contentNodeInfo);
                 }
                 else
-                {                    
-                    activityPoster.postFileUpdated(siteId, tenantDomain, contentNodeInfo);
+                {
+                    // file updated
+                    activityPoster.postFileFolderUpdated(siteId, tenantDomain, contentNodeInfo);
                 }
             }
         }

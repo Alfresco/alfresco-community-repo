@@ -78,6 +78,7 @@ function postActivity()
 
    switch (String(type).toLowerCase())
    {
+      case "file-created":
       case "file-added":
       case "file-updated":
       case "file-liked":
@@ -93,6 +94,7 @@ function postActivity()
       case "files-added":
       case "files-deleted":
       case "files-updated":
+      case "folders-deleted":
          data.title = json.get("fileCount");
          strParams = "?path=" + json.get("path");
          if (parentNodeRef != null)
@@ -102,6 +104,8 @@ function postActivity()
          break;
       
       case "file-deleted":
+      case "folder-added":
+      case "folder-deleted":
          data.title = json.get("fileName");
          data.nodeRef = nodeRef;
          strParams = "?path=" + json.get("path");

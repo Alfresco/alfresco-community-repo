@@ -25,19 +25,21 @@ import org.alfresco.service.cmr.model.FileInfo;
  * 
  * @author Matt Ward
  */
+// TODO consolidate with ActivityPost for OpenCMIS
 public interface ActivityPoster
 {
-    void postFileAdded(
+    void postFileFolderAdded(
                 String siteId,
                 String tenantDomain,
-                FileInfo contentNodeInfo) throws WebDAVServerException;
+                String path,
+                FileInfo nodeInfo) throws WebDAVServerException;
     
-    void postFileUpdated(
+    void postFileFolderUpdated(
                 String siteId,
                 String tenantDomain,
-                FileInfo contentNodeInfo) throws WebDAVServerException;
+                FileInfo nodeInfo) throws WebDAVServerException;
     
-    void postFileDeleted(
+    void postFileFolderDeleted(
                 String siteId,
                 String tenantDomain,
                 String parentPath,

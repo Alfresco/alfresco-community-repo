@@ -109,9 +109,12 @@ public class WarHelperImpl implements WarHelper
      * @throws ModuleManagementToolException
      */
 	protected String findManifestArtibute(TFile war, String attributeName) throws ModuleManagementToolException {
+		
+		InputStream is = null;
+		
 		try 
 		{
-			InputStream is = new TFileInputStream(war+MANIFEST_FILE);
+			is = new TFileInputStream(war+MANIFEST_FILE);
 			Manifest manifest = new Manifest(is);
 			Attributes attribs = manifest.getMainAttributes();
 			return attribs.getValue(attributeName);
@@ -120,6 +123,13 @@ public class WarHelperImpl implements WarHelper
 		{
             throw new ModuleManagementToolException("Unabled to read a manifest for the war file: "+ war);     
 		}
+        finally
+        {
+            if (is != null)
+            {
+                try { is.close(); } catch (Throwable e ) {}
+            }
+        }
 	}
 
 

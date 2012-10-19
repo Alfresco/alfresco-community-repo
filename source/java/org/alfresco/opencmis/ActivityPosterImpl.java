@@ -106,11 +106,6 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
 	{
 		this.activitiesEnabled = activitiesEnabled;
 	}
-	
-    private boolean isHidden(NodeRef nodeRef)
-    {
-        return nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN);
-    }
 
     private final String getPathFromNode(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException
     {
@@ -177,9 +172,12 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
     		NodeRef nodeRef = fileInfo.getNodeRef();
         	SiteInfo siteInfo = siteService.getSite(nodeRef);
         	String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
-        	NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        	
-    		postFileActivity(ActivityType.FILE_ADDED, null, parentNodeRef, nodeRef, siteId, fileInfo.getName());
+    		if(siteId != null && !siteId.equals(""))
+    		{
+        		// post only for nodes within sites
+    			NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+    			postFileActivity(ActivityType.FILE_ADDED, null, parentNodeRef, nodeRef, siteId, fileInfo.getName());
+    		}
     	}
     }
 
@@ -193,9 +191,12 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
     	{
         	SiteInfo siteInfo = siteService.getSite(nodeRef);
         	String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
-        	String fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-
-    		postFileActivity(ActivityType.FILE_UPDATED, null, null, nodeRef, siteId, fileName);
+    		if(siteId != null && !siteId.equals(""))
+    		{
+        		// post only for nodes within sites
+    			String fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+    			postFileActivity(ActivityType.FILE_UPDATED, null, null, nodeRef, siteId, fileName);
+    		}
     	}
     }
     
@@ -203,39 +204,44 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
      * {@inheritDoc}
      */
     @Override
-    public void postFileDeleted(
-            String parentPath,
-            NodeRef parentNodeRef,
-            NodeRef nodeRef,
-            String siteId,
-            String fileName)
+    public void postFileDeleted(ActivityInfo activityInfo)
     {
-    	if(activitiesEnabled)
-    	{
-    		postFileActivity(ActivityType.FILE_DELETED, parentPath, parentNodeRef, nodeRef, siteId, fileName);
+    	if(activitiesEnabled && activityInfo.getSiteId() != null)
+		{
+    		// post only for nodes within sites
+    		postFileActivity(ActivityType.FILE_DELETED, activityInfo.getParentPath(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
+    				activityInfo.getSiteId(), activityInfo.getFileName());
     	}
     }
 
-    public String getParentPath(NodeRef nodeRef)
+    public ActivityInfo getActivityInfo(NodeRef nodeRef)
     {
-    	SiteInfo siteInfo = siteService.getSite(nodeRef);
-    	String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
     	NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
-        String parentPath = "/";
-        try
-        {
-        	parentPath = getPathFromNode(documentLibrary, parentNodeRef);
-	    }
-	    catch (FileNotFoundException error)
-	    {
-	        if (logger.isDebugEnabled())
+    	String fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        SiteInfo siteInfo = siteService.getSite(nodeRef);
+        String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
+    	if(siteId != null && !siteId.equals(""))
+    	{
+	        NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
+	        String parentPath = "/";
+	        try
 	        {
-	            logger.debug("No " + SiteService.DOCUMENT_LIBRARY + " container found.");
-	        }
-	    }
+	        	parentPath = getPathFromNode(documentLibrary, parentNodeRef);
+		    }
+		    catch (FileNotFoundException error)
+		    {
+		        if (logger.isDebugEnabled())
+		        {
+		            logger.debug("No " + SiteService.DOCUMENT_LIBRARY + " container found.");
+		        }
+		    }
 
-	    return parentPath;
+		    return new ActivityInfo(nodeRef, parentPath, parentNodeRef, siteId, fileName);
+    	}
+    	else
+    	{
+    		return null;
+    	}
     }
 
     private void postFileActivity(
@@ -307,5 +313,50 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
         }
         
         return json;
+    }
+    
+    public static class ActivityInfo
+    {
+    	private NodeRef nodeRef;
+        private String parentPath;
+        private NodeRef parentNodeRef;
+        private String siteId;
+        private String fileName;
+
+		public ActivityInfo(NodeRef nodeRef, String parentPath, NodeRef parentNodeRef,
+				String siteId, String fileName)
+		{
+			super();
+			this.nodeRef = nodeRef;
+			this.parentPath = parentPath;
+			this.parentNodeRef = parentNodeRef;
+			this.siteId = siteId;
+			this.fileName = fileName;
+		}
+		
+		public NodeRef getNodeRef()
+		{
+			return nodeRef;
+		}
+
+		public String getParentPath()
+		{
+			return parentPath;
+		}
+
+		public NodeRef getParentNodeRef()
+		{
+			return parentNodeRef;
+		}
+
+		public String getSiteId()
+		{
+			return siteId;
+		}
+		
+		public String getFileName()
+		{
+			return fileName;
+		}
     }
 }

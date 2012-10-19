@@ -41,6 +41,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.ActivityPosterImpl.ActivityInfo;
 import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
 import org.alfresco.opencmis.dictionary.CMISAllowedActionEnum;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
@@ -738,30 +739,22 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     public void deleteNode(NodeRef nodeRef, boolean postActivity)
     {
+        ActivityInfo activityInfo = null;
+
         // post activity after removal of the node
         postActivity &= hiddenAspect.getVisibility(Client.cmis, nodeRef) == Visibility.Visible;
-        String parentPath = null;
-    	NodeRef parentNodeRef = null;
-    	SiteInfo siteInfo = null;
-    	String siteId = null;
-    	String fileName = null;
-
-    	// get this information before the node is deleted
     	if(postActivity)
     	{
-	    	parentPath = activityPoster.getParentPath(nodeRef);
-	    	parentNodeRef = getNodeService().getPrimaryParent(nodeRef).getParentRef();
-	    	siteInfo = siteService.getSite(nodeRef);
-	    	siteId = (siteInfo != null ? siteInfo.getShortName() : null);
-	    	fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        	// get this information before the node is deleted
+	    	activityInfo = activityPoster.getActivityInfo(nodeRef);
     	}
 
         getNodeService().deleteNode(nodeRef);
 
         // post activity after removal of the node
-        if(postActivity)
+        if(postActivity && activityInfo != null)
         {
-        	activityPoster.postFileDeleted(parentPath, parentNodeRef, nodeRef, siteId, fileName);
+        	activityPoster.postFileDeleted(activityInfo);
         }
     }
 

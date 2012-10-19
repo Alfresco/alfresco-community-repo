@@ -18,6 +18,7 @@
  */
 package org.alfresco.opencmis;
 
+import org.alfresco.opencmis.ActivityPosterImpl.ActivityInfo;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -32,12 +33,7 @@ public interface ActivityPoster
     
     void postFileUpdated(NodeRef nodeRef);
 
-    void postFileDeleted(
-            String parentPath,
-            NodeRef parentNodeRef,
-            NodeRef nodeRef,
-            String siteId,
-            String fileName);
+    void postFileDeleted(ActivityInfo activityInfo);
     
-    String getParentPath(NodeRef nodeRef);
+    ActivityInfo getActivityInfo(NodeRef nodeRef);
 }

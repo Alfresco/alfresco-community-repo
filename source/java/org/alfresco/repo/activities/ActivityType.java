@@ -35,11 +35,20 @@ public interface ActivityType
     public static final String SUBSCRIPTIONS_SUBSCRIBE = "org.alfresco.subscriptions.subscribed";
     public static final String SUBSCRIPTIONS_FOLLOW = "org.alfresco.subscriptions.followed";
     
-    public static final String FILE_ADDED = "org.alfresco.documentlibrary.file-added";
+    public static final String FILE_ADDED   = "org.alfresco.documentlibrary.file-added";
     public static final String FILE_UPDATED = "org.alfresco.documentlibrary.file-updated";
     public static final String FILE_DELETED = "org.alfresco.documentlibrary.file-deleted";
     
-    public static final String FILES_ADDED = "org.alfresco.documentlibrary.files-added";
+    public static final String FILES_ADDED   = "org.alfresco.documentlibrary.files-added";
     public static final String FILES_UPDATED = "org.alfresco.documentlibrary.files-updated";
     public static final String FILES_DELETED = "org.alfresco.documentlibrary.files-deleted";
+    
+    public static final String FOLDER_ADDED   = "org.alfresco.documentlibrary.folder-added";
+    public static final String FOLDER_DELETED = "org.alfresco.documentlibrary.folder-deleted";
+    
+    public static final String FOLDERS_ADDED   = "org.alfresco.documentlibrary.folders-added";
+    public static final String FOLDERS_DELETED = "org.alfresco.documentlibrary.folders-deleted";
+    
+    public static final String FILE_LIKED = "org.alfresco.documentlibrary.file-liked";
+    public static final String FOLDER_LIKED = "org.alfresco.documentlibrary.folder-liked";
 }

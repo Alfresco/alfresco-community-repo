@@ -153,6 +153,9 @@ public class PostLookup
         rollupTypes.put(ActivityType.FILE_ADDED,   ActivityType.FILES_ADDED);
         rollupTypes.put(ActivityType.FILE_UPDATED, ActivityType.FILES_UPDATED);
         rollupTypes.put(ActivityType.FILE_DELETED, ActivityType.FILES_DELETED);
+        
+        rollupTypes.put(ActivityType.FOLDER_ADDED,   ActivityType.FOLDERS_ADDED);
+        rollupTypes.put(ActivityType.FOLDER_DELETED, ActivityType.FOLDERS_DELETED);
     }
     
     public void execute() throws JobExecutionException

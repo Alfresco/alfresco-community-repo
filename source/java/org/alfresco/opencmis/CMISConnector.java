@@ -754,7 +754,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         // post activity after removal of the node
         if(postActivity && activityInfo != null)
         {
-        	activityPoster.postFileDeleted(activityInfo);
+        	activityPoster.postFileFolderDeleted(activityInfo);
         }
     }
 

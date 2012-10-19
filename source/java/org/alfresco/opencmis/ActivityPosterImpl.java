@@ -48,6 +48,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @see ActivityPoster
  * @author sglover
  */
+// TODO consolidate with ActivityPost for WebDAV
 public class ActivityPosterImpl implements ActivityPoster, InitializingBean
 {
     private static final String APP_TOOL = "CMIS";
@@ -165,18 +166,37 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
      * {@inheritDoc}
      */
     @Override
-    public void postFileAdded(FileInfo fileInfo)
+    public void postFileFolderAdded(FileInfo fileInfo)
     {
     	if(activitiesEnabled && !fileInfo.isHidden())
     	{
     		NodeRef nodeRef = fileInfo.getNodeRef();
         	SiteInfo siteInfo = siteService.getSite(nodeRef);
         	String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
+    		
     		if(siteId != null && !siteId.equals(""))
     		{
         		// post only for nodes within sites
     			NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-    			postFileActivity(ActivityType.FILE_ADDED, null, parentNodeRef, nodeRef, siteId, fileInfo.getName());
+    			
+    			String path = null;
+    			if (fileInfo.isFolder())
+    			{
+    			    NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
+    	            path = "/";
+    	            try
+    	            {
+    	                path = getPathFromNode(documentLibrary, nodeRef);
+    	            }
+    	            catch (FileNotFoundException error)
+    	            {
+    	                if (logger.isDebugEnabled())
+    	                {
+    	                    logger.debug("No " + SiteService.DOCUMENT_LIBRARY + " container found.");
+    	                }
+    	            }
+    			}
+    			postFileFolderActivity((fileInfo.isFolder() ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED), path, parentNodeRef, nodeRef, siteId, fileInfo.getName());
     		}
     	}
     }
@@ -185,7 +205,7 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
      * {@inheritDoc}
      */
     @Override
-    public void postFileUpdated(NodeRef nodeRef)
+    public void postFileFolderUpdated(boolean isFolder, NodeRef nodeRef)
     {
     	if(activitiesEnabled && hiddenAspect.getVisibility(Client.cmis, nodeRef) == Visibility.Visible)
     	{
@@ -195,7 +215,11 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
     		{
         		// post only for nodes within sites
     			String fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-    			postFileActivity(ActivityType.FILE_UPDATED, null, null, nodeRef, siteId, fileName);
+    			
+    		    if (!isFolder)
+    		    {
+    		        postFileFolderActivity(ActivityType.FILE_UPDATED, null, null, nodeRef, siteId, fileName);
+    		    }
     		}
     	}
     }
@@ -204,24 +228,27 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
      * {@inheritDoc}
      */
     @Override
-    public void postFileDeleted(ActivityInfo activityInfo)
+    public void postFileFolderDeleted(ActivityInfo activityInfo)
     {
     	if(activitiesEnabled && activityInfo.getSiteId() != null)
 		{
     		// post only for nodes within sites
-    		postFileActivity(ActivityType.FILE_DELETED, activityInfo.getParentPath(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
+    		postFileFolderActivity((activityInfo.isFolder() ? ActivityType.FOLDER_DELETED : ActivityType.FILE_DELETED), activityInfo.getParentPath(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
     				activityInfo.getSiteId(), activityInfo.getFileName());
     	}
     }
 
     public ActivityInfo getActivityInfo(NodeRef nodeRef)
     {
-    	NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-    	String fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
         SiteInfo siteInfo = siteService.getSite(nodeRef);
         String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
     	if(siteId != null && !siteId.equals(""))
     	{
+    	    NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+    	    FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
+    	    String name = fileInfo.getName();
+    	    boolean isFolder = fileInfo.isFolder();
+    	        
 	        NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
 	        String parentPath = "/";
 	        try
@@ -235,8 +262,8 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
 		            logger.debug("No " + SiteService.DOCUMENT_LIBRARY + " container found.");
 		        }
 		    }
-
-		    return new ActivityInfo(nodeRef, parentPath, parentNodeRef, siteId, fileName);
+	        
+		    return new ActivityInfo(nodeRef, parentPath, parentNodeRef, siteId, name, isFolder);
     	}
     	else
     	{
@@ -244,15 +271,15 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
     	}
     }
 
-    private void postFileActivity(
+    private void postFileFolderActivity(
             String activityType,
-            String parentPath,
+            String path,
             NodeRef parentNodeRef,
             NodeRef nodeRef,
             String siteId,
-            String fileName)
+            String name)
     {
-    	JSONObject json = createActivityJSON(getCurrentTenantDomain(), parentPath, parentNodeRef, nodeRef, fileName);
+    	JSONObject json = createActivityJSON(getCurrentTenantDomain(), path, parentNodeRef, nodeRef, name);
 
     	activityService.postActivity(
     			activityType,
@@ -273,7 +300,7 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
      */
     private JSONObject createActivityJSON(
                 String tenantDomain,
-                String parentPath,
+                String path,
                 NodeRef parentNodeRef,
                 NodeRef nodeRef,
                 String fileName)
@@ -289,10 +316,10 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
                 json.put("parentNodeRef", parentNodeRef);
             }
             
-            if (parentPath != null)
+            if (path != null)
             {
-                // Used for deleted files.
-                json.put("page", "documentlibrary?path=" + parentPath);
+                // Used for deleted files and folders (added or deleted)
+                json.put("page", "documentlibrary?path=" + path);
             }
             else
             {
@@ -322,9 +349,10 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
         private NodeRef parentNodeRef;
         private String siteId;
         private String fileName;
+        private boolean isFolder;
 
 		public ActivityInfo(NodeRef nodeRef, String parentPath, NodeRef parentNodeRef,
-				String siteId, String fileName)
+				String siteId, String fileName, boolean isFolder)
 		{
 			super();
 			this.nodeRef = nodeRef;
@@ -332,6 +360,7 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
 			this.parentNodeRef = parentNodeRef;
 			this.siteId = siteId;
 			this.fileName = fileName;
+			this.isFolder = isFolder;
 		}
 		
 		public NodeRef getNodeRef()
@@ -358,5 +387,10 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
 		{
 			return fileName;
 		}
+		
+        public boolean isFolder()
+        {
+            return isFolder;
+        }
     }
 }

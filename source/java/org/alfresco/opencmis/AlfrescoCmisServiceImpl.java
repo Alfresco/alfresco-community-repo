@@ -1085,12 +1085,16 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         connector.checkChildObjectType(parentInfo, type.getTypeId());
 
         // run transaction
-        NodeRef nodeRef = connector.getFileFolderService().create(
-                parentInfo.getNodeRef(), name, type.getAlfrescoClass()).getNodeRef();
+        FileInfo fileInfo = connector.getFileFolderService().create(
+                parentInfo.getNodeRef(), name, type.getAlfrescoClass());
+        NodeRef nodeRef = fileInfo.getNodeRef();
+        
 
         connector.setProperties(nodeRef, type, properties, new String[] { PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
         connector.applyPolicies(nodeRef, type, policies);
         connector.applyACL(nodeRef, type, addAces, removeAces);
+        
+        connector.getActivityPoster().postFileFolderAdded(fileInfo);
 
         return nodeRef.toString();
     }
@@ -1175,7 +1179,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         String objectId = connector.createObjectId(nodeRef);
 
-        connector.getActivityPoster().postFileAdded(fileInfo);
+        connector.getActivityPoster().postFileFolderAdded(fileInfo);
 
         return objectId;
     }
@@ -1223,7 +1227,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             connector.applyACL(nodeRef, type, addAces, removeAces);
             connector.applyVersioningState(nodeRef, versioningState);
 
-            connector.getActivityPoster().postFileAdded(fileInfo);
+            connector.getActivityPoster().postFileFolderAdded(fileInfo);
 
             return connector.createObjectId(nodeRef);
         }
@@ -1369,7 +1373,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         objectId.setValue(connector.createObjectId(nodeRef));
 
-        connector.getActivityPoster().postFileUpdated(nodeRef);
+        connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
     }
 
     @Override
@@ -1395,7 +1399,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         connector.getNodeService().setProperty(nodeRef, ContentModel.PROP_CONTENT, null);
 
-        connector.getActivityPoster().postFileUpdated(nodeRef);
+        connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
 
         objectId.setValue(connector.createObjectId(nodeRef));
     }
@@ -1480,7 +1484,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 getObjectInfo(repositoryId, objectId.getValue(), "*", IncludeRelationships.NONE);
             }
 
-            connector.getActivityPoster().postFileUpdated(nodeRef);
+            connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
         }
     }
 

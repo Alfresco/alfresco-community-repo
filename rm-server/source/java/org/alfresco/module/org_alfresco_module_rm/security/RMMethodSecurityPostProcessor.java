@@ -95,7 +95,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
                 PropertyValue beanValue = beanDef.getPropertyValues().getPropertyValue(PROP_OBJECT_DEFINITION_SOURCE);                                     
                 String beanStringValue = (String)((TypedStringValue)beanValue.getValue()).getValue();
                 String mergedStringValue = merge(beanStringValue);
-                beanDef.getPropertyValues().addPropertyValue(PROP_OBJECT_DEFINITION_SOURCE, new TypedStringValue(mergedStringValue));                
+                beanDef.getPropertyValues().addPropertyValue(PROP_OBJECT_DEFINITION_SOURCE, new TypedStringValue(mergedStringValue));  
             }
         }
     }
@@ -144,6 +144,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
     private String merge(String beanStringValue) 
     {
         Map<String, String> map = convertToMap(beanStringValue);
+        String allString = null;
         
         for (Map.Entry<String, String> entry : map.entrySet())
         {
@@ -151,7 +152,14 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
             String propKey = PROPERTY_PREFIX + key;
             if (properties.containsKey(propKey) == true)
             {
-                map.put(key, entry.getValue() + "," + properties.getProperty(propKey));
+                if (propKey.endsWith("*") == true)
+                {   
+                    allString = key + "=" + entry.getValue() + "," + properties.getProperty(propKey);
+                }
+                else
+                {    
+                    map.put(key, entry.getValue() + "," + properties.getProperty(propKey));
+                }
             }
             else
             {
@@ -162,7 +170,12 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
             }
         }
         
-        return convertToString(map);
+        String result = convertToString(map);
+        if (allString != null)
+        {
+            result = result + allString;
+        }
+        return result;
     }
     
     /**
@@ -190,7 +203,10 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
         StringBuffer buffer = new StringBuffer(256);
         for (Map.Entry<String, String> entry : map.entrySet())
         {
-            buffer.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");            
+            if (entry.getKey().endsWith("*") == false)
+            {
+                buffer.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+            }
         }    
         
         return buffer.toString();

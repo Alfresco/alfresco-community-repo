@@ -18,11 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.security;
 
-import java.net.URL;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Tests method level security of core alfresco services.
@@ -78,4 +75,23 @@ public class MethodSecurityTest extends BaseRMTestCase implements RMPermissionMo
             
         }, rmUserName);
     }
+    
+    // TODO helper test that can be uncommented and used to show that methods that don't  have
+    //      security definitions are defaulting to RM_DENY
+//    public void testMissingMethodSecurity()
+//    {
+//        doTestInTransaction(new FailureTest
+//        (
+//                "Should be denied since method level security is missing."
+//        )
+//        {
+//            @Override
+//            public void run()
+//            {
+//                ((LockService)applicationContext.getBean("LockService")).getLockStatus(rmContainer);              
+//            }
+//            
+//        }, rmAdminName);
+//        
+//    }
 }

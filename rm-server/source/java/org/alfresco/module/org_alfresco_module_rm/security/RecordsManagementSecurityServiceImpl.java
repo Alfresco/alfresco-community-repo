@@ -271,7 +271,48 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
      */
     public void onCreateRMContainer(ChildAssociationRef childAssocRef)
     {
-        setUpPermissions(childAssocRef.getChildRef());
+        final NodeRef recordCategory = childAssocRef.getChildRef();
+        setUpPermissions(recordCategory);
+        
+        // Pull any permissions found on the parent (ie the record category)
+        final NodeRef parentNodeRef = childAssocRef.getParentRef();
+        if (parentNodeRef != null && nodeService.exists(parentNodeRef) == true)
+        {
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            {
+                public Object doWork()
+                {
+                    boolean fillingOnly = false;
+                    if (recordsManagementService.isFilePlan(parentNodeRef) == true)
+                    {
+                        fillingOnly = true;
+                    }
+
+                    // since this is not a root category, inherit from parent
+                    Set<AccessPermission> perms = permissionService.getAllSetPermissions(parentNodeRef);
+                    for (AccessPermission perm : perms) 
+                    {
+                        if (fillingOnly == false ||
+                            RMPermissionModel.FILING.equals(perm.getPermission()) == true)
+                        {
+                            AccessStatus accessStatus = perm.getAccessStatus();
+                            boolean allow = false;
+                            if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                            {
+                                allow = true;
+                            }
+                            permissionService.setPermission(
+                                    recordCategory, 
+                                    perm.getAuthority(), 
+                                    perm.getPermission(), 
+                                    allow);
+                        }
+                    }
+                    
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName()); 
+        }
     }
     
     /**

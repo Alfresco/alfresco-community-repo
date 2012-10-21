@@ -29,6 +29,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.security.PersonService;
 
 import org.alfresco.repo.webdav.auth.RemoteUserMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 /**
  * A default {@link RemoteUserMapper} implementation. Extracts a user ID using
  * {@link HttpServletRequest#getRemoteUser()} and optionally from a configured request header. If there is no configured
@@ -56,6 +58,8 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
 
     /** The person service. */
     private PersonService personService;
+
+    static Log logger = LogFactory.getLog(DefaultRemoteUserMapper.class);
 
     /**
      * Sets the name of the remote user used to 'proxy' requests securely in the name of another user. Typically this
@@ -123,25 +127,43 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
      */
     public String getRemoteUser(HttpServletRequest request)
     {
+        if (logger.isDebugEnabled())
+            logger.debug("Getting RemoteUser from http request.");
         if (!this.isEnabled)
         {
+            if (logger.isDebugEnabled())
+                logger.debug("DefaultRemoteUserMapper is disabled, returning null.");
             return null;
         }
         String remoteUserId = request.getRemoteUser();
         String headerUserId = extractUserFromProxyHeader(request);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("The remote user id is: " + remoteUserId);
+            logger.debug("The header user id is: " + headerUserId);
+            logger.debug("The proxy user name is: " + this.proxyUserName);
+        }
         if (this.proxyUserName == null)
         {
             // Normalize the user ID taking into account case sensitivity settings
-            return normalizeUserId(headerUserId != null ? headerUserId : remoteUserId);
+            String normalizedUserId =  normalizeUserId(headerUserId != null ? headerUserId : remoteUserId);
+            if (logger.isDebugEnabled())
+                logger.debug("Returning " + normalizedUserId);
+            return normalizedUserId;
         }
         else if (remoteUserId == null)
         {
+            if (logger.isDebugEnabled())
+                logger.debug("Returning null");
             return null;
         }
         else
         {
             // Normalize the user ID taking into account case sensitivity settings
-            return normalizeUserId(remoteUserId.equals(this.proxyUserName) ? headerUserId : remoteUserId);
+            String normalizedUserId =  normalizeUserId(remoteUserId.equals(this.proxyUserName) ? headerUserId : remoteUserId);
+            if (logger.isDebugEnabled())
+                logger.debug("Returning " + normalizedUserId);
+            return normalizedUserId;
         }
     }
 
@@ -165,6 +187,8 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
                 return personService.getUserIdentifier(userId);
             }
         }, AuthenticationUtil.getSystemUserName());
+        if (logger.isDebugEnabled())
+            logger.debug("The normalized user name is: " + normalized + " for user id " + userId);
         return normalized == null ? userId : normalized;
     }
 

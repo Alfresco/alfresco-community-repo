@@ -82,7 +82,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String UPDATE_STORE_ROOT = "alfresco.node.update_StoreRoot";
     private static final String UPDATE_STORE = "alfresco.node.update_Store";
     private static final String SELECT_STORE_ALL = "alfresco.node.select_StoreAll";
-    private static final String SELECT_STORE_ROOT_NODE_BY_ID = "alfresco.node.select_StoreRootNodeById";
+    private static final String SELECT_STORE_BY_REF = "alfresco.node.select_StoreByRef";
     private static final String SELECT_STORE_ROOT_NODE_BY_REF = "alfresco.node.select_StoreRootNodeByRef";
     private static final String INSERT_NODE = "alfresco.node.insert.insert_Node";
     private static final String UPDATE_NODE = "alfresco.node.update_Node";
@@ -272,11 +272,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected NodeEntity selectStoreRootNode(Long storeId)
+    protected StoreEntity selectStore(StoreRef storeRef)
     {
         StoreEntity store = new StoreEntity();
-        store.setId(storeId);
-        return (NodeEntity) template.selectOne(SELECT_STORE_ROOT_NODE_BY_ID, store);
+        store.setProtocol(storeRef.getProtocol());
+        store.setIdentifier(storeRef.getIdentifier());
+        return (StoreEntity) template.selectOne(SELECT_STORE_BY_REF, store);
     }
 
     @Override

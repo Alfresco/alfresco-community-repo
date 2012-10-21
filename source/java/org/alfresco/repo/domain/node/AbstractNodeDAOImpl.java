@@ -691,6 +691,21 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Stores
      */
 
+    @Override
+    public Pair<Long, StoreRef> getStore(StoreRef storeRef)
+    {
+        StoreEntity store = selectStore(storeRef);
+        if (store == null)
+        {
+            return null;
+        }
+        else
+        {
+            return new Pair<Long, StoreRef>(store.getId(), store.getStoreRef());
+        }
+    }
+
+    @Override
     public List<Pair<Long, StoreRef>> getStores()
     {
         List<StoreEntity> storeEntities = selectAllStores();
@@ -4598,7 +4613,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int updateTransaction(Long txnId, Long commit_time_ms);
     protected abstract int deleteTransaction(Long txnId);
     protected abstract List<StoreEntity> selectAllStores();
-    protected abstract NodeEntity selectStoreRootNode(Long storeId);
+    protected abstract StoreEntity selectStore(StoreRef storeRef);
     protected abstract NodeEntity selectStoreRootNode(StoreRef storeRef);
     protected abstract Long insertStore(StoreEntity store);
     protected abstract int updateStoreRoot(StoreEntity store);

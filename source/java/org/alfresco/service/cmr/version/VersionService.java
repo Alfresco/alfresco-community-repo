@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.alfresco.repo.version.VersionServicePolicies.CalculateVersionLabelPolicy;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -49,6 +48,22 @@ public interface VersionService
      */
     @Auditable
     public StoreRef getVersionStoreReference();
+
+    /**
+     * Is the nodeRef a version node?
+     * 
+     * @return  true, if the nodeRef is a version node, false otherwise
+     */
+    @Auditable
+    public boolean isAVersion(NodeRef nodeRef);
+
+    /**
+     * Is the nodeRef versioned?
+     * 
+     * @return  true, if the nodeRef is versioned, false otherwise
+     */
+    @Auditable
+    public boolean isVersioned(NodeRef nodeRef);
     
     /**
      * Creates a new version based on the referenced node.

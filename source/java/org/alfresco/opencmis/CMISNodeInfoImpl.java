@@ -53,6 +53,12 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentExcep
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
 
+/**
+ * CMIS representation of a node.
+ * 
+ * Tries to avoid getting the node's version history where possible (because it's not very performant).
+ * 
+ */
 public class CMISNodeInfoImpl implements CMISNodeInfo
 {
     private static final GregorianCalendar DUMMY_DATE = new GregorianCalendar(2010, 4, 1);
@@ -76,6 +82,10 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     private Map<String, Serializable> properties;
     private List<CMISNodeInfo> parents;
 
+    public CMISNodeInfoImpl()
+    {
+    }
+    
     public CMISNodeInfoImpl(CMISConnector connector, String objectId)
     {
         this.connector = connector;
@@ -98,6 +108,61 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         this.associationRef = associationRef;
 
         analyseAssociationRef();
+    }
+
+    private boolean isCurrentNode()
+    {
+    	return objecVariant != CMISObjectVariant.VERSION;
+    }
+
+    protected void analyseVersionNode(NodeRef nodeRef)
+    {
+        // check version
+        versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
+        if (versionHistory == null)
+        {
+            objecVariant = CMISObjectVariant.CURRENT_VERSION;
+            objectId = nodeRef.toString() + CMISConnector.ID_SEPERATOR + CMISConnector.UNVERSIONED_VERSION_LABEL;
+            versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
+            currentObjectId = objectId;
+        }
+        else
+        {
+            Version headVersion = versionHistory.getHeadVersion();
+
+            versionLabel = (String) connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+            objectId = headVersion.getVersionedNodeRef().toString() + CMISConnector.ID_SEPERATOR + versionLabel;
+            currentObjectId = headVersion.getVersionedNodeRef().toString() + CMISConnector.ID_SEPERATOR
+                    + headVersion.getVersionLabel();
+            currentNodeId = headVersion.getVersionedNodeRef().toString();
+
+            objecVariant = (headVersion.getVersionLabel().equals(versionLabel) ? CMISObjectVariant.CURRENT_VERSION
+                    : CMISObjectVariant.VERSION);
+        }
+    }
+
+    protected void analyseCurrentVersion(NodeRef nodeRef)
+    {
+    	if(connector.getVersionService().isVersioned(nodeRef))
+    	{
+    		versionLabel = (String) connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+    		objectId = nodeRef.toString() + CMISConnector.ID_SEPERATOR + versionLabel;
+    		currentObjectId = nodeRef.toString() + CMISConnector.ID_SEPERATOR + versionLabel;
+    		currentNodeId = nodeRef.toString();
+    		objecVariant = CMISObjectVariant.CURRENT_VERSION;
+    	}
+    	else
+    	{
+    		setUnversioned(nodeRef);
+    	}
+    }
+    
+    protected void setUnversioned(NodeRef nodeRef)
+    {
+        objecVariant = CMISObjectVariant.CURRENT_VERSION;
+        objectId = nodeRef.toString() + CMISConnector.ID_SEPERATOR + CMISConnector.UNVERSIONED_VERSION_LABEL;
+        versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
+        currentObjectId = objectId;    		    	
     }
 
     protected void analyseObjectId()
@@ -126,6 +191,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
             if (NodeRef.isNodeRef(currentNodeId))
             {
+            	// nodeRef is a "live" node, the version label identifies the specific version of the node
                 nodeRef = new NodeRef(currentNodeId);
 
                 // check for existence
@@ -200,10 +266,9 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                     return;
                 }
 
-                // check version
-                versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
-                if (versionHistory == null)
-                {
+            	if(!connector.getVersionService().isVersioned(nodeRef))
+            	{
+            		// the node isn't versioned
                     if (versionLabel.equals(CMISConnector.UNVERSIONED_VERSION_LABEL))
                     {
                         objecVariant = CMISObjectVariant.CURRENT_VERSION;
@@ -212,29 +277,52 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                     {
                         objecVariant = CMISObjectVariant.NOT_EXISTING;
                     }
-
-                    return;
-                }
-
-                try
-                {
-                    currentObjectId = currentNodeId + CMISConnector.ID_SEPERATOR
-                            + versionHistory.getHeadVersion().getVersionLabel();
-
-                    version = versionHistory.getVersion(versionLabel);
-
-                    if (versionLabel.equals(versionHistory.getHeadVersion().getVersionLabel()))
-                    {
-                        objecVariant = CMISObjectVariant.CURRENT_VERSION;
-                    } else
-                    {
-                        nodeRef = version.getFrozenStateNodeRef();
-                        objecVariant = CMISObjectVariant.VERSION;
-                    }
-                } catch (VersionDoesNotExistException e)
-                {
-                    objecVariant = CMISObjectVariant.NOT_EXISTING;
-                }
+            	}
+            	else
+            	{
+            		// the node is versioned, determine whether the versionLabel refers to the head version or a
+            		// specific non-head version
+	            	String headVersionLabel = (String)connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+	                currentObjectId = currentNodeId + CMISConnector.ID_SEPERATOR + headVersionLabel;
+	
+	                if (versionLabel.equals(headVersionLabel))
+	                {
+	                	// the version label refers to the current head version
+	                    objecVariant = CMISObjectVariant.CURRENT_VERSION;
+	                }
+	                else
+	                {
+	                	// the version label refers to a specific non-head version, find the nodeRef
+	                	// of the version node from the version history
+	                    versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
+	                    if (versionHistory == null)
+	                    {
+	                    	// unexpected null versionHistory, assume not versioned
+	                        if (versionLabel.equals(CMISConnector.UNVERSIONED_VERSION_LABEL))
+	                        {
+	                            objecVariant = CMISObjectVariant.CURRENT_VERSION;
+	
+	                        }
+	                        else
+	                        {
+	                            objecVariant = CMISObjectVariant.NOT_EXISTING;
+	                        }
+	                    }
+	                    else
+	                    {
+		                    try
+		                    {
+		        	            version = versionHistory.getVersion(versionLabel);
+		        	            nodeRef = version.getFrozenStateNodeRef();
+		        	            objecVariant = CMISObjectVariant.VERSION;
+		                    }
+		                    catch (VersionDoesNotExistException e)
+		                    {
+		                        objecVariant = CMISObjectVariant.NOT_EXISTING;
+		                    }
+	                    }
+	                }
+            	}
 
                 // check if checked out
                 hasPWC = connector.getCheckOutCheckInService().isCheckedOut(getCurrentNodeNodeRef());
@@ -323,26 +411,13 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
 
         // check version
-        versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
-        if (versionHistory == null)
+        if(connector.getVersionService().isAVersion(nodeRef))
         {
-            objecVariant = CMISObjectVariant.CURRENT_VERSION;
-            objectId = nodeRef.toString() + CMISConnector.ID_SEPERATOR + CMISConnector.UNVERSIONED_VERSION_LABEL;
-            versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
-            currentObjectId = objectId;
+        	analyseVersionNode(nodeRef);
         }
         else
         {
-            Version headVersion = versionHistory.getHeadVersion();
-
-            versionLabel = (String) connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
-            objectId = headVersion.getVersionedNodeRef().toString() + CMISConnector.ID_SEPERATOR + versionLabel;
-            currentObjectId = headVersion.getVersionedNodeRef().toString() + CMISConnector.ID_SEPERATOR
-                    + headVersion.getVersionLabel();
-            currentNodeId = headVersion.getVersionedNodeRef().toString();
-
-            objecVariant = (headVersion.getVersionLabel().equals(versionLabel) ? CMISObjectVariant.CURRENT_VERSION
-                    : CMISObjectVariant.VERSION);
+        	analyseCurrentVersion(nodeRef);
         }
 
         hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
@@ -450,30 +525,37 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     {
         if (isLatestMajorVersion == null)
         {
-            isLatestMajorVersion = Boolean.FALSE;
+        	isLatestMajorVersion = Boolean.FALSE;
             if (!isPWC())
             {
-                VersionHistory versionHistory = getVersionHistory();
-                if (versionHistory == null)
-                {
-                    isLatestMajorVersion = Boolean.TRUE;
-                } else
-                {
-                    Version currentVersion = versionHistory.getHeadVersion();
-                    while (currentVersion != null)
-                    {
-                        if (currentVersion.getVersionType() == VersionType.MAJOR)
-                        {
-                        	// ALF-11116: the current node (in the main store) and the frozen node (in the version store) are both represented as CMISNodeInfos
-                        	// but are indistinguishable apart from their storeRef (their objectVariant can be the same).
-                            isLatestMajorVersion = (nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID) || nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID)) ?
-                            		currentVersion.getFrozenStateNodeRef().equals(nodeRef) : currentVersion.getVersionedNodeRef().equals(nodeRef);
-                            break;
-                        }
-                        currentVersion = versionHistory.getPredecessor(currentVersion);
-                    }
-                }
-            }
+	        	if(isCurrentNode())
+    	    	{
+	        		isLatestMajorVersion = Boolean.TRUE;
+        		}
+        		else
+        		{
+	                VersionHistory versionHistory = getVersionHistory();
+	                if (versionHistory == null)
+	                {
+	                    isLatestMajorVersion = Boolean.TRUE;
+	                } else
+	                {
+	                    Version currentVersion = versionHistory.getHeadVersion();
+	                    while (currentVersion != null)
+	                    {
+	                        if (currentVersion.getVersionType() == VersionType.MAJOR)
+	                        {
+	                        	// ALF-11116: the current node (in the main store) and the frozen node (in the version store) are both represented as CMISNodeInfos
+	                        	// but are indistinguishable apart from their storeRef (their objectVariant can be the same).
+	                            isLatestMajorVersion = (nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID) || nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID)) ?
+	                            		currentVersion.getFrozenStateNodeRef().equals(nodeRef) : currentVersion.getVersionedNodeRef().equals(nodeRef);
+	                            break;
+	                        }
+	                        currentVersion = versionHistory.getPredecessor(currentVersion);
+	                    }
+	                }
+	            }
+        	}
         }
 
         return isLatestMajorVersion.booleanValue();
@@ -730,6 +812,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
     }
 
+    // TODO lock here??
     public VersionHistory getVersionHistory()
     {
         if (versionHistory == null && isDocument())
@@ -744,8 +827,28 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
         return versionHistory;
     }
+    
+    public void deleteNode()
+    {
+        Version version = getVersion();
 
-    public Version getVersion()
+        if (getVersionHistory().getPredecessor(version) == null)
+        {
+            connector.getNodeService().deleteNode(nodeRef);
+        }
+        else
+        {
+            connector.getVersionService().deleteVersion(nodeRef, version);
+        }
+    }
+
+    public void deleteVersion()
+    {
+        Version version = getVersion();
+        connector.getVersionService().deleteVersion(nodeRef, version);
+    }
+
+    protected Version getVersion()
     {
         if (version == null && isDocument())
         {

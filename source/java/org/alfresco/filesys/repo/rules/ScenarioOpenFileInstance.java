@@ -20,6 +20,7 @@ package org.alfresco.filesys.repo.rules;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.filesys.repo.OpenFileMode;
 import org.alfresco.filesys.repo.ResultCallback;
@@ -73,7 +74,7 @@ import org.apache.commons.logging.LogFactory;
  * 4) close
  * 
  */
-class ScenarioOpenFileInstance implements ScenarioInstance
+class ScenarioOpenFileInstance implements ScenarioInstance, DependentInstance
 {
     private static Log logger = LogFactory.getLog(ScenarioOpenFileInstance.class);
       
@@ -537,6 +538,34 @@ class ScenarioOpenFileInstance implements ScenarioInstance
     private boolean isReadOnly(NetworkFile file)
     {
         return (file.getGrantedAccess() == NetworkFile.READONLY);
+    }
+
+    /* This openFileInstance knows about ScenarioDeleteRestore */
+    @Override
+    public Command win(List<ScenarioResult> results, Command command)
+    {
+        if(command instanceof CompoundCommand)
+        {
+            CompoundCommand c = (CompoundCommand)command; 
+            for(ScenarioResult looser : results)
+            {
+                if(looser.scenario instanceof ScenarioDeleteRestoreInstance)
+                {
+                    Command l = looser.command; 
+                    ArrayList<Command> commands = new ArrayList<Command>();
+                    ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                    ArrayList<Command> postErrorCommands = new ArrayList<Command>();
+                    commands.add(l);
+                    postCommitCommands.addAll(c.getPostCommitCommands());
+                    postErrorCommands.addAll(c.getPostErrorCommands());
+                    
+                    logger.debug("returning merged high priority executor");
+                    return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
+                }
+            }
+        }
+        // No change
+        return command;
     }
 }
 

@@ -5256,6 +5256,182 @@ public class ContentDiskDriverTest extends TestCase
 
     } // testScenarioMSMacWord20011SaveWithBackup save
     
+    
+    /**
+     * Simulates a Mac Lion Drag and Drop 
+     * 0. ALF-15158.diff  already exists and is versionable
+     * 1. Delete ALF-15158.diff 
+     * 2. Create new document ALF-15158.diff 
+     */
+    public void testMacDragAndDrop() throws Exception
+    {
+        logger.debug("testMacDragAndDrop(");
+        
+        final String FILE_NAME = "ALF-15158.diff";
+        
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+            NodeRef file1NodeRef;
+        };
+        
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\MacDragAndDrop";
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "cifs", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();        
+
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+     
+        /**
+         * Create a file in the test directory
+         */    
+        
+        try
+        {
+            logger.debug("expect to get exception - cleaning garbage");
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+        
+        logger.debug("0) create new file");
+        RetryingTransactionCallback<TestContext> createFileCB = new RetryingTransactionCallback<TestContext>() {
+            @Override
+            public TestContext execute() throws Throwable
+            {
+  
+                TestContext ctx = new TestContext();
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                
+                /**
+                 * Create the file we are going to use (FileA.pptx)
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                ctx.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(ctx.firstFileHandle);
+                
+                driver.closeFile(testSession, testConnection, ctx.firstFileHandle); 
+                
+                ctx.file1NodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                nodeService.addAspect(ctx.file1NodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                        
+                return ctx;
+            }
+        };
+        final TestContext testContext = tran.doInTransaction(createFileCB, false, true);
+        
+        /**
+         * 1) delete the old file
+         */
+        logger.debug("1) delete old file");
+        RetryingTransactionCallback<Void> renameOldFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameOldFileCB, false, true);
+
+             
+        /**
+         * 2) CreateNewFile and write some new content
+         * 
+         */
+        logger.debug("2) write some content");
+        RetryingTransactionCallback<Void> restoreFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);    
+         
+                ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest3.doc");
+                assertNotNull("unable to find test resource filesys/ContentDiskDriverTest3.doc", fileResource);
+
+                byte[] buffer= new byte[1000];
+                InputStream is = fileResource.getInputStream();
+                try
+                {
+                    long offset = 0;
+                    int i = is.read(buffer, 0, buffer.length);
+                    while(i > 0)
+                    {
+                        testContext.firstFileHandle.writeFile(buffer, i, 0, offset);
+                        offset += i;
+                        i = is.read(buffer, 0, buffer.length);
+                    }                 
+                }
+                finally
+                {
+                    is.close();
+                }
+            
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
+                    
+                return null;
+            }
+        };
+        tran.doInTransaction(restoreFileCB, false, true);
+        
+                   
+        logger.debug("3) validate results");
+        /**
+         * Now validate everything is correct
+         */
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               
+               Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+               
+               ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+               assertNotNull("data is null", data);
+               assertEquals("size is wrong", 26112, data.getSize());
+               assertEquals("mimeType is wrong", "application/msword",data.getMimetype());
+               
+               assertTrue("versionable aspect missing", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+               assertTrue("hidden aspect still applied", !nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_HIDDEN));
+               assertTrue("temporary aspect still applied", !nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_TEMPORARY));
+           
+               assertEquals("Node ref has changed", shuffledNodeRef, testContext.file1NodeRef);
+               return null;
+            }
+        };
+        
+        tran.doInTransaction(validateCB, true, true);
+        
+    } // testMacDragAndDrop
+    
     /**
      * Test server
      */

@@ -228,14 +228,14 @@
         <property name="jsonConversionComponent" ref="jsonConversionComponent" />
     </bean>
 
-	<bean id="baseJsonConversionComponent" abstract="true">
-		<property name="nodeService" ref="NodeService"/>
-		<property name="publicServiceAccessService" ref="PublicServiceAccessService" />
-		<property name="namespaceService" ref="NamespaceService" />
-		<property name="fileFolderService" ref="FileFolderService" />
-		<property name="lockService" ref="LockService" />
-		<property name="permissionService" ref="PermissionService" />	
-		<property name="contentService" ref="ContentService" />
+    <bean id="baseJsonConversionComponent" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="publicServiceAccessService" ref="PublicServiceAccessService" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="lockService" ref="LockService" />
+        <property name="permissionService" ref="PermissionService" />   
+        <property name="contentService" ref="ContentService" />
         <property name="userPermissions">
             <list>
                 <value>CancelCheckOut</value>
@@ -244,52 +244,50 @@
                 <value>Delete</value>
                 <value>Write</value>
             </list>
-        </property>	
-	</bean>
+        </property> 
+    </bean>
 
-	<bean id="jsonConversionComponent" class="org.alfresco.repo.jscript.app.JSONConversionComponent" parent="baseJsonConversionComponent">
-	</bean>
-	
-	<bean id="baseDecorator" abstract="true" init-method="init">
-		<property name="nodeService" ref="NodeService"/>
-		<property name="namespaceService" ref="NamespaceService"/>
-		<property name="permissionService" ref="PermissionService"/>
-		<property name="jsonConversionComponent" ref="jsonConversionComponent"/>
-	</bean>
-		
+    <bean id="jsonConversionComponent" class="org.alfresco.repo.jscript.app.JSONConversionComponent" parent="baseJsonConversionComponent">
+    </bean>
+    
+    <bean id="baseDecorator" abstract="true" init-method="init">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="jsonConversionComponent" ref="jsonConversionComponent"/>
+    </bean>
+        
     <bean id="usernamePropertiesDecorator" parent="baseDecorator" class="org.alfresco.repo.jscript.app.UsernamePropertyDecorator">
-    	<property name="personService" ref="PersonService" />
-    	<property name="propertyNames">
-    		<set>
-    			<value>cm:creator</value>
-    			<value>cm:modifier</value>
-    			<value>cm:workingCopyOwner</value>
-    			<value>cm:lockOwner</value>
-    			<value>cm:owner</value>
+        <property name="personService" ref="PersonService" />
+        <property name="propertyNames">
+            <set>
+                <value>cm:creator</value>
+                <value>cm:modifier</value>
+                <value>cm:workingCopyOwner</value>
+                <value>cm:lockOwner</value>
+                <value>cm:owner</value>
             <value>qshare:sharedBy</value>
-    		</set>
-   		</property>
+            </set>
+        </property>
     </bean>
     
     <bean id="ignorePropertiesDecorator" parent="baseDecorator" class="org.alfresco.repo.jscript.app.IgnorePropertyDecorator">
-    	<property name="propertyNames">
-    		<set>
-    			<value>cm:content</value>
-    			<value>sys:locale</value>    			
-    			<value>sys:node-uuid</value>
-    			<value>sys:store-protocol</value>
-    			<value>sys:node-dbid</value>
-    			<value>sys:store-identifier</value>
-    		</set>
-   		</property>
+        <property name="propertyNames">
+            <set>
+                <value>cm:content</value>
+                <value>sys:node-uuid</value>
+                <value>sys:store-protocol</value>
+                <value>sys:store-identifier</value>
+            </set>
+        </property>
     </bean>
 
     <bean id="tagPropertyDecorator" parent="baseDecorator" class="org.alfresco.repo.jscript.app.TagPropertyDecorator">
-    	<property name="propertyName" value="cm:taggable" />    
+        <property name="propertyName" value="cm:taggable" />    
     </bean>
     
     <bean id="categoryPropertyDecorator" parent="baseDecorator" class="org.alfresco.repo.jscript.app.CategoryPropertyDecorator">    
-    	<property name="propertyName" value="cm:categories" />    
+        <property name="propertyName" value="cm:categories" />    
     </bean>
 
 </beans>

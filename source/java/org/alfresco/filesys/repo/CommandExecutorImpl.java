@@ -21,6 +21,7 @@ import org.alfresco.filesys.repo.rules.commands.ReduceQuotaCommand;
 import org.alfresco.filesys.repo.rules.commands.RemoveNoContentFileOnError;
 import org.alfresco.filesys.repo.rules.commands.RemoveTempFileCommand;
 import org.alfresco.filesys.repo.rules.commands.RenameFileCommand;
+import org.alfresco.filesys.repo.rules.commands.RestoreFileCommand;
 import org.alfresco.filesys.repo.rules.commands.ReturnValueCommand;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.filesys.TreeConnection;
@@ -216,11 +217,17 @@ public class CommandExecutorImpl implements CommandExecutor
                 CreateFileCommand create = (CreateFileCommand)command;
                 return repositoryDiskInterface.createFile(create.getRootNode(), create.getPath(), create.getAllocationSize());
             }
+            else if(command instanceof RestoreFileCommand)
+            {
+                logger.debug("restore file command");
+                RestoreFileCommand restore = (RestoreFileCommand)command;
+                return repositoryDiskInterface.restoreFile(sess, tree, restore.getRootNode(), restore.getPath(), restore.getAllocationSize(), restore.getOriginalNodeRef());
+            }
             else if(command instanceof DeleteFileCommand)
             {
                 logger.debug("delete file command");
                 DeleteFileCommand delete = (DeleteFileCommand)command;
-                diskInterface.deleteFile(sess, tree, delete.getPath());
+                return repositoryDiskInterface.deleteFile2(sess, tree, delete.getRootNode(), delete.getPath());
             }
             else if(command instanceof OpenFileCommand)
             {

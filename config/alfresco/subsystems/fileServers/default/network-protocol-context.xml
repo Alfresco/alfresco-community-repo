@@ -134,6 +134,19 @@
        
        <property name="scenarios">
             <list>
+               <!--  Mac Finder Drag and Drop -->
+               <bean id="deleteRestoreShuffle" class="org.alfresco.filesys.repo.rules.ScenarioDeleteRestore">
+                    <property name="pattern"><value>.*</value></property>
+                    <property name="timeout"><value>60000</value></property>
+                    <property name="ranking"><value>MEDIUM</value></property>
+                </bean>
+                <!-- Open/Close reference counting -->
+                <bean id="openFileScenario" class="org.alfresco.filesys.repo.rules.ScenarioOpenFile">
+                    <property name="pattern"><value>.*</value></property>
+                    <!-- 20 seconds to open a file -->
+                    <property name="timeout"><value>20000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
                 <!-- TextEdit Mac Lion -->
                 <bean id="tempDeleteShuffle" class="org.alfresco.filesys.repo.rules.ScenarioTempDeleteShuffle">
                     <property name="pattern"><value>^.*\.txt$</value></property>
@@ -181,12 +194,7 @@
                 <bean id="simpleNonBufferedScenario" class="org.alfresco.filesys.repo.rules.ScenarioSimpleNonBuffered">
                     <property name="ranking"><value>LOW</value></property>
                 </bean>
-                <bean id="openFileScenario" class="org.alfresco.filesys.repo.rules.ScenarioOpenFile">
-                    <property name="pattern"><value>.*</value></property>
-                    <!-- 20 seconds to open a file -->
-                    <property name="timeout"><value>20000</value></property>
-                    <property name="ranking"><value>HIGH</value></property>
-                </bean>
+
                 <bean id="framemakerFileScenario" class="org.alfresco.filesys.repo.rules.ScenarioDoubleRenameShuffle">
                     <property name="pattern"><value>.*.backup.fm$</value></property>
                     <property name="timeout"><value>60000</value></property>
@@ -298,6 +306,7 @@
       <property name="checkOutCheckInService"><ref bean="CheckoutCheckinService"/></property>
       <property name="ioControlHandler"><ref bean="contentIOHandler"/></property>
       <property name="contentComparator"><ref bean="contentComparator"/></property>
+      <property name="nodeArchiveService" ><ref bean="nodeArchiveService"/></property>
 
    </bean>
 

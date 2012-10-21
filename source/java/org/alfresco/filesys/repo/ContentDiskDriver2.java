@@ -76,6 +76,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -143,6 +145,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     private BehaviourFilter policyBehaviourFilter;
     private NodeMonitorFactory m_nodeMonitorFactory;
     private ContentComparator contentComparator;
+    private NodeArchiveService nodeArchiveService;
 
     // TODO Should not be here - should be specific to a context.
 	private boolean isLockedFilesAsOffline;
@@ -168,6 +171,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         PropertyCheck.mandatory(this, "m_nodeMonitorFactory", m_nodeMonitorFactory);
         PropertyCheck.mandatory(this, "ioControlHandler", ioControlHandler);
         PropertyCheck.mandatory(this, "contentComparator", getContentComparator());
+        PropertyCheck.mandatory(this, "nodeArchiveService", nodeArchiveService);
     }
     
     /**
@@ -1170,6 +1174,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         throw new AlfrescoRuntimeException("obsolete method called");
     }
 
+    public void deleteFile(final SrvSession session, final TreeConnection tree, final String name) throws IOException
+    {
+        throw new AlfrescoRuntimeException("obsolete method called");
+    }
+
     /**
      * Delete the specified file.
      * 
@@ -1177,8 +1186,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * @param tree Tree connection
      * @param file NetworkFile
      * @exception java.io.IOException The exception description.
+     * @return NodeRef of deletedFile
      */
-    public void deleteFile(final SrvSession session, final TreeConnection tree, final String name) throws IOException
+    public NodeRef deleteFile2(final SrvSession session, final TreeConnection tree, NodeRef rootNode, String path) throws IOException
     {
         // Get the device context
         
@@ -1186,21 +1196,21 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         
         if(logger.isDebugEnabled())
         {
-            logger.debug("deleteFile:" + name + ", session:" + session.getUniqueId());
+            logger.debug("deleteFile:" + path + ", session:" + session.getUniqueId());
         }
         
         try
         {
             if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
             {
-                String[] paths = FileName.splitPath(name);
+                String[] paths = FileName.splitPath(path);
                 // lookup parent directory
                 NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
               
                 // Check whether we are opening a pseudo file
                 if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
                 {
-                    return;
+                    return null;
                 }
             }
             
@@ -1209,34 +1219,34 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             final QuotaManager quotaMgr = ctx.getQuotaManager();
 
             // Get the node and delete it
-            final NodeRef nodeRef = getNodeForPath(tree, name);
+            final NodeRef nodeRef = getNodeForPath(tree, path);
                     
             if (fileFolderService.exists(nodeRef))
             {
                 // Get the size of the file being deleted        
-                final FileInfo fInfo = quotaMgr == null ? null : getFileInformation(session, tree, name);
+                final FileInfo fInfo = quotaMgr == null ? null : getFileInformation(session, tree, path);
 
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("deleted file" + name);
+                    logger.debug("deleted file" + path);
                 }
                 fileFolderService.delete(nodeRef);
                 
                 //TODO Needs to be post-commit
                 if (quotaMgr != null)
                 {
-                    quotaMgr.releaseSpace(session, tree, fInfo.getFileId(), name, fInfo.getSize());
+                    quotaMgr.releaseSpace(session, tree, fInfo.getFileId(), path, fInfo.getSize());
                 }
          
                 // Debug
                     
                 if (logger.isDebugEnabled())
                 {
-                   logger.debug("Deleted file: " + name + ", nodeRef=" + nodeRef);
+                   logger.debug("Deleted file: " + path + ", nodeRef=" + nodeRef);
                 }
 
                 // void return
-                return;
+                return nodeRef;
             }
         }
         catch (NodeLockedException ex)
@@ -1247,7 +1257,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             }
             // Convert to a filesystem access denied status
             
-            throw new AccessDeniedException("Unable to delete " + name);
+            throw new AccessDeniedException("Unable to delete " + path);
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
@@ -1259,7 +1269,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             }
             
             // Convert to a filesystem access denied status
-            throw new AccessDeniedException("Unable to delete " + name);
+            throw new AccessDeniedException("Unable to delete " + path);
         }
         catch (IOException ex)
         {
@@ -1280,10 +1290,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             }
             
             // Convert to a general I/O exception
-            IOException ioe = new IOException("Delete file " + name);
+            IOException ioe = new IOException("Delete file " + path);
             ioe.initCause(ex);
             throw ioe;
         }
+        return null;
     }
 
     /**
@@ -2996,5 +3007,50 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     public ContentComparator getContentComparator()
     {
         return contentComparator;
+    }
+
+    @Override
+    public NetworkFile restoreFile(
+            SrvSession sess, 
+            TreeConnection tree, 
+            NodeRef rootNode, 
+            String path,
+            long allocationSize, 
+            NodeRef originalNodeRef) throws IOException
+    {
+        // First attempt to restore the node
+        
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("restore node:" + originalNodeRef + ", path:" + path);
+        }
+        
+        NodeRef archivedNodeRef = getNodeArchiveService().getArchivedNode(originalNodeRef);
+        RestoreNodeReport report = getNodeArchiveService().restoreArchivedNode(archivedNodeRef);
+        
+        if(report.getStatus().isSuccess())
+        {
+            NodeRef newNodeRef = report.getRestoredNodeRef();
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("node has been restored");
+            }
+            
+            return openFile(sess, tree, rootNode, path, OpenFileMode.READ_WRITE, true);
+        }
+        else
+        {
+            return createFile(rootNode, path, allocationSize);
+        }
+    }
+
+    public void setNodeArchiveService(NodeArchiveService nodeArchiveService)
+    {
+        this.nodeArchiveService = nodeArchiveService;
+    }
+
+    public NodeArchiveService getNodeArchiveService()
+    {
+        return nodeArchiveService;
     }
 }

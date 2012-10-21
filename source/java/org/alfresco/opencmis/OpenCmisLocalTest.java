@@ -70,6 +70,7 @@ public class OpenCmisLocalTest extends TestCase
         @Override
         public void init(Map<String, String> parameters)
         {
+        	serviceFactory.init(parameters);
         }
 
         @Override

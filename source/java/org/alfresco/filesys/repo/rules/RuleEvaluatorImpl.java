@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
+import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -81,6 +82,7 @@ public class RuleEvaluatorImpl implements RuleEvaluator
     /**
      * Evaluate the scenarios against the current operation
      * @param operation the operation to be evaluated
+     * @return the command to execute that operation
      */
     public Command evaluate(EvaluatorContext context, Operation operation)
     {
@@ -88,13 +90,14 @@ public class RuleEvaluatorImpl implements RuleEvaluator
         {
             logger.debug("evaluate:" + operation);
         }
-        
-         
+               
         /**
          * For each scenario, do we need to create a new scenario 
          * instance for the specified operation ?
-         */   
-        // currentScenarioInstances needs to be protected for concurrency.       
+         */
+        List<ScenarioResult> results = new ArrayList<ScenarioResult>(5);
+        
+        // currentScenarioInstances needs to be protected for concurrency.
         synchronized (context.getScenarioInstances())
         {
             for(Scenario scenario : scenarios)
@@ -111,8 +114,6 @@ public class RuleEvaluatorImpl implements RuleEvaluator
              */
             Iterator<ScenarioInstance> i = context.getScenarioInstances().iterator();
 
-            Map<Ranking, Command> executors = new HashMap<Ranking, Command>();
-
             while(i.hasNext())
             {
 
@@ -124,7 +125,8 @@ public class RuleEvaluatorImpl implements RuleEvaluator
                 Command executor = scenario.evaluate(operation);
                 if(executor != null)
                 {
-                    executors.put(scenario.getRanking(), executor);
+                    results.add(new ScenarioResult(scenario, executor));
+
                 }
                 if(scenario.isComplete())
                 {
@@ -136,29 +138,53 @@ public class RuleEvaluatorImpl implements RuleEvaluator
                     i.remove();
                 }
             }
-
-            // HOW to arbitrate between many scenario executors
-            // Idea : Scenarios have rankings.
-            Command ex = executors.get(Ranking.HIGH);
-            if (ex != null) 
-            {
-                logger.debug("returning high priority executor");
-                return ex;
-            }
-            ex = executors.get(Ranking.MEDIUM);
-            if (ex != null) 
-            {
-                logger.debug("returning medium priority executor");
-                return ex;
-            }
-            ex = executors.get(Ranking.LOW);
-            if (ex != null) 
-            {
-                logger.debug("returning low priority executor");
-                return ex;
-            }
+        } // End of syncronized block
+      
+        // results contains the results of the evaluator
+        
+        Map<Ranking, ScenarioResult> executors = new HashMap<Ranking, ScenarioResult>();
+        
+        // HOW to arbitrate between many scenario executors
+        // Idea : Scenarios have rankings.
+        for(ScenarioResult result : results)
+        {
+            executors.put(result.scenario.getRanking(), result);
         }
-
+        
+        ScenarioResult ex = executors.get(Ranking.HIGH);
+        if (ex != null) 
+        {
+            if(ex.scenario instanceof DependentInstance)
+            {
+                DependentInstance di = (DependentInstance)ex.scenario;
+                for(ScenarioResult looser : results)
+                {
+                    if(ex != looser)
+                    {
+                        Command c = di.win(results, ex.command);
+                        logger.debug("returning merged high priority executor");
+                        
+                        return c;
+                    }
+                }
+            }
+                
+            logger.debug("returning high priority executor");
+            return ex.command;
+        }
+        ex = executors.get(Ranking.MEDIUM);
+        if (ex != null) 
+        {
+            logger.debug("returning medium priority executor");
+            return ex.command;
+        }
+        ex = executors.get(Ranking.LOW);
+        if (ex != null) 
+        {
+            logger.debug("returning low priority executor");
+            return ex.command;
+        }
+        
         return null;
     }
 
@@ -179,5 +205,4 @@ public class RuleEvaluatorImpl implements RuleEvaluator
         
         return impl;
     } 
-   
 }

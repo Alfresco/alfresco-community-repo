@@ -628,18 +628,16 @@
             alf_store
     </select>
     
-    <select id="select_StoreRootNodeById" parameterType="Store" resultMap="result_StoreRootNode">
+    <select id="select_StoreByRef" parameterType="Store" resultMap="result_StoreRef">
         select
-            node.id             as id,
-            store.id            as storeId,
-            store.protocol      as storeProtocol,
-            store.identifier    as storeIdentifier,
-            node.uuid           as uuid
+            store.id            as id,
+            store.protocol      as protocol,
+            store.identifier    as identifier
         from
             alf_store store
-            join alf_node node on (store.root_node_id = node.id)
         where
-            store.id = #{id}
+            store.protocol = #{protocol} and
+            store.identifier = #{identifier}
     </select>
     
     <select id="select_StoreRootNodeByRef" parameterType="Store" resultMap="result_StoreRootNode">

@@ -196,10 +196,12 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             // Server side exceptions
             if (status >= 500 && status <= 599)
             {
+                logger.error("executeRequest: remote connector server exception: ["+status+"] "+statusText);
                 throw new RemoteConnectorServerException(status, statusText);
             }
             if(status == Status.STATUS_PRECONDITION_FAILED)
             {
+                logger.error("executeRequest: remote connector client exception: ["+status+"] "+statusText);
                 throw new RemoteConnectorClientException(status, statusText, response);
             }
             else
@@ -208,16 +210,18 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
                 if (httpRequest != null)
                 {
                     // Response wasn't too big and is available, supply it
+                    logger.error("executeRequest: remote connector client exception: ["+status+"] "+statusText);
                     throw new RemoteConnectorClientException(status, statusText, response);
                 }
                 else
                 {
                     // Response was too large, report without it
+                    logger.error("executeRequest: remote connector client exception: ["+status+"] "+statusText);
                     throw new RemoteConnectorClientException(status, statusText, null);
                 }
             }
         }
-
+        
         // If we get here, then the request/response was all fine
         // So, return our created response
         return response;

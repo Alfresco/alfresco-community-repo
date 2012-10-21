@@ -685,6 +685,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     continue;
                 }
 
+                if(isFolder && type.getAlfrescoClass().equals(ContentModel.TYPE_SYSTEM_FOLDER))
+                {
+                	continue;
+                }
+
                 // create a child CMIS object
                 ObjectInFolderDataImpl object = new ObjectInFolderDataImpl();
                 CMISNodeInfo ni = createNodeInfo(child.getChildRef());

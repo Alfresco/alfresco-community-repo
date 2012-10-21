@@ -55,6 +55,26 @@ public interface RepositoryDiskInterface
     public NetworkFile createFile(NodeRef rootNode, String Path, long allocationSize) throws IOException;
 
     /**
+     * RestoreFile.
+     * 
+     * Either restores the file or creates a new one.
+     * 
+     * @param rootNode
+     * @param fromPath - the source node
+     * @param toPath - the target node
+     * @param allocationSize size to allocate for new file
+     * @param originalNodeRef
+     * @throws FileNotFoundException 
+     */
+    public NetworkFile restoreFile(SrvSession sess,
+            TreeConnection tree, 
+            NodeRef rootNode, 
+            String path,
+            long allocationSize, 
+            NodeRef originalNodeRef) throws IOException;
+
+
+    /**
      * 
      * @param session // temp until refactor
      * @param tree // temp until refactor
@@ -75,6 +95,18 @@ public interface RepositoryDiskInterface
      * @throws FileNotFoundException 
      */
     public void closeFile(NodeRef rootNode, String Path, NetworkFile file) throws IOException;
+    
+    
+    /**
+     * Delete file
+     * @param session
+     * @param tree
+     * @param rootNode
+     * @param path
+     * @return NodeRef of file deleted or null if no file deleted
+     * @throws IOException
+     */
+    public NodeRef deleteFile2(final SrvSession session, final TreeConnection tree, NodeRef rootNode, String path) throws IOException;
     
     /**
      * 

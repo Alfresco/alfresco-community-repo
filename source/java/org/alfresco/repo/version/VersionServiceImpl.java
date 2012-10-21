@@ -1310,4 +1310,16 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
             }
         }
     }
+
+	@Override
+    public boolean isAVersion(NodeRef nodeRef)
+    {
+		throw new UnsupportedOperationException();
+    }
+	
+	@Override
+    public boolean isVersioned(NodeRef nodeRef)
+    {
+        return this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+    }
 }

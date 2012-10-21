@@ -83,6 +83,13 @@ public interface NodeDAO extends NodeBulkLoader
      */
     
     /**
+     * Get the ID-ref pair for a store
+     * 
+     * @return                  Returns the ID-reference pair for the store or <tt>null</tt> if it doesn't exist
+     */
+    public Pair<Long, StoreRef> getStore(StoreRef storeRef);
+    
+    /**
      * Fetch a list of all stores in the repository
      * 
      * @return                  Returns a list of stores

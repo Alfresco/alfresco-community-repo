@@ -29,6 +29,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
@@ -114,5 +115,19 @@ public class NodeDAOTest extends TestCase
     {
         List<NodeIdAndAclId> acls = nodeDAO.getPrimaryChildrenAcls(1L);
         assertNotNull("Null list", acls);
+    }
+    
+    public void testGetStoreId() throws Throwable
+    {
+        // Get all stores
+        List<Pair<Long, StoreRef>> storePairs = nodeDAO.getStores();
+        // Check each one
+        for (Pair<Long, StoreRef> storePair : storePairs)
+        {
+            StoreRef storeRef = storePair.getSecond();
+            // Check
+            Pair<Long, StoreRef> checkStorePair = nodeDAO.getStore(storeRef);
+            assertEquals("Store pair did not match. ", storePair, checkStorePair);
+        }
     }
 }

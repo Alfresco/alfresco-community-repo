@@ -31,13 +31,12 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
+import org.alfresco.repo.version.common.VersionHistoryImpl.VersionComparatorAsc;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
-import org.alfresco.repo.version.common.VersionHistoryImpl.VersionComparatorAsc;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -1385,4 +1384,33 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             }
         }
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.version.VersionService#isAVersion(org.alfresco.service.cmr.repository.NodeRef)
+     */
+	@Override
+    public boolean isAVersion(NodeRef nodeRef)
+    {
+		NodeRef realNodeRef = nodeRef;
+        if(nodeRef.getStoreRef().getProtocol().equals(VersionBaseModel.STORE_PROTOCOL))
+        {
+        	realNodeRef = VersionUtil.convertNodeRef(nodeRef);        	
+        }
+        return this.dbNodeService.hasAspect(realNodeRef, Version2Model.ASPECT_VERSION);
+    }
+	
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.version.VersionService#isVersioned(org.alfresco.service.cmr.repository.NodeRef)
+     */
+	@Override
+    public boolean isVersioned(NodeRef nodeRef)
+    {
+		NodeRef realNodeRef = nodeRef;
+        if(nodeRef.getStoreRef().getProtocol().equals(VersionBaseModel.STORE_PROTOCOL))
+        {
+        	realNodeRef = VersionUtil.convertNodeRef(nodeRef);        	
+        }
+        return this.dbNodeService.hasAspect(realNodeRef, ContentModel.ASPECT_VERSIONABLE);
+    }
+
 }

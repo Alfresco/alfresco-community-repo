@@ -192,6 +192,8 @@ public abstract class BaseAuthenticationFilter
                 && (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive()))
         {
             userId = remoteUserMapper.getRemoteUser(httpServletRequest);
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Found a remote user: " + userId);
         }
         
         String sessionAttrib = getUserAttributeName(); 
@@ -201,12 +203,15 @@ public abstract class BaseAuthenticationFilter
         {
             try
             {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("Found a session user: " + sessionUser.getUserName());
                 authenticationService.validate(sessionUser.getTicket());
                 setExternalAuth(session, externalAuth);
             }
             catch (AuthenticationException e)
             {
-                // The ticket may have expired or the person could have been removed
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("The ticket may have expired or the person could have been removed, invalidating session.", e);
                 invalidateSession(httpServletRequest);
                 sessionUser = null;
             }
@@ -214,9 +219,12 @@ public abstract class BaseAuthenticationFilter
         
         if (userId != null)
         {
-            // We have a previously-cached user with the wrong identity - replace them
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("We have a previously-cached user with the wrong identity - replace them.");
             if (sessionUser != null && !sessionUser.getUserName().equals(userId))
             {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("Removing the session user, invalidating session.");
                 session.removeAttribute(sessionAttrib);
                 session.invalidate();
                 sessionUser = null;
@@ -225,6 +233,8 @@ public abstract class BaseAuthenticationFilter
             if (sessionUser == null)
             {
                // If we have been authenticated by other means, just propagate through the user identity
+               if (getLogger().isDebugEnabled())
+                   getLogger().debug("Propagating through the user identity: " + userId);
                authenticationComponent.setCurrentUser(userId);
                session = httpServletRequest.getSession();
 
@@ -319,6 +329,8 @@ public abstract class BaseAuthenticationFilter
     protected SessionUser createUserEnvironment(HttpSession session, final String userName, final String ticket, boolean externalAuth)
             throws IOException, ServletException
     {
+        if (getLogger().isDebugEnabled())
+            getLogger().debug("Create the User environment for: " + userName);
         SessionUser user = doInSystemTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>()
         {
             public SessionUser execute() throws Throwable
@@ -400,6 +412,8 @@ public abstract class BaseAuthenticationFilter
     protected boolean handleLoginForm(HttpServletRequest req, HttpServletResponse res) throws IOException,
             ServletException
     {
+        if (getLogger().isDebugEnabled())
+            getLogger().debug("Handling the login form.");
         // Invalidate current session
         HttpSession session = req.getSession(false);
         if (session != null)
@@ -424,12 +438,16 @@ public abstract class BaseAuthenticationFilter
 
             if (username == null || username.length() == 0)
             {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("Username not specified in the login form.");
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Username not specified");
                 return false;
             }
 
             if (password == null)
             {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("Password not specified in the login form.");
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Password not specified");
                 return false;
             }
@@ -442,10 +460,14 @@ public abstract class BaseAuthenticationFilter
         }
         catch (AuthenticationException e)
         {
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Login failed", e);
             res.sendError(HttpServletResponse.SC_FORBIDDEN, "Login failed");
         }
         catch (JSONException jErr)
         {
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Unable to parse JSON POST body", jErr);
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unable to parse JSON POST body: " + jErr.getMessage());
         }
         return false;

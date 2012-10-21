@@ -319,6 +319,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         		if (checkForTicketParameter(context, req, resp))
         		{
                     // Filter validate hook
+                    if (getLogger().isDebugEnabled())
+                        getLogger().debug("Authenticated with a ticket parameter.");
                     onValidate( context, req, resp);
 
                     // Chain to the next filter
@@ -398,13 +400,15 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                             {
                                 // Allow the user to access the requested page
                                 onValidate(context, req, resp);
-                                
+                                if (getLogger().isDebugEnabled())
+                                    getLogger().debug("Authenticated through Kerberos.");
                                 return true;
                             }
                             else
                             {
                                 // Send back a request for SPNEGO authentication
-                                
+                                if (getLogger().isDebugEnabled())
+                                    getLogger().debug("Failed SPNEGO authentication.");
                             	restartLoginChallenge(context, req, resp);
                             	return false;
                             }
@@ -413,6 +417,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                         {
                             // Even though the user successfully authenticated, the ticket may not be granted, e.g. to
                             // max user limit
+                            if (getLogger().isDebugEnabled())
+                                getLogger().debug("Validate failed.", ex);
                             onValidateFailed(context, req, resp, httpSess);
                             return false;
                         }                        
@@ -462,13 +468,16 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
     {
         // Process the callback list
-        
+        if (getLogger().isDebugEnabled())
+            getLogger().debug("Processing the JAAS callback list of " + callbacks.length + " items.");
         for (int i = 0; i < callbacks.length; i++)
         {
             // Request for user name
             
             if (callbacks[i] instanceof NameCallback)
             {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("Request for user name.");
                 NameCallback cb = (NameCallback) callbacks[i];
                 cb.setName(m_accountName);
             }
@@ -476,6 +485,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             // Request for password
             else if (callbacks[i] instanceof PasswordCallback)
             {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("Request for password.");
                 PasswordCallback cb = (PasswordCallback) callbacks[i];
                 cb.setPassword(m_password.toCharArray());
             }
@@ -484,6 +495,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             
             else if (callbacks[i] instanceof RealmCallback)
             {
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("Request for realm.");
                 RealmCallback cb = (RealmCallback) callbacks[i];
                 cb.setText(m_krbRealm);
             }
@@ -585,6 +598,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         HttpSession session = req.getSession(false);
         if (session != null)
         {
+            if (getLogger().isDebugEnabled())
+                getLogger().debug("Clearing session.");
             session.invalidate();
         }
         logonStartAgain(context, req, resp);
@@ -600,6 +615,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
      */
     public void logonStartAgain(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException
 	{
+        if (getLogger().isDebugEnabled())
+            getLogger().debug("Issuing login challenge to browser.");
         // Force the logon to start again
         resp.setHeader("WWW-Authenticate", "Negotiate");
         resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

@@ -264,6 +264,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
             // If this isn't the same ticket, invalidate the session
             if (user != null && !ticket.equals(user.getTicket()))
             {
+               if (getLogger().isDebugEnabled())
+                   getLogger().debug("The ticket doesn't match, invalidate the session.");
                invalidateSession(req);
                user = null;
             }
@@ -271,6 +273,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
             // If we don't yet have a valid cached user, validate the ticket and create one
             if (user == null)
             {
+               if (getLogger().isDebugEnabled())
+                   getLogger().debug("There is no valid cached user, validate the ticket and create one.");
                authenticationService.validate(ticket);
                user = createUserEnvironment(req.getSession(), authenticationService.getCurrentUserName(),
                      authenticationService.getCurrentTicket(), true);
@@ -413,6 +417,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     protected synchronized String getServerName()
     {
         // Get the local server name, try the file server config first
+        if (getLogger().isDebugEnabled())
+            getLogger().debug("Searching for local server name.");
         String srvName = null;
         if (serverConfiguration != null)
         {
@@ -431,6 +437,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         }
 
         m_lastResolvedServerName = null;
+        if (getLogger().isDebugEnabled())
+            getLogger().debug("Found server name in the file server configuration: " + srvName);
         m_lastConfiguredServerName = srvName;
         if (serverConfiguration != null)
         {
@@ -441,7 +449,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
                     InetAddress resolved = InetAddress.getByName(m_lastConfiguredServerName);
                     if (resolved == null)
                     {
-                        // Failed to resolve the configured name
+                        if (getLogger().isDebugEnabled())
+                            getLogger().debug("Failed to resolve the configured name.");
 
                         m_lastResolvedServerName = serverConfiguration.getLocalServerName(true);
                     }
@@ -478,6 +487,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
 
                 m_lastResolvedServerName = InetAddress.getLocalHost().getHostName();
 
+                if (getLogger().isInfoEnabled())
+                    getLogger().info("Found FQDN " + m_lastResolvedServerName);
                 // Strip any domain name
 
                 int pos = m_lastResolvedServerName.indexOf(".");

@@ -717,6 +717,9 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
      */
     protected final boolean checkNTLMv1(String md4hash, byte[] challenge, Type3NTLMMessage type3Msg, boolean checkLMHash)
     {
+        if (getLogger().isDebugEnabled())
+            getLogger().debug(("Perform an NTLMv1 hashed password check."));
+        
         // Generate the local encrypted password using the challenge that was sent to the client
         byte[] p21 = new byte[21];
         byte[] md4byts = m_md4Encoder.decodeHash(md4hash);
@@ -747,12 +750,14 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
 
             if (i == clientHash.length)
             {
-                // Hashed passwords match
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug(("Hashed passwords match."));
                 return true;
             }
         }
 
-        // Hashed passwords do not match
+        if (getLogger().isDebugEnabled())
+            getLogger().debug(("Hashed passwords do not match."));
         return false;
     }
 
@@ -766,6 +771,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
      */
     protected final boolean checkNTLMv2(String md4hash, byte[] challenge, Type3NTLMMessage type3Msg)
     {
+        if (getLogger().isDebugEnabled())
+            getLogger().debug(("Perform an NTLMv2 check."));
     	boolean ntlmv2OK = false;
     	boolean lmv2OK   = false;
     	
@@ -792,8 +799,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
 
                 if (i == clientHmac.length)
                 {
-                    //  HMAC matches the client, user authenticated
-                	
+                    if (getLogger().isDebugEnabled())
+                        getLogger().debug(("HMAC matches the client, user authenticated."));
                 	ntlmv2OK = true;
                 }
             }
@@ -829,7 +836,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
 	
 	                    if (i == lmv2Hmac.length)
 	                    {
-	                        //  LMv2 HMAC matches the client, user authenticated
+                            if (getLogger().isDebugEnabled())
+                                getLogger().debug(("LMv2 HMAC matches the client, user authenticated."));
 	                    	
 	                        //return true;
 	                    	lmv2OK = true;
@@ -862,6 +870,8 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
      */
     protected final boolean checkNTLMv2SessionKey(String md4hash, byte[] challenge, Type3NTLMMessage type3Msg)
     {
+        if (getLogger().isDebugEnabled())
+            getLogger().debug(("Perform an NTLMv2 session key check."));
         // Create the value to be encrypted by appending the server challenge and client challenge
         // and applying an MD5 digest
         byte[] nonce = new byte[16];
@@ -921,12 +931,13 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
 
             if (i == clientHash.length)
             {
-                //  Hashed password check successful
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug(("Hashed password check successful."));
                 return true;
             }
         }
-
-        // Password check failed
+        if (getLogger().isDebugEnabled())
+            getLogger().debug(("Password check failed."));
         return false;
     }
     

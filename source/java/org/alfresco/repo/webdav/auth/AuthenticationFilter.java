@@ -101,6 +101,9 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
     public void doFilter(ServletContext context, ServletRequest req, ServletResponse resp, FilterChain chain)
             throws IOException, ServletException
     {
+        if (logger.isDebugEnabled())
+            logger.debug("Entering AuthenticationFilter.");
+        
         // Assume it's an HTTP request
 
         HttpServletRequest httpReq = (HttpServletRequest) req;
@@ -111,13 +114,16 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
 
         if (user == null)
         {
+            if (logger.isDebugEnabled())
+                logger.debug("There is no user in the session.");
             // Get the authorization header
             
             String authHdr = httpReq.getHeader("Authorization");
             
             if ( authHdr != null && authHdr.length() > 5 && authHdr.substring(0,5).equalsIgnoreCase("BASIC"))
             {
-                // Basic authentication details present
+                if (logger.isDebugEnabled())
+                    logger.debug("Basic authentication details present in the header.");
                 byte[] encodedString = Base64.decodeBase64(authHdr.substring(5).getBytes());
                 
                 // ALF-13621: Due to browser inconsistencies we have to try a fallback path of encodings
@@ -160,15 +166,18 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                     }
                     catch (CharacterCodingException e)
                     {
-                        // Didn't decode using this charset. Try the next one or fail
+                        if (logger.isDebugEnabled())
+                            logger.debug("Didn't decode using " + decoder.getClass().getName(), e);
                     }
                     catch (AuthenticationException ex)
                     {
-                        // Do nothing, user object will be null
+                        if (logger.isDebugEnabled())
+                            logger.debug("Authentication error ", ex);
                     }
                     catch (NoSuchPersonException e)
                     {
-                        // Do nothing, user object will be null
+                        if (logger.isDebugEnabled())
+                            logger.debug("There is no such person error ", e);
                     }
                 }
             }
@@ -208,7 +217,8 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
             
             if ( user == null)
             {
-                // No user/ticket, force the client to prompt for logon details
+                if (logger.isDebugEnabled())
+                    logger.debug("No user/ticket, force the client to prompt for logon details.");
     
                 httpResp.setHeader("WWW-Authenticate", "BASIC realm=\"Alfresco DAV Server\"");
                 httpResp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

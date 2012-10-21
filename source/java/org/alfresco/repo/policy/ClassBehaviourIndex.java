@@ -213,4 +213,22 @@ import org.alfresco.service.namespace.QName;
         }
     }
 
+    /**
+     * Remove class behaviour
+     * 
+     * @param behaviour
+     */
+    public void removeClassBehaviour(BehaviourDefinition<B> behaviour)
+    {
+        lock.writeLock().lock();
+        try
+        {
+            classMap.remove(behaviour);
+        }
+        finally
+        {
+            lock.writeLock().unlock();
+        }
+    } 
+
 }

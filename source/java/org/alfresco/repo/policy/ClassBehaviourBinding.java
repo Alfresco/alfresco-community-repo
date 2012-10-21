@@ -30,7 +30,7 @@ import org.alfresco.service.namespace.QName;
  * @author David Caruana
  *
  */
-/*package*/ class ClassBehaviourBinding implements BehaviourBinding
+public class ClassBehaviourBinding implements BehaviourBinding
 {
     // The dictionary service
     private DictionaryService dictionary;

@@ -137,6 +137,11 @@ public class PolicyComponentImpl implements PolicyComponent
         return delegate;
     }
 
+    @Override
+    public void removeClassDefinition(BehaviourDefinition<ClassBehaviourBinding> definition)
+    {
+        getClassBehaviourIndex(definition.getPolicy()).removeClassBehaviour(definition);
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.policy.PolicyComponent#registerPropertyPolicy(java.lang.Class)

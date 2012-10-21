@@ -21,7 +21,9 @@ package org.alfresco.repo.googledocs;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -35,6 +37,8 @@ import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
+import org.alfresco.repo.policy.BehaviourDefinition;
+import org.alfresco.repo.policy.ClassBehaviourBinding;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -46,6 +50,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.beans.factory.DisposableBean;
 
 /**
  * Behaviour associated with google editable documents
@@ -55,7 +60,8 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
                                              CheckOutCheckInServicePolicies.OnCheckOut,
                                              CheckOutCheckInServicePolicies.BeforeCheckIn,
                                              CheckOutCheckInServicePolicies.OnCheckIn,
-                                             NodeServicePolicies.BeforeDeleteNodePolicy
+                                             NodeServicePolicies.BeforeDeleteNodePolicy,
+                                             DisposableBean
 {
     /** Policy component */
     private PolicyComponent policyComponent;
@@ -71,6 +77,9 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
     
     /** Content service */
     private ContentService contentService;
+    
+    /** binded behaviours definitions*/
+    private Set<BehaviourDefinition<ClassBehaviourBinding>> behaviours;
     
     /**
      * @param policyComponent   policy component
@@ -117,34 +126,35 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
      */
     public void init()
     {        
+        behaviours = new HashSet<BehaviourDefinition<ClassBehaviourBinding>>();
         // GoogleEditable resource behaviours
-        policyComponent.bindClassBehaviour(OnAddAspectPolicy.QNAME, 
+        behaviours.add(policyComponent.bindClassBehaviour(OnAddAspectPolicy.QNAME, 
                                            GoogleDocsModel.ASPECT_GOOGLEEDITABLE , 
-                                           new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT));        
-        policyComponent.bindClassBehaviour(OnCheckOut.QNAME, 
+                                           new JavaBehaviour(this, "onAddAspect", NotificationFrequency.FIRST_EVENT)));        
+        behaviours.add(policyComponent.bindClassBehaviour(OnCheckOut.QNAME, 
                                            GoogleDocsModel.ASPECT_GOOGLEEDITABLE, 
-                                           new JavaBehaviour(this, "onCheckOut", NotificationFrequency.FIRST_EVENT));
+                                           new JavaBehaviour(this, "onCheckOut", NotificationFrequency.FIRST_EVENT)));
        
         // Google resource behaviours
-        policyComponent.bindClassBehaviour(BeforeCheckIn.QNAME, 
+        behaviours.add(policyComponent.bindClassBehaviour(BeforeCheckIn.QNAME, 
                                            GoogleDocsModel.ASPECT_GOOGLERESOURCE, 
-                                           new JavaBehaviour(this, "beforeCheckIn", NotificationFrequency.FIRST_EVENT));
-        policyComponent.bindClassBehaviour(OnCheckIn.QNAME, 
+                                           new JavaBehaviour(this, "beforeCheckIn", NotificationFrequency.FIRST_EVENT)));
+        behaviours.add(policyComponent.bindClassBehaviour(OnCheckIn.QNAME, 
                                            GoogleDocsModel.ASPECT_GOOGLERESOURCE, 
-                                           new JavaBehaviour(this, "onCheckIn", NotificationFrequency.FIRST_EVENT));
-        policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
+                                           new JavaBehaviour(this, "onCheckIn", NotificationFrequency.FIRST_EVENT)));
+        behaviours.add(policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
                                            GoogleDocsModel.ASPECT_GOOGLERESOURCE,
-                                           new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT));
+                                           new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.FIRST_EVENT)));
         
         // Copy behaviours
-        this.policyComponent.bindClassBehaviour(
+        behaviours.add(policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 GoogleDocsModel.ASPECT_GOOGLEEDITABLE,
-                new JavaBehaviour(this, "getGoogleEditableCopyCallback"));
-        this.policyComponent.bindClassBehaviour(
+                new JavaBehaviour(this, "getGoogleEditableCopyCallback")));
+        behaviours.add(policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
                 GoogleDocsModel.ASPECT_GOOGLERESOURCE,
-                new JavaBehaviour(this, "getGoogleResourceCopyCallback"));    
+                new JavaBehaviour(this, "getGoogleResourceCopyCallback")));    
     }
 
     /**
@@ -270,6 +280,15 @@ public class GoogleEditableAspect implements NodeServicePolicies.OnAddAspectPoli
         public Map<QName, Serializable> getCopyProperties(QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
         {
             return Collections.emptyMap();
+        }
+    }
+
+    @Override
+    public void destroy() throws Exception
+    {
+        for(BehaviourDefinition<ClassBehaviourBinding> definition : behaviours)
+        {
+            policyComponent.removeClassDefinition(definition);
         }
     }
 }

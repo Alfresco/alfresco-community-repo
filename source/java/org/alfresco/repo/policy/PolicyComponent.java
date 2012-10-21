@@ -206,6 +206,13 @@ public interface PolicyComponent
      */
     public BehaviourDefinition<ServiceBehaviourBinding> bindAssociationBehaviour(QName policy, Object service, Behaviour behaviour);
     
+    /**
+     * Unbind behaviour 
+     * 
+     * @param definition
+     */
+    public void removeClassDefinition(BehaviourDefinition<ClassBehaviourBinding> definition);
+    
 }
 
 

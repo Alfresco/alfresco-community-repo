@@ -82,6 +82,23 @@ import java.util.Map;
         
     }
     
+    /**
+     * Remove behavior from map
+     * 
+     * @param behaviourDefinition
+     */
+    public void remove(BehaviourDefinition<B> behaviourDefinition)
+    {
+        B binding = behaviourDefinition.getBinding();
+        List<BehaviourDefinition<B>> existing = index.get(binding);
+        if (existing != null && existing.contains(behaviourDefinition))
+        {
+            existing.remove(behaviourDefinition);
+            size--;
+        }
+
+    } 
+    
     
     /**
      * Gets a Behaviour from the Map

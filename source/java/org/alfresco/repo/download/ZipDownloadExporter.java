@@ -120,7 +120,6 @@ public class ZipDownloadExporter extends BaseExporter
         zipStream.setFallbackToUTF8(true);
     }
 
-
     @Override
     public void startNode(NodeRef nodeRef)
     {
@@ -169,14 +168,11 @@ public class ZipDownloadExporter extends BaseExporter
         }
     }
     
-
     @Override
     public void endNode(NodeRef nodeRef)
     {
         path.pop();
     }
-
-    
 
     @Override
     public void end()
@@ -215,7 +211,6 @@ public class ZipDownloadExporter extends BaseExporter
         return pathBuilder.toString();
     }
 
-    
     /**
      * Copy input stream to output stream
      * 
@@ -228,12 +223,19 @@ public class ZipDownloadExporter extends BaseExporter
     {
         byte[] buffer = new byte[2048 * 10];
         int read = in.read(buffer, 0, 2048 *10);
+        int i = 0;
         while (read != -1)
         {
             output.write(buffer, 0, read);
             done = done + read;
-            updateStatus();
-            checkCancelled();
+            
+            // ALF-16289 - only update the status every 10MB
+            if (i++%500 == 0)
+            {
+                updateStatus();
+                checkCancelled();
+            }
+            
             read = in.read(buffer, 0, 2048 *10);
         }
     }
@@ -247,7 +249,6 @@ public class ZipDownloadExporter extends BaseExporter
             {
                 return downloadStorage.isCancelled(downloadNodeRef);                
             }
-            
         }, true, true);
 
         if ( downloadCancelled == true)
@@ -261,7 +262,6 @@ public class ZipDownloadExporter extends BaseExporter
     {
         transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
-
             @Override
             public Object execute() throws Throwable
             {

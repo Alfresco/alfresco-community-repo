@@ -1127,6 +1127,12 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     public QName addCustomAssocDefinition(String label)
     {
         ParameterCheck.mandatoryString("label", label);
+
+        // If this label is already taken...
+        if (existsLabel(label))
+        {
+            throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, label));
+        }
         
         NodeRef modelRef = getCustomModelRef(""); // defaults to RM_CUSTOM_URI
         M2Model deserializedModel = readCustomContentModel(modelRef);
@@ -1140,12 +1146,6 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNKNOWN_ASPECT, aspectName));
         }
 
-        // If this label is already taken...
-        if (getQNameForClientId(label) != null)
-        {
-            throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, label));
-        }
-        
         QName generatedQName = this.generateQNameFor(label);
         String generatedShortQName = generatedQName.toPrefixString(namespaceService);
         
@@ -1178,6 +1178,18 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         
         return generatedQName;
     }
+
+    private boolean existsLabel(String label)
+    {
+        for (AssociationDefinition associationDefinition : getCustomReferenceDefinitions().values())
+        {
+            if (associationDefinition.getTitle().equalsIgnoreCase(label))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     
     // note: currently RMC custom assocs only
     public QName addCustomChildAssocDefinition(String source, String target)
@@ -1185,6 +1197,12 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         ParameterCheck.mandatoryString("source", source);
         ParameterCheck.mandatoryString("target", target);
         
+        String compoundID = this.getCompoundIdFor(source, target);
+        if (existsLabel(compoundID))
+        {
+           throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, compoundID));
+        }
+
         NodeRef modelRef = getCustomModelRef(""); // defaults to RM_CUSTOM_URI
         M2Model deserializedModel = readCustomContentModel(modelRef);
         
@@ -1197,12 +1215,6 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNKNOWN_ASPECT, aspectName));
         }
 
-        String compoundID = this.getCompoundIdFor(source, target);
-        if (getQNameForClientId(compoundID) != null)
-        {
-            throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, compoundID));
-        }
-        
         M2ClassAssociation customAssoc = customAssocsAspect.getAssociation(compoundID);
         if (customAssoc != null)
         {
@@ -1238,13 +1250,23 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     public QName updateCustomChildAssocDefinition(QName refQName, String newSource, String newTarget)
     {
         String compoundId = getCompoundIdFor(newSource, newTarget);
+        // If this compoundId is already taken...
+        if (existsLabel(compoundId))
+        {
+           throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, compoundId));
+        }
         return persistUpdatedAssocTitle(refQName, compoundId);
     }
     
     // note: currently RMC custom assocs only
     public QName updateCustomAssocDefinition(QName refQName, String newLabel)
     {
-        return persistUpdatedAssocTitle(refQName, newLabel);
+       // If this label is already taken...
+       if (existsLabel(newLabel))
+       {
+          throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, newLabel));
+       }
+       return persistUpdatedAssocTitle(refQName, newLabel);
     }
 
     /**

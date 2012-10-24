@@ -268,7 +268,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
       }
       catch (Exception ex)
       {
-         throw new RuntimeException("Unexpected exception thrown", ex);
+         throw new RuntimeException("Unexpected exception thrown. Please refer to the log files for details.", ex);
       }
       finally
       {

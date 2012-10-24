@@ -2,8 +2,11 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -39,16 +42,29 @@ public class FileRecordAction extends ActionExecuterAbstractBase
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.repo.ref.NodeRef, org.alfresco.repo.ref.NodeRef)
      */
-    public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
+    public void executeImpl(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {
-        NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);
-        try
+        final NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);
+        
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            fileFolderService.move(actionedUponNodeRef, destinationParent, null);
-        }
-        catch (FileNotFoundException e)
-        {
-            // Do nothing
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                try
+                {
+                    fileFolderService.move(actionedUponNodeRef, destinationParent, null);
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new AlfrescoRuntimeException("Could not file record.", e);
+                }
+                
+                return null;
+            }
+            
+        });
+        
+        
     }
 }

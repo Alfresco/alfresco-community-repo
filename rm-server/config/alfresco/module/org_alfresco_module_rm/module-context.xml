@@ -131,6 +131,9 @@
     <!--  Import DOD 5015 -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/dod5015/dod5015-context.xml"/>
     
+    <!--  Import Demo Context -->
+    <import resource="classpath:alfresco/module/org_alfresco_module_rm/demo/demo-context.xml"/>
+    
     <!-- Import the RM identifier service's -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-id-context.xml"/>
     

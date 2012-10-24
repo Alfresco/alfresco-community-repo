@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
+import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -51,6 +52,7 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     /** Record service */
     private RecordService recordService;
     
+    /** Node service */
     private NodeService nodeService;
     
     /**
@@ -69,6 +71,9 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
         this.recordService = recordService;
     }
     
+    /**
+     * @param nodeService   node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -99,6 +104,20 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
                     {
                         // create record from existing document
                         recordService.createRecordFromDocument(filePlan, actionedUponNodeRef);
+                        
+                        // DEMO CODE
+                        if (nodeService.getProperty(actionedUponNodeRef, PROP_ORIGINATOR) == null)
+                        {
+                            nodeService.setProperty(actionedUponNodeRef, PROP_ORIGINATOR, "Michelle Smith");
+                        }
+                        if (nodeService.getProperty(actionedUponNodeRef, PROP_ORIGINATING_ORGANIZATION) == null)
+                        {
+                            nodeService.setProperty(actionedUponNodeRef, PROP_ORIGINATING_ORGANIZATION, "Customer Service");
+                        }
+                        if (nodeService.getProperty(actionedUponNodeRef, PROP_PUBLICATION_DATE) == null)
+                        {
+                            nodeService.setProperty(actionedUponNodeRef, PROP_PUBLICATION_DATE, new Date());
+                        }                    
                         
                         return null;
                     }

@@ -25,9 +25,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,6 +36,7 @@ import org.alfresco.web.bean.repository.User;
 import org.alfresco.web.config.ClientConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigService;
 
 /**
  * Kerberos Authentication Filter Class
@@ -160,6 +159,17 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
             return true;
         }
     }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#writeLoginPageLink(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    @Override
+    protected void writeLoginPageLink(ServletContext context, HttpServletRequest req, HttpServletResponse resp)
+            throws IOException
+    {
+        BaseServlet.redirectToLoginPage(req, resp, context, false);
+    }
+
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#getLogger()

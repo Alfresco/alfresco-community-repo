@@ -224,6 +224,19 @@ public abstract class BaseServlet extends HttpServlet
    public static void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res, ServletContext sc)
          throws IOException
    {
+      redirectToLoginPage(req, res, sc, AuthenticationHelper.getRemoteUser(sc, req) == null);
+   }
+   
+   /**
+    * Redirect to the Login page - saving the current URL which can be redirected back later
+    * once the user has successfully completed the authentication process.
+    * @param sendRedirect allow a redirect status code to be set? If <code>false</code> redirect
+    * will be via markup rather than status code (to allow the status code to be used for handshake
+    * responses etc.
+    */
+   public static void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res, ServletContext sc, boolean sendRedirect)
+         throws IOException
+   {
       // authentication failed - so end servlet execution and redirect to login page
       StringBuilder redirectURL = new StringBuilder(1024).append(req.getContextPath()).append(FACES_SERVLET).append(
             Application.getLoginPage(sc));
@@ -267,7 +280,7 @@ public abstract class BaseServlet extends HttpServlet
       }
       
       // If external authentication isn't in use (e.g. proxied share authentication), it's safe to return a redirect to the client
-      if (AuthenticationHelper.getRemoteUser(sc, req) == null)
+      if (sendRedirect)
       {
          res.sendRedirect(redirectURL.toString());
       }

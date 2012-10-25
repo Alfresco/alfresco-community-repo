@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Get association definitions</shortname>
+   <description>Get the collection of association definitions.</description>
+   <url>/api/defclasses/{prefix}/{shortClassName}/association/{assocprefix}/{assocname}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

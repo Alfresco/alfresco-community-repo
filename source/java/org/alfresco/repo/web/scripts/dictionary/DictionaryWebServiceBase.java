@@ -18,8 +18,12 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -95,6 +99,26 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
         return result;
     }
     
+    /**
+     * @param prefix - prefix for class name
+     * @param shortName - short class name
+     * @return qualified name for class name
+     */
+    protected QName createClassQName(String prefix, String shortName)
+    {
+        QName result = null;
+        String url = namespaceService.getNamespaceURI(prefix);
+        if (url != null && url.length() != 0 && shortName != null && shortName.length() != 0)
+        {
+            QName classQName = QName.createQName(url, shortName);
+            if (dictionaryservice.getClass(classQName) != null)
+            {
+                result = classQName;
+            }
+        }
+        return result;
+    }
+    
     
     /**
      * @param qname
@@ -127,6 +151,26 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     }
     
     /**
+     * @param prefix        prefix for classname as cm
+     * @param shorname      the short class name as person
+     * @return String       the full name in the following format {namespaceuri}shorname
+     */
+    public String getFullNamespaceURI(String prefix, String shorname)
+    {
+        try
+        {
+            String result = null;
+            String url = this.namespaceService.getNamespaceURI(prefix);
+            result = "{" + url + "}" + shorname;
+            return result;
+        }
+        catch (Exception e)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "The exact classname - " + prefix + ":" + shorname + "  parameter has not been provided in the URL");
+        }
+    }
+    
+    /**
      * @param classname - checks whether the classname is valid , gets the classname as input e.g cm_person
      * @return true - if the class is valid , false - if the class is invalid
      */
@@ -143,6 +187,27 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     		//just ignore
     	}
     	return false;
+    }
+    
+    /**
+     * Checks whether the classname is valid
+     * @param prefix - gets the prefix as input e.g cm
+     * @param shorname - gets the short classname as input e.g person
+     * @return true - if the class is valid , false - if the class is invalid
+     */
+    public boolean isValidClassname(String prefix, String shorname) 
+    {
+        QName qname = null;
+        try
+        {
+            qname = QName.createQName(this.getFullNamespaceURI(prefix, shorname));
+            return (dictionaryservice.getClass(qname) != null);
+        }
+        catch (InvalidQNameException e)
+        {
+            //just ignore
+        }
+        return false;
     }
     
     /**
@@ -192,6 +257,26 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     	}
     	return false;
 	}
+    
+    /**
+     * @param prefix as the input
+     * @param shorname as the input
+     * @return true if it is a aspect or false if it is a Type
+     */
+    public boolean isValidTypeorAspect(String prefix, String shorname)
+    {
+        try
+        {
+            QName qname = QName.createQName(this.getFullNamespaceURI(prefix, shorname));
+            return ((this.dictionaryservice.getClass(qname) != null) && 
+                    (this.dictionaryservice.getClass(qname).isAspect()));
+        }
+        catch (InvalidQNameException e)
+        {
+            // ignore
+        }
+        return false;
+    }
     
     /**
      * @param modelname - gets the modelname as the input (modelname is without prefix ie. cm:contentmodel => where modelname = contentmodel)
@@ -267,6 +352,23 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     	return (classfilter.equals(CLASS_FILTER_OPTION_TYPE1) || 
           	    classfilter.equals(CLASS_FILTER_OPTION_TYPE2) || 
           	    classfilter.equals(CLASS_FILTER_OPTION_TYPE3));
+    }
+   
+    /**
+     * Returns dependent collections (properties or associations)
+     * in order that complies to order of class definitions 
+     * @param sortedClassDefs - list of sorted class definitions
+     * @param dependent - collections that depend on class definitions
+     * @return collection of dependent values
+     */
+    protected <T> Collection<T> reorderedValues(List<ClassDefinition> sortedClassDefs,  Map<QName, T> dependent)
+    {
+        Collection<T> result = new ArrayList<T>(sortedClassDefs.size());
+        for (ClassDefinition classDef : sortedClassDefs)
+        {
+            result.add(dependent.get(classDef.getName()));
+        }
+        return result;
     }
    
 }

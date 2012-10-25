@@ -620,7 +620,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         // Force the logon to start again
         resp.setHeader("WWW-Authenticate", "Negotiate");
         resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        writeLoginPageLink(req, resp);
+        writeLoginPageLink(context, req, resp);
         
         resp.flushBuffer();
     }

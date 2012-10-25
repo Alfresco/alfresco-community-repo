@@ -16,35 +16,43 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.web.scripts.dictionary;
+package org.alfresco.repo.web.scripts.dictionary.prefixed;
 
+import org.alfresco.repo.web.scripts.dictionary.AbstractAssociationsGet;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Webscript to get the Classdefinitions for a classname eg. =>cm_author
+ * Webscript to get the Associationdefinitions for a given classname 
+ * 
  * @author Saravanan Sellathurai, Viachaslau Tsikhanovich
  */
 
-public class ClassGet extends AbstractClassGet
-{	
-    private static final String DICTIONARY_CLASS_NAME = "className";
+public class AssociationsGet extends AbstractAssociationsGet
+{
+    private static final String DICTIONARY_PREFIX = "prefix";
+    private static final String DICTIONARY_SHORT_CLASS_NAME = "shortClassName";
     
-    /**
-     * @Override method from AbstractClassGet
-     */
     @Override
     protected QName getClassQname(WebScriptRequest req)
     {
-        String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        //validate the classname and throw appropriate error message
-        if (isValidClassname(className) == false)
+        String prefix = req.getServiceMatch().getTemplateVars().get(DICTIONARY_PREFIX);
+        String shortClassName = req.getServiceMatch().getTemplateVars().get(DICTIONARY_SHORT_CLASS_NAME);
+        
+        //validate classname
+        if (isValidClassname(prefix, shortClassName) == false)
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + prefix + ":" + shortClassName + " - parameter in the URL");
         }
-        return QName.createQName(getFullNamespaceURI(className));
+        return QName.createQName(getFullNamespaceURI(prefix, shortClassName));
+    }
+        
+    @Override
+    protected QName getAssociationQname(String namespacePrefix, String name)
+    {
+        return QName.createQName(getFullNamespaceURI(namespacePrefix, name));
     }
     
 }

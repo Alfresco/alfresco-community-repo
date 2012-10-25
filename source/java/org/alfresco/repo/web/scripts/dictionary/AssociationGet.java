@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,58 +18,45 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /*
  * Webscript to get the Associationdefinition for a given classname and association-name
- * @author Saravanan Sellathurai
+ * @author Saravanan Sellathurai, Viachaslau Tsikhanovich
  */
 
-public class AssociationGet extends DictionaryWebServiceBase
+public class AssociationGet extends AbstractAssociationGet
 {
-    private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
-	private static final String DICTIONARY_CLASS_NAME = "classname";
-	private static final String DICTIONARY_ASSOCIATION_NAME = "assocname";
+    private static final String DICTIONARY_CLASS_NAME = "classname";
+    private static final String DICTIONARY_ASSOCIATION_NAME = "assocname";
     
-    /**
-     * @Override  method from DeclarativeWebScript 
-     */
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    @Override
+    protected QName getAssociationQname(WebScriptRequest req)
     {
-        String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
         String associationName = req.getServiceMatch().getTemplateVars().get(DICTIONARY_ASSOCIATION_NAME);
-        Map<String, Object> model = new HashMap<String, Object>(1);
-        QName classQname = null;
-        QName associationQname = null;
-        
-        //validate the classname
-        if(isValidClassname(className) == false)
-        {
-        	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
-        }
-       
-        classQname = QName.createQName(getFullNamespaceURI(className));
-        
         if(associationName == null)
         {
         	throw new WebScriptException(Status.STATUS_NOT_FOUND, "Missing parameter association name in the URL");
         }
         
-        associationQname = QName.createQName(getFullNamespaceURI(associationName));
+        return QName.createQName(getFullNamespaceURI(associationName));
+    }
+
+    @Override
+    protected QName getClassQname(WebScriptRequest req)
+    {
+        String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
         
-		if(this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname) != null)
-		{
-			model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname));
-		}
+        // validate the classname
+        if (isValidClassname(className) == false)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the classname - " + className + " - parameter in the URL");
+        }
 		
-		return model;
+        return QName.createQName(getFullNamespaceURI(className));
     }
     
 }

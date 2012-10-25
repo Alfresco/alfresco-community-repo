@@ -16,8 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.web.scripts.dictionary;
+package org.alfresco.repo.web.scripts.dictionary.prefixed;
 
+import org.alfresco.repo.web.scripts.dictionary.AbstractPropertiesGet;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -31,23 +32,25 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 public class PropertiesGet extends AbstractPropertiesGet
 {
-    private static final String DICTIONARY_CLASS_NAME = "classname";
-	
+    private static final String DICTIONARY_PREFIX = "prefix";
+    private static final String DICTIONARY_SHORT_CLASS_NAME = "shortClassName";
+    
     @Override
     protected QName getClassQName(WebScriptRequest req)
     {
         QName classQName = null;
-        String className = req.getServiceMatch().getTemplateVars().get(DICTIONARY_CLASS_NAME);
-        if (className != null && className.length() != 0)
+        String prefix = req.getServiceMatch().getTemplateVars().get(DICTIONARY_PREFIX);
+        String shortName = req.getServiceMatch().getTemplateVars().get(DICTIONARY_SHORT_CLASS_NAME);
+        if (prefix != null && prefix.length() != 0 && shortName != null && shortName.length()!= 0)
         {            
-            classQName = createClassQName(className);
+            classQName = createClassQName(prefix, shortName);
             if (classQName == null)
             {
                 // Error 
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + className + " - parameter in the URL");
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Check the className - " + prefix + ":" + shortName + " - parameter in the URL");
             }
         }
         return classQName;
     }
-            
+
 }

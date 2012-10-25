@@ -267,7 +267,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             // Send back a request for NTLM authentication
             sresp.setHeader(WWW_AUTHENTICATE, AUTH_NTLM);
             sresp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            writeLoginPageLink(sreq, sresp);
+            writeLoginPageLink(context, sreq, sresp);
             sresp.flushBuffer();
             return false;
         }
@@ -1033,7 +1033,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             // Force the logon to start again
             res.setHeader(WWW_AUTHENTICATE, AUTH_NTLM);
             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            writeLoginPageLink(req, res);
+            writeLoginPageLink(context, req, res);
         }
         res.flushBuffer();
     }

@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Get property definitions</shortname>
+   <description>Gets the collection of property definitions.</description>
+   <url>/api/defclasses/{prefix}/{shortClassName}/properties?nsp={namespacePrefix?}&amp;n={name?}</url>
+   <url>/api/defproperties?nsp={namespacePrefix?}&amp;n={name?}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

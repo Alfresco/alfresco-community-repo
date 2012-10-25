@@ -345,6 +345,15 @@
       <property name="CMISRenditionService" ref="CMISRenditionService" />
    </bean>
    
+   <!--  Content Info -->
+   <bean id="webscript.org.alfresco.cmis.content.head" class="org.alfresco.repo.web.scripts.content.ContentInfo" parent="webscript">
+      <property name="referenceFactory" ref="CMISReferenceFactory" />
+      <property name="permissionService" ref="PermissionService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="contentService" ref="ContentService" />
+      <property name="mimetypeService" ref="MimetypeService" />
+   </bean>
+   
    <!--  Content Write -->
    <bean id="webscript.org.alfresco.cmis.content.put" class="org.alfresco.repo.web.scripts.content.ContentSet" parent="webscript">
       <property name="referenceFactory" ref="CMISReferenceFactory" />
@@ -815,6 +824,15 @@
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="namespaceService" ref="NamespaceService"/>
    </bean>
+   
+   <!-- api with separated prefixes and names -->
+   <bean id="webscript.org.alfresco.repository.dictionary.prefixed.classes.get" class="org.alfresco.repo.web.scripts.dictionary.prefixed.ClassesGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.prefixed.class.get" class="org.alfresco.repo.web.scripts.dictionary.prefixed.ClassGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.prefixed.subclasses.get" class="org.alfresco.repo.web.scripts.dictionary.prefixed.SubClassesGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.prefixed.property.get" class="org.alfresco.repo.web.scripts.dictionary.prefixed.PropertyGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.prefixed.properties.get" class="org.alfresco.repo.web.scripts.dictionary.prefixed.PropertiesGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.prefixed.association.get" class="org.alfresco.repo.web.scripts.dictionary.prefixed.AssociationGet" parent="webscript.dictionary"/>
+   <bean id="webscript.org.alfresco.repository.dictionary.prefixed.associations.get" class="org.alfresco.repo.web.scripts.dictionary.prefixed.AssociationsGet" parent="webscript.dictionary"/>
    
    <bean id="webscript.org.alfresco.repository.dictionary.classes.get" class="org.alfresco.repo.web.scripts.dictionary.ClassesGet" parent="webscript.dictionary"/>
    <bean id="webscript.org.alfresco.repository.dictionary.class.get" class="org.alfresco.repo.web.scripts.dictionary.ClassGet" parent="webscript.dictionary"/>

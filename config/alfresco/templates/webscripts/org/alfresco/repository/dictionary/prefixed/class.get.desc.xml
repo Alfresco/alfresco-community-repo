@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Get class definitions for classname</shortname>
+   <description>Gets the collection of class definitions for a given classname.</description>
+   <url>/api/defclasses/{prefix}/{shortClassName}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

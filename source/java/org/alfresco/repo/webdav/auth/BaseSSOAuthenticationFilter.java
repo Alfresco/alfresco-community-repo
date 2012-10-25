@@ -522,12 +522,13 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     /**
      * Writes link to login page and refresh tag which cause user
      * to be redirected to the login page.
-     * 
+     *
+     * @param context ServletContext
      * @param resp HttpServletResponse
      * @param httpSess HttpSession
      * @throws IOException
      */
-    protected void writeLoginPageLink(HttpServletRequest req, HttpServletResponse resp) throws IOException
+    protected void writeLoginPageLink(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
         if ( hasLoginPage())
         {

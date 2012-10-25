@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,7 +21,10 @@ package org.alfresco.repo.web.scripts.dictionary;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -174,6 +177,66 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		
 		//assertEquals(2, result.getJSONObject("associations").length());
 	}
+
+    private void validatePropertiesConformity(JSONArray classDefs) throws Exception
+    {
+        final int itemsToTest = 10;
+        for (int i = 0; (i < itemsToTest) && (i < classDefs.length()); ++i)
+        {
+            JSONObject classDef1 = classDefs.getJSONObject(i);
+            JSONArray propertyNames1 = classDef1.getJSONObject("properties").names();
+            // properties of class obtained by api/classes
+            List<String> propertyValues1 = Collections.emptyList();
+            if (propertyNames1 != null)
+            {
+                propertyValues1 = new ArrayList<String>(propertyNames1.length());
+                for (int j = 0; j < propertyNames1.length(); j++)
+                {
+                    propertyValues1.add(propertyNames1.getString(j));
+                }
+            }
+
+            String classUrl = classDef1.getString("url");
+            assertTrue(classUrl.contains(URL_SITES));
+            Response responseFromGetClassDef = sendRequest(new GetRequest(classUrl), 200);
+            JSONObject classDef2 = new JSONObject(responseFromGetClassDef.getContentAsString());
+            assertTrue(classDef2.length() > 0);
+            assertEquals(200, responseFromGetClassDef.getStatus());
+            assertEquals(classDef1.getString("name"), classDef2.getString("name"));
+            JSONArray propertyNames2 = classDef2.getJSONObject("properties").names();
+            // properties of class obtained by api/classes/class
+            List<String> propertyValues2 = Collections.emptyList();
+            if (propertyNames2 != null)
+            {
+                propertyValues2 = new ArrayList<String>(propertyNames2.length());
+                for (int j = 0; j < propertyNames2.length(); j++)
+                {
+                    propertyValues2.add(propertyNames2.getString(j));
+                }
+            }
+
+            Response responseFromGetPropertiesDef = sendRequest(new GetRequest(classUrl + "/properties"), 200);
+            JSONArray propertiesDefs = new JSONArray(responseFromGetPropertiesDef.getContentAsString());
+            assertEquals(200, responseFromGetClassDef.getStatus());
+            // properties of class obtained by api/classes/class/properties
+            List<String> propertyValues3 = new ArrayList<String>(propertiesDefs.length());
+            for (int j = 0; j < propertiesDefs.length(); j++)
+            {
+                propertyValues3.add(propertiesDefs.getJSONObject(j).getString("name"));
+            }
+
+            assertEquivalenceProperties(propertyValues1, propertyValues2);
+            assertEquivalenceProperties(propertyValues2, propertyValues3);
+        }
+    }
+
+    private void assertEquivalenceProperties(List<String> propertyValues1, List<String> propertyValues2)
+    {
+        if ((propertyValues1.size() != propertyValues2.size()) || !propertyValues1.containsAll(propertyValues2))
+        {
+            fail("Wrong properties in classes");
+        }
+    }
 
 	public void testGetPropertyDef() throws Exception
 	{
@@ -947,5 +1010,16 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		assertEquals(404,response.getStatus());
 		
 	}
+	
+    public void testGetClasses() throws Exception
+    {
+        GetRequest req = new GetRequest(URL_SITES);
+        Response response = sendRequest(req, 200);
+        JSONArray result = new JSONArray(response.getContentAsString());
+
+        assertTrue(result.length() > 0);
+        assertEquals(200, response.getStatus());
+        validatePropertiesConformity(result);
+    }
 	
 }

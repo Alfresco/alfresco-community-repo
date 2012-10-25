@@ -1,0 +1,33 @@
+<webscript>
+  <shortname>Head Content</shortname>
+  <description> Head method for the specified document.</description>
+  
+  <!-- alfresco style -->
+  <!-- maybe need to add many paths, like in content.get.desc.xml -->
+  <url>/api/node/content{property}/{store_type}/{store_id}/{id}?a={attach?}&amp;streamId={streamId?}</url>
+  
+  <args>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+    <arg>
+        <shortname>property</shortname>
+        <description>the name of the content property to retrieve content from</description>
+        <default>cm:content</default>
+    </arg>
+    <arg>
+        <shortname>attach</shortname>
+        <description>if true, force download of content as attachment</description>
+        <default>false</default>
+    </arg>
+    <arg>
+        <shortname>streamId</shortname>
+        <description>if provided, download the rendition of the content as identified by the stream id</description>
+    </arg>
+  </args>
+  
+  <format default="">argument</format>
+  <authentication>guest</authentication>
+  <transaction allow="readonly"/>
+</webscript>

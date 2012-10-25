@@ -240,6 +240,13 @@ public class ModuleManagementTool implements LogOutput
             // Try to find an installed module by the ID
             ModuleDetails installedModuleDetails = warHelper.getModuleDetailsOrAlias(warFile, installingModuleDetails);
             
+            //Check module directory exists
+            TFile moduleInstallDirectory = new TFile(warFileLocation + WarHelper.MODULE_NAMESPACE_DIR+ "/" + installingId);
+            if (preview == false  && moduleInstallDirectory.exists() == false)
+            {
+            	moduleInstallDirectory.mkdir();
+            }       
+            
             uninstallIfNecessary(warFileLocation, installedModuleDetails, preview, forceInstall, installingVersion);
             
             outputVerboseMessage("Adding files relating to version '" + installingVersion + "' of module '" + installingId + "'");

@@ -85,7 +85,7 @@ public class ModuleManagementToolTest extends TestCase
         installed0.load();
         assertNotNull(installed0);
         assertEquals(9, installed0.getAdds().size());
-        assertEquals(1, installed0.getMkdirs().size());
+        //assertEquals(1, installed0.getMkdirs().size());
 
         // Try and install same version
         try
@@ -168,7 +168,11 @@ public class ModuleManagementToolTest extends TestCase
         assertNotNull(warDirectory);
         assertNotNull(ampDirectory);  
         this.manager.installModule(ampDirectory, warDirectory);
-
+        
+        warDirectory = extractToDir(".war", "module/share-4.2.a.war");
+        assertNotNull(warDirectory);
+        String ampV2Location = getFileLocation(".amp", "module/test_v6.amp");
+        this.manager.installModule(ampV2Location, warDirectory);
     }
     
     public void testDependencySuccess() throws Exception

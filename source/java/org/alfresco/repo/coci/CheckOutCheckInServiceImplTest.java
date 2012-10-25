@@ -847,6 +847,27 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         }
     }
 
+    public void testCheckInLockableAspectDoesntCopies_ALF16194()
+    {
+        // Check-out nodeRef
+        NodeRef workingCopy = this.cociService.checkout(
+                this.nodeRef, 
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("workingCopy"));
+        assertNotNull(workingCopy);
+        
+        // Check-in 
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version");      
+        cociService.checkin(workingCopy, versionProperties);
+        
+        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+        {
+            fail("Lockable aspect should not be copied from the working copy to the original document");
+        }
+    }
+    
     private NodeRef createFolderWithPermission(NodeRef parent, String username, String permission)
     {
         // Authenticate as system user because the current user should not be node owner

@@ -319,11 +319,15 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 public void process(String siteName) throws Throwable
                 {
                     // get the Site NodeRef
-                    NodeRef siteRef = getSiteNodeRef(siteName);
-                    if (siteRef != null)
+                    SiteInfo siteInfo = AVMToADMRemoteStorePatch.this.siteService.getSite(siteName);
+
+                    // ALF-16256: We've actually looked up the site by case insensitive name. But there may actually be
+                    // paths in existence for the same site name but with different cases. We are only interested in the
+                    // site whose name matches EXACTLY.
+                    if (siteInfo != null && siteInfo.getShortName().equals(siteName))
                     {
                         // create the 'surf-config' folder for the site and cache the NodeRef to it
-                        NodeRef surfConfigRef = getSurfConfigNodeRef(siteRef);
+                        NodeRef surfConfigRef = getSurfConfigNodeRef(siteInfo.getNodeRef());
                         siteReferenceCache.put(siteName, surfConfigRef);
                         
                         // pre-create folders that may cause contention later during multi-threaded batch processing
@@ -596,17 +600,6 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 retryPaths.put(avmNode.getPath(), avmNode);
             }
         }
-    }
-    
-    /**
-     * @param shortName     Site shortname
-     * 
-     * @return the given Site folder node reference
-     */
-    private NodeRef getSiteNodeRef(String shortName)
-    {
-        SiteInfo siteInfo = this.siteService.getSite(shortName); 
-        return siteInfo != null ? siteInfo.getNodeRef() : null;
     }
     
     /**

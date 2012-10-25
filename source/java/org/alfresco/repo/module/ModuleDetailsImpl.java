@@ -32,7 +32,6 @@ import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VersionNumber;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Module details implementation.
@@ -283,7 +282,7 @@ public class ModuleDetailsImpl implements ModuleDetails
         }
         if (editions != null)
         {
-            properties.setProperty(PROP_EDITIONS, StringUtils.join(editions,","));
+            properties.setProperty(PROP_EDITIONS, join(editions.toArray(new String[editions.size()]), ','));
         }
         if (dependencies.size() > 0)
         {
@@ -409,6 +408,49 @@ public class ModuleDetailsImpl implements ModuleDetails
         this.editions = editions;
     }
 
+    /**
+	 * Grateful received from Apache Commons StringUtils class
+	 * 
+	 */
+    private static String join(Object[] array, char separator) {
+       if (array == null) {
+            return null;
+       }
+       return join(array, separator, 0, array.length);
+    }
+    
+    /**
+	 * Grateful received from Apache Commons StringUtils class
+	 * 
+	 * @param array
+	 * @param separator
+	 * @param startIndex
+	 * @param endIndex
+	 * @return
+	 */
+    private static String join(Object[] array, char separator, int startIndex, int endIndex) {
+		if (array == null) {
+			return null;
+		}
+		int bufSize = (endIndex - startIndex);
+		if (bufSize <= 0) {
+			return "";
+		}
+
+		bufSize *= ((array[startIndex] == null ? 16 : array[startIndex].toString().length()) + 1);
+		StringBuffer buf = new StringBuffer(bufSize);
+
+		for (int i = startIndex; i < endIndex; i++) {
+			if (i > startIndex) {
+				buf.append(separator);
+			}
+			if (array[i] != null) {
+				buf.append(array[i]);
+			}
+		}
+		return buf.toString();
+	}
+	 
     /**
      * @author Derek Hulley
      */

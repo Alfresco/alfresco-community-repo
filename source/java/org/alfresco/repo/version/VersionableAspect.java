@@ -380,9 +380,9 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                     
                     // If a major version is requested, indicate it in the versionProperties map
                     String versionType = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_TYPE);
-                    if (versionType != null && versionType.equals(VersionType.MAJOR.toString()))
+                    if (versionType == null  || !versionType.equals(VersionType.MINOR.toString()))
                     {
-                    	versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
                     }
                     
                     versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_INITIAL_VERSION));

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,8 +24,10 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -49,6 +51,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
@@ -107,6 +110,8 @@ public class FileFolderServiceImplTest extends TestCase
     private PermissionService permissionService;
     private TenantService tenantService;
     private MutableAuthenticationService authenticationService;
+    private CheckOutCheckInService cociService;
+    
     private DictionaryDAO dictionaryDAO;
     private UserTransaction txn;
     private NodeRef rootNodeRef;
@@ -124,6 +129,7 @@ public class FileFolderServiceImplTest extends TestCase
         authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         tenantService = (TenantService) ctx.getBean("tenantService");
+        cociService = serviceRegistry.getCheckOutCheckInService();
         
         // start the transaction
         txn = transactionService.getUserTransaction();
@@ -266,37 +272,6 @@ public class FileFolderServiceImplTest extends TestCase
 		}
     }
     
-    public void testListPage() throws Exception
-    {
-        // sanity checks only (see also GetChildrenCannedQueryTest)
-        
-        PagingRequest pagingRequest = new PagingRequest(100, null);
-        PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, null, pagingRequest);
-        
-        assertNotNull(pagingResults);
-        assertFalse(pagingResults.hasMoreItems());
-        assertTrue((pagingResults.getQueryExecutionId() != null) && (pagingResults.getQueryExecutionId().length() > 0));
-        assertNull(pagingResults.getTotalResultCount());
-        
-        List<FileInfo> files = pagingResults.getPage();
-        
-        // check
-        String[] expectedNames = new String[]
-        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
-        checkFileList(files, 2, 3, expectedNames);
-        
-        
-        // empty list if skip count greater than number of results (ALF-7884)
-        pagingRequest = new PagingRequest(1000, 3, null);
-        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, null, pagingRequest);
-        
-        assertNotNull(pagingResults);
-        assertFalse(pagingResults.hasMoreItems());
-        assertEquals(0, pagingResults.getPage().size());
-        
-        // TODO add more here
-    }
-
     public void testShallowFilesOnlyList() throws Exception
     {
         List<FileInfo> files = fileFolderService.listFiles(workingRootNodeRef);
@@ -1373,7 +1348,38 @@ public class FileFolderServiceImplTest extends TestCase
         assertEquals(1, pagingResults.getPage().size());
     }
     
-    public void testListHiddenFiles()
+    public void testListPage() throws Exception
+    {
+        // sanity checks only (see also GetChildrenCannedQueryTest)
+        
+        PagingRequest pagingRequest = new PagingRequest(100, null);
+        PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, null, pagingRequest);
+        
+        assertNotNull(pagingResults);
+        assertFalse(pagingResults.hasMoreItems());
+        assertTrue((pagingResults.getQueryExecutionId() != null) && (pagingResults.getQueryExecutionId().length() > 0));
+        assertNull(pagingResults.getTotalResultCount());
+        
+        List<FileInfo> files = pagingResults.getPage();
+        
+        // check
+        String[] expectedNames = new String[]
+        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+        checkFileList(files, 2, 3, expectedNames);
+        
+        
+        // empty list if skip count greater than number of results (ALF-7884)
+        pagingRequest = new PagingRequest(1000, 3, null);
+        pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, null, pagingRequest);
+        
+        assertNotNull(pagingResults);
+        assertFalse(pagingResults.hasMoreItems());
+        assertEquals(0, pagingResults.getPage().size());
+        
+        // TODO add more here
+    }
+    
+    public void testList_HiddenFiles()
     {
     	// Test that hidden files are not returned for clients that should not be able to see them,
     	// and that the total result count is correct.
@@ -1416,5 +1422,105 @@ public class FileFolderServiceImplTest extends TestCase
     	{
     		FileFilterMode.setClient(saveClient);
     	}
+    }
+    
+    public void testList_notCheckedOut_ALF_13602()
+    {
+        // Test that, eg. in the case of Share doclib, when listing files that have been checked-out we only list the working copy (ie. not the original checkedOut copy)
+        
+        int totalItems = 165;
+        int pageSize   = 50;
+        
+        // create some files
+        NodeRef nodeRef = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+        NodeRef nodeRef1 = fileFolderService.create(nodeRef, "parent", ContentModel.TYPE_CONTENT).getNodeRef();
+        
+        NodeRef[] children = new NodeRef[totalItems];
+        for (int i = 0; i < totalItems; i++)
+        {
+            String suffix = String.format("%05d", i);
+            children[i] = fileFolderService.create(nodeRef1, "child-" + suffix, ContentModel.TYPE_CONTENT).getNodeRef();
+        }
+        
+        checkPages(nodeRef1, pageSize, totalItems, false, -1);
+        
+        // checkout 5th child
+        cociService.checkout(children[4]);
+        
+        checkPages(nodeRef1, pageSize, totalItems, false, 4);
+        
+        checkPages(nodeRef1, pageSize, totalItems, true, 4);
+    }
+    
+    private void checkPages(NodeRef parentRef, int pageSize, int totalItems, boolean hideCheckedOut, int checkedOutChildIdx)
+    {
+        Set<QName> ignoreQNameTypes = null;
+        if (hideCheckedOut)
+        {
+            ignoreQNameTypes = new HashSet<QName>(1);
+            ignoreQNameTypes.add(ContentModel.ASPECT_CHECKED_OUT);
+        }
+        else
+        {
+            if (checkedOutChildIdx > -1)
+            {
+                totalItems++;
+            }
+        }
+        
+        List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>(1);
+        sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME, true));
+        
+        int pageCount = (totalItems / pageSize) + 1;
+        
+        for (int i = 1; i <= pageCount; i++)
+        {
+            int offset = (i-1)*pageSize;
+            
+            PagingRequest pagingRequest = new PagingRequest(offset, pageSize);
+            pagingRequest.setRequestTotalCountMax(10000); // need this so that total count is set
+            
+            PagingResults<FileInfo> results = fileFolderService.list(parentRef, true, true, ignoreQNameTypes, sortProps, pagingRequest);
+            
+            Pair<Integer, Integer> totalResultCount = results.getTotalResultCount();
+            assertNotNull(totalResultCount.getFirst());
+            assertEquals(totalItems, totalResultCount.getFirst().intValue());
+            assertNotNull(totalResultCount.getSecond());
+            assertEquals(totalItems, totalResultCount.getSecond().intValue());
+            
+            assertEquals((i != pageCount ? pageSize : (totalItems - ((pageCount-1)*pageSize))), results.getPage().size());
+            
+            int j = offset;
+            for (FileInfo fileInfo : results.getPage())
+            {
+                String suffix = String.format("%05d", j);
+                if (checkedOutChildIdx > -1)
+                {
+                    if (! hideCheckedOut)
+                    {
+                        if (j == checkedOutChildIdx+1)
+                        {
+                            suffix = String.format("%05d", j-1) + " (Working Copy)";
+                        }
+                        else if (j > checkedOutChildIdx+1)
+                        {
+                            suffix = String.format("%05d", j-1);
+                        }
+                    }
+                    else
+                    {
+                        if (j == checkedOutChildIdx)
+                        {
+                            suffix = String.format("%05d", j) + " (Working Copy)";
+                        }
+                    }
+                }
+                
+                String actual = fileInfo.getName();
+                String expected = "child-"+suffix;
+                assertTrue("Expected: "+expected+", Actual: "+actual+" (j="+j+")", expected.equals(actual));
+                j++;
+            }
+        }
     }
 }

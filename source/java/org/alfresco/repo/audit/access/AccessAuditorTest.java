@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -541,7 +541,6 @@ public class AccessAuditorTest
         // original file
         assertEquals("CHECK IN", origMap.get("action"));
         assertContains("deleteNodeAspect", origMap.get("sub-actions"));     
-        assertContains("addNodeAspect", origMap.get("sub-actions"));
         assertContains("copyNode", origMap.get("sub-actions"));
         assertContains("createVersion", origMap.get("sub-actions"));
         assertContains("updateNodeProperties", origMap.get("sub-actions"));

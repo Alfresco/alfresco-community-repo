@@ -1,0 +1,3 @@
+#log4j.logger.org.alfresco.repo.content.transform.TransformerDebug=debug
+#log4j.logger.org.alfresco.util.exec.RuntimeExecBootstrapBean=debug
+#log4j.logger.org.alfresco.util.exec.RuntimeExec=debug

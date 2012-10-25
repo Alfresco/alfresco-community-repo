@@ -1081,7 +1081,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         NodeRef nodeRef = createNodeWithVersionType(null);
         setComplete();
         endTransaction();
-        assertCorrectVersionLabel(nodeRef, "0.1");
+        assertCorrectVersionLabel(nodeRef, "1.0");
     }
 
     public void testAddVersionableAspectWithMinorVersionType()
@@ -1400,8 +1400,8 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 // Check version labels, should be 0.2 and 0.1 as property changes
                 //  are minor updates, and we had no initial label set
                 Version[] versions = versionHistory.getAllVersions().toArray(new Version[2]);
-                assertEquals("0.2", versions[0].getVersionLabel());
-                assertEquals("0.1", versions[1].getVersionLabel());
+                assertEquals("1.1", versions[0].getVersionLabel());
+                assertEquals("1.0", versions[1].getVersionLabel());
                 
                 return null;
             }
@@ -1486,9 +1486,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 
                 // Check the versions, 
                 Version[] versions = versionHistory.getAllVersions().toArray(new Version[3]);
-                assertEquals("0.3", versions[0].getVersionLabel());
-                assertEquals("0.2", versions[1].getVersionLabel());
-                assertEquals("0.1", versions[2].getVersionLabel());
+                assertEquals("1.2", versions[0].getVersionLabel());
+                assertEquals("1.1", versions[1].getVersionLabel());
+                assertEquals("1.0", versions[2].getVersionLabel());
                 
                 return null;
             }
@@ -1503,7 +1503,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                Version[] versions = versionHistory.getAllVersions().toArray(new Version[3]);
                
                Version v = versions[1];
-               assertEquals("0.2", v.getVersionLabel());
+               assertEquals("1.1", v.getVersionLabel());
                versionService.deleteVersion(versionableNode, v);
                return null;
             }
@@ -1518,8 +1518,8 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 
                 // Check the versions, will now have a gap 
                 Version[] versions = versionHistory.getAllVersions().toArray(new Version[2]);
-                assertEquals("0.3", versions[0].getVersionLabel());
-                assertEquals("0.1", versions[1].getVersionLabel());
+                assertEquals("1.2", versions[0].getVersionLabel());
+                assertEquals("1.0", versions[1].getVersionLabel());
                 return null;
             }
         });
@@ -1530,7 +1530,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             public Object execute() throws Exception
             {
                Version v = versionService.getCurrentVersion(versionableNode);
-               assertEquals("0.3", v.getVersionLabel());
+               assertEquals("1.2", v.getVersionLabel());
                versionService.deleteVersion(versionableNode, v);
                return null;
             }
@@ -1545,7 +1545,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 
                 // Check the version 
                 Version[] versions = versionHistory.getAllVersions().toArray(new Version[1]);
-                assertEquals("0.1", versions[0].getVersionLabel());
+                assertEquals("1.0", versions[0].getVersionLabel());
                 return null;
             }
         });

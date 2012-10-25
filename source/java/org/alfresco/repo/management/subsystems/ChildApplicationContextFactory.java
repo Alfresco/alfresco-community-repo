@@ -715,9 +715,10 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             {
                 ChildApplicationContextFactory.logger
                         .info("Starting '" + getCategory() + "' subsystem, ID: " + getId());
-                this.applicationContext = ChildApplicationContextFactory.this.new ChildApplicationContext(
+                ClassPathXmlApplicationContext applicationContext = ChildApplicationContextFactory.this.new ChildApplicationContext(
                         this.properties, this.compositeProperties);
-                this.applicationContext.refresh();
+                applicationContext.refresh();
+                this.applicationContext = applicationContext;
                 ChildApplicationContextFactory.logger.info("Startup of '" + getCategory() + "' subsystem, ID: "
                         + getId() + " complete");
             }

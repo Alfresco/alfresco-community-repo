@@ -91,6 +91,7 @@
       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
       <property name="methodSecurity" ref="FileFolderService_security_list"/>
       <property name="hiddenAspect" ref="hiddenAspect"/>
+      <property name="nodeService" ref="nodeService"/>
    </bean>
 
    <bean id="mlTranslationInterceptor" class="org.alfresco.repo.model.filefolder.MLTranslationInterceptor" >

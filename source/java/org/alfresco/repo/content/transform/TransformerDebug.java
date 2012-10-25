@@ -108,7 +108,7 @@ public class TransformerDebug
     {
         private static final AtomicInteger uniqueId = new AtomicInteger(0);
 
-        private final int id;
+        private int id;
         private final String fromUrl;
         private final String sourceMimetype;
         private final String targetMimetype;
@@ -125,7 +125,7 @@ public class TransformerDebug
         private Frame(Frame parent, String fromUrl, String sourceMimetype, String targetMimetype,
                 TransformationOptions options, Call pushCall, boolean origDebugOutput)
         {
-            this.id = parent == null ? uniqueId.getAndIncrement() : ++parent.childId;
+            this.id = parent == null ? -1 : ++parent.childId;
             this.fromUrl = fromUrl;
             this.sourceMimetype = sourceMimetype;
             this.targetMimetype = targetMimetype;
@@ -133,6 +133,15 @@ public class TransformerDebug
             this.callType = pushCall;
             this.origDebugOutput = origDebugOutput;
             start = System.currentTimeMillis();
+        }
+        
+        private int getId()
+        {
+            if (id == -1)
+            {
+                id = uniqueId.getAndIncrement();
+            }
+            return id;
         }
     }
     
@@ -587,7 +596,7 @@ public class TransformerDebug
         {
             logger.debug(getReference()+message, t);
         }
-        else
+        else if (logger.isTraceEnabled())
         {
             logger.trace(getReference()+message, t);
         }
@@ -623,13 +632,13 @@ public class TransformerDebug
             frame = iterator.next();
             if (sb.length() == 0)
             {
-                sb.append(frame.id);
+                sb.append(frame.getId());
                 lengthOfFirstId = sb.length();
             }
             else
             {
                 sb.append('.');
-                sb.append(frame.id);
+                sb.append(frame.getId());
             }
         }
         if (frame != null)

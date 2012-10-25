@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -48,7 +48,9 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.apache.commons.logging.Log;
@@ -269,7 +271,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     }
     
     @Override
-    protected boolean canReadSite(final RepoCtx ctx, String siteIdIn, String connectedUser, final String tenantDomain) throws Exception
+    protected boolean canReadSite(final RepoCtx ctx, String siteIdIn, final String connectedUser, final String tenantDomain) throws Exception
     {
         if (useRemoteCallbacks)
         {
@@ -283,7 +285,26 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             public Boolean doWork() throws Exception
             {
-                return (siteService.getSite(siteId) != null);
+                boolean canRead = false;
+                SiteInfo siteInfo = siteService.getSite(siteId);
+                if (siteInfo != null)
+                {
+                    switch (siteInfo.getVisibility())
+                    {
+                    case MODERATED:
+                        // moderated - note: need to check site membership
+                        canRead = siteService.isMember(siteId, connectedUser);
+                        break;
+                    case PUBLIC:
+                    case PRIVATE:
+                        // public or private - note: for private site, membership is implied (since getSite did not return null)
+                        canRead = true;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                return canRead;
             }
         }, connectedUser);
     }

@@ -468,6 +468,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
             workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, userName);
             workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_LABEL, workingCopyLabel);
             nodeService.addAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
+            nodeService.addAspect(workingCopy, ContentModel.ASPECT_LOCKABLE, null);
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT, null);
             nodeService.createAssociation(nodeRef, workingCopy, ContentModel.ASSOC_WORKING_COPY_LINK);
         }

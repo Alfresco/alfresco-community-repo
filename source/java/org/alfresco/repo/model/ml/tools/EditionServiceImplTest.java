@@ -80,7 +80,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
 
         Version rootEdition = editionService.getEditions(mlContainerNodeRef).getAllVersions().iterator().next();
         // Ensure that the version label is 1.0
-        assertTrue("The edition label would be 0.1 and not " + rootEdition.getVersionLabel(), rootEdition.getVersionLabel().equals("0.1"));
+        assertTrue("The edition label would be 1.0 and not " + rootEdition.getVersionLabel(), rootEdition.getVersionLabel().equals("1.0"));
 
         /*
          * default (1.1)
@@ -90,7 +90,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
         Version firstEdition = editions.get(0);
         // Ensure that the version label is 1.1
-        assertTrue("The edition label would be 0.2 and not " + firstEdition.getVersionLabel(), firstEdition.getVersionLabel().equals("0.2"));
+        assertTrue("The edition label would be 1.1 and not " + firstEdition.getVersionLabel(), firstEdition.getVersionLabel().equals("1.1"));
 
         /*
          * major (2.0)
@@ -101,8 +101,8 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         pivot = editionService.createEdition(pivot, versionProperties);
         editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
         Version secondEdition = editions.get(0);
-        // Ensure that the version label is 1.0
-        assertTrue("The edition label would be 1.0 and not " + secondEdition.getVersionLabel(), secondEdition.getVersionLabel().equals("1.0"));
+        // Ensure that the version label is 2.0
+        assertTrue("The edition label would be 2.0 and not " + secondEdition.getVersionLabel(), secondEdition.getVersionLabel().equals("2.0"));
 
         /*
          * minor (2.1)
@@ -114,7 +114,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         editions = new ArrayList<Version>(editionService.getEditions(mlContainerNodeRef).getAllVersions());
         Version thirdEdition = editions.get(0);
         // Ensure that the version label is 2.1
-        assertTrue("The edition label would be 1.1 and not " + thirdEdition.getVersionLabel(), thirdEdition.getVersionLabel().equals("1.1"));
+        assertTrue("The edition label would be 2.1 and not " + thirdEdition.getVersionLabel(), thirdEdition.getVersionLabel().equals("2.1"));
     }
 
     public void testCreateEdition() throws Exception
@@ -138,8 +138,8 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         assertTrue("The locale of the conatiner should be changed", nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE).equals(Locale.FRENCH));
 
         // get the two editions
-        Version rootEdition = editionHistory.getVersion("0.1");
-        Version actualEdition = editionHistory.getVersion("0.2");
+        Version rootEdition = editionHistory.getVersion("1.0");
+        Version actualEdition = editionHistory.getVersion("1.1");
 
         // get the translations of the root versions
         List<VersionHistory> rootVersionTranslations = editionService.getVersionedTranslations(rootEdition);
@@ -181,7 +181,7 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
     public void testEditionServiceWithContent()
     {
         // create a mlContainer with some content
-        NodeRef mlContainerNodeRef = createMLContainerWithContent("0.1");
+        NodeRef mlContainerNodeRef = createMLContainerWithContent("1.0");
         // get the french translation
         NodeRef frenchContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef,
                 Locale.FRENCH);
@@ -189,24 +189,24 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         // create a new edition starting from the french translation
         NodeRef newStartingPoint = editionService.createEdition(frenchContentNodeRef, null);
         frenchContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH);
-        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "0.2" + "-" + "0.2");
+        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.1" + "-" + "0.2");
         checkContentVersionValuesForEditions(mlContainerNodeRef);
-        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "0.2" + "-" + "0.3");
+        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.1" + "-" + "0.3");
         checkContentVersionValuesForEditions(mlContainerNodeRef);
-        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "0.2" + "-" + "0.4");
+        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.1" + "-" + "0.4");
         // checkContentVersionValuesForEditions(mlContainerNodeRef);
         frenchContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH);
 
         newStartingPoint = editionService.createEdition(frenchContentNodeRef, null);
         frenchContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH);
-        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "0.3" + "-" + "0.2");
+        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.2" + "-" + "0.2");
         checkContentVersionValuesForEditions(mlContainerNodeRef);
-        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "0.3" + "-" + "0.3");
+        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.2" + "-" + "0.3");
         checkContentVersionValuesForEditions(mlContainerNodeRef);
-        NodeRef chineseContentNodeRef = createContent(CHINESE_CONTENT + "-" + Locale.CHINESE + "-" + "0.3" + "-0.1");
+        NodeRef chineseContentNodeRef = createContent(CHINESE_CONTENT + "-" + Locale.CHINESE + "-" + "1.2" + "-1.0");
         multilingualContentService.addTranslation(chineseContentNodeRef, mlContainerNodeRef, Locale.CHINESE);
         checkContentVersionValuesForEditions(mlContainerNodeRef);
-        NodeRef japaneseContentNodeRef = createContent(JAPANESE_CONTENT + "-" + Locale.JAPANESE + "-" + "0.3" + "-0.1");
+        NodeRef japaneseContentNodeRef = createContent(JAPANESE_CONTENT + "-" + Locale.JAPANESE + "-" + "1.2" + "-1.0");
         multilingualContentService.addTranslation(japaneseContentNodeRef, mlContainerNodeRef, Locale.JAPANESE);
         checkContentVersionValuesForEditions(mlContainerNodeRef);
 
@@ -216,19 +216,19 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
         checkContentVersionValuesForEditions(mlContainerNodeRef);
         japaneseContentNodeRef = multilingualContentService
                 .getTranslationForLocale(mlContainerNodeRef, Locale.JAPANESE);
-        modifyContent(japaneseContentNodeRef, JAPANESE_CONTENT + "-" + Locale.JAPANESE + "-" + "0.4" + "-0.2");
-        chineseContentNodeRef = createContent(CHINESE_CONTENT + "-" + Locale.CHINESE + "-" + "0.4" + "-0.1");
+        modifyContent(japaneseContentNodeRef, JAPANESE_CONTENT + "-" + Locale.JAPANESE + "-" + "1.3" + "-0.2");
+        chineseContentNodeRef = createContent(CHINESE_CONTENT + "-" + Locale.CHINESE + "-" + "1.3" + "-1.0");
 
         multilingualContentService.addTranslation(chineseContentNodeRef, mlContainerNodeRef, Locale.CHINESE);
         checkContentVersionValuesForEditions(mlContainerNodeRef);
-        frenchContentNodeRef = createContent(FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "0.4" + "-0.1");
+        frenchContentNodeRef = createContent(FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.3" + "-1.0");
         multilingualContentService.addTranslation(frenchContentNodeRef, mlContainerNodeRef, Locale.FRENCH);
         checkContentVersionValuesForEditions(mlContainerNodeRef);
 
         frenchContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH);
         newStartingPoint = editionService.createEdition(frenchContentNodeRef, null);
         frenchContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH);
-        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "0.5" + "-" + "0.2");
+        modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.4" + "-" + "0.2");
         checkContentVersionValuesForEditions(mlContainerNodeRef);
 
 
@@ -241,9 +241,9 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
          Version secondEdition = editions.iterator().next();
          // Ensure that the version label is 2.0
          assertTrue("The edition label would be 2.0 and not " + secondEdition.getVersionLabel(), secondEdition
-          .getVersionLabel().equals("1.0"));
-         frenchContentNodeRef = createContent(FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.0" + "-0.1");
-         modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.0" + "-" + "0.2");
+          .getVersionLabel().equals("2.0"));
+         frenchContentNodeRef = createContent(FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.0" + "-1.0");
+         modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "1.0" + "-" + "1.1");
          checkContentVersionValuesForEditions(mlContainerNodeRef);
 
          frenchContentNodeRef = multilingualContentService.getTranslationForLocale(mlContainerNodeRef, Locale.FRENCH);
@@ -254,10 +254,10 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
 
           editions = editionService.getEditions(mlContainerNodeRef).getAllVersions();
           secondEdition = editions.iterator().next();
-          // Ensure that the version label is 2.0
+          // Ensure that the version label is 3.0
           assertTrue("The edition label would be 3.0 and not " + secondEdition.getVersionLabel(), secondEdition
-           .getVersionLabel().equals("2.0"));
-          modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "2.0" + "-" + "0.2");
+           .getVersionLabel().equals("3.0"));
+          modifyContent(frenchContentNodeRef, FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + "3.0" + "-" + "0.2");
           checkContentVersionValuesForEditions(mlContainerNodeRef);
 
 
@@ -404,9 +404,9 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
                         {
                             // it is not a root version therefore it should respect the conventions
                             Triplet testTriplet = new Triplet(versionnedContent);
-                            assertTrue(testTriplet.locale.equals(versionLocale.toString()));
-                            assertTrue(testTriplet.edition.equals(editionLabel));
-                            assertTrue(testTriplet.version.equals(versionLabel));
+                            assertEquals(testTriplet.locale, versionLocale.toString());
+                            assertEquals(testTriplet.edition, editionLabel);
+                            assertEquals(testTriplet.version, versionLabel);
                         }
 
                     }
@@ -504,11 +504,11 @@ public class EditionServiceImplTest extends AbstractMultilingualTestCases
     NodeRef createMLContainerWithContent(String editionSuffix)
     {
         NodeRef chineseContentNodeRef = createContent(CHINESE_CONTENT + "-" + Locale.CHINESE + "-" + editionSuffix
-                + "-0.1");
+                + "-1.0");
         NodeRef frenchContentNodeRef = createContent(FRENCH_CONTENT + "-" + Locale.FRENCH + "-" + editionSuffix
-                + "-0.1");
+                + "-1.0");
         NodeRef japaneseContentNodeRef = createContent(JAPANESE_CONTENT + "-" + Locale.JAPANESE + "-" + editionSuffix
-                + "-0.1");
+                + "-1.0");
 
         multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
         multilingualContentService.addTranslation(frenchContentNodeRef, chineseContentNodeRef, Locale.FRENCH);

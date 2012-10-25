@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -40,7 +40,6 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
-import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
@@ -425,59 +424,63 @@ public class FileFolderServiceImpl implements FileFolderService
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.model.FileFolderService#list(org.alfresco.service.cmr.repository.NodeRef, boolean, boolean, java.util.Set, org.alfresco.service.cmr.model.PagingSortRequest)
      */
-    @Auditable(parameters = {"contextNodeRef", "files", "folders", "ignoreTypeQNames", "sortProps", "pagingRequest"})
+    @Auditable(parameters = {"contextNodeRef", "files", "folders", "ignoreQNames", "sortProps", "pagingRequest"})
     public PagingResults<FileInfo> list(NodeRef contextNodeRef,
                                       boolean files,
                                       boolean folders,
-                                      Set<QName> ignoreTypeQNames,
+                                      Set<QName> ignoreQNames,
                                       List<Pair<QName, Boolean>> sortProps,
                                       PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         
-        Set<QName> searchTypeQNames = buildTypes(files, folders, ignoreTypeQNames);
+        Pair<Set<QName>,Set<QName>> pair = buildSearchTypesAndIgnoreAspects(files, folders, ignoreQNames);
+        Set<QName> searchTypeQNames = pair.getFirst();
+        Set<QName> ignoreAspectQNames = pair.getSecond();
         
         // execute query
-        final CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, null, searchTypeQNames, sortProps, pagingRequest);
+        final CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, null, searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
         return getPagingResults(pagingRequest, results);
     }
 
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.model.FileFolderService#list(org.alfresco.service.cmr.repository.NodeRef, boolean, boolean, String, java.util.Set, org.alfresco.service.cmr.model.PagingSortRequest)
      */
-    public PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, String pattern, Set<QName> ignoreQNameTypes, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    public PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, String pattern, Set<QName> ignoreQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("contextNodeRef", contextNodeRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         
-        Set<QName> searchTypeQNames = buildTypes(files, folders, ignoreQNameTypes);
+        Pair<Set<QName>,Set<QName>> pair = buildSearchTypesAndIgnoreAspects(files, folders, ignoreQNames);
+        Set<QName> searchTypeQNames = pair.getFirst();
+        Set<QName> ignoreAspectQNames = pair.getSecond();
         
         // execute query
-        final CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, pattern, searchTypeQNames, sortProps, pagingRequest);
+        final CannedQueryResults<NodeRef> results = listImpl(contextNodeRef, pattern, searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
         return getPagingResults(pagingRequest, results);
     }
     
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, boolean files, boolean folders)
     {
-        Set<QName> searchTypeQNames = buildTypes(files, folders, null);
+        Set<QName> searchTypeQNames = buildSearchTypesAndIgnoreAspects(files, folders, null).getFirst();
         return listImpl(contextNodeRef, searchTypeQNames);
     }
     
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, Set<QName> searchTypeQNames)
     {
-        return listImpl(contextNodeRef, null, searchTypeQNames, null, new PagingRequest(defaultListMaxResults, null));
+        return listImpl(contextNodeRef, null, searchTypeQNames, null, null, new PagingRequest(defaultListMaxResults, null));
     }
     
     // note: similar to getChildAssocs(contextNodeRef, searchTypeQNames) but enables paging features, including max items, sorting etc (with permissions per-applied)
-    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern, Set<QName> searchTypeQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_FILEFOLDER_LIST);
 
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, Collections.singleton(ContentModel.ASSOC_CONTAINS), searchTypeQNames, null, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, Collections.singleton(ContentModel.ASSOC_CONTAINS), searchTypeQNames, ignoreAspectQNames, null, sortProps, pagingRequest);
 
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();
@@ -747,9 +750,10 @@ public class FileFolderServiceImpl implements FileFolderService
         return PermissionCheckedValueMixin.create(results);
     }
     
-    private Set<QName> buildTypes(boolean files, boolean folders, Set<QName> ignoreQNameTypes)
+    private Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(boolean files, boolean folders, Set<QName> ignoreQNameTypes)
     {
         Set<QName> searchTypeQNames = new HashSet<QName>(100);
+        Set<QName> ignoreAspectQNames = null;
         
         // Build a list of file and folder types
         if (folders)
@@ -763,10 +767,32 @@ public class FileFolderServiceImpl implements FileFolderService
         
         if (ignoreQNameTypes != null)
         {
+            Set<QName> ignoreQNamesNotSearchTypes = new HashSet<QName>(ignoreQNameTypes);
+            ignoreQNamesNotSearchTypes.removeAll(searchTypeQNames);
+            ignoreQNamesNotSearchTypes.remove(ContentModel.TYPE_SYSTEM_FOLDER); // note: not included in buildFolderTypes()
+            
+            if (ignoreQNamesNotSearchTypes.size() > 0)
+            {
+                ignoreAspectQNames = getAspectsToIgnore(ignoreQNamesNotSearchTypes);
+            }
+            
             searchTypeQNames.removeAll(ignoreQNameTypes);
         }
         
-        return searchTypeQNames;
+        return new Pair<Set<QName>, Set<QName>>(searchTypeQNames, ignoreAspectQNames);
+    }
+    
+    private Set<QName> getAspectsToIgnore(Set<QName> ignoreQNames)
+    {
+        Set<QName> ignoreQNameAspects = new HashSet<QName>(ignoreQNames.size());
+        for (QName qname : ignoreQNames)
+        {
+            if (dictionaryService.getAspect(qname) != null)
+            {
+                ignoreQNameAspects.add(qname);
+            }
+        }
+        return ignoreQNameAspects;
     }
     
     private Set<QName> buildFolderTypes()

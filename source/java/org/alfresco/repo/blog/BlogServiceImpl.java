@@ -573,9 +573,8 @@ public class BlogServiceImpl implements BlogService
                 @Override
                 public Pair<Integer, Integer> getTotalResultCount()
                 {
-                    int skipCount = finalLuceneResults.getStart();
                     int itemsRemainingAfterThisPage = finalLuceneResults.length();
-                    final int totalItemsInUnpagedResultSet = skipCount + itemsRemainingAfterThisPage;
+                    final int totalItemsInUnpagedResultSet = pagingReq.getSkipCount() + itemsRemainingAfterThisPage;
                     return new Pair<Integer, Integer>(totalItemsInUnpagedResultSet, totalItemsInUnpagedResultSet);
                 }
                 

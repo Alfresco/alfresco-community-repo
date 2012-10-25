@@ -2767,6 +2767,12 @@
         <property name="hiddenAspect" ref="hiddenAspect" />
         <property name="avmStore"><value>sitestore</value></property>
         <property name="avmRootPath"><value>/alfresco/site-data</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.migrateTenantsFromAttrsToTable" />
+                <ref bean="patch.migrateAttrTenants" />
+            </list>
+        </property> 
     </bean>
     
     <!-- Fix data related to cm:copiedfrom aspect -->
@@ -3403,6 +3409,17 @@
         </property>
         <property name="behaviourFilter" >
             <ref bean="policyBehaviourFilter"/>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V4.1-rename-constraint-activiti" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.1-rename-constraint-activiti</value></property>
+        <property name="description"><value>patch.renameConstraintActiviti.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6020</value></property>
+        <property name="targetSchema"><value>6021</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/rename-constraint-activiti.sql</value>
         </property>
     </bean>
     

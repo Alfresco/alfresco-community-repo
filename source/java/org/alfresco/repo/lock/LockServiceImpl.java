@@ -34,6 +34,7 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
+import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -537,32 +538,11 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * @return              Returns {@link LockableAspectCopyBehaviourCallback}
+     * @return              Returns {@link DoNothingCopyBehaviourCallback}
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
-        return LockableAspectCopyBehaviourCallback.INSTANCE;
-    }
-
-    /**
-     * Extends the default copy behaviour to prevent copying of lockable properties.
-     * 
-     * @author Derek Hulley
-     * @since 3.2
-     */
-    private static class LockableAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
-    {
-        private static final CopyBehaviourCallback INSTANCE = new LockableAspectCopyBehaviourCallback();
-        
-        /**
-         * @return          Returns an empty map
-         */
-        @Override
-        public Map<QName, Serializable> getCopyProperties(
-                QName classQName, CopyDetails copyDetails, Map<QName, Serializable> properties)
-        {
-            return Collections.emptyMap();
-        }
+        return DoNothingCopyBehaviourCallback.getInstance();
     }
     
     /**

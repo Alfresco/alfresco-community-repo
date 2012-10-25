@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryParameters;
@@ -36,6 +37,7 @@ import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.FileFilterMode.Client;
@@ -46,7 +48,8 @@ import org.alfresco.util.FileFilterMode.Client;
  * To get paged list of files and folders of a parent folder filtered by child type.
  * Also optionally filtered and/or sorted by one or more properties (up to three).
  * 
- * This is the same as the nodes getchildren canned query, except it takes into account hidden files and folders.
+ * This is the same as the nodes getchildren canned query, except it takes into account hidden files and folders (with respect to client visibility)
+ * and other aspect(s) to ignore - eg. optionally "cm:checkedOut" in case of Share DocLib.
  * 
  * @since 4.1.1
  * @author steveglover, janv
@@ -56,6 +59,8 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
 {
     private HiddenAspect hiddenAspect;
     private DictionaryService dictionaryService;
+    private NodeService nodeService;
+    private Set<QName> ignoreAspectQNames;
     
     public GetChildrenCannedQuery(
             NodeDAO nodeDAO,
@@ -66,12 +71,17 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
             MethodSecurityBean<NodeRef> methodSecurity,
             CannedQueryParameters params,
             HiddenAspect hiddenAspect,
-            DictionaryService dictionaryService)
+            DictionaryService dictionaryService,
+            NodeService nodeService,
+            Set<QName> ignoreAspectQNames)
     {
         super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurity, params);
         
         this.hiddenAspect = hiddenAspect;
         this.dictionaryService = dictionaryService;
+        
+        this.nodeService = nodeService;
+        this.ignoreAspectQNames = ignoreAspectQNames;
     }
     
     @Override
@@ -101,18 +111,7 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
         protected boolean include(FilterSortNode node)
         {
             boolean ret = super.include(node);
-            
-            // only visible files are returned, relative to the client type.
-            try
-            {
-                final Client client = FileFilterMode.getClient();
-                return ret && hiddenAspect.getVisibility(client, node.getNodeRef()) != Visibility.NotVisible;
-            }
-            catch(AccessDeniedException e)
-            {
-                // user may not have permission to determine the visibility of the node
-                return ret;
-            }
+            return ret && includeImpl(ret, node.getNodeRef());
         }
         
         @Override
@@ -151,20 +150,42 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
 		protected boolean include(NodeRef nodeRef)
 		{
 			boolean ret = super.include(nodeRef);
-
-            // only visible files are returned, relative to the client type.
-			try
-			{
-	            final Client client = FileFilterMode.getClient();
-	        	return ret && hiddenAspect.getVisibility(client, nodeRef) != Visibility.NotVisible;
-            }
-            catch(AccessDeniedException e)
-            {
-            	// user may not have permission to determine the visibility of the node
-            	return ret;
-            }
+			
+			return ret && includeImpl(ret, nodeRef);
 		}
-    	
     }
-
+    
+    protected boolean includeImpl(boolean ret, NodeRef nodeRef)
+    {
+        // only visible files are returned, relative to the client type.
+        try
+        {
+            final Client client = FileFilterMode.getClient();
+            boolean notHidden = hiddenAspect.getVisibility(client, nodeRef) != Visibility.NotVisible;
+            
+            boolean notIgnore = true;
+            if (ignoreAspectQNames != null)
+            {
+                if (ignoreAspectQNames.size() > 1)
+                {
+                    Set<QName> nodeAspects = nodeService.getAspects(nodeRef);
+                    notIgnore = (! nodeAspects.removeAll(ignoreAspectQNames));
+                }
+                else if (ignoreAspectQNames.size() == 1)
+                {
+                    if (nodeService.hasAspect(nodeRef, ignoreAspectQNames.iterator().next()))
+                    {
+                        notIgnore = false;
+                    }
+                }
+            }
+            
+            return ret && notHidden && notIgnore;
+        }
+        catch (AccessDeniedException e)
+        {
+            // user may not have permission to determine the visibility of the node
+            return ret;
+        }
+    }
 }

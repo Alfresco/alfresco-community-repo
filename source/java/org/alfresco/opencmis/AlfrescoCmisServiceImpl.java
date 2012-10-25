@@ -566,6 +566,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 {
                     // create a child CMIS object
                     CMISNodeInfo ni = createNodeInfo(child.getNodeRef());
+                    if (getObjectInfo(repositoryId, ni.getObjectId())==null)
+                    {
+                        // ignore invalid children
+                        continue;
+                    }
                     ObjectData object = connector.createCMISObject(ni, child, filter, includeAllowableActions,
                             includeRelationships, renditionFilter, false, false);
 

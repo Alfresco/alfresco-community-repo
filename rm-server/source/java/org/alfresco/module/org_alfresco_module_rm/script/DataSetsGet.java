@@ -86,11 +86,11 @@ public class DataSetsGet extends DeclarativeWebScript
 
          // Data set details
          String dataSetId = value.getId();
-         Boolean isLoaded = new Boolean(dataSetService.isLoadedDataSet(filePlan, dataSetId));
+         String isLoaded = String.valueOf(dataSetService.isLoadedDataSet(filePlan, dataSetId));
 
          dataSet.put("label", value.getLabel());
          dataSet.put("id", dataSetId);
-         dataSet.put("isLoaded", isLoaded.toString());
+         dataSet.put("isLoaded", isLoaded);
 
          // Add data set to the list
          dataSetList.add(dataSet);

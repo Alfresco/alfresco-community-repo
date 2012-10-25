@@ -3,7 +3,7 @@
    <description>WebScript to get the list of available RM test data</description>
    <url>/api/rma/datasets?site={site?}&amp;unloadedonly={unloadedonly?}</url>
    <format default="json">argument</format>
-   <authentication>admin</authentication>
+   <authentication>user</authentication>
    <transaction>required</transaction>
    <lifecycle>internal</lifecycle>
 </webscript>

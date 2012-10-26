@@ -76,6 +76,26 @@ public class TenantUtil
      * Execute a unit of work in a given tenant context. The thread's tenant context will be returned to its normal state
      * after the call.
      * 
+     * @param runAsWork    the unit of work to do
+     * @param uid          the user ID
+     * @param tenanDomain  the tenant domain
+     * @return Returns     the work's return value
+     */
+    public static <R> R runAsUserTenant(final TenantRunAsWork<R> runAsWork, final String uid, final String tenantDomain)
+    {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<R>()
+        {
+            public R doWork()
+            {
+                return runAsTenant(runAsWork, tenantDomain);
+            }
+        }, uid);
+    }
+    
+    /**
+     * Execute a unit of work in a given tenant context. The thread's tenant context will be returned to its normal state
+     * after the call.
+     * 
      * @param runAsWork  the unit of work to do
      * @param uid        the user ID
      * @return Returns the work's return value

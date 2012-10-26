@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,7 +34,11 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -53,7 +57,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
@@ -86,16 +89,21 @@ public class DiscussionServiceImplTest
     private static NodeService                  PUBLIC_NODE_SERVICE;
     private static PersonService                PERSON_SERVICE;
     private static RetryingTransactionHelper    TRANSACTION_HELPER;
-    private static TransactionService           TRANSACTION_SERVICE;
     private static PermissionService            PERMISSION_SERVICE;
     private static SiteService                  SITE_SERVICE;
     private static TaggingService               TAGGING_SERVICE;
+    private static TenantAdminService           TENANT_ADMIN_SERVICE;
     
     private static final String TEST_USER = DiscussionServiceImplTest.class.getSimpleName() + "_testuser";
     private static final String ADMIN_USER = AuthenticationUtil.getAdminUserName();
+    
+    private static final String TENANT_DOMAIN = (DiscussionServiceImplTest.class.getSimpleName() + "Tenant").toLowerCase();
+    private static final String TENANT_ADMIN_USER = ADMIN_USER + "@" + TENANT_DOMAIN;
+    private static final String TENANT_TEST_USER = TEST_USER + "@" + TENANT_DOMAIN;
 
     private static SiteInfo DISCUSSION_SITE;
     private static SiteInfo ALTERNATE_DISCUSSION_SITE;
+    private static SiteInfo TENANT_DISCUSSION_SITE;
     private static NodeRef FORUM_NODE;
     
     /**
@@ -117,10 +125,12 @@ public class DiscussionServiceImplTest
         PUBLIC_NODE_SERVICE    = (NodeService)testContext.getBean("NodeService");
         PERSON_SERVICE         = (PersonService)testContext.getBean("personService");
         TRANSACTION_HELPER     = (RetryingTransactionHelper)testContext.getBean("retryingTransactionHelper");
-        TRANSACTION_SERVICE    = (TransactionService)testContext.getBean("TransactionService");
         PERMISSION_SERVICE     = (PermissionService)testContext.getBean("permissionService");
         SITE_SERVICE           = (SiteService)testContext.getBean("siteService");
         TAGGING_SERVICE        = (TaggingService)testContext.getBean("TaggingService");
+        TENANT_ADMIN_SERVICE   = testContext.getBean("tenantAdminService", TenantAdminService.class);
+
+        createTenantAndTestSites();
 
         // Do the setup as admin
         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
@@ -380,6 +390,99 @@ public class DiscussionServiceImplTest
           assertEquals(3, posts.getPage().size());
        }
     }
+    
+    @Test
+    public void tenantCreateNewTopicAndPostAndReply() throws Exception
+    {
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Object>(){
+
+            @Override
+            public Object doWork() throws Exception
+            {
+                TopicInfo siteTopic;
+                PostInfo post;
+                PostInfo reply1;
+
+                // Nothing to start with
+                PagingResults<TopicInfo> results = DISCUSSION_SERVICE.listTopics(TENANT_DISCUSSION_SITE.getShortName(), true, new PagingRequest(10));
+                assertEquals(0, results.getPage().size());
+
+                // Create two topics, one node and one site based
+                siteTopic = DISCUSSION_SERVICE.createTopic(TENANT_DISCUSSION_SITE.getShortName(),
+                            "Site Title");
+
+                testNodesToTidy.add(siteTopic.getNodeRef());
+
+                // There are no posts to start with
+                PagingResults<PostInfo> posts = DISCUSSION_SERVICE.listPosts(siteTopic, new PagingRequest(10));
+                assertEquals(0, posts.getPage().size());      
+              
+                // The topic has no primary post
+                assertEquals(null, DISCUSSION_SERVICE.getPrimaryPost(siteTopic));
+                // Which means no recent post
+                assertEquals(null, DISCUSSION_SERVICE.getMostRecentPost(siteTopic));
+
+                // Create the first post
+                String contents = "This Is Some Content";
+                post = DISCUSSION_SERVICE.createPost(siteTopic, contents);
+              
+                // Ensure it got a NodeRef, a Name and the Topic
+                assertNotNull(post.getNodeRef());
+                assertNotNull(post.getSystemName());
+                assertEquals(siteTopic, post.getTopic());
+              
+                // Ensure it shares a name with the topic
+                assertEquals(siteTopic.getSystemName(), post.getSystemName());
+              
+                // As this is the primary post, it'll share the topic title
+                assertEquals(siteTopic.getTitle(), post.getTitle());
+              
+                // It will have contents and a creator
+                assertEquals(contents, post.getContents());
+              
+                // Fetch and check
+                post = DISCUSSION_SERVICE.getPost(siteTopic, post.getSystemName());
+                assertNotNull(post.getNodeRef());
+                assertNotNull(post.getSystemName());
+                assertEquals(siteTopic, post.getTopic());
+                assertEquals(siteTopic.getTitle(), post.getTitle());
+                assertEquals(contents, post.getContents());
+              
+                // Topic will now have a primary post
+                assertNotNull(DISCUSSION_SERVICE.getPrimaryPost(siteTopic));
+                assertEquals(post.getNodeRef(), DISCUSSION_SERVICE.getPrimaryPost(siteTopic).getNodeRef());
+              
+                // Topic will now have one post listed
+                posts = DISCUSSION_SERVICE.listPosts(siteTopic, new PagingRequest(10));
+                assertEquals(1, posts.getPage().size());      
+              
+                // Add a reply
+                String reply1Contents = "Reply Contents";
+                reply1 = DISCUSSION_SERVICE.createReply(post, reply1Contents);
+                assertNotNull(reply1.getNodeRef());
+                assertNotNull(reply1.getSystemName());
+                assertEquals(siteTopic, reply1.getTopic());
+                assertEquals(null, reply1.getTitle()); // No title by default for
+                                                       // replies
+                assertEquals(reply1Contents, reply1.getContents());
+              
+                // Fetch and check
+                PostWithReplies postWithReplies = DISCUSSION_SERVICE.listPostReplies(siteTopic, 1);
+                assertNotNull(postWithReplies);
+                assertEquals(1, postWithReplies.getReplies().size());
+                PostInfo reply2 = postWithReplies.getReplies().get(0).getPost();
+                assertNotNull(reply2.getNodeRef());
+                assertNotNull(reply2.getSystemName());
+                assertEquals(siteTopic, reply2.getTopic());
+                assertEquals(null, reply2.getTitle()); // No title by default for
+                                                       // replies
+                assertEquals(reply1Contents, reply1.getContents());
+                return null;
+            }
+            
+        }, TENANT_TEST_USER, TENANT_DOMAIN);
+    }
+
     
     @Test public void createUpdateDeleteEntries() throws Exception
     {
@@ -1848,6 +1951,84 @@ public class DiscussionServiceImplTest
          AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
     }
     
+    private static void createTenantAndTestSites()
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Object>(){
+
+            @Override
+            public Object doWork() throws Exception
+            {
+                createTenant();
+                return null;
+            }
+            
+        }, ADMIN_USER);
+        
+        createTenantUser();
+        
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Object>() {
+
+            @Override
+            public Object doWork() throws Exception
+            {
+                createTenantTestSites();
+                return null;
+            }
+        }, TENANT_TEST_USER, TENANT_DOMAIN);
+    }
+    
+    private static void createTenantTestSites() throws Exception
+    {
+        final DiscussionServiceImpl privateDiscussionService = (DiscussionServiceImpl)testContext.getBean("discussionService");
+        
+        TENANT_DISCUSSION_SITE = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<SiteInfo>()
+           {
+              @Override
+              public SiteInfo execute() throws Throwable
+              {
+                  SiteInfo site = SITE_SERVICE.createSite(
+                        TEST_SITE_PREFIX, 
+                        DiscussionServiceImplTest.class.getSimpleName() + "_testSite" + System.currentTimeMillis(),
+                        "test site title", "test site description", 
+                        SiteVisibility.PUBLIC);
+                  privateDiscussionService.getSiteDiscussionsContainer(site.getShortName(), true);
+                  CLASS_TEST_NODES_TO_TIDY.add(site.getNodeRef());
+                  return site;
+              }
+         });
+    }
+
+    
+    private static void createTenant()
+    {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+           @Override
+           public Void execute() throws Throwable
+           {
+              if (!TENANT_ADMIN_SERVICE.existsTenant(TENANT_DOMAIN))
+              {
+                 TENANT_ADMIN_SERVICE.createTenant(TENANT_DOMAIN, "password".toCharArray());
+              }
+              return null;
+           }
+        });
+    }
+    
+    private static void createTenantUser()
+    {
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Object>(){
+
+            @Override
+            public Object doWork() throws Exception
+            {
+                createUser(TENANT_TEST_USER);
+                return null;
+            }
+            
+        }, TENANT_ADMIN_USER, TENANT_DOMAIN);
+    }
+    
     /**
      * By default, all tests are run as the admin user.
      */
@@ -1865,6 +2046,21 @@ public class DiscussionServiceImplTest
     {
         performDeletionOfNodes(CLASS_TEST_NODES_TO_TIDY);
         deleteUser(TEST_USER);
+        deleteUser(TENANT_TEST_USER);
+        deleteTenant();
+    }
+
+    private static void deleteTenant()
+    {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+           @Override
+           public Void execute() throws Throwable
+           {
+               TENANT_ADMIN_SERVICE.deleteTenant(TENANT_DOMAIN);
+               return null;
+           }
+        });
     }
 
     /**

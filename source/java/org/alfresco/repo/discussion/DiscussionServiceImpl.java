@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -48,11 +48,11 @@ import org.alfresco.repo.query.NodeWithTargetsEntity;
 import org.alfresco.repo.query.NodeWithTargetsEntity.TargetAndTypeId;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteServiceImpl;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.discussion.DiscussionService;
 import org.alfresco.service.cmr.discussion.PostInfo;
 import org.alfresco.service.cmr.discussion.PostWithReplies;
 import org.alfresco.service.cmr.discussion.TopicInfo;
-import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -100,9 +100,9 @@ public class DiscussionServiceImpl implements DiscussionService
     private ContentService contentService;
     private TaggingService taggingService;
     private NamespaceService namespaceService;
-    private FileFolderService fileFolderService;
     private TransactionService transactionService;
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
+    private TenantService tenantService;
     
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -139,11 +139,6 @@ public class DiscussionServiceImpl implements DiscussionService
         this.namespaceService = namespaceService;
     }
     
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
-    
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -155,6 +150,14 @@ public class DiscussionServiceImpl implements DiscussionService
     public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry)
     {
         this.cannedQueryRegistry = cannedQueryRegistry;
+    }
+    
+    /**
+     * Set the {@link TenantService}
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
     
     /**
@@ -832,6 +835,7 @@ public class DiscussionServiceImpl implements DiscussionService
                // References a node outside of this topic
                continue;
             }
+            nodeRef = tenantService.getBaseName(nodeRef);
             if (id.equals(e.getId()))
             {
                // Self reference

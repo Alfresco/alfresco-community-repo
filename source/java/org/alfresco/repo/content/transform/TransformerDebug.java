@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -57,6 +56,8 @@ import org.apache.commons.logging.LogFactory;
 public class TransformerDebug
 {
     private static final Log logger = LogFactory.getLog(TransformerDebug.class);
+    private static final TransformerLog info = new TransformerLog();
+    private static final String NO_TRANSFORMERS = "No transformers";
 
     private enum Call
     {
@@ -119,16 +120,19 @@ public class TransformerDebug
         private Call callType;
         private int childId;
         private Set<UnavailableTransformer> unavailableTransformers;
-// See debug(String, Throwable) as to why this is commented out
-//      private Throwable lastThrowable;
-
-        private Frame(Frame parent, String fromUrl, String sourceMimetype, String targetMimetype,
-                TransformationOptions options, Call pushCall, boolean origDebugOutput)
+        private String failureReason;
+        private long sourceSize;
+        private String transformerName;
+        
+        private Frame(Frame parent, String transformerName, String fromUrl, String sourceMimetype, String targetMimetype,
+                long sourceSize, TransformationOptions options, Call pushCall, boolean origDebugOutput)
         {
             this.id = parent == null ? -1 : ++parent.childId;
             this.fromUrl = fromUrl;
+            this.transformerName = transformerName;
             this.sourceMimetype = sourceMimetype;
             this.targetMimetype = targetMimetype;
+            this.sourceSize = sourceSize;
             this.options = options;
             this.callType = pushCall;
             this.origDebugOutput = origDebugOutput;
@@ -143,18 +147,48 @@ public class TransformerDebug
             }
             return id;
         }
+        
+        private void setFailureReason(String failureReason)
+        {
+            this.failureReason = failureReason;
+        }
+
+        private String getFailureReason()
+        {
+            return failureReason;
+        }
+
+        private void setSourceSize(long sourceSize)
+        {
+            this.sourceSize = sourceSize;
+        }
+
+        public long getSourceSize()
+        {
+            return sourceSize;
+        }
+
+        private void setTransformerName(String transformerName)
+        {
+            this.transformerName = transformerName;
+        }
+
+        public String getTransformerName()
+        {
+            return transformerName;
+        }
     }
     
     private class UnavailableTransformer
     {
         private final String name;
-        private final String reason;
+        private final long maxSourceSizeKBytes;
         private final transient boolean debug;
         
-        UnavailableTransformer(String name, String reason, boolean debug)
+        UnavailableTransformer(String name, long maxSourceSizeKBytes, boolean debug)
         {
             this.name = name;
-            this.reason = reason;
+            this.maxSourceSizeKBytes = maxSourceSizeKBytes;
             this.debug = debug;
         }
         
@@ -162,7 +196,7 @@ public class TransformerDebug
         public int hashCode()
         {
             int hashCode = 37 * name.hashCode();
-            hashCode += 37 * reason.hashCode();
+            hashCode += 37 * maxSourceSizeKBytes;
             return hashCode;
         }
 
@@ -178,7 +212,7 @@ public class TransformerDebug
                 UnavailableTransformer that = (UnavailableTransformer) obj;
                 return
                     EqualsHelper.nullSafeEquals(name, that.name) &&
-                    EqualsHelper.nullSafeEquals(reason, that.reason);
+                    maxSourceSizeKBytes == that.maxSourceSizeKBytes;
             }
             else
             {
@@ -248,7 +282,7 @@ public class TransformerDebug
         }
     }
     
-    private void push(String name, String fromUrl, String sourceMimetype, String targetMimetype,
+    private void push(String transformerName, String fromUrl, String sourceMimetype, String targetMimetype,
             long sourceSize, TransformationOptions options, Call callType)
     {
         Deque<Frame> ourStack = ThreadInfo.getStack();
@@ -256,18 +290,20 @@ public class TransformerDebug
 
         if (callType == Call.TRANSFORM && frame != null && frame.callType == Call.AVAILABLE)
         {
+            frame.setTransformerName(transformerName);
+            frame.setSourceSize(sourceSize);
             frame.callType = Call.AVAILABLE_AND_TRANSFORM;
         }
 
         // Create a new frame. Logging level is set to trace if the file size is 0
         boolean origDebugOutput = ThreadInfo.setDebugOutput(ThreadInfo.getDebugOutput() && sourceSize != 0);
-        frame = new Frame(frame, fromUrl, sourceMimetype, targetMimetype, options, callType, origDebugOutput);
+        frame = new Frame(frame, transformerName, fromUrl, sourceMimetype, targetMimetype, sourceSize, options, callType, origDebugOutput);
         ourStack.push(frame);
             
         if (callType == Call.TRANSFORM)
         {
             // Log the basic info about this transformation
-            logBasicDetails(frame, sourceSize, name, (ourStack.size() == 1));
+            logBasicDetails(frame, sourceSize, transformerName, (ourStack.size() == 1));
         }
     }
     
@@ -288,20 +324,12 @@ public class TransformerDebug
                 String name = (!isTransformableStack.isEmpty())
                     ? isTransformableStack.getFirst()
                     : getName(transformer);
-                String reason = "> "+fileSize(maxSourceSizeKBytes*1024);
                 boolean debug = (maxSourceSizeKBytes != 0);
-                if (ourStack.size() == 1)
+                if (frame.unavailableTransformers == null)
                 {
-                    if (frame.unavailableTransformers == null)
-                    {
-                        frame.unavailableTransformers = new HashSet<UnavailableTransformer>();
-                    }
-                    frame.unavailableTransformers.add(new UnavailableTransformer(name, reason, debug));
+                    frame.unavailableTransformers = new HashSet<UnavailableTransformer>();
                 }
-                else
-                {
-                    log("-- " + name + ' ' + reason, debug);
-                }
+                frame.unavailableTransformers.add(new UnavailableTransformer(name, maxSourceSizeKBytes, debug));
             }
         }
     }
@@ -315,18 +343,25 @@ public class TransformerDebug
         {
             Deque<Frame> ourStack = ThreadInfo.getStack();
             Frame frame = ourStack.peek();
+            boolean firstLevel = ourStack.size() == 1;
 
             // Override setDebugOutput(false) to allow debug when there are transformers but they are all unavailable
             // Note once turned on we don't turn it off again.
-            if (transformers.size() == 0 &&
-                frame.unavailableTransformers != null &&
-                frame.unavailableTransformers.size() != 0) {
-                ThreadInfo.setDebugOutput(true);
+            if (transformers.size() == 0)
+            {
+                frame.setFailureReason(NO_TRANSFORMERS);
+                if (frame.unavailableTransformers != null &&
+                    frame.unavailableTransformers.size() != 0)
+                {
+                    ThreadInfo.setDebugOutput(true);
+                }
             }
+            frame.setSourceSize(sourceSize);
+            
             // Log the basic info about this transformation
             logBasicDetails(frame, sourceSize,
                     calledFrom + ((transformers.size() == 0) ? " NO transformers" : ""),
-                    (ourStack.size() == 1));
+                    firstLevel);
 
             // Report available and unavailable transformers
             char c = 'a';
@@ -346,8 +381,8 @@ public class TransformerDebug
                 for (UnavailableTransformer unavailable: frame.unavailableTransformers)
                 {
                     int pad = longestNameLength - unavailable.name.length();
-                    log("--" + (c++) + ") " + unavailable.name + spaces(pad+1) + unavailable.reason,
-                        unavailable.debug);
+                    String reason = "> "+fileSize(unavailable.maxSourceSizeKBytes*1024);
+                    log("--" + (c++) + ") " + unavailable.name + spaces(pad+1) + reason, unavailable.debug);
                 }
             }
         }
@@ -476,29 +511,91 @@ public class TransformerDebug
         if (!ourStack.isEmpty())
         {
             Frame frame = ourStack.peek();
+
             if ((frame.callType == callType) ||
                 (frame.callType == Call.AVAILABLE_AND_TRANSFORM && callType == Call.AVAILABLE))
             {
-                if (!suppressFinish && (ourStack.size() == 1 || logger.isTraceEnabled()))
+                int size = ourStack.size();
+                String ms = ms(System.currentTimeMillis() - frame.start);
+
+                logInfo(frame, size, ms);
+                
+                boolean firstLevel = size == 1;
+                if (!suppressFinish && (firstLevel || logger.isTraceEnabled()))
                 {
-                    boolean topFrame = ourStack.size() == 1;
-                    log("Finished in " +
-                        ms(System.currentTimeMillis() - frame.start) +
+                    log("Finished in " + ms +
                         (frame.callType == Call.AVAILABLE ? " Transformer NOT called" : "") +
-                        (topFrame ? "\n" : ""), 
-                        topFrame);
+                        (firstLevel ? "\n" : ""), 
+                        firstLevel);
                 }
                 
                 setDebugOutput(frame.origDebugOutput);
                 ourStack.pop();
-                
-// See debug(String, Throwable) as to why this is commented out
-//                if (ourStack.size() >= 1)
-//                {
-//                    ourStack.peek().lastThrowable = frame.lastThrowable;
-//                }
             }
         }
+    }
+
+    private void logInfo(Frame frame, int size, String ms)
+    {
+        if (info.isDebugEnabled())
+        {
+            String failureReason = frame.getFailureReason();
+            boolean firstLevel = size == 1;
+            String sourceExt = getMimetypeExt(frame.sourceMimetype);
+            String targetExt = getMimetypeExt(frame.targetMimetype);
+            String fileName = getFileName(frame.options, firstLevel, frame.sourceSize);
+            long sourceSize = frame.getSourceSize();
+            String transformerName = frame.getTransformerName();
+            String level = null;
+            boolean debug = false;
+            if (NO_TRANSFORMERS.equals(failureReason))
+            {
+                debug = firstLevel;
+                level = "INFO";
+                failureReason = NO_TRANSFORMERS;
+                if (frame.unavailableTransformers != null)
+                {
+                    level = "WARN";
+                    long smallestMaxSourceSizeKBytes = Long.MAX_VALUE;
+                    for (UnavailableTransformer unavailable: frame.unavailableTransformers)
+                    {
+                        if (smallestMaxSourceSizeKBytes > unavailable.maxSourceSizeKBytes)
+                        {
+                            smallestMaxSourceSizeKBytes = unavailable.maxSourceSizeKBytes;
+                        }
+                    }
+                    failureReason = "No transformers as file is > "+fileSize(smallestMaxSourceSizeKBytes*1024);
+                }
+            }
+            else if (frame.callType == Call.TRANSFORM)
+            {
+                level = failureReason == null || failureReason.length() == 0 ? "INFO" : "ERROR";
+                
+                // Use TRACE logging for all but the first TRANSFORM
+                debug = size == 1 || (size == 2 && ThreadInfo.getStack().peekLast().callType != Call.TRANSFORM);
+            }
+            
+            if (level != null)
+            {
+                infoLog(getReference(debug), sourceExt, targetExt, level, fileName, sourceSize, transformerName, failureReason, ms, debug);
+            }
+        }
+    }
+    
+    private void infoLog(String reference, String sourceExt, String targetExt, String level, String fileName,
+            long sourceSize, String transformerName, String failureReason, String ms, boolean debug)
+    {
+        String message =
+                "  "+reference +
+                sourceExt +
+                targetExt +
+                (level == null ? "" : level+' ') +
+                (fileName == null ? "" : fileName) +
+                (sourceSize >= 0 ? ' '+fileSize(sourceSize) : "") +
+                (transformerName == null ? "" : ' '+transformerName) +
+                (failureReason == null ? "" : ' '+failureReason) +
+                ' '+ms;
+        info.log(message,  debug);
     }
 
     /**
@@ -507,7 +604,7 @@ public class TransformerDebug
     public boolean isEnabled()
     {
         // Don't check ThreadInfo.getDebugOutput() as availableTransformers() may upgrade from trace to debug.
-        return logger.isDebugEnabled();
+        return logger.isDebugEnabled() || info.isDebugEnabled();
     }
     
     /**
@@ -545,40 +642,32 @@ public class TransformerDebug
         if (isEnabled())
         {
             log(message + ' ' + t.getMessage());
-
-//            // Generally the full stack is not needed as transformer
-//            // Exceptions get logged as a Error higher up, so including
-//            // the stack trace has been found not to be needed. Keeping
-//            // the following code and code that sets lastThrowable just
-//            // in case we need it after all.
-//
-//            Frame frame = ThreadInfo.getStack().peek();
-//            boolean newThrowable = isNewThrowable(frame.lastThrowable, t);
-//            frame.lastThrowable = t;
-//
-//            if (newThrowable)
-//            {
-//                log(message, t, true);
-//            }
-//            else
-//            {
-//                log(message + ' ' + t.getMessage());
-//            }
+            
+            Deque<Frame> ourStack = ThreadInfo.getStack();
+            if (!ourStack.isEmpty())
+            {
+                Frame frame = ourStack.peek();
+                frame.setFailureReason(message +' '+ getRootCauseMessage(t));
+            }
         }
     }
 
-//    private boolean isNewThrowable(Throwable lastThrowable, Throwable t)
-//    {
-//        while (t != null)
-//        {
-//            if (lastThrowable == t)
-//            {
-//                return false;
-//            }
-//            t = t.getCause();
-//        }
-//        return true;
-//    }
+    private String getRootCauseMessage(Throwable t)
+    {
+        Throwable cause = t;
+        while (cause != null)
+        {
+            t = cause;
+            cause = t.getCause();
+        }
+        
+        String message = t.getMessage();
+        if (message == null || message.length() == 0)
+        {
+            message = t.getClass().getSimpleName();
+        }
+        return message;
+    }
 
     private void log(String message)
     {
@@ -592,13 +681,13 @@ public class TransformerDebug
     
     private void log(String message, Throwable t, boolean debug)
     {
-        if (debug && ThreadInfo.getDebugOutput())
+        if (debug && ThreadInfo.getDebugOutput() && logger.isDebugEnabled())
         {
-            logger.debug(getReference()+message, t);
+            logger.debug(getReference(false)+message, t);
         }
         else if (logger.isTraceEnabled())
         {
-            logger.trace(getReference()+message, t);
+            logger.trace(getReference(false)+message, t);
         }
     }
 
@@ -609,19 +698,15 @@ public class TransformerDebug
      */
     public <T extends Throwable> T setCause(T t)
     {
-// See debug(String, Throwable) as to why this is commented out
-//        if (isEnabled())
-//        {
-//            Deque<Frame> ourStack = ThreadInfo.getStack();
-//            if (!ourStack.isEmpty())
-//            {
-//                ourStack.peek().lastThrowable = t;
-//            }
-//        }
         return t;
     }
     
-    private String getReference()
+    /**
+     * Returns a N.N.N style reference to the transformation.
+     * @param firstLevelOnly indicates if only the top level should be included.
+     * @return a padded (fixed length) reference.
+     */
+    private String getReference(boolean firstLevelOnly)
     {
         StringBuilder sb = new StringBuilder("");
         Frame frame = null;
@@ -634,6 +719,10 @@ public class TransformerDebug
             {
                 sb.append(frame.getId());
                 lengthOfFirstId = sb.length();
+                if (firstLevelOnly)
+                {
+                    break;
+                }
             }
             else
             {
@@ -768,5 +857,32 @@ public class TransformerDebug
         sb.append(unit);
 
         return sb.toString();
+    }
+}
+
+class TransformerLog
+{
+    private static final Log logger = LogFactory.getLog(TransformerLog.class);
+
+    void log(String message, boolean debug)
+    {
+        if (debug)
+        {
+            logger.debug(message);
+        }
+        else
+        {
+            logger.trace(message);
+        }
+    }
+
+    public boolean isDebugEnabled()
+    {
+        return logger.isDebugEnabled();
+    }
+
+    public boolean isTraceEnabled()
+    {
+        return logger.isTraceEnabled();
     }
 }

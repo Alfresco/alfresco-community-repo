@@ -70,7 +70,7 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
             bytes[i] = (byte)i;
         }
         // create the dummyRegistry
-        dummyRegistry = new ContentTransformerRegistry();
+        dummyRegistry = new ContentTransformerRegistry(new TransformerSelectorImpl());
         // create some dummy transformers for reliability tests
         new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, B, 10L);
         new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, B, 10L);

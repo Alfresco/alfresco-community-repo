@@ -35,7 +35,10 @@ import org.apache.commons.logging.LogFactory;
  * <p>
  * The transformers themselves are used to determine the applicability
  * of a particular transformation.
- *
+ * <p>
+ * The actual selection of a transformer is done by the injected
+ * {@link TransformerSelector}.
+ * 
  * @see org.alfresco.repo.content.transform.ContentTransformer
  * 
  * @author Derek Hulley
@@ -46,11 +49,14 @@ public class ContentTransformerRegistry
     
     private List<ContentTransformer> transformers;
     
+    private final TransformerSelector transformerSelector;
+    
     /**
      * @param mimetypeMap all the mimetypes available to the system
      */
-    public ContentTransformerRegistry()
+    public ContentTransformerRegistry(TransformerSelector transformerSelector)
     {
+        this.transformerSelector = transformerSelector;
         this.transformers = new ArrayList<ContentTransformer>(10);
     }
     
@@ -108,67 +114,7 @@ public class ContentTransformerRegistry
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         // Get the list of transformers
-        List<ContentTransformer> transformers = findTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-        final Map<ContentTransformer,Long> activeTransformers = new HashMap<ContentTransformer, Long>();
-        
-        // identify the performance of all the transformers
-         for (ContentTransformer transformer : transformers)
-        {
-            long transformationTime = transformer.getTransformationTime();
-            activeTransformers.put(transformer, transformationTime);
-        }
-         
-        // sort by performance (quicker is "better")
-        List<ContentTransformer> sorted = new ArrayList<ContentTransformer>(activeTransformers.keySet());
-        Collections.sort(sorted, new Comparator<ContentTransformer>() {
-
-            @Override
-            public int compare(ContentTransformer a, ContentTransformer b)
-            {
-                return activeTransformers.get(a).compareTo(activeTransformers.get(b));
-            }
-            
-        });
-        
-        // All done
-        return sorted;
-    }
-    
-    /**
-     * Gets all transformers, of equal reliability, that can perform the requested transformation.
-     * 
-     * @return Returns best transformer for the translation - null if all
-     *      score 0.0 on reliability
-     */
-    private List<ContentTransformer> findTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
-    {
-        List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(2);
-        boolean foundExplicit = false;
-        
-        // loop through transformers
-        for (ContentTransformer transformer : this.transformers)
-        {
-            if (transformer.isTransformable(sourceMimetype, sourceSize, targetMimetype, options) == true)
-            {
-                if (transformer.isExplicitTransformation(sourceMimetype, targetMimetype, options) == true)
-                {
-                    if (foundExplicit == false)
-                    {
-                        transformers.clear();
-                        foundExplicit = true;
-                    }
-                    transformers.add(transformer);
-                }
-                else
-                {
-                    if (foundExplicit == false)
-                    {
-                        transformers.add(transformer);
-                    }
-                }
-            }
-        }
-        // done
+        List<ContentTransformer> transformers = transformerSelector.selectTransformers(this.transformers, sourceMimetype, sourceSize, targetMimetype, options);
         if (logger.isDebugEnabled())
         {
             logger.debug("Searched for transformer: \n" +

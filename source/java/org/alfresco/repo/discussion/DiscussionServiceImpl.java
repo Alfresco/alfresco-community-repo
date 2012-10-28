@@ -584,7 +584,7 @@ public class DiscussionServiceImpl implements DiscussionService
        NodeBackedEntity node = results.getPage().get(0);
        
        // Wrap and return
-       return buildPost(node.getNodeRef(), topic, node.getName(), null);
+       return buildPost(tenantService.getBaseName(node.getNodeRef()), topic, node.getName(), null);
     }
 
    
@@ -820,7 +820,7 @@ public class DiscussionServiceImpl implements DiscussionService
       Map<Long,NodeRef> idToNodeRef = new HashMap<Long, NodeRef>();
       for(NodeWithTargetsEntity e : results.getPage())
       {
-         idToNodeRef.put(e.getId(), e.getNodeRef());
+         idToNodeRef.put(e.getId(), tenantService.getBaseName(e.getNodeRef()));
       }
       
       Map<NodeRef,List<NodeWithTargetsEntity>> idToReplies = new HashMap<NodeRef, List<NodeWithTargetsEntity>>();
@@ -869,7 +869,7 @@ public class DiscussionServiceImpl implements DiscussionService
          {
             for (NodeWithTargetsEntity entity : replies)
             {
-               calculateRepliesPreLoad(entity.getNodeRef(), preLoad, idToReplies, levels-1);
+               calculateRepliesPreLoad(tenantService.getBaseName(entity.getNodeRef()), preLoad, idToReplies, levels-1);
             }
          }
       }
@@ -885,7 +885,7 @@ public class DiscussionServiceImpl implements DiscussionService
          {
             for (NodeWithTargetsEntity entity : replyEntities)
             {
-               PostInfo replyPost = buildPost(entity.getNodeRef(), post.getTopic(), entity.getName(), null);
+               PostInfo replyPost = buildPost(tenantService.getBaseName(entity.getNodeRef()), post.getTopic(), entity.getName(), null);
                replies.add(wrap(replyPost, idToReplies, levels-1));
             }
          }

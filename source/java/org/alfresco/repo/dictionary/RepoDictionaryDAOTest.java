@@ -116,13 +116,13 @@ public class RepoDictionaryDAOTest extends TestCase
     
     private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
     {
-        SimpleCache<String,DictionaryRegistry> dictionaryCache = new DefaultSimpleCache<String, DictionaryRegistry>(11, getClass().getName());   
+        SimpleCache<String,DictionaryRegistry> dictionaryCache = new DefaultSimpleCache<String, DictionaryRegistry>(11, getClass().getName() + ".dictionary");
         dictionaryDAO.setDictionaryRegistryCache(dictionaryCache);
     }
     
     private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
     {
-        SimpleCache<String, NamespaceRegistry> namespaceCache = new NullCache<String, NamespaceRegistry>();   
+        SimpleCache<String, NamespaceRegistry> namespaceCache = new DefaultSimpleCache<String, NamespaceRegistry>(11, getClass().getName() + ".namespace");
         namespaceDAO.setNamespaceRegistryCache(namespaceCache);
     }
     

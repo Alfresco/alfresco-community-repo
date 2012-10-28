@@ -206,24 +206,24 @@ public class SubscriptionServiceActivitiesTest extends TestCase
                 createSite(userId1+"mod2", SiteVisibility.MODERATED);
                 siteService.setMembership(userId1+"mod2", userId1, SiteModel.SITE_MANAGER);
                 
+                List<String> feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 0, feed.size());
+                
+                feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 0, feed.size());
+                
+                // userId1 + 5, userId2 + 0
+                generateFeed();
+                
+                feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 5, feed.size());
+                
+                feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 0, feed.size());
+                
                 return null;
             }
         }, AuthenticationUtil.getAdminUserName());
-        
-        List<String> feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 0, feed.size());
-        
-        feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 0, feed.size());
-        
-        // userId1 + 5, userId2 + 0
-        generateFeed();
-        
-        feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 5, feed.size());
-        
-        feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 0, feed.size());
         
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -245,14 +245,22 @@ public class SubscriptionServiceActivitiesTest extends TestCase
             }
         }, userId2);
         
-        // userId1 + 5, userId2 + 2
-        generateFeed();
-        
-        feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 7, feed.size());
-        
-        feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 2, feed.size());
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        {
+            @Override
+            public Object doWork() throws Exception
+            {
+                // userId1 + 5, userId2 + 2
+                generateFeed();
+                
+                List<String> feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 7, feed.size());
+                
+                feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 2, feed.size());
+                return null;
+            }
+        }, AuthenticationUtil.getAdminUserName());
         
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -268,38 +276,38 @@ public class SubscriptionServiceActivitiesTest extends TestCase
             }
         }, userId1);
         
-        // userId1 + 5, userId2 + 1
-        generateFeed();
-        
-        feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 12, feed.size());
-        
-        // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
-        feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 3, feed.size());
-        
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             @Override
             public Object doWork() throws Exception
             {
+                // userId1 + 5, userId2 + 1
+                generateFeed();
+                
+                List <String> feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 12, feed.size());
+                
+                // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
+                feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 3, feed.size());
+
                 siteService.setMembership(userId1+"priv2", userId2, SiteModel.SITE_CONSUMER);
                 siteService.setMembership(userId1+"mod2", userId2, SiteModel.SITE_MANAGER);
                 
+                // userId1 + 2, userId2 + 2
+                generateFeed();
+                
+                feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 14, feed.size());
+                
+                // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
+                feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 5, feed.size());
+
                 return null;
             }
         }, AuthenticationUtil.getAdminUserName());
-        
-        // userId1 + 2, userId2 + 2
-        generateFeed();
-        
-        feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 14, feed.size());
-        
-        // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
-        feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 5, feed.size());
-        
+                
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             @Override
@@ -315,53 +323,44 @@ public class SubscriptionServiceActivitiesTest extends TestCase
             }
         }, userId1);
         
-        // userId1 + 5, userId2 + 3
-        generateFeed();
-        
-        feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 19, feed.size());
-        
-        // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
-        feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 8, feed.size());
-        
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             @Override
             public Object doWork() throws Exception
             {
+                // userId1 + 5, userId2 + 3
+                generateFeed();
+                
+                List<String> feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 19, feed.size());
+                
+                // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
+                feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 8, feed.size());
+                
                 deleteSite(userId1+"pub");
                 deleteSite(userId1+"priv1");
                 deleteSite(userId1+"priv2");
                 deleteSite(userId1+"mod1");
                 deleteSite(userId1+"mod2");
                 
-                return null;
-            }
-        }, AuthenticationUtil.getAdminUserName());
-        
-        feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 2, feed.size());
-        
-        feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 2, feed.size());
-        
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            @Override
-            public Object doWork() throws Exception
-            {
+                feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 2, feed.size());
+                
+                feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 2, feed.size());
+                
                 deletePerson(userId1);
                 deletePerson(userId2);
                 
+                feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 0, feed.size());
+                
+                feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
+                assertEquals(feed.toString(), 0, feed.size());
+
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());
-        
-        feed = activityService.getUserFeedEntries(userId1, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 0, feed.size());
-        
-        feed = activityService.getUserFeedEntries(userId2, "json", null, false, false, null, null);
-        assertEquals(feed.toString(), 0, feed.size());
+        }, AuthenticationUtil.getAdminUserName());       
     }
 }

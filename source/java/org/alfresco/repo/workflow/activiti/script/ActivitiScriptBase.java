@@ -32,6 +32,7 @@ import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 
 /**
@@ -167,12 +168,14 @@ public class ActivitiScriptBase
         {
             userName = AuthenticationUtil.getFullyAuthenticatedUser();
         }
-        if (userName != null)
+        // The "System" user is a special case, which has no person object associated with it.
+        if(userName != null && !AuthenticationUtil.SYSTEM_USER_NAME.equals(userName))
         {
             ServiceRegistry services = getServiceRegistry();
-            NodeRef person = services.getPersonService().getPerson(userName);
-            if(person !=null)
+            PersonService personService = services.getPersonService();
+            if (personService.personExists(userName))
             {
+                NodeRef person = personService.getPerson(userName);
                 return new ActivitiScriptNode(person, services);
             }
         }

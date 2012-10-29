@@ -35,7 +35,7 @@ function doclist_getAllNodes(parsedArgs, filterParams, query, totalItemCount)
       if (parentNode !== null)
       {
          var skip = -1,
-               max = -1;
+             max = -1;
 
          if (args.size != null)
          {
@@ -48,11 +48,13 @@ function doclist_getAllNodes(parsedArgs, filterParams, query, totalItemCount)
          }
 
          var sortField = (args.sortField == null ? "cm:name" : args.sortField),
-            sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
+             sortAsc = (((args.sortAsc == null) || (args.sortAsc == "true")) ? true : false);
 
          // Get paged set
          requestTotalCountMax = skip + REQUEST_MAX;
-         var pagedResult = parentNode.childFileFolders(true, true, filterParams.ignoreTypes, skip, max, requestTotalCountMax, sortField, sortAsc, "TODO");
+         var pagedResult = parentNode.childFileFolders(
+            true, true, filterParams.ignoreTypes.concat(filterParams.ignoreAspects),
+            skip, max, requestTotalCountMax, sortField, sortAsc, "");
 
          allNodes = pagedResult.page;
          totalRecords = pagedResult.totalResultCountUpper;

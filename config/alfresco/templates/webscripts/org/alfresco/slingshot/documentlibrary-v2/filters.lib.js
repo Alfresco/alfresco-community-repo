@@ -20,7 +20,14 @@ var Filters =
       "fm:forums",
       "fm:forum",
       "fm:topic",
-      "fm:post",
+      "fm:post"
+   ],
+   
+   /**
+    * Aspects ignored from the canned query based resultset
+    */
+   IGNORED_ASPECTS:
+   [
       "cm:checkedOut"
    ],
 
@@ -64,7 +71,8 @@ var Filters =
          language: "lucene",
          templates: null,
          variablePath: true,
-         ignoreTypes: Filters.IGNORED_TYPES
+         ignoreTypes: Filters.IGNORED_TYPES,
+         ignoreAspects: Filters.IGNORED_ASPECTS
       };
 
       optional = optional || {};

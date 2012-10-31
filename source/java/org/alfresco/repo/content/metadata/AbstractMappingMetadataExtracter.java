@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
@@ -92,7 +93,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
-abstract public class AbstractMappingMetadataExtracter implements MetadataExtracter
+abstract public class AbstractMappingMetadataExtracter implements MetadataExtracter, MetadataEmbedder
 {
     public static final String NAMESPACE_PROPERTY_PREFIX = "namespace.prefix.";
     private static final String ERR_TYPE_CONVERSION = "metadata.extraction.err.type_conversion";
@@ -105,11 +106,14 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private boolean initialized;
     
     private Set<String> supportedMimetypes;
+    private Set<String> supportedEmbedMimetypes;
     private OverwritePolicy overwritePolicy;
     private boolean failOnTypeConversion;
     protected Set<DateFormat> supportedDateFormats = new HashSet<DateFormat>(0);
     private Map<String, Set<QName>> mapping;
+    private Map<QName, Set<String>> embedMapping;
     private boolean inheritDefaultMapping;
+    private boolean inheritDefaultEmbedMapping;
 
     /**
      * Default constructor.  If this is called, then {@link #isSupported(String)} should
@@ -137,8 +141,22 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         overwritePolicy = OverwritePolicy.PRAGMATIC;
         failOnTypeConversion = true;
         mapping = null;                     // The default will be fetched
+        embedMapping = null;
         inheritDefaultMapping = false;      // Any overrides are complete 
+        inheritDefaultEmbedMapping = false;
         initialized = false;
+    }
+
+    /**
+     * Constructor that can be used when the list of supported extract and embed mimetypes is known up front.
+     *
+     * @param supportedMimetypes    the set of mimetypes supported for extraction by default
+     * @param supportedEmbedMimetypes    the set of mimetypes supported for embedding by default
+     */
+    protected AbstractMappingMetadataExtracter(Set<String> supportedMimetypes, Set<String> supportedEmbedMimetypes)
+    {
+        this(supportedMimetypes);
+        this.supportedEmbedMimetypes = supportedEmbedMimetypes;
     }
 
     /**
@@ -187,7 +205,18 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         this.supportedMimetypes.clear();
         this.supportedMimetypes.addAll(supportedMimetypes);
     }
-    
+
+    /**
+     * Set the mimetypes that are supported for embedding.
+     *
+     * @param supportedEmbedMimetypes
+     */
+    public void setSupportedEmbedMimetypes(Collection<String> supportedEmbedMimetypes)
+    {
+        this.supportedEmbedMimetypes.clear();
+        this.supportedEmbedMimetypes.addAll(supportedEmbedMimetypes);
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -197,7 +226,21 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     {
         return supportedMimetypes.contains(sourceMimetype);
     }
-    
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #setSupportedEmbedMimetypes(Collection)
+     */
+    public boolean isEmbeddingSupported(String sourceMimetype)
+    {
+        if (supportedEmbedMimetypes == null)
+        {
+            return false;
+        }
+        return supportedEmbedMimetypes.contains(sourceMimetype);
+    }
+
     /**
      * TODO - This doesn't appear to be used, so should be removed / deprecated / replaced
      * @return      Returns <code>1.0</code> if the mimetype is supported, otherwise <tt>0.0</tt>
@@ -309,6 +352,23 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
+     * Set if the embed property mappings augment or override the mapping generically provided by the
+     * extracter implementation.  The default is <tt>false</tt>, i.e. any mapping set completely
+     * replaces the {@link #getDefaultEmbedMapping() default mappings}.
+     *
+     * @param inheritDefaultEmbedMapping <tt>true</tt> to add the configured embed mapping
+     *                              to the list of default embed mappings.
+     *
+     * @see #getDefaultEmbedMapping()
+     * @see #setEmbedMapping(Map)
+     * @see #setEmbedMappingProperties(Properties)
+     */
+    public void setInheritDefaultEmbedMapping(boolean inheritDefaultEmbedMapping)
+    {
+        this.inheritDefaultEmbedMapping = inheritDefaultEmbedMapping;
+    }
+
+    /**
      * Set the mapping from document metadata to system metadata.  It is possible to direct
      * an extracted document property to several system properties.  The conversion between
      * the document property types and the system property types will be done by the
@@ -319,6 +379,19 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public void setMapping(Map<String, Set<QName>> mapping)
     {
         this.mapping = mapping;
+    }
+
+    /**
+     * Set the embed mapping from document metadata to system metadata.  It is possible to direct
+     * an model properties to several content file metadata keys.  The conversion between
+     * the model property types and the content file metadata keys types will be done by the
+     * {@link org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter default converter}.
+     *
+     * @param embedMapping       an embed mapping from model properties to content file metadata keys
+     */
+    public void setEmbedMapping(Map<QName, Set<String>> embedMapping)
+    {
+        this.embedMapping = embedMapping;
     }
 
     /**
@@ -346,7 +419,33 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     {
         mapping = readMappingProperties(mappingProperties);
     }
-    
+
+    /**
+     * Set the properties that contain the embed mapping from model properties to content file metadata.
+     * This is an alternative to the {@link #setEmbedMapping(Map)} method.  Any mappings already
+     * present will be cleared out.
+     *
+     * The property mapping is of the form:
+     * <pre>
+     * # Namespaces prefixes
+     * namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
+     * namespace.prefix.my=http://www....com/alfresco/1.0
+     *
+     * # Mapping
+     * cm\:author=editor
+     * cm\:title=title
+     * cm\:summary=user1
+     * cm\:description=description,user2
+     * </pre>
+     * The embed mapping can therefore be from a model property onto several content file metadata properties.
+     *
+     * @param embedMappingProperties     the properties that map model properties to content file metadata properties
+     */
+    public void setEmbedMappingProperties(Properties embedMappingProperties)
+    {
+        embedMapping = readEmbedMappingProperties(embedMappingProperties);
+    }
+
     /**
      * Helper method for derived classes to obtain the mappings that will be applied to raw
      * values.  This should be called after initialization in order to guarantee the complete
@@ -372,7 +471,29 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         return Collections.unmodifiableMap(mapping);
     }
-    
+
+    /**
+     * Helper method for derived classes to obtain the embed mappings.
+     * This should be called after initialization in order to guarantee the complete
+     * map is given.
+     * <p>
+     * Normally, the list of properties that can be embedded in a document is fixed and
+     * well-known..  But some implementations may have
+     * an extra, indeterminate set of values available for embedding.  If the embedding of
+     * these runtime parameters is expensive, then the keys provided by the return value can
+     * be used to embed values in the documents.  The metadata embedding becomes fully
+     * configuration-driven, i.e. declaring further mappings will result in more values being
+     * embedded in the documents.
+     */
+    protected final Map<QName, Set<String>> getEmbedMapping()
+    {
+        if (!initialized)
+        {
+            throw new UnsupportedOperationException("The complete embed mapping is only available after initialization.");
+        }
+        return Collections.unmodifiableMap(embedMapping);
+    }
+
     /**
      * A utility method to read mapping properties from a resource file and convert to the map form.
      * 
@@ -490,15 +611,137 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                             "   Mapping: " + entry);
                 }
             }
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-                logger.debug("Added mapping from " + documentProperty + " to " + qnames);
+                logger.trace("Added mapping from " + documentProperty + " to " + qnames);
             }
         }
         // Done
         return convertedMapping;
     }
-    
+
+    /**
+     * A utility method to read embed mapping properties from a resource file and convert to the map form.
+     *
+     * @param propertiesUrl     A standard Properties file URL location
+     *
+     * @see #setEmbedMappingProperties(Properties)
+     */
+    protected Map<QName, Set<String>> readEmbedMappingProperties(String propertiesUrl)
+    {
+        InputStream is = null;
+        try
+        {
+            is = getClass().getClassLoader().getResourceAsStream(propertiesUrl);
+            if(is == null)
+            {
+                return null;
+            }
+            Properties props = new Properties();
+            props.load(is);
+            // Process it
+            Map<QName, Set<String>> map = readEmbedMappingProperties(props);
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Loaded embed mapping properties from resource: " + propertiesUrl);
+            }
+            return map;
+        }
+        catch (Throwable e)
+        {
+            throw new AlfrescoRuntimeException(
+                    "Unable to load properties file to read extracter embed mapping properties: \n" +
+                    "   Extracter:  " + this + "\n" +
+                    "   Bundle:     " + propertiesUrl,
+                    e);
+        }
+        finally
+        {
+            if (is != null)
+            {
+                try { is.close(); } catch (Throwable e) {}
+            }
+        }
+    }
+
+    /**
+     * A utility method to convert mapping properties to the Map form.
+     * <p>
+     * Different from readMappingProperties in that keys are the Alfresco QNames
+     * and values are file metadata properties.
+     *
+     * @see #setMappingProperties(Properties)
+     */
+    protected Map<QName, Set<String>> readEmbedMappingProperties(Properties mappingProperties)
+    {
+        Map<String, String> namespacesByPrefix = new HashMap<String, String>(5);
+        // Get the namespaces
+        for (Map.Entry<Object, Object> entry : mappingProperties.entrySet())
+        {
+            String propertyName = (String) entry.getKey();
+            if (propertyName.startsWith(NAMESPACE_PROPERTY_PREFIX))
+            {
+                String prefix = propertyName.substring(17);
+                String namespace = (String) entry.getValue();
+                namespacesByPrefix.put(prefix, namespace);
+            }
+        }
+        // Create the mapping
+        Map<QName, Set<String>> convertedMapping = new HashMap<QName, Set<String>>(17);
+        for (Map.Entry<Object, Object> entry : mappingProperties.entrySet())
+        {
+            String modelProperty = (String) entry.getKey();
+            String metadataKeysString = (String) entry.getValue();
+            if (modelProperty.startsWith(NAMESPACE_PROPERTY_PREFIX))
+            {
+                // Ignore these now
+                continue;
+            }
+
+                int index = modelProperty.indexOf(QName.NAMESPACE_PREFIX);
+                if (index > -1 && modelProperty.charAt(0) != QName.NAMESPACE_BEGIN)
+                {
+                    String prefix = modelProperty.substring(0, index);
+                    String suffix = modelProperty.substring(index + 1);
+                    // It is prefixed
+                    String uri = namespacesByPrefix.get(prefix);
+                    if (uri == null)
+                    {
+                        throw new AlfrescoRuntimeException(
+                                "No prefix mapping for embed property mapping: \n" +
+                                "   Extracter: " + this + "\n" +
+                                "   Mapping: " + entry);
+                    }
+                    modelProperty = QName.NAMESPACE_BEGIN + uri + QName.NAMESPACE_END + suffix;
+                }
+                try
+                {
+                    QName qname = QName.createQName(modelProperty);
+                    String[] metadataKeysArray = metadataKeysString.split(",");
+                    Set<String> metadataKeys = new HashSet<String>(metadataKeysArray.length);
+                    for (String metadataKey : metadataKeysArray) {
+                        metadataKeys.add(metadataKey.trim());
+                    }
+                    // Create the entry
+                    convertedMapping.put(qname, metadataKeys);
+                }
+                catch (InvalidQNameException e)
+                {
+                    throw new AlfrescoRuntimeException(
+                            "Can't create metadata embedding property mapping: \n" +
+                            "   Extracter: " + this + "\n" +
+                            "   Mapping: " + entry);
+                }
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Added mapping from " + modelProperty + " to " + metadataKeysString);
+            }
+        }
+        // Done
+        return convertedMapping;
+    }
+
     /**
      * Registers this instance of the extracter with the registry.  This will call the
      * {@link #init()} method and then register if the registry is available.
@@ -560,6 +803,31 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     "There are no property mappings for the metadata extracter.\n" +
                     "  Nothing will be extracted by: " + this);
         }
+
+        Map<QName, Set<String>> defaultEmbedMapping = getDefaultEmbedMapping();
+
+        // Was a mapping explicitly provided
+        if (embedMapping == null)
+        {
+            // No mapping, so use the default
+            embedMapping = defaultEmbedMapping;
+        }
+        else if (inheritDefaultEmbedMapping)
+        {
+            // Merge the default mapping into the configured mapping
+            for (QName modelProperty : defaultEmbedMapping.keySet())
+            {
+                Set<String> metadataKeys = embedMapping.get(modelProperty);
+                if (metadataKeys == null)
+                {
+                    metadataKeys = new HashSet<String>(3);
+                    embedMapping.put(modelProperty, metadataKeys);
+                }
+                Set<String> defaultMetadataKeys = defaultEmbedMapping.get(modelProperty);
+                metadataKeys.addAll(defaultMetadataKeys);
+            }
+        }
+
         // Done
         initialized = true;
     }
@@ -585,6 +853,25 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     "Metadata extracter does not support mimetype: \n" +
                     "   reader: " + reader + "\n" +
                     "   supported: " + supportedMimetypes + "\n" +
+                    "   extracter: " + this);
+        }
+    }
+
+    /**
+     * Checks if embedding for the mimetype is supported.
+     *
+     * @param writer the writer to check
+     * @throws AlfrescoRuntimeException if embedding for the mimetype is not supported
+     */
+    protected void checkIsEmbedSupported(ContentWriter writer)
+    {
+        String mimetype = writer.getMimetype();
+        if (!isSupported(mimetype))
+        {
+            throw new AlfrescoRuntimeException(
+                    "Metadata extracter does not support embedding mimetype: \n" +
+                    "   writer: " + writer + "\n" +
+                    "   supported: " + supportedEmbedMimetypes + "\n" +
                     "   extracter: " + this);
         }
     }
@@ -730,7 +1017,103 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         return changedProperties;
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    public final void embed(
+            Map<QName, Serializable> properties,
+            ContentReader reader,
+            ContentWriter writer)
+    {
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Starting metadata embedding: \n" +
+                    "   reader: " + reader + "\n" +
+                    "   writer: " + writer + "\n" +
+                    "   extracter: " + this);
+        }
+
+        if (!initialized)
+        {
+            throw new AlfrescoRuntimeException(
+                    "Metadata extracter not initialized.\n" +
+                    "  Call the 'register' method on: " + this + "\n" +
+                    "  Implementations of the 'init' method must call the base implementation.");
+        }
+        // check the reliability
+        checkIsEmbedSupported(writer);
+
+        try
+        {
+            embedInternal(mapSystemToRaw(properties), reader, writer);
+            if(logger.isDebugEnabled())
+            {
+               logger.debug("Embedded Metadata into " + writer);
+            }
+        }
+        catch (Throwable e)
+        {
+            // Ask Tika to detect the document, and report back on if
+            //  the current mime type is plausible
+            String typeErrorMessage = null;
+            String differentType = null;
+            if(mimetypeService != null)
+            {
+               differentType = mimetypeService.getMimetypeIfNotMatches(writer.getReader());
+            }
+            else
+            {
+               logger.info("Unable to verify mimetype of " + writer.getReader() +
+                           " as no MimetypeService available to " + getClass().getName());
+            }
+            if(differentType != null)
+            {
+               typeErrorMessage = "\n" +
+                  "   claimed mime type: " + writer.getMimetype() + "\n" +
+                  "   detected mime type: " + differentType;
+            }
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Metadata embedding failed: \n" +
+                        "   Extracter: " + this + "\n" +
+                        "   Content:   " + writer +
+                        typeErrorMessage,
+                        e);
+            }
+            else
+            {
+                logger.warn(
+                        "Metadata embedding failed (turn on DEBUG for full error): \n" +
+                        "   Extracter: " + this + "\n" +
+                        "   Content:   " + writer + "\n" +
+                        "   Failure:   " + e.getMessage() +
+                        typeErrorMessage);
+            }
+        }
+        finally
+        {
+            // check that the writer was closed (if used)
+            if (writer.isChannelOpen())
+            {
+                logger.error("Content writer not closed by metadata extracter: \n" +
+                        "   writer: " + writer + "\n" +
+                        "   extracter: " + this);
+            }
+        }
+
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Completed metadata embedding: \n" +
+                    "   writer:    " + writer + "\n" +
+                    "   extracter: " + this);
+        }
+    }
+
     /**
      * 
      * @param rawMetadata   Metadata keyed by document properties
@@ -765,7 +1148,42 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         return systemProperties;
     }
-    
+
+    /**
+     *
+     * @param systemMetadata   Metadata keyed by system properties
+     * @return              Returns the metadata keyed by the content file metadata properties
+     */
+    private Map<String, Serializable> mapSystemToRaw(Map<QName, Serializable> systemMetadata)
+    {
+        Map<String, Serializable> metadataProperties = new HashMap<String, Serializable>(systemMetadata.size() * 2 + 1);
+        for (Map.Entry<QName, Serializable> entry : systemMetadata.entrySet())
+        {
+            QName modelProperty = entry.getKey();
+            // Check if there is a mapping for this
+            if (!embedMapping.containsKey(modelProperty))
+            {
+                // No mapping - ignore
+                continue;
+            }
+            Serializable documentValue = entry.getValue();
+            Set<String> metadataKeys = embedMapping.get(modelProperty);
+            for (String metadataKey : metadataKeys)
+            {
+                metadataProperties.put(metadataKey, documentValue);
+            }
+        }
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Converted system model values to metadata values: \n" +
+                    "   System Properties:    " + systemMetadata + "\n" +
+                    "   Metadata Properties: " + metadataProperties);
+        }
+        return metadataProperties;
+    }
+
     /**
      * Filters the system properties that are going to be applied.  Gives the metadata extracter an 
      * opportunity to remove properties that may not be appropriate in a given context.
@@ -1054,7 +1472,91 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         // Attempt to load the properties
         return readMappingProperties(propertiesUrl);
     }
-    
+
+    /**
+     * This method provides a <i>best guess</i> of what model properties should be embedded
+     * in content.  The list of properties mapped by default need <b>not</b>
+     * include all properties to be embedded in the document; just the obvious set of mappings
+     * need be supplied.
+     * Implementations must either provide the default mapping properties in the expected
+     * location or override the method to provide the default mapping.
+     * <p>
+     * The default implementation looks for the default mapping file in the location
+     * given by the class name and <i>.embed.properties</i>.  If the extracter's class is
+     * <b>x.y.z.MyExtracter</b> then the default properties will be picked up at
+     * <b>classpath:/x/y/z/MyExtracter.embed.properties</b>.
+     * Inner classes are supported, but the '$' in the class name is replaced with '-', so
+     * default properties for <b>x.y.z.MyStuff$MyExtracter</b> will be located using
+     * <b>x.y.z.MyStuff-MyExtracter.embed.properties</b>.
+     * <p>
+     * The default mapping implementation should include thorough Javadocs so that the
+     * system administrators can accurately determine how to best enhance or override the
+     * default mapping.
+     * <p>
+     * If the default mapping is declared in a properties file other than the one named after
+     * the class, then the {@link #readEmbedMappingProperties(String)} method can be used to quickly
+     * generate the return value:
+     * <pre><code>
+     *      protected Map<<String, Set<QName>> getDefaultMapping()
+     *      {
+     *          return readEmbedMappingProperties(DEFAULT_MAPPING);
+     *      }
+     * </code></pre>
+     * The map can also be created in code either statically or during the call.
+     * <p>
+     * If no embed mapping properties file is found a reverse of the extract
+     * mapping in {@link #getDefaultMapping()} will be assumed with the first QName in each
+     * value used as the key for this mapping and a last win approach for duplicates.
+     *
+     * @return              Returns the default, static embed mapping.  It may not be null.
+     *
+     * @see #setInheritDefaultMapping(boolean inherit)
+     */
+    protected Map<QName, Set<String>> getDefaultEmbedMapping()
+    {
+        String className = this.getClass().getName();
+        // Replace $
+        className = className.replace('$', '-');
+        // Replace .
+        className = className.replace('.', '/');
+        // Append .properties
+        String propertiesUrl = className + ".embed.properties";
+        // Attempt to load the properties
+        Map<QName, Set<String>> embedMapping = readEmbedMappingProperties(propertiesUrl);
+        if (embedMapping == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No explicit embed mapping properties found at: " + propertiesUrl + ", assuming reverse of extract mapping");
+            }
+            Map<String, Set<QName>> extractMapping = this.mapping;
+            if (extractMapping == null || extractMapping.size() == 0)
+            {
+                extractMapping = getDefaultMapping();
+            }
+            embedMapping = new HashMap<QName, Set<String>>(extractMapping.size());
+            for (String metadataKey : extractMapping.keySet())
+            {
+                if (extractMapping.get(metadataKey) != null && extractMapping.get(metadataKey).size() > 0)
+                {
+                    QName modelProperty = extractMapping.get(metadataKey).iterator().next();
+                    Set<String> metadataKeys = embedMapping.get(modelProperty);
+                    if (metadataKeys == null)
+                    {
+                        metadataKeys = new HashSet<String>(1);
+                        embedMapping.put(modelProperty, metadataKeys);
+                    }
+                    metadataKeys.add(metadataKey);
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Added mapping from " + modelProperty + " to " + metadataKeys.toString());
+                    }
+                }
+            }
+        }
+        return embedMapping;
+    }
+
     /**
      * Override to provide the raw extracted metadata values.  An extracter should extract
      * as many of the available properties as is realistically possible.  Even if the
@@ -1089,4 +1591,25 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * @see #getDefaultMapping()
      */
     protected abstract Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable;
+
+    /**
+     * Override to embed metadata values.  An extracter should embed
+     * as many of the available properties as is realistically possible.  Even if the
+     * {@link #getDefaultEmbedMapping() default mapping} doesn't handle all properties, it is
+     * possible for each instance of the extracter to be configured differently and more or
+     * less of the properties may be used in different installations.
+     *
+     * @param metadata		the metadata keys and values to embed in the content file
+     * @param reader		the reader for the original document.  This stream provided by
+     *                      the reader must be closed if accessed directly.
+     * @param writer        the writer for the document to embed the values in.  This stream provided by
+     *                      the writer must be closed if accessed directly.
+     * @throws              All exception conditions can be handled.
+     *
+     * @see #getDefaultEmbedMapping()
+     */
+    protected void embedInternal(Map<String, Serializable> metadata, ContentReader reader, ContentWriter writer) throws Throwable
+    {
+        // TODO make this an abstract method once more extracters support embedding
+    }
 }

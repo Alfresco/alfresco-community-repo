@@ -539,6 +539,23 @@
             <value>true</value>
         </property>
     </bean>
+    
+    <bean id="embed-metadata" class="org.alfresco.repo.action.executer.ContentMetadataEmbedder" parent="action-executer">
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+        <property name="metadataExtracterRegistry">
+            <ref bean="metadataExtracterRegistry" />
+        </property>
+        <property name="applicableTypes">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
+        </property>
+    </bean>
 
     <bean id="import" class="org.alfresco.repo.action.executer.ImporterActionExecuter" parent="action-executer">
         <property name="importerService">

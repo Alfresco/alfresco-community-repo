@@ -44,6 +44,7 @@ public class MetadataExtracterRegistry
 
     private List<MetadataExtracter> extracters;
     private Map<String, List<MetadataExtracter>> extracterCache;
+    private Map<String, List<MetadataEmbedder>> embedderCache;
 
     /** Controls read access to the cache */
     private Lock extracterCacheReadLock;
@@ -55,6 +56,7 @@ public class MetadataExtracterRegistry
         // initialise lists
         extracters = new ArrayList<MetadataExtracter>(10);
         extracterCache = new HashMap<String, List<MetadataExtracter>>(17);
+        embedderCache = new HashMap<String, List<MetadataEmbedder>>(17);
 
         // create lock objects for access to the cache
         ReadWriteLock extractionCacheLock = new ReentrantReadWriteLock();
@@ -72,6 +74,7 @@ public class MetadataExtracterRegistry
         try
         {
             extracterCache.clear();
+            embedderCache.clear();
         }
         finally
         {
@@ -96,6 +99,7 @@ public class MetadataExtracterRegistry
         {
             extracters.add(extracter);
             extracterCache.clear();
+            embedderCache.clear();
         }
         finally
         {
@@ -185,5 +189,93 @@ public class MetadataExtracterRegistry
             extractors.add(extractor);
         }
         return extractors;
+    }
+    
+    /**
+     * Gets the best metadata embedder. This is a combination of the most
+     * reliable and the most performant embedder.
+     * <p>
+     * The result is cached for quicker access next time.
+     * 
+     * @param mimetype the source MIME of the extraction
+     * @return Returns a metadata embedder that can embed metadata in the
+     *         chosen MIME type.
+     */
+    public MetadataEmbedder getEmbedder(String sourceMimetype)
+    {
+        List<MetadataEmbedder> embedders = null;
+        extracterCacheReadLock.lock();
+        try
+        {
+            if (embedderCache.containsKey(sourceMimetype))
+            {
+                // the translation has been requested before
+                // it might have been null
+                embedders = embedderCache.get(sourceMimetype);
+            }
+        }
+        finally
+        {
+            extracterCacheReadLock.unlock();
+        }
+
+        if (embedders == null)
+        {
+            // No request has been made before
+            // Get a write lock on the cache
+            // No double check done as it is not an expensive task
+            extracterCacheWriteLock.lock();
+            try
+            {
+                // find the most suitable transformer - may be empty list
+                embedders = findBestEmbedders(sourceMimetype);
+                // store the result even if it is null
+                embedderCache.put(sourceMimetype, embedders);
+            }
+            finally
+            {
+                extracterCacheWriteLock.unlock();
+            }
+        }
+        
+        // We have the list of embedders that supposedly work (as registered).
+        // Take the last one that still claims to work
+        MetadataEmbedder liveEmbedder = null;
+        for (MetadataEmbedder embedder : embedders)
+        {
+            // An extractor may dynamically become unavailable 
+            if (!embedder.isEmbeddingSupported(sourceMimetype))
+            {
+                continue;
+            }
+            liveEmbedder = embedder;
+        }
+        return liveEmbedder;
+    }
+    
+    /**
+     * @param       sourceMimetype The MIME type under examination
+     * @return      Returns a set of embedders that will work for the given mimetype
+     */
+    private List<MetadataEmbedder> findBestEmbedders(String sourceMimetype)
+    {
+        logger.debug("Finding embedders for " + sourceMimetype);
+
+        List<MetadataEmbedder> embedders = new ArrayList<MetadataEmbedder>(1);
+
+        for (MetadataExtracter extractor : extracters)
+        {
+        	if (!(extractor instanceof MetadataEmbedder))
+        	{
+        		continue;
+        	}
+            if (!((MetadataEmbedder) extractor).isEmbeddingSupported(sourceMimetype))
+            {
+                // extraction not achievable
+                continue;
+            }
+            embedders.add((MetadataEmbedder)extractor);
+        }
+        return embedders;
     }
 }

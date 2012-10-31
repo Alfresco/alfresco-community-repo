@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,11 +20,13 @@ package org.alfresco.repo.content.metadata;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,8 +37,12 @@ import java.util.TimeZone;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.embedder.Embedder;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -72,7 +78,9 @@ import org.xml.sax.SAXException;
  * @since 3.4
  * @author Nick Burch
  */
-public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetadataExtracter
+public abstract class TikaPoweredMetadataExtracter
+        extends AbstractMappingMetadataExtracter
+        implements MetadataEmbedder
 {
     protected static Log logger = LogFactory.getLog(TikaPoweredMetadataExtracter.class);
 
@@ -118,11 +126,19 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
     
     public TikaPoweredMetadataExtracter(ArrayList<String> supportedMimeTypes)
     {
-       this(new HashSet<String>(supportedMimeTypes));
+       this(new HashSet<String>(supportedMimeTypes), null);
+    }
+    public TikaPoweredMetadataExtracter(ArrayList<String> supportedMimeTypes, ArrayList<String> supportedEmbedMimeTypes)
+    {
+       this(new HashSet<String>(supportedMimeTypes), new HashSet<String>(supportedEmbedMimeTypes));
     }
     public TikaPoweredMetadataExtracter(HashSet<String> supportedMimeTypes)
     {
-        super(supportedMimeTypes);
+       this(supportedMimeTypes, null);
+    }
+    public TikaPoweredMetadataExtracter(HashSet<String> supportedMimeTypes, HashSet<String> supportedEmbedMimeTypes)
+    {
+        super(supportedMimeTypes, supportedEmbedMimeTypes);
         
         // TODO Once TIKA-451 is fixed this list will get nicer
         this.tikaDateFormats = new DateFormat[] {
@@ -189,6 +205,18 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
     protected abstract Parser getParser();
     
     /**
+     * Returns the Tika Embedder to modify
+     * the document.
+     * 
+     * @return the Tika embedder
+     */
+    protected Embedder getEmbedder()
+    {
+        // TODO make this an abstract method once more extracters support embedding
+        return null;
+    }
+    
+    /**
      * Do we care about the contents of the
      *  extracted header, or nothing at all?
      */
@@ -215,7 +243,7 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
      * For these cases, buffer out to a local file if not
      *  already there
      */
-    private InputStream getInputStream(ContentReader reader) throws IOException {
+    protected InputStream getInputStream(ContentReader reader) throws IOException {
        // Prefer the File if available, it's generally quicker
        if(reader instanceof FileContentReader) 
        {
@@ -336,6 +364,71 @@ public abstract class TikaPoweredMetadataExtracter extends AbstractMappingMetada
         }
 
         return rawProperties;
+    }
+    
+    @Override
+    protected void embedInternal(Map<String, Serializable> properties, ContentReader reader, ContentWriter writer) throws Throwable
+    {
+        Embedder embedder = getEmbedder();
+        if (embedder == null)
+        {
+            return;
+        }
+        OutputStream outputStream = null;
+        try
+        {
+            Metadata metadataToEmbed = new Metadata();
+            for (String metadataKey : properties.keySet())
+            {
+                Serializable value = properties.get(metadataKey);
+                if (value == null)
+                {
+                    continue;
+                }
+                if (value instanceof Collection<?>)
+                {
+                    for (Object singleValue : (Collection<?>) value)
+                    {
+                        try
+                        {
+                            // Convert to a string value for Tika
+                            metadataToEmbed.add(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, singleValue));
+                        }
+                        catch (TypeConversionException e)
+                        {
+                            logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
+                        }
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        // Convert to a string value for Tika
+                        metadataToEmbed.add(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, value));
+                    }
+                    catch (TypeConversionException e)
+                    {
+                        logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
+                    }
+                }
+            }
+            InputStream inputStream = getInputStream(reader);
+            outputStream = writer.getContentOutputStream();
+            embedder.embed(metadataToEmbed, inputStream, outputStream, null);
+        }
+        catch (Exception e)
+        {
+            logger.error(e.getMessage(), e);
+        }
+        finally
+        {
+            if (outputStream != null)
+            {
+                try { outputStream.close(); } catch (Throwable e) {}
+            }
+        }
+        
     }
     
     /**

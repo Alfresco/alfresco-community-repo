@@ -22,7 +22,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.alfresco.repo.content.cleanup.ContentStoreCleanerTest;
-import org.alfresco.repo.content.encoding.CharsetFinderTest;
 import org.alfresco.repo.content.filestore.FileContentStoreTest;
 import org.alfresco.repo.content.filestore.NoRandomAccessFileContentStoreTest;
 import org.alfresco.repo.content.filestore.ReadOnlyFileContentStoreTest;
@@ -59,6 +58,7 @@ public class ContentFullContextTestSuite extends TestSuite
         
         try
         {
+            @SuppressWarnings("rawtypes")
             Class clazz = Class.forName("org.alfresco.repo.content.routing.StoreSelectorAspectContentStoreTest");
             suite.addTestSuite(clazz);
         }

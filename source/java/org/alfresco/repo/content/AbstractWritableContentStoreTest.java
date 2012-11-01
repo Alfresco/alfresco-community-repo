@@ -194,7 +194,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     /**
      * Checks that the various methods of obtaining a reader are supported.
      */
-    public void testGetReader() throws Exception
+    public synchronized void testGetReader() throws Exception
     {
         ContentStore store = getStore();
         ContentWriter writer = store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
@@ -212,10 +212,12 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         
         // write some content
         long before = System.currentTimeMillis();
+        this.wait(1000L);
         writer.setMimetype("text/plain");
         writer.setEncoding("UTF-8");
         writer.setLocale(Locale.CHINESE);
         writer.putContent(content);
+        this.wait(1000L);
         long after = System.currentTimeMillis();
         
         // get a reader from the store

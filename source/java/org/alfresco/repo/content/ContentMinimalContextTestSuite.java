@@ -18,6 +18,10 @@
  */
 package org.alfresco.repo.content;
 
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import org.alfresco.repo.content.metadata.DWGMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.HtmlMetadataExtracterTest;
 import org.alfresco.repo.content.metadata.MP3MetadataExtracterTest;
@@ -52,12 +56,6 @@ import org.alfresco.service.cmr.repository.TransformationOptionLimitsTest;
 import org.alfresco.service.cmr.repository.TransformationOptionPairTest;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
-
-import com.google.gdata.data.acl.AclRole;
-
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 /**
  * Metadata Extractor and Transform test suite

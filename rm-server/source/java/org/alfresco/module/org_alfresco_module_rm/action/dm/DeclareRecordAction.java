@@ -14,7 +14,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -32,6 +31,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class DeclareRecordAction extends ActionExecuterAbstractBase implements RecordsManagementModel
 {
    /** I18N */
+   private static final String MSG_UNDECLARED_ONLY_RECORDS = "rm.action.undeclared-only-records";
    private static final String MSG_NO_DECLARE_MAND_PROP = "rm.action.no-declare-mand-prop";
 
    /** Logger */
@@ -96,68 +96,32 @@ public class DeclareRecordAction extends ActionExecuterAbstractBase implements R
    @Override
    protected void executeImpl(Action action, final NodeRef actionedUponNodeRef)
    {
-      // skip everything if the actioned upon node reference is already a record
-      if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == false)
+      if (recordsManagementService.isRecord(actionedUponNodeRef) == true)
       {
-         // TODO we should use the file plan passed as a parameter
-         // grab the file plan
-         List<NodeRef> filePlans = recordsManagementService.getFilePlans();
-         if (filePlans.size() == 1)
+         if (recordService.isDeclared(actionedUponNodeRef) == false)
          {
-            // TODO parameterise the action with the file plan
-            final NodeRef filePlan = filePlans.get(0);
+            List<String> missingProperties = new ArrayList<String>(5);
+            // Aspect not already defined - check mandatory properties then add
+            if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties) == true)
+            {
+               // Add the declared aspect
+               Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
+               declaredProps.put(PROP_DECLARED_AT, new Date());
+               declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
+               nodeService.addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
 
-            // run record creation as system
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
-                @Override
-                public Void doWork() throws Exception
-                {
-                    // create record from existing document
-                    recordService.createRecordFromDocument(filePlan, actionedUponNodeRef);
-                    return null;
-                }
-            });
-
-            // DEMO CODE
-            if (nodeService.getProperty(actionedUponNodeRef, PROP_ORIGINATOR) == null)
-            {
-                nodeService.setProperty(actionedUponNodeRef, PROP_ORIGINATOR, "Michelle Smith");
+               // remove all owner related rights 
+               ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
             }
-            if (nodeService.getProperty(actionedUponNodeRef, PROP_ORIGINATING_ORGANIZATION) == null)
+            else
             {
-                nodeService.setProperty(actionedUponNodeRef, PROP_ORIGINATING_ORGANIZATION, "Customer Service");
-            }
-            if (nodeService.getProperty(actionedUponNodeRef, PROP_PUBLICATION_DATE) == null)
-            {
-                nodeService.setProperty(actionedUponNodeRef, PROP_PUBLICATION_DATE, new Date());
-            }
-
-            if (recordService.isDeclared(actionedUponNodeRef) == false)
-            {
-                List<String> missingProperties = new ArrayList<String>(5);
-                // Aspect not already defined - check mandatory properties then add
-                if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties) == true)
-                {
-                    // Add the declared aspect
-                    Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
-                    declaredProps.put(PROP_DECLARED_AT, new Date());
-                    declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
-                    nodeService.addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
-                    
-                    // remove all owner related rights 
-                    ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
-                }
-                else
-                {
-                    throw new AlfrescoRuntimeException(buildMissingPropertiesErrorString(missingProperties));
-                }
+               throw new AlfrescoRuntimeException(buildMissingPropertiesErrorString(missingProperties));
             }
          }
-         else
-         {
-            throw new AlfrescoRuntimeException("Unable to find file plan.");
-         }
+      }
+      else
+      {
+         throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, actionedUponNodeRef.toString()));
       }
    }
 
@@ -249,8 +213,7 @@ public class DeclareRecordAction extends ActionExecuterAbstractBase implements R
    @Override
    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
    {
-      // TODO eventually we will need to pass in the file plan as a parameter
-      // TODO .. or the RM site
+      // No parameters
    }
 
 }

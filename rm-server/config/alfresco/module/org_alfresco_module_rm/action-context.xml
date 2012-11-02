@@ -34,4 +34,12 @@
         </property> -->
     </bean>  
     
+    <!--  Declare record action -->
+    <bean id="declare-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.DeclareRecordAction">
+        <property name="recordsManagementService" ref="RecordsManagementService" />
+        <property name="recordService" ref="RecordService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="ownableService" ref="OwnableService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+    </bean>
 </beans>    

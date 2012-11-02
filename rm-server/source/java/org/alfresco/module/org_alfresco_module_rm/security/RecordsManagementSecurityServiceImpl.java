@@ -22,12 +22,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -39,6 +43,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -56,6 +61,9 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Records management permission service implementation
@@ -63,7 +71,9 @@ import org.json.JSONObject;
  * @author Roy Wetherall
  */
 public class RecordsManagementSecurityServiceImpl implements RecordsManagementSecurityService, 
-                                                             RecordsManagementModel
+                                                             RecordsManagementModel,
+                                                             ApplicationContextAware,
+                                                             NodeServicePolicies.OnMoveNodePolicy
                                                              
 {
     /** Capability service */
@@ -90,8 +100,23 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
     
+    /** Unfiled record container name */
+    private static final String NAME_UNFILED_CONTAINER = "Unfiled Records";
+    
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementSecurityServiceImpl.class);
+    
+    /** Application context */
+    private ApplicationContext applicationContext;
+    
+    /**
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+    }
     
     /**
      * Set the capability service
@@ -183,7 +208,12 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
         policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnCreateNodePolicy.QNAME,  
                 TYPE_RECORD_FOLDER, 
-                new JavaBehaviour(this, "onCreateRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));                
+                new JavaBehaviour(this, "onCreateRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));    
+        
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnMoveNodePolicy.QNAME, 
+                ASPECT_RECORD, 
+                new JavaBehaviour(this, "onMoveNode", NotificationFrequency.TRANSACTION_COMMIT));
     }
     
     /**
@@ -204,9 +234,9 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
         
         if (nodeService.exists(rmRootNode) == true)
         {
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            NodeRef unfiledContainer = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
             {
-                public Object doWork()
+                public NodeRef doWork()
                 {
                     // Create "all" role group for root node
                     String allRoles = authorityService.createAuthority(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode), "All Roles", null);                    
@@ -214,14 +244,45 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                     // Set the permissions
                     permissionService.setInheritParentPermissions(rmRootNode, false);
                     permissionService.setPermission(rmRootNode, allRoles, RMPermissionModel.READ_RECORDS, true);
-                                        
-                    return null;
+                    permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+                    permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
+                    
+                    // Create the unfiled record container
+                    return createUnfiledContainer(rmRootNode, allRoles);
                 }
             }, AuthenticationUtil.getSystemUserName());
                         
             // Bootstrap in the default set of roles for the newly created root node
-            bootstrapDefaultRoles(rmRootNode);
+            bootstrapDefaultRoles(rmRootNode, unfiledContainer);
         }
+    }
+    
+    /**
+     * Creates unfiled container node and sets up permissions
+     * 
+     * @param rmRootNode
+     * @param allRoles
+     */
+    private NodeRef createUnfiledContainer(NodeRef rmRootNode, String allRoles)
+    {
+        // create the properties map
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        properties.put(ContentModel.PROP_NAME, NAME_UNFILED_CONTAINER);
+        
+        // create the unfiled container
+        NodeRef container = nodeService.createNode(
+                        rmRootNode, 
+                        ASSOC_UNFILED_RECORDS, 
+                        QName.createQName(RM_URI, NAME_UNFILED_CONTAINER), 
+                        TYPE_UNFILED_RECORD_CONTAINER,
+                        properties).getChildRef();
+        
+        // set inheritance to false
+        permissionService.setInheritParentPermissions(container, false);
+        permissionService.setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
+        permissionService.setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+        
+        return container;
     }
     
     /**
@@ -279,36 +340,39 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
      */
     public void onCreateRecordFolder(ChildAssociationRef childAssocRef)
     {
-    	final NodeRef folderNodeRef = childAssocRef.getChildRef();
+      final NodeRef folderNodeRef = childAssocRef.getChildRef();
         setUpPermissions(folderNodeRef);
         
         // Pull any permissions found on the parent (ie the record category)
         final NodeRef catNodeRef = childAssocRef.getParentRef();
         if (nodeService.exists(catNodeRef) == true)
         {
-        	AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
-                	Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
-                	for (AccessPermission perm : perms) 
-                	{
-                		AccessStatus accessStatus = perm.getAccessStatus();
-                		boolean allow = false;
-                		if (AccessStatus.ALLOWED.equals(accessStatus) == true)
-                		{
-                			allow = true;
-                		}
-                		permissionService.setPermission(
-                				folderNodeRef, 
-                				perm.getAuthority(), 
-                				perm.getPermission(), 
-                				allow);
-        			}
-                	
+                  Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
+                  for (AccessPermission perm : perms) 
+                  {
+                      if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false)
+                      {
+                        AccessStatus accessStatus = perm.getAccessStatus();
+                        boolean allow = false;
+                        if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                        {
+                           allow = true;
+                        }
+                        permissionService.setPermission(
+                              folderNodeRef, 
+                              perm.getAuthority(), 
+                              perm.getPermission(), 
+                              allow);
+                      }
+               }
+                  
                     return null;
                 }
-            }, AuthenticationUtil.getSystemUserName());	
+            }, AuthenticationUtil.getSystemUserName());  
         }
     }
     
@@ -324,8 +388,11 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
             {
                 public Object doWork()
                 {
-                    // Break inheritance 
+                    // break inheritance 
                     permissionService.setInheritParentPermissions(nodeRef, false);
+                    
+                    // set extended reader permissions    
+                    permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
                                     
                     return null;
                 }
@@ -352,7 +419,12 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#bootstrapDefaultRoles(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void bootstrapDefaultRoles(final NodeRef rmRootNode)
+    public void bootstrapDefaultRoles(NodeRef rmRootNode)
+    {
+        bootstrapDefaultRoles(rmRootNode, null);
+    }
+    
+    private void bootstrapDefaultRoles(final NodeRef rmRootNode, final NodeRef unfiledContainer)
     {
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -434,7 +506,12 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                         // Add any additional admin permissions
                         if (isAdmin == true)
                         {
+                            // Admin has filing
                             permissionService.setPermission(rmRootNode, role.getRoleGroupName(), RMPermissionModel.FILING, true);
+                            if (unfiledContainer != null)
+                            {
+                                permissionService.setPermission(unfiledContainer, role.getRoleGroupName(), RMPermissionModel.FILING, true);
+                            }
                             
                             // Add the creating user to the administration group
                             String user = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -597,6 +674,12 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
         }, AuthenticationUtil.getSystemUserName());
     }
     
+    /**
+     * 
+     * @param rmRootNode
+     * @param roleAuthority
+     * @return
+     */
     private Set<String> getCapabilitiesImpl(NodeRef rmRootNode, String roleAuthority)
     {
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(rmRootNode);
@@ -636,7 +719,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
         }, AuthenticationUtil.getSystemUserName()).booleanValue();
     }
     
-    /*
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#hasRMAdminRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     public boolean hasRMAdminRole(NodeRef rmRootNode, String user)
@@ -791,7 +874,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
             public Boolean doWork() throws Exception
             { 
                 if (recordsManagementService.isFilePlan(nodeRef) == false &&
-                    recordsManagementService.isRecordCategory(nodeRef) == true)
+                    recordsManagementService.isRecordsManagementContainer(nodeRef) == true)
                 {
                     setReadPermissionUp(nodeRef, authority);
                     setPermissionDown(nodeRef, authority, permission);
@@ -841,13 +924,13 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     private void setPermissionDown(NodeRef nodeRef, String authority, String permission)
     {
         setPermissionImpl(nodeRef, authority, permission);
-        if (recordsManagementService.isRecordCategory(nodeRef) == true)
+        if (recordsManagementService.isRecordsManagementContainer(nodeRef) == true)
         {
             List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)
             {
                 NodeRef child = assoc.getChildRef();
-                if (recordsManagementService.isRecordCategory(child) == true ||
+                if (recordsManagementService.isRecordsManagementContainer(child) == true ||
                     recordsManagementService.isRecordFolder(child) == true)
                 {
                     setPermissionDown(child, authority, permission);
@@ -886,13 +969,13 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 // Delete permission on this node
                 permissionService.deletePermission(nodeRef, authority, permission);
                 
-                if (recordsManagementService.isRecordCategory(nodeRef) == true)
+                if (recordsManagementService.isRecordsManagementContainer(nodeRef) == true)
                 {
                     List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                     for (ChildAssociationRef assoc : assocs)
                     {
                         NodeRef child = assoc.getChildRef();
-                        if (recordsManagementService.isRecordCategory(child) == true ||
+                        if (recordsManagementService.isRecordsManagementContainer(child) == true ||
                             recordsManagementService.isRecordFolder(child) == true)
                         {
                             deletePermission(child, authority, permission);
@@ -903,5 +986,164 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());        
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#hasExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public boolean hasExtendedReaders(NodeRef nodeRef)
+    {
+        boolean result = false;
+        Set<String> extendedReaders = getExtendedReaders(nodeRef);
+        if (extendedReaders != null && extendedReaders.size() != 0)
+        {
+            result = true;
+        }
+        return result;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<String> getExtendedReaders(NodeRef nodeRef)
+    {
+        NodeService nodeService = (NodeService)applicationContext.getBean("nodeService");
+        Set<String> result = null;
+        
+        Map<String, Integer> readerMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
+        if (readerMap != null)
+        {
+            result = readerMap.keySet();
+        }
+        
+        return result;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#setExtendedReaders(org.alfresco.service.cmr.repository.NodeRef, java.util.Set)
+     */
+    @Override
+    public void setExtendedReaders(NodeRef nodeRef, Set<String> readers)
+    {
+        setExtendedReaders(nodeRef, readers, true);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#setExtendedReaders(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, boolean)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setExtendedReaders(NodeRef nodeRef, java.util.Set<String> readers, boolean applyToParents)
+    {        
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("readers", readers);
+        
+        NodeService nodeService = (NodeService)applicationContext.getBean("nodeService");
+        RecordsManagementService recordsManagementService = (RecordsManagementService)applicationContext.getBean("recordsManagementService");
+        
+        if (nodeRef != null && 
+            readers.isEmpty() == false)
+        {
+            // add the aspect if missing
+            if (nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_READERS) == false)
+            {
+                nodeService.addAspect(nodeRef, ASPECT_EXTENDED_READERS, null);
+            }
+            
+            // get reader map
+            Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
+            if (readersMap == null)
+            {
+                // create reader map
+                readersMap = new HashMap<String, Integer>(7);
+            }
+            
+            for (String reader : readers)
+            {
+                if (readersMap.containsKey(reader) == true)
+                {
+                    // increment reference count
+                    Integer count = readersMap.get(reader);
+                    readersMap.put(reader, Integer.valueOf(count.intValue()+1));
+                }
+                else
+                {
+                    // add reader with initial count
+                    readersMap.put(reader, Integer.valueOf(1));
+                }
+            }
+            
+            // set the readers property (this will in turn apply the aspect if required)
+            nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)readersMap);
+            
+            // apply the readers to any renditions of the content
+            if (recordsManagementService.isRecord(nodeRef) == true)
+            {
+                List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
+                for (ChildAssociationRef assoc : assocs)
+                {
+                    NodeRef child = assoc.getChildRef();
+                    setExtendedReaders(child, readers, false);
+                }
+            }
+            
+            if  (applyToParents == true)
+            {            
+                // apply the extended readers up the file plan primary hierarchy
+                NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                if (parent != null &&
+                    recordsManagementService.isFilePlanComponent(parent) == true)
+                {
+                    setExtendedReaders(parent, readers);
+                }
+            }
+        }
+    }
+    
+    @Override
+    public void removeExtendedReaders(NodeRef nodeRef, Set<String> readers)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#removeAllExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void removeAllExtendedReaders(NodeRef nodeRef)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void onMoveNode(final ChildAssociationRef origAssoc, final ChildAssociationRef newAssoc)
+    {
+        // TODO temp solution for demo
+        
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() 
+        {
+
+            @Override
+            public Void doWork() throws Exception
+            {
+                NodeRef record = newAssoc.getChildRef();
+                NodeRef parent = newAssoc.getParentRef();
+                
+                Set<String> readers = getExtendedReaders(record);
+                if (readers != null && readers.size() != 0)
+                {
+                    setExtendedReaders(parent, readers);
+                }
+                
+                return null;
+            }});
+        
+        
+        
     }
 }

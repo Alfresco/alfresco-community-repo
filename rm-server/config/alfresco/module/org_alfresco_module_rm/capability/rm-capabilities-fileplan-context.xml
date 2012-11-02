@@ -12,13 +12,13 @@
         <property name="capabilities">
     		<list>
     			<ref bean="rmCreateRootRecordCategoryCapability"/>   
-    			<ref bean="rmCreateModifyDestroyRecordCategoryCapability"/>     	    			
+    			<ref bean="rmCreateModifyDestroyRecordCategoryCapability"/>   
+				<ref bean="rmCreateModifyDestroyUnfiledRecordContainerCapability"/> 	    			
     		</list>
     	</property>
     </bean>
 
     <!--  Unassignable Capabilities -->    
-    
 
     <bean id="rmCreateRootRecordCategoryCapability" 
     	  parent="declarativeCapability">
@@ -61,6 +61,22 @@
     		</list>
     	</property>
     	<property name="targetCapability" ref="rmCreateModifyDestroyFileplanMetadataCapability"/>
+    </bean>
+    
+    <bean id="rmCreateModifyDestroyUnfiledRecordContainerCapability"
+          parent="declarativeCapability">
+    	<property name="name" value="CreateModifyDestroyUnfiledRecordContainer"/>
+    	<property name="private" value="true"/>
+    	<property name="kinds">
+    		<list>
+    			<value>UNFILED_RECORD_CONTAINER</value>
+    		</list>
+    	</property>		
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   			</map>
+   		</property>
     </bean>
 
 </beans>

@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,11 +33,11 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -77,7 +76,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     private final static String MSG_PARENT_RECORD_FOLDER_ROOT = "rm.service.parent-record-folder-root";
     private final static String MSG_PARENT_RECORD_FOLDER_TYPE = "rm.service.parent-record-folder-type";
     private final static String MSG_RECORD_FOLDER_TYPE = "rm.service.record-folder-type";
-    private final static String MSG_NOT_RECORD = "rm.service.not-record";
     
     /** Store that the RM roots are contained within */
     @SuppressWarnings("unused")
@@ -104,9 +102,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
 
     /** Well-known location of the scripts folder. */
     private NodeRef scriptsFolderNodeRef = new NodeRef("workspace", "SpacesStore", "rm_scripts");
-    
-    /** List of available record meta-data aspects */
-    private Set<QName> recordMetaDataAspects;
     
     /** Java behaviour */
     private JavaBehaviour onChangeToDispositionActionDefinition;
@@ -253,7 +248,7 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
                 throw new AlfrescoRuntimeException("Unable to complete operation, because only content can be filed within a record folder.");
             }        
         }
-    }
+    }    
     
     /**
      * On add content to container
@@ -290,7 +285,17 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
         NodeRef thumbnail = childAssocRef.getChildRef();
         if (nodeService.exists(thumbnail) == true)
         {
+            // apply file plan component aspect to thumbnail
             nodeService.addAspect(thumbnail, ASPECT_FILE_PLAN_COMPONENT, null);
+            
+            // manage any extended readers
+            RecordsManagementSecurityService securityService = serviceRegistry.getRecordsManagementSecurityService();            
+            NodeRef parent = childAssocRef.getParentRef();            
+            Set<String> readers = securityService.getExtendedReaders(parent);
+            if (readers != null && readers.size() != 0)
+            {
+                securityService.setExtendedReaders(thumbnail, readers, false);
+            }
         }
     }
     
@@ -443,6 +448,15 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     }
     
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecordsManagementContainer(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public boolean isRecordsManagementContainer(NodeRef nodeRef)
+    {
+        return instanceOf(nodeRef, TYPE_RECORDS_MANAGEMENT_CONTAINER);
+    }
+    
+    /**
      * Utility method to safely and quickly determine if a node is a type (or sub-type) of the one specified.
      */
     private boolean instanceOf(NodeRef nodeRef, QName ofClassName)
@@ -511,6 +525,10 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
             else if (instanceOf(nodeRef, TYPE_DISPOSITION_SCHEDULE) == true || instanceOf(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION) == true)
             {
                 result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
+            }
+            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER) == true)
+            {
+                result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
             }
         }
         
@@ -1001,7 +1019,7 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
         List<NodeRef> records = getRecords(recordFolder);
         for (NodeRef record : records)
         {
-            if (isRecordDeclared(record) == false)
+            if (serviceRegistry.getRecordService().isDeclared(record) == false)
             {
                 result = false;
                 break;
@@ -1121,31 +1139,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getRecordMetaDataAspects()
-     */
-    public Set<QName> getRecordMetaDataAspects() 
-    {
-    	if (recordMetaDataAspects == null)
-    	{
-    	    recordMetaDataAspects = new HashSet<QName>(7);
-    		Collection<QName> aspects = dictionaryService.getAllAspects();
-    		for (QName aspect : aspects) 
-    		{
-    		    AspectDefinition def = dictionaryService.getAspect(aspect);
-    		    if (def != null)
-    		    {
-    		        QName parent = def.getParentName();
-    		        if (parent != null && ASPECT_RECORD_META_DATA.equals(parent) == true)
-    		        {
-    		            recordMetaDataAspects.add(aspect);
-    		        }
-    		    }
-			}
-    	}
-    	return recordMetaDataAspects;
-	}
-    
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getRecords(org.alfresco.service.cmr.repository.NodeRef)
      */
     public List<NodeRef> getRecords(NodeRef recordFolder)
@@ -1164,21 +1157,7 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
             }
         }
         return result;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecord(org.alfresco.service.cmr.repository.NodeRef, boolean)
-     */
-    public boolean isRecordDeclared(NodeRef record)
-    {
-        if (isRecord(record) == false)
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_RECORD, record.toString()));
-        }
-        return (this.nodeService.hasAspect(record, ASPECT_DECLARED_RECORD));
-    } 
-
-    
+    }   
     
     /**
      * This method examines the old and new property sets and for those properties which
@@ -1270,5 +1249,25 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
         }
         
         return result;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getRecordMetaDataAspects()
+     */
+    @Override
+    @Deprecated
+    public Set<QName> getRecordMetaDataAspects()
+    {
+        return serviceRegistry.getRecordService().getRecordMetaDataAspects();
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecordDeclared(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Deprecated
+    public boolean isRecordDeclared(NodeRef nodeRef)
+    {
+        return serviceRegistry.getRecordService().isDeclared(nodeRef);
     }
 }

@@ -35,5 +35,6 @@ public enum FilePlanComponentKind
     RECORD, 
     TRANSFER, 
     HOLD, 
-    DISPOSITION_SCHEDULE;
+    DISPOSITION_SCHEDULE,
+    UNFILED_RECORD_CONTAINER;
 }

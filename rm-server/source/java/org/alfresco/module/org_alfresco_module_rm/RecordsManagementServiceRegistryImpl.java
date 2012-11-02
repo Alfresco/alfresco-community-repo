@@ -23,6 +23,7 @@ import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditSe
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
 
@@ -65,6 +66,14 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     {
         return (RecordsManagementService)getService(RECORDS_MANAGEMENT_SERVICE);
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordService()
+     */
+    public RecordService getRecordService()
+    {
+        return (RecordService)getService(RECORD_SERVICE);
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementSecurityService()
@@ -74,7 +83,7 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
         return (RecordsManagementSecurityService)getService(RECORDS_MANAGEMENT_SECURITY_SERVICE);
     }
 
-    /*
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementAuditService()
      */
     public RecordsManagementAuditService getRecordsManagementAuditService()

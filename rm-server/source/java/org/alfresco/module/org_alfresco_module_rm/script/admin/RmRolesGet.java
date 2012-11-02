@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.script.admin;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,19 +66,26 @@ public class RmRolesGet extends DeclarativeWebScript
         
         // TODO should be passed 
         List<NodeRef> roots = rmService.getFilePlans();
-        NodeRef root = roots.get(0);
-        
-        // Get the user filter
-        String user  = req.getParameter("user");
-        if (user != null && user.length() != 0)
+        if (roots != null && roots.size() > 0)
         {
-            roles = rmSecurityService.getRolesByUser(root, user);
+           NodeRef root = roots.get(0);
+           
+           // Get the user filter
+           String user  = req.getParameter("user");
+           if (user != null && user.length() != 0)
+           {
+               roles = rmSecurityService.getRolesByUser(root, user);
+           }
+           else
+           {
+               roles = rmSecurityService.getRoles(root);
+           }
         }
         else
         {
-            roles = rmSecurityService.getRoles(root);
+           roles = new HashSet<Role>(1);
         }
-        
+
         model.put("roles", roles);
         
         return model;

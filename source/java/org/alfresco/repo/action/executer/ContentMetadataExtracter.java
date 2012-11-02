@@ -19,6 +19,8 @@
 package org.alfresco.repo.action.executer;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -37,6 +40,8 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,8 +65,10 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     private NodeService nodeService;
     private ContentService contentService;
     private DictionaryService dictionaryService;
+    private TaggingService taggingService;
     private MetadataExtracterRegistry metadataExtracterRegistry;
     private boolean carryAspectProperties = true;
+    private boolean enableStringTagging = false;
     
     public ContentMetadataExtracter()
     {
@@ -92,6 +99,14 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     }
 
     /**
+     * @param taggingService The TaggingService to set.
+     */
+    public void setTaggingService(TaggingService taggingService)
+    {
+        this.taggingService = taggingService;
+    }
+
+    /**
      * @param metadataExtracterRegistry The metadataExtracterRegistry to set.
      */
     public void setMetadataExtracterRegistry(MetadataExtracterRegistry metadataExtracterRegistry)
@@ -110,7 +125,92 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
     {
         this.carryAspectProperties = carryAspectProperties;
     }
+    
+    /**
+     * Whether or not to enable mapping of simple strings to cm:taggable tags
+     * 
+     * @param enableStringTagging       <tt>true</tt> find or create tags for each string 
+     *                                  mapped to cm:taggable.  <tt>false</tt> (default) 
+     *                                  ignore mapping strings to tags.
+     */
+    public void setEnableStringTagging(boolean enableStringTagging)
+    {
+        this.enableStringTagging = enableStringTagging;
+    }
 
+    /**
+     * Iterates the values of the taggable property which the metadata
+     * extractor should have already attempted to convert values to {@link NodeRef}s.
+     * <p>
+     * If conversion by the metadata extracter failed due to a MalformedNodeRefException
+     * the taggable property should still contain raw string values.
+     * <p>
+     * Mixing of NodeRefs and string values is permitted so each raw value is
+     * checked for a valid NodeRef representation and if so, converts to a NodeRef, 
+     * if not, adds as a tag via the {@link TaggingService}.
+     * 
+     * @param actionedUponNodeRef The NodeRef being actioned upon
+     * @param propertyDef the PropertyDefinition of the taggable property
+     * @param rawValue the raw value from the metadata extracter
+     */
+    @SuppressWarnings("unchecked")
+    protected void addTags(NodeRef actionedUponNodeRef, PropertyDefinition propertyDef, Serializable rawValue)
+    {
+        List<String> tags = new ArrayList<String>();
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("converting " + rawValue.toString() + " of type " + 
+                    rawValue.getClass().getCanonicalName() + " to tags");
+        }
+        if (rawValue instanceof Collection<?>)
+        {
+            for (Object singleValue : (Collection<?>) rawValue)
+            {
+                if (singleValue instanceof String)
+                {
+                    if (NodeRef.isNodeRef((String) singleValue))
+                    {
+                        // Convert to a NodeRef
+                        Serializable convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(
+                                propertyDef.getDataType(),
+                                (String) singleValue);
+                        String tagName = (String) nodeService.getProperty((NodeRef) convertedPropertyValue, ContentModel.PROP_NAME);
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace("found tag '" + tagName + "' from tag nodeRef '" + (String) singleValue + "', " +
+                            		"adding to " + actionedUponNodeRef.toString());
+                        }
+                        tags.add(tagName);
+                    }
+                    else
+                    {
+                        // Must be a simple string
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace("adding string tag '" + (String) singleValue + "' to " + actionedUponNodeRef.toString());
+                        }
+                        tags.add((String) singleValue);
+                        
+                    }
+                }
+                else if (singleValue instanceof NodeRef)
+                {
+                    String tagName = (String) nodeService.getProperty((NodeRef) singleValue, ContentModel.PROP_NAME);
+                    tags.add(tagName);
+                }
+            }
+        }
+        else if (rawValue instanceof String)
+        {
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("adding tag '" + (String) rawValue + "' to " + actionedUponNodeRef.toString());
+            }
+            tags.add((String) rawValue);
+        }
+        taggingService.addTags(actionedUponNodeRef, tags);
+    }
+    
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.service.cmr.repository.NodeRef,
      *      NodeRef)
@@ -143,6 +243,10 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             }
             // There is no extracter to use
             return;
+        }
+        if (enableStringTagging && (extracter instanceof AbstractMappingMetadataExtracter))
+        {
+            ((AbstractMappingMetadataExtracter) extracter).setEnableStringTagging(enableStringTagging);
         }
         
         // Get all the node's properties
@@ -212,11 +316,22 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             ClassDefinition propertyContainerDef = propertyDef.getContainerClass();
             if (propertyContainerDef.isAspect())
             {
-                QName aspectQName = propertyContainerDef.getName();
-                requiredAspectQNames.add(aspectQName);
-                // Get all properties associated with the aspect
-                Set<QName> aspectProperties = propertyContainerDef.getProperties().keySet();
-                aspectPropertyQNames.addAll(aspectProperties);
+                if (enableStringTagging && propertyContainerDef.getName().equals(ContentModel.ASPECT_TAGGABLE))
+                {
+                    Serializable oldValue = nodeProperties.get(propertyQName);
+                    addTags(actionedUponNodeRef, propertyDef, oldValue);
+                    // Replace the raw value with the created tag NodeRefs
+                    nodeProperties.put(ContentModel.PROP_TAGS, 
+                            nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TAGS));
+                }
+                else
+                {
+                    QName aspectQName = propertyContainerDef.getName();
+                    requiredAspectQNames.add(aspectQName);
+                    // Get all properties associated with the aspect
+                    Set<QName> aspectProperties = propertyContainerDef.getProperties().keySet();
+                    aspectPropertyQNames.addAll(aspectProperties);
+                }
             }
         }
         

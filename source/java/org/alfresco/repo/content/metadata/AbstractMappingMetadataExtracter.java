@@ -38,11 +38,13 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MalformedNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
@@ -114,6 +116,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Map<QName, Set<String>> embedMapping;
     private boolean inheritDefaultMapping;
     private boolean inheritDefaultEmbedMapping;
+    private boolean enableStringTagging;
 
     /**
      * Default constructor.  If this is called, then {@link #isSupported(String)} should
@@ -349,6 +352,18 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public void setInheritDefaultMapping(boolean inheritDefaultMapping)
     {
         this.inheritDefaultMapping = inheritDefaultMapping;
+    }
+
+    /**
+     * Whether or not to enable the pass through of simple strings to cm:taggable tags
+     * 
+     * @param enableStringTagging       <tt>true</tt> find or create tags for each string 
+     *                                  mapped to cm:taggable.  <tt>false</tt> (default) 
+     *                                  ignore mapping strings to tags.
+     */
+    public void setEnableStringTagging(boolean enableStringTagging)
+    {
+        this.enableStringTagging = enableStringTagging;
     }
 
     /**
@@ -1296,6 +1311,38 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                             propertyQName,
                             propertyTypeDef.getName(),
                             propertyValue);
+                }
+            }
+            catch (MalformedNodeRefException e)
+            {
+                if (propertyQName.equals(ContentModel.PROP_TAGS))
+                {
+                    if (enableStringTagging)
+                    {
+                        // We must want to map tag string values instead of nodeRefs
+                        // ContentMetadataExtracter will take care of tagging by string
+                        ArrayList<Object> list = new ArrayList<Object>(1);
+                        for (Object value : (Object[]) propertyValue)
+                        {
+                            list.add(value);
+                        }
+                        convertedProperties.put(propertyQName, list);
+                    }
+                    else
+                    {
+                        if (logger.isInfoEnabled())
+                        {
+                            logger.info("enableStringTagging is false and could not convert " + 
+                                    propertyQName.toString() + ": " + e.getMessage());
+                        }
+                    }
+                }
+                else
+                {
+                    if (failOnTypeConversion)
+                    {
+                        throw e;
+                    }
                 }
             }
         }

@@ -458,23 +458,52 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         }
     }
     
+    // Lookup Table for dubious characters.
+    final static String[][] dubiousChars = new String[][] { { "\\", "%5c" }, 
+            { "/", "%2f" }, 
+            { "*", "%2a" }, 
+            { "|", "%7c" }, 
+            { ":", "%3a" }, 
+            { "\"", "%22" }, 
+            { "<", "%3c" }, 
+            { ">", "%3e" },
+            { "?", "%3f" }};
+    
     /**
-     * Replaces characters \/*|:"<>?. on their hex values. Subject field is used as name of the content, so we need to replace characters that are forbidden in content names.
      * 
-     * @param subject String representing subject
-     * @return Encoded string
+     * Subject field is used as name of the content, so we need to replace characters that are forbidden in file names.
+     * 
+     * Trims whitespace
+     * 
+     * Replaces characters \/*|:"<>? with their hex values.  
+     * 
+     * @param subject the string of the email subject
+     *
+     ** @return filename
      */
-    // MER Removed . * ,  { ".", "%2e" }
-    public static String encodeSubject(String subject)
-    {
-        String result = subject.trim();
-        String[][] s = new String[][] { { "\\", "%5c" }, { "/", "%2f" }, { "*", "%2a" }, { "|", "%7c" }, { ":", "%3a" }, { "\"", "%22" }, { "<", "%3c" }, { ">", "%3e" },
-                { "?", "%3f" }};
 
-        for (int i = 0; i < s.length; i++)
+    
+    public static String encodeSubject(String subject)
+    {   
+        
+        // MER Removed . * ,  { ".", "%2e" }
+        
+        // Filename regex from model is (.*[\"\*\\\>\<\?\/\:\|]+.*)|(.*[\.]?.*[\.]+$)|(.*[ ]+$)
+        //Strip whitespace
+        String result = subject.trim();
+        
+        // replace dubious chars
+        for (int i = 0; i < dubiousChars.length; i++)
         {
-            result = result.replace(s[i][0], s[i][1]);
+            result = result.replace(dubiousChars[i][0], dubiousChars[i][1]);
         }
+        
+        // Replace trailing "." with %2e
+        if(result.endsWith("."))
+        {
+            result = result.substring(0, result.length() -1) + "%2e";
+        }
+        
 
         return result;
     }

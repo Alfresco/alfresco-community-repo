@@ -21,6 +21,7 @@ package org.alfresco.repo.domain.node;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -3011,6 +3012,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                         throw new ConcurrencyFailureException("FK violation updating primary parent association:" + assoc, e); 
                     }
                     
+                    // Now here's the safe way of recognizing a SQL exception - by its SQLState or error code!
+                    if (e instanceof SQLException && ((SQLException)e).getSQLState().equals("40P01"))
+                    {
+                        logger.warn("insertChildAssoc: PostgreSQL deadlock loser retry: "+assoc);
+                        throw new ConcurrencyFailureException("PostgreSQL deadlock loser retry...", e);                        
+                    }
+
                     // We assume that this is from the child cm:name constraint violation
                     throw new DuplicateChildNodeNameException(
                             parentNode.getNodeRef(),

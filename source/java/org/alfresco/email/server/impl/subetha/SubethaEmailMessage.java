@@ -462,26 +462,5 @@ public class SubethaEmailMessage implements EmailMessage
     {
         return attachments;
     }
-    
-//    /**
-//     * Replaces characters \/*|:"<>?. on their hex values. Subject field is used as name of the content, so we need to replace characters that are forbidden in content names.
-//     * 
-//     * @param subject String representing subject
-//     * @return Encoded string
-//     */
-//    // MER Removed . * ,  { ".", "%2e" }
-//    static private String encodeSubject(String subject)
-//    {
-//        String result = subject.trim();
-//        String[][] s = new String[][] { { "\\", "%5c" }, { "/", "%2f" }, { "*", "%2a" }, { "|", "%7c" }, { ":", "%3a" }, { "\"", "%22" }, { "<", "%3c" }, { ">", "%3e" },
-//                { "?", "%3f" }};
-//
-//        for (int i = 0; i < s.length; i++)
-//        {
-//            result = result.replace(s[i][0], s[i][1]);
-//        }
-//
-//        return result;
-//    }
 
 }

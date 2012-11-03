@@ -274,6 +274,7 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
                     }
                     finally
                     {
+                        jbpmContext.getSession().flush();
                         jbpmContext.close();
                     }
                     return null;
@@ -343,6 +344,7 @@ public class AlfrescoJobExecutorThread extends JobExecutorThread
                     }
                     finally
                     {
+                        jbpmContext.getSession().flush();
                         jbpmContext.close();
                     }
 

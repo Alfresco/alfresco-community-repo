@@ -1352,7 +1352,7 @@ public class FileFolderServiceImpl implements FileFolderService
                 results.add(pathInfo);
             }
             // check that we found the root
-            if (!foundRoot || results.size() == 0)
+            if (!foundRoot)
             {
                 throw new FileNotFoundException(nodeRef);
             }

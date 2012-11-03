@@ -369,8 +369,11 @@ public class EmailServiceImplTest extends TestCase
 
     /**
       * ALF-9544
+      * ALF-751 
       *  
       * Inbound email to a folder restricts file name to 86 characters or less.
+      * 
+      * Also has tests for other variations of subject
       */
     public void testFolderSubject() throws Exception
     {
@@ -490,6 +493,102 @@ public class EmailServiceImplTest extends TestCase
             emailService.importMessage(delivery, m);
          }
         
+        
+        // ALF-751 Email ends with period
+        {
+            Session sess = Session.getDefaultInstance(new Properties());
+            assertNotNull("sess is null", sess);
+            SMTPMessage msg = new SMTPMessage(sess);
+            InternetAddress[] toa =  { new InternetAddress(to) };
+        
+            msg.setFrom(new InternetAddress(TEST_EMAIL));
+            msg.setRecipients(Message.RecipientType.TO, toa);
+            msg.setSubject("Foobar.");
+            msg.setContent(content, "text/plain");
+                
+            StringBuffer sb = new StringBuffer();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            msg.writeTo(bos);
+            InputStream is = new StringInputStream(bos.toString());
+            assertNotNull("is is null", is);
+        
+            SubethaEmailMessage m = new SubethaEmailMessage(is);   
+            EmailDelivery delivery = new EmailDelivery(to, from, null);
+
+            emailService.importMessage(delivery, m);
+         }
+        
+        // ALF-751 Email ends with ...
+        {
+            Session sess = Session.getDefaultInstance(new Properties());
+            assertNotNull("sess is null", sess);
+            SMTPMessage msg = new SMTPMessage(sess);
+            InternetAddress[] toa =  { new InternetAddress(to) };
+        
+            msg.setFrom(new InternetAddress(TEST_EMAIL));
+            msg.setRecipients(Message.RecipientType.TO, toa);
+            msg.setSubject("Foobar...");
+            msg.setContent(content, "text/plain");
+                
+            StringBuffer sb = new StringBuffer();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            msg.writeTo(bos);
+            InputStream is = new StringInputStream(bos.toString());
+            assertNotNull("is is null", is);
+        
+            SubethaEmailMessage m = new SubethaEmailMessage(is);   
+            EmailDelivery delivery = new EmailDelivery(to, from, null);
+
+            emailService.importMessage(delivery, m);
+         }
+        
+        // ALF-751 Email subject is blank " ... "
+        {
+            Session sess = Session.getDefaultInstance(new Properties());
+            assertNotNull("sess is null", sess);
+            SMTPMessage msg = new SMTPMessage(sess);
+            InternetAddress[] toa =  { new InternetAddress(to) };
+        
+            msg.setFrom(new InternetAddress(TEST_EMAIL));
+            msg.setRecipients(Message.RecipientType.TO, toa);
+            msg.setSubject(" ... ");
+            msg.setContent(content, "text/plain");
+                
+            StringBuffer sb = new StringBuffer();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            msg.writeTo(bos);
+            InputStream is = new StringInputStream(bos.toString());
+            assertNotNull("is is null", is);
+        
+            SubethaEmailMessage m = new SubethaEmailMessage(is);   
+            EmailDelivery delivery = new EmailDelivery(to, from, null);
+
+            emailService.importMessage(delivery, m);
+         }
+        
+        // ALF-751 Email subject is a single .
+        {
+            Session sess = Session.getDefaultInstance(new Properties());
+            assertNotNull("sess is null", sess);
+            SMTPMessage msg = new SMTPMessage(sess);
+            InternetAddress[] toa =  { new InternetAddress(to) };
+        
+            msg.setFrom(new InternetAddress(TEST_EMAIL));
+            msg.setRecipients(Message.RecipientType.TO, toa);
+            msg.setSubject(".");
+            msg.setContent(content, "text/plain");
+                
+            StringBuffer sb = new StringBuffer();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            msg.writeTo(bos);
+            InputStream is = new StringInputStream(bos.toString());
+            assertNotNull("is is null", is);
+        
+            SubethaEmailMessage m = new SubethaEmailMessage(is);   
+            EmailDelivery delivery = new EmailDelivery(to, from, null);
+
+            emailService.importMessage(delivery, m);
+         }
            
     }
     

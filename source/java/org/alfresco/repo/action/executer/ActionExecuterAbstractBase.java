@@ -23,11 +23,11 @@ import java.util.Set;
 
 import org.alfresco.repo.action.ActionDefinitionImpl;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
+import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -235,9 +235,8 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         
         // Only execute the action if this action is read only or the actioned upon node reference doesn't
         // have a lock applied for this user.
-        if (ignoreLock == true ||
-            hasLock(actionedUponNodeRef) == false)
-        {        
+        if (ignoreLock || !LockUtils.isLockedAndReadOnly(actionedUponNodeRef, lockService))
+        {
             // Execute the implementation
             executeImpl(action, actionedUponNodeRef);
         }
@@ -250,22 +249,6 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
                              ") is locked.");
             }
         }
-    }
-    
-    /**
-     * Indicates whether a node has a lock.
-     * 
-     * @param nodeRef    node reference
-     * @return boolean    true if node has lock, false otherwise
-     */
-    private boolean hasLock(NodeRef nodeRef)
-    {
-        boolean result = false;
-        if (baseNodeService.exists(nodeRef) == true)
-        {
-            result = (lockService.getLockStatus(nodeRef) != LockStatus.NO_LOCK);
-        }
-        return result;
     }
     
     /**

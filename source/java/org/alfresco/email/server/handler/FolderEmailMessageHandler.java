@@ -56,6 +56,10 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
     
     private static final Log log = LogFactory.getLog(FolderEmailMessageHandler.class);
     
+    /**
+     * overwriteDuplicates.
+     * if true then overwrite an existing node with the same name.   if false the name is changed to make it unique.
+     */ 
     private boolean overwriteDuplicates = false;
 
     /**

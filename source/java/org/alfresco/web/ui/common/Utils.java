@@ -98,6 +98,10 @@ public final class Utils extends StringUtils
    
    private static final Log logger = LogFactory.getLog(Utils.class);
    
+   static
+   {
+       tagWhiteList.add("STRIKE");
+   }
    /**
     * Private constructor
     */

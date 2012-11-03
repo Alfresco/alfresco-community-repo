@@ -21,7 +21,6 @@ package org.alfresco.repo.domain.node;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -98,6 +97,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.util.Assert;
 
 /**
@@ -3004,6 +3004,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     controlDAO.rollbackToSavepoint(savepoint);
                     // DuplicateChildNodeNameException implements DoNotRetryException.
                     
+                    // Allow real DB concurrency issues (e.g. DeadlockLoserDataAccessException) straight through for a retry
+                    if (e instanceof ConcurrencyFailureException)
+                    {
+                        throw e;                        
+                    }
+
                     // There are some cases - FK violations, specifically - where we DO actually want to retry.
                     // Detecting this is done by looking for the related FK names, 'fk_alf_cass_*' in the error message
                     String lowerMsg = e.getMessage().toLowerCase();
@@ -3012,13 +3018,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                         throw new ConcurrencyFailureException("FK violation updating primary parent association:" + assoc, e); 
                     }
                     
-                    // Now here's the safe way of recognizing a SQL exception - by its SQLState or error code!
-                    if (e instanceof SQLException && ((SQLException)e).getSQLState().equals("40P01"))
-                    {
-                        logger.warn("insertChildAssoc: PostgreSQL deadlock loser retry: "+assoc);
-                        throw new ConcurrencyFailureException("PostgreSQL deadlock loser retry...", e);                        
-                    }
-
                     // We assume that this is from the child cm:name constraint violation
                     throw new DuplicateChildNodeNameException(
                             parentNode.getNodeRef(),

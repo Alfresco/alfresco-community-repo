@@ -109,6 +109,10 @@ function postActivity()
          data.title = json.get("fileName");
          data.nodeRef = nodeRef;
          strParams = "?path=" + json.get("path");
+         if (parentNodeRef != null)
+         {
+            data.parentNodeRef = parentNodeRef;
+         }
          break;
       
       default:

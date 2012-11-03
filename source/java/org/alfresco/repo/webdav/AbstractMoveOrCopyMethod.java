@@ -178,5 +178,9 @@ public abstract class AbstractMoveOrCopyMethod extends HierarchicalMethod
     	return shuffleOperation;
     }
     
-    
+    protected void parseRequestHeaders() throws WebDAVServerException
+    {
+        super.parseRequestHeaders();
+        parseIfHeader();
+    } 
 }

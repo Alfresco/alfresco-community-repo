@@ -96,6 +96,8 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
            try
            {
                fileFolderService.rename(sourceNodeRef, name);
+               // As per the WebDAV spec, we make sure the node is unlocked once moved
+               getDAVHelper().getLockService().unlock(sourceNodeRef);
            }
            catch (AccessDeniedException e)
            {
@@ -135,6 +137,8 @@ public class MoveMethod extends AbstractMoveOrCopyMethod
             // It is a simple move operation 
             fileFolderService.moveFrom(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);  
         }
+        // As per the WebDAV spec, we make sure the node is unlocked once moved
+        getDAVHelper().getLockService().unlock(sourceNodeRef);
     }
     
     private void copyOnlyContent(NodeRef sourceNodeRef, FileInfo destFileInfo, FileFolderService fileFolderService)

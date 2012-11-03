@@ -20,7 +20,7 @@
   <url>/api/login?u={username}&amp;pw={password?}</url>
   <format default="xml"/>
   <authentication>none</authentication>
-  <transaction allow="readonly">required</transaction>
+  <transaction allow="readwrite">required</transaction>
   <lifecycle>public_api</lifecycle>
   <family>Authentication</family>
 </webscript>

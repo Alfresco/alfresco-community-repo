@@ -338,7 +338,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     }        
                 };
                 
-                if (retryingTransactionHelper.doInTransaction(authWork, true))
+                if (retryingTransactionHelper.doInTransaction(authWork))
                 {
                     // Execute Web Script if authentication passed
                     // The Web Script has its own txn management with potential runAs() user

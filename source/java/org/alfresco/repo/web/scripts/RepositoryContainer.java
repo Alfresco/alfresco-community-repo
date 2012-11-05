@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -96,7 +97,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     /** Component Dependencies */
     private Repository repository;
     private RepositoryImageResolver imageResolver;
-    private RetryingTransactionHelper retryingTransactionHelper;
+    private TransactionService transactionService;
     private RetryingTransactionHelper fallbackTransactionHelper;
     private AuthorityService authorityService;
     private DescriptorService descriptorService;
@@ -137,15 +138,15 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     {
         this.imageResolver = imageResolver;
     }
-
-    /**
-     * @param retryingTransactionHelper
-     */
-    public void setTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
-        this.retryingTransactionHelper = retryingTransactionHelper;
-    }
     
+    /**
+     * @param transactionService
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     /**
      * @param fallbackTransactionHelper an unlimited transaction helper used to generate error responses
      */
@@ -338,7 +339,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     }        
                 };
                 
-                if (retryingTransactionHelper.doInTransaction(authWork))
+                if (transactionService.getRetryingTransactionHelper().doInTransaction(authWork, transactionService.isReadOnly()))
                 {
                     // Execute Web Script if authentication passed
                     // The Web Script has its own txn management with potential runAs() user
@@ -488,7 +489,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
             
             try
             {
-                retryingTransactionHelper.doInTransaction(work, readonly, requiresNew);
+                transactionService.getRetryingTransactionHelper().doInTransaction(work, readonly, requiresNew);
             }
             catch (TooBusyException e)
             {
@@ -648,7 +649,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
     @Override
     public void reset() 
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
             {

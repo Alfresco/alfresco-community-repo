@@ -533,7 +533,7 @@
 
    <servlet>
       <servlet-name>cmisws</servlet-name>
-      <servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
+      <servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
       <load-on-startup>7</load-on-startup>
    </servlet>
 

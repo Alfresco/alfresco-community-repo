@@ -1209,8 +1209,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             else
             {
                 long off = (offset == null ? 0 : offset.longValue());
-                long len = (length == null ? contentReader.getSize() : length.longValue()) - off;
-                if (len > contentReader.getSize())
+                long len = (length == null ? contentReader.getSize() : length.longValue());
+                if (off + len > contentReader.getSize())
                 {
                     len = contentReader.getSize() - off;
                 }

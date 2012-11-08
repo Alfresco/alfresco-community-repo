@@ -21,7 +21,6 @@ package org.alfresco.repo.activities;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,15 +39,14 @@ import org.alfresco.service.cmr.activities.ActivityPostService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -304,31 +302,39 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                 // activity posting user avatars will be retrieved and added to the activity feed. This will enable
                 // avatars to be requested using the unique nodeRef which can be safely cached by the browser and
                 // improve performance...
-                if (userIdToAvatarNodeRefCache.containsKey(activityFeed.getPostUserId()))
+                NodeRef avatarNodeRef = null;
+                String postUserId = activityFeed.getPostUserId();
+                if (userIdToAvatarNodeRefCache.containsKey(postUserId))
                 {
                     // If we've previously cached the users avatar, or if we've determine that the user doesn't
                     // have an avatar then use the cached data.
-                    activityFeed.setPostUserAvatarNodeRef(userIdToAvatarNodeRefCache.get(activityFeed.getPostUserId()));
+                    avatarNodeRef = userIdToAvatarNodeRefCache.get(postUserId);
                 }
                 else
                 {
-                    // Get the avatar for the user id, set it in the activity feed and update the cache
-                    NodeRef avatarNodeRef = null;
-                    NodeRef postPerson = this.personService.getPerson(activityFeed.getPostUserId());
-                    List<AssociationRef> assocRefs = this.nodeService.getTargetAssocs(postPerson, ContentModel.ASSOC_AVATAR);
-                    if (!assocRefs.isEmpty())
+                    try
                     {
-                        avatarNodeRef = assocRefs.get(0).getTargetRef();
-                        activityFeed.setPostUserAvatarNodeRef(avatarNodeRef);
-                    }
-                    else
+                        NodeRef postPerson = this.personService.getPerson(postUserId);
+                        List<AssociationRef> assocRefs = this.nodeService.getTargetAssocs(postPerson, ContentModel.ASSOC_AVATAR);
+                        if (!assocRefs.isEmpty())
+                        {
+                            // Get the avatar for the user id, set it in the activity feed and update the cache
+                            avatarNodeRef = assocRefs.get(0).getTargetRef();
+                        }
+                    } 
+                    catch (NoSuchPersonException e) 
                     {
-                        activityFeed.setPostUserAvatarNodeRef(null);
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.warn("getUserFeedEntries: person no longer exists: "+postUserId);
+                        }
                     }
                     
                     // Update the cache (setting null if there is no avatar for the user)...
-                    userIdToAvatarNodeRefCache.put(activityFeed.getPostUserId(), avatarNodeRef);
+                    userIdToAvatarNodeRefCache.put(postUserId, avatarNodeRef);
                 }
+                
+                activityFeed.setPostUserAvatarNodeRef(avatarNodeRef);
                 
                 activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
                 result.add(activityFeed);

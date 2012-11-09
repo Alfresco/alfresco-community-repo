@@ -301,7 +301,7 @@ subprojects {
 		
 		mmt = new org.alfresco.repo.module.tool.ModuleManagementTool()
 		mmt.setVerbose(true)		
-		mmt.installModule(ampFileLocation.getPath(), warFileLocation.getPath(), false, false, false)
+		mmt.installModule(ampFileLocation.getPath(), warFileLocation.getPath(), false, true, false)
 	}
 	
 	task cleanDeploy(type: Delete) {

@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -111,7 +112,7 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
             // Calculate a transfer name
             QName nodeDbid = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "node-dbid");
             Long dbId = (Long)this.nodeService.getProperty(dispositionLifeCycleNodeRef, nodeDbid);
-            String transferName = padString(dbId.toString(), 10);
+            String transferName = StringUtils.leftPad(dbId.toString(), 10, "0");
             
             // Create the transfer object
             Map<QName, Serializable> transferProps = new HashMap<QName, Serializable>(2);

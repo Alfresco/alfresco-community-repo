@@ -398,8 +398,9 @@
     </bean>
     
     <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability">
-        <property name="capability" ref="rmExtendRetentionPeriodOrFreezeCapability"/>
-    </bean>       
+        <property name="capability" ref="rmExtendRetentionPeriodOrFreezeCapability" />
+        <property name="freezeService" ref="freezeService" />
+    </bean>
 
     <!-- Unfreeze record -->
 
@@ -425,8 +426,9 @@
     </bean>
     
     <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction" depends-on="rmUnfreezeCapability">
-        <property name="capability" ref="rmUnfreezeCapability"/>
-    </bean>        
+        <property name="capability" ref="rmUnfreezeCapability" />
+        <property name="freezeService" ref="freezeService" />
+    </bean>
     
     <!-- Relinquish Hold Action-->
 
@@ -442,8 +444,9 @@
     </bean>
     
     <bean id="relinquishHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RelinquishHoldAction" parent="rmAction" depends-on="rmUnfreezeCapability">
-        <property name="capability" ref="rmUnfreezeCapability"/>
-    </bean>      
+        <property name="capability" ref="rmUnfreezeCapability" />
+        <property name="freezeService" ref="freezeService" />
+    </bean>
     
     <!-- Edit hold reason -->
 
@@ -469,7 +472,8 @@
     </bean>
     
     <bean id="editHoldReason" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditHoldReasonAction" parent="rmAction" depends-on="rmViewUpdateReasonsForFreezeCapability">
-        <property name="capability" ref="rmViewUpdateReasonsForFreezeCapability"/>
+        <property name="capability" ref="rmViewUpdateReasonsForFreezeCapability" />
+        <property name="freezeService" ref="freezeService" />
     </bean>  
     
     <!-- Edit review as of date -->

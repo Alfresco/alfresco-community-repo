@@ -18,6 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.freeze;
 
+import java.util.Set;
+
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Freeze Service Interface
@@ -39,7 +42,7 @@ public interface FreezeService
      * @param nodeRef   hold node reference
      * @return boolean  true if hold, false otherwise
      */
-    // TODO boolean isHold(NodeRef nodeRef);
+    boolean isHold(NodeRef nodeRef);
     
     /**
      * Indicates whether the passed node reference is frozen.
@@ -47,7 +50,7 @@ public interface FreezeService
      * @param nodeRef   node reference
      * @return boolean  true if frozen, false otherwise
      */
-    // TODO boolean isFrozen(NodeRef nodeRef);
+    boolean isFrozen(NodeRef nodeRef);
     
     /**
      * Get the 'root' frozen node references in a hold.
@@ -55,7 +58,7 @@ public interface FreezeService
      * @param hold          hold node reference
      * @return Set<NodeRef> frozen node references
      */
-    // TODO Set<NodeRef> getFrozen(NodeRef hold);
+    Set<NodeRef> getFrozen(NodeRef hold);
     
     /**
      * Freezes a node with the provided reason, creating a hold node reference.
@@ -64,7 +67,7 @@ public interface FreezeService
      * @param nodeRef   node reference
      * @return NodeRef  hold node reference
      */
-    // TODO NodeRef freeze(String reason, NodeRef nodeRef);
+    NodeRef freeze(String reason, NodeRef nodeRef);
     
     /**
      * Freezes a node, adding it an existing hold.
@@ -72,24 +75,24 @@ public interface FreezeService
      * @param hold      hold node reference
      * @param nodeRef   node reference
      */
-    // TODO void freeze(NodeRef hold, NodeRef nodeRef);
+    void freeze(NodeRef hold, NodeRef nodeRef);
     
     /**
      * Freezes a collection of nodes with the given reason, creating a hold.
      * 
      * @param reason        freeze reason
-     * @param Set<NodeRef>  set of nodes to freeze 
+     * @param nodeRefs  set of nodes to freeze 
      * @return NodeRef      hold node reference
      */
-    // TODO NodeRef freeze(String reason, Set<NodeRef> nodeRef);
+   NodeRef freeze(String reason, Set<NodeRef> nodeRefs);
     
     /**
      * Freeze a collection of nodes, adding them to an existing hold.
      * 
      * @param hold      hold node reference
-     * @param nodeRef   set of nodes to freeze
+     * @param nodeRefs   set of nodes to freeze
      */
-    // TODO void freeze(NodeRef hold, Set<NodeRef> nodeRef);
+    void freeze(NodeRef hold, Set<NodeRef> nodeRefs);
     
     /**
      * Unfreeze a frozen node.  
@@ -99,7 +102,7 @@ public interface FreezeService
      * 
      * @param nodeRef   node reference
      */
-    // TODO void unFreeze(NodeRef nodeRef);
+    void unFreeze(NodeRef nodeRef);
     
     /**
      * Unfreeze a collection of nodes.
@@ -107,16 +110,16 @@ public interface FreezeService
      * The unfrozen nodes are automatically removed from the hold(s) the are in.  If the hold(s) is
      * subsequently empty, the hold is automatically deleted.
      * 
-     * @param Set<NodeRef>  set of nodes to unfreeze
+     * @param nodeRefs  set of nodes to unfreeze
      */
-    // TODO void unFreeze(Set<NodeRef> nodeRef);
+    void unFreeze(Set<NodeRef> nodeRefs);
     
     /**
      * Unfreezes all nodes within a hold and deletes the hold.
      * 
      * @param hold  hold node reference
      */
-    // TODO void relinquish(NodeRef hold);
+    void relinquish(NodeRef hold);
     
     /**
      * Gets the freeze reason for a hold.
@@ -124,7 +127,7 @@ public interface FreezeService
      * @param hold      hold node reference
      * @return String   freeze reason
      */
-    // TODO String getReason(NodeRef hold);
+    String getReason(NodeRef hold);
     
     /**
      * Updates the freeze reason for a given hold.
@@ -132,5 +135,5 @@ public interface FreezeService
      * @param hold      hold node reference
      * @param reason    updated reason
      */
-    // TODO void updateReason(NodeRef hold, String reason);
+    void updateReason(NodeRef hold, String reason);
 }

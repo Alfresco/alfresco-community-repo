@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Files a record into a particular record folder
@@ -79,7 +80,7 @@ public class FileAction extends RMActionExecuterAbstractBase
 	        // Calculate the filed date and record identifier	        
 	        String year = Integer.toString(fileCalendar.get(Calendar.YEAR));
 	        QName nodeDbid = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "node-dbid");
-	        String recordId = year + "-" + padString(recordProperties.get(nodeDbid).toString(), 10);        
+	        String recordId = year + "-" + StringUtils.leftPad(recordProperties.get(nodeDbid).toString(), 10, "0");
 	        recordProperties.put(RecordsManagementModel.PROP_IDENTIFIER, recordId);
         }
         

@@ -722,6 +722,7 @@
     	<property name="policyComponent" ref="policyComponent" />
         <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="dictionaryService" ref="dictionaryService" />
     </bean>
     
     <!-- Records Management Audit Service -->

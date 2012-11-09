@@ -365,8 +365,11 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
      * @param s     String to pad with leading zero '0' characters
      * @param len   Length to pad to
      * 
-     * @return padded string or the original if already at >=len characters 
+     * @return padded string or the original if already at >=len characters
+     * 
+     * @deprecated As of 2.1, replaced by {@link org.apache.commons.lang.StringUtils.leftPad}
      */
+    @Deprecated
     protected String padString(String s, int len)
     {
        String result = s;

@@ -25,9 +25,11 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -37,83 +39,93 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class EditHoldReasonAction extends RMActionExecuterAbstractBase
 {
-    private static final String MSG_HOLD_EDIT_REASON_NONE = "rm.action.hold-edit-reason-none";
-    private static final String MSG_HOLD_EDIT_TYPE = "rm.action.hold-edit-type";
-    
-    /** Parameter names */
-    public static final String PARAM_REASON = "reason";
-    
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        QName nodeType = this.nodeService.getType(actionedUponNodeRef);
-        if (this.dictionaryService.isSubClass(nodeType, TYPE_HOLD) == true)
-        {
-            // Get the property values
-            String reason = (String)action.getParameterValue(PARAM_REASON);
-            if (reason == null || reason.length() == 0)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_HOLD_EDIT_REASON_NONE));
-            }
-            
-            // Set the hold reason
-            nodeService.setProperty(actionedUponNodeRef, PROP_HOLD_REASON, reason);
+   private static final String MSG_HOLD_EDIT_REASON_NONE = "rm.action.hold-edit-reason-none";
+   private static final String MSG_HOLD_EDIT_TYPE = "rm.action.hold-edit-type";
 
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_HOLD_EDIT_TYPE, TYPE_HOLD.toString(), actionedUponNodeRef.toString()));
-        }                
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedAspects()
-     */
-    @Override
-    public Set<QName> getProtectedAspects()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(ASPECT_FROZEN);
-        return qnames;
-    }
+   /** Parameter names */
+   public static final String PARAM_REASON = "reason";
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedProperties()
-     */
-    @Override
-    public Set<QName> getProtectedProperties()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(PROP_HOLD_REASON);
-        return qnames;
-    }
+   /** Freeze Service */
+   private FreezeService freezeService;
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-     */
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        QName nodeType = this.nodeService.getType(filePlanComponent);
-        if (this.dictionaryService.isSubClass(nodeType, TYPE_HOLD) == true)
-        {
-            return true;
-        }
-        else
-        {
-            if(throwException)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_HOLD_EDIT_TYPE, TYPE_HOLD.toString(), filePlanComponent.toString()));
-            }
-            else
-            {
-                return false;
-            }
-        }        
-    }
+   /**
+    * Set freeze service
+    * 
+    * @param freezeService freeze service
+    */
+   public void setFreezeService(FreezeService freezeService)
+   {
+      this.freezeService = freezeService;
+   }
 
-    
+   /**
+    * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+    */
+   @Override
+   protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+   {
+      if (freezeService.isHold(actionedUponNodeRef))
+      {
+         // Get the property values
+         String reason = (String) action.getParameterValue(PARAM_REASON);
+         if (StringUtils.isBlank(reason))
+         {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_HOLD_EDIT_REASON_NONE));
+         }
+
+         // Update hold reason
+         freezeService.updateReason(actionedUponNodeRef, reason);
+      }
+      else
+      {
+         throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_HOLD_EDIT_TYPE, TYPE_HOLD.toString(), actionedUponNodeRef.toString()));
+      }
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedAspects()
+    */
+   @Override
+   public Set<QName> getProtectedAspects()
+   {
+      HashSet<QName> qnames = new HashSet<QName>();
+      qnames.add(ASPECT_FROZEN);
+      return qnames;
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedProperties()
+    */
+   @Override
+   public Set<QName> getProtectedProperties()
+   {
+      HashSet<QName> qnames = new HashSet<QName>();
+      qnames.add(PROP_HOLD_REASON);
+      return qnames;
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
+    */
+   @Override
+   protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
+   {
+      QName nodeType = this.nodeService.getType(filePlanComponent);
+      if (this.dictionaryService.isSubClass(nodeType, TYPE_HOLD) == true)
+      {
+         return true;
+      }
+      else
+      {
+         if(throwException)
+         {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_HOLD_EDIT_TYPE, TYPE_HOLD.toString(), filePlanComponent.toString()));
+         }
+         else
+         {
+            return false;
+         }
+      }
+   }
+
 }

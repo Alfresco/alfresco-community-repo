@@ -20,19 +20,14 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Unfreeze Action
@@ -41,119 +36,46 @@ import org.apache.commons.logging.LogFactory;
  */
 public class UnfreezeAction extends RMActionExecuterAbstractBase
 {
-    /** Logger */
-    private static Log logger = LogFactory.getLog(UnfreezeAction.class);
+   /** Freeze Service */
+   private FreezeService freezeService;
 
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_FROZEN) == true)
-        {
-            final boolean isFolder = this.recordsManagementService.isRecordFolder(actionedUponNodeRef);
+   /**
+    * Set freeze service
+    * 
+    * @param freezeService freeze service
+    */
+   public void setFreezeService(FreezeService freezeService)
+   {
+      this.freezeService = freezeService;
+   }
 
-            if (logger.isDebugEnabled())
-            {
-                StringBuilder msg = new StringBuilder();
-                msg.append("Unfreezing node ").append(actionedUponNodeRef);
-                if (isFolder)
-                {
-                    msg.append(" (folder)");
-                }
-                logger.debug(msg.toString());
-            }
+   /**
+    * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+    */
+   @Override
+   protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+   {
+      freezeService.unFreeze(actionedUponNodeRef);
+   }
 
-            // Remove freeze from node
-            removeFreeze(actionedUponNodeRef);
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedAspects()
+    */
+   @Override
+   public Set<QName> getProtectedAspects()
+   {
+      HashSet<QName> qnames = new HashSet<QName>();
+      qnames.add(ASPECT_FROZEN);
+      return qnames;
+   }
 
-            // Remove freeze from records if a record folder
-            if (isFolder)
-            {
-                List<NodeRef> records = this.recordsManagementService.getRecords(actionedUponNodeRef);
-                for (NodeRef record : records)
-                {
-                    removeFreeze(record);
-                }
-            }
-        }
-    }
-
-    /**
-     * Removes a freeze from a node
-     * 
-     * @param nodeRef
-     *            node reference
-     */
-    private void removeFreeze(NodeRef nodeRef)
-    {
-        // Get all the holds and remove this node from them
-        List<ChildAssociationRef> assocs = this.nodeService.getParentAssocs(nodeRef, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
-
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Removing freeze from node ").append(nodeRef)
-                .append("which has ").append(assocs.size()).append(" holds");
-            logger.debug(msg.toString());
-        }
-
-        for (ChildAssociationRef assoc : assocs)
-        {
-            // Remove the frozen node as a child
-            NodeRef holdNodeRef = assoc.getParentRef();
-            this.nodeService.removeChild(holdNodeRef, nodeRef);
-
-            if (logger.isDebugEnabled())
-            {
-                StringBuilder msg = new StringBuilder();
-                msg.append("Removed frozen node from hold ").append(holdNodeRef);
-                logger.debug(msg.toString());
-            }
-
-            // Check to see if we should delete the hold
-            List<ChildAssociationRef> holdAssocs = this.nodeService.getChildAssocs(holdNodeRef, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
-            if (holdAssocs.size() == 0)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    StringBuilder msg = new StringBuilder();
-                    msg.append("Hold node ").append(holdNodeRef)
-                        .append(" with name ").append(nodeService.getProperty(holdNodeRef, ContentModel.PROP_NAME))
-                        .append(" has no frozen nodes. Hence deleting it.");
-                    logger.debug(msg.toString());
-                }
-                
-                // Delete the hold object
-                this.nodeService.deleteNode(holdNodeRef);
-            }
-        }
-
-        // Remove the aspect
-        this.nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
-
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Removed frozen aspect from ").append(nodeRef);
-            logger.debug(msg.toString());
-        }
-    }
-
-    @Override
-    public Set<QName> getProtectedAspects()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(ASPECT_FROZEN);
-        return qnames;
-    }
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        return this.nodeService.hasAspect(filePlanComponent, ASPECT_FROZEN);
-    }
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
+    */
+   @Override
+   protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
+   {
+      return this.nodeService.hasAspect(filePlanComponent, ASPECT_FROZEN);
+   }
 
 }

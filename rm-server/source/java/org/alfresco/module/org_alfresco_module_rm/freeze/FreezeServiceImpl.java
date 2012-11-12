@@ -65,7 +65,6 @@ public class FreezeServiceImpl implements FreezeService,
 
    /** I18N */
    private static final String MSG_FREEZE_ONLY_RECORDS_FOLDERS = "rm.action.freeze-only-records-folders";
-   private static final String MSG_EMPTY_SET_OF_NODEREFS = "rm.action.empty-set-of-noderefs";
 
    /** Hold node reference key */
    private static final String KEY_HOLD_NODEREF = "holdNodeRef";
@@ -229,6 +228,7 @@ public class FreezeServiceImpl implements FreezeService,
       ParameterCheck.mandatoryString("reason", reason);
       ParameterCheck.mandatory("nodeRef", nodeRef);
 
+      // FIXME: Should we consider only records and record folders or 'any' node references
       // Check if the actionedUponNodeRef is a valid file plan component
       boolean isRecord = recordsManagementService.isRecord(nodeRef);
       boolean isFolder = recordsManagementService.isRecordFolder(nodeRef);
@@ -311,12 +311,7 @@ public class FreezeServiceImpl implements FreezeService,
    public NodeRef freeze(String reason, Set<NodeRef> nodeRefs)
    {
       ParameterCheck.mandatoryString("reason", reason);
-      ParameterCheck.mandatory("nodeRefs", nodeRefs);
-
-      if (nodeRefs.isEmpty())
-      {
-         throw new AlfrescoRuntimeException(MSG_EMPTY_SET_OF_NODEREFS);
-      }
+      ParameterCheck.mandatoryCollection("nodeRefs", nodeRefs);
 
       // FIXME: Can we assume that the nodeRefs are in the same filePlan???
       NodeRef nodeRef = nodeRefs.iterator().next();
@@ -334,7 +329,7 @@ public class FreezeServiceImpl implements FreezeService,
    public void freeze(NodeRef hold, Set<NodeRef> nodeRefs)
    {
       ParameterCheck.mandatory("hold", hold);
-      ParameterCheck.mandatory("nodeRefs", nodeRefs);
+      ParameterCheck.mandatoryCollection("nodeRefs", nodeRefs);
 
       for (NodeRef nodeRef : nodeRefs)
       {
@@ -393,7 +388,7 @@ public class FreezeServiceImpl implements FreezeService,
    @Override
    public void unFreeze(Set<NodeRef> nodeRefs)
    {
-      ParameterCheck.mandatory("nodeRefs", nodeRefs);
+      ParameterCheck.mandatoryCollection("nodeRefs", nodeRefs);
 
       for (NodeRef nodeRef : nodeRefs)
       {
@@ -409,109 +404,35 @@ public class FreezeServiceImpl implements FreezeService,
    {
       ParameterCheck.mandatory("hold", hold);
 
-      final NodeRef holdBeingRelinquished = hold;
-      List<ChildAssociationRef> frozenNodeAssocs = nodeService.getChildAssocs(holdBeingRelinquished, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
+      List<ChildAssociationRef> frozenNodeAssocs = nodeService.getChildAssocs(hold, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
 
       if (logger.isDebugEnabled())
       {
          StringBuilder msg = new StringBuilder();
-         msg.append("Relinquishing hold ").append(holdBeingRelinquished)
-            .append(" which has ").append(frozenNodeAssocs.size()).append(" frozen node(s).");
+         msg.append("Relinquishing hold '").append(hold)
+            .append("' which has '").append(frozenNodeAssocs.size()).append("' frozen node(s).");
          logger.debug(msg.toString());
       }
 
       for (ChildAssociationRef assoc : frozenNodeAssocs)
       {
-         final NodeRef nextFrozenNode = assoc.getChildRef();
-
          // Remove the freeze if this is the only hold that references the node
-         removeFreeze(nextFrozenNode, holdBeingRelinquished);
+         removeFreeze(assoc.getChildRef(), hold);
       }
 
       if (logger.isDebugEnabled())
       {
          StringBuilder msg = new StringBuilder();
-         msg.append("Deleting hold object ").append(holdBeingRelinquished)
-            .append(" with name ").append(nodeService.getProperty(holdBeingRelinquished, ContentModel.PROP_NAME));
+         msg.append("Deleting hold object '").append(hold)
+            .append("' with name '").append(nodeService.getProperty(hold, ContentModel.PROP_NAME))
+            .append("'.");
          logger.debug(msg.toString());
       }
 
       // Delete the hold node
-      this.nodeService.deleteNode(holdBeingRelinquished);
+      nodeService.deleteNode(hold);
    }
 
-   /**
-    * Removes a freeze from a node
-    * 
-    * @param nodeRef   node reference
-    */
-   private void removeFreeze(NodeRef nodeRef, NodeRef holdBeingRelinquished)
-   {
-      // We should only remove the frozen aspect if there are no other 'holds' in effect for this node.
-      // One complication to consider is that holds can be placed on records or on folders.
-      // Therefore if the nodeRef here is a record, we need to go up the containment hierarchy looking
-      // for holds at each level.
-
-      // Get all the holds and remove this node from them.
-      List<ChildAssociationRef> parentAssocs = this.nodeService.getParentAssocs(nodeRef, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
-      // If the nodeRef is a record, there could also be applicable holds as parents of the folder(s).
-      if (recordsManagementService.isRecord(nodeRef))
-      {
-         List<NodeRef> parentFolders = recordsManagementService.getRecordFolders(nodeRef);
-         for (NodeRef folder : parentFolders)
-         {
-            List<ChildAssociationRef> moreAssocs = nodeService.getParentAssocs(folder, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
-            parentAssocs.addAll(moreAssocs);
-         }
-      }
-
-      if (logger.isDebugEnabled())
-      {
-         StringBuilder msg = new StringBuilder();
-         msg.append("Removing freeze from ").append(nodeRef).append(" which has ")
-            .append(parentAssocs.size()).append(" holds");
-         logger.debug(msg.toString());
-      }
-
-      boolean otherHoldsAreInEffect = false;
-      for (ChildAssociationRef chAssRef : parentAssocs)
-      {
-         if (!chAssRef.getParentRef().equals(holdBeingRelinquished))
-         {
-            otherHoldsAreInEffect = true;
-            break;
-         }
-      }
-
-      if (!otherHoldsAreInEffect)
-      {
-         if (logger.isDebugEnabled())
-         {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Removing frozen aspect from ").append(nodeRef);
-            logger.debug(msg.toString());
-         }
-
-         // Remove the aspect
-         this.nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
-      }
-
-      // Remove the freezes on the child records as long as there is no other hold referencing them
-      if (this.recordsManagementService.isRecordFolder(nodeRef) == true)
-      {
-         if (logger.isDebugEnabled())
-         {
-            StringBuilder msg = new StringBuilder();
-            msg.append(nodeRef).append(" is a record folder");
-            logger.debug(msg.toString());
-         }
-         for (NodeRef record : recordsManagementService.getRecords(nodeRef))
-         {
-            removeFreeze(record, holdBeingRelinquished);
-         }
-      }
-   }
-   
    /**
     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#getReason(org.alfresco.service.cmr.repository.NodeRef)
     */
@@ -551,21 +472,22 @@ public class FreezeServiceImpl implements FreezeService,
       Long dbId = (Long) nodeService.getProperty(nodeRef, nodeDbid);
       String transferName = StringUtils.leftPad(dbId.toString(), 10, "0");
 
-      // Create the hold object
+      // Create the properties for the hold object
       Map<QName, Serializable> holdProps = new HashMap<QName, Serializable>(2);
       holdProps.put(ContentModel.PROP_NAME, transferName);
       holdProps.put(PROP_HOLD_REASON, reason);
 
-      // Get the root rm node
+      // Get the root rm node and create the hold object
       NodeRef root = recordsManagementService.getFilePlan(nodeRef);
-      final QName transferQName = QName.createQName(RM_URI, transferName);
+      QName transferQName = QName.createQName(RM_URI, transferName);
       holdNodeRef = nodeService.createNode(root, ASSOC_HOLDS, transferQName, TYPE_HOLD, holdProps).getChildRef();
 
       if (logger.isDebugEnabled())
       {
          StringBuilder msg = new StringBuilder();
-         msg.append("Created hold object ").append(holdNodeRef)
-            .append(" with transfer name ").append(transferQName);
+         msg.append("Created hold object '").append(holdNodeRef)
+            .append("' with transfer name '").append(transferQName)
+            .append("'.");
          logger.debug(msg.toString());
       }
 
@@ -603,7 +525,8 @@ public class FreezeServiceImpl implements FreezeService,
          if (logger.isDebugEnabled())
          {
             StringBuilder msg = new StringBuilder();
-            msg.append("Removed frozen node from hold '").append(holdNodeRef).append("'.");
+            msg.append("Removed frozen node '").append(nodeRef)
+               .append("' from hold '").append(holdNodeRef).append("'.");
             logger.debug(msg.toString());
           }
 
@@ -626,13 +549,86 @@ public class FreezeServiceImpl implements FreezeService,
       }
 
       // Remove the aspect
-      this.nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
+      nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
 
       if (logger.isDebugEnabled())
       {
          StringBuilder msg = new StringBuilder();
-         msg.append("Removed frozen aspect from ").append(nodeRef);
+         msg.append("Removed frozen aspect from '").append(nodeRef).append("'.");
          logger.debug(msg.toString());
+      }
+   }
+
+   /**
+    * Removes a freeze from a node from the given hold
+    * 
+    * @param nodeRef   node reference
+    * @param hold      hold
+    */
+   private void removeFreeze(NodeRef nodeRef, NodeRef hold)
+   {
+      // We should only remove the frozen aspect if there are no other 'holds' in effect for this node.
+      // One complication to consider is that holds can be placed on records or on folders.
+      // Therefore if the nodeRef here is a record, we need to go up the containment hierarchy looking
+      // for holds at each level.
+
+      // Get all the holds and remove this node from them.
+      List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
+      // If the nodeRef is a record, there could also be applicable holds as parents of the folder(s).
+      if (recordsManagementService.isRecord(nodeRef))
+      {
+         List<NodeRef> parentFolders = recordsManagementService.getRecordFolders(nodeRef);
+         for (NodeRef folder : parentFolders)
+         {
+            List<ChildAssociationRef> moreAssocs = nodeService.getParentAssocs(folder, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
+            parentAssocs.addAll(moreAssocs);
+         }
+      }
+
+      if (logger.isDebugEnabled())
+      {
+         StringBuilder msg = new StringBuilder();
+         msg.append("Removing freeze from ").append(nodeRef).append(" which has ")
+            .append(parentAssocs.size()).append(" holds");
+         logger.debug(msg.toString());
+      }
+
+      boolean otherHoldsAreInEffect = false;
+      for (ChildAssociationRef chAssRef : parentAssocs)
+      {
+         if (!chAssRef.getParentRef().equals(hold))
+         {
+            otherHoldsAreInEffect = true;
+            break;
+         }
+      }
+
+      if (!otherHoldsAreInEffect)
+      {
+         if (logger.isDebugEnabled())
+         {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Removing frozen aspect from ").append(nodeRef);
+            logger.debug(msg.toString());
+         }
+
+         // Remove the aspect
+         nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
+      }
+
+      // Remove the freezes on the child records as long as there is no other hold referencing them
+      if (recordsManagementService.isRecordFolder(nodeRef) == true)
+      {
+         if (logger.isDebugEnabled())
+         {
+            StringBuilder msg = new StringBuilder();
+            msg.append(nodeRef).append(" is a record folder");
+            logger.debug(msg.toString());
+         }
+         for (NodeRef record : recordsManagementService.getRecords(nodeRef))
+         {
+            removeFreeze(record, hold);
+         }
       }
    }
 }

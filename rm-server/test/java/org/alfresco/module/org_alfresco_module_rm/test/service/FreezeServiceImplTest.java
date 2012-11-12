@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
@@ -52,34 +53,8 @@ public class FreezeServiceImplTest extends BaseRMTestCase
    }
 
    /**
-    * @see FreezeService#isHold(org.alfresco.service.cmr.repository.NodeRef)
+    * @see FreezeService#freeze(String, NodeRef)
     */
-   public void testIsHold() throws Exception
-   {
-      doTestInTransaction(new Test<Void>()
-      {
-         @Override
-         public Void run() throws Exception
-         {
-            // FIXME
-            return null;
-         }
-      });
-   }
-
-   public void testGetFrozen() throws Exception
-   {
-      doTestInTransaction(new Test<Void>()
-      {
-         @Override
-         public Void run() throws Exception
-         {
-            // FIXME
-            return null;
-         }
-      });
-   }
-
    public void testFreeze() throws Exception
    {
       doTestInTransaction(new Test<Void>()
@@ -109,8 +84,9 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertNotNull(holdAssocs);
             assertEquals(1, holdAssocs.size());
             NodeRef holdNodeRef = holdAssocs.get(0).getChildRef();
+            assertTrue(freezeService.isHold(holdNodeRef));
             assertEquals("FreezeReason", freezeService.getReason(holdNodeRef));
-            List<ChildAssociationRef> freezeAssocs = nodeService.getChildAssocs(holdNodeRef);
+            Set<NodeRef> freezeAssocs = freezeService.getFrozen(holdNodeRef);
             assertNotNull(freezeAssocs);
             assertEquals(1, freezeAssocs.size());
 
@@ -171,6 +147,9 @@ public class FreezeServiceImplTest extends BaseRMTestCase
       });
    }
 
+   /**
+    * @see FreezeService#unFreeze(NodeRef)
+    */
    public void testUnFreeze() throws Exception
    {
       doTestInTransaction(new Test<Void>()
@@ -184,6 +163,9 @@ public class FreezeServiceImplTest extends BaseRMTestCase
       });
    }
 
+   /**
+    * @see FreezeService#relinquish(NodeRef)
+    */
    public void testRelinquish() throws Exception
    {
       doTestInTransaction(new Test<Void>()

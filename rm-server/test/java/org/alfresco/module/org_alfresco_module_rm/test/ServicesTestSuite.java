@@ -23,6 +23,7 @@ import junit.framework.TestSuite;
 
 import org.alfresco.module.org_alfresco_module_rm.test.service.DataSetServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.DispositionServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.FreezeServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementActionServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementAdminServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementSearchServiceImplTest;
@@ -55,6 +56,7 @@ public class ServicesTestSuite extends TestSuite
         suite.addTestSuite(RecordsManagementSearchServiceImplTest.class);
         suite.addTestSuite(VitalRecordServiceImplTest.class);
         suite.addTestSuite(DataSetServiceImplTest.class);
+        suite.addTestSuite(FreezeServiceImplTest.class);
         return suite;
     }
 }

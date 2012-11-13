@@ -29,6 +29,6 @@ public class FrozenEvaluator extends BaseEvaluator
     @Override
     protected boolean evaluateImpl(NodeRef nodeRef)
     {
-        return recordsManagementService.isFrozen(nodeRef);
+        return freezeService.isFrozen(nodeRef);
     }
 }

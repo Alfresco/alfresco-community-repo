@@ -138,7 +138,7 @@ public class FreezeServiceImpl implements FreezeService,
             if (nodeService.exists(nodeRef) == true &&
                      recordsManagementService.isFilePlanComponent(nodeRef) == true)
             {
-               if (recordsManagementService.isFrozen(nodeRef) == true)
+               if (isFrozen(nodeRef) == true)
                {
                   // never allowed to delete a frozen node 
                   throw new AccessDeniedException("Frozen nodes can not be deleted.");
@@ -165,7 +165,7 @@ public class FreezeServiceImpl implements FreezeService,
          if (assoc.isPrimary() == true)
          {
             NodeRef nodeRef = assoc.getChildRef();
-            if (recordsManagementService.isFrozen(nodeRef) == true)
+            if (isFrozen(nodeRef) == true)
             {
                // never allowed to delete a node with a frozen child
                throw new AccessDeniedException("Can not delete node, because it contains a frozen child node.");
@@ -454,6 +454,39 @@ public class FreezeServiceImpl implements FreezeService,
       ParameterCheck.mandatoryString("reason", reason);
 
       nodeService.setProperty(hold, PROP_HOLD_REASON, reason);
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#getHold(org.alfresco.service.cmr.repository.NodeRef)
+    */
+   @Override
+   public Set<NodeRef> getHolds(NodeRef filePlan)
+   {
+      ParameterCheck.mandatory("filePlan", filePlan);
+
+      Set<NodeRef> holds = new HashSet<NodeRef>();
+
+      List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(filePlan, ASSOC_HOLDS, RegexQNamePattern.MATCH_ALL);
+      if (childAssocs != null && !childAssocs.isEmpty())
+      {
+         for (ChildAssociationRef childAssoc : childAssocs)
+         {
+            holds.add(childAssoc.getChildRef());
+         }
+      }
+
+      return holds;
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#hasFrozenChildren(org.alfresco.service.cmr.repository.NodeRef)
+    */
+   @Override
+   public boolean hasFrozenChildren(NodeRef nodeRef)
+   {
+      ParameterCheck.mandatory("nodeRef", nodeRef);
+
+      return getFrozen(nodeRef).size() > 0 ? true : false;
    }
 
    /**

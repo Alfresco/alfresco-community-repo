@@ -36,10 +36,10 @@ private boolean checkChildren = false;
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {
-        boolean result = rmService.isFrozen(nodeRef);
+        boolean result = freezeService.isFrozen(nodeRef);
         if (result == false && checkChildren == true)
         {
-            result = rmService.hasFrozenChildren(nodeRef);
+            result = freezeService.hasFrozenChildren(nodeRef);
         }
         return result;
     }

@@ -136,4 +136,21 @@ public interface FreezeService
      * @param reason    updated reason
      */
     void updateReason(NodeRef hold, String reason);
+
+    /**
+     * Gets the hold node references for a given file plan
+     * or an empty set if there is not any hold node available
+     * 
+     * @param filePlan      file plan for which the hold nodes will be retrieved
+     * @return Set<NodeRef> hold node references
+     */
+    Set<NodeRef> getHolds(NodeRef filePlan);
+
+    /**
+     * Checks whether or not the given node has frozen children
+     * 
+     * @param nodeRef The nodeRef for which will be checked if it has frozen children
+     * @return true   if the given nodeRef has frozen children, false otherwise
+     */
+    boolean hasFrozenChildren(NodeRef nodeRef);
 }

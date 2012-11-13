@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -150,7 +151,10 @@ public interface RecordsManagementService
      * @return  boolean     true if record is frozen, false otherwise
      * 
      * @since 2.0
+     *
+     * @deprecated As of 2.1, replaced by {@link FreezeService#isFrozen(NodeRef)}
      */
+    @Deprecated 
     boolean isFrozen(NodeRef nodeRef);
     
     
@@ -164,7 +168,10 @@ public interface RecordsManagementService
      * @return boolean  true if record folder has frozen children, false otherwise
      * 
      * @since 2.0
+     * 
+     * @deprecated As of 2.1, replaced by {@link FreezeService#hasFrozenChildren(NodeRef)}
      */
+    @Deprecated
     boolean hasFrozenChildren(NodeRef nodeRef);    
     
     /**

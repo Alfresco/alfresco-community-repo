@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -40,6 +41,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     protected RecordsManagementService rmService;
     protected PermissionService permissionService;
     protected NodeService nodeService;
+    protected FreezeService freezeService;
     
     /**
      * @param rmService records management service
@@ -63,6 +65,14 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    /**
+     * @param freezeService   freeze service
+     */
+    public void setFreezeService(FreezeService freezeService)
+    {
+       this.freezeService = freezeService;
     }
     
     /**

@@ -486,7 +486,19 @@ public class FreezeServiceImpl implements FreezeService,
    {
       ParameterCheck.mandatory("nodeRef", nodeRef);
 
-      return getFrozen(nodeRef).size() > 0 ? true : false;
+      List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+      if (childAssocs != null && !childAssocs.isEmpty())
+      {
+         for (ChildAssociationRef childAssociationRef : childAssocs)
+         {
+            if (isFrozen(childAssociationRef.getChildRef()))
+            {
+               return true;
+            }
+         }
+      }
+
+      return false;
    }
 
    /**

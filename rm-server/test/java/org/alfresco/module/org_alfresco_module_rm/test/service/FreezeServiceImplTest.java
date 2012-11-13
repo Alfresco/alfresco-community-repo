@@ -28,16 +28,19 @@ public class FreezeServiceImplTest extends BaseRMTestCase
    private FreezeService freezeService;
 
    /** Id of the test data set*/
-   private static final String DATA_SET_ID = "testExampleData"; 
+   private static final String DATA_SET_ID = "testExampleData";
 
    /** First Record */
-   private NodeRef recordOne; 
+   private NodeRef recordOne;
 
    /** Second Record */
-   private NodeRef recordTwo; 
+   private NodeRef recordTwo;
 
    /** Third Record */
-   private NodeRef recordThree; 
+   private NodeRef recordThree;
+
+   /** Fourth Record */
+   private NodeRef recordFour;
 
    /**
     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
@@ -55,29 +58,38 @@ public class FreezeServiceImplTest extends BaseRMTestCase
 
    public void testFreezeService() throws Exception
    {
-      doTestInTransaction(new Test<Void>()
+      doTestInTransaction(new Test<NodeRef>()
       {
          @Override
-         public Void run() throws Exception
+         public NodeRef run() throws Exception
          {
             NodeRef recordFolder = getRecordFolder();
 
             recordOne = createRecord(recordFolder, "one.txt", "1");
             recordTwo = createRecord(recordFolder, "two.txt", "22");
             recordThree = createRecord(recordFolder, "three.txt", "333");
+            recordFour = createRecord(recordFolder, "four.txt", "4444");
 
-            return null;
+            return recordFolder;
          }
 
          @Override
-         public void test(Void result) throws Exception
+         public void test(NodeRef result) throws Exception
          {
             assertTrue(rmService.isRecord(recordOne));
+            assertTrue(rmService.isRecord(recordTwo));
+            assertTrue(rmService.isRecord(recordThree));
+            assertTrue(rmService.isRecord(recordFour));
             assertTrue(rmService.isFilePlanComponent(recordOne));
+            assertTrue(rmService.isFilePlanComponent(recordTwo));
+            assertTrue(rmService.isFilePlanComponent(recordThree));
+            assertTrue(rmService.isFilePlanComponent(recordFour));
 
+            // Freeze a record
             freezeService.freeze("FreezeReason", recordOne);
+            assertTrue(freezeService.hasFrozenChildren(result));
 
-            // Check the hold exists 
+            // Check the hold exists
             Set<NodeRef> holdAssocs = freezeService.getHolds(filePlan);
             assertNotNull(holdAssocs);
             assertEquals(1, holdAssocs.size());
@@ -181,6 +193,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertNotNull(freezeService.getFreezeDate(recordTwo));
             assertNotNull(freezeService.getFreezeInitiator(recordTwo));
             assertFalse(freezeService.isFrozen(recordThree));
+            assertFalse(freezeService.isFrozen(recordFour));
 
             // Relinquish the first hold
             holdNodeRef = holdAssocs.iterator().next();
@@ -203,6 +216,32 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertFalse(freezeService.isFrozen(recordOne));
             assertFalse(freezeService.isFrozen(recordTwo));
             assertFalse(freezeService.isFrozen(recordThree));
+            assertFalse(freezeService.isFrozen(recordFour));
+            assertFalse(freezeService.hasFrozenChildren(result));
+
+            // Test freezing nodes, adding them to an existing hold
+            NodeRef hold = freezeService.freeze("AnotherFreezeReason", recordFour);
+            freezeService.freeze(hold, recordOne);
+            Set<NodeRef> nodes = new HashSet<NodeRef>();
+            nodes.add(recordTwo);
+            nodes.add(recordThree);
+            freezeService.freeze(hold, nodes);
+            assertTrue(freezeService.hasFrozenChildren(result));
+
+            // Check the hold
+            holdAssocs = freezeService.getHolds(filePlan);
+            assertNotNull(holdAssocs);
+            assertEquals(1, holdAssocs.size());
+
+            // Relinquish the first hold
+            freezeService.relinquish(holdAssocs.iterator().next());
+
+            // Check the nodes are unfrozen
+            assertFalse(freezeService.isFrozen(recordOne));
+            assertFalse(freezeService.isFrozen(recordTwo));
+            assertFalse(freezeService.isFrozen(recordThree));
+            assertFalse(freezeService.isFrozen(recordFour));
+            assertFalse(freezeService.hasFrozenChildren(result));
          }
 
          /**

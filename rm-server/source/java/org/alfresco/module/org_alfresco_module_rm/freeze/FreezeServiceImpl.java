@@ -490,6 +490,50 @@ public class FreezeServiceImpl implements FreezeService,
    }
 
    /**
+    * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#getFreezeDate(org.alfresco.service.cmr.repository.NodeRef)
+    */
+   @Override
+   public Date getFreezeDate(NodeRef nodeRef)
+   {
+      ParameterCheck.mandatory("nodeRef", nodeRef);
+
+      if (isFrozen(nodeRef))
+      {
+         Serializable property = nodeService.getProperty(nodeRef, PROP_FROZEN_AT);
+         if (property != null)
+         {
+            return (Date) property;
+         }
+      }
+
+      return null;
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#getFreezeInitiator(org.alfresco.service.cmr.repository.NodeRef)
+    */
+   @Override
+   public String getFreezeInitiator(NodeRef nodeRef)
+   {
+      ParameterCheck.mandatory("nodeRef", nodeRef);
+
+      if (isFrozen(nodeRef))
+      {
+         Serializable property = nodeService.getProperty(nodeRef, PROP_FROZEN_BY);
+         if (property != null)
+         {
+            return (String) property;
+         }
+      }
+
+      return null;
+   }
+
+   /**
+    * Helper Methods
+    */
+
+   /**
     * Creates a hold using the given nodeRef and reason
     * 
     * @param nodeRef the nodeRef which will be frozen

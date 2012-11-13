@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.freeze;
 
+import java.util.Date;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -153,4 +154,20 @@ public interface FreezeService
      * @return true   if the given nodeRef has frozen children, false otherwise
      */
     boolean hasFrozenChildren(NodeRef nodeRef);
+
+   /**
+    * Gets the date of the freeze for the given node, null if the node is not frozen
+    * 
+    * @param nodeRef The nodeRef for which the date check will be performed
+    * @return Date   The of the freeze or null 
+    */
+   Date getFreezeDate(NodeRef nodeRef);
+
+   /**
+    * Gets the initiator of the freeze for the given node, null if the node is not frozen
+    * 
+    * @param nodeRef The nodeRef for which the initiator check will be performed
+    * @return String The initiator of the freeze or null
+    */
+   String getFreezeInitiator(NodeRef nodeRef);
 }

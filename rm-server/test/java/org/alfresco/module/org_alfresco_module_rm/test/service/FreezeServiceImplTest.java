@@ -182,9 +182,27 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertNotNull(freezeService.getFreezeInitiator(recordTwo));
             assertFalse(freezeService.isFrozen(recordThree));
 
-            // FIXME
-            freezeService.unFreeze(recordTwo);
-            freezeService.unFreeze(recordOne);
+            // Relinquish the first hold
+            holdNodeRef = holdAssocs.iterator().next();
+            freezeService.relinquish(holdNodeRef);
+
+            // Check the existing hold
+            holdAssocs = freezeService.getHolds(filePlan);
+            assertNotNull(holdAssocs);
+            assertEquals(1, holdAssocs.size());
+
+            // Relinquish the second hold
+            holdNodeRef = holdAssocs.iterator().next();
+            freezeService.unFreeze(freezeService.getFrozen(holdNodeRef));
+
+            // All holds should be deleted
+            holdAssocs = freezeService.getHolds(filePlan);
+            assertEquals(0, holdAssocs.size());
+
+            // Check the nodes are unfrozen
+            assertFalse(freezeService.isFrozen(recordOne));
+            assertFalse(freezeService.isFrozen(recordTwo));
+            assertFalse(freezeService.isFrozen(recordThree));
          }
 
          /**

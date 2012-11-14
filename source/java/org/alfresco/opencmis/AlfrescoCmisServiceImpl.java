@@ -2672,7 +2672,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             if (contentStream.getStream() != null)
             {
                 OutputStream out = new BufferedOutputStream(new FileOutputStream(tempFile), bufferSize);
-                InputStream in = new BufferedInputStream(contentStream.getStream(), bufferSize);
+                //InputStream in = new BufferedInputStream(contentStream.getStream(), bufferSize);
+                // Temporary work around for bug in InternalTempFileInputStream which auto closes during read
+                // BufferedInputStream subsequent use of available() throws an exception.
+                InputStream in = contentStream.getStream();
 
                 byte[] buffer = new byte[bufferSize];
                 int i;

@@ -53,7 +53,7 @@ public class ContentStreamLengthProperty extends AbstractProperty
         {
             return contentData.getSize();
         }
-        return 0L;
+        return null;
     }
 
     public QName getMappedProperty()

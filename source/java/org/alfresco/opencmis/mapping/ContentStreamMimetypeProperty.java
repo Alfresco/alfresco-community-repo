@@ -56,7 +56,7 @@ public class ContentStreamMimetypeProperty extends AbstractProperty
         {
             return contentData.getMimetype();
         }
-        return "";
+        return null;
     }
 
     public String getLuceneFieldName()

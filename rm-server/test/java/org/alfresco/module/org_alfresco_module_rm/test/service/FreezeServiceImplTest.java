@@ -54,10 +54,10 @@ public class FreezeServiceImplTest extends BaseRMTestCase
          @Override
          public void test(NodeRef result) throws Exception
          {
-            assertTrue(rmService.isRecord(recordOne));
-            assertTrue(rmService.isRecord(recordTwo));
-            assertTrue(rmService.isRecord(recordThree));
-            assertTrue(rmService.isRecord(recordFour));
+            assertTrue(recordService.isRecord(recordOne));
+            assertTrue(recordService.isRecord(recordTwo));
+            assertTrue(recordService.isRecord(recordThree));
+            assertTrue(recordService.isRecord(recordFour));
             assertTrue(rmService.isFilePlanComponent(recordOne));
             assertTrue(rmService.isFilePlanComponent(recordTwo));
             assertTrue(rmService.isFilePlanComponent(recordThree));

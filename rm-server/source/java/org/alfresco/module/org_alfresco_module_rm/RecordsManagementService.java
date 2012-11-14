@@ -107,14 +107,6 @@ public interface RecordsManagementService
     boolean isRecordFolder(NodeRef nodeRef);
     
     /**
-     * Indicates whether the given node is a record or not.
-     * 
-     * @param nodeRef   node reference
-     * @return boolean  true if record, false otherwise
-     */
-    boolean isRecord(NodeRef nodeRef);
-    
-    /**
      * Indicates whether the given node is a transfer (container) or not.
      * 
      * @param nodeRef   node reference
@@ -495,4 +487,15 @@ public interface RecordsManagementService
      */
     @Deprecated
     boolean hasFrozenChildren(NodeRef nodeRef);
+    
+    /**
+     * Indicates whether the given node is a record or not.
+     * 
+     * @param nodeRef   node reference
+     * @return boolean  true if record, false otherwise
+     * 
+     * @deprecated As of 2.1, replaced by {@link RecordService#isRecord(NodeRef)}
+     */
+    @Deprecated
+    boolean isRecord(NodeRef nodeRef);
 }

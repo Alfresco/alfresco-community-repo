@@ -159,6 +159,17 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
    }
 
    /**
+    * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecord(org.alfresco.service.cmr.repository.NodeRef)
+    */
+   @Override
+   public boolean isRecord(NodeRef nodeRef)
+   {
+      ParameterCheck.mandatory("nodeRef", nodeRef);
+
+      return nodeService.hasAspect(nodeRef, ASPECT_RECORD);
+   }
+
+   /**
     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isDeclared(org.alfresco.service.cmr.repository.NodeRef)
     */
    @Override
@@ -166,7 +177,7 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
    {
       ParameterCheck.mandatory("record", record);
 
-      return (nodeService.hasAspect(record, ASPECT_DECLARED_RECORD));
+      return nodeService.hasAspect(record, ASPECT_DECLARED_RECORD);
    } 
 
    /**

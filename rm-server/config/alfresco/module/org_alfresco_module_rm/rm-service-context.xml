@@ -905,6 +905,7 @@
             <value>
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromDocument=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getUnfiledRecordContainer=RM_ALLOW

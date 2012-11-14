@@ -595,14 +595,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     {
         return instanceOf(nodeRef, TYPE_RECORD_FOLDER);
     }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecord(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isRecord(NodeRef nodeRef)
-    {
-        return this.nodeService.hasAspect(nodeRef, ASPECT_RECORD);
-    }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isTransfer(org.alfresco.service.cmr.repository.NodeRef)
@@ -1259,5 +1251,15 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     public boolean hasFrozenChildren(NodeRef nodeRef)
     {
         return serviceRegistry.getFreezeService().hasFrozenChildren(nodeRef);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isRecord(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Deprecated
+    public boolean isRecord(NodeRef nodeRef)
+    {
+        return serviceRegistry.getRecordService().isRecord(nodeRef);
     }
 }

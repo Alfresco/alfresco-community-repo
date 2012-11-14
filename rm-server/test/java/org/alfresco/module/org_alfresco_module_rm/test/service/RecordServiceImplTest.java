@@ -52,6 +52,22 @@ public class RecordServiceImplTest extends BaseRMTestCase
    }
 
    /**
+    * @see RecordService#isRecord(org.alfresco.service.cmr.repository.NodeRef)
+    */
+   public void testIsRecord() throws Exception
+   {
+      doTestInTransaction(new Test<Void>()
+      {
+         @Override
+         public Void run()
+         {
+            // FIXME
+            return null;
+         }
+      });
+   }
+
+   /**
     * @see RecordService#isDeclared(org.alfresco.service.cmr.repository.NodeRef)
     */
    public void testIsDeclared() throws Exception

@@ -40,7 +40,9 @@ import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
@@ -113,6 +115,12 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
     
     /** Ownable service **/
     protected OwnableService ownableService;
+    
+    /** Freeze Service */
+    protected FreezeService freezeService;
+    
+    /** Record Service */
+    protected RecordService recordService;
     
     protected LinkedList<AbstractCapability> capabilities = new LinkedList<AbstractCapability>();;
     
@@ -226,7 +234,27 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
     {
         this.ownableService = ownableService;
     }
-
+    
+    /**
+     * Set freeze service
+     * 
+     * @param freezeService freeze service
+     */
+    public void setFreezeService(FreezeService freezeService)
+    {
+        this.freezeService = freezeService;
+    }
+    
+    /**
+     * Set record service
+     * 
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
+    
     /**
      * Register with a single capability
      * @param capability

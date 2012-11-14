@@ -40,6 +40,14 @@ public interface RecordService
    Set<QName> getRecordMetaDataAspects();
 
    /**
+    * Checks whether if the given node reference is a record or not
+    * 
+    * @param nodeRef    node reference to be checked
+    * @return boolean   true if the node reference is a record, false otherwise
+    */
+   boolean isRecord(NodeRef nodeRef);
+
+   /**
     * Indicates whether the record is declared
     * 
     * @param nodeRef   node reference of the record for which the check would be performed

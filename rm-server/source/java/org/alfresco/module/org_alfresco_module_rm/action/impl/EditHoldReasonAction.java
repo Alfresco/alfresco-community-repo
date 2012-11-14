@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
-import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -44,19 +43,6 @@ public class EditHoldReasonAction extends RMActionExecuterAbstractBase
 
    /** Parameter names */
    public static final String PARAM_REASON = "reason";
-
-   /** Freeze Service */
-   private FreezeService freezeService;
-
-   /**
-    * Set freeze service
-    * 
-    * @param freezeService freeze service
-    */
-   public void setFreezeService(FreezeService freezeService)
-   {
-      this.freezeService = freezeService;
-   }
 
    /**
     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -110,14 +96,13 @@ public class EditHoldReasonAction extends RMActionExecuterAbstractBase
    @Override
    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
    {
-      QName nodeType = this.nodeService.getType(filePlanComponent);
-      if (this.dictionaryService.isSubClass(nodeType, TYPE_HOLD) == true)
+      if (freezeService.isHold(filePlanComponent) == true)
       {
          return true;
       }
       else
       {
-         if(throwException)
+         if (throwException)
          {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_HOLD_EDIT_TYPE, TYPE_HOLD.toString(), filePlanComponent.toString()));
          }

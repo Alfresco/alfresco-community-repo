@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
-import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -43,19 +42,6 @@ public class FreezeAction extends RMActionExecuterAbstractBase
 
    /** Parameter names */
    public static final String PARAM_REASON = "reason";
-
-   /** Freeze Service */
-   private FreezeService freezeService;
-
-   /**
-    * Set freeze service
-    * 
-    * @param freezeService freeze service
-    */
-   public void setFreezeService(FreezeService freezeService)
-   {
-      this.freezeService = freezeService;
-   }
 
    /**
     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -95,7 +81,7 @@ public class FreezeAction extends RMActionExecuterAbstractBase
    @Override
    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
    {
-      if (this.recordsManagementService.isRecord(filePlanComponent) == true ||
+      if (this.recordService.isRecord(filePlanComponent) == true ||
                this.recordsManagementService.isRecordFolder(filePlanComponent) == true)
       {
          // Get the property values

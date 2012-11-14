@@ -48,189 +48,185 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class DeclareRecordAction extends RMActionExecuterAbstractBase
 {
-    /** I18N */
-    private static final String MSG_UNDECLARED_ONLY_RECORDS = "rm.action.undeclared-only-records";
-    private static final String MSG_NO_DECLARE_MAND_PROP = "rm.action.no-declare-mand-prop";
-    
-    /** Logger */
-    private static Log logger = LogFactory.getLog(DeclareRecordAction.class);
+   /** I18N */
+   private static final String MSG_UNDECLARED_ONLY_RECORDS = "rm.action.undeclared-only-records";
+   private static final String MSG_NO_DECLARE_MAND_PROP = "rm.action.no-declare-mand-prop";
 
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        if (recordsManagementService.isRecord(actionedUponNodeRef) == true)
-        {
-            if (recordsManagementService.isRecordDeclared(actionedUponNodeRef) == false)
+   /** Logger */
+   private static Log logger = LogFactory.getLog(DeclareRecordAction.class);
+
+   /**
+    * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+    */
+   @Override
+   protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+   {
+      if (recordService.isRecord(actionedUponNodeRef) == true)
+      {
+         if (recordService.isDeclared(actionedUponNodeRef) == false)
+         {
+            List<String> missingProperties = new ArrayList<String>(5);
+            // Aspect not already defined - check mandatory properties then add
+            if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties) == true)
             {
-                List<String> missingProperties = new ArrayList<String>(5);
-                // Aspect not already defined - check mandatory properties then add
-                if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties) == true)
-                {
-                    // Add the declared aspect
-                    Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
-                    declaredProps.put(PROP_DECLARED_AT, new Date());
-                    declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
-                    this.nodeService.addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
-                    
-                    // remove all owner related rights 
-                    this.ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
-                }
-                else
-                {
-                    throw new AlfrescoRuntimeException(buildMissingPropertiesErrorString(missingProperties));
-                }
-            }
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, actionedUponNodeRef.toString()));
-        }
-    }
-    
-    private String buildMissingPropertiesErrorString(List<String> missingProperties)
-    {
-        StringBuilder builder = new StringBuilder(255);
-        builder.append(I18NUtil.getMessage(MSG_NO_DECLARE_MAND_PROP));
-        builder.append("  ");
-        for (String missingProperty : missingProperties)            
-        {
-            builder.append(missingProperty)
-                   .append(", ");
-        }
-        return builder.toString();
-    }
+               // Add the declared aspect
+               Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
+               declaredProps.put(PROP_DECLARED_AT, new Date());
+               declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
+               this.nodeService.addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
 
-    /**
-     * Helper method to check whether all the mandatory properties of the node have been set
-     * 
-     * @param nodeRef
-     *            node reference
-     * @return boolean true if all mandatory properties are set, false otherwise
-     */
-    private boolean mandatoryPropertiesSet(NodeRef nodeRef, List<String> missingProperties)
-    {
-        boolean result = true;
-
-        Map<QName, Serializable> nodeRefProps = this.nodeService.getProperties(nodeRef);
-
-        QName nodeRefType = this.nodeService.getType(nodeRef);
-
-        TypeDefinition typeDef = this.dictionaryService.getType(nodeRefType);
-        for (PropertyDefinition propDef : typeDef.getProperties().values())
-        {
-            if (propDef.isMandatory() == true)
-            {
-                if (nodeRefProps.get(propDef.getName()) == null)
-                {
-                    logMissingProperty(propDef, missingProperties);
-
-                    result = false;
-                    break;
-                }
-            }
-        }
-
-        if (result != false)
-        {
-            Set<QName> aspects = this.nodeService.getAspects(nodeRef);
-            for (QName aspect : aspects)
-            {
-                AspectDefinition aspectDef = this.dictionaryService.getAspect(aspect);
-                for (PropertyDefinition propDef : aspectDef.getProperties().values())
-                {
-                    if (propDef.isMandatory() == true)
-                    {
-                        if (nodeRefProps.get(propDef.getName()) == null)
-                        {
-                            logMissingProperty(propDef, missingProperties);
-
-                            result = false;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Log information about missing properties.
-     * 
-     * @param propDef               property definition
-     * @param missingProperties     missing properties
-     */
-    private void logMissingProperty(PropertyDefinition propDef, List<String> missingProperties)
-    {
-        if (logger.isWarnEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Mandatory property missing: ").append(propDef.getName());
-            logger.warn(msg.toString());
-        }
-        missingProperties.add(propDef.getName().toString());
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedAspects()
-     */
-    @Override
-    public Set<QName> getProtectedAspects()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(ASPECT_DECLARED_RECORD);
-        return qnames;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-     */
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        if (recordsManagementService.isRecord(filePlanComponent) == true)
-        {
-            if (recordsManagementService.isRecordDeclared(filePlanComponent) == false)
-            {
-                // Aspect not already defined - check mandatory properties then add
-                List<String> missingProperties = new ArrayList<String>(10);
-                if (mandatoryPropertiesSet(filePlanComponent, missingProperties) == true)
-                {
-                    return true;
-                }
-                else
-                {
-                    if (throwException)
-                    {
-                        throw new AlfrescoRuntimeException(buildMissingPropertiesErrorString(missingProperties));
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
+               // remove all owner related rights 
+               this.ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
             }
             else
             {
-                return false;
+               throw new AlfrescoRuntimeException(buildMissingPropertiesErrorString(missingProperties));
             }
-        }
-        else
-        {
-            if (throwException)
+         }
+      }
+      else
+      {
+         throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, actionedUponNodeRef.toString()));
+      }
+   }
+
+   private String buildMissingPropertiesErrorString(List<String> missingProperties)
+   {
+      StringBuilder builder = new StringBuilder(255);
+      builder.append(I18NUtil.getMessage(MSG_NO_DECLARE_MAND_PROP));
+      builder.append("  ");
+      for (String missingProperty : missingProperties)
+      {
+         builder.append(missingProperty).append(", ");
+      }
+      return builder.toString();
+    }
+
+   /**
+    * Helper method to check whether all the mandatory properties of the node have been set
+    * 
+    * @param nodeRef    node reference
+    * @return boolean   true if all mandatory properties are set, false otherwise
+    */
+   private boolean mandatoryPropertiesSet(NodeRef nodeRef, List<String> missingProperties)
+   {
+      boolean result = true;
+
+      Map<QName, Serializable> nodeRefProps = this.nodeService.getProperties(nodeRef);
+
+      QName nodeRefType = this.nodeService.getType(nodeRef);
+
+      TypeDefinition typeDef = this.dictionaryService.getType(nodeRefType);
+      for (PropertyDefinition propDef : typeDef.getProperties().values())
+      {
+         if (propDef.isMandatory() == true)
+         {
+            if (nodeRefProps.get(propDef.getName()) == null)
             {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, filePlanComponent.toString()));
+               logMissingProperty(propDef, missingProperties);
+
+               result = false;
+               break;
+            }
+         }
+      }
+
+      if (result != false)
+      {
+         Set<QName> aspects = this.nodeService.getAspects(nodeRef);
+         for (QName aspect : aspects)
+         {
+            AspectDefinition aspectDef = this.dictionaryService.getAspect(aspect);
+            for (PropertyDefinition propDef : aspectDef.getProperties().values())
+            {
+               if (propDef.isMandatory() == true)
+               {
+                  if (nodeRefProps.get(propDef.getName()) == null)
+                  {
+                     logMissingProperty(propDef, missingProperties);
+
+                     result = false;
+                     break;
+                  }
+               }
+            }
+         }
+      }
+
+      return result;
+   }
+
+   /**
+    * Log information about missing properties.
+    * 
+    * @param propDef             property definition
+    * @param missingProperties   missing properties
+    */
+   private void logMissingProperty(PropertyDefinition propDef, List<String> missingProperties)
+   {
+      if (logger.isWarnEnabled())
+      {
+         StringBuilder msg = new StringBuilder();
+         msg.append("Mandatory property missing: ").append(propDef.getName());
+         logger.warn(msg.toString());
+      }
+      missingProperties.add(propDef.getName().toString());
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedAspects()
+    */
+   @Override
+   public Set<QName> getProtectedAspects()
+   {
+      HashSet<QName> qnames = new HashSet<QName>();
+      qnames.add(ASPECT_DECLARED_RECORD);
+      return qnames;
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
+    */
+   @Override
+   protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
+   {
+      if (recordService.isRecord(filePlanComponent) == true)
+      {
+         if (recordService.isDeclared(filePlanComponent) == false)
+         {
+            // Aspect not already defined - check mandatory properties then add
+            List<String> missingProperties = new ArrayList<String>(10);
+            if (mandatoryPropertiesSet(filePlanComponent, missingProperties) == true)
+            {
+               return true;
             }
             else
             {
-                return false;
+               if (throwException)
+               {
+                  throw new AlfrescoRuntimeException(buildMissingPropertiesErrorString(missingProperties));
+               }
+               else
+               {
+                  return false;
+               }
             }
-        }
-    }
-
+         }
+         else
+         {
+            return false;
+         }
+      }
+      else
+      {
+         if (throwException)
+         {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, filePlanComponent.toString()));
+         }
+         else
+         {
+            return false;
+         }
+      }
+   }
 }

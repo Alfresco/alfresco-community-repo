@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
-import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -36,19 +35,6 @@ import org.alfresco.service.namespace.QName;
  */
 public class UnfreezeAction extends RMActionExecuterAbstractBase
 {
-   /** Freeze Service */
-   private FreezeService freezeService;
-
-   /**
-    * Set freeze service
-    * 
-    * @param freezeService freeze service
-    */
-   public void setFreezeService(FreezeService freezeService)
-   {
-      this.freezeService = freezeService;
-   }
-
    /**
     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
     */
@@ -75,7 +61,7 @@ public class UnfreezeAction extends RMActionExecuterAbstractBase
    @Override
    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
    {
-      return this.nodeService.hasAspect(filePlanComponent, ASPECT_FROZEN);
+      return freezeService.isFrozen(filePlanComponent);
    }
 
 }

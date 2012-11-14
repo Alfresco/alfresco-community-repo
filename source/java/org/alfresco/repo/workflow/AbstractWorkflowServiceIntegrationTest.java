@@ -35,6 +35,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.person.TestGroupManager;
 import org.alfresco.repo.security.person.TestPersonManager;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,6 +57,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTimer;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
@@ -83,6 +85,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected NodeService nodeService;
     private NodeRef companyHome;
     protected WorkflowTestHelper wfTestHelper;
+    protected TransactionService transactionService;
     
     public void testDeployWorkflowDefinition()
     {
@@ -310,7 +313,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         WorkflowPath path = workflowService.startWorkflow(workflowDef.getId(), params);
         assertNotNull(path);
         assertTrue(path.isActive());
-        String workflowInstanceId = path.getInstance().getId();
+        final String workflowInstanceId = path.getInstance().getId();
         
         // End start task to progress workflow
         WorkflowTask startTask = workflowService.getStartTask(workflowInstanceId);
@@ -356,8 +359,19 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         assertFalse(workflowService.isTaskEditable(currentTask, USER3));
         assertFalse(workflowService.isTaskReassignable(currentTask, USER3));
         
-        // cancel the workflow
-        workflowService.cancelWorkflow(workflowInstanceId);
+        setComplete();
+        endTransaction();        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // cancel the workflow
+                workflowService.cancelWorkflow(workflowInstanceId);
+                return null;
+            }
+        });
+        startNewTransaction();
     }
     
     public void testPooledTaskCapabilities()
@@ -384,7 +398,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         WorkflowPath path = workflowService.startWorkflow(workflowDef.getId(), params);
         assertNotNull(path);
         assertTrue(path.isActive());
-        String workflowInstanceId = path.getInstance().getId();
+        final String workflowInstanceId = path.getInstance().getId();
         
         // End start task to progress workflow
         WorkflowTask startTask = workflowService.getStartTask(workflowInstanceId);
@@ -510,8 +524,19 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         assertFalse(workflowService.isTaskReassignable(currentTask, USER2));
         assertFalse(workflowService.isTaskReassignable(currentTask, USER3));
 
-        // cancel the workflow
-        workflowService.cancelWorkflow(workflowInstanceId);
+        setComplete();
+        endTransaction();        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // cancel the workflow
+                workflowService.cancelWorkflow(workflowInstanceId);
+                return null;
+            }
+        });
+        startNewTransaction();
     }
 
     public void testGetWorkflowTaskDefinitions()
@@ -1190,6 +1215,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         this.nodeService = registry.getNodeService();
         Repository repositoryHelper = (Repository) applicationContext.getBean("repositoryHelper");
         this.companyHome = repositoryHelper.getCompanyHome();
+        this.transactionService = registry.getTransactionService();
 
         MutableAuthenticationService authenticationService = registry.getAuthenticationService();
         AuthorityService authorityService = registry.getAuthorityService();
@@ -1223,13 +1249,22 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     @Override
     protected void onTearDownInTransaction() throws Exception
     {
-        wfTestHelper.tearDown();
-        authenticationComponent.setSystemUserAsCurrentUser();
-        groupManager.clearGroups();
-        personManager.clearPeople();
-        authenticationComponent.clearCurrentSecurityContext();
+        endTransaction();
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                wfTestHelper.tearDown();
+                authenticationComponent.setSystemUserAsCurrentUser();
+                groupManager.clearGroups();
+                personManager.clearPeople();
+                authenticationComponent.clearCurrentSecurityContext();
 
-        super.onTearDownInTransaction();
+                AbstractWorkflowServiceIntegrationTest.super.onTearDownInTransaction();
+                return null;
+            }
+        });
     }
 
     protected abstract String getEngine();

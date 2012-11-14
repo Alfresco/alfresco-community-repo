@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.NavigableMap;
 
 import javax.mail.Flags;
-import javax.mail.MessagingException;
 import javax.mail.Flags.Flag;
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.alfresco.model.ContentModel;
@@ -127,9 +127,9 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     /**
      * Protected constructor for the hierarchy delimiter
      */
-    AlfrescoImapFolder(String userName, ServiceRegistry serviceRegistry)
+    AlfrescoImapFolder(String userName, ImapService imapService, ServiceRegistry serviceRegistry)
     {
-        this(null, userName, "", "", null, serviceRegistry, false, false, 0);
+        this(null, userName, "", "", null, imapService, serviceRegistry, false, false, 0);
     }
         
 
@@ -150,10 +150,11 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             String folderPath,
             ImapViewMode viewMode,
             boolean extractAttachmentsEnabled,
+            ImapService imapService,
             ServiceRegistry serviceRegistry,
             int mountPointId)
     {
-        this(folderInfo, userName, folderName, folderPath, viewMode, serviceRegistry, null, extractAttachmentsEnabled, mountPointId);
+        this(folderInfo, userName, folderName, folderPath, viewMode, imapService, serviceRegistry, null, extractAttachmentsEnabled, mountPointId);
     }
 
     /**
@@ -165,7 +166,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
      * @param viewMode - defines view mode. Can be one of the following: {@link AlfrescoImapConst#MODE_ARCHIVE} or {@link AlfrescoImapConst#MODE_VIRTUAL}.
      * @param rootNodeRef - reference to the root node of the store where folder is placed.
      * @param mountPointName - name of the mount point.
-     * @param imapService - reference to the {@link ImapHelper} object.
+     * @param imapService - the IMAP service.
      * @param selectable - defines whether the folder is selectable or not.
      */
     public AlfrescoImapFolder(
@@ -174,6 +175,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             String folderName,
             String folderPath,
             ImapViewMode viewMode,
+            ImapService imapService,
             ServiceRegistry serviceRegistry,
             Boolean selectable,
             boolean extractAttachmentsEnabled,
@@ -186,7 +188,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         this.folderPath = folderPath;
         this.viewMode = viewMode != null ? viewMode : ImapViewMode.ARCHIVE;
         this.extractAttachmentsEnabled = extractAttachmentsEnabled;
-        this.imapService = serviceRegistry.getImapService();
+        this.imapService = imapService;
         
         // MailFolder object can be null if it is used to obtain hierarchy delimiter by LIST command:
         // Example:

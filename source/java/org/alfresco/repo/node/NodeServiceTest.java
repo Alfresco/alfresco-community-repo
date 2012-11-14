@@ -321,6 +321,22 @@ public class NodeServiceTest extends TestCase
         assertEquals("", 3, paths.size());
     }
 
+    static class InnerCallbackException extends RuntimeException
+    {
+        private final Throwable hiddenCause;
+
+        public InnerCallbackException(Throwable hiddenCause)
+        {
+            super(hiddenCause.getMessage());
+            this.hiddenCause = hiddenCause;
+        }
+
+        public Throwable getHiddenCause()
+        {
+            return hiddenCause;
+        }
+    }
+
     /**
      * Tests that two separate node trees can be deleted concurrently at the database level.
      * This is not a concurrent thread issue; instead we delete a hierarchy and hold the txn
@@ -340,10 +356,10 @@ public class NodeServiceTest extends TestCase
         buildNodeHierarchy(workspaceRootNodeRef, nodesOne);
         final NodeRef[] nodesTwo = new NodeRef[10];
         buildNodeHierarchy(workspaceRootNodeRef, nodesTwo);
-        
+
         // Prime the root of the archive store (first child adds inherited ACL)
         nodeService.deleteNode(nodesPrimer[0]);
-        
+
         RetryingTransactionCallback<Void> outerCallback = new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -351,18 +367,73 @@ public class NodeServiceTest extends TestCase
             {
                 // Delete the first hierarchy
                 nodeService.deleteNode(nodesOne[0]);
+
                 // Keep the txn hanging around to maintain DB locks
                 // and start a second transaction to delete another hierarchy
-                RetryingTransactionCallback<Void> innerCallback = new RetryingTransactionCallback<Void>()
+                class InnerThread extends Thread
                 {
-                    @Override
-                    public Void execute() throws Throwable
+
+                    private Throwable error;
+
+                    public InnerThread()
                     {
-                        nodeService.deleteNode(nodesTwo[0]);
-                        return null;
+                        setDaemon(true);
                     }
-                };
-                txnService.getRetryingTransactionHelper().doInTransaction(innerCallback, false, true);
+
+                    public Throwable getError()
+                    {
+                        return error;
+                    }
+
+                    /*
+                     * (non-Javadoc)
+                     * @see java.lang.Thread#run()
+                     */
+                    @Override
+                    public void run()
+                    {
+                        AuthenticationUtil.setRunAsUserSystem();
+                        RetryingTransactionCallback<Void> innerCallback = new RetryingTransactionCallback<Void>()
+                        {
+                            @Override
+                            public Void execute() throws Throwable
+                            {
+                                try
+                                {
+                                    nodeService.deleteNode(nodesTwo[0]);
+                                    return null;
+                                }
+                                catch (Throwable t)
+                                {
+                                    // Wrap throwables so they pass straight through the retry mechanism
+                                    throw new InnerCallbackException(t);
+                                }
+                            }
+                        };
+                        try
+                        {
+                            txnService.getRetryingTransactionHelper().doInTransaction(innerCallback, false, true);
+                        }
+                        catch (InnerCallbackException e)
+                        {
+                            error = e.getHiddenCause();
+                        }
+                    }
+                }
+                InnerThread innerThread = new InnerThread();
+                innerThread.start();
+                innerThread.join(30000);
+                if (innerThread.isAlive())
+                {
+                    innerThread.interrupt();
+                    fail("Transaction hung for 30 seconds. Test failed.");
+                }
+                // Rethrow potentially retryable exception
+                Throwable t = innerThread.getError();
+                if (t != null)
+                {
+                    throw t;
+                }
                 return null;
             }
         };

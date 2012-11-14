@@ -641,7 +641,9 @@
                 <!-- ALF-12205 - do not version on comments -->
                 <value>fm:commentCount</value>
                 <value>cm:expiryDate</value>
-            </list>
+                <!-- MNT-181 -->
+                <value>sys:clientVisibilityMask</value>
+</list>
         </property>
         <property name="enableAutoVersioning" value="${version.store.enableAutoVersioning}" />
     </bean>

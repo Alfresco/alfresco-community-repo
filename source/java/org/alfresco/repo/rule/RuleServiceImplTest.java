@@ -953,6 +953,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     
     public void testDeleteSpaceWithExecuteScriptRule() throws Exception
     {
+        endTransaction(); // So we don't hang indefinitely waiting for the outer transaction
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute()

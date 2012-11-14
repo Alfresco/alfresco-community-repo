@@ -568,7 +568,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         // A request for the hierarchy delimiter
         if (mailboxName.length() == 0)
         {
-            return new AlfrescoImapFolder(user.getLogin(), serviceRegistry);
+            return new AlfrescoImapFolder(user.getLogin(), this, serviceRegistry);
         }
         final NodeRef root;
         final List<String> pathElements;
@@ -633,7 +633,7 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
             }
         }
         return new AlfrescoImapFolder(mailFolder, user.getLogin(), pathElements.get(pathElements.size() - 1), mailboxName, viewMode,
-                serviceRegistry, true, isExtractionEnabled(mailFolder.getNodeRef()), mountPointId);
+                this, serviceRegistry, true, isExtractionEnabled(mailFolder.getNodeRef()), mountPointId);
     }
 
     public void deleteMailbox(AlfrescoImapUser user, String mailboxName)
@@ -1053,12 +1053,12 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                         if (!listSubscribed || !unsubscribedFodlers.contains(mountPointFileInfo.getNodeRef()))
                         {
                             result.add(new AlfrescoImapFolder(mountPointFileInfo, userName, mountPointName, mountPointName, viewMode,
-                                    isExtractionEnabled(mountPointFileInfo.getNodeRef()), serviceRegistry, mountPointId));
+                                    isExtractionEnabled(mountPointFileInfo.getNodeRef()), this, serviceRegistry, mountPointId));
                         }
                         else if (rootPath.endsWith("%") && !expandFolder(mountPoint, user, mountPointName, "%", true, viewMode, mountPointId).isEmpty()) // \NoSelect 
                         {
                             result.add(new AlfrescoImapFolder(mountPointFileInfo, userName, mountPointName, mountPointName, viewMode,
-                                    serviceRegistry, false, isExtractionEnabled(mountPointFileInfo.getNodeRef()), mountPointId));
+                                    this, serviceRegistry, false, isExtractionEnabled(mountPointFileInfo.getNodeRef()), mountPointId));
                         }
                         if (rootPath.endsWith("*"))
                         {
@@ -1169,12 +1169,12 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 if (!listSubscribed || !unsubscribedFodlers.contains(fileInfo.getNodeRef()))
                 {
                     fullList.add(new AlfrescoImapFolder(fileInfo, userName, fileInfo.getName(), folderPath, viewMode,
-                            isExtractionEnabled(fileInfo.getNodeRef()), serviceRegistry, mountPointId));
+                            isExtractionEnabled(fileInfo.getNodeRef()), this, serviceRegistry, mountPointId));
                 }
                 else if (name.endsWith("%") && !expandFolder(fileInfo.getNodeRef(), user, folderPath, "%", true, viewMode, mountPointId).isEmpty()) // \NoSelect 
                 {
                     fullList.add(new AlfrescoImapFolder(fileInfo, userName, fileInfo.getName(), folderPath, viewMode,
-                            serviceRegistry, false, isExtractionEnabled(fileInfo.getNodeRef()), mountPointId));
+                            this, serviceRegistry, false, isExtractionEnabled(fileInfo.getNodeRef()), mountPointId));
                 }
                 if (name.endsWith("*"))
                 {

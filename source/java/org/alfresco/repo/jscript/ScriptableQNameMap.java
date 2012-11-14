@@ -18,9 +18,10 @@
  */
 package org.alfresco.repo.jscript;
 
-import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QNameMap;
+import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
 /**
@@ -43,7 +44,7 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
     {
         return "ScriptableQNameMap";
     }
-    
+
     /**
      * @see org.mozilla.javascript.Scriptable#get(java.lang.String, org.mozilla.javascript.Scriptable)
      */
@@ -53,6 +54,17 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
         if ("length".equals(name))
         {
             return this.size();
+        }
+        else if ("hasOwnProperty".equals(name))
+        {
+            return new Callable()
+            {
+                @Override
+                public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
+                {
+                    return (args.length > 0 ? hasOwnProperty(args[0]) : null);
+                }
+            };
         }
         else
         {
@@ -66,6 +78,17 @@ public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
     public Object get(int index, Scriptable start)
     {
         return null;
+    }
+
+    /**
+     * ECMAScript 5 hasOwnProperty method support.
+     * 
+     * @param key   Object key to test for
+     * @return true if found, false otherwise
+     */
+    public boolean hasOwnProperty(Object key)
+    {
+        return containsKey(key);
     }
 
     /**

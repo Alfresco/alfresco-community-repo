@@ -193,7 +193,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     }
 
     /**
-     * Helper setter of the transformer debug. 
+     * Setter of the transformer debug. 
      * @param transformerDebug
      */
     public void setTransformerDebug(TransformerDebug transformerDebug)
@@ -1435,11 +1435,11 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                             try
                             {
                                 // get the transformer
-                            TransformationOptions options = new TransformationOptions();
-                            options.setSourceNodeRef(nodeRef);
-                            transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
+                                TransformationOptions options = new TransformationOptions();
+                                options.setSourceNodeRef(nodeRef);
+                                transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
                                 long sourceSize = reader.getSize();
-                            List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
+                                List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
                                 transformerDebug.availableTransformers(transformers, sourceSize, "ADMLuceneIndexer");
 
                                 if (transformers.isEmpty())

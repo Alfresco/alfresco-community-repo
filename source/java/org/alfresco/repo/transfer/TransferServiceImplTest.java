@@ -1485,6 +1485,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testPathBasedUpdate() throws Exception
     {
+        endTransaction();
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
 
         final String CONTENT_TITLE = "ContentTitle";
@@ -1602,21 +1603,28 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 testContext.child = nodeService.createNode(testContext.guestHome, ContentModel.ASSOC_CONTAINS, TEST_QNAME, ContentModel.TYPE_CONTENT);
                 testContext.newContentNodeRef = testContext.child.getChildRef();
                 nodeService.setProperty(testContext.newContentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE_UPDATED); 
-
-                /**
-                 * Transfer our node which is a new node (so will not exist on the back end) with a path that already has a node.
-                 */
-                {
-                    TransferDefinition definition = new TransferDefinition();
-                    Set<NodeRef>nodes = new HashSet<NodeRef>();
-                    nodes.add(testContext.newContentNodeRef);
-                    definition.setNodes(nodes);
-                    transferService.transfer(testContext.targetName, definition);
-                }        
                 return null;
             }
         };
         tran.doInTransaction(transfer1CB);
+
+        RetryingTransactionCallback<Void> transfer1CB2 = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Transfer our node which is a new node (so will not exist on the back end) with a path that already has a node.
+                 */
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(testContext.newContentNodeRef);
+                definition.setNodes(nodes);
+                transferService.transfer(testContext.targetName, definition);
+                return null;
+            }
+        };
+        tran.doInTransaction(transfer1CB2);
 
         RetryingTransactionCallback<Void> validateStep1CB = new RetryingTransactionCallback<Void>() {
 

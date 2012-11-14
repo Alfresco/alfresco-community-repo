@@ -559,6 +559,7 @@ public class AuthenticationTest extends TestCase
 
     public void testCreateAuthenticationWhileRunningAsSystem() throws Exception
     {
+        userTransaction.rollback();
         RunAsWork<Object> authWorkAsMuppet = new RunAsWork<Object>()
         {
             public Object doWork() throws Exception

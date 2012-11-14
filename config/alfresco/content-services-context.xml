@@ -220,6 +220,9 @@
       <property name="dictionaryService">
          <ref bean="dictionaryService" />
       </property>
+      <property name="properties">
+         <ref bean="global-properties" />
+      </property>
    </bean>
    
    <!-- For coordination between OOoDirect and OOoJodconverter subsystems -->

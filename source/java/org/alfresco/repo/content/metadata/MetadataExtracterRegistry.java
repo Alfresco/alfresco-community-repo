@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005-2012 Jesper Steen Møller
  *
  * This file is part of Alfresco
  *
@@ -119,6 +119,7 @@ public class MetadataExtracterRegistry
      */
     public MetadataExtracter getExtracter(String sourceMimetype)
     {
+        logger.debug("Get extractors for " + sourceMimetype);
         List<MetadataExtracter> extractors = null;
         extracterCacheReadLock.lock();
         try
@@ -162,11 +163,25 @@ public class MetadataExtracterRegistry
             // An extractor may dynamically become unavailable 
             if (!extractor.isSupported(sourceMimetype))
             {
+                logger.debug("Get unsupported: "+getName(extractor));
                 continue;
             }
+            logger.debug("Get supported:   "+getName(extractor));
             liveExtractor = extractor;
         }
+        logger.debug("Get returning:   "+getName(liveExtractor));
         return liveExtractor;
+    }
+    
+    private String getName(MetadataExtracter extractor)
+    {
+        return extractor == null
+               ? null
+               : extractor instanceof AbstractMetadataExtracter
+               ? ((AbstractMetadataExtracter)extractor).getBeanName()
+               : extractor instanceof AbstractMappingMetadataExtracter
+               ? ((AbstractMappingMetadataExtracter)extractor).getBeanName()
+               : extractor.getClass().getSimpleName();
     }
 
     /**
@@ -184,10 +199,13 @@ public class MetadataExtracterRegistry
             if (!extractor.isSupported(sourceMimetype))
             {
                 // extraction not achievable
+                logger.debug("Find unsupported: "+getName(extractor));
                 continue;
             }
+            logger.debug("Find supported:   "+getName(extractor));
             extractors.add(extractor);
         }
+        logger.debug("Find returning:   "+extractors);
         return extractors;
     }
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,6 +53,7 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xmlbeans.impl.xb.xsdschema.All;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
@@ -95,7 +96,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
-abstract public class AbstractMappingMetadataExtracter implements MetadataExtracter, MetadataEmbedder
+abstract public class AbstractMappingMetadataExtracter implements MetadataExtracter, MetadataEmbedder, BeanNameAware
 {
     public static final String NAMESPACE_PROPERTY_PREFIX = "namespace.prefix.";
     private static final String ERR_TYPE_CONVERSION = "metadata.extraction.err.type_conversion";
@@ -117,6 +118,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private boolean inheritDefaultMapping;
     private boolean inheritDefaultEmbedMapping;
     private boolean enableStringTagging;
+    private String beanName;
+    private Properties properties;
 
     /**
      * Default constructor.  If this is called, then {@link #isSupported(String)} should
@@ -227,7 +230,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      */
     public boolean isSupported(String sourceMimetype)
     {
-        return supportedMimetypes.contains(sourceMimetype);
+        return supportedMimetypes.contains(sourceMimetype) && isEnabled(sourceMimetype);
     }
 
     /**
@@ -242,6 +245,27 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             return false;
         }
         return supportedEmbedMimetypes.contains(sourceMimetype);
+    }
+
+    private boolean isEnabled(String mimetype)
+    {
+        return properties == null || mimetypeService == null ||
+               (getBooleanProperty(beanName+".enabled", true) &&
+                getBooleanProperty(beanName+'.'+mimetypeService.getExtension(mimetype)+".enabled", true));
+    }
+
+    private boolean getBooleanProperty(String name, boolean defaultValue)
+    {
+        boolean value = defaultValue;
+        if (properties != null)
+        {
+            String property = properties.getProperty(name);
+            if (property != null)
+            {
+                value = property.trim().equalsIgnoreCase("true");
+            }
+        }
+        return value;
     }
 
     /**
@@ -352,6 +376,25 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public void setInheritDefaultMapping(boolean inheritDefaultMapping)
     {
         this.inheritDefaultMapping = inheritDefaultMapping;
+    }
+
+    @Override
+    public void setBeanName(String beanName)
+    {
+        this.beanName = beanName;
+    }
+    
+    public String getBeanName()
+    {
+        return beanName;
+    }
+    
+    /**
+     * The Alfresco global properties.
+     */
+    public void setProperties(Properties properties)
+    {
+        this.properties = properties;
     }
 
     /**

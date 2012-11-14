@@ -59,96 +59,97 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class FilesystemContentDataFactory implements ContentDataFactory, InitializingBean
 {
-	private static final Log logger   = LogFactory.getLog(FilesystemContentDataFactory.class);
-	
-	private static final String PROTOCOL_DELIMITER = ContentStore.PROTOCOL_DELIMITER;
-	private static final String OS_FILE_SEPARATOR  = System.getProperty("file.separator");
-	
-	private MimetypeService mimetypeService;
-	private String defaultEncoding;
-	private String storeProtocol;
-	
-	public void setMimetypeService(MimetypeService mimetypeService)
-	{
-		this.mimetypeService = mimetypeService;
-	}
-	
-	public void setDefaultEncoding(String defaultEncoding)
-	{
-		this.defaultEncoding = defaultEncoding;
-	}
-	
-	public void setStoreProtocol(String storeProtocol)
-	{
-		this.storeProtocol = storeProtocol;
-	}
+    private static final Log logger   = LogFactory.getLog(FilesystemContentDataFactory.class);
+    
+    private static final String PROTOCOL_DELIMITER = ContentStore.PROTOCOL_DELIMITER;
+    private static final String OS_FILE_SEPARATOR  = System.getProperty("file.separator");
+    
+    private MimetypeService mimetypeService;
+    private String defaultEncoding;
+    private String storeProtocol;
+    
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
+    }
+    
+    public void setDefaultEncoding(String defaultEncoding)
+    {
+        this.defaultEncoding = defaultEncoding;
+    }
+    
+    public void setStoreProtocol(String storeProtocol)
+    {
+        this.storeProtocol = storeProtocol;
+    }
 
-	public void afterPropertiesSet() throws Exception
-	{
-		PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
         PropertyCheck.mandatory(this, "defaultEncoding", defaultEncoding);
         PropertyCheck.mandatory(this, "storeProtocol",   storeProtocol);
-	}
-	
-	/**
-	 * Create a {@link ContentData} by combining the given {@link ContentStore}'s root location and the {@link File}'s path within that store.
-	 * The given file must therefore be accessible within the content store's configured root location.
-	 * The encoding and mimetype will be guessed from the given file. 
-	 * 
-	 * @param store			The {@link ContentStore} in which the file should be
-	 * @param contentFile	The {@link File} to check
-	 * @return the constructed {@link ContentData}
-	 */
-	public ContentData createContentData(ContentStore store, File contentFile)
+    }
+    
+    /**
+     * Create a {@link ContentData} by combining the given {@link ContentStore}'s root location and the {@link File}'s path within that store.
+     * The given file must therefore be accessible within the content store's configured root location.
+     * The encoding and mimetype will be guessed from the given file. 
+     * 
+     * @param store            The {@link ContentStore} in which the file should be
+     * @param contentFile    The {@link File} to check
+     * @return the constructed {@link ContentData}
+     */
+    public ContentData createContentData(ContentStore store, File contentFile)
     {
-		if(!contentIsInStore(contentFile, store))
-		{
-			throw new IllegalArgumentException("Can't create content URL : file '" + contentFile.getAbsolutePath() + 
-					"' is not located within the store's tree ! The store's root is :'" + store.getRootLocation());
-		}
-			
-		String relativeFilePath = contentFile.getAbsolutePath().replace(store.getRootLocation() + OS_FILE_SEPARATOR, "");
-		String mimetype = mimetypeService.guessMimetype(contentFile.getName());
-    	String encoding = defaultEncoding;
-    	if(!contentFile.isDirectory())
-    	{
-    		encoding = guessEncoding(contentFile, mimetype);
-    	}
-    	
+        if(!contentIsInStore(contentFile, store))
+        {
+            throw new IllegalArgumentException("Can't create content URL : file '" + contentFile.getAbsolutePath() + 
+                    "' is not located within the store's tree ! The store's root is :'" + store.getRootLocation());
+        }
+            
+        String relativeFilePath = contentFile.getAbsolutePath().replace(store.getRootLocation() + OS_FILE_SEPARATOR, "");
+        String mimetype = mimetypeService.guessMimetype(contentFile.getName());
+        String encoding = defaultEncoding;
+        if(!contentFile.isDirectory())
+        {
+            encoding = guessEncoding(contentFile, mimetype);
+        }
+        
         ContentData contentData = new ContentData(storeProtocol + PROTOCOL_DELIMITER + relativeFilePath, mimetype, contentFile.length(), encoding);
         
         Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, contentFile.getName());
         contentProps.put(ContentModel.PROP_CONTENT, contentData);
          
-        return contentData;		
+        return contentData;        
     }
-	
-	/**
-	 * Check if file is in the store's tree, by checking if the file path starts 
-	 * with the store's configured root location.
-	 * 
-	 * @param store			The {@link ContentStore} in which the file should be
-	 * @param contentFile	The {@link File} to check
-	 * @return boolean : whether or not the file is in the expected file tree
-	 */
-	private boolean contentIsInStore(File contentFile,ContentStore store)
-	{
-		return contentFile.getAbsolutePath().startsWith(store.getRootLocation());
-	}
-	
-	/**
-	 * Attempt to guess file encoding. fall back to {@link #defaultEncoding} otherwise.
-	 * 
-	 * @param file		the {@link java.io.File} to test
-	 * @param mimetype	the file mimetype. used to first distinguish between binary and text files
-	 * @return the encoding as a {@link String}
-	 */
-	private String guessEncoding(File file,String mimetype)
-	{
+    
+    /**
+     * Check if file is in the store's tree, by checking if the file path starts 
+     * with the store's configured root location.
+     * 
+     * @param store            The {@link ContentStore} in which the file should be
+     * @param contentFile    The {@link File} to check
+     * @return boolean : whether or not the file is in the expected file tree
+     */
+    private boolean contentIsInStore(File contentFile,ContentStore store)
+    {
+        File contentStoreFile = new File(store.getRootLocation());
+        return contentFile.getAbsolutePath().startsWith(contentStoreFile.getAbsolutePath());
+    }
+    
+    /**
+     * Attempt to guess file encoding. fall back to {@link #defaultEncoding} otherwise.
+     * 
+     * @param file        the {@link java.io.File} to test
+     * @param mimetype    the file mimetype. used to first distinguish between binary and text files
+     * @return the encoding as a {@link String}
+     */
+    private String guessEncoding(File file,String mimetype)
+    {
         String encoding = defaultEncoding; // fallback default
         if(file.isDirectory())
-        	return defaultEncoding; // not necessary to guess folder encoding
+            return defaultEncoding; // not necessary to guess folder encoding
         InputStream is = null;
         ContentCharsetFinder charsetFinder = mimetypeService.getContentCharsetFinder();
 
@@ -159,7 +160,7 @@ public class FilesystemContentDataFactory implements ContentDataFactory, Initial
         }
         catch (Throwable e)
         {
-        	if(logger.isWarnEnabled())
+            if(logger.isWarnEnabled())
                 logger.warn("Failed to guess character encoding of file: '" + file.getName() + "'. Falling back to configured default encoding (" + defaultEncoding + ")");
         }
         finally
@@ -171,6 +172,6 @@ public class FilesystemContentDataFactory implements ContentDataFactory, Initial
         }
         
         return encoding;
-	}
+    }
 
 }

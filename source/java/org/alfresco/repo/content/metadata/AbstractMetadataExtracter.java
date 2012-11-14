@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005-2012 Jesper Steen Møller
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -31,6 +32,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Support class for metadata extracters.
@@ -40,7 +42,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
-abstract public class AbstractMetadataExtracter implements MetadataExtracter
+abstract public class AbstractMetadataExtracter implements MetadataExtracter, BeanNameAware
 {
     protected static Log logger = LogFactory.getLog(AbstractMetadataExtracter.class);
     
@@ -49,6 +51,8 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
     private Set<String> supportedMimetypes;
     private double reliability;
     private long extractionTime;
+    private String beanName;
+    private Properties properties;
 
     protected AbstractMetadataExtracter(String supportedMimetype, double reliability, long extractionTime)
     {
@@ -82,6 +86,25 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
+    }
+
+    @Override
+    public void setBeanName(String beanName)
+    {
+        this.beanName = beanName;
+    }
+    
+    public String getBeanName()
+    {
+        return beanName;
+    }
+    
+    /**
+     * The Alfresco global properties.
+     */
+    public void setProperties(Properties properties)
+    {
+        this.properties = properties;
     }
 
     /**
@@ -131,7 +154,28 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter
     public boolean isSupported(String mimetype)
     {
         double reliability = getReliability(mimetype);
-        return reliability > 0.0;
+        return reliability > 0.0  && isEnabled(mimetype);
+    }
+
+    private boolean isEnabled(String mimetype)
+    {
+        return properties == null || mimetypeService == null ||
+               (getBooleanProperty(beanName+".enabled", true) &&
+                getBooleanProperty(beanName+'.'+mimetypeService.getExtension(mimetype)+".enabled", true));
+    }
+
+    private boolean getBooleanProperty(String name, boolean defaultValue)
+    {
+        boolean value = defaultValue;
+        if (properties != null)
+        {
+            String property = properties.getProperty(name);
+            if (property != null)
+            {
+                value = property.trim().equalsIgnoreCase("true");
+            }
+        }
+        return value;
     }
 
     public long getExtractionTime()

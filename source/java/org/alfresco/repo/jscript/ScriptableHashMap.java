@@ -21,6 +21,8 @@ package org.alfresco.repo.jscript;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
+import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
 /**
@@ -51,6 +53,17 @@ public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scrip
         {
             return this.size();
         }
+        else if ("hasOwnProperty".equals(name))
+        {
+            return new Callable()
+            {
+                @Override
+                public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
+                {
+                    return (args.length > 0 ? hasOwnProperty(args[0]) : null);
+                }
+            };
+        }
         else
         {
             return get(name);
@@ -70,6 +83,17 @@ public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scrip
             value = itrValues.next();
         }
         return value;
+    }
+    
+    /**
+     * ECMAScript 5 hasOwnProperty method support.
+     * 
+     * @param key   Object key to test for
+     * @return true if found, false otherwise
+     */
+    public boolean hasOwnProperty(Object key)
+    {
+        return containsKey(key);
     }
 
     /**

@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Derek Hulley
  */
-public class CopyMethod extends AbstractMoveOrCopyMethod
+public class CopyMethod extends MoveMethod
 {
     /**
      * Default constructor
@@ -35,14 +35,13 @@ public class CopyMethod extends AbstractMoveOrCopyMethod
     {
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.webdav.MoveMethod#isMove()
+     */
     @Override
-    protected void moveOrCopy(
-            FileFolderService fileFolderService,
-            NodeRef sourceNodeRef,
-            NodeRef sourceParentNodeRef,
-            NodeRef destParentNodeRef,
-            String name) throws Exception
+    protected boolean isMove()
     {
-        fileFolderService.copy(sourceNodeRef, destParentNodeRef, name);
+        return false;
     }
 }

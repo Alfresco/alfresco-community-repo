@@ -25,10 +25,51 @@
       <property name="lockStoreFactory" ref="webdavLockStoreFactory"/>
    </bean>
 
-    <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper">
-        <constructor-arg value="${system.webdav.url.path.prefix}"/>
-        <constructor-arg ref="ServiceRegistry"/>
-        <constructor-arg ref="authenticationService"/>
-        <constructor-arg ref="tenantService"/>
-    </bean>
+   <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper">
+      <property name="serviceRegistry">
+         <ref bean="ServiceRegistry" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="fileFolderService">
+         <ref bean="FileFolderService" />
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService" />
+      </property>
+      <property name="namespaceService">
+         <ref bean="NamespaceService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="DictionaryService" />
+      </property>
+      <property name="mimetypeService">
+         <ref bean="MimetypeService" />
+      </property>
+      <property name="lockService">
+         <ref bean="webDAVLockService" />
+      </property>
+      <property name="actionService">
+         <ref bean="ActionService" />
+      </property>
+      <property name="permissionService">
+         <ref bean="PermissionService" />
+      </property>
+      <property name="hiddenAspect">
+         <ref bean="hiddenAspect" />
+      </property>
+      <property name="authenticationService">
+         <ref bean="authenticationService" />
+      </property>
+      <property name="tenantService">
+         <ref bean="tenantService" />
+      </property>
+      <property name="renameShufflePattern">
+         <value>${system.webdav.renameShufflePattern}</value>
+      </property>
+      <property name="urlPathPrefix">
+         <value>${system.webdav.url.path.prefix}</value>
+      </property>
+   </bean>
 </beans>

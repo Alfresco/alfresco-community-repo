@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
@@ -194,6 +193,13 @@ public class PropFindMethod extends WebDAVMethod
         {
             // The path is not valid - send a 404 error back to the client
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
+        }
+        
+        // A node hidden during a 'shuffle' operation - send a 404 error back to the client, as some Mac clients need
+        // this
+        if (isHidden(pathNodeInfo.getNodeRef()))
+        {
+            throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);            
         }
 
         // Set the response content type

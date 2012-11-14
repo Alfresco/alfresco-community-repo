@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,10 +35,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.LockUtils;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -52,7 +55,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.NotImplementedException;
@@ -73,9 +75,13 @@ import org.xml.sax.helpers.AttributesImpl;
 public class WebDAVHelper
 {
     // Constants
+ 
+    public static final String BEAN_NAME = "webDAVHelper";
+
     private static final String HTTPS_SCHEME = "https://";
     private static final String HTTP_SCHEME = "http://";
     
+
     // Path seperator
     public static final String PathSeperator   = "/";
     public static final char PathSeperatorChar = '/';
@@ -84,7 +90,7 @@ public class WebDAVHelper
     // Logging
     private static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
     
-    // Service registry
+    // Service registry TODO: eliminate this - not dependency injection!
     private ServiceRegistry m_serviceRegistry;
 
     // Services
@@ -99,33 +105,30 @@ public class WebDAVHelper
     private AuthenticationService m_authService;
     private PermissionService m_permissionService;
     private TenantService m_tenantService;
+    private HiddenAspect m_hiddenAspect;
+    
+    // pattern is tested against full path after it has been lower cased.
+    private Pattern m_renameShufflePattern = Pattern.compile("(.*/\\..*)|(.*[a-f0-9]{8}+$)|(.*\\.tmp$)|(.*\\.wbk$)|(.*\\.bak$)|(.*\\~$)");
     
     //  Empty XML attribute list
     
-    private AttributesImpl m_nullAttribs = new AttributesImpl();
+    private final AttributesImpl m_nullAttribs = new AttributesImpl();
     private String m_urlPathPrefix;
-    
-    /**
-     * Class constructor
-     */
-    protected WebDAVHelper(String urlPathPrefix, ServiceRegistry serviceRegistry, AuthenticationService authService, TenantService tenantService)
-    {
-        m_serviceRegistry = serviceRegistry;
         
-        m_nodeService       = m_serviceRegistry.getNodeService();
-        m_fileFolderService = m_serviceRegistry.getFileFolderService();
-        m_searchService     = m_serviceRegistry.getSearchService();
-        m_namespaceService  = m_serviceRegistry.getNamespaceService();
-        m_dictionaryService = m_serviceRegistry.getDictionaryService();
-        m_mimetypeService   = m_serviceRegistry.getMimetypeService();
-        m_lockService       = (WebDAVLockService)m_serviceRegistry.getService(QName.createQName(NamespaceService.ALFRESCO_URI, WebDAVLockService.BEAN_NAME));
-        m_actionService     = m_serviceRegistry.getActionService();
-        m_permissionService = m_serviceRegistry.getPermissionService();
-        m_tenantService     = tenantService;
-        m_authService       = authService;
-        m_urlPathPrefix     = urlPathPrefix;
+    /**
+     * Set the regular expression that will be applied to filenames during renames
+     * to detect whether clients are performing a renaming shuffle - common during
+     * file saving on various clients.
+     * <p/>
+     * <bALF-3856, ALF-7079, MNT-181</b>
+     * 
+     * @param renameShufflePattern      a regular expression filename match
+     */
+    public void setRenameShufflePattern(Pattern renameShufflePattern)
+    {
+        this.m_renameShufflePattern = renameShufflePattern;
     }
-    
+
     /**
      * @return          Return the authentication service
      */
@@ -139,6 +142,7 @@ public class WebDAVHelper
      */
     public final ServiceRegistry getServiceRegistry()
     {
+        // TODO: eliminate this - not dependency injection!
         return m_serviceRegistry;
     }
     
@@ -211,7 +215,15 @@ public class WebDAVHelper
     {
         return m_permissionService;
     }
-    
+        
+    /**
+     * @return the hidden aspect bean
+     */
+    public final HiddenAspect getHiddenAspect()
+    {
+        return m_hiddenAspect;
+    }
+
     /**
      * Retrieve the {@link TenantService} held by the helper.
      * 
@@ -230,6 +242,118 @@ public class WebDAVHelper
         return getServiceRegistry().getCopyService();
     }
     
+    public void setTenantService(TenantService tenantService)
+    {
+        this.m_tenantService = tenantService;
+    }
+    
+    /**
+     * @param serviceRegistry the service registry
+     */
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.m_serviceRegistry = serviceRegistry;
+    }
+
+    /**
+     * @param nodeService the node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.m_nodeService = nodeService;
+    }
+
+    /**
+     * @param fileFolderService the fileFolder service
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.m_fileFolderService = fileFolderService;
+    }
+
+    /**
+     * @param searchService the search service
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.m_searchService = searchService;
+    }
+
+    /**
+     * @param namespaceService the namespace service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.m_namespaceService = namespaceService;
+    }
+
+    /**
+     * @param dictionaryService the dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.m_dictionaryService = dictionaryService;
+    }
+
+    /**
+     * @param mimetypeService the mimetype service
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.m_mimetypeService = mimetypeService;
+    }
+
+    /**
+     * @param lockService the lock service
+     */
+    public void setLockService(WebDAVLockService lockService)
+    {
+        this.m_lockService = lockService;
+    }
+
+    /**
+     * @param actionService the action service
+     */
+    public void setActionService(ActionService actionService)
+    {
+        this.m_actionService = actionService;
+    }
+
+    /**
+     * @param authService the authentication service
+     */
+    public void setAuthenticationService(AuthenticationService authService)
+    {
+        this.m_authService = authService;
+    }
+
+    /**
+     * @param permissionService the permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.m_permissionService = permissionService;
+    }
+
+    /**
+     * @param hiddenAspect the hiddenAspect to set
+     */
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
+        this.m_hiddenAspect = hiddenAspect;
+    }
+
+    /**
+     * Checks a new path in a move operation to detect whether clients are starting a renaming shuffle - common during
+     * file saving on various clients.
+     * <p/>
+     * <b>ALF-3856, ALF-7079, MNT-181</b>
+     */
+    public boolean isRenameShuffle(String newPath)
+    {
+        return m_renameShufflePattern.matcher(newPath.toLowerCase()).matches();
+    }
+
     /**
      * Split the path into seperate directory path and file name strings.
      * If the path is not empty, then there will always be an entry for the filename

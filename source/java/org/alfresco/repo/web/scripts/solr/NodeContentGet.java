@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts.solr;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.web.scripts.content.StreamContent;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -36,6 +38,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.httpclient.HttpStatus;
@@ -67,6 +70,7 @@ public class NodeContentGet extends StreamContent
     private NodeDAO nodeDAO;
     private NodeService nodeService;
     private ContentService contentService;
+    private TransformerDebug transformerDebug;
 
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -81,6 +85,15 @@ public class NodeContentGet extends StreamContent
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+    
+    /**
+     * Setter of the transformer debug. 
+     * @param transformerDebug
+     */
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
     }
 
     /**
@@ -157,54 +170,69 @@ public class NodeContentGet extends StreamContent
             return;            
         }
         
-        ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        if(transformer == null)
-        {
-            res.setHeader(TRANSFORM_STATUS_HEADER, "noTransform");
-            res.setStatus(HttpStatus.SC_NO_CONTENT);
-            return;
-        }
-        
-        // Perform transformation catering for mimetype AND encoding
-        ContentWriter writer = contentService.getTempWriter();
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");                            // Expect transformers to produce UTF-8
-        
         try
         {
-        	long start = System.currentTimeMillis();
-            transformer.transform(reader, writer);
-            long transformDuration = System.currentTimeMillis() - start;
-            res.setHeader(TRANSFORM_DURATION_HEADER, String.valueOf(transformDuration));
-        }
-        catch (ContentIOException e)
-        {
-            transformException = e;
-        }
+            // get the transformer
+            TransformationOptions options = new TransformationOptions();
+            options.setSourceNodeRef(nodeRef);
+            transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
+            long sourceSize = reader.getSize();
+            List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
+            transformerDebug.availableTransformers(transformers, sourceSize, "NodeContentGet");
 
-        if(transformException == null)
-        {
-            // point the reader to the new-written content
-            textReader = writer.getReader();
-            // Check that the reader is a view onto something concrete
-            if (textReader == null || !textReader.exists())
+            if (transformers.isEmpty())
             {
-                transformException = new ContentIOException(
-                        "The transformation did not write any content, yet: \n"
-                        + "   transformer:     " + transformer + "\n" + "   temp writer:     " + writer);
+                res.setHeader(TRANSFORM_STATUS_HEADER, "noTransform");
+                res.setStatus(HttpStatus.SC_NO_CONTENT);
+                return;
+            }
+            ContentTransformer transformer = transformers.get(0);
+            
+            // Perform transformation catering for mimetype AND encoding
+            ContentWriter writer = contentService.getTempWriter();
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.setEncoding("UTF-8");                            // Expect transformers to produce UTF-8
+            
+            try
+            {
+                long start = System.currentTimeMillis();
+                transformer.transform(reader, writer);
+                long transformDuration = System.currentTimeMillis() - start;
+                res.setHeader(TRANSFORM_DURATION_HEADER, String.valueOf(transformDuration));
+            }
+            catch (ContentIOException e)
+            {
+                transformException = e;
+            }
+
+            if(transformException == null)
+            {
+                // point the reader to the new-written content
+                textReader = writer.getReader();
+                // Check that the reader is a view onto something concrete
+                if (textReader == null || !textReader.exists())
+                {
+                    transformException = new ContentIOException(
+                            "The transformation did not write any content, yet: \n"
+                            + "   transformer:     " + transformer + "\n" + "   temp writer:     " + writer);
+                }
+            }
+
+            if(transformException != null)
+            {
+                res.setHeader(TRANSFORM_STATUS_HEADER, "transformFailed");
+                res.setHeader(TRANSFORM_EXCEPTION_HEADER, transformException.getMessage());
+                res.setStatus(HttpStatus.SC_NO_CONTENT);
+            }
+            else
+            {
+                res.setStatus(HttpStatus.SC_OK);
+                streamContentImpl(req, res, textReader, false, modified, String.valueOf(modified.getTime()), null);            
             }
         }
-
-        if(transformException != null)
+        finally
         {
-            res.setHeader(TRANSFORM_STATUS_HEADER, "transformFailed");
-            res.setHeader(TRANSFORM_EXCEPTION_HEADER, transformException.getMessage());
-            res.setStatus(HttpStatus.SC_NO_CONTENT);
-        }
-        else
-        {
-            res.setStatus(HttpStatus.SC_OK);
-            streamContentImpl(req, res, textReader, false, modified, String.valueOf(modified.getTime()), null);            
+            transformerDebug.popAvailable();
         }
     }
 }

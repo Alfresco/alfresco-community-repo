@@ -63,6 +63,8 @@ function getCommentData(node)
    data.node = node;
    data.author = people.getPerson(node.properties["cm:creator"]);
    data.isUpdated = (node.properties["cm:modified"] - node.properties["cm:created"]) > 5000;
+   data.canEditComment = (person == data.owner) || (person == data.author) ||
+                         node.hasPermission("SiteManager") || node.hasPermission("Coordinator");
    return data;
 }
 

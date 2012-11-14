@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.webdav.WebDavService;
+import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Implements the WebDAV DELETE method
@@ -101,18 +102,30 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
 
         checkNode(fileInfo);
 
-        // ALF-7079 fix, working copies are not deleted at all
-        if (!getNodeService().hasAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_WORKING_COPY))
+        NodeService nodeService = getNodeService();
+        NodeRef nodeRef = fileInfo.getNodeRef();
+        // MNT-181: working copies and versioned nodes are hidden rather than deleted
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            setHidden(nodeRef, true);
+            getDAVLockService().unlock(nodeRef);
+        }
+        // We just ensure already-hidden nodes are left unlocked
+        else if (isHidden(nodeRef))
+        {
+            getDAVLockService().unlock(nodeRef);            
+        }
+        // A 'real' delete
+        else
         {
             // As this content will be deleted, we need to extract some info before it's no longer available.
             String siteId = getSiteId();
             NodeRef deletedNodeRef = fileInfo.getNodeRef();
-            FileInfo parentFile = getDAVHelper().getParentNodeForPath(getRootNodeRef(), getPath(), getServletPath());
-            boolean hidden = fileInfo.isHidden();
+            FileInfo parentFile = getDAVHelper().getParentNodeForPath(getRootNodeRef(), path, getServletPath());
             // Delete it
             fileFolderService.delete(deletedNodeRef);
             // Don't post activity data for hidden files, resource forks etc.
-            if (!hidden)
+            if (!getDAVHelper().isRenameShuffle(path))
             {
                  postActivity(parentFile, fileInfo, siteId);
             }

@@ -43,7 +43,7 @@
       "edit": false,
       "delete": false
    <#else>
-      "edit": ${item.node.hasPermission("Write")?string},
+      "edit": ${item.canEditComment?string},
       "delete": ${item.node.hasPermission("Delete")?string}
    </#if>
    }

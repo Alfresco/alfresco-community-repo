@@ -164,7 +164,14 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             }
 
             checkNode(contentNodeInfo);
-
+            
+            // 'Unhide' hidden nodes and behave as though we created them
+            NodeRef contentNodeRef = contentNodeInfo.getNodeRef();
+            if (isHidden(contentNodeRef))
+            {
+                setHidden(contentNodeRef, false);
+                created = true;
+            }
         }
         catch (FileNotFoundException e)
         {

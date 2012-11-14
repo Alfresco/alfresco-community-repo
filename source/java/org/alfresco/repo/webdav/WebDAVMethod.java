@@ -46,6 +46,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
+import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -66,6 +68,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -991,6 +995,38 @@ public abstract class WebDAVMethod
         
         return ns.toString();
     }
+
+    protected void setHidden(NodeRef nodeRef, boolean isHidden)
+    {
+        int mask = 0;
+        boolean allVisible = true;
+        Visibility webDavVisibility = isHidden ? Visibility.NotVisible : Visibility.Visible;
+        HiddenAspect hiddenAspect = m_davHelper.getHiddenAspect();
+        for (Client client : hiddenAspect.getClients())
+        {
+            Visibility clientVisibility = client == FileFilterMode.getClient() ? webDavVisibility : hiddenAspect
+                    .getVisibility(client, nodeRef);
+            if (clientVisibility != Visibility.Visible)
+            {
+                allVisible = false;
+            }
+            mask |= hiddenAspect.getClientVisibilityMask(client, clientVisibility);
+        }
+        if (allVisible)
+        {
+            getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_HIDDEN);
+        }
+        else
+        {
+            hiddenAspect.hideNode(nodeRef, mask);
+        }
+    }
+
+    protected boolean isHidden(NodeRef nodeRef)
+    {
+        return m_davHelper.getHiddenAspect().getVisibility(FileFilterMode.getClient(), nodeRef) != Visibility.Visible;
+    }
+
     /**
      * Checks if write operation can be performed on node.
      * 
@@ -1098,16 +1134,18 @@ public abstract class WebDAVMethod
                 }
                 else
                 {
+                // This particular node is not locked so it will not be part of the conditions
+                if (nodeLockToken == null)
+                {
+                    return;
+                }
                     // Node has exclusive lock. Check if conditions contains lock token of the node
                     // If not throw exception
                     for (Condition condition : m_conditions)
                     {
-                        if (nodeLockToken != null)
+                        if (condition.getLockTokensMatch().contains(nodeLockToken))
                         {
-                            if (condition.getLockTokensMatch().contains(nodeLockToken))
-                            {
-                                return;
-                            }
+                            return;
                         }
                     }
                     throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
@@ -1150,9 +1188,9 @@ public abstract class WebDAVMethod
         // Checks If header conditions.
         // Each condition can contain check of ETag and check of Lock token.
 
-        if (m_conditions == null)
+        if (m_conditions == null || nodeLockToken == null)
         {
-            // No conditions were provided with "If" request header, so check successful
+            // No conditions were provided with the "If" request header, or this node isn't locked and will not be in the conditions thus the check is successful
             return;
         }
         

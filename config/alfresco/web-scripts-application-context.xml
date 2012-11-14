@@ -1532,6 +1532,7 @@
       <property name="contentService" ref="contentService"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="transformerDebug" ref="transformerDebug" />
    </bean>
 
    <bean id="webscript.org.alfresco.repository.solr.model.get"

@@ -41,7 +41,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.FileFilterMode;
@@ -310,8 +309,6 @@ public class WebDAVServlet extends HttpServlet
         transactionService = serviceRegistry.getTransactionService();
         tenantService = (TenantService) context.getBean("tenantService");
         
-        AuthenticationService authService = (AuthenticationService) context.getBean("authenticationService");
-
         nodeService = (NodeService) context.getBean("NodeService");
         searchService = (SearchService) context.getBean("SearchService");
         namespaceService = (NamespaceService) context.getBean("NamespaceService");
@@ -321,7 +318,7 @@ public class WebDAVServlet extends HttpServlet
         // Collaborator used by WebDAV methods to create activity posts.
         activityPoster = new ActivityPosterImpl("WebDAV", activityService);
         
-        // Create the WebDAV helper
+        // Get the WebDAV helper
         m_davHelper = (WebDAVHelper) context.getBean("webDAVHelper");
         
         // Initialize the root node

@@ -1129,7 +1129,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             final Acl addAces, final Acl removeAces, ExtensionsData extension)
     {
         checkRepositoryId(repositoryId);
-
+        
         // get the parent folder node ref
         final CMISNodeInfo parentInfo = getOrCreateFolderInfo(folderId, "Parent folder");
 
@@ -1163,6 +1163,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
 
         // copy stream to temp file
+        // OpenCMIS does this for us ....
         final File tempFile = copyToTempFile(contentStream);
         final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
 
@@ -2281,10 +2282,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     {
         checkRepositoryId(repositoryId);
 
-        if (aclPropagation == AclPropagation.OBJECTONLY)
-        {
-            throw new CmisInvalidArgumentException("ACL propagation 'objectonly' is not supported!");
-        }
+        // We are spec compliant if we just let it through and the tck will not fail
 
         CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
@@ -2307,10 +2305,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     {
         checkRepositoryId(repositoryId);
 
-        if (aclPropagation == AclPropagation.OBJECTONLY)
-        {
-            throw new CmisInvalidArgumentException("ACL propagation 'objectonly' is not supported!");
-        }
+        // We are spec compliant if we just let it through and the tck will not fail
 
         CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 

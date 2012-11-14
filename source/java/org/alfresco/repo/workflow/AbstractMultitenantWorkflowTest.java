@@ -54,7 +54,7 @@ import org.junit.Test;
  */
 public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
 {
-    private static final String XML = MimetypeMap.MIMETYPE_XML;
+    protected static final String XML = MimetypeMap.MIMETYPE_XML;
 
     public static final String DEFAULT_ADMIN_PW = "admin";
     private final static QName ADHOC_TASK  = QName.createQName(NamespaceService.WORKFLOW_MODEL_1_0_URI, "adhocTask");
@@ -64,15 +64,15 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
     
     private TenantAdminService tenantAdminService;
     
-    private TenantService tenantService;
+    protected TenantService tenantService;
     
-    private ServiceRegistry serviceRegistry;
+    protected ServiceRegistry serviceRegistry;
     
-    private WorkflowService workflowService;
-    private PersonService personService;
+    protected WorkflowService workflowService;
+    protected PersonService personService;
     
-    private String user1;
-    private String user2;
+    protected String user1;
+    protected String user2;
     
     private WorkflowTestHelper wfTestHelper;
     
@@ -250,7 +250,7 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
         return definition;
     }
     
-    private InputStream getInputStream(String resource)
+    protected InputStream getInputStream(String resource)
     {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         return classLoader.getResourceAsStream(resource);

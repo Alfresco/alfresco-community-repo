@@ -163,6 +163,12 @@
             <columnname>start_time_</columnname>
           </columnnames>
         </index>
+        <index name="act_idx_hi_act_inst_procinst" unique="false">
+          <columnnames>
+            <columnname>proc_inst_id_</columnname>
+            <columnname>act_id_</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
     <table name="act_hi_attachment">

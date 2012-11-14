@@ -1241,6 +1241,12 @@
             <columnname>END_TIME_</columnname>
           </columnnames>
         </index>
+        <index name="ACT_IDX_HI_ACT_INST_PROCINST" unique="false">
+          <columnnames>
+            <columnname>PROC_INST_ID_</columnname>
+            <columnname>ACT_ID_</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
     <table name="act_hi_detail">

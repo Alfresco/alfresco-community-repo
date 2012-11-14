@@ -3423,4 +3423,15 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V4.2-add-activti-index-historic-activity" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.2-add-activti-index-historic-activity" />
+        <property name="description" value="patch.addActivtiIndexHistoricActivity.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="6021" />
+        <property name="targetSchema" value="6022" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/add-activti-index-historic-activity.sql</value>
+        </property>
+    </bean>
+    
 </beans>

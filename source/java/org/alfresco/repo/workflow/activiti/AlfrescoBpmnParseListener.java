@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.delegate.TaskListener;
+import org.activiti.engine.impl.bpmn.behavior.CallActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.bpmn.parser.BpmnParseListener;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -139,7 +140,17 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
     @Override
     public void parseCallActivity(Element callActivityElement, ScopeImpl scope, ActivityImpl activity)
     {
-        // Nothing to do here
+    	if (tenantService.isEnabled())
+        {
+    		ActivityBehavior activityBehavior = activity.getActivityBehavior();
+        	if(activityBehavior instanceof CallActivityBehavior)
+        	{
+        		CallActivityBehavior callActivity = (CallActivityBehavior) activityBehavior;
+        		
+        		// Make name of process-definition to be called aware of the current tenant
+        		callActivity.setProcessDefinitonKey(tenantService.getName(callActivity.getProcessDefinitonKey()));
+        	}
+        }
     }
 
     @Override

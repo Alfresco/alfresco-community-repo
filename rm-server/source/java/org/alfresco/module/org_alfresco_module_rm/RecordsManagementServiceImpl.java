@@ -605,14 +605,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isHold(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isHold(NodeRef nodeRef)
-    {
-        return instanceOf(nodeRef, TYPE_HOLD);
-    }
-    
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isTransfer(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isTransfer(NodeRef nodeRef)
@@ -627,38 +619,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     public boolean isMetadataStub(NodeRef nodeRef)
     {
         return nodeService.hasAspect(nodeRef, ASPECT_GHOSTED);
-    }
-    
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isFrozen(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean isFrozen(NodeRef nodeRef)
-    {
-        return nodeService.hasAspect(nodeRef, ASPECT_FROZEN);
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#hasFrozenChildren(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean hasFrozenChildren(NodeRef nodeRef)
-    {
-        boolean result = false;
-        if (isFilePlanComponent(nodeRef) == true)
-        {
-            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef assoc : assocs)
-            {
-                if (isFrozen(assoc.getChildRef()) == true)
-                {
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
     }
     
     /**
@@ -1269,5 +1229,35 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     public boolean isRecordDeclared(NodeRef nodeRef)
     {
         return serviceRegistry.getRecordService().isDeclared(nodeRef);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isHold(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Deprecated
+    public boolean isHold(NodeRef nodeRef)
+    {
+        return serviceRegistry.getFreezeService().isHold(nodeRef);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isFrozen(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Deprecated
+    public boolean isFrozen(NodeRef nodeRef)
+    {
+        return serviceRegistry.getFreezeService().isFrozen(nodeRef);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#hasFrozenChildren(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Deprecated
+    public boolean hasFrozenChildren(NodeRef nodeRef)
+    {
+        return serviceRegistry.getFreezeService().hasFrozenChildren(nodeRef);
     }
 }

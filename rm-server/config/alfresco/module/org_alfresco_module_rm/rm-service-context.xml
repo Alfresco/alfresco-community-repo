@@ -719,10 +719,68 @@
     <!--  Freeze Service  -->
     
     <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl" init-method="init">
-    	<property name="policyComponent" ref="policyComponent" />
+        <property name="policyComponent" ref="policyComponent" />
         <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dictionaryService" ref="dictionaryService" />
+    </bean>
+    
+    <bean id="FreezeService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService</value>
+        </property>
+        <property name="target">
+            <ref bean="freezeService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FreezeService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FreezeService_security"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="FreezeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="FreezeService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.isHold=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.isFrozen=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.getFrozen=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.freeze=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.unFreeze=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.relinquish=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.getReason=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.updateReason=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.getHolds=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.hasFrozenChildren=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.getFreezeDate=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.getFreezeInitiator=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.*=RM_DENY
+                ]]>
+            </value>
+        </property>
     </bean>
     
     <!-- Records Management Audit Service -->
@@ -798,10 +856,9 @@
     <!--  Record Service -->
     
     <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
-    	<property name="recordsManagementService" ref="RecordsManagementService"/> 
-    	<property name="nodeService" ref="NodeService"/>
-        <property name="policyComponent" ref="policyComponent"/>
-    	<property name="dictionaryService" ref="DictionaryService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <!--<property name="policyComponent" ref="policyComponent"/>-->
+        <property name="dictionaryService" ref="DictionaryService"/>
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>

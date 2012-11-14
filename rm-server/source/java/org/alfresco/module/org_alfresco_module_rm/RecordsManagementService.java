@@ -112,17 +112,7 @@ public interface RecordsManagementService
      * @param nodeRef   node reference
      * @return boolean  true if record, false otherwise
      */
-    boolean isRecord(NodeRef nodeRef);    
-    
-    /**
-     * Indicates whether the given node is a hold (container) or not.
-     * 
-     * @param nodeRef   node reference
-     * @return boolean  true if hold, false otherwise
-     * 
-     * @since 2.0
-     */
-    boolean isHold(NodeRef nodeRef);
+    boolean isRecord(NodeRef nodeRef);
     
     /**
      * Indicates whether the given node is a transfer (container) or not.
@@ -142,37 +132,7 @@ public interface RecordsManagementService
      * 
      * @since 
      */
-    boolean isMetadataStub(NodeRef nodeRef);    
-    
-    /**
-     * Indicates whether the item is frozen or not.
-     * 
-     * @param   nodeRef     node reference
-     * @return  boolean     true if record is frozen, false otherwise
-     * 
-     * @since 2.0
-     *
-     * @deprecated As of 2.1, replaced by {@link FreezeService#isFrozen(NodeRef)}
-     */
-    @Deprecated 
-    boolean isFrozen(NodeRef nodeRef);
-    
-    
-    /**
-     * Indicates whether the item has frozen children or not.
-     * 
-     * NOTE: this only checks the immediate children and does not check the frozen
-     *       state of the node being passed
-     * 
-     * @param nodeRef   node reference 
-     * @return boolean  true if record folder has frozen children, false otherwise
-     * 
-     * @since 2.0
-     * 
-     * @deprecated As of 2.1, replaced by {@link FreezeService#hasFrozenChildren(NodeRef)}
-     */
-    @Deprecated
-    boolean hasFrozenChildren(NodeRef nodeRef);    
+    boolean isMetadataStub(NodeRef nodeRef);
     
     /**
      * Indicates whether the item is cutoff or not.
@@ -489,8 +449,50 @@ public interface RecordsManagementService
      * @param nodeRef   node reference (record)
      * @return boolean  true if record is declared, false otherwise
      * 
-     * @deprecated As of 2.1, replaced by {@link RecordsService#isDeclared()}
+     * @deprecated As of 2.1, replaced by {@link RecordService#isDeclared(NodeRef)}
      */
     @Deprecated
     boolean isRecordDeclared(NodeRef nodeRef);
+    
+    /**
+     * Indicates whether the given node is a hold (container) or not.
+     * 
+     * @param nodeRef   node reference
+     * @return boolean  true if hold, false otherwise
+     * 
+     * @since 2.0
+     * 
+     * @deprecated As of 2.1, replaced by {@link FreezeService#isHold(NodeRef)}
+     */
+    @Deprecated
+    boolean isHold(NodeRef nodeRef);
+    
+    /**
+     * Indicates whether the item is frozen or not.
+     * 
+     * @param   nodeRef     node reference
+     * @return  boolean     true if record is frozen, false otherwise
+     * 
+     * @since 2.0
+     *
+     * @deprecated As of 2.1, replaced by {@link FreezeService#isFrozen(NodeRef)}
+     */
+    @Deprecated 
+    boolean isFrozen(NodeRef nodeRef);
+    
+    /**
+     * Indicates whether the item has frozen children or not.
+     * 
+     * NOTE: this only checks the immediate children and does not check the frozen
+     *       state of the node being passed
+     * 
+     * @param nodeRef   node reference 
+     * @return boolean  true if record folder has frozen children, false otherwise
+     * 
+     * @since 2.0
+     * 
+     * @deprecated As of 2.1, replaced by {@link FreezeService#hasFrozenChildren(NodeRef)}
+     */
+    @Deprecated
+    boolean hasFrozenChildren(NodeRef nodeRef);
 }

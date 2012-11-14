@@ -32,39 +32,46 @@ import org.alfresco.service.namespace.QName;
  */
 public interface RecordService
 {
-    /**
-     * Get a list of all the record meta-data aspects
-     * 
-     * @return {@link Set}<{@link QName}>   list of record meta-data aspects
-     */
-    Set<QName> getRecordMetaDataAspects();
-        
-    /**
-     * Indicates whether the record is declared
-     * 
-     * @param nodeRef   node reference (record)
-     * @return boolean  true if record is declared, false otherwise
-     */
-    boolean isDeclared(NodeRef nodeRef);  
-    
-    /**
-     * Create a new record from an existing document.
-     * 
-     * @param filePlan
-     * @param document
-     */
-    void createRecordFromDocument(NodeRef filePlan, NodeRef document);
-    
-    // TODO boolean isRecordFiled(NodeRef record);
-    // TODO boolean isRecordClassified(NodeRef record);
-    
-   // NodeRef getNewRecordContainer(NodeRef filePlan);
-    
-    //NodeRef createRecord(NodeRef filePlan, NodeRef document);
-    
-    // TODO NodeRef createAndFileRecord(NodeRef recordFolder, NodeRef document);
-    
-    // TODO void fileRecord(NodeRef recordFolder, NodeRef record);  
-    
-    public NodeRef getUnfiledRecordContainer(NodeRef filePlan);
+   /**
+    * Gets a list of all the record meta-data aspects
+    * 
+    * @return {@link Set}<{@link QName}>   list of record meta-data aspects
+    */
+   Set<QName> getRecordMetaDataAspects();
+
+   /**
+    * Indicates whether the record is declared
+    * 
+    * @param nodeRef   node reference of the record for which the check would be performed
+    * @return boolean  true if record is declared, false otherwise
+    */
+   boolean isDeclared(NodeRef nodeRef);  
+
+   /**
+    * Creates a new record from an existing document.
+    * 
+    * @param filePlan   The filePlan in which the record should be placed
+    * @param document   The document from which the record will be created
+    */
+   void createRecordFromDocument(NodeRef filePlan, NodeRef document);
+
+   /**
+    * Gets the unfiled record container for the given file plan
+    * 
+    * @param filePlan   The filePlan for which the unfiled record container should be retrieved
+    * @return NodeRef   The nodeRef of the container object
+    */
+   public NodeRef getUnfiledRecordContainer(NodeRef filePlan);
+
+   // TODO boolean isRecordFiled(NodeRef record);
+
+   // TODO boolean isRecordClassified(NodeRef record);
+
+   // TODO NodeRef getNewRecordContainer(NodeRef filePlan);
+
+   // TODO NodeRef createRecord(NodeRef filePlan, NodeRef document);
+
+   // TODO NodeRef createAndFileRecord(NodeRef recordFolder, NodeRef document);
+
+   // TODO void fileRecord(NodeRef recordFolder, NodeRef record);
 }

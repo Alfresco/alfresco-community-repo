@@ -10,8 +10,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
-import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -21,12 +19,6 @@ import org.alfresco.service.namespace.QName;
 
 public class FreezeServiceImplTest extends BaseRMTestCase
 {
-   /** Data Set Service */
-   private DataSetService dataSetService;
-
-   /** Freeze Service */
-   private FreezeService freezeService;
-
    /** Id of the test data set*/
    private static final String DATA_SET_ID = "testExampleData";
 
@@ -41,20 +33,6 @@ public class FreezeServiceImplTest extends BaseRMTestCase
 
    /** Fourth Record */
    private NodeRef recordFour;
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
-    */
-   @Override
-   protected void initServices()
-   {
-      super.initServices();
-
-      // Get Data Set Service
-      dataSetService = (DataSetService) applicationContext.getBean("DataSetService");
-      // Get Freeze Service
-      freezeService = (FreezeService) applicationContext.getBean("freezeService");
-   }
 
    public void testFreezeService() throws Exception
    {

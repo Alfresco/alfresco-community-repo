@@ -7,10 +7,10 @@
     
     <bean id="capabilityCondition.base"
           abstract="true">
-		<property name="recordsManagementService" ref="recordsManagementService" />
-		<property name="permissionService" ref="PermissionService" />    
-		<property name="nodeService" ref="NodeService" />
-		<property name="freezeService" ref="freezeService" />
+        <property name="recordsManagementService" ref="recordsManagementService" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="freezeService" ref="FreezeService" />
     </bean>
     
     <bean id="capabilityCondition.frozen" 

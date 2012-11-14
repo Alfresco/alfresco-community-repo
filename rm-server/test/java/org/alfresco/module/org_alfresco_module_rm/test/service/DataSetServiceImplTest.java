@@ -15,23 +15,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 public class DataSetServiceImplTest extends BaseRMTestCase
 {
-   /** Data Set Service */
-   private DataSetService dataSetService;
-
    /** Id of the test data set*/
    private static final String DATA_SET_ID = "testExampleData"; 
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
-    */
-   @Override
-   protected void initServices()
-   {
-      super.initServices();
-
-      // Get Data Set Service
-      dataSetService = (DataSetService) applicationContext.getBean("DataSetService");
-   }
 
    /**
     * @see DataSetService#getDataSets()

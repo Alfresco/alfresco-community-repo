@@ -27,11 +27,14 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
@@ -112,6 +115,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected RecordsManagementSecurityService securityService;
     protected CapabilityService capabilityService;
     protected VitalRecordService vitalRecordService;
+    protected DataSetService dataSetService;
+    protected FreezeService freezeService;
+    protected RecordService recordService;
     
     /** test data */
     protected StoreRef storeRef;
@@ -266,6 +272,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         securityService = (RecordsManagementSecurityService)this.applicationContext.getBean("RecordsManagementSecurityService");
         capabilityService = (CapabilityService)this.applicationContext.getBean("CapabilityService");
         vitalRecordService = (VitalRecordService)this.applicationContext.getBean("VitalRecordService");
+        dataSetService = (DataSetService) applicationContext.getBean("DataSetService");
+        freezeService = (FreezeService) applicationContext.getBean("FreezeService");
+        recordService = (RecordService) applicationContext.getBean("RecordService");
     }
     
     /**

@@ -19,16 +19,13 @@
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.springframework.util.CollectionUtils;
 
 
 /**
@@ -578,40 +575,8 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
     }
     
     /********** Record methods **********/
-    
-    // TODO void testIsRecordFrozen()
-    
-    /**
-     * @see RecordsManagementService#getRecordMetaDataAspects()
-     */
-    public void testGetRecordMetaDataAspects()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                Set<QName> aspects = rmService.getRecordMetaDataAspects();
-                assertNotNull(aspects);
-                assertEquals(5, aspects.size());
-                assertTrue(aspects.containsAll(
-                        CollectionUtils.arrayToList(new QName[]
-                        {
-                            DOD5015Model.ASPECT_DIGITAL_PHOTOGRAPH_RECORD, 
-                            DOD5015Model.ASPECT_PDF_RECORD,
-                            DOD5015Model.ASPECT_WEB_RECORD,
-                            DOD5015Model.ASPECT_SCANNED_RECORD,
-                            ASPECT_RECORD_META_DATA
-                        })));
-                
-                return null;
-            }
-        });   
-    }
-    
+
     // TODO void testGetRecordFolders(NodeRef record); 
-    
-    // TODO void testIsRecordDeclared(NodeRef nodeRef);
     
     /********** RM2 - Multi-hierarchy record taxonomy's **********/
     

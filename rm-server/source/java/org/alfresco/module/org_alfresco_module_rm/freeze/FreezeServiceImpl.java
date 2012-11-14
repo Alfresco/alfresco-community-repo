@@ -185,7 +185,15 @@ public class FreezeServiceImpl implements FreezeService,
    {
       ParameterCheck.mandatory("nodeRef", nodeRef);
 
-      return dictionaryService.isSubClass(nodeService.getType(nodeRef), TYPE_HOLD);
+      QName type = nodeService.getType(nodeRef);
+      if (nodeService.exists(nodeRef) && (TYPE_HOLD.equals(type)) || dictionaryService.isSubClass(type, TYPE_HOLD))
+      {
+         return true;
+      }
+      else
+      {
+         return false;
+      }
    }
 
    /**

@@ -22,6 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
@@ -31,16 +32,19 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Servlet responsible for streaming content directly into the repository from the PUT request.
@@ -84,6 +88,7 @@ public class UploadContentServlet extends BaseServlet
     protected static final String ARG_PROPERTY = "property";
     protected static final String ARG_MIMETYPE = "mimetype";
     protected static final String ARG_ENCODING = "encoding";
+    protected static final String ARG_LOCALE = "locale";
 
     /**
      * @see javax.servlet.http.HttpServlet#doPut(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -158,6 +163,7 @@ public class UploadContentServlet extends BaseServlet
         ContentService contentService = serviceRegistry.getContentService();
         PermissionService permissionService = serviceRegistry.getPermissionService();
         MimetypeService mimetypeService = serviceRegistry.getMimetypeService();
+        NodeService nodeService = serviceRegistry.getNodeService();
         
         InputStream is = req.getInputStream();
         BufferedInputStream inputStream = new BufferedInputStream(is);
@@ -189,6 +195,21 @@ public class UploadContentServlet extends BaseServlet
            encoding = charset.name();
         }
 
+        // Get the locale
+        Locale locale = I18NUtil.parseLocale(req.getParameter(ARG_LOCALE));
+        if (locale == null)
+        {
+            locale = I18NUtil.getContentLocale();
+            if (nodeRef != null)
+            {
+                ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, propertyQName);
+                if (contentData != null)
+                {
+                    locale = contentData.getLocale();
+                }
+            }
+        }
+
         if (logger.isDebugEnabled())
         {
             if (nodeRef != null) {logger.debug("Found NodeRef: " + nodeRef.toString());}
@@ -196,6 +217,7 @@ public class UploadContentServlet extends BaseServlet
             logger.debug("File name: " + filename);
             logger.debug("Mimetype: " + mimetype);
             logger.debug("Encoding: " + encoding);
+            logger.debug("Locale: " + locale);
         }
 
         // Check that the user has the permissions to write the content
@@ -227,9 +249,13 @@ public class UploadContentServlet extends BaseServlet
             return;
         }
         
-        // Set the mimetype and encoding
+        // Set the mimetype, encoding and locale
         writer.setMimetype(mimetype);
         writer.setEncoding(encoding);
+        if (locale != null)
+        {
+            writer.setLocale(locale);
+        }
         
         // Stream the content into the repository
         writer.putContent(inputStream);

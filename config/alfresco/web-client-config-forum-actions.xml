@@ -182,6 +182,7 @@
          
          <!-- Edit an existing Post -->
          <action id="edit_post">
+            <evaluator>org.alfresco.web.action.evaluator.EditPostEvaluator</evaluator>
             <permissions>
                <permission allow="true">Write</permission>
             </permissions>

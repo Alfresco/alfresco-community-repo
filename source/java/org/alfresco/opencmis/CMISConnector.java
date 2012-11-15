@@ -860,6 +860,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public String createObjectId(NodeRef currentVersionNodeRef)
     {
+        if(getFileFolderService().getFileInfo(currentVersionNodeRef).isFolder())
+        {
+            return currentVersionNodeRef.toString();
+        }
+        
         Serializable versionLabel = getNodeService()
                 .getProperty(currentVersionNodeRef, ContentModel.PROP_VERSION_LABEL);
         if (versionLabel == null)

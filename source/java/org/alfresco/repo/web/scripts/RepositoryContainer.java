@@ -45,6 +45,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TooBusyException;
@@ -339,7 +340,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer implements Ten
                     }        
                 };
                 
-                if (transactionService.getRetryingTransactionHelper().doInTransaction(authWork, transactionService.isReadOnly()))
+                boolean readOnly = transactionService.isReadOnly();
+                boolean requiresNew = !readOnly && AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
+                if (transactionService.getRetryingTransactionHelper().doInTransaction(authWork, readOnly, requiresNew))
                 {
                     // Execute Web Script if authentication passed
                     // The Web Script has its own txn management with potential runAs() user

@@ -50,175 +50,173 @@ import org.json.JSONTokener;
  */
 public class RmActionPost extends DeclarativeWebScript
 {
-    private static Log logger = LogFactory.getLog(RmActionPost.class);
-    
-    private static final String PARAM_NAME = "name";
-    private static final String PARAM_NODE_REF = "nodeRef";
-    private static final String PARAM_NODE_REFS = "nodeRefs";
-    private static final String PARAM_PARAMS = "params";
-    
-    private NodeService nodeService;
-    private RecordsManagementActionService rmActionService;
-    
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+   private static Log logger = LogFactory.getLog(RmActionPost.class);
 
-    public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
-    {
-        this.rmActionService = rmActionService;
-    }
+   private static final String PARAM_NAME = "name";
+   private static final String PARAM_NODE_REF = "nodeRef";
+   private static final String PARAM_NODE_REFS = "nodeRefs";
+   private static final String PARAM_PARAMS = "params";
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        String reqContentAsString;
-        try
-        {
-            reqContentAsString = req.getContent().getContent();
-        } 
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
+   private NodeService nodeService;
+   private RecordsManagementActionService rmActionService;
 
-        String actionName = null;
-        List<NodeRef> targetNodeRefs = null;
-        Map<String, Serializable> actionParams = new HashMap<String, Serializable>(3);
-        
-        try
-        {        
-            JSONObject jsonObj = new JSONObject(new JSONTokener(reqContentAsString));
-                
-            // Get the action name
-            if (jsonObj.has(PARAM_NAME) == true)
-            {
-                actionName = jsonObj.getString(PARAM_NAME);
-            }
-                
-            // Get the target references
-            if (jsonObj.has(PARAM_NODE_REF) == true)
-            {
-                NodeRef nodeRef = new NodeRef(jsonObj.getString(PARAM_NODE_REF));
-                targetNodeRefs = new ArrayList<NodeRef>(1);
-                targetNodeRefs.add(nodeRef);
-            }
-            if (jsonObj.has(PARAM_NODE_REFS) == true)
-            {
-                JSONArray jsonArray = jsonObj.getJSONArray(PARAM_NODE_REFS);
-                if (jsonArray.length() != 0)
-                {
-                    targetNodeRefs = new ArrayList<NodeRef>(jsonArray.length());
-                    for (int i = 0; i < jsonArray.length(); i++)
-                    {
-                        NodeRef nodeRef = new NodeRef(jsonArray.getString(i));
-                        targetNodeRefs.add(nodeRef);
-                    }
-                }
-            }
-                
-            // params are optional.
-            if (jsonObj.has(PARAM_PARAMS))
-            {
-                JSONObject paramsObj = jsonObj.getJSONObject(PARAM_PARAMS);
-                for (Iterator iter = paramsObj.keys(); iter.hasNext(); )
-                {
-                    Object nextKey = iter.next();
-                    String nextKeyString = (String)nextKey;
-                    Object nextValue = paramsObj.get(nextKeyString);
-                    
-                    // Check for date values
-                    if (nextValue instanceof JSONObject)
-                    {
-                        if (((JSONObject)nextValue).has("iso8601") == true)
-                        {
-                            String dateStringValue = ((JSONObject)nextValue).getString("iso8601");
-                            nextValue = ISO8601DateFormat.parse(dateStringValue);
-                        }
-                    } 
-                    
-                    actionParams.put(nextKeyString, (Serializable)nextValue);
-                }
-            }
-        }
-        catch (JSONException exception)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unable to parse request JSON.");
-        }
-        
-        // validate input: check for mandatory params.
-        // Some RM actions can be posted without a nodeRef.
-        if (actionName == null)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                "A mandatory parameter has not been provided in URL");
-        }
+   public void setNodeService(NodeService nodeService)
+   {
+      this.nodeService = nodeService;
+   }
 
-        // Check that all the nodes provided exist and build report string
-        StringBuffer targetNodeRefsString = new StringBuffer(30);
-        boolean firstTime = true;
-        for (NodeRef targetNodeRef : targetNodeRefs)
-        {
-            if (nodeService.exists(targetNodeRef) == false)
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND,
-                    "The targetNode does not exist (" + targetNodeRef.toString() + ")");
-            }
-            
-            // Build the string
-            if (firstTime == true)
-            {
-                firstTime = false;
-            }
-            else
-            {
-                targetNodeRefsString.append(", ");
-            }
-            targetNodeRefsString.append(targetNodeRef.toString());
-        }
+   public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
+   {
+      this.rmActionService = rmActionService;
+   }
 
-        // Proceed to execute the specified action on the specified node.
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Executing Record Action ")
-               .append(actionName)
-               .append(", (")
-               .append(targetNodeRefsString.toString())
-               .append("), ")
-               .append(actionParams);
-            logger.debug(msg.toString());
-        }
-        
-        Map<String, Object> model = new HashMap<String, Object>();        
-        if (targetNodeRefs.isEmpty())
-        {
-            RecordsManagementActionResult result = this.rmActionService.executeRecordsManagementAction(actionName, actionParams);
-            if (result.getValue() != null)
-            {
-                model.put("result", result.getValue().toString());
-            }
-        }
-        else
-        {
-            Map<NodeRef, RecordsManagementActionResult> resultMap = this.rmActionService.executeRecordsManagementAction(targetNodeRefs, actionName, actionParams);
-            Map<String, String> results = new HashMap<String, String>(resultMap.size());
-            for (NodeRef nodeRef : resultMap.keySet())
-            {
-                Object value = resultMap.get(nodeRef).getValue();
-                if (value != null)
-                {
-                    results.put(nodeRef.toString(), resultMap.get(nodeRef).getValue().toString());
-                }
-            }
-            model.put("results", results);
-        }
-        
-        model.put("message", "Successfully queued action [" + actionName + "] on " + targetNodeRefsString.toString());
+   @SuppressWarnings("unchecked")
+   @Override
+   public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+   {
+      String reqContentAsString;
+      try
+      {
+         reqContentAsString = req.getContent().getContent();
+      } 
+      catch (IOException iox)
+      {
+         throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+               "Could not read content from req.", iox);
+      }
 
-        return model;
-    }
+      String actionName = null;
+      List<NodeRef> targetNodeRefs = new ArrayList<NodeRef>(1);
+      Map<String, Serializable> actionParams = new HashMap<String, Serializable>(3);
+
+      try
+      {
+         JSONObject jsonObj = new JSONObject(new JSONTokener(reqContentAsString));
+
+         // Get the action name
+         if (jsonObj.has(PARAM_NAME) == true)
+         {
+            actionName = jsonObj.getString(PARAM_NAME);
+         }
+
+         // Get the target references
+         if (jsonObj.has(PARAM_NODE_REF) == true)
+         {
+            NodeRef nodeRef = new NodeRef(jsonObj.getString(PARAM_NODE_REF));
+            targetNodeRefs.add(nodeRef);
+         }
+         if (jsonObj.has(PARAM_NODE_REFS) == true)
+         {
+            JSONArray jsonArray = jsonObj.getJSONArray(PARAM_NODE_REFS);
+            if (jsonArray.length() != 0)
+            {
+               targetNodeRefs = new ArrayList<NodeRef>(jsonArray.length());
+               for (int i = 0; i < jsonArray.length(); i++)
+               {
+                  NodeRef nodeRef = new NodeRef(jsonArray.getString(i));
+                  targetNodeRefs.add(nodeRef);
+               }
+            }
+         }
+
+         // params are optional.
+         if (jsonObj.has(PARAM_PARAMS))
+         {
+            JSONObject paramsObj = jsonObj.getJSONObject(PARAM_PARAMS);
+            for (Iterator<String> iter = paramsObj.keys(); iter.hasNext(); )
+            {
+               String nextKeyString = iter.next();
+               Object nextValue = paramsObj.get(nextKeyString);
+
+               // Check for date values
+               if (nextValue instanceof JSONObject)
+               {
+                  if (((JSONObject)nextValue).has("iso8601") == true)
+                  {
+                     String dateStringValue = ((JSONObject)nextValue).getString("iso8601");
+                     nextValue = ISO8601DateFormat.parse(dateStringValue);
+                  }
+               } 
+
+               actionParams.put(nextKeyString, (Serializable)nextValue);
+            }
+         }
+      }
+      catch (JSONException exception)
+      {
+         throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unable to parse request JSON.");
+      }
+
+      // validate input: check for mandatory params.
+      // Some RM actions can be posted without a nodeRef.
+      if (actionName == null)
+      {
+         throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+               "A mandatory parameter has not been provided in URL");
+      }
+
+      // Check that all the nodes provided exist and build report string
+      StringBuffer targetNodeRefsString = new StringBuffer(30);
+      boolean firstTime = true;
+      for (NodeRef targetNodeRef : targetNodeRefs)
+      {
+         if (nodeService.exists(targetNodeRef) == false)
+         {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND,
+                  "The targetNode does not exist (" + targetNodeRef.toString() + ")");
+         }
+
+         // Build the string
+         if (firstTime == true)
+         {
+            firstTime = false;
+         }
+         else
+         {
+            targetNodeRefsString.append(", ");
+         }
+         targetNodeRefsString.append(targetNodeRef.toString());
+      }
+
+      // Proceed to execute the specified action on the specified node.
+      if (logger.isDebugEnabled())
+      {
+         StringBuilder msg = new StringBuilder();
+         msg.append("Executing Record Action ")
+            .append(actionName)
+            .append(", (")
+            .append(targetNodeRefsString.toString())
+            .append("), ")
+            .append(actionParams);
+         logger.debug(msg.toString());
+      }
+
+      Map<String, Object> model = new HashMap<String, Object>();
+      if (targetNodeRefs.isEmpty())
+      {
+         RecordsManagementActionResult result = this.rmActionService.executeRecordsManagementAction(actionName, actionParams);
+         if (result.getValue() != null)
+         {
+            model.put("result", result.getValue().toString());
+         }
+      }
+      else
+      {
+         Map<NodeRef, RecordsManagementActionResult> resultMap = this.rmActionService.executeRecordsManagementAction(targetNodeRefs, actionName, actionParams);
+         Map<String, String> results = new HashMap<String, String>(resultMap.size());
+         for (NodeRef nodeRef : resultMap.keySet())
+         {
+            Object value = resultMap.get(nodeRef).getValue();
+            if (value != null)
+            {
+               results.put(nodeRef.toString(), resultMap.get(nodeRef).getValue().toString());
+            }
+         }
+         model.put("results", results);
+      }
+
+      model.put("message", "Successfully queued action [" + actionName + "] on " + targetNodeRefsString.toString());
+
+      return model;
+   }
 }

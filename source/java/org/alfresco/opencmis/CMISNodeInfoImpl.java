@@ -125,6 +125,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             objectId = nodeRef.toString() + CMISConnector.ID_SEPERATOR + CMISConnector.UNVERSIONED_VERSION_LABEL;
             versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
             currentObjectId = objectId;
+            hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
         }
         else
         {
@@ -138,6 +139,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
             objecVariant = (headVersion.getVersionLabel().equals(versionLabel) ? CMISObjectVariant.CURRENT_VERSION
                     : CMISObjectVariant.VERSION);
+            hasPWC = connector.getCheckOutCheckInService().isCheckedOut(headVersion.getVersionedNodeRef());
         }
     }
 
@@ -150,6 +152,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             currentObjectId = nodeRef.toString() + CMISConnector.ID_SEPERATOR + versionLabel;
             currentNodeId = nodeRef.toString();
             objecVariant = CMISObjectVariant.CURRENT_VERSION;
+            hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
         }
         else
         {
@@ -325,7 +328,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                 }
 
                 // check if checked out
-                hasPWC = connector.getCheckOutCheckInService().isCheckedOut(getCurrentNodeNodeRef());
+                hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
             } else if (objectId.startsWith(CMISConnector.ASSOC_ID_PREFIX))
             {
                 // check the association id
@@ -420,7 +423,6 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             analyseCurrentVersion(nodeRef);
         }
 
-        hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
     }
 
     protected void analyseAssociationRef()

@@ -148,6 +148,10 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         if(connector.getVersionService().isVersioned(nodeRef))
         {
             versionLabel = (String) connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
+            if(versionLabel == null)
+            {
+                versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
+            }
             objectId = nodeRef.toString() + CMISConnector.ID_SEPERATOR + versionLabel;
             currentObjectId = nodeRef.toString() + CMISConnector.ID_SEPERATOR + versionLabel;
             currentNodeId = nodeRef.toString();

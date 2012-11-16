@@ -833,7 +833,11 @@
                                 <exclude>**/org/alfresco/repo/avm/AVMServiceRemoteSystemTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/blog/BlogIntegrationServiceSystemTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/caching/quota/StandardQuotaStrategyTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/content/caching/ContentCacheImplTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/content/caching/test/SlowContentStoreTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/content/metadata/TikaAudioMetadataExtracterTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/transform/OOXMLThumbnailContentTransformerTest.*</exclude>
+                                <exclude>**/org/alfresco/repo/content/transform/ArchiveContentTransformerTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/domain/avm/AVMStoreDAOTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/content/transform/FailoverContentTransformerTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/domain/node/NodePropertyHelperTest.*</exclude>
@@ -851,6 +855,7 @@
                                 <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiTaskComponentTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/workflow/activiti/ActivitiWorkflowComponentTest.*</exclude>
                                 <exclude>**/org/alfresco/repo/workflow/jbpm/JbpmTimerTest.*</exclude>
+                                <exclude>**/org/alfresco/util/schemacomp/model/AbstractDbObjectTest.*</exclude>
 
                                 <!-- TODO tests which pass with Ant, but not here. To investigate -->
                                 <exclude>**/org/alfresco/cmis/changelog/CMISChangeLogServiceTest.*</exclude>

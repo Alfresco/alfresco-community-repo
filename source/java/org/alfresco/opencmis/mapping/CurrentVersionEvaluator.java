@@ -57,10 +57,21 @@ public class CurrentVersionEvaluator extends AbstractActionEvaluator
 
     public boolean isAllowed(CMISNodeInfo nodeInfo)
     {
-        if (!nodeInfo.isCurrentVersion())
+        if(nodeInfo.hasPWC())
         {
-            return nonCurrentVersionValue;
+            if(!nodeInfo.isPWC())
+            {
+                return nonCurrentVersionValue;
+            }
         }
+        else
+        {
+            if (!nodeInfo.isCurrentVersion())
+            {
+                return nonCurrentVersionValue;
+            }
+        }
+        
 
         return currentVersionEvaluator == null ? currentVersionValue : currentVersionEvaluator.isAllowed(nodeInfo);
     }

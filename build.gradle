@@ -17,6 +17,10 @@ task wrapper(type: Wrapper) {
     gradleVersion = '1.0-milestone-8'
 }
 
+task deleteDist(type: Delete) {
+    ant.delete(includeEmptyDirs: 'true', dir: 'dist')
+}
+
 task packageBuild (dependsOn: [':rm-server:amp', ':rm-share:amp']) << {
 	
 	distDir = file('dist')

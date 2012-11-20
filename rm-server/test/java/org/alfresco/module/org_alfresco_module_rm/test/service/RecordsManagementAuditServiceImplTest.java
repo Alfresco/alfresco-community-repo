@@ -47,7 +47,8 @@ import org.alfresco.util.Pair;
  * 
  * @since 3.2
  */
-public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase implements RMPermissionModel
+public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase 
+                                                   implements RMPermissionModel
 {
     /** Records management audit service */
     private RecordsManagementAuditService auditService;

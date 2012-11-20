@@ -24,8 +24,10 @@ import junit.framework.TestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.service.DataSetServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.DispositionServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FreezeServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.RecordServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementActionServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementAdminServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementAuditServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementSearchServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.VitalRecordServiceImplTest;
@@ -50,13 +52,14 @@ public class ServicesTestSuite extends TestSuite
         suite.addTestSuite(DispositionServiceImplTest.class);
         suite.addTestSuite(RecordsManagementActionServiceImplTest.class);
         suite.addTestSuite(RecordsManagementAdminServiceImplTest.class);
-        //suite.addTestSuite(RecordsManagementAuditServiceImplTest.class);
+        suite.addTestSuite(RecordsManagementAuditServiceImplTest.class);
         //suite.addTestSuite(RecordsManagementEventServiceImplTest.class);
         //suite.addTestSuite(RecordsManagementSecurityServiceImplTest.class);
         suite.addTestSuite(RecordsManagementSearchServiceImplTest.class);
         suite.addTestSuite(VitalRecordServiceImplTest.class);
         suite.addTestSuite(DataSetServiceImplTest.class);
         suite.addTestSuite(FreezeServiceImplTest.class);
+        suite.addTestSuite(RecordServiceImplTest.class);
         return suite;
     }
 }

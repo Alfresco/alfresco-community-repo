@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -77,10 +78,11 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
 
                // remove all owner related rights 
                this.ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
-            }
+            }            
             else
             {
-               throw new AlfrescoRuntimeException(buildMissingPropertiesErrorString(missingProperties));
+               logger.debug(buildMissingPropertiesErrorString(missingProperties));
+               action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, "missingProperties");
             }
          }
       }
@@ -95,9 +97,10 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
       StringBuilder builder = new StringBuilder(255);
       builder.append(I18NUtil.getMessage(MSG_NO_DECLARE_MAND_PROP));
       builder.append("  ");
-      for (String missingProperty : missingProperties)
+      for (String missingProperty : missingProperties)            
       {
-         builder.append(missingProperty).append(", ");
+         builder.append(missingProperty)
+            .append(", ");
       }
       return builder.toString();
     }

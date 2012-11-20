@@ -282,12 +282,12 @@ public class RMSearchGet extends DeclarativeWebScript
                     relPath.append(getName());
                     try
                     {
-                        this.browseUrl = "documentlibrary?path=" + URLEncoder.encode(relPath.toString(), "UTF-8");
+                        this.browseUrl = "documentlibrary?path=" + URLEncoder.encode(relPath.toString(), "UTF-8").replaceAll("\\+","%20");
                     }
                     catch (UnsupportedEncodingException e)
                     {
                         throw new AlfrescoRuntimeException("Could not process search results.", e);
-                    }
+                    }                    
                 }
             }
             else

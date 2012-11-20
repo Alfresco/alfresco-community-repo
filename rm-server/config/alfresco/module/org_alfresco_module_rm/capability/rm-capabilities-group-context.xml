@@ -115,5 +115,32 @@
     	</property>
     	<property name="targetCapability" ref="rmCreate" />
     </bean>
+    
+    <bean id="rmImport"
+          parent="compositeCapability">
+    	<property name="name" value="Import"/>
+    	<property name="private" value="true"/>
+    	<property name="kinds">
+			<list>
+				<value>FILE_PLAN</value>
+				<value>RECORD_CATEGORY</value>
+				<value>RECORD_FOLDER</value>
+			</list>
+		</property>	
+		<property name="conditions">
+    		<map>
+    			<entry key="capabilityCondition.frozen" value="false"/>
+    			<entry key="capabilityCondition.closed" value="false"/>
+    			<entry key="capabilityCondition.filling" value="true"/>
+    		</map>
+    	</property>
+    	<property name="capabilities">
+    		<list>
+    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    			
+    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    			
+    			<ref bean="rmFileRecordsCapability"/>
+    		</list>
+    	</property>
+    </bean>
 
 </beans>

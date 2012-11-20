@@ -613,6 +613,7 @@
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.addEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.removeEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.existsEvent=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.existsEventDisplayLabel=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.*=RM_DENY
                 ]]>
             </value>
@@ -989,7 +990,8 @@
         <property name="securityService" ref="RecordsManagementSecurityService"/>
     	<property name="notificationService" ref="NotificationService"/>
     	<property name="recordsManagementService" ref="RecordsManagementService"/>
-    	<property name="repositoryHelper" ref="repositoryHelper" />
+  		<property name="nodeService" ref="nodeService"/>
+  		<property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="namespaceService" ref="namespaceService"/>
         <property name="searchService" ref="searchService"/>
         <property name="siteService" ref="SiteService" />

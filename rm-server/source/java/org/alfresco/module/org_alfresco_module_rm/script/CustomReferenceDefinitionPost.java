@@ -85,6 +85,11 @@ public class CustomReferenceDefinitionPost extends AbstractRmWebScript
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                         "Could not parse JSON from req.", je);
         }
+        catch (IllegalArgumentException iae)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                  iae.getMessage(), iae);
+        }
         
         return ftlModel;
     }

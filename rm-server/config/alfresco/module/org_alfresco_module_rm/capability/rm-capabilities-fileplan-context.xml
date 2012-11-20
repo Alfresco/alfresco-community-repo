@@ -29,7 +29,12 @@
 			<list>
 			    <value>FILE_PLAN</value>
 			</list>
-		</property>	
+		</property>			
+   		<property name="conditions">
+   			<map>
+   				<entry key="capabilityCondition.filling" value="true"/>
+   			</map>
+   		</property>
     </bean>
     
     <bean id="rmCreateModifyDestroyRecordCategoryCapability" 

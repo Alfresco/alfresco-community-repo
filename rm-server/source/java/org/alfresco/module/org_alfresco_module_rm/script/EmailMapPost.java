@@ -53,6 +53,16 @@ public class EmailMapPost extends DeclarativeWebScript
             JSONObject json = null;
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
             
+            if(json.has("delete"))
+            {
+                JSONArray toDelete = json.getJSONArray("delete");
+                for(int i = 0 ; i < toDelete.length(); i++)
+                {
+                    JSONObject val = toDelete.getJSONObject(i);
+                    customEmailMappingService.deleteCustomMapping(val.getString("from"), val.getString("to"));
+                }
+            }
+            
             if(json.has("add"))
             {
                 JSONArray toAdd = json.getJSONArray("add");
@@ -64,17 +74,6 @@ public class EmailMapPost extends DeclarativeWebScript
                 }
             }
             
-            if(json.has("delete"))
-            {
-                JSONArray toDelete = json.getJSONArray("delete");
-                for(int i = 0 ; i < toDelete.length(); i++)
-                {
-                    JSONObject val = toDelete.getJSONObject(i);
-                    customEmailMappingService.deleteCustomMapping(val.getString("from"), val.getString("to"));
-                }
-            }
-            
-                
             // Set the return value.
             Set<CustomMapping> emailMap = customEmailMappingService.getCustomMappings();
             // create model object with the lists model

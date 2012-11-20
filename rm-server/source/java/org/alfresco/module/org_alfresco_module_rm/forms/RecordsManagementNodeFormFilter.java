@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.forms;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -263,20 +264,31 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
         for (FieldDefinition fieldDef : fieldDefs)
         {
-            if (fieldDef.getName().equals("cm:title") || 
-                fieldDef.getName().equals("cm:author") ||
-                fieldDef.getName().equals("rma:originator") ||
-                fieldDef.getName().equals("rma:publicationDate") ||
-                fieldDef.getName().equals("rma:dateReceived") ||
-                fieldDef.getName().equals("rma:address") ||
-                fieldDef.getName().equals("rma:otherAddress"))
-            {
-                fieldDef.setProtectedField(true);
+            String prefixName = fieldDef.getName();
+            
+            // check the value of the property, if empty then do not mark property 
+            // as read only
+            QName qname = QName.createQName(prefixName, namespaceService);
+            Serializable value = nodeService.getProperty(nodeRef, qname);
+            if (value != null)
+            {            
+                if (prefixName.equals("cm:title") || 
+                    prefixName.equals("cm:author") ||
+                    prefixName.equals("rma:originator") ||
+                    prefixName.equals("rma:publicationDate") ||
+                    prefixName.equals("rma:dateReceived") ||
+                    prefixName.equals("rma:address") ||
+                    prefixName.equals("rma:otherAddress"))
+                {
+                    fieldDef.setProtectedField(true);
+                }
             }
         }
         
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled() == true)
+        {
             logger.debug("Set email related fields to be protected");
+        }
     }
     
     /**

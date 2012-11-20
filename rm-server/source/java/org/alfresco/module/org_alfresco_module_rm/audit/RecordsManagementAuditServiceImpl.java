@@ -129,6 +129,8 @@ public class RecordsManagementAuditServiceImpl
     private static final String MSG_WEB_RECORD = "rm.audit.web-record";
     private static final String MSG_TRAIL_FILE_FAIL = "rm.audit.trail-file-fail";
     private static final String MSG_AUDIT_REPORT = "rm.audit.audit-report";
+    private static final String MSG_CREATE_DISPOSITION_SCHEDULE = "rm.audit.create-disposition-schedule";
+    private static final String MSG_UNFREEZE = "rm.audit.unfreeze";
     
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
@@ -320,6 +322,10 @@ public class RecordsManagementAuditServiceImpl
                     new AuditEvent("applyDigitalPhotographRecord", MSG_PHOTO_RECORD));
         this.auditEvents.put("applyWebRecord", 
                     new AuditEvent("applyWebRecord", MSG_WEB_RECORD));
+        this.auditEvents.put("createDispositionSchedule", 
+                    new AuditEvent("createDispositionSchedule", MSG_CREATE_DISPOSITION_SCHEDULE));
+        this.auditEvents.put("unfreeze", 
+                    new AuditEvent("unfreeze", MSG_UNFREEZE));
     }
     
     @Override

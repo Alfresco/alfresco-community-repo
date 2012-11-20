@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
@@ -68,9 +66,12 @@ public class DispositionLifecycleGet extends DispositionAbstractBase
         DispositionAction nextAction = this.dispositionService.getNextDispositionAction(nodeRef);
         if (nextAction == null)
         {
-            status.setCode(HttpServletResponse.SC_NOT_FOUND, 
-                        "Node " + nodeRef.toString() + " does not have a disposition lifecycle");
-            return null;
+           Map<String, Object> nextActionModel = new HashMap<String, Object>(2);
+           nextActionModel.put("notFound", true);
+           nextActionModel.put("message", "Node " + nodeRef.toString() + " does not have a disposition lifecycle");
+           Map<String, Object> model = new HashMap<String, Object>(1);
+           model.put("nextaction", nextActionModel);
+           return model;
         }
         else
         {

@@ -814,7 +814,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_EVENTS,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_METADATA,
-                                AccessStatus.ALLOWED);
+                                AccessStatus.DENIED);
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,

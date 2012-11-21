@@ -10,9 +10,7 @@
 <!-- and enforce security based on the currently authenticated user.                     -->
 <!--                                                                                     -->
 
-
 <beans>
-
 
     <!-- ===================== -->
     <!-- Permissions Model DAO -->
@@ -966,6 +964,7 @@
                org.alfresco.service.cmr.site.SiteService.findSites=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.getContainer=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.getMembersRole=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.getMembersRoleInfo=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.getSite=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.getSiteGroup=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.getSiteRoleGroup=ACL_ALLOW

@@ -1561,7 +1561,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 String roleFilter, int size, boolean collapseGroups)
     {
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
-        if (siteNodeRef == null) { throw new SiteDoesNotExistException(shortName); }
+        if (siteNodeRef == null)
+        {
+            throw new SiteDoesNotExistException(shortName);
+        }
 
         // Build an array of name filter tokens pre lowercased to test against person properties
         // We require that matching people have at least one match against one of these on
@@ -1758,6 +1761,57 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         Pattern p=Pattern.compile(paternStr.toString(), Pattern.CASE_INSENSITIVE);
         Matcher matcher=p.matcher(compareString);
         return matcher.matches();
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#getMembersRoleInfo(java.lang.String, java.lang.String)
+     */
+    public SiteMemberInfo getMembersRoleInfo(String shortName, String authorityName)
+    {
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null)
+        {
+            throw new SiteDoesNotExistException(shortName);
+        }
+        
+        SiteMemberInfo membership = null;
+        
+        QName siteType = directNodeService.getType(siteNodeRef);
+        Set<String> permissions = this.permissionService.getSettablePermissions(siteType);
+        for (String role : permissions)
+        {
+            if (membership == null)
+            {
+                String roleGroup = getSiteRoleGroup(shortName, role, true);
+                Set<String> authorities = this.authorityService.getContainedAuthorities(null, roleGroup, true);
+                if (authorities.contains(authorityName))
+                {
+                    // found a direct membership for this user - return this role info
+                    membership = new SiteMemberInfoImpl(authorityName, role, false);
+                }
+                else
+                {
+                    // else test each group returned to see if the user is contained within it
+                    for (String authority : authorities)
+                    {
+                        switch (AuthorityType.getAuthorityType(authority))
+                        {
+                            case GROUP:
+                                Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+                                if (users.contains(authorityName))
+                                {
+                                    membership = new SiteMemberInfoImpl(authorityName, role, true);
+                                    // skip out - one confirmed role membership is enough information
+                                    break;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return membership;
     }
 
     /**

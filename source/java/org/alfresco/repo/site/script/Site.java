@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteMemberInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
@@ -361,7 +362,7 @@ public class Site implements Serializable
     }
     
     /**
-     * Gets a user's role on this site.
+     * Gets a user's role in this site.
      * <p>
      * If the user is not a member of the site then null is returned.
      * 
@@ -371,6 +372,19 @@ public class Site implements Serializable
     public String getMembersRole(String authorityName)
     {
         return this.siteService.getMembersRole(getShortName(), authorityName);
+    }
+    
+    /**
+     * Gets extended information on the user's role in this site.
+     * <p>
+     * If the user is not a member of the site then null is returned.
+     * 
+     * @param authorityName  authority name
+     * @return SiteMemberInfo   user's role information or null if not a member
+     */
+    public SiteMemberInfo getMembersRoleInfo(String authorityName)
+    {
+        return this.siteService.getMembersRoleInfo(getShortName(), authorityName);
     }
     
     /**

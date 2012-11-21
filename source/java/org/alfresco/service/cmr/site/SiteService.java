@@ -272,6 +272,16 @@ public interface SiteService
     String getMembersRole(String shortName, String authorityName);
     
     /**
+     * Gets the extended role information of the specified user.
+     * 
+     * @param shortName     site short name
+     * @param authorityName full authority name (so if it's a group then its prefixed with 'GROUP_')
+     * @return SiteMemberInfo   site role information, null if none
+     */
+    @NotAuditable
+    SiteMemberInfo getMembersRoleInfo(String shortName, String authorityName);
+    
+    /**
      * Indicates whether an authority is a member of a site or not
      * 
      * @param shortName     site short name

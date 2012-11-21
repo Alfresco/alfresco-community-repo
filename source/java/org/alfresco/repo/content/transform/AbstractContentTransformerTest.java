@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,6 +44,7 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.ResourceUtils;
 
 /**
  * Provides a base set of tests for testing
@@ -129,12 +129,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
         {
             return null;
         }
-        File file = new File(url.getFile());
-        if (!file.exists())
-        {
-            return null;
-        }
-        return file;
+        return ResourceUtils.getFile(url);
     }
     /**
      * Helper method to load one of the "The quick brown fox" files from the

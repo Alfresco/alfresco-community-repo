@@ -913,9 +913,12 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Boolean doWork() throws Exception
-            { 
-                if (recordsManagementService.isFilePlan(nodeRef) == false &&
-                    recordsManagementService.isRecordsManagementContainer(nodeRef) == true)
+            {
+                if (recordsManagementService.isFilePlan(nodeRef) == true)
+                {
+                   setPermissionDown(nodeRef, authority, permission);
+                }
+                else if (recordsManagementService.isRecordsManagementContainer(nodeRef) == true)
                 {
                     setReadPermissionUp(nodeRef, authority);
                     setPermissionDown(nodeRef, authority, permission);

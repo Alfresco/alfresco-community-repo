@@ -36,8 +36,8 @@ function main()
       }
    }
    
-   // Get the role of the user
-   var role = site.getMembersRole(userName);
+   // Get the role info for the user
+   var role = site.getMembersRoleInfo(userName);
    if (role == null)
    {
       // Person is not a member of the site

@@ -109,6 +109,18 @@ subprojects {
 		}
 	}
 	
+	configurations.all {
+		exclude group: 'com.sun.jdmk', module: 'jmxtools'
+		exclude group: 'com.sun.jmx', module: 'jmxri'
+		exclude group: "javax.mail", module: "mail"
+		exclude group: 'javax.jms', module: 'jms'
+		exclude group: 'maven-plugins', module: 'maven-cobertura-plugin'
+		exclude group: 'maven-plugins', module: 'maven-findbugs-plugin'
+		exclude group: 'org.mybatis', module: 'mybatis'
+		exclude group: 'commons-dbcp', module: 'commons-dbcp'
+		exclude group: 'org.alfresco', module: 'alfresco-web-framework-commons'
+	}
+	
 	dependencies {		     		
 		
 		compile fileTree(dir: explodedLibsDir, include: '*.jar')     	

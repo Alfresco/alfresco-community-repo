@@ -92,11 +92,20 @@ subprojects {
 		}
 		mavenCentral()
 		maven {
-			url "https://artifacts.alfresco.com/nexus/content/groups/internal"
+			url alfrescoMavenUrl
+		}
+		maven {
+			url alfrescoEnterpriseMavenUrl
 			credentials {
-				username 'bamboo'
-				password 'b@mb00'
+				username alfrescoEnterpriseMavenUser
+				password alfrescoEnterpriseMavenPwd
 			}
+		}
+		maven {
+			url 'https://artifacts.alfresco.com/nexus/content/groups/public-snapshots'
+		}
+		maven {
+			url 'https://repository.jboss.org/nexus/content/groups/public'
 		}
 	}
 	

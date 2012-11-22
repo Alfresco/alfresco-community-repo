@@ -300,20 +300,20 @@
 		</property>	
 		<property name="capability" value="Delete"/>      
 	</bean>	  
-	
-	<bean id="jsonConversionComponent.managePermissionsAction"
-	      parent="jsonConversionComponent.baseAction">
-		<property name="name" value="managePermissions"/>
-		<property name="kinds">
-			<set>
-				<value>RECORD_CATEGORY</value>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</set>
-		</property>	
-		<property name="capability" value ="ManageAccessRights"/>
-	</bean>
-	
+
+    <bean id="jsonConversionComponent.managePermissionsAction"
+          parent="jsonConversionComponent.baseAction">
+        <property name="name" value="managePermissions"/>
+        <property name="kinds">
+            <set>
+                <value>FILE_PLAN</value>
+                <value>RECORD_CATEGORY</value>
+                <value>RECORD_FOLDER</value>
+            </set>
+        </property>
+        <property name="capability" value ="ManageAccessRights"/>
+    </bean>
+
 	<bean id="jsonConversionComponent.viewAuditLogAction"
 	      parent="jsonConversionComponent.baseAction">
 		<property name="name" value="viewAuditLog"/>
@@ -538,21 +538,6 @@
 		<property name="name" value="export"/>
 		<property name="capability" value="ViewRecords"/>
 	</bean>
-
-    <bean id="jsonConversionComponent.managePermissions"
-          parent="jsonConversionComponent.baseAction">
-        <property name="name" value="managePerms"/>
-        <property name="kinds">
-            <set>
-                <value>FILE_PLAN</value>
-                <!-- FIXME: Should we enable the button also for record category and record folder
-                <value>RECORD_CATEGORY</value>
-                <value>RECORD_FOLDER</value>
-                -->
-            </set>
-        </property>
-        <property name="capability" value ="ManagePermissions"/>
-    </bean>
 
 	<bean id="jsonConversionComponent.relinquish"
 	      parent="jsonConversionComponent.baseAction">

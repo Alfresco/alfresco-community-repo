@@ -141,19 +141,5 @@
     			<ref bean="rmFileRecordsCapability"/>
     		</list>
     	</property>
-    </bean>
-
-    <bean id="rmManagePermissionsCapability"
-          parent="declarativeCapability">
-        <property name="name" value="ManagePermissions"/>
-        <property name="private" value="true"/>
-        <property name="permission" value="ManageAccessRights"/>
-        <property name="conditions">
-            <map>
-                <entry key="capabilityCondition.frozen" value="false"/>
-                <entry key="capabilityCondition.closed" value="false"/>
-                <entry key="capabilityCondition.filling" value="true"/>
-            </map>
-        </property>
     </bean> 
 </beans>

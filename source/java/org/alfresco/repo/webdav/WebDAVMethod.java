@@ -1046,6 +1046,11 @@ public abstract class WebDAVMethod
             String nodeETag = getDAVHelper().makeQuotedETag(fileInfo);
             NodeRef nodeRef = fileInfo.getNodeRef();
 
+            // Regardless of WebDAV locks, if we can't write to this node, then it's locked!
+            if (getDAVHelper().isLockedAndReadOnly(nodeRef))
+            {
+                throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+            }
         
             // Handle the case where there are no conditions and no lock token stored on the node. Node just needs to be writable with no shared locks
             if (m_conditions == null)
@@ -1053,7 +1058,7 @@ public abstract class WebDAVMethod
                 // ALF-3681 fix. WebDrive 10 client doesn't send If header when locked resource is updated so check the node by lockOwner.
                 if (!nodeLockInfo.isExclusive() || (m_userAgent != null && m_userAgent.equals(WebDAV.AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV)))
                 {
-                    if (getDAVHelper().isLockedOrReadOnly(nodeRef) || (!ignoreShared && nodeLockInfo.isShared() && !nodeLockInfo.getSharedLockTokens().isEmpty()))
+                    if (!ignoreShared && nodeLockInfo.isShared() && !nodeLockInfo.getSharedLockTokens().isEmpty())
                     {
                         throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
                     }
@@ -1062,10 +1067,8 @@ public abstract class WebDAVMethod
             }
 
             // Checking of the If tag consists of two checks:
-            // 1. If the node is locked we need to check it's Lock token independently of conditions check result.
-            //    For example "(<wrong token>) (Not <DAV:no-lock>)" if always true,
-            //    but request must fail with 423 Locked response because node is locked.
-            // 2. Check if ANY of the conditions in If header true.
+            // 1. Check the appropriate lock token for the node has been supplied (if the node is locked)
+            // 2. If there are conditions, check at least one condition (corresponding to this node) is satisfied.
             checkLockToken(nodeLockInfo, ignoreShared, lockMethod);
             checkConditions(nodeLockInfo.getExclusiveLockToken(), nodeETag);
             
@@ -1188,9 +1191,9 @@ public abstract class WebDAVMethod
         // Checks If header conditions.
         // Each condition can contain check of ETag and check of Lock token.
 
-        if (m_conditions == null || nodeLockToken == null)
+        if (m_conditions == null)
         {
-            // No conditions were provided with the "If" request header, or this node isn't locked and will not be in the conditions thus the check is successful
+            // No conditions were provided with "If" request header, so check successful
             return;
         }
         
@@ -1216,12 +1219,12 @@ public abstract class WebDAVMethod
             // Check lock tokens that should match
             if (condition.getLockTokensMatch() != null)
             {
-                fMatchLockToken = condition.getLockTokensMatch().contains(nodeLockToken) ? true : false;
+                fMatchLockToken = nodeLockToken == null || condition.getLockTokensMatch().contains(nodeLockToken);
             }
             // Check lock tokens that shouldn't match
             if (condition.getLockTokensNotMatch() != null)
             {
-                fMatchLockToken = condition.getLockTokensNotMatch().contains(nodeLockToken) ? false : true;
+                fMatchLockToken = nodeLockToken == null || !condition.getLockTokensNotMatch().contains(nodeLockToken);
             }
 
             if (fMatchETag && fMatchLockToken)

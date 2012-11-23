@@ -31,11 +31,11 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.webdav.WebDavService;
 import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.extensions.surf.util.URLDecoder;
 
 /**
  * Implements the WebDAV PUT method
@@ -154,6 +154,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         FileFolderService fileFolderService = getFileFolderService();
 
         // Get the status for the request path
+        LockInfo nodeLockInfo = null;
         try
         {
             contentNodeInfo = getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
@@ -163,11 +164,11 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                 throw new WebDAVServerException(HttpServletResponse.SC_BAD_REQUEST);
             }
 
-            checkNode(contentNodeInfo);
+            nodeLockInfo = checkNode(contentNodeInfo);
             
-            // 'Unhide' hidden nodes and behave as though we created them
+            // 'Unhide' nodes hidden by us and behave as though we created them
             NodeRef contentNodeRef = contentNodeInfo.getNodeRef();
-            if (isHidden(contentNodeRef))
+            if (isHidden(contentNodeRef) && !getDAVHelper().isRenameShuffle(getPath()))
             {
                 setHidden(contentNodeRef, false);
                 created = true;
@@ -222,9 +223,26 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                 lockInfo.getRWLock().readLock().unlock();            
             }
         }
+        // ALF-16808: We disable the versionable aspect if we are overwriting
+        // empty content because it's probably part of a compound operation to
+        // create a new single version
+        boolean disabledVersioning = false;
         
         try
         {
+            // Disable versioning if we are overwriting an empty file with content
+            NodeRef nodeRef = contentNodeInfo.getNodeRef();
+            ContentData contentData = (ContentData)getNodeService().getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            if ((contentData == null || contentData.getSize() == 0) && getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+            {
+                getDAVHelper().getPolicyBehaviourFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                disabledVersioning = true;
+            }
+            // ALF-16756: To avoid firing inbound rules too early (while a node is still locked) apply the no content aspect
+            if (nodeLockInfo != null && nodeLockInfo.isExclusive() && !ContentData.hasContent(contentData))
+            {
+                getNodeService().addAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_NO_CONTENT, null);
+            }
             // Access the content
             ContentWriter writer = fileFolderService.getWriter(contentNodeInfo.getNodeRef());
         
@@ -289,8 +307,16 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             }
             throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
         }
-        
+        finally
+        {
+            if (disabledVersioning)
+            {
+                getDAVHelper().getPolicyBehaviourFilter().enableBehaviour(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_VERSIONABLE);
+            }
+        }
+
         postActivity();
+
     }
     
     /**

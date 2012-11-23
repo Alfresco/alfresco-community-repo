@@ -236,6 +236,10 @@ public class UnlockMethod extends WebDAVMethod
     // and tries to tidy down as it exits.
     private void removeNoContentAspect(NodeRef nodeRef)
     {
+        if (getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
+        {
+            getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT);
+        }
         if (getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT))
         {
             getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_WEBDAV_NO_CONTENT);

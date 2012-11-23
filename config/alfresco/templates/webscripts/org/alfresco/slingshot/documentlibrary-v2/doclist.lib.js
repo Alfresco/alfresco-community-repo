@@ -241,7 +241,7 @@ function doclist_main()
          {
             locationNode = item.isLink ? item.linkedNode : item.node;
             // Ensure we have Read permissions on the destination on the link object
-            if (!locationNode.hasPermission("Read")) break;
+            if (!locationNode.hasPermission("Read")) continue;
             location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
             // Parent node
             if (node.parent != null && node.parent.isContainer && node.parent.hasPermission("Read"))

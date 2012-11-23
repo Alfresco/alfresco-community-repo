@@ -65,6 +65,9 @@
       <property name="tenantService">
          <ref bean="tenantService" />
       </property>
+      <property name="policyBehaviourFilter">
+         <ref bean="policyBehaviourFilter" />
+      </property>
       <property name="renameShufflePattern">
          <value>${system.webdav.renameShufflePattern}</value>
       </property>

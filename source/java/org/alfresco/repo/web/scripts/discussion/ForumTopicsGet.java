@@ -65,7 +65,7 @@ public class ForumTopicsGet extends AbstractDiscussionWebScript
       }
       
       // Get the topics
-      boolean oldestTopicsFirst = true;
+      boolean oldestTopicsFirst = false;
       PagingResults<TopicInfo> topics = null;
       PagingRequest paging = buildPagingRequest(req);
       if (tagSearch)

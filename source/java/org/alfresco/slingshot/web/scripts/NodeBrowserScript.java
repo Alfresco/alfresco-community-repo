@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -676,7 +677,14 @@ public class NodeBrowserScript extends DeclarativeWebScript
 		
 		public String getPrefixedName()
 		{
-			return name.toPrefixString(getNamespaceService());
+			try
+			{
+				return name.toPrefixString(getNamespaceService());
+			}
+			catch(NamespaceException e)
+			{
+				return name.getLocalName();
+			}
 		}
 		
 		public String toString()

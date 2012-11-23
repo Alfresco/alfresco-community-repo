@@ -11,6 +11,7 @@
 	"lastName": <#if p.lastName??>"${p.lastName}"<#else>null</#if>,
 	"jobtitle": <#if p.jobtitle??>"${p.jobtitle}"<#else>null</#if>,
 	"organization": <#if p.organization??>"${p.organization}"<#else>null</#if>,
+	"organizationId": <#if p.organizationId??>"${p.organizationId}"<#else>null</#if>, 
 	"location": <#if p.location??>"${p.location}"<#else>null</#if>,
 	"telephone": <#if p.telephone??>"${p.telephone}"<#else>null</#if>,
 	"mobile": <#if p.mobile??>"${p.mobile}"<#else>null</#if>,

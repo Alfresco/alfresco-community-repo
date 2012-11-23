@@ -36,6 +36,7 @@ import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -113,6 +114,9 @@ public class WebDAVHelper
     //  Empty XML attribute list
     
     private final AttributesImpl m_nullAttribs = new AttributesImpl();
+        
+    private BehaviourFilter m_policyBehaviourFilter;
+
     private String m_urlPathPrefix;
         
     /**
@@ -341,6 +345,17 @@ public class WebDAVHelper
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.m_hiddenAspect = hiddenAspect;
+    }
+
+    
+    public BehaviourFilter getPolicyBehaviourFilter()
+    {
+        return m_policyBehaviourFilter;
+    }
+
+    public void setPolicyBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        m_policyBehaviourFilter = behaviourFilter;
     }
 
     /**
@@ -1089,11 +1104,11 @@ public class WebDAVHelper
     /**
      * Indicates if the node is unlocked or the current user has a WRITE_LOCK<p>
      * 
-     * @see LockService#isLockedOrReadOnly(NodeRef)
+     * @see LockService#isLockedAndReadOnly(NodeRef)
      * 
      * @param nodeRef    the node reference
      */
-    public boolean isLockedOrReadOnly(final NodeRef nodeRef)
+    public boolean isLockedAndReadOnly(final NodeRef nodeRef)
     {
         return LockUtils.isLockedAndReadOnly(nodeRef, m_serviceRegistry.getLockService());
     }

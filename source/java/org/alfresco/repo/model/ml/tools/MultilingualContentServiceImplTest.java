@@ -164,6 +164,59 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         assertEquals("Pivot node ref not correct", frenchContentNodeRef, multilingualContentService.getPivotTranslation(mlContainerNodeRef));
     }
 
+    /**
+     * Testing unmakeTranslation
+     * @throws Exception
+     */
+    public void testUnmakeTranslation() throws Exception
+    {
+        NodeRef frenchContentNodeRef = createContent();
+        multilingualContentService.makeTranslation(frenchContentNodeRef, Locale.FRENCH);
+        NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(frenchContentNodeRef);
+        
+        NodeRef englishContentNodeRef = createContent();
+        multilingualContentService.addTranslation(englishContentNodeRef, frenchContentNodeRef, Locale.ENGLISH);
+        
+        NodeRef germanContentNodeRef = createContent();
+        multilingualContentService.addTranslation(germanContentNodeRef, frenchContentNodeRef, Locale.GERMAN);
+        
+        multilingualContentService.unmakeTranslation(englishContentNodeRef);
+        multilingualContentService.unmakeTranslation(germanContentNodeRef);
+        //multilingualContentService.unmakeTranslation(frenchContentNodeRef);
+        
+        //calling unmakeTranslation() dissolves the multiligual document.
+        //none of the documents composing the multilingual document
+        assertTrue("The document should not be multilingual!",
+                !multilingualContentService.isTranslation(englishContentNodeRef) &&
+                !multilingualContentService.isTranslation(germanContentNodeRef));
+    }   
+    
+    /**
+     * Testing unmakeTranslation() on pivot
+     * @throws Exception
+     */
+    public void testUnmakeTranslationOnPivot() throws Exception
+    {
+        NodeRef frenchContentNodeRef = createContent();
+        multilingualContentService.makeTranslation(frenchContentNodeRef, Locale.FRENCH);
+        NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(frenchContentNodeRef);
+        
+        NodeRef englishContentNodeRef = createContent();
+        multilingualContentService.addTranslation(englishContentNodeRef, frenchContentNodeRef, Locale.ENGLISH);
+        
+        NodeRef germanContentNodeRef = createContent();
+        multilingualContentService.addTranslation(germanContentNodeRef, frenchContentNodeRef, Locale.GERMAN);
+        
+        multilingualContentService.unmakeTranslation(frenchContentNodeRef);
+        
+        //calling unmakeTranslation() dissolves the multiligual document.
+        //none of the documents composing the multilingual document
+        assertTrue("The document should not be multilingual!",
+                !multilingualContentService.isTranslation(frenchContentNodeRef) &&
+                !multilingualContentService.isTranslation(englishContentNodeRef) &&
+                !multilingualContentService.isTranslation(germanContentNodeRef));
+    }
+    
     @SuppressWarnings("unused")
     public void testCreateEmptyTranslation() throws Exception
     {

@@ -2484,6 +2484,12 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>5010</value></property>
         <property name="targetSchema"><value>5011</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.migrateTenantsFromAttrsToTable" />
+                <ref bean="patch.migrateAttrTenants" />
+            </list>
+        </property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>

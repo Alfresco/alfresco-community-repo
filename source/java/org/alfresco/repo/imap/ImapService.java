@@ -315,6 +315,8 @@ public interface ImapService
      */
     public void extractAttachments(NodeRef messageRef, MimeMessage originalMessage) throws IOException, MessagingException;
     
+    public String generateUniqueFilename(NodeRef destFolderNodeRef, String fileName);
+
     static class FolderStatus
     {        
         public final int messageCount;

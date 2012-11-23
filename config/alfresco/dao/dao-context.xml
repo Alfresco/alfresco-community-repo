@@ -287,8 +287,6 @@
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="aclCrudDAO" ref="aclCrudDAO"/>
       <property name="aclCache" ref="aclCache"/>
-      <property name="readersCache" ref="readersCache"/>
-      <property name="readersDeniedCache" ref="readersDeniedCache"/>
       <property name="nodeDAO" ref="nodeDAO"/>
       <property name="tenantService" ref="tenantService"/>
    </bean>

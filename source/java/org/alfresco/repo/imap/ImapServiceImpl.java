@@ -2107,6 +2107,29 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
         attachmentsExtractor.extractAttachments(messageRef, originalMessage);
     }
 
+    public String generateUniqueFilename(NodeRef destFolderNodeRef, String fileName)
+    {
+        if(fileFolderService.searchSimple(destFolderNodeRef, fileName) != null)
+        {
+            String name = fileName;
+            String ext = "";
+            if (fileName.lastIndexOf(".") != -1)
+            {
+                int index = fileName.lastIndexOf(".");
+                name = fileName.substring(0, index);
+                ext = fileName.substring(index);
+            }
+            int copyNum = 0;
+            do
+            {
+                copyNum++;
+            } while (fileFolderService.searchSimple(destFolderNodeRef, name + " (" + copyNum + ")" + ext) != null);
+                fileName =  name + " (" + copyNum + ")" + ext;
+        }
+     	
+        return fileName;
+    }
+    
     static class CacheItem
     {
         private Date modified;

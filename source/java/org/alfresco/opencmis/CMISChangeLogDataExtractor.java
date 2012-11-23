@@ -26,6 +26,7 @@ import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -100,10 +101,15 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
     private NodeRef getNodeRef(Serializable data)
     {
         NodeRef nodeRef = null;
-        if (data instanceof FileInfo)
+        if (data instanceof ChildAssociationRef)
+        {
+            nodeRef = ((ChildAssociationRef) data).getChildRef();
+        }
+        else if (data instanceof FileInfo)
         {
             nodeRef = ((FileInfo) data).getNodeRef();
-        } else if (data instanceof NodeRef)
+        }
+        else if (data instanceof NodeRef)
         {
             nodeRef = (NodeRef) data;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,6 +21,8 @@ package org.alfresco.repo.domain.permissions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,11 +72,8 @@ public class AclDAOImpl implements AclDAO
     private AclCrudDAO aclCrudDAO;
     private NodeDAO nodeDAO;
     private TenantService tenantService;
-    private SimpleCache<Long, AccessControlList> aclCache;
-    private SimpleCache<Serializable, Set<String>> readersCache;
+    private SimpleCache<Serializable, AccessControlList> aclCache;
     
-    private SimpleCache<Serializable, Set<String>> readersDeniedCache;
-
     private enum WriteMode
     {
         /**
@@ -132,25 +131,9 @@ public class AclDAOImpl implements AclDAO
      * 
      * @param aclCache
      */
-    public void setAclCache(SimpleCache<Long, AccessControlList> aclCache)
+    public void setAclCache(SimpleCache<Serializable, AccessControlList> aclCache)
     {
         this.aclCache = aclCache;
-    }
-
-    /**
-     * @param readersCache the readersCache to set
-     */
-    public void setReadersCache(SimpleCache<Serializable, Set<String>> readersCache)
-    {
-        this.readersCache = readersCache;
-    }
-    
-    /**
-     * @param readersDeniedCache the readersDeniedCache to set
-     */
-    public void setReadersDeniedCache(SimpleCache<Serializable, Set<String>> readersDeniedCache)
-    {
-        this.readersDeniedCache = readersDeniedCache;
     }
 
     /**
@@ -348,8 +331,8 @@ public class AclDAOImpl implements AclDAO
         }
         getWritable(created, toInherit, excluded, toAdd, toInherit, false, changes, WriteMode.CREATE_AND_INHERIT);
 
-
-        return createdAcl;
+        // Fetch an up-to-date version
+        return getAcl(created);
     }
 
     private void getWritable(
@@ -442,9 +425,6 @@ public class AclDAOImpl implements AclDAO
         AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         if (!acl.isLatest())
         {
-            aclCache.remove(id);
-            readersCache.remove(id);
-            readersDeniedCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
 
@@ -493,9 +473,6 @@ public class AclDAOImpl implements AclDAO
             }
             acl.setAclChangeSetId(getCurrentChangeSetId());
             aclCrudDAO.updateAcl(acl);
-            aclCache.remove(id);
-            readersCache.remove(id);
-            readersDeniedCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
         else if ((acl.getAclChangeSetId() == getCurrentChangeSetId()) && (!requiresVersion) && (!acl.getRequiresVersion()))
@@ -533,9 +510,6 @@ public class AclDAOImpl implements AclDAO
                 acl.setInheritsFrom(inheritsFrom);
             }
             aclCrudDAO.updateAcl(acl);
-            aclCache.remove(id);
-            readersCache.remove(id);
-            readersDeniedCache.remove(id);
             return new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType());
         }
         else
@@ -623,9 +597,6 @@ public class AclDAOImpl implements AclDAO
             acl.setLatest(Boolean.FALSE);
             acl.setRequiresVersion(Boolean.FALSE);
             aclCrudDAO.updateAcl(acl);
-            aclCache.remove(id);
-            readersCache.remove(id);
-            readersDeniedCache.remove(id);
             return new AclChangeImpl(id, created, acl.getAclType(), newAcl.getAclType());
         }
     }
@@ -751,13 +722,13 @@ public class AclDAOImpl implements AclDAO
     @Override
     public List<AclChange> deleteAccessControlEntries(final String authority)
     {
-        List<AclChange> acls = new ArrayList<AclChange>();
+        List<AclChange> aclChanges = new LinkedList<AclChange>();
 
         // get authority
         Authority authEntity = aclCrudDAO.getAuthority(authority);
         if (authEntity == null)
         {
-            return acls;
+            return aclChanges;
         }
 
         List<Long> aces = new ArrayList<Long>();
@@ -767,6 +738,7 @@ public class AclDAOImpl implements AclDAO
         boolean leaveAuthority = false;
         if (members.size() > 0)
         {
+            Set<AclUpdateEntity> acls = new HashSet<AclUpdateEntity>(members.size() * 2);
             List<Long> membersToDelete = new ArrayList<Long>(members.size());
 
             // fix up members and extract acls and aces
@@ -817,12 +789,9 @@ public class AclDAOImpl implements AclDAO
                 
                 if (!hasAnotherTenantNodes)
                 {
-                    aclCache.remove(aclId);
-                    readersCache.remove(aclId);
-                    readersDeniedCache.remove(aclId);
-
-                    Acl list = aclCrudDAO.getAcl(aclId);
-                    acls.add(new AclChangeImpl(aclId, aclId, list.getAclType(), list.getAclType()));
+                    AclUpdateEntity list = aclCrudDAO.getAclForUpdate(aclId);
+                    aclChanges.add(new AclChangeImpl(aclId, aclId, list.getAclType(), list.getAclType()));
+                    acls.add(list);
                     membersToDelete.add(aclMemberId);
                     aces.add((Long)aceId);
                 }
@@ -830,6 +799,13 @@ public class AclDAOImpl implements AclDAO
 
             // delete list of acl members
             aclCrudDAO.deleteAclMembers(membersToDelete);
+
+            // Remember to 'touch' all affected ACLs
+            for (AclUpdateEntity acl : acls)
+            {
+                acl.setAclChangeSetId(getCurrentChangeSetId());
+                aclCrudDAO.updateAcl(acl);
+            }
         }
 
         if (!leaveAuthority)
@@ -859,7 +835,7 @@ public class AclDAOImpl implements AclDAO
             }
         }
 
-        return acls;
+        return aclChanges;
     }
 
     /**
@@ -874,10 +850,6 @@ public class AclDAOImpl implements AclDAO
             // delete acl members & acl
             aclCrudDAO.deleteAclMembersByAcl(aclId);
             aclCrudDAO.deleteAcl(aclId);
-
-            aclCache.remove(aclId);
-            readersCache.remove(aclId);
-            readersDeniedCache.remove(aclId);
         }
         if (dbAcl.getAclType() == ACLType.SHARED)
         {
@@ -893,10 +865,6 @@ public class AclDAOImpl implements AclDAO
                         // delete acl members & acl
                         aclCrudDAO.deleteAclMembersByAcl(aclId);
                         aclCrudDAO.deleteAcl(aclId);
-
-                        aclCache.remove(aclId);
-                        readersCache.remove(aclId);
-                        readersDeniedCache.remove(aclId);
                     }
                 }
                 else
@@ -1008,10 +976,6 @@ public class AclDAOImpl implements AclDAO
             aclCrudDAO.deleteAcl(acl.getId());
         }
 
-        // remove the deleted acl from the cache
-        aclCache.remove(id);
-        readersCache.remove(id);
-        readersDeniedCache.remove(id);
         acls.add(new AclChangeImpl(id, null, acl.getAclType(), null));
         return acls;
     }
@@ -1075,37 +1039,31 @@ public class AclDAOImpl implements AclDAO
         return aclCrudDAO.getAcl(id);
     }
 
+    @Override
+    public void setCheckAclConsistency()
+    {
+        aclCrudDAO.setCheckAclConsistency();
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public AccessControlList getAccessControlList(Long id)
     {
-        AccessControlList acl = aclCache.get(id);
-        if (acl == null)
-        {
-            acl = getAccessControlListImpl(id);
-            aclCache.put(id, acl);
-        }
-        else
-        {
-            // System.out.println("Used cache for "+id);
-        }
-        return acl;
-    }
-
-    /**
-     * @return the access control list
-     */
-    private AccessControlList getAccessControlListImpl(final Long id)
-    {
-        SimpleAccessControlList acl = new SimpleAccessControlList();
+        // Used the cached properties as our cache key
         AccessControlListProperties properties = getAccessControlListProperties(id);
         if (properties == null)
         {
             return null;
         }
+        AccessControlList aclCached = aclCache.get((Serializable)properties);
+        if (aclCached != null)
+        {
+            return aclCached;
+        }
 
+        SimpleAccessControlList acl = new SimpleAccessControlList();
         acl.setProperties(properties);
 
         List<Map<String, Object>> results = aclCrudDAO.getAcesAndAuthoritiesByAcl(id);
@@ -1143,6 +1101,9 @@ public class AclDAOImpl implements AclDAO
 
         Collections.sort(entries);
         acl.setEntries(entries);
+        
+        // Cache it for next time
+        aclCache.put((Serializable)properties, acl);
 
         return acl;
     }
@@ -1153,7 +1114,6 @@ public class AclDAOImpl implements AclDAO
     @Override
     public Long getInheritedAccessControlList(Long id)
     {
-        aclCache.remove(id);
         AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         if (acl.getAclType() == ACLType.OLD)
         {
@@ -1355,9 +1315,6 @@ public class AclDAOImpl implements AclDAO
             acl.setInherits(Boolean.TRUE);
             acl.setAclChangeSetId(getCurrentChangeSetId());
             aclCrudDAO.updateAcl(acl);
-            aclCache.remove(id);
-            readersCache.remove(id);
-            readersDeniedCache.remove(id);
             changes.add(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
             return changes;
         case SHARED:
@@ -1394,7 +1351,6 @@ public class AclDAOImpl implements AclDAO
     @Override
     public List<AclChange> disableInheritance(Long id, boolean setInheritedOnAcl)
     {
-        aclCache.remove(id);
         AclUpdateEntity acl = aclCrudDAO.getAclForUpdate(id);
         List<AclChange> changes = new ArrayList<AclChange>(1);
         switch (acl.getAclType())
@@ -1406,9 +1362,6 @@ public class AclDAOImpl implements AclDAO
             acl.setInherits(Boolean.FALSE);
             acl.setAclChangeSetId(getCurrentChangeSetId());
             aclCrudDAO.updateAcl(acl);
-            aclCache.remove(id);
-            readersCache.remove(id);
-            readersDeniedCache.remove(id);
             changes.add(new AclChangeImpl(id, id, acl.getAclType(), acl.getAclType()));
             return changes;
         case SHARED:
@@ -1442,9 +1395,6 @@ public class AclDAOImpl implements AclDAO
             aclToCopy.setRequiresVersion(true);
             aclToCopy.setAclChangeSetId(getCurrentChangeSetId());
             aclCrudDAO.updateAcl(aclToCopy);
-            aclCache.remove(toCopy);
-            readersCache.remove(toCopy);
-            readersDeniedCache.remove(toCopy);
             inheritedId = getInheritedAccessControlList(toCopy);
             if ((inheritedId != null) && (!inheritedId.equals(toCopy)))
             {
@@ -1452,9 +1402,6 @@ public class AclDAOImpl implements AclDAO
                 inheritedAcl.setRequiresVersion(true);
                 inheritedAcl.setAclChangeSetId(getCurrentChangeSetId());
                 aclCrudDAO.updateAcl(inheritedAcl);
-                aclCache.remove(inheritedId);
-                readersCache.remove(inheritedId);
-                readersDeniedCache.remove(inheritedId);
             }
             return toCopy;
         case REDIRECT:

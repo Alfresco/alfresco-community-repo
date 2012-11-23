@@ -44,7 +44,7 @@ public class RuleTriggerTest extends BaseSpringTest
     private static final String ON_DELETE_CHILD_ASSOCIATION_TRIGGER = "on-delete-child-association-trigger";
     private static final String ON_CREATE_ASSOCIATION_TRIGGER = "on-create-association-trigger";
     private static final String ON_DELETE_ASSOCIATION_TRIGGER = "on-delete-association-trigger";
-    private static final String ON_CONTENT_UPDATE_TRIGGER = "on-content-update-trigger";
+    private static final String ON_PROPERTY_UPDATE_TRIGGER = "on-property-update-trigger";
     private static final String ON_CONTENT_CREATE_TRIGGER = "on-content-create-trigger";
 
     private NodeService nodeService;
@@ -228,12 +228,22 @@ public class RuleTriggerTest extends BaseSpringTest
     
     public void testOnContentCreateTrigger()
     {
+        TestRuleType nodeCreate = createTestRuleType(ON_CREATE_NODE_TRIGGER);
+        assertFalse(nodeCreate.rulesTriggered);
+
         NodeRef nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTENT).getChildRef();
         
+        assertTrue(nodeCreate.rulesTriggered);
+
+        // Terminate the transaction
+        setComplete();
+        endTransaction();
+        startNewTransaction();
+
         TestRuleType contentCreate = createTestRuleType(ON_CONTENT_CREATE_TRIGGER);
         assertFalse(contentCreate.rulesTriggered);
         
@@ -260,14 +270,19 @@ public class RuleTriggerTest extends BaseSpringTest
     
     public void testOnContentUpdateTrigger()
     {
-         NodeRef nodeRef = this.nodeService.createNode(
+        TestRuleType nodeCreate = createTestRuleType(ON_CREATE_NODE_TRIGGER);
+        assertFalse(nodeCreate.rulesTriggered);
+
+        NodeRef nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTENT).getChildRef();
+
+        assertTrue(nodeCreate.rulesTriggered);
         
         TestRuleType contentCreate = createTestRuleType(ON_CONTENT_CREATE_TRIGGER);
-        TestRuleType contentUpdate = createTestRuleType(ON_CONTENT_UPDATE_TRIGGER);
+        TestRuleType contentUpdate = createTestRuleType(ON_PROPERTY_UPDATE_TRIGGER);
         assertFalse(contentCreate.rulesTriggered);
         assertFalse(contentUpdate.rulesTriggered);
         
@@ -290,7 +305,7 @@ public class RuleTriggerTest extends BaseSpringTest
         contentWriter2.putContent("more content some content");
         
         // Check to see if the rule type has been triggered
-        assertFalse(contentCreate.rulesTriggered);
+        assertTrue(contentCreate.rulesTriggered);
         assertFalse(
                 "Content update must not fire if the content was created in the same txn.",
                 contentUpdate.rulesTriggered);
@@ -298,6 +313,7 @@ public class RuleTriggerTest extends BaseSpringTest
         // Terminate the transaction
         setComplete();
         endTransaction();
+        contentCreate.rulesTriggered = false;
         
         // Try and trigger the type (again)
         ContentWriter contentWriter3 = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);

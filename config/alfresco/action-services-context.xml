@@ -420,12 +420,6 @@
 
     <bean id="transform-image" class="org.alfresco.repo.action.executer.ImageTransformActionExecuter"
         parent="transform">
-        <property name="imageMagickContentTransformer">
-            <ref bean="transformer.ImageMagick" />
-        </property>
-        <property name="transformerDebug">
-            <ref bean="transformerDebug" />
-        </property>
     </bean>
 
     <bean id="copy" class="org.alfresco.repo.action.executer.CopyActionExecuter" parent="action-executer">
@@ -493,6 +487,12 @@
         </property>
     </bean>
     
+    <bean id="errorProneActionExecutor" class="org.alfresco.repo.activities.feed.ErrorProneActionExecutor" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+   </bean>
+   
     <!-- Import MailService from the OutboundSMTP subsystem (needed for email space/invited users actions) -->
     <bean id="mailService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
         <property name="sourceApplicationContextFactory">

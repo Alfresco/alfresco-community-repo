@@ -17,6 +17,7 @@ import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -88,7 +89,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
     	this.batchSize = batchSize;
     }
     
-    public void setUserNotifier(UserNotifier userNotifier)
+	public void setUserNotifier(UserNotifier userNotifier)
     {
 		this.userNotifier = userNotifier;
 	}
@@ -165,6 +166,11 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         }
 
         String lockToken = getLock(LOCK_TTL);
+        if (lockToken == null)
+        {
+            logger.info("Can't get lock. Assume multiple feed notifiers...");
+            return;
+        }
 
         try
         {
@@ -281,6 +287,21 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 
 	            public void process(final PersonInfo person) throws Throwable
 	            {
+	            	final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+                    txHelper.setMaxRetries(0);
+
+                    txHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+                    {
+                        public Void execute() throws Throwable
+                        {
+			            	processInternal(person);
+			            	return null;
+                        }
+                    }, false, true);
+	            }
+	            
+		        private void processInternal(final PersonInfo person) throws Throwable
+		        {
 	            	final NodeRef personNodeRef = person.getNodeRef();
 
 	                try
@@ -306,7 +327,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 	                    // skip this person - eg. no longer exists ?
 	                    logger.warn("Skip feed notification for user ("+personNodeRef+"): " + inre.getMessage());
 	                }
-	            }
+		        }
 	        };
 
 	        // grab people for the batch processor in chunks of size batchSize

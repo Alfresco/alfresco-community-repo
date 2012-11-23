@@ -4236,6 +4236,54 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
     
     @Override
+    public Set<Long> getCachedAncestors(List<Long> nodeIds)
+    {
+        // First, make sure 'level 1' nodes and their parents are in the cache
+        cacheNodesById(nodeIds);
+        for (Long nodeId : nodeIds)
+        {
+            // Filter out deleted nodes
+            if (exists(nodeId))
+            {
+                getParentAssocsCached(nodeId);
+            }
+        }
+        // Now recurse on all ancestors in the cache
+        Set<Long> ancestors = new TreeSet<Long>();
+        for (Long nodeId : nodeIds)
+        {
+            findCachedAncestors(nodeId, ancestors);
+        }
+        return ancestors;
+    }
+
+    /**
+     * Uses the node and parent assocs cache content to recursively find the set of currently cached ancestor node IDs
+     */
+    private void findCachedAncestors(Long nodeId, Set<Long> ancestors)
+    {
+        if (!ancestors.add(nodeId))
+        {
+            return; // Already visited
+        }
+        Node node = nodesCache.getValue(nodeId);
+        if (node == null)
+        {
+            return; // Not in cache yet - will load in due course
+        }
+        Pair<Long, String> cacheKey = new Pair<Long, String>(nodeId, node.getTransaction().getChangeTxnId());
+        ParentAssocsInfo value = parentAssocsCache.get(cacheKey);
+        if (value == null)
+        {
+            return; // Not in cache yet - will load in due course
+        }
+        for (ChildAssocEntity childAssoc : value.getParentAssocs().values())
+        {
+            findCachedAncestors(childAssoc.getParentNode().getId(), ancestors);
+        }
+    }
+
+    @Override
     public void cacheNodesById(List<Long> nodeIds)
     {
         /*

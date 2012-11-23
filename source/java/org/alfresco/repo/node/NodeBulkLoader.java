@@ -19,6 +19,7 @@
 package org.alfresco.repo.node;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -32,6 +33,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface NodeBulkLoader
 {
+    /**
+     * Gets the current set of cached ancestors of the given list of nodes.
+     * 
+     * @param nodeIds
+     *            a list of node IDs to visit
+     * @return the current set of cached ancestors of the given list of nodes, including the nodes themselves.
+     */
+    public Set<Long> getCachedAncestors(List<Long> nodeIds);
+
     /**
      * Transaction-scope setting to make the Node loader to guarantee the validity of all
      * caches: some cache data will be reloaded; some cache data will be considered safe. 

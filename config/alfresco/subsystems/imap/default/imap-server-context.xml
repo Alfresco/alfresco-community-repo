@@ -115,6 +115,9 @@
         <property name="nodeService">
             <ref bean="NodeService"/>
         </property>
+        <property name="imapService">
+            <ref bean="imapService"/>
+        </property>
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>

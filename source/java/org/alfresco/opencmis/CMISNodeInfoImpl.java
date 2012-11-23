@@ -94,6 +94,15 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         analyseObjectId();
     }
 
+    public CMISNodeInfoImpl(CMISConnector connector, NodeRef nodeRef, VersionHistory versionHistory)
+    {
+        this.connector = connector;
+        this.nodeRef = nodeRef;
+        this.versionHistory = versionHistory;
+
+        analyseNodeRef();
+    }
+    
     public CMISNodeInfoImpl(CMISConnector connector, NodeRef nodeRef)
     {
         this.connector = connector;
@@ -115,10 +124,10 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         return objecVariant != CMISObjectVariant.VERSION;
     }
 
-    protected void analyseVersionNode(NodeRef nodeRef)
+    protected void analyseVersionNode()
     {
         // check version
-        versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
+        versionHistory = getVersionHistory();
         if (versionHistory == null)
         {
             objecVariant = CMISObjectVariant.CURRENT_VERSION;
@@ -301,7 +310,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                     {
                         // the version label refers to a specific non-head version, find the nodeRef
                         // of the version node from the version history
-                        versionHistory = connector.getVersionService().getVersionHistory(nodeRef);
+                        versionHistory = getVersionHistory();
                         if (versionHistory == null)
                         {
                             // unexpected null versionHistory, assume not versioned
@@ -420,7 +429,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         // check version
         if(connector.getVersionService().isAVersion(nodeRef))
         {
-            analyseVersionNode(nodeRef);
+            analyseVersionNode();
         }
         else
         {

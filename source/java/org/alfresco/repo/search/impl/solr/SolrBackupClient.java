@@ -89,7 +89,7 @@ public class SolrBackupClient implements InitializingBean
         String lockToken = getLock(60000);
         if (lockToken == null)
         {
-
+            return;
         }
         // Use a flag to keep track of the running job
         final AtomicBoolean running = new AtomicBoolean(true);

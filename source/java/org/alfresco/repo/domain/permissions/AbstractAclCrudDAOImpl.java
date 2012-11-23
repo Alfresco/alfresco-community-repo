@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
 import org.alfresco.repo.domain.CrcHelper;
@@ -95,6 +96,12 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     private EntityLookupCache<Long, AclEntity, Serializable> aclEntityCache;
     
     /**
+     * Backing transactional cache to allow read-through requests to be honoured
+     */
+    private TransactionalCache<Serializable, Object> aclEntityTransactionalCache;
+    
+    
+    /**
      * Cache for the Authority entity:<br/>
      * KEY: ID (Authority)<br/>
      * VALUE: AuthorityEntity<br/>
@@ -115,12 +122,13 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
      * 
      * @param aclEntityCache            the cache of IDs to AclEntities
      */
-    public void setAclEntityCache(SimpleCache<Serializable, Object> aclEntityCache)
+    public void setAclEntityCache(TransactionalCache<Serializable, Object> aclEntityCache)
     {
         this.aclEntityCache = new EntityLookupCache<Long, AclEntity, Serializable>(
                 aclEntityCache,
                 CACHE_REGION_ACL,
                 aclEntityDaoCallback);
+        this.aclEntityTransactionalCache = aclEntityCache;
     }
     
     /**
@@ -200,6 +208,12 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         return entityPair.getSecond();
     }
     
+    @Override
+    public void setCheckAclConsistency()
+    {
+        aclEntityTransactionalCache.setDisableSharedCacheReadForTransaction(true);
+    }
+
     public AclUpdateEntity getAclForUpdate(long id)
     {
         AclEntity acl = getAclImpl(id);

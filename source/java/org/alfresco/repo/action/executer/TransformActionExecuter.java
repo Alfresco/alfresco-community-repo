@@ -82,6 +82,11 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     private MimetypeService mimetypeService;
     
     /**
+     * Properties (needed to avoid changing method signatures)
+     */
+    protected TransformationOptions options;
+    
+    /**
      * Set the mime type service
      */
     public void setMimetypeService(MimetypeService mimetypeService) 
@@ -172,8 +177,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             throw new RuleServiceException(CONTENT_READER_NOT_FOUND_MESSAGE);
         }
 
-        TransformationOptions options = new TransformationOptions();
-        options.setSourceNodeRef(actionedUponNodeRef);
+        options = newTransformationOptions(ruleAction, actionedUponNodeRef);
         if (null == contentService.getTransformer(contentReader.getContentUrl(), contentReader.getMimetype(), contentReader.getSize(), mimeType, options))
         {
             throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, contentReader.getMimetype(), mimeType));
@@ -243,7 +247,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             }
         }
         
-        boolean newCopy = false;
         if (copyNodeRef == null)
         {
             // Copy the content node
@@ -253,11 +256,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                     destinationAssocTypeQName,
                     destinationAssocQName,
                     false);
-            newCopy = true;
-        }         
-        
-        if (newCopy == true)
-        {
+
             // Adjust the name of the copy
             nodeService.setProperty(copyNodeRef, ContentModel.PROP_NAME, newName);
             String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
@@ -282,6 +281,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             // TODO: Check failure patterns for actions.
             try
             {
+                options.setTargetNodeRef(copyNodeRef);
                 doTransform(ruleAction, actionedUponNodeRef, contentReader, copyNodeRef, contentWriter);
             }
             catch(NoTransformerException e)
@@ -296,6 +296,11 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                 throw new RuleServiceException(TRANSFORMING_ERROR_MESSAGE + e.getMessage());
             }
         }
+    }
+
+    protected TransformationOptions newTransformationOptions(Action ruleAction, NodeRef sourceNodeRef)
+    {
+        return new TransformationOptions(sourceNodeRef, ContentModel.PROP_NAME, null, ContentModel.PROP_NAME);
     }    
     
     /**
@@ -306,10 +311,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                                 NodeRef destinationNodeRef, ContentWriter contentWriter)    
 
     {
-        // Transformation options
-        TransformationOptions options = new TransformationOptions(
-                sourceNodeRef, ContentModel.PROP_NAME, destinationNodeRef, ContentModel.PROP_NAME);          
-        
         // transform - will throw NoTransformerException if there are no transformers
         this.contentService.transform(contentReader, contentWriter, options);
     }

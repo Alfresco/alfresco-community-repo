@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -894,6 +894,19 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
     // BatchProcessWorker that runs work as another user.
     private abstract class RunAsWorker extends BatchProcessWorkerAdaptor<NodeRef>
     {
+        @Override
+        public void beforeProcess() throws Throwable
+        {
+            AuthenticationUtil.pushAuthentication();
+            AuthenticationUtil.setFullyAuthenticatedUser(userName);
+        }
+
+        @Override
+        public void afterProcess() throws Throwable
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+
         final String userName;
         final String name;
         

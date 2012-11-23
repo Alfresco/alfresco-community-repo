@@ -48,6 +48,7 @@ import org.alfresco.repo.forms.processor.FilteredFormProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -502,21 +503,36 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             // ensure that the association being persisted is defined in the model
             AssociationDefinition assocDef = assocDefs.get(fullQName);
 
-            // TODO: if the association is not defined on the node, check for the association
-            // in all models, however, the source of an association can be critical so we
-            // can't just look up the association in the model regardless. We need to
-            // either check the source class of the node and the assoc def match or we
-            // check that the association was defined as part of an aspect (where by it's
-            // nature can have any source type)
-
+            // If the association is not defined on this node i.e. it is not defined for this node's content
+            // type and is not defined for any of the aspects that have already been applied to this node,
+            // then assocDef here will be null. This is because assocDef is passed in to this method, its value
+            // having been obtained from dictionaryService.getAnonymousType()
+            //
+            // However if the association type is defined on an aspect which has not yet been applied to this node
+            // then setting a value for this association should lead to the automatic application of the aspect defining it.
             if (assocDef == null)
             {
-                if (getLogger().isWarnEnabled())
-                {
-                    getLogger().warn("Ignoring field '" + fieldName + "' as an association definition can not be found");
-                }
+                // Is it defined on any other type?
+                AssociationDefinition assocDefFromDictionary = this.dictionaryService.getAssociation(fullQName);
                 
-                return;
+                // If the association is defined on any *aspect* type...
+                if (assocDefFromDictionary != null && assocDefFromDictionary.getSourceClass().isAspect())
+                {
+                    // ... then it should be safe to proceed with applying the association value.
+                    assocDef = assocDefFromDictionary;
+                }
+                else
+                {
+                    // ... else it is either undefined in the dictionary service or is defined on a concrete
+                    // content type which is inconsistent with the node's type. We'll ignore it, which is what
+                    // has been done with unhandled associations up to this point.
+                    if (getLogger().isWarnEnabled())
+                    {
+                        getLogger().warn("Ignoring field '" + fieldName + "' as a valid association definition can not be found");
+                    }
+                    
+                    return;
+                }
             }
 
             String value = (String) fieldData.getValue();

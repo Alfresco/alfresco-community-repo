@@ -74,7 +74,6 @@
       <constructor-arg>
          <list>
             <ref bean="on-property-update-trigger"/>
-            <ref bean="on-content-update-trigger"/>
             <ref bean="on-create-association-trigger"/>
             <ref bean="on-delete-association-trigger"/>
          </list>
@@ -115,6 +114,9 @@
    </bean>
    
    <bean id="on-property-update-trigger" class="org.alfresco.repo.rule.ruletrigger.OnPropertyUpdateRuleTrigger" parent="rule-trigger-base">
+      <property name="ignoreEmptyContent" >
+         <value>${policy.content.update.ignoreEmpty}</value>
+      </property>
    </bean>
    
    <bean id="on-create-child-association-trigger" class="org.alfresco.repo.rule.ruletrigger.OnCreateChildAssociationRuleTrigger" parent="rule-trigger-base">
@@ -153,15 +155,13 @@
       </property>
    </bean>
    
-   <bean id="on-content-update-trigger" class="org.alfresco.repo.rule.ruletrigger.OnContentUpdateRuleTrigger" parent="rule-trigger-base">      
-      <property name="onNewContent">
-         <value>false</value>
-      </property>
-   </bean>
-   
-   <bean id="on-content-create-trigger" class="org.alfresco.repo.rule.ruletrigger.OnContentUpdateRuleTrigger" parent="rule-trigger-base">
+   <bean id="on-content-create-trigger" class="org.alfresco.repo.rule.ruletrigger.OnPropertyUpdateRuleTrigger" parent="rule-trigger-base">
       <property name="onNewContent">
          <value>true</value>
+      </property>
+      <property name="runtimeRuleService" ref="ruleService"/>
+      <property name="ignoreEmptyContent" >
+         <value>${policy.content.update.ignoreEmpty}</value>
       </property>
    </bean>
    

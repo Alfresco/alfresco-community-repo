@@ -19,6 +19,7 @@
 package org.alfresco.repo.cache;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -266,10 +267,52 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * 
      * @param noSharedCacheRead         <tt>true</tt> to avoid reading from the shared cache for the transaction
      */
+    @SuppressWarnings("unchecked")
     public void setDisableSharedCacheReadForTransaction(boolean noSharedCacheRead)
     {
         TransactionData txnData = getTransactionData();
-        txnData.noSharedCacheRead = noSharedCacheRead;
+
+        // If we are switching on noSharedCacheRead mode, convert all existing reads and updates to avoid 'consistent
+        // read' behaviour giving us a potentially out of date node already accessed
+        if (noSharedCacheRead && !txnData.noSharedCacheRead)
+        {
+            txnData.noSharedCacheRead = noSharedCacheRead;
+            String currentCacheRegion = TenantUtil.getCurrentDomain();
+            for (Map.Entry<Serializable, CacheBucket<V>> entry : new ArrayList<Map.Entry<Serializable, CacheBucket<V>>>(
+                    txnData.updatedItemsCache.entrySet()))
+            {
+                Serializable cacheKey = entry.getKey();
+                K key = null;
+                if (cacheKey instanceof CacheRegionKey)
+                {
+                    CacheRegionKey cacheRegionKey = (CacheRegionKey) cacheKey;
+                    if (currentCacheRegion.equals(cacheRegionKey.getCacheRegion()))
+                    {
+                        key = (K) cacheRegionKey.getCacheKey();
+                    }
+                }
+                else
+                {
+                    key = (K) cacheKey;
+                }
+
+                if (key != null)
+                {
+                    CacheBucket<V> bucket = entry.getValue();
+                    // Simply 'forget' reads
+                    if (bucket instanceof ReadCacheBucket)
+                    {
+                        txnData.updatedItemsCache.remove(cacheKey);
+                    }
+                    // Convert updates to removes
+                    else if (bucket instanceof UpdateCacheBucket)
+                    {
+                        remove(key);
+                    }
+                    // Leave new entries alone - they can't have come from the shared cache
+                }
+            }
+        }
     }
     
     /**

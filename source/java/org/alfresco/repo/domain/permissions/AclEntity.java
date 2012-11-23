@@ -199,9 +199,13 @@ public class AclEntity implements Acl, Serializable
     @Override
     public int hashCode()
     {
-        return (id == null ? 0 : id.hashCode());
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((version == null) ? 0 : version.hashCode());
+        return result;
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -211,8 +215,9 @@ public class AclEntity implements Acl, Serializable
         }
         else if (obj instanceof AclEntity)
         {
-            AclEntity that = (AclEntity)obj;
-            return (EqualsHelper.nullSafeEquals(this.id, that.id));
+            AclEntity that = (AclEntity) obj;
+            return EqualsHelper.nullSafeEquals(this.id, that.id)
+                    && EqualsHelper.nullSafeEquals(this.version, that.version);
         }
         else
         {

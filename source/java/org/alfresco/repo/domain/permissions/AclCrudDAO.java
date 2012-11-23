@@ -45,6 +45,12 @@ import org.alfresco.util.Pair;
  */
 public interface AclCrudDAO
 {
+    /**
+     * Transaction-scope setting to make the DAO guarantee the validity of all caches: some cache data will be reloaded;
+     * some cache data will be considered safe.
+     */
+    public void setCheckAclConsistency();
+
     //
     // Access Control List (ACL)
     //

@@ -71,6 +71,7 @@ public class AttachmentsExtractor
  
    private FileFolderService fileFolderService;
    private NodeService nodeService;
+    private ImapService imapService;
    private ServiceRegistry serviceRegistry;
    private RepositoryFolderConfigBean attachmentsFolder;
    private NodeRef attachmentsFolderRef;
@@ -84,6 +85,11 @@ public class AttachmentsExtractor
    public void setNodeService(NodeService nodeService)
    {
        this.nodeService = nodeService;
+    }
+
+    public void setImapService(ImapService imapService)
+    {
+        this.imapService = imapService;
    }
  
    public void setAttachmentsFolder(RepositoryFolderConfigBean attachmentsFolder)
@@ -193,23 +199,11 @@ public class AttachmentsExtractor
        }
        else
        {
-           String name = fileName;
-           String ext = "";
-           if (fileName.lastIndexOf(".") != -1)
-           {
-               int index = fileName.lastIndexOf(".");
-               name = fileName.substring(0, index);
-               ext = fileName.substring(index);
- 
-           }
-           
-           int copyNum = 0;
-           do
-           {
-               copyNum++;
-           } while (fileFolderService.searchSimple(attachmentsFolderRef, name + " (" + copyNum + ")" + ext) != null);
-           
-           FileInfo createdFile = fileFolderService.create(attachmentsFolderRef, name + " (" + copyNum + ")" + ext, ContentModel.TYPE_CONTENT);
+
+            
+            String newFileName = imapService.generateUniqueFilename(attachmentsFolderRef, fileName); 
+            
+            FileInfo createdFile = fileFolderService.create(attachmentsFolderRef, newFileName, ContentModel.TYPE_CONTENT);
            nodeService.createAssociation(messageFile, createdFile.getNodeRef(), ImapModel.ASSOC_IMAP_ATTACHMENT);
            attachmentFile = createdFile.getNodeRef();
  

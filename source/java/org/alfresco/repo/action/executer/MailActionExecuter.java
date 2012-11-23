@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,8 +39,8 @@ import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -301,6 +301,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             final Action ruleAction,
             final NodeRef actionedUponNodeRef) 
     {
+        MimeMessageHelper message = null;
+        if (!testMode && validNodeRefIfPresent(actionedUponNodeRef))
+        {
+            message = prepareEmail(ruleAction, actionedUponNodeRef);
+        }
+        final MimeMessageHelper finalMessage = message;
+        
         if (sendAfterCommit(ruleAction))
         {
             AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
@@ -314,9 +321,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         @Override
                         public Void execute() throws Throwable
                         {
-                            if (validNodeRefIfPresent(actionedUponNodeRef))
+                        	if (finalMessage != null)
                             {
-                                prepareAndSendEmail(ruleAction, actionedUponNodeRef);
+                                   sendEmail(ruleAction, actionedUponNodeRef, finalMessage);
                             }
                             return null;
                         }
@@ -328,7 +335,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         {
             if (validNodeRefIfPresent(actionedUponNodeRef))
             {
-                prepareAndSendEmail(ruleAction, actionedUponNodeRef);
+                sendEmail(ruleAction, actionedUponNodeRef, finalMessage);
             }
         }
     }
@@ -356,9 +363,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return sendAfterCommit == null ? false : sendAfterCommit.booleanValue();
     }
     
-    private void prepareAndSendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef)
+    public MimeMessageHelper prepareEmail(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {
-        // Create the mime mail message
+        // Create the mime mail message.
+        // Hack: using an array here to get around the fact that inner classes aren't closures.
+        // The MimeMessagePreparator.prepare() signature does not allow us to return a value and yet
+        // we can't set a result on a bare, non-final object reference due to Java language restrictions.
+        final MimeMessageHelper[] messageRef = new MimeMessageHelper[1];
+        
         MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
         {
             @SuppressWarnings("unchecked")
@@ -369,7 +381,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                    logger.debug(ruleAction.getParameterValues());
                 }
                 
-                MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
+                messageRef[0] = new MimeMessageHelper(mimeMessage);
                 
                 // set header encoding if one has been supplied
                 if (headerEncoding != null && headerEncoding.length() != 0)
@@ -381,7 +393,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 String to = (String)ruleAction.getParameterValue(PARAM_TO);
                 if (to != null && to.length() != 0)
                 {
-                    message.setTo(to);
+                    messageRef[0].setTo(to);
                 }
                 else
                 {
@@ -449,7 +461,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         
                         if(recipients.size() > 0)
                         {
-                            message.setTo(recipients.toArray(new String[recipients.size()]));
+                            messageRef[0].setTo(recipients.toArray(new String[recipients.size()]));
                         }
                         else
                         {
@@ -487,7 +499,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         {
                             logger.debug("from specified as a parameter, from:" + from);
                         }
-                        message.setFrom(from);
+                        messageRef[0].setFrom(from);
                     }
                     else
                     {
@@ -504,12 +516,12 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                             {
                                 logger.debug("looked up email address for :" + fromPerson + " email from " + fromActualUser);
                             }
-                            message.setFrom(fromActualUser);
+                            messageRef[0].setFrom(fromActualUser);
                         }
                         else
                         {
                             // from system or user does not have email address
-                            message.setFrom(fromDefaultAddress);
+                            messageRef[0].setFrom(fromDefaultAddress);
                         }
                     }
 
@@ -521,14 +533,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         logger.debug("from not enabled - sending from default address:" + fromDefaultAddress);
                     }
                     // from is not enabled.
-                    message.setFrom(fromDefaultAddress);
+                    messageRef[0].setFrom(fromDefaultAddress);
                 }
                 
 
 
                 
                 // set subject line
-                message.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
+                messageRef[0].setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
                 
                 // See if an email template has been specified
                 String text = null;
@@ -587,24 +599,41 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 
                 if (text != null)
                 {
-                    message.setText(text, isHTML);
+                    messageRef[0].setText(text, isHTML);
                 }
                 
             }
         };
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage(); 
+        try
+        {
+            mailPreparer.prepare(mimeMessage);
+        } catch (Exception e)
+        {
+            // We're forced to catch java.lang.Exception here. Urgh.
+            if (logger.isInfoEnabled())
+            {
+                logger.warn("Unable to prepare mail message. Skipping.", e);
+            }
+        }
         
+        return messageRef[0];
+    }
+    
+    private void sendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef, MimeMessageHelper preparedMessage)
+    {
         try
         {
             // Send the message unless we are in "testMode"
-            if(!testMode)
+            if(!testMode && preparedMessage != null)
             {
-                javaMailSender.send(mailPreparer);
+                javaMailSender.send(preparedMessage.getMimeMessage());
             }
-            else
+            else if (validNodeRefIfPresent(actionedUponNodeRef))
             {
                try {
                   MimeMessage mimeMessage = javaMailSender.createMimeMessage(); 
-                  mailPreparer.prepare(mimeMessage);
+                  prepareEmail(ruleAction, actionedUponNodeRef);
                   lastTestMessage = mimeMessage;
                } catch(Exception e) {
                   System.err.println(e);

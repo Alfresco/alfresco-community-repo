@@ -344,7 +344,9 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         }
         else
         {
-            serviceRegistry.getFileFolderService().copy(sourceMessageFileInfo.getNodeRef(), destFolderNodeRef, null);
+            String fileName = (String) serviceRegistry.getNodeService().getProperty(sourceMessageFileInfo.getNodeRef(), ContentModel.PROP_NAME);
+            String newFileName = imapService.generateUniqueFilename(destFolderNodeRef, fileName);
+            serviceRegistry.getFileFolderService().copy(sourceMessageFileInfo.getNodeRef(), destFolderNodeRef, newFileName);
         }
     }
 

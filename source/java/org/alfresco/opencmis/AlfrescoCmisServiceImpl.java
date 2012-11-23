@@ -248,12 +248,17 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
     protected CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef)
     {
-        CMISNodeInfoImpl result = connector.createNodeInfo(nodeRef);
+        return createNodeInfo(nodeRef, null);
+    }
+
+    protected CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef, VersionHistory versionHistory)
+    {
+        CMISNodeInfoImpl result = connector.createNodeInfo(nodeRef, versionHistory);
         nodeInfoMap.put(result.getObjectId(), result);
 
         return result;
     }
-
+    
     protected CMISNodeInfo createNodeInfo(AssociationRef assocRef)
     {
         CMISNodeInfoImpl result = connector.createNodeInfo(assocRef);
@@ -2004,7 +2009,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             // convert the version history
             for (Version version : versionHistory.getAllVersions())
             {
-                CMISNodeInfo versionInfo = createNodeInfo(version.getFrozenStateNodeRef());
+                CMISNodeInfo versionInfo = createNodeInfo(version.getFrozenStateNodeRef(), versionHistory);
 
                 result.add(
                         connector.createCMISObject(

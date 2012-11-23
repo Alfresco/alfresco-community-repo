@@ -83,30 +83,31 @@ public class RuleTypeImplTest extends BaseSpringTest
     
     public void testMockInboundRuleType()
     {
-    	NodeRef nodeRef = this.nodeService.createNode(
-                this.rootNodeRef, 
-    			ContentModel.ASSOC_CHILDREN,
-    			ContentModel.ASSOC_CHILDREN,
-                ContentModel.TYPE_CONTENT).getChildRef();
-		NodeRef nodeRef2 = this.nodeService.createNode(
-                this.rootNodeRef, 
-    			ContentModel.ASSOC_CHILDREN,
-    			ContentModel.ASSOC_CHILDREN,
-                ContentModel.TYPE_CONTAINER).getChildRef();
-    	
     	List<RuleTrigger> triggers = new ArrayList<RuleTrigger>(2);
         triggers.add((RuleTrigger)this.applicationContext.getBean("on-content-create-trigger"));
-    	triggers.add((RuleTrigger)this.applicationContext.getBean("on-content-update-trigger"));
+    	triggers.add((RuleTrigger)this.applicationContext.getBean("on-create-node-trigger"));
     	triggers.add((RuleTrigger)this.applicationContext.getBean("on-create-child-association-trigger"));
     	
     	ExtendedRuleType ruleType = new ExtendedRuleType(triggers);
     	assertFalse(ruleType.rulesTriggered);
     	
+        NodeRef nodeRef = this.nodeService.createNode(
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTENT).getChildRef();
+        
     	// Update some content in order to trigger the rule type
     	ContentWriter contentWriter = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
     	contentWriter.putContent("any old content");        
     	assertTrue(ruleType.rulesTriggered);
+    	
+        NodeRef nodeRef2 = this.nodeService.createNode(
+                this.rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER).getChildRef();
     	
     	// Reset
     	ruleType.rulesTriggered = false;

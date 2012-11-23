@@ -117,11 +117,6 @@
         </property>
         <property name="auditService" ref="auditService" />
     </bean>
-
-    <bean id="CMISChangeLogDataExtractor" class="org.alfresco.cmis.changelog.CMISChangeLogDataExtractor">        
-        <property name="cmisService" ref="CMISService" />
-        <property name="registry" ref="auditModel.extractorRegistry" />        
-    </bean>
     
     <bean id="CMISAccessControlService" class="org.alfresco.cmis.acl.CMISAccessControlServiceImpl" >
         <!-- Valid values are: NONE, DISCOVER, MANAGE -->

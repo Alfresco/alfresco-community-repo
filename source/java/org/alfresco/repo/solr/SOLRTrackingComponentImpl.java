@@ -186,6 +186,9 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         if(enabled)
         {
+            // We don't want the caches to lie and we may not be part of the cluster
+            aclDAO.setCheckAclConsistency();
+
             /*
              * This is an N+1 query that should, in theory, make use of cached ACL readers data.
              */
@@ -486,7 +489,6 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     
     private List<Long> preCacheNodes(NodeMetaDataParameters nodeMetaDataParameters)
     {
-        nodeDAO.setCheckNodeConsistency();
         int maxResults = nodeMetaDataParameters.getMaxResults();
         boolean isLimitSet = (maxResults != 0 && maxResults != Integer.MAX_VALUE);
 
@@ -515,8 +517,13 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 nodeIds.add(nodeId);
             }
         }
-        // pre-cache nodes
-        nodeDAO.cacheNodesById(nodeIds);
+        
+        // Pre-evaluate ancestors so we can bulk load them
+        List<Long> ancestors = new ArrayList<Long>(nodeDAO.getCachedAncestors(nodeIds));
+        // Ensure that we get fresh node references
+        nodeDAO.setCheckNodeConsistency();
+        // bulk load nodes and their ancestors      
+        nodeDAO.cacheNodesById(ancestors);
         
         return nodeIds;
     }
@@ -554,10 +561,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         {
             return;
         }
-        
-        // Ensure that we get fresh node references
-        nodeDAO.setCheckNodeConsistency();
-        
+                
         NodeMetaDataQueryRowHandler rowHandler = new NodeMetaDataQueryRowHandler(callback);
         boolean includeType = (resultFilter == null ? true : resultFilter.getIncludeType());
         boolean includeProperties = (resultFilter == null ? true : resultFilter.getIncludeProperties());

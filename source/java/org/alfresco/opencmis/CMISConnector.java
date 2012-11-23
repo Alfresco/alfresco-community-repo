@@ -104,6 +104,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.descriptor.Descriptor;
@@ -844,7 +845,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef)
     {
-        return new CMISNodeInfoImpl(this, nodeRef);
+        return createNodeInfo(nodeRef, null);
+    }
+
+    /**
+     * Creates an object info object.
+     */
+    public CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef, VersionHistory versionHistory)
+    {
+        return new CMISNodeInfoImpl(this, nodeRef, versionHistory);
     }
 
     /**

@@ -442,22 +442,44 @@ public class MultilingualContentServiceImpl implements MultilingualContentServic
      * @param translationNodeRef                a translation
      */
     private void unmakeTranslationSimple(NodeRef translationNodeRef)
-    {
-        if (nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+    {      
+        try
         {
-            nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
-            nodeService.addAspect(translationNodeRef, ContentModel.ASPECT_TEMPORARY, null);
+            this.policyBehaviourFilter.disableBehaviour(ContentModel.TYPE_MULTILINGUAL_CONTAINER);
+            if (nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            {
+                nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION);
+                nodeService.addAspect(translationNodeRef, ContentModel.ASPECT_TEMPORARY, null);
+            }
+            else
+            {
+                if (nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT))
+                {
+                    nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
+                }
+            }
+            List<ChildAssociationRef> assocRefs = nodeService.getParentAssocs(
+                    translationNodeRef,
+                    ContentModel.ASSOC_MULTILINGUAL_CHILD, 
+                    RegexQNamePattern.MATCH_ALL);
+            if (assocRefs.size() != 1)
+            {
+                throw new AlfrescoRuntimeException(
+                        "Unable to remove ASSOC_MULTILINGUAL_CHILD on : " + translationNodeRef.toString());
+            }
         }
-        else
+        finally
         {
-            nodeService.removeAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
+            this.policyBehaviourFilter.enableBehaviour(ContentModel.TYPE_MULTILINGUAL_CONTAINER);
         }
     }
 
     /** @inheritDoc */
     public void unmakeTranslation(NodeRef translationNodeRef)
     {
-        if (isPivotTranslation(translationNodeRef))
+        if ((nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION) ||
+                nodeService.hasAspect(translationNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT)) &&
+                isPivotTranslation(translationNodeRef))
         {
             NodeRef containerNodeRef = getMLContainer(translationNodeRef, true);
             // We have not cleaned up all other translations

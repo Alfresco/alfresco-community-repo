@@ -35,6 +35,12 @@ import org.alfresco.repo.security.permissions.impl.AclChange;
 public interface AclDAO
 {
     /**
+     * Transaction-scope setting to make the DAO guarantee the validity of all caches: some cache data will be reloaded;
+     * some cache data will be considered safe.
+     */
+    public void setCheckAclConsistency();
+
+    /**
      * Get an ACL (including entries)
      */
     public AccessControlList getAccessControlList(Long id);

@@ -428,6 +428,7 @@
       </property>
       <property name="maxCacheSize" value="50000" />
       <property name="mutable" value="true" />
+      <property name="allowEqualsChecks" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
@@ -500,51 +501,6 @@
       </property>
       <property name="name">
          <value>org.alfresco.messagesTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize" value="1000" />
-      <property name="mutable" value="true" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
-   </bean>
-   
-   
-   <!-- The transactional cache for Dictionary Models -->
-   
-   <bean name="compiledModelsCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="compiledModelsSharedCache" />
-      </property>
-      <property name="name">
-         <value>org.alfresco.compiledModelsTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize" value="1000" />
-      <property name="mutable" value="true" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
-   </bean>
-   
-   
-   <!-- The transactional cache for Dictionary Namespaces -->
-   
-   <bean name="prefixesCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="prefixesSharedCache" />
-      </property>
-      <property name="name">
-         <value>org.alfresco.prefixesTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize" value="1000" />
-      <property name="mutable" value="true" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
-   </bean>
-   
-   
-   <!-- The transactional cache for In-Memory WebScripts Registry -->
-   
-   <bean name="webScriptsRegistryCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="webScriptsRegistrySharedCache" />
-      </property>
-      <property name="name">
-         <value>org.alfresco.webScriptsRegistryTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="1000" />
       <property name="mutable" value="true" />

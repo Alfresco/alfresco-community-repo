@@ -18,48 +18,35 @@
  */
 package org.alfresco.repo.action.executer;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
-import org.alfresco.repo.content.transform.ContentTransformer;
-import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
- * Transfor action executer
+ * Transform action executer. Modified original code to use any transformer rather than just 
+ * ImageMagick. The original, allowed additional command line options to be supplied (added for
+ * backward compatibility in 15/04/2008). Now removed. Did not find any internal usage (22/11/2012) but it
+ * is possible that there may be some in Javascript calling ScriptNode or custom code using
+ * the context passed to the ImageRenderingEngine. That said, it will almost always be ImagMagick
+ * that does the transform so it will still be used. These command line options were to overcome issues with
+ * ImageMagick. Other transformers will just ignore them.
  * 
  * @author Roy Wetherall
  */
 public class ImageTransformActionExecuter extends TransformActionExecuter 
 {
-    private TransformerDebug transformerDebug;
-
     /**
      * Action constants
      */
     public static final String NAME = "transform-image";
     public static final String PARAM_CONVERT_COMMAND = "convert-command";
-
-    private ContentTransformer imageMagickContentTransformer;
-
-    /**
-     * Set the image magick content transformer
-     * 
-     * @param imageMagickContentTransformer
-     *            the conten transformer
-     */
-    public void setImageMagickContentTransformer(ContentTransformer imageMagickContentTransformer)
-    {
-        this.imageMagickContentTransformer = imageMagickContentTransformer;
-    }
 
     /**
      * Add parameter definitions
@@ -71,48 +58,17 @@ public class ImageTransformActionExecuter extends TransformActionExecuter
         paramList.add(new ParameterDefinitionImpl(PARAM_CONVERT_COMMAND, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_CONVERT_COMMAND)));
     }
 
-    public void setTransformerDebug(TransformerDebug transformerDebug)
+    @Override
+    protected TransformationOptions newTransformationOptions(Action ruleAction, NodeRef sourceNodeRef)
     {
-        this.transformerDebug = transformerDebug;
-    }
-
-    /**
-	 * @see org.alfresco.repo.action.executer.TransformActionExecuter#doTransform(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter)
-     */
-    protected void doTransform(Action ruleAction,
-            NodeRef sourceNodeRef, ContentReader contentReader,
-            NodeRef destinationNodeRef, ContentWriter contentWriter)
-    {
-        // Try and transform the content
+        ImageTransformationOptions options = new ImageTransformationOptions();
+        options.setSourceNodeRef(sourceNodeRef);
+        options.setSourceContentProperty(ContentModel.PROP_NAME);
+        options.setTargetContentProperty(ContentModel.PROP_NAME);
+        
         String convertCommand = (String) ruleAction.getParameterValue(PARAM_CONVERT_COMMAND);
-        // create some options for the transform
-        ImageTransformationOptions imageOptions = new ImageTransformationOptions();
-        imageOptions.setCommandOptions(convertCommand);
-        imageOptions.setSourceNodeRef(sourceNodeRef);
+        options.setCommandOptions(convertCommand);
 
-        // check if the transformer is going to work, i.e. is available
-        String sourceMimetype = contentReader.getMimetype();
-        String targetMimetype = contentWriter.getMimetype();
-        long sourceSize = contentReader.getSize();
-        try
-        {
-            transformerDebug.pushAvailable(contentReader.getContentUrl(), sourceMimetype, targetMimetype, imageOptions);
-            List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(1);
-            if (imageMagickContentTransformer.isTransformable(sourceMimetype, contentReader.getSize(), targetMimetype, imageOptions))
-            {
-                transformers.add(imageMagickContentTransformer);
-            }
-            transformerDebug.availableTransformers(transformers, sourceSize, "ImageTransformActionExecuter.doTransform(...)");
-            if (transformers.size() == 0)
-            {
-                throw new NoTransformerException(sourceMimetype, targetMimetype);
-            }
-
-            imageMagickContentTransformer.transform(contentReader, contentWriter, imageOptions);
-        }
-        finally
-        {
-            transformerDebug.popAvailable();
-        }
+        return options;
     }
 }

@@ -323,13 +323,13 @@
 
    <!-- The cross-transaction shared cache for Dictionary Models -->
    
-   <bean name="compiledModelsSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+   <bean name="compiledModelsCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
       <property name="maxItems" value="${cache.compiledModelsSharedCache.maxItems}"/>
    </bean>
 
    <!-- The cross-transaction shared cache for Dictionary Namespaces -->
  
-   <bean name="prefixesSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+   <bean name="prefixesCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
       <property name="maxItems" value="${cache.prefixesSharedCache.maxItems}"/>
    </bean>
    
@@ -339,7 +339,7 @@
 
    <!-- The cross-transaction shared cache for In-Memory WebScripts Registry -->
    
-   <bean name="webScriptsRegistrySharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+   <bean name="webScriptsRegistryCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
       <property name="maxItems" value="${cache.webScriptsRegistrySharedCache.maxItems}"/>
    </bean>
    

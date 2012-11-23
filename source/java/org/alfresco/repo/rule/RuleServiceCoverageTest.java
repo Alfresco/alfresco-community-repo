@@ -929,14 +929,13 @@ public class RuleServiceCoverageTest extends TestCase
                     .getBean("OutboundSMTP")).getApplicationContext().getBean("mail");
         mailService.setTestMode(true);
         mailService.clearLastTestMessage();
-                
-        NodeRef contentNodeRef = this.nodeService.createNode(
+        
+        this.nodeService.createNode(
                 this.nodeRef,
                 ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_CONTENT,
                 getContentProperties()).getChildRef();        
-        addContentToNode(contentNodeRef);   
         
         // An email should appear in the recipients email
         // System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));
@@ -1664,8 +1663,52 @@ public class RuleServiceCoverageTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,                
                 QName.createQName(TEST_NAMESPACE, "children"),
                 ContentModel.TYPE_CONTENT).getChildRef();        
+        assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));        
+        addContentToNode(contentNodeRef);            
+        assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        
+        // ALF-14744 / MNT-187: Create a content node - this time with 'empty content' in the same transaction
+        contentNodeRef = this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                NodeRef contentNodeRef = RuleServiceCoverageTest.this.nodeService.createNode(
+                        RuleServiceCoverageTest.this.nodeRef,
+                        ContentModel.ASSOC_CHILDREN,                
+                        QName.createQName(TEST_NAMESPACE, "children"),
+                        ContentModel.TYPE_CONTENT).getChildRef();
+                ContentWriter contentWriter = RuleServiceCoverageTest.this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                assertNotNull(contentWriter);
+                contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                contentWriter.setEncoding("UTF-8");
+                contentWriter.putContent("");
+                return contentNodeRef;
+            }
+        });
         assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));        
         addContentToNode(contentNodeRef);            
+        assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
+
+        // ALF-14744 / MNT-187: Create a content node - this time with the 'no content' aspect in the same transaction
+        contentNodeRef = this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            @Override
+            public NodeRef execute() throws Throwable
+            {
+                NodeRef contentNodeRef = RuleServiceCoverageTest.this.nodeService.createNode(
+                        RuleServiceCoverageTest.this.nodeRef,
+                        ContentModel.ASSOC_CHILDREN,                
+                        QName.createQName(TEST_NAMESPACE, "children"),
+                        ContentModel.TYPE_CONTENT).getChildRef();
+                RuleServiceCoverageTest.this.nodeService.addAspect(contentNodeRef, ContentModel.ASPECT_NO_CONTENT, null);
+                return contentNodeRef;
+            }
+        });
+        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));        
+        addContentToNode(contentNodeRef);            
+        assertFalse(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_NO_CONTENT);
         assertTrue(this.nodeService.hasAspect(contentNodeRef, ContentModel.ASPECT_VERSIONABLE));
         
         // Create a node to be moved

@@ -34,6 +34,7 @@ import org.alfresco.cmis.CMISChangeLogService;
 import org.alfresco.cmis.CMISChangeType;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.opencmis.CMISChangeLogDataExtractor;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;

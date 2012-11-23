@@ -765,7 +765,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
      * Key for a cache object is built from all the known Authorities (which can change dynamically so they must all be
      * used) the NodeRef ID and the permission reference itself. This gives a unique key for each permission test.
      */
-    static Serializable generateKey(Set<String> auths, NodeRef nodeRef, PermissionReference perm, CacheType type)
+    Serializable generateKey(Set<String> auths, NodeRef nodeRef, PermissionReference perm, CacheType type)
     {
         LinkedHashSet<Serializable> key = new LinkedHashSet<Serializable>();
         key.add(perm.toString());
@@ -779,6 +779,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             key.addAll(auths);            
         }        
         key.add(nodeRef);
+        // Ensure some concept of node version or transaction is included in the key so we can track without cache replication 
+        NodeRef.Status nodeStatus = nodeService.getNodeStatus(nodeRef);
+        key.add(nodeStatus == null ? "null" : nodeStatus.getChangeTxnId());
         key.add(type);
         return key;
     }
@@ -1178,28 +1181,18 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     @Override
     public Set<String> getReaders(Long aclId)
     {
-        Set<String> aclReaders = readersCache.get(aclId);
-        if (aclReaders == null)
-        {
-            aclReaders = buildReaders(aclId);
-            readersCache.put(aclId, aclReaders);
-        }
-        return aclReaders;
-    }
-    
-    /**
-     * Builds the set of authorities who can read the given ACL.  No caching is done here.
-     * 
-     * @return              an <b>unmodifiable</b> set of authorities
-     */
-    protected Set<String> buildReaders(Long aclId)
-    {
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
         if (acl == null)
         {
             return Collections.emptySet();
         }
 
+        Set<String> aclReaders = readersCache.get((Serializable)acl.getProperties());
+        if (aclReaders != null)
+        {
+            return aclReaders;
+        }
+        
         HashSet<String> assigned = new HashSet<String>();
         HashSet<String> readers = new HashSet<String>();
 
@@ -1217,23 +1210,30 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             }
         }
 
-        return Collections.unmodifiableSet(readers);
+        aclReaders = Collections.unmodifiableSet(readers);
+        readersCache.put((Serializable)acl.getProperties(), aclReaders);
+        return aclReaders;
     }
     
     /**
      * @param aclId
      * @return set of authorities with read permission on the ACL
      */
-    protected Set<String> buildReadersDenied(Long aclId)
+    private Set<String> getReadersDenied(Long aclId)
     {
-        HashSet<String> assigned = new HashSet<String>();
-        HashSet<String> denied = new HashSet<String>();
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
 
         if (acl == null)
         {
+            return Collections.emptySet();
+        }
+        Set<String> denied = readersDeniedCache.get(aclId);
+        if (denied != null)
+        {
             return denied;
         }
+        denied = new HashSet<String>();
+        Set<String> assigned = new HashSet<String>();
 
         for (AccessControlEntry ace : acl.getEntries())
         {
@@ -1248,6 +1248,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
                 denied.add(authority);
             }
         }
+        
+        readersDeniedCache.put((Serializable)acl.getProperties(), denied);
 
         return denied;
     }
@@ -1261,12 +1263,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         if(anyDenyDenies)
         {
 
-            Set<String> aclReadersDenied = readersDeniedCache.get(aclId);
-            if(aclReadersDenied == null)
-            {
-                aclReadersDenied = buildReadersDenied(aclId);
-                readersDeniedCache.put(aclId, aclReadersDenied);
-            }
+            Set<String> aclReadersDenied = getReadersDenied(aclId);
 
             for(String auth : aclReadersDenied)
             {

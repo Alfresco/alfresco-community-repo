@@ -2,7 +2,7 @@
   <shortname>Update a persisted replication definition</shortname>
   <description>Updates a previously persisted replication defintion with the supplied details.</description>
   <url>/api/replication-definition/{replication_definition_name}</url>
-  <format default="json"/>
+  <format default="json">argument</format>
   <authentication>admin</authentication>
   <transaction>required</transaction>
 </webscript>

@@ -1003,6 +1003,22 @@ alfresco.xforms.RichTextEditor = alfresco.xforms.Widget.extend({
         {
           editorDocument.widget = t;
 
+	   var height = t._params["height"]; 
+
+	   if(!isNaN(parseInt(height))) 
+	   { 
+	     var num = 1;
+	
+	     while($(ed.id + '_toolbar' + num) != null) 
+	     { 
+	       height -= 26; 
+	       num++; 
+	     } 
+
+	     $(ed.id + '_tbl').style.height = t._params["height"] + "px"; 
+	     $(ed.id + '_ifr').style.height = height + "px"; 
+	   } 
+		  
           if ("false" == t._params["convert_fonts_to_spans"])
           {
             ed.settings.convert_fonts_to_spans = false;
@@ -4767,6 +4783,15 @@ alfresco.xforms.XForm = new Class({
     this.rootWidget.render(alfUI);
 
     this.loadWidgets(rootGroup, this.rootWidget);
+
+    var resolver = alfresco.xforms.FOCUS_RESOLVER;
+    var root = document.getElementById("alfresco-xforms-root-group-childContainerNode");
+    var firstControl = resolver.findControl(root, false, true);
+
+    if (null != firstControl)
+    {
+      firstControl.focus();
+    }
   },
 
   /** Creates the widget for the provided xforms node. */
@@ -5408,7 +5433,6 @@ alfresco.xforms.FocusResolver = new Class({
       if (frameParent.id != resolver._currentParent)
       {
         resolver._navigationDirection = 0;
-        resolver._navigationDirection = 0;
         resolver._forced = true;
         resolver._currentElement.focus();
         resolver._forced = false;
@@ -5536,10 +5560,10 @@ alfresco.xforms.FocusResolver = new Class({
 
   _searchForTheBestElement: function(start)
   {
-    var result = this._findControl(start, true, false);
+    var result = this.findControl(start, true, false);
     if ((null != result) && ((0 != result.tabIndex) || ("DIV" == result.tagName) || ("SPAN" == result.tagName)) && (null != result.children))
     {
-      result = this._findControl(result, false, true);
+      result = this.findControl(result, false, true);
     }
     return result;
   },
@@ -5563,16 +5587,16 @@ alfresco.xforms.FocusResolver = new Class({
     return null;
   },
 
-  _findControl: function(element, ignoreTabIndex, dontCareAboutValidity)
+  findControl: function(element, ignoreTabIndex, dontCareAboutValidity)
   {
-    if (null == element)
+    if ((null == element) || (("DIV" == element.tagName) && element.hasClass("xformsItemLabelContainer")))
     {
       return null;
     }
 
     var result = null;
 
-    if ((!dontCareAboutValidity || (("DIV" != element.tagName) && ("SPAN" != element.tagName))) && (ignoreTabIndex || (0 == element.tabIndex))
+    if ((!dontCareAboutValidity || (("LABEL" != element.tagName) && ("DIV" != element.tagName) && ("SPAN" != element.tagName))) && (ignoreTabIndex || (0 == element.tabIndex))
         && (dontCareAboutValidity || ((null != element.widget) && (!element.widget.isValidForSubmit()))))
     {
       result = element;
@@ -5582,7 +5606,7 @@ alfresco.xforms.FocusResolver = new Class({
     {
       for (var i = 0; (null == result) && (i < element.children.length); i++)
       {
-        result = this._findControl(element.children[i], ignoreTabIndex, dontCareAboutValidity);
+        result = this.findControl(element.children[i], ignoreTabIndex, dontCareAboutValidity);
       }
     }
 
@@ -5645,7 +5669,7 @@ alfresco.xforms.FocusResolver = new Class({
 
   _ensureInUniqueId: function(element)
   {
-    if ((null != element) && (null == element.id) || (0 == element.id.length))
+    if ((null != element) && ((null == element.id) || (0 == element.id.length)))
     {
       element.id = (((null != element.type) && (element.type.length > 0)) ? (element.type) : (element.tagName)) + "_generated_id_" + (new Date()).getTime();
     }

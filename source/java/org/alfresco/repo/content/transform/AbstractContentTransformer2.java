@@ -268,7 +268,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
             // Report the error
             if(differentType == null)
             {
-                transformerDebug.debug("Failed", e);
+                transformerDebug.debug("          Failed", e);
                 throw new ContentIOException("Content conversion failed: \n" +
                        "   reader: " + reader + "\n" +
                        "   writer: " + writer + "\n" +
@@ -278,7 +278,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
             }
             else
             {
-               transformerDebug.debug("Failed: Mime type was '"+differentType+"'", e);
+               transformerDebug.debug("          Failed: Mime type was '"+differentType+"'", e);
                throw new ContentIOException("Content conversion failed: \n" +
                      "   reader: " + reader + "\n" +
                      "   writer: " + writer + "\n" +

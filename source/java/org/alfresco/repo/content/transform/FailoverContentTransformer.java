@@ -241,7 +241,7 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
         // At this point we have tried all transformers in the sequence without apparent success.
         if (transformationException != null)
         {
-            transformerDebug.debug("No more transformations to failover to");
+            transformerDebug.debug("          No more transformations to failover to");
             if (logger.isDebugEnabled())
             {
                 logger.debug("All transformations were unsuccessful. Throwing latest exception.", transformationException);

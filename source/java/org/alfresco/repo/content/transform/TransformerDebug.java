@@ -641,7 +641,15 @@ public class TransformerDebug
     {
         if (isEnabled())
         {
-            log(message + ' ' + t.getMessage());
+            // Trim messages of the form: "Failed... : \n   reader:...\n    writer:..."
+            String msg = t.getMessage();
+            int i = msg.indexOf(": \n");
+            if (i != -1)
+            {
+                msg = msg.substring(0, i);
+            }
+            
+            log(message + ' ' + msg);
             
             Deque<Frame> ourStack = ThreadInfo.getStack();
             if (!ourStack.isEmpty())

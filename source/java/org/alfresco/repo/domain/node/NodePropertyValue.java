@@ -184,6 +184,23 @@ public class NodePropertyValue implements Cloneable, Serializable
                 return Integer.valueOf(4);
             }
 
+            /**
+             * Cope with special values (ALF-16906)
+             */
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                if (value instanceof Float)
+                {
+                    Float f = (Float) value;
+                    if (Float.isInfinite(f) || Float.isNaN(f))
+                    {
+                        return ValueType.STRING;
+                    }
+                }
+                return ValueType.FLOAT;
+            }
+
             @Override
             Serializable convert(Serializable value)
             {
@@ -196,6 +213,23 @@ public class NodePropertyValue implements Cloneable, Serializable
             public Integer getOrdinalNumber()
             {
                 return Integer.valueOf(5);
+            }
+
+            /**
+             * Cope with special values (ALF-16906)
+             */
+            @Override
+            protected ValueType getPersistedType(Serializable value)
+            {
+                if (value instanceof Double)
+                {
+                    Double d = (Double) value;
+                    if (Double.isInfinite(d) || Double.isNaN(d))
+                    {
+                        return ValueType.STRING;
+                    }
+                }
+                return ValueType.DOUBLE;
             }
 
             @Override

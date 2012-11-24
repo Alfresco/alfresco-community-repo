@@ -1164,7 +1164,8 @@ public class FileFolderServiceImpl implements FileFolderService
                         !newExt.equalsIgnoreCase(oldExt))
                 {
                     String targetMimetype = contentData.getMimetype();
-                    String newMimetype = mimetypeService.guessMimetype(newName);
+                    final ContentReader reader = contentService.getReader(targetNodeRef, ContentModel.PROP_CONTENT);
+                    String newMimetype = mimetypeService.guessMimetype(newName, reader);
                     if (!targetMimetype.equalsIgnoreCase(newMimetype))
                 	{
                         contentData = ContentData.setMimetype(contentData, newMimetype);

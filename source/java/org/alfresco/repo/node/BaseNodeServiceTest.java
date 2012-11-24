@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.crypto.SealedObject;
 import javax.transaction.UserTransaction;
@@ -63,7 +62,6 @@ import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -74,7 +72,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.alfresco.util.TestWithUserUtils;
 import org.hibernate.dialect.DB2Dialect;
 import org.hibernate.dialect.Dialect;
 import org.springframework.context.ApplicationContext;
@@ -2057,6 +2054,27 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Serializable checkProperty = nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
         assertTrue("Property not converted to a Collection", checkProperty instanceof Collection);
         assertTrue("Collection doesn't contain value", ((Collection<?>)checkProperty).contains("GHI"));
+        
+        // Check special numbers (Double): ALF-16906
+        nodeService.setProperty(nodeRef, PROP_QNAME_DOUBLE_VALUE, Double.NaN);
+        assertEquals("Double.NaN failed", Double.NaN, nodeService.getProperty(nodeRef, PROP_QNAME_DOUBLE_VALUE));
+        nodeService.setProperty(nodeRef, PROP_QNAME_DOUBLE_VALUE, Double.NEGATIVE_INFINITY);
+        assertEquals("Double.NEGATIVE_INFINITY failed", Double.NEGATIVE_INFINITY, nodeService.getProperty(nodeRef, PROP_QNAME_DOUBLE_VALUE));
+        nodeService.setProperty(nodeRef, PROP_QNAME_DOUBLE_VALUE, Double.POSITIVE_INFINITY);
+        assertEquals("Double.POSITIVE_INFINITY failed", Double.POSITIVE_INFINITY, nodeService.getProperty(nodeRef, PROP_QNAME_DOUBLE_VALUE));
+        // Check special numbers (Float): ALF-16906
+        nodeService.setProperty(nodeRef, PROP_QNAME_FLOAT_VALUE, Float.NaN);
+        assertEquals("Float.NaN failed", Float.NaN, nodeService.getProperty(nodeRef, PROP_QNAME_FLOAT_VALUE));
+        nodeService.setProperty(nodeRef, PROP_QNAME_FLOAT_VALUE, Float.NEGATIVE_INFINITY);
+        assertEquals("Float.NEGATIVE_INFINITY failed", Float.NEGATIVE_INFINITY, nodeService.getProperty(nodeRef, PROP_QNAME_FLOAT_VALUE));
+        nodeService.setProperty(nodeRef, PROP_QNAME_FLOAT_VALUE, Float.POSITIVE_INFINITY);
+        assertEquals("Float.POSITIVE_INFINITY failed", Float.POSITIVE_INFINITY, nodeService.getProperty(nodeRef, PROP_QNAME_FLOAT_VALUE));
+    }
+    
+    public void testPropertySpecialNumbers() throws Exception
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(17);
+        properties.put(PROP_QNAME_DOUBLE_VALUE, Double.NaN);
     }
     
     public void testPropertyLocaleBehaviour() throws Exception

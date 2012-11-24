@@ -446,7 +446,7 @@ public abstract class FeedTaskProcessor
         Set<String> recipients = new HashSet<String>();
         
         // Add site members to recipient list
-        if (siteId.length() > 0)
+        if ((null != siteId) && (siteId.length() > 0))
         {
             // Get the members of this site - save hammering the repository by reusing cached site members
             Set<String> connectedUsers = siteConnectedUsers.get(siteId);
@@ -490,7 +490,7 @@ public abstract class FeedTaskProcessor
             followerConnectedUsers.put(userTenantKey, followerUsers);
         }
         
-        if (siteId.length() > 0)
+        if ((null != siteId) && (siteId.length() > 0))
         {
             for (String followerUser : followerUsers)
             {

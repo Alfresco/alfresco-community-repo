@@ -302,7 +302,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             final NodeRef actionedUponNodeRef) 
     {
         MimeMessageHelper message = null;
-        if (!testMode && validNodeRefIfPresent(actionedUponNodeRef))
+        if (validNodeRefIfPresent(actionedUponNodeRef))
         {
             message = prepareEmail(ruleAction, actionedUponNodeRef);
         }
@@ -625,19 +625,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         try
         {
             // Send the message unless we are in "testMode"
-            if(!testMode && preparedMessage != null)
+            if (preparedMessage != null)
             {
-                javaMailSender.send(preparedMessage.getMimeMessage());
-            }
-            else if (validNodeRefIfPresent(actionedUponNodeRef))
-            {
-               try {
-                  MimeMessage mimeMessage = javaMailSender.createMimeMessage(); 
-                  prepareEmail(ruleAction, actionedUponNodeRef);
-                  lastTestMessage = mimeMessage;
-               } catch(Exception e) {
-                  System.err.println(e);
-               }
+                if (!testMode)
+                {
+                    javaMailSender.send(preparedMessage.getMimeMessage());
+                }
+                else
+                {
+                    lastTestMessage = preparedMessage.getMimeMessage();
+                }
             }
         }
         catch (MailException e)

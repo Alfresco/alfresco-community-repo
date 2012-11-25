@@ -2,113 +2,117 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    
     <!--  Assignable Capabilities -->
-    
+
     <!--  Cut off -->
-    <bean id="rmApproveRecordsScheduledForCutoffCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="ApproveRecordsScheduledForCutoff"/>
-   		<property name="permission" value="ApproveRecordsScheduledForCutoff"/>   		
-		<property name="kinds">
-			<list>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</list>
-		</property>	
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/>   				
-   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
-   			</map>
-   		</property>
+    <bean id="rmApproveRecordsScheduledForCutoffCapability"
+          parent="rmCutoffGroup">
+        <property name="name" value="ApproveRecordsScheduledForCutoff"/>
+        <property name="permission" value="ApproveRecordsScheduledForCutoff"/>
+        <property name="kinds">
+            <list>
+                <value>RECORD_FOLDER</value>
+                <value>RECORD</value>
+            </list>
+        </property>
+        <property name="conditions">
+            <map>
+                <entry key="capabilityCondition.filling" value="true"/>
+                <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+            </map>
+        </property>
     </bean>
-        
-    <!--  Transfer -->    
-    <bean id="rmAuthorizeAllTransfersCapability" 
-    	  parent="compositeCapability">
-        <property name="name" value="AuthorizeAllTransfers"/>  
-   		<property name="permission" value="AuthorizeAllTransfers"/>  	
-    	<property name="capabilities">
-    		<list>
-    			<ref bean="rmInitiateAllTransfersCapability"/>       			
-    			<ref bean="rmCompleteAllTransfersCapability"/>   			    			    		
-    		</list>
-    	</property>
+
+    <!--  Transfer -->
+    <bean id="rmAuthorizeAllTransfersCapability"
+          parent="compositeCapability">
+        <property name="name" value="AuthorizeAllTransfers"/>
+        <property name="permission" value="AuthorizeAllTransfers"/>
+        <property name="capabilities">
+            <list>
+                <ref bean="rmInitiateAllTransfersCapability"/>
+                <ref bean="rmCompleteAllTransfersCapability"/>
+            </list>
+        </property>
+        <property name="groupId" value="dispositionAndTransfers" />
     </bean>
-    
-    <!--  Accession --> 
-    <bean id="rmAuthorizeNominatedTransfersCapability" 
-    	  parent="compositeCapability">
-        <property name="name" value="AuthorizeNominatedTransfers"/>  
-   		<property name="permission" value="AuthorizeNominatedTransfers"/>
-    	<property name="capabilities">
-    		<list>
-    			<ref bean="rmInitiateNominatedTransfersCapability"/>       			
-    			<ref bean="rmCompleteNominatedTransfersCapability"/>   			    			    		
-    		</list>
-    	</property>
+
+    <!--  Accession -->
+    <bean id="rmAuthorizeNominatedTransfersCapability"
+          parent="compositeCapability">
+        <property name="name" value="AuthorizeNominatedTransfers"/>
+        <property name="permission" value="AuthorizeNominatedTransfers"/>
+        <property name="capabilities">
+            <list>
+                <ref bean="rmInitiateNominatedTransfersCapability"/>
+                <ref bean="rmCompleteNominatedTransfersCapability"/>
+            </list>
+        </property>
+        <property name="groupId" value="dispositionAndTransfers" />
     </bean>
-    
+
     <!--  Destroy -->
-    <bean id="rmDestroyRecordsScheduledForDestructionCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="DestroyRecordsScheduledForDestruction"/>
-   		<property name="permission" value="DestroyRecordsScheduledForDestruction"/>   		
-   		<property name="kinds">
-			<list>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</list>
-		</property>			
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/> 
-   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
-   				<entry key="capabilityCondition.destroyIsScheduled" value="true"/>
-   			</map>
-   		</property>
+    <bean id="rmDestroyRecordsScheduledForDestructionCapability"
+          parent="declarativeCapability">
+        <property name="name" value="DestroyRecordsScheduledForDestruction"/>
+        <property name="permission" value="DestroyRecordsScheduledForDestruction"/>
+        <property name="kinds">
+            <list>
+                <value>RECORD_FOLDER</value>
+                <value>RECORD</value>
+            </list>
+        </property>
+        <property name="conditions">
+            <map>
+                <entry key="capabilityCondition.filling" value="true"/>
+                <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+                <entry key="capabilityCondition.destroyIsScheduled" value="true"/>
+            </map>
+        </property>
+        <property name="groupId" value="dispositionAndTransfers" />
     </bean>
-            
-    <!--  Unscheduled Destroy -->     
+
+    <!--  Unscheduled Destroy -->
     <bean id="rmDestroyRecordsCapability"
-    	  parent="declarativeCapability">
-   		<property name="name" value="DestroyRecords"/>
-   		<property name="permission" value="DestroyRecords"/>   		
-		<property name="kinds">
-			<list>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</list>
-		</property>	
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/> 
-   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
-   				<entry key="capabilityCondition.destroyMayBeScheduled" value="true"/>
-   			</map>
-   		</property>
-    </bean>    
-    
+          parent="declarativeCapability">
+        <property name="name" value="DestroyRecords"/>
+        <property name="permission" value="DestroyRecords"/>
+        <property name="kinds">
+            <list>
+                <value>RECORD_FOLDER</value>
+                <value>RECORD</value>
+            </list>
+        </property>
+        <property name="conditions">
+            <map>
+                <entry key="capabilityCondition.filling" value="true"/>
+                <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+                <entry key="capabilityCondition.destroyMayBeScheduled" value="true"/>
+            </map>
+        </property>
+        <property name="groupId" value="dispositionAndTransfers" />
+    </bean>
+
     <!--  Manually Change Disposition Dates -->
-    <bean id="rmManuallyChangeDispositionDatesCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="ManuallyChangeDispositionDates"/>
-   		<property name="permission" value="ManuallyChangeDispositionDates"/>  		
-   		<property name="kinds">
-			<list>
-				<value>RECORD_FOLDER</value>
-				<value>RECORD</value>
-			</list>
-		</property>	 		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/> 
-   				<entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>   	
-   				<entry key="capabilityCondition.hasDispositionAsOfDate" value="true"/> 
-   				<entry key="capabilityCondition.isTransferring" value="false" />
-   			</map>
-   		</property>
+    <bean id="rmManuallyChangeDispositionDatesCapability"
+          parent="declarativeCapability">
+        <property name="name" value="ManuallyChangeDispositionDates"/>
+        <property name="permission" value="ManuallyChangeDispositionDates"/>
+        <property name="kinds">
+            <list>
+                <value>RECORD_FOLDER</value>
+                <value>RECORD</value>
+            </list>
+        </property>
+        <property name="conditions">
+            <map>
+                <entry key="capabilityCondition.filling" value="true"/>
+                <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+                <entry key="capabilityCondition.hasDispositionAsOfDate" value="true"/>
+                <entry key="capabilityCondition.isTransferring" value="false" />
+            </map>
+        </property>
+        <property name="groupId" value="dispositionAndTransfers" />
     </bean>
 
 	<!--  Non-assignable Capabilities -->

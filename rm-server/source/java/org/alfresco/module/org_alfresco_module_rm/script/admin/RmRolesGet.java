@@ -37,57 +37,57 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Get information about record management roles
- * 
+ *
  * @author Roy Wetherall
  */
 public class RmRolesGet extends DeclarativeWebScript
 {
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RmRolesGet.class);
-    
-    private RecordsManagementService rmService;
-    private RecordsManagementSecurityService rmSecurityService;
-    
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService rmSecurityService)
-    {
-        this.rmSecurityService = rmSecurityService;
-    }
-    
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
+   @SuppressWarnings("unused")
+   private static Log logger = LogFactory.getLog(RmRolesGet.class);
 
-    @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, Object> model = new HashMap<String, Object>();
-        Set<Role> roles = null;
-        
-        // TODO should be passed 
-        List<NodeRef> roots = rmService.getFilePlans();
-        if (roots != null && roots.size() > 0)
-        {
-           NodeRef root = roots.get(0);
-           
-           // Get the user filter
-           String user  = req.getParameter("user");
-           if (user != null && user.length() != 0)
-           {
-               roles = rmSecurityService.getRolesByUser(root, user);
-           }
-           else
-           {
-               roles = rmSecurityService.getRoles(root);
-           }
-        }
-        else
-        {
-           roles = new HashSet<Role>(1);
-        }
+   private RecordsManagementService rmService;
+   private RecordsManagementSecurityService rmSecurityService;
 
-        model.put("roles", roles);
-        
-        return model;
+   public void setRecordsManagementSecurityService(RecordsManagementSecurityService rmSecurityService)
+   {
+      this.rmSecurityService = rmSecurityService;
+   }
+
+   public void setRecordsManagementService(RecordsManagementService rmService)
+   {
+      this.rmService = rmService;
+   }
+
+   @Override
+   public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+   {
+      Map<String, Object> model = new HashMap<String, Object>();
+      Set<Role> roles = null;
+
+      // TODO should be passed 
+      List<NodeRef> roots = rmService.getFilePlans();
+      if (roots != null && roots.size() > 0)
+      {
+         NodeRef root = roots.get(0);
+
+         // Get the user filter
+         String user  = req.getParameter("user");
+         if (user != null && user.length() != 0)
+         {
+            roles = rmSecurityService.getRolesByUser(root, user);
+         }
+         else
+         {
+            roles = rmSecurityService.getRoles(root);
+         }
+      }
+      else
+      {
+         roles = new HashSet<Role>(1);
+      }
+
+      model.put("roles", roles);
+
+      return model;
     }
 }

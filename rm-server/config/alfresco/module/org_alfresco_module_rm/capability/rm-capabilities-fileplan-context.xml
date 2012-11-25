@@ -2,20 +2,21 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    
+
     <!--  Assignable Capabilities -->
-        
-    <bean id="rmCreateModifyDestroyFileplanMetadataCapability" 
-    	  parent="compositeCapability">
-   		<property name="name" value="CreateModifyDestroyFileplanMetadata"/>
-   		<property name="permission" value="CreateModifyDestroyFileplanMetadata"/>   		
+
+    <bean id="rmCreateModifyDestroyFileplanMetadataCapability"
+          parent="compositeCapability">
+        <property name="name" value="CreateModifyDestroyFileplanMetadata"/>
+        <property name="permission" value="CreateModifyDestroyFileplanMetadata"/>
         <property name="capabilities">
-    		<list>
-    			<ref bean="rmCreateRootRecordCategoryCapability"/>   
-    			<ref bean="rmCreateModifyDestroyRecordCategoryCapability"/>   
-				<ref bean="rmCreateModifyDestroyUnfiledRecordContainerCapability"/> 	    			
-    		</list>
-    	</property>
+            <list>
+                <ref bean="rmCreateRootRecordCategoryCapability"/>
+                <ref bean="rmCreateModifyDestroyRecordCategoryCapability"/>
+                <ref bean="rmCreateModifyDestroyUnfiledRecordContainerCapability"/>
+            </list>
+        </property>
+        <property name="groupId" value="filePlanMetadataListsAndEmail" />
     </bean>
 
     <!--  Unassignable Capabilities -->    

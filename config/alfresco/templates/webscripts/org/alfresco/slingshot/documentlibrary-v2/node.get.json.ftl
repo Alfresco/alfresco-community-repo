@@ -9,7 +9,8 @@
       <#if doclist.customJSON??>"custom": <#noescape>${doclist.customJSON},</#noescape></#if>
       "onlineEditing": ${doclist.onlineEditing?string},
       "workingCopyLabel": "${workingCopyLabel}",
-      "shareURL": "${site.getShareUrl()}"
+      "shareURL": "${site.getShareUrl()}",
+      "serverURL": "${url.server}"
    },
    "item":
    {

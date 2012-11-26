@@ -95,12 +95,4 @@ public interface CapabilityService
     * @return
     */
    AccessStatus getCapabilityAccessState(NodeRef nodeRef, String capabilityName);
-
-   /**
-    * Gets all the capabilities grouped by their ids. The map key is the group id of a capability and the 
-    * value is another map with the key being the capability name and the value being the capability title
-    * 
-    * @return Map of capabilities grouped by their ids
-    */
-   Map<String, Map<String, String>> getGroupedCapabilities();
 }

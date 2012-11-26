@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -96,7 +97,33 @@ public class CapabilitiesGet extends DeclarativeWebScript
       Map<String, Object> model = new HashMap<String, Object>(1);
       if (grouped == true)
       {
-         model.put("groupedCapabilities", capabilityService.getGroupedCapabilities());
+         // Construct the map which is needed to build the model
+         Map<String, GroupedCapabilities> groupedCapabilitiesMap = new HashMap<String, GroupedCapabilities>(13);
+
+         Set<Capability> capabilities = capabilityService.getCapabilities();
+         for (Capability capability : capabilities)
+         {
+            String capabilityGroupTitle = capability.getGroupTitle();
+            if (StringUtils.isNotBlank(capabilityGroupTitle))
+            {
+               String capabilityGroupId = capability.getGroupId();
+               String capabilityName = capability.getName();
+               String capabilityTitle = capability.getTitle();
+
+               if (groupedCapabilitiesMap.containsKey(capabilityGroupId))
+               {
+                  groupedCapabilitiesMap.get(capabilityGroupId).addCapability(capabilityName, capabilityTitle);
+               }
+               else
+               {
+                  GroupedCapabilities groupedCapabilities = new GroupedCapabilities(capabilityGroupId, capabilityGroupTitle, capabilityName, capabilityTitle);
+                  groupedCapabilities.addCapability(capabilityName, capabilityTitle);
+                  groupedCapabilitiesMap.put(capabilityGroupId, groupedCapabilities);
+               }
+            }
+         }
+
+         model.put("groupedCapabilities", groupedCapabilitiesMap);
       }
       else
       {
@@ -122,5 +149,57 @@ public class CapabilitiesGet extends DeclarativeWebScript
       }
 
       return model;
+   }
+
+   /**
+    * Class to represent grouped capabilities for use in a Freemarker template
+    *
+    */
+   public class GroupedCapabilities
+   {
+      private String capabilityGroupId;
+      private String capabilityGroupTitle;
+      private String capabilityName;
+      private String capabilityTitle;
+      private Map<String, String> capabilities;
+
+      public GroupedCapabilities(String capabilityGroupId, String capabilityGroupTitle, String capabilityName, String capabilityTitle)
+      {
+         this.capabilityGroupId = capabilityGroupId;
+         this.capabilityGroupTitle = capabilityGroupTitle;
+         this.capabilityName = capabilityName;
+         this.capabilityTitle = capabilityTitle;
+         this.capabilities = new HashMap<String, String>(5);
+      }
+
+      public String getGroupId()
+      {
+         return this.capabilityGroupId;
+      }
+
+      public String getGroupTitle()
+      {
+         return this.capabilityGroupTitle;
+      }
+
+      public String getCapabilityName()
+      {
+         return this.capabilityName;
+      }
+
+      public String getCapabilityTitle()
+      {
+         return this.capabilityTitle;
+      }
+
+      public Map<String, String> getCapabilities()
+      {
+         return this.capabilities;
+      }
+
+      public void addCapability(String capabilityName, String capabilityTitle)
+      {
+         this.capabilities.put(capabilityName, capabilityTitle);
+      }
    }
 }

@@ -28,7 +28,6 @@ import java.util.Set;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Roy Wetherall
@@ -169,36 +168,5 @@ public class CapabilityServiceImpl implements CapabilityService
          result = map.get(capability);
       }
       return result;
-   }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getGroupedCapabilities()
-    */
-   @Override
-   public Map<String, Map<String, String>> getGroupedCapabilities()
-   {
-      Map<String, Map<String, String>> groupedCapabilities = new HashMap<String, Map<String, String>>(capabilities.size());
-      for (Capability capability : getCapabilities(true))
-      {
-         String groupTitle = capability.getGroupTitle();
-         if (StringUtils.isNotBlank(groupTitle))
-         {
-            String capabilityName = capability.getName();
-            String capabilityTitle = capability.getTitle();
-
-            if (groupedCapabilities.containsKey(groupTitle))
-            {
-               groupedCapabilities.get(groupTitle).put(capabilityName, capabilityTitle);
-            }
-            else
-            {
-               Map<String, String> capabilityList = new HashMap<String, String>(13);
-               capabilityList.put(capabilityName, capabilityTitle);
-               groupedCapabilities.put(groupTitle, capabilityList);
-            }
-         }
-      }
-
-      return groupedCapabilities;
    }
 }

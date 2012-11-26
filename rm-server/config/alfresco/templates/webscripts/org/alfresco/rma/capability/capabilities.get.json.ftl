@@ -4,19 +4,21 @@
       <#if groupedCapabilities??>
       "groupedCapabilities":
       [
-         <#assign keys = groupedCapabilities?keys>
-         <#list keys as key>
+         <#list groupedCapabilities?keys as groupedCapabilityKey>
          {
-            "${key}":
-            <#assign capabilitiesMap = groupedCapabilities[key]>
-            <#assign capabilitiesKeys = capabilitiesMap?keys>
+            "${groupedCapabilityKey}":
             {
-            <#list capabilitiesKeys as capabilitiesKey>
-               "${capabilitiesKey}": "${capabilitiesMap[capabilitiesKey]}"
-               <#if capabilitiesKey_has_next>,</#if>
-            </#list>
+               <#assign groupedCapability = groupedCapabilities[groupedCapabilityKey]>
+               groupTitle: "${groupedCapability.groupTitle}",
+               capabilities:
+               {
+               <#assign capabilities = groupedCapability.capabilities>
+               <#list capabilities?keys as capabilityKey>
+                  "${capabilityKey}": "${capabilities[capabilityKey]}"<#if capabilityKey_has_next>,</#if>
+               </#list>
+               }
             }
-         }<#if key_has_next>,</#if>
+         }<#if groupedCapabilityKey_has_next>,</#if>
          </#list>
       ]
       <#else>

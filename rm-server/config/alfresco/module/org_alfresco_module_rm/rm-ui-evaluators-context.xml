@@ -311,6 +311,7 @@
                 <value>FILE_PLAN</value>
                 <value>RECORD_CATEGORY</value>
                 <value>RECORD_FOLDER</value>
+                <value>UNFILED_RECORD_CONTAINER</value>
             </set>
         </property>
         <property name="capability" value ="ManageAccessRights"/>

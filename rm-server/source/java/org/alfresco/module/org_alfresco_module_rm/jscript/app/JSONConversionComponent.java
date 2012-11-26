@@ -29,6 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.namespace.QName;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -39,226 +40,230 @@ import org.json.simple.JSONObject;
  */
 public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONConversionComponent
 {
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
-    
-    /** Record service */
-    private RecordService recordService;
-    
-    /** Capability service */
-    private CapabilityService capabilityService;
-    
-    /** Indicators */
-    private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
-    
-    /** Actions */
-    private List<BaseEvaluator> actions = new ArrayList<BaseEvaluator>();
-    
-    /**
-     * @param recordsManagementService  records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }   
-    
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
-    
-    /**
-     * @param capabilityService     capability service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
-        this.capabilityService = capabilityService;
-    }
-    
-    /**
-     * @param indicator  registered indicator
-     */
-    public void registerIndicator(BaseEvaluator indicator)
-    {
-        indicators.add(indicator);
-    }
-    
-    /**
-     * @param action    registered action
-     */
-    public void registerAction(BaseEvaluator action)
-    {
-        actions.add(action);
-    }
+   /** Records management service */
+   private RecordsManagementService recordsManagementService;
 
-    /**
-     * @see org.alfresco.repo.jscript.app.JSONConversionComponent#setRootValues(org.alfresco.service.cmr.model.FileInfo, org.json.simple.JSONObject, boolean)
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    protected void setRootValues(FileInfo nodeInfo, JSONObject rootJSONObject, boolean useShortQNames)
-    {
-        // Set the base root values
-        super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
-        
-        // Get the node reference for convenience
-        NodeRef nodeRef = nodeInfo.getNodeRef();
-                
-        if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef, RMPermissionModel.VIEW_RECORDS)) == true)
-        {
-            // Indicate whether the node is a RM object or not
-            boolean isFilePlanComponent = recordsManagementService.isFilePlanComponent(nodeInfo.getNodeRef());
-            rootJSONObject.put("isRmNode", isFilePlanComponent);
-            
-            if (isFilePlanComponent == true)
-            {                    
-                rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, rootJSONObject, useShortQNames));
-            }
-        }
-    }
-    
-    /**
-     * 
-     * @param nodeRef
-     * @param rootJSONObject
-     * @param useShortQName
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    private JSONObject setRmNodeValues(NodeRef nodeRef, JSONObject rootJSONObject, boolean useShortQName)
-    {
-        JSONObject rmNodeValues = new JSONObject();
-        
-        // UI convenience type
-        rmNodeValues.put("uiType", getUIType(nodeRef));
+   /** Record service */
+   private RecordService recordService;
 
-        // Get the 'kind' of the file plan component
-        FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(nodeRef);
-        rmNodeValues.put("kind", kind.toString());        
-        
-        // File plan node reference
-        NodeRef filePlan = recordsManagementService.getFilePlan(nodeRef);
-        rmNodeValues.put("filePlan", filePlan.toString());
-        
-        // Unfiled container node reference
-        rmNodeValues.put("unfiledRecordContainer", recordService.getUnfiledRecordContainer(filePlan).toString());
-        
-        // Set the indicators array
-        setIndicators(rmNodeValues, nodeRef);
-        
-        // Set the actions array
-        setActions(rmNodeValues, nodeRef);
-        
-        return rmNodeValues;
-    }
-  
-    @SuppressWarnings("unchecked")
-    private void setIndicators(JSONObject rmNodeValues, NodeRef nodeRef)
-    {
-        if (indicators != null && indicators.isEmpty() == false)
-        {
-            JSONArray jsonIndicators = new JSONArray();
-            
-            for (BaseEvaluator indicator : indicators)
-            {
-                if (indicator.evaluate(nodeRef) == true)
-                {
-                    jsonIndicators.add(indicator.getName());
-                }
-            }
-            
-            rmNodeValues.put("indicators", jsonIndicators);
-        }
-    }
-    
-    @SuppressWarnings("unchecked")
-    private void setActions(JSONObject rmNodeValues, NodeRef nodeRef)
-    {
-        if (actions != null && actions.isEmpty() == false)
-        {
-            JSONArray jsonActions = new JSONArray();
-            
-            for (BaseEvaluator action : actions)
-            {
-                if (action.evaluate(nodeRef) == true)
-                {
-                    jsonActions.add(action.getName());
-                }
-            }
+   /** Capability service */
+   private CapabilityService capabilityService;
 
-            rmNodeValues.put("actions", jsonActions);
-        }
-    }
-    
-    /**
-     * Gets the rm 'type' used as a UI convenience and compatibility flag.
-     */
-    private String getUIType(NodeRef nodeRef)
-    {
-        String result = "unknown";
-        
-        FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(nodeRef); 
-        if (kind != null)
-        {
-            switch (kind)
+   /** Indicators */
+   private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
+
+   /** Actions */
+   private List<BaseEvaluator> actions = new ArrayList<BaseEvaluator>();
+
+   /**
+    * @param recordsManagementService  records management service
+    */
+   public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+   {
+      this.recordsManagementService = recordsManagementService;
+   }
+
+   /**
+    * @param recordService record service
+    */
+   public void setRecordService(RecordService recordService)
+   {
+      this.recordService = recordService;
+   }
+
+   /**
+    * @param capabilityService     capability service
+    */
+   public void setCapabilityService(CapabilityService capabilityService)
+   {
+      this.capabilityService = capabilityService;
+   }
+
+   /**
+    * @param indicator  registered indicator
+    */
+   public void registerIndicator(BaseEvaluator indicator)
+   {
+      indicators.add(indicator);
+   }
+
+   /**
+    * @param action    registered action
+    */
+   public void registerAction(BaseEvaluator action)
+   {
+      actions.add(action);
+   }
+
+   /**
+    * @see org.alfresco.repo.jscript.app.JSONConversionComponent#setRootValues(org.alfresco.service.cmr.model.FileInfo, org.json.simple.JSONObject, boolean)
+    */
+   @SuppressWarnings("unchecked")
+   @Override
+   protected void setRootValues(FileInfo nodeInfo, JSONObject rootJSONObject, boolean useShortQNames)
+   {
+      // Set the base root values
+      super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
+
+      // Get the node reference for convenience
+      NodeRef nodeRef = nodeInfo.getNodeRef();
+
+      if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef, RMPermissionModel.VIEW_RECORDS)) == true)
+      {
+         // Indicate whether the node is a RM object or not
+         boolean isFilePlanComponent = recordsManagementService.isFilePlanComponent(nodeInfo.getNodeRef());
+         rootJSONObject.put("isRmNode", isFilePlanComponent);
+
+         if (isFilePlanComponent == true)
+         {
+            rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, rootJSONObject, useShortQNames));
+         }
+      }
+   }
+
+   /**
+    * 
+    * @param nodeRef
+    * @param rootJSONObject
+    * @param useShortQName
+    * @return
+    */
+   @SuppressWarnings("unchecked")
+   private JSONObject setRmNodeValues(NodeRef nodeRef, JSONObject rootJSONObject, boolean useShortQName)
+   {
+      JSONObject rmNodeValues = new JSONObject();
+
+      // UI convenience type
+      rmNodeValues.put("uiType", getUIType(nodeRef));
+
+      // Get the 'kind' of the file plan component
+      FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(nodeRef);
+      rmNodeValues.put("kind", kind.toString());
+
+      // File plan node reference
+      NodeRef filePlan = recordsManagementService.getFilePlan(nodeRef);
+      rmNodeValues.put("filePlan", filePlan.toString());
+
+      // Unfiled container node reference
+      NodeRef unfiledRecordContainer = recordService.getUnfiledRecordContainer(filePlan);
+      rmNodeValues.put("unfiledRecordContainer", unfiledRecordContainer.toString());
+      rmNodeValues.put("properties", propertiesToJSON(unfiledRecordContainer, useShortQName));
+      QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
+      rmNodeValues.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
+
+      // Set the indicators array
+      setIndicators(rmNodeValues, nodeRef);
+
+      // Set the actions array
+      setActions(rmNodeValues, nodeRef);
+
+      return rmNodeValues;
+   }
+
+   @SuppressWarnings("unchecked")
+   private void setIndicators(JSONObject rmNodeValues, NodeRef nodeRef)
+   {
+      if (indicators != null && indicators.isEmpty() == false)
+      {
+         JSONArray jsonIndicators = new JSONArray();
+
+         for (BaseEvaluator indicator : indicators)
+         {
+            if (indicator.evaluate(nodeRef) == true)
             {
-                case FILE_PLAN:
-                {       
-                    result = "fileplan";
-                    break;
-                }
-                case RECORD_CATEGORY:
-                {
-                    result = "record-category";
-                    break;
-                }
-                case RECORD_FOLDER:
-                {
-                    if (recordsManagementService.isMetadataStub(nodeRef) == true)
-                    {
-                        result = "metadata-stub-folder";
-                    }
-                    else
-                    {
-                        result = "record-folder";
-                    }
-                    break;
-                }
-                case RECORD:
-                {
-                    if (recordsManagementService.isMetadataStub(nodeRef) == true)
-                    {
-                        result = "metadata-stub";
-                    }
-                    else
-                    {
-                        if (recordService.isDeclared(nodeRef) == true)
-                        {
-                            result = "record";
-                        }
-                        else
-                        {
-                            result = "undeclared-record";
-                        }
-                    }
-                    break;
-                }
-                case HOLD:
-                {
-                    result = "hold-container";
-                    break;
-                }
-                case TRANSFER:
-                {
-                    result = "transfer-container";
-                    break;
-                }
-            }        
-        }
-        
-        return result;
-    }
+               jsonIndicators.add(indicator.getName());
+            }
+         }
+
+         rmNodeValues.put("indicators", jsonIndicators);
+      }
+   }
+
+   @SuppressWarnings("unchecked")
+   private void setActions(JSONObject rmNodeValues, NodeRef nodeRef)
+   {
+      if (actions != null && actions.isEmpty() == false)
+      {
+         JSONArray jsonActions = new JSONArray();
+
+         for (BaseEvaluator action : actions)
+         {
+            if (action.evaluate(nodeRef) == true)
+            {
+               jsonActions.add(action.getName());
+            }
+         }
+
+         rmNodeValues.put("actions", jsonActions);
+      }
+   }
+
+   /**
+    * Gets the rm 'type' used as a UI convenience and compatibility flag.
+    */
+   private String getUIType(NodeRef nodeRef)
+   {
+      String result = "unknown";
+
+      FilePlanComponentKind kind = recordsManagementService.getFilePlanComponentKind(nodeRef);
+      if (kind != null)
+      {
+         switch (kind)
+         {
+            case FILE_PLAN:
+            {
+               result = "fileplan";
+               break;
+            }
+            case RECORD_CATEGORY:
+            {
+               result = "record-category";
+               break;
+            }
+            case RECORD_FOLDER:
+            {
+               if (recordsManagementService.isMetadataStub(nodeRef) == true)
+               {
+                  result = "metadata-stub-folder";
+               }
+               else
+               {
+                  result = "record-folder";
+               }
+               break;
+            }
+            case RECORD:
+            {
+               if (recordsManagementService.isMetadataStub(nodeRef) == true)
+               {
+                  result = "metadata-stub";
+               }
+               else
+               {
+                  if (recordService.isDeclared(nodeRef) == true)
+                  {
+                     result = "record";
+                  }
+                  else
+                  {
+                     result = "undeclared-record";
+                  }
+               }
+               break;
+            }
+            case HOLD:
+            {
+               result = "hold-container";
+               break;
+            }
+            case TRANSFER:
+            {
+               result = "transfer-container";
+               break;
+            }
+         }
+      }
+
+      return result;
+   }
 }

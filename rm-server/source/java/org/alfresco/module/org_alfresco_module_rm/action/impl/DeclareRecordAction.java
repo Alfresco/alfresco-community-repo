@@ -78,7 +78,7 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
 
                // remove all owner related rights 
                this.ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
-            }            
+            }
             else
             {
                logger.debug(buildMissingPropertiesErrorString(missingProperties));
@@ -108,8 +108,8 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
    /**
     * Helper method to check whether all the mandatory properties of the node have been set
     * 
-    * @param nodeRef    node reference
-    * @return boolean   true if all mandatory properties are set, false otherwise
+    * @param nodeRef node reference
+    * @return boolean true if all mandatory properties are set, false otherwise
     */
    private boolean mandatoryPropertiesSet(NodeRef nodeRef, List<String> missingProperties)
    {
@@ -162,8 +162,8 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
    /**
     * Log information about missing properties.
     * 
-    * @param propDef             property definition
-    * @param missingProperties   missing properties
+    * @param propDef               property definition
+    * @param missingProperties     missing properties
     */
    private void logMissingProperty(PropertyDefinition propDef, List<String> missingProperties)
    {
@@ -203,22 +203,8 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
             {
                return true;
             }
-            else
-            {
-               if (throwException)
-               {
-                  throw new AlfrescoRuntimeException(buildMissingPropertiesErrorString(missingProperties));
-               }
-               else
-               {
-                  return false;
-               }
-            }
          }
-         else
-         {
-            return false;
-         }
+         return false;
       }
       else
       {
@@ -232,4 +218,5 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
          }
       }
    }
+
 }

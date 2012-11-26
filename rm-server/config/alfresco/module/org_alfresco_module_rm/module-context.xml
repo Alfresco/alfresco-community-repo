@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-	 <bean id="permissionServiceImpl" class="org.alfresco.module.org_alfresco_module_rm.permission.PermissionServiceImpl" init-method="init">
+	 <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.RMPermissionServiceImpl" init-method="init">
         <property name="nodeService">
             <ref bean="mtAwareNodeService" />
         </property>
@@ -131,9 +131,6 @@
         
     <!--  Import DOD 5015 -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/dod5015/dod5015-context.xml"/>
-    
-    <!--  Import Demo Context -->
-    <import resource="classpath:alfresco/module/org_alfresco_module_rm/demo/demo-context.xml"/>
     
     <!-- Import the RM identifier service's -->
     <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-id-context.xml"/>

@@ -12,12 +12,12 @@ dependencies {
 	testRuntime files(configDir)
 	testRuntime files(testResourceDir)
 	
-	testRuntime group: alfrescoGroupId, name: 'alfresco', version: alfrescoBaseVersion, type: 'war'
-	testRuntime group: alfrescoGroupId, name: 'alfresco-solr', version: alfrescoBaseVersion, type: 'zip'
+	alfrescoDeps group: alfrescoGroupId, name: 'alfresco', version: alfrescoBaseVersion, type: 'war'
+	alfrescoDeps group: alfrescoGroupId, name: 'alfresco-solr', version: alfrescoBaseVersion, type: 'zip'
 }
 
 task fetchSOLR(type:Copy) {
-	from configurations.testRuntime
+	from configurations.alfrescoDeps
 	into '.'
 	include '*.zip'
 	rename { String filename -> solrFile }

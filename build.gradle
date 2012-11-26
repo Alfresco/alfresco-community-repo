@@ -109,6 +109,10 @@ subprojects {
 		}
 	}
 	
+	configurations {
+		alfrescoDeps
+	}	
+	
 	configurations.all {
 		exclude group: 'com.sun.jdmk', module: 'jmxtools'
 		exclude group: 'com.sun.jmx', module: 'jmxri'
@@ -143,7 +147,7 @@ subprojects {
 	/** --- Dependancy tasks --- */	
 
 	task fetchWarFile(type:Copy) {
-        from configurations.testRuntime
+        from configurations.alfrescoDeps
         into '.'
         include '*.war'
         rename { String filename -> warFile }

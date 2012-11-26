@@ -231,4 +231,5 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Extended readers aspect
     public static final QName ASPECT_EXTENDED_READERS = QName.createQName(RM_URI, "extendedReaders");
     public static final QName PROP_READERS = QName.createQName(RM_URI, "readers");
+
 }

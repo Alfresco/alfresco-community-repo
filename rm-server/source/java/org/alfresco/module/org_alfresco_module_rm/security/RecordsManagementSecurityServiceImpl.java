@@ -392,25 +392,25 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
             {
                 public Object doWork()
                 {
-                  Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
-                  for (AccessPermission perm : perms) 
-                  {
-                      if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false)
-                      {
-                        AccessStatus accessStatus = perm.getAccessStatus();
-                        boolean allow = false;
-                        if (AccessStatus.ALLOWED.equals(accessStatus) == true)
-                        {
-                           allow = true;
-                        }
-                        permissionService.setPermission(
-                              folderNodeRef, 
-                              perm.getAuthority(), 
-                              perm.getPermission(), 
-                              allow);
-                      }
-               }
-                  
+                	Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
+                	for (AccessPermission perm : perms) 
+                	{
+                	    if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false)
+                	    {
+                    		AccessStatus accessStatus = perm.getAccessStatus();
+                    		boolean allow = false;
+                    		if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                    		{
+                    			allow = true;
+                    		}
+                    		permissionService.setPermission(
+                    				folderNodeRef, 
+                    				perm.getAuthority(), 
+                    				perm.getPermission(), 
+                    				allow);
+                	    }
+        			}
+                	
                     return null;
                 }
             }, AuthenticationUtil.getSystemUserName());  

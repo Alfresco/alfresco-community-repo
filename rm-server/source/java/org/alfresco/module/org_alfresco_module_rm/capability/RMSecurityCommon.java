@@ -22,7 +22,7 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -31,6 +31,9 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * @author Roy Wetherall
@@ -41,6 +44,8 @@ public class RMSecurityCommon
     protected int NOSET_VALUE = -100;
     
     private static Log logger = LogFactory.getLog(RMSecurityCommon.class);
+    
+    private ApplicationContext applicationContext;
     
     protected NodeService nodeService;
     protected PermissionService permissionService;

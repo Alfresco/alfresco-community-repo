@@ -48,6 +48,7 @@
     	<property name="permissionService" ref="permissionService"/>
     	<property name="recordsManagementService" ref="recordsManagementService"/>
     	<property name="caveatConfigComponent" ref="caveatConfigComponent"/>
+    	<!-- <property name="recordService" ref="recordService"/> -->
     </bean>
     
     <!-- ====== -->

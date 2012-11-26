@@ -22,19 +22,39 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.BaseEvaluator;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
+ * Determines whether a node has multiple parents within a file plan
+ * 
  * @author Roy Wetherall
  */
 public class MultiParentEvaluator extends BaseEvaluator
 {
     @Override
-    protected boolean evaluateImpl(NodeRef nodeRef)
-    {
-        List<ChildAssociationRef> parents = nodeService.getParentAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-        return (parents.size() > 1);
+    protected boolean evaluateImpl(final NodeRef nodeRef)
+    {           
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
+        {
+            @Override
+            public Boolean doWork() throws Exception
+            {
+                List<ChildAssociationRef> parents = nodeService.getParentAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                int count = 0;
+                for (ChildAssociationRef parent : parents)
+                {
+                    if (nodeService.hasAspect(parent.getParentRef(), ASPECT_FILE_PLAN_COMPONENT) == true)
+                    {
+                        count++;
+                    }
+                }
+                
+                return (count > 1);                
+            }
+        });
     }
 }

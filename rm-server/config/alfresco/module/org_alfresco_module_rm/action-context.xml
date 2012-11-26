@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- I18N -->
+    <bean id="rmActionResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.module.org_alfresco_module_rm.messages.actions</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!--  Create record action -->
+    <bean id="create-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction">    	
+    	<property name="recordsManagementService" ref="RecordsManagementService"/>
+    	<property name="recordService" ref="RecordService" />
+    	<property name="nodeService" ref="NodeService" />
+    	<property name="applicableTypes">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
+        </property>
+    </bean>     
+    
+     <!--  File record action -->
+    <bean id="file-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.FileRecordAction">    	
+    	<property name="fileFolderService" ref="FileFolderService"/>
+    <!-- <property name="applicableTypes">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}content</value>
+            </list>
+        </property> -->
+    </bean>  
+    
+    <!--  Declare record action -->
+    <bean id="declare-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.DeclareRecordAction">
+        <property name="recordsManagementService" ref="RecordsManagementService" />
+        <property name="recordService" ref="RecordService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="ownableService" ref="OwnableService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+    </bean>
+</beans>    

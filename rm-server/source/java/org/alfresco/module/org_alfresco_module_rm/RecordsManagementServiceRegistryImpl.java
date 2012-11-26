@@ -71,15 +71,14 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
    {
       return (RecordsManagementService)getService(RECORDS_MANAGEMENT_SERVICE);
    }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordService()
-    */
-   @Override
-   public RecordService getRecordService()
-   {
-      return (RecordService)getService(RECORD_SERVICE);
-   }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordService()
+     */
+    public RecordService getRecordService()
+    {
+        return (RecordService)getService(RECORD_SERVICE);
+    }
 
    /**
     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementSecurityService()

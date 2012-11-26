@@ -114,7 +114,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
 
         if (recordsManagementService.isRecord(actionedUponNodeRef) == true)
         {
-            if (recordsManagementService.isRecordDeclared(actionedUponNodeRef) == false)
+            if (recordService.isDeclared(actionedUponNodeRef) == false)
             {
                 ChildAssociationRef parent = nodeService.getPrimaryParent(actionedUponNodeRef);
                 
@@ -175,7 +175,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     {
         if (recordsManagementService.isRecord(filePlanComponent) == true)
         {
-            if (recordsManagementService.isRecordDeclared(filePlanComponent))
+            if (recordService.isDeclared(filePlanComponent))
             {
                 if (throwException)
                 {

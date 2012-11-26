@@ -56,7 +56,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 
 /**
- * Event service implementation unit test
+ * Security service implementation unit test
  * 
  * @author Roy Wetherall
  */

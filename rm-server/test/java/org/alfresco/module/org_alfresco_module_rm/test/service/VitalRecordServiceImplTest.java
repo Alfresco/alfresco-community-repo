@@ -20,7 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.service;
 
 import java.util.Date;
 
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementSearchBehaviour;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordDefinition;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

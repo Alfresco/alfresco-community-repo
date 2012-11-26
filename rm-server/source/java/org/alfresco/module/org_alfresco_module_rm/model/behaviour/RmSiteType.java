@@ -16,8 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.model;
+package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -54,6 +55,9 @@ public class RmSiteType implements RecordsManagementModel,
     
     /** Record Management Search Service */
     private RecordsManagementSearchService recordsManagementSearchService;
+    
+    /** Behaviour */
+    JavaBehaviour behaviour = new JavaBehaviour(this, "onCreateNode", NotificationFrequency.FIRST_EVENT);
     
     /**
      * Set the policy component
@@ -98,7 +102,7 @@ public class RmSiteType implements RecordsManagementModel,
         policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnCreateNodePolicy.QNAME,
                 TYPE_RM_SITE,
-                new JavaBehaviour(this, "onCreateNode", NotificationFrequency.FIRST_EVENT));
+                behaviour);
     }
 
     /**
@@ -107,33 +111,41 @@ public class RmSiteType implements RecordsManagementModel,
 	@Override
 	public void onCreateNode(ChildAssociationRef childAssocRef) 
 	{
-		final NodeRef rmSite = childAssocRef.getChildRef();
-        
-        // Do not execute behaviour if this has been created in the archive store
-        if(rmSite.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == true)
-        {
-            // This is not the spaces store - probably the archive store
-            return;
-        }
-        
-        if (nodeService.exists(rmSite) == true)
-        {
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+	    behaviour.disable();
+	    try
+	    {	    
+    		final NodeRef rmSite = childAssocRef.getChildRef();
+            
+            // Do not execute behaviour if this has been created in the archive store
+            if(rmSite.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == true)
             {
-                public Object doWork()
+                // This is not the spaces store - probably the archive store
+                return;
+            }
+            
+            if (nodeService.exists(rmSite) == true)
+            {
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
-                	SiteInfo siteInfo = siteService.getSite(rmSite);
-                	if (siteInfo != null)
-                	{	                
-	                	// Create the file plan component
-	                	siteService.createContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY, TYPE_FILE_PLAN, null);
-	                	
-	                	// Add the reports
-	                	recordsManagementSearchService.addReports(siteInfo.getShortName());
-                	}
-                    return null;
-                }
-            }, AuthenticationUtil.getAdminUserName());
-        }
+                    public Object doWork()
+                    {
+                    	SiteInfo siteInfo = siteService.getSite(rmSite);
+                    	if (siteInfo != null)
+                    	{	                
+    	                	// Create the file plan component
+    	                	siteService.createContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY, TYPE_FILE_PLAN, null);
+    	                	
+    	                	// Add the reports
+    	                	recordsManagementSearchService.addReports(siteInfo.getShortName());
+                    	}
+                        return null;
+                    }
+                }, AuthenticationUtil.getAdminUserName());
+            }
+	    }
+	    finally
+	    {
+	        behaviour.enable();
+	    }
 	}
 }

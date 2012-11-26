@@ -4,7 +4,6 @@
 <beans>
 
     <!--  Assignable Capabilities -->
-
     <bean id="rmAccessAuditCapability"
           parent="rmAuditGroup">
         <property name="name" value="AccessAudit"/>

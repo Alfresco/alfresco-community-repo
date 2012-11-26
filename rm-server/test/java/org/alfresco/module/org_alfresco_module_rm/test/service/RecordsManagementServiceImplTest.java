@@ -574,10 +574,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
         });
     }
     
-    /********** Record methods **********/
 
-    // TODO void testGetRecordFolders(NodeRef record); 
-    
     /********** RM2 - Multi-hierarchy record taxonomy's **********/
     
     /**

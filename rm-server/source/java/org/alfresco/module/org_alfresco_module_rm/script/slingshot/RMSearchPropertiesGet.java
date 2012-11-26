@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -43,35 +43,45 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RMSearchPropertiesGet extends DeclarativeWebScript
 {
-    private RecordsManagementAdminService adminService;
-    
-    private RecordsManagementService recordsManagementService;
-    
-    private DictionaryService dictionaryService;
-    
+    /** Services */
+    private RecordsManagementAdminService adminService;    
+    private RecordService recordService;    
+    private DictionaryService dictionaryService;    
     private NamespaceService namespaceService;
-    
+   
+    /**
+     * @param adminService  records management admin service
+     */
     public void setAdminService(RecordsManagementAdminService adminService)
     {
         this.adminService = adminService;
     }
     
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    /**
+     * @param recordService     record service
+     */
+    public void setRecordService(RecordService recordService)
     {
-        this.recordsManagementService = recordsManagementService;
+        this.recordService = recordService;
     }
     
+    /**
+     * @param dictionaryService dictionary service
+     */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
     
+    /**
+     * @param namespaceService  namespace service
+     */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
     
-    /*
+    /**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
@@ -81,7 +91,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
         
         List<Group> groups = new ArrayList<Group>(5);
         
-        Set<QName> aspects = recordsManagementService.getRecordMetaDataAspects();
+        Set<QName> aspects = recordService.getRecordMetaDataAspects();
         for (QName aspect : aspects)
         {
             Map<QName, PropertyDefinition> properties = dictionaryService.getPropertyDefs(aspect);

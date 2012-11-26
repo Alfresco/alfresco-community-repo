@@ -101,6 +101,9 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
     /** Records management service */
     protected RecordsManagementService recordsManagementService;
     
+    /** Record service */
+    protected RecordService recordService;
+    
     /** Disposition service */
     protected DispositionService dispositionService;
     
@@ -118,9 +121,6 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
     
     /** Freeze Service */
     protected FreezeService freezeService;
-    
-    /** Record Service */
-    protected RecordService recordService;
     
     protected LinkedList<AbstractCapability> capabilities = new LinkedList<AbstractCapability>();;
     
@@ -301,10 +301,21 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         PropertyCheck.mandatory(this, "recordsManagementService", recordsManagementService);
         PropertyCheck.mandatory(this, "recordsManagementAdminService", recordsManagementAdminService);
         PropertyCheck.mandatory(this, "recordsManagementEventService", recordsManagementEventService);
+        
         for(AbstractCapability capability : capabilities)
         {
             capability.registerAction(this);
         }
+    }
+    
+    /**
+     * Indicates whether this records management action is public or not
+     * 
+     * @return  boolean true if public, false otherwise
+     */
+    public boolean isPublicAction()
+    {
+        return publicAction;
     }
     
     /**

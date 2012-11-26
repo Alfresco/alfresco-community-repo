@@ -33,7 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.model.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
@@ -43,6 +43,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -50,6 +51,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -104,6 +106,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected AuthorityService authorityService;
     protected PersonService personService;
     protected TransactionService transactionService;
+    protected FileFolderService fileFolderService;
+    protected PermissionService permissionService;
     
     /** RM Services */
     protected RecordsManagementService rmService;
@@ -261,6 +265,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("AuthenticationService");
         personService = (PersonService)this.applicationContext.getBean("PersonService");
         transactionService = (TransactionService)applicationContext.getBean("TransactionService");
+        fileFolderService = (FileFolderService)applicationContext.getBean("FileFolderService");
+        permissionService = (PermissionService)applicationContext.getBean("PermissionService");
         
         // Get RM services
         rmService = (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
@@ -325,16 +331,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void setupTestData()
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+    	doTestInTransaction(new Test<Void>()
         {
-            @Override
-            public Object execute() throws Throwable
+            public Void run()
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                setupTestDataImpl();
-                return null;
+            	setupTestDataImpl();
+            	return null;
             }
-        });
+        }, 
+        AuthenticationUtil.getSystemUserName());    	
     }
     
     /**

@@ -48,7 +48,7 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
     {
         if (recordsManagementService.isRecord(actionedUponNodeRef) == true)
         {
-            if (recordsManagementService.isRecordDeclared(actionedUponNodeRef) == true)
+            if (recordService.isDeclared(actionedUponNodeRef) == true)
             {
                 // Remove the declared aspect
                 this.nodeService.removeAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD);
@@ -73,7 +73,7 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
     {
         if (recordsManagementService.isRecord(filePlanComponent) == true)
         {
-            if (recordsManagementService.isRecordDeclared(filePlanComponent) == true)
+            if (recordService.isDeclared(filePlanComponent) == true)
             {
                return true;
             }

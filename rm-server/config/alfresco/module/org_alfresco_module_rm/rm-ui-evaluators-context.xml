@@ -7,6 +7,7 @@
     	  class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent" 
     	  parent="baseJsonConversionComponent">       
         <property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="recordService" ref="RecordService"/>
         <property name="capabilityService" ref="CapabilityService"/>
 	</bean>
 	
@@ -14,6 +15,7 @@
 	      abstract="true">
 		<property name="jsonConversionComponent" ref="jsonConversionComponent"/>
 		<property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="recordService" ref="RecordService"/>
 	    <property name="nodeService" ref="NodeService"/>
 	    <property name="namespaceService" ref="NamespaceService"/>
 	    <property name="capabilityService" ref="CapabilityService"/>

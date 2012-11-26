@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.model;
+package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,6 +36,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionScheduleImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordDefinition;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -315,13 +316,22 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
     
-    public void onAddRecordAspect(NodeRef nodeRef, QName aspectTypeQName)
+    public void onAddRecordAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        if (nodeService.exists(nodeRef) == true)
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
         {
-            applySearchAspect(nodeRef);
-            setupDispositionScheduleProperties(nodeRef);
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.exists(nodeRef) == true)
+                {
+                    applySearchAspect(nodeRef);
+                    setupDispositionScheduleProperties(nodeRef);
+                }
+                
+                return null;
+            }
+        });
     }
     
     public void recordFolderCreate(ChildAssociationRef childAssocRef)
@@ -494,20 +504,28 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
     }
     
-    public void rmSearchAspectAdd(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        if (nodeService.exists(nodeRef) == true)
+    public void rmSearchAspectAdd(final NodeRef nodeRef, final QName aspectTypeQName)
+    {     
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
         {
-            // Initialise the search parameters as required
-            setVitalRecordDefintionDetails(nodeRef);
-        }        
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.exists(nodeRef) == true)
+                {
+                    // Initialise the search parameteres as required
+                    setVitalRecordDefintionDetails(nodeRef);
+                }   
+                
+                return null;
+            }
+        });
     }
 
     public void vitalRecordDefintionAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        // Only care about record folders or record categories
-        if (recordsManagementService.isRecordFolder(nodeRef) == true ||
-            recordsManagementService.isRecordCategory(nodeRef) == true)
+        // Only care about record folders
+        if (recordsManagementService.isRecordFolder(nodeRef) == true)
         {
             updateVitalRecordDefinitionValues(nodeRef);         
         }
@@ -515,9 +533,8 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     
     public void vitalRecordDefintionUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        // Only care about record folders or record categories
-        if (recordsManagementService.isRecordFolder(nodeRef) == true ||
-            recordsManagementService.isRecordCategory(nodeRef) == true)
+        // Only care about record folders
+        if (recordsManagementService.isRecordFolder(nodeRef) == true)
         {
             Set<QName> props = new HashSet<QName>(1);
             props.add(PROP_REVIEW_PERIOD);
@@ -537,17 +554,14 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         applySearchAspect(nodeRef);
         setVitalRecordDefintionDetails(nodeRef);
         
-        if (recordsManagementService.isRecordFolder(nodeRef) == true)
-        {        
-            List<NodeRef> records = recordsManagementService.getRecords(nodeRef);
-            for (NodeRef record : records)
-            {
-                // Apply the search aspect
-                applySearchAspect(record);
-                
-                // Set the vital record definition details
-                setVitalRecordDefintionDetails(record);
-            }
+        List<NodeRef> records = recordsManagementService.getRecords(nodeRef);
+        for (NodeRef record : records)
+        {
+            // Apply the search aspect
+            applySearchAspect(record);
+            
+            // Set the vital record definition details
+            setVitalRecordDefintionDetails(record);
         }
     }
     

@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSet;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
-import org.alfresco.module.org_alfresco_module_rm.model.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.lang.StringUtils;

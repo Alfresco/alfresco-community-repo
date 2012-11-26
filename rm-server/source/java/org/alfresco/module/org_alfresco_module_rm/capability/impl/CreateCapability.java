@@ -26,6 +26,7 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
@@ -37,6 +38,13 @@ import org.alfresco.service.namespace.QName;
  */
 public class CreateCapability extends DeclarativeCapability
 {
+    private RecordService recordService;
+    
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
+    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -70,7 +78,7 @@ public class CreateCapability extends DeclarativeCapability
             {
                 if(linkee == null)
                 {
-                    if(rmService.isRecord(destination) && rmService.isRecordDeclared(destination) == false)
+                    if(rmService.isRecord(destination) && recordService.isDeclared(destination) == false)
                     {
                         if (permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                         {
@@ -80,7 +88,7 @@ public class CreateCapability extends DeclarativeCapability
                 }
                 else
                 {
-                    if(rmService.isRecord(linkee) && rmService.isRecord(destination) && rmService.isRecordDeclared(destination) == false)
+                    if(rmService.isRecord(linkee) && rmService.isRecord(destination) && recordService.isDeclared(destination) == false)
                     {
                         if (permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                         {

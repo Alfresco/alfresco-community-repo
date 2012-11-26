@@ -179,6 +179,13 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
             filterParams.query = "+PARENT:\"" + filterData + "\"";
          }
          break;
+         
+      case "unfiledRecords":
+    	  filterParams.variablePath = false;
+          filterQuery = "+PATH:\"" + parsedArgs.pathNode.qnamePath + "/rma:Unfiled_x0020_Records/*\"";
+          filterParams.query = filterQuery + filterQueryDefaults;	
+    	  
+    	  break;
 
       default:
          filterParams.variablePath = false;

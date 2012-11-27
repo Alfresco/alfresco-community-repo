@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -43,7 +42,6 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -61,9 +59,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Records management permission service implementation
@@ -71,9 +66,7 @@ import org.springframework.context.ApplicationContextAware;
  * @author Roy Wetherall
  */
 public class RecordsManagementSecurityServiceImpl implements RecordsManagementSecurityService, 
-                                                             RecordsManagementModel,
-                                                             ApplicationContextAware,
-                                                             NodeServicePolicies.OnMoveNodePolicy
+                                                             RecordsManagementModel
                                                              
 {
     /** Capability service */
@@ -105,18 +98,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementSecurityServiceImpl.class);
-    
-    /** Application context */
-    private ApplicationContext applicationContext;
-    
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
     
     /**
      * Set the capability service
@@ -209,11 +190,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 NodeServicePolicies.OnCreateNodePolicy.QNAME,  
                 TYPE_RECORD_FOLDER, 
                 new JavaBehaviour(this, "onCreateRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));    
-        
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnMoveNodePolicy.QNAME, 
-                ASPECT_RECORD, 
-                new JavaBehaviour(this, "onMoveNode", NotificationFrequency.TRANSACTION_COMMIT));
     }
     
     /**
@@ -570,6 +546,13 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
         }, AuthenticationUtil.getSystemUserName());
     }
     
+    /**
+     * Helper method to convert a stream to a string.
+     * 
+     * @param is    input stream
+     * @return {@link String}   string
+     * @throws IOException
+     */
     public String convertStreamToString(InputStream is) throws IOException
     {
         /*
@@ -762,6 +745,8 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#hasRMAdminRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * 
+     * TODO .. change this to check a property of the role its self
      */
     public boolean hasRMAdminRole(NodeRef rmRootNode, String user)
     {
@@ -1030,164 +1015,5 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());        
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#hasExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean hasExtendedReaders(NodeRef nodeRef)
-    {
-        boolean result = false;
-        Set<String> extendedReaders = getExtendedReaders(nodeRef);
-        if (extendedReaders != null && extendedReaders.size() != 0)
-        {
-            result = true;
-        }
-        return result;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<String> getExtendedReaders(NodeRef nodeRef)
-    {
-        NodeService nodeService = (NodeService)applicationContext.getBean("nodeService");
-        Set<String> result = null;
-        
-        Map<String, Integer> readerMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
-        if (readerMap != null)
-        {
-            result = readerMap.keySet();
-        }
-        
-        return result;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#setExtendedReaders(org.alfresco.service.cmr.repository.NodeRef, java.util.Set)
-     */
-    @Override
-    public void setExtendedReaders(NodeRef nodeRef, Set<String> readers)
-    {
-        setExtendedReaders(nodeRef, readers, true);
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#setExtendedReaders(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, boolean)
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public void setExtendedReaders(NodeRef nodeRef, java.util.Set<String> readers, boolean applyToParents)
-    {        
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("readers", readers);
-        
-        NodeService nodeService = (NodeService)applicationContext.getBean("nodeService");
-        RecordsManagementService recordsManagementService = (RecordsManagementService)applicationContext.getBean("recordsManagementService");
-        
-        if (nodeRef != null && 
-            readers.isEmpty() == false)
-        {
-            // add the aspect if missing
-            if (nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_READERS) == false)
-            {
-                nodeService.addAspect(nodeRef, ASPECT_EXTENDED_READERS, null);
-            }
-            
-            // get reader map
-            Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
-            if (readersMap == null)
-            {
-                // create reader map
-                readersMap = new HashMap<String, Integer>(7);
-            }
-            
-            for (String reader : readers)
-            {
-                if (readersMap.containsKey(reader) == true)
-                {
-                    // increment reference count
-                    Integer count = readersMap.get(reader);
-                    readersMap.put(reader, Integer.valueOf(count.intValue()+1));
-                }
-                else
-                {
-                    // add reader with initial count
-                    readersMap.put(reader, Integer.valueOf(1));
-                }
-            }
-            
-            // set the readers property (this will in turn apply the aspect if required)
-            nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)readersMap);
-            
-            // apply the readers to any renditions of the content
-            if (recordsManagementService.isRecord(nodeRef) == true)
-            {
-                List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
-                for (ChildAssociationRef assoc : assocs)
-                {
-                    NodeRef child = assoc.getChildRef();
-                    setExtendedReaders(child, readers, false);
-                }
-            }
-            
-            if  (applyToParents == true)
-            {            
-                // apply the extended readers up the file plan primary hierarchy
-                NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-                if (parent != null &&
-                    recordsManagementService.isFilePlanComponent(parent) == true)
-                {
-                    setExtendedReaders(parent, readers);
-                }
-            }
-        }
-    }
-    
-    @Override
-    public void removeExtendedReaders(NodeRef nodeRef, Set<String> readers)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#removeAllExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public void removeAllExtendedReaders(NodeRef nodeRef)
-    {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void onMoveNode(final ChildAssociationRef origAssoc, final ChildAssociationRef newAssoc)
-    {
-        // TODO temp solution for demo
-        
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() 
-        {
-
-            @Override
-            public Void doWork() throws Exception
-            {
-                NodeRef record = newAssoc.getChildRef();
-                NodeRef parent = newAssoc.getParentRef();
-                
-                Set<String> readers = getExtendedReaders(record);
-                if (readers != null && readers.size() != 0)
-                {
-                    setExtendedReaders(parent, readers);
-                }
-                
-                return null;
-            }});
-        
-        
-        
     }
 }

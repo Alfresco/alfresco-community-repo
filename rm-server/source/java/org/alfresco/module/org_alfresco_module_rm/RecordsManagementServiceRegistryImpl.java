@@ -25,6 +25,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
 
@@ -123,5 +124,14 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
    public FreezeService getFreezeService()
    {
       return (FreezeService)getService(FREEZE_SERVICE);
+   }
+
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getExtendedSecurityService()
+    */
+   @Override
+   public ExtendedSecurityService getExtendedSecurityService()
+   {
+       return (ExtendedSecurityService)getService(EXTENDED_SECURITY_SERVICE);
    }
 }

@@ -33,11 +33,13 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -280,23 +282,33 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
      * @param childAssocRef
      * @param bNew
      */
-    public void onAddRecordThumbnail(ChildAssociationRef childAssocRef, boolean bNew)
+    public void onAddRecordThumbnail(final ChildAssociationRef childAssocRef, final boolean bNew)
     {
-        NodeRef thumbnail = childAssocRef.getChildRef();
-        if (nodeService.exists(thumbnail) == true)
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            // apply file plan component aspect to thumbnail
-            nodeService.addAspect(thumbnail, ASPECT_FILE_PLAN_COMPONENT, null);
-            
-            // manage any extended readers
-            RecordsManagementSecurityService securityService = serviceRegistry.getRecordsManagementSecurityService();            
-            NodeRef parent = childAssocRef.getParentRef();            
-            Set<String> readers = securityService.getExtendedReaders(parent);
-            if (readers != null && readers.size() != 0)
+            @Override
+            public Void doWork() throws Exception
             {
-                securityService.setExtendedReaders(thumbnail, readers, false);
+                NodeRef thumbnail = childAssocRef.getChildRef();
+                
+                if (nodeService.exists(thumbnail) == true)
+                {
+                    // apply file plan component aspect to thumbnail
+                    nodeService.addAspect(thumbnail, ASPECT_FILE_PLAN_COMPONENT, null);
+                    
+                    // manage any extended readers
+                    ExtendedSecurityService extendedSecurityService = serviceRegistry.getExtendedSecurityService();            
+                    NodeRef parent = childAssocRef.getParentRef();            
+                    Set<String> readers = extendedSecurityService.getExtendedReaders(parent);
+                    if (readers != null && readers.size() != 0)
+                    {
+                        extendedSecurityService.setExtendedReaders(thumbnail, readers, false);
+                    }
+                }
+                
+                return null;
             }
-        }
+        });        
     }
     
     /**

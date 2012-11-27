@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -14,8 +15,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Roy Wetherall
  */
-public class RecordsManagementSecurityServiceImplTest extends BaseRMTestCase
+public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
 {
+    private ExtendedSecurityService extendedSecurityService;
+    
     private NodeRef record;
     private NodeRef recordToo;
     
@@ -26,6 +29,14 @@ public class RecordsManagementSecurityServiceImplTest extends BaseRMTestCase
     }
     
     @Override
+    protected void initServices()
+    {
+        super.initServices();
+        
+        extendedSecurityService = (ExtendedSecurityService)applicationContext.getBean("ExtendedSecurityService");
+    }
+    
+    @Override
     protected void setupTestDataImpl()
     {
         super.setupTestDataImpl();
@@ -33,35 +44,6 @@ public class RecordsManagementSecurityServiceImplTest extends BaseRMTestCase
         record = utils.createRecord(rmFolder, "record.txt");
         recordToo = utils.createRecord(rmFolder, "recordToo.txt");    
     }
-
-    
-    // TODO testGetProtectedAspects
-    
-    // TODO getProtectedProperties
-    
-    // TODO bootstrapDefaultRoles
-    
-    // TODO getRoles
-    
-    // TODO getRolesByUser
-    
-    // TODO getRole    
-    
-    // TODO existsRole
-    
-    // TODO hasRMAdminRole
-    
-    // TODO createRole
-    
-    // TODO updateRole
-    
-    // TODO deleteRole
-    
-    // TODO assignRoleToAuthority
-    
-    // TODO setPermission
-    
-    // TODO deletePermission
     
     public void testExtendedReaders()
     {
@@ -74,13 +56,13 @@ public class RecordsManagementSecurityServiceImplTest extends BaseRMTestCase
                 assertFalse(hasExtendedReadersAspect(rmFolder));
                 assertFalse(hasExtendedReadersAspect(record));
                 
-                assertNull(securityService.getExtendedReaders(record));
+                assertNull(extendedSecurityService.getExtendedReaders(record));
                 
                 Set<String> extendedReaders = new HashSet<String>(2);
                 extendedReaders.add("monkey");
                 extendedReaders.add("elephant");
                 
-                securityService.setExtendedReaders(record, extendedReaders);
+                extendedSecurityService.setExtendedReaders(record, extendedReaders);
                 
                 Map<String, Integer> testMap = new HashMap<String, Integer>(2);
                 testMap.put("monkey", Integer.valueOf(1));
@@ -95,7 +77,7 @@ public class RecordsManagementSecurityServiceImplTest extends BaseRMTestCase
                 extendedReadersToo.add("monkey");
                 extendedReadersToo.add("snake");
                 
-                securityService.setExtendedReaders(recordToo, extendedReadersToo);
+                extendedSecurityService.setExtendedReaders(recordToo, extendedReadersToo);
                 
                 Map<String, Integer> testMapToo = new HashMap<String, Integer>(2);
                 testMapToo.put("monkey", Integer.valueOf(1));
@@ -109,6 +91,39 @@ public class RecordsManagementSecurityServiceImplTest extends BaseRMTestCase
                 test(filePlan, testMapThree);
                 test(rmContainer, testMapThree);
                 test(rmFolder, testMapThree);
+                test(recordToo, testMapToo);
+                
+                // test remove (with no parent inheritance)
+                
+                Set<String> removeMap1 = new HashSet<String>(2);
+                removeMap1.add("elephant");
+                removeMap1.add("monkey");
+                
+                extendedSecurityService.removeExtendedReaders(rmFolder, removeMap1, false);
+                
+                Map<String, Integer> testMapFour = new HashMap<String, Integer>(2);
+                testMapFour.put("monkey", Integer.valueOf(1));
+                testMapFour.put("snake", Integer.valueOf(1));
+                
+                test(filePlan, testMapThree);
+                test(rmContainer, testMapThree);
+                test(rmFolder, testMapFour);
+                test(recordToo, testMapToo);
+                
+                // test remove (apply to parents)
+                
+                Set<String> removeMap2 = new HashSet<String>(1);
+                removeMap2.add("snake");
+                
+                extendedSecurityService.removeExtendedReaders(recordToo, removeMap2, true);
+                
+                testMapThree.remove("snake");
+                testMapFour.remove("snake");
+                testMapToo.remove("snake");
+                
+                test(filePlan, testMapThree);
+                test(rmContainer, testMapThree);
+                test(rmFolder, testMapFour);
                 test(recordToo, testMapToo);
                 
                 return null;
@@ -131,22 +146,14 @@ public class RecordsManagementSecurityServiceImplTest extends BaseRMTestCase
                 for (Map.Entry<String, Integer> entry: testMap.entrySet())
                 {
                     assertTrue(readersMap.containsKey(entry.getKey()));
-                    assertEquals(entry.getValue(), readersMap.get(entry.getKey()));
+                    assertEquals(entry.getKey(), entry.getValue(), readersMap.get(entry.getKey()));
                     
                 }
                 
-                Set<String> readers = securityService.getExtendedReaders(nodeRef);
+                Set<String> readers = extendedSecurityService.getExtendedReaders(nodeRef);
                 assertNotNull(readers);
                 assertEquals(testMap.size(), readers.size());
             }
         });
-    }
-    
-    // TODO getExtendedReaders
-    
-    // TODO setExtendedReaders
-    
-    // TODO removeExtendedReaders
-    
-    // TODO removeAllExtendedReaders        
+    }     
 }

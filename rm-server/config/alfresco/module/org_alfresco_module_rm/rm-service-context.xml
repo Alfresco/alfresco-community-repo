@@ -481,17 +481,70 @@
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.createRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.updateRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deleteRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW  
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.hasExtendedReaders=RM_ALLOW  
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getExtendedReaders=RM_ALLOW 
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.setExtendedReaders=RM_ALLOW 
-				org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.removeExtendedReaders=RM_ALLOW 
-    			org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.removeAllExtendedReaders=RM_ALLOW   
+                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW   
     			org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.*=RM_DENY             
                 ]]>
             </value>
         </property>
     </bean>
+    
+    <!--  Records Management Extended Security Service -->
+    
+    <bean id="extendedSecurityService" 
+          class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl"           
+          init-method="init">        
+        <property name="policyComponent" ref="policyComponent"/>  
+        <property name="nodeService" ref="nodeService"/>
+        <property name="recordService" ref="recordService"/>
+        <property name="recordsManagementService" ref="recordsManagementService"/>
+    </bean>
+    
+    <bean id="ExtendedSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService</value>
+        </property>
+        <property name="target">
+            <ref bean="extendedSecurityService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="ExtendedSecurityService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="ExtendedSecurityService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ExtendedSecurityService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="ExtendedSecurityService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[   
+    			org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService.*=RM_ALLOW             
+                ]]>
+            </value>
+        </property>
+    </bean>
+    
     
     <!-- Records Management Action Service -->
     
@@ -858,11 +911,10 @@
     
     <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
         <property name="nodeService" ref="NodeService"/>
-        <!--<property name="policyComponent" ref="policyComponent"/>-->
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
         <property name="permissionService" ref="PermissionService"/>
-        <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
+        <property name="extendedSecurityService" ref="ExtendedSecurityService" />
     </bean>
     
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

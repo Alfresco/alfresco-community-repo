@@ -47,8 +47,8 @@ public class ExtendedReaderDynamicAuthority implements DynamicAuthority,
     /** Authority service */
     private AuthorityService authorityService;
     
-    /** Records management security service */
-    private RecordsManagementSecurityService recordsManagementSecurityService;
+    /** Extended security service */
+    private ExtendedSecurityService extendedSecurityService;
     
     /** Node service */
     private NodeService nodeService;
@@ -72,15 +72,15 @@ public class ExtendedReaderDynamicAuthority implements DynamicAuthority,
     }
     
     /**
-     * @return  records management security service
+     * @return  extended security service
      */
-    public RecordsManagementSecurityService getRecordsManagementSecurityService()
+    public ExtendedSecurityService getExtendedSecurityService()
     {
-        if (recordsManagementSecurityService == null)
+        if (extendedSecurityService == null)
         {
-            recordsManagementSecurityService = (RecordsManagementSecurityService)applicationContext.getBean("recordsManagementSecurityService");
+            extendedSecurityService = (ExtendedSecurityService)applicationContext.getBean("extendedSecurityService");
         }
-        return recordsManagementSecurityService;
+        return extendedSecurityService;
     }
     
     /**
@@ -123,7 +123,7 @@ public class ExtendedReaderDynamicAuthority implements DynamicAuthority,
         
         if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_READERS) == true)
         {
-            Set<String> readers = getRecordsManagementSecurityService().getExtendedReaders(nodeRef);
+            Set<String> readers = getExtendedSecurityService().getExtendedReaders(nodeRef);
             if (readers != null)
             {
                 for (String reader : readers)
@@ -167,6 +167,8 @@ public class ExtendedReaderDynamicAuthority implements DynamicAuthority,
     @Override
     public Set<PermissionReference> requiredFor()
     {
+        // TODO ... should we set something here?  ReadRecord?
+        
         return null;
     }
 }

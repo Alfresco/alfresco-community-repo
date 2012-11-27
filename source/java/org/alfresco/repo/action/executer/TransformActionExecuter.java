@@ -283,6 +283,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             {
                 options.setTargetNodeRef(copyNodeRef);
                 doTransform(ruleAction, actionedUponNodeRef, contentReader, copyNodeRef, contentWriter);
+                ruleAction.setParameterValue(PARAM_RESULT, copyNodeRef);
             }
             catch(NoTransformerException e)
             {

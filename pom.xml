@@ -51,6 +51,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>alfresco-web-framework-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>alfresco-jndi-client</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -143,7 +148,7 @@
             <artifactId>standard</artifactId>
             <version>1.1.0</version>
         </dependency>
-        
+
         <!-- Dependency on the web-framework-commons resources skinny war -->
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -151,6 +156,7 @@
             <version>${project.version}</version>
             <classifier>webapp</classifier>
             <type>war</type>
+            <scope>provided</scope> <!-- ALF-16947 -->
         </dependency>
 
         <!-- 'provided' dependencies, not packaged in war -->
@@ -280,6 +286,16 @@
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
+                    <overlays>
+                        <overlay>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>alfresco-web-framework-commons</artifactId>
+                            <classifier>webapp</classifier>
+                            <excludes>
+                                <exclude>WEB-INF/classes/*</exclude>
+                            </excludes>
+                        </overlay>
+                    </overlays>
                     <attachClasses>true</attachClasses>
                     <archiveClasses>true</archiveClasses>
                 </configuration>

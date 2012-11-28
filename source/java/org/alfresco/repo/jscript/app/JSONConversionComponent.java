@@ -32,6 +32,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONAware;
 import org.json.simple.JSONObject;
@@ -298,11 +299,20 @@ public class JSONConversionComponent
                 else if (value instanceof List)
                 {
                 	// Convert the List to a JSON list by recursively calling propertyToJSON
-                	List jsonList = new ArrayList(((List) value).size());
-                	for (Object listItem : (List) value) {
-						jsonList.add(propertyToJSON(nodeRef, propertyName, key, (Serializable) listItem));
-					}
+                	List<Object> jsonList = new ArrayList<Object>(((List<Serializable>) value).size());
+                	for (Serializable listItem : (List<Serializable>) value)
+                	{
+                	    jsonList.add(propertyToJSON(nodeRef, propertyName, key, listItem));
+                	}
                 	return jsonList;
+                }
+                else if (value instanceof Double)
+                {
+                    return (Double.isInfinite((Double)value) || Double.isNaN((Double)value) ? null : value.toString());
+                }
+                else if (value instanceof Float)
+                {
+                    return (Float.isInfinite((Float)value) || Float.isNaN((Float)value) ? null : value.toString());
                 }
                 else
                 {
@@ -338,11 +348,9 @@ public class JSONConversionComponent
             catch (NamespaceException ne)
             {
                 // ignore properties that do not have a registered namespace
-                if (logger.isDebugEnabled() == true)
-                {
+                if (logger.isDebugEnabled())
                     logger.debug("Ignoring property '" + propertyName + "' as its namespace is not registered");
-                }
-            }            
+            }
         }
         
         return propertiesJSON;

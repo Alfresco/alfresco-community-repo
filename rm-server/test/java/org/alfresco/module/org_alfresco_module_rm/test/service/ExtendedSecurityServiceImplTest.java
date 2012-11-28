@@ -21,6 +21,8 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
     
     private NodeRef record;
     private NodeRef recordToo;
+    private NodeRef moveRecordCategory;
+    private NodeRef moveRecordFolder;
     
     @Override
     protected boolean isUserTest()
@@ -43,6 +45,9 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         
         record = utils.createRecord(rmFolder, "record.txt");
         recordToo = utils.createRecord(rmFolder, "recordToo.txt");    
+        
+        moveRecordCategory = rmService.createRecordCategory(filePlan, "moveRecordCategory");
+        moveRecordFolder = rmService.createRecordFolder(moveRecordCategory, "moveRecordFolder");
     }
     
     public void testExtendedReaders()
@@ -51,10 +56,10 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         {
             public Void run()
             {
-                assertFalse(hasExtendedReadersAspect(filePlan));
-                assertFalse(hasExtendedReadersAspect(rmContainer));
-                assertFalse(hasExtendedReadersAspect(rmFolder));
-                assertFalse(hasExtendedReadersAspect(record));
+                assertFalse(extendedSecurityService.hasExtendedReaders(filePlan));
+                assertFalse(extendedSecurityService.hasExtendedReaders(rmContainer));
+                assertFalse(extendedSecurityService.hasExtendedReaders(rmFolder));
+                assertFalse(extendedSecurityService.hasExtendedReaders(record));
                 
                 assertNull(extendedSecurityService.getExtendedReaders(record));
                 
@@ -68,10 +73,10 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 testMap.put("monkey", Integer.valueOf(1));
                 testMap.put("elephant", Integer.valueOf(1));
                 
-                test(filePlan, testMap);
-                test(rmContainer, testMap);
-                test(rmFolder, testMap);
-                test(record, testMap);
+                checkExtendedReaders(filePlan, testMap);
+                checkExtendedReaders(rmContainer, testMap);
+                checkExtendedReaders(rmFolder, testMap);
+                checkExtendedReaders(record, testMap);
                 
                 Set<String> extendedReadersToo = new HashSet<String>(2);
                 extendedReadersToo.add("monkey");
@@ -88,10 +93,10 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 testMapThree.put("elephant", Integer.valueOf(1));
                 testMapThree.put("snake", Integer.valueOf(1));
                 
-                test(filePlan, testMapThree);
-                test(rmContainer, testMapThree);
-                test(rmFolder, testMapThree);
-                test(recordToo, testMapToo);
+                checkExtendedReaders(filePlan, testMapThree);
+                checkExtendedReaders(rmContainer, testMapThree);
+                checkExtendedReaders(rmFolder, testMapThree);
+                checkExtendedReaders(recordToo, testMapToo);
                 
                 // test remove (with no parent inheritance)
                 
@@ -105,10 +110,10 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 testMapFour.put("monkey", Integer.valueOf(1));
                 testMapFour.put("snake", Integer.valueOf(1));
                 
-                test(filePlan, testMapThree);
-                test(rmContainer, testMapThree);
-                test(rmFolder, testMapFour);
-                test(recordToo, testMapToo);
+                checkExtendedReaders(filePlan, testMapThree);
+                checkExtendedReaders(rmContainer, testMapThree);
+                checkExtendedReaders(rmFolder, testMapFour);
+                checkExtendedReaders(recordToo, testMapToo);
                 
                 // test remove (apply to parents)
                 
@@ -121,39 +126,86 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 testMapFour.remove("snake");
                 testMapToo.remove("snake");
                 
-                test(filePlan, testMapThree);
-                test(rmContainer, testMapThree);
-                test(rmFolder, testMapFour);
-                test(recordToo, testMapToo);
+                checkExtendedReaders(filePlan, testMapThree);
+                checkExtendedReaders(rmContainer, testMapThree);
+                checkExtendedReaders(rmFolder, testMapFour);
+                checkExtendedReaders(recordToo, testMapToo);
+                
+                return null;
+            }
+        });
+    }    
+    
+    public void testMove()
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            Map<String, Integer> testMap = new HashMap<String, Integer>(2);
+            
+            public Void run() throws Exception
+            {
+                testMap.put("monkey", Integer.valueOf(1));
+                testMap.put("elephant", Integer.valueOf(1));                
+                
+                assertFalse(extendedSecurityService.hasExtendedReaders(filePlan));
+                assertFalse(extendedSecurityService.hasExtendedReaders(rmContainer));
+                assertFalse(extendedSecurityService.hasExtendedReaders(rmFolder));
+                assertFalse(extendedSecurityService.hasExtendedReaders(record));
+                assertFalse(extendedSecurityService.hasExtendedReaders(moveRecordCategory));
+                assertFalse(extendedSecurityService.hasExtendedReaders(moveRecordFolder));
+                
+                assertNull(extendedSecurityService.getExtendedReaders(record));
+                
+                Set<String> extendedReaders = new HashSet<String>(2);
+                extendedReaders.add("monkey");
+                extendedReaders.add("elephant");
+                
+                extendedSecurityService.setExtendedReaders(record, extendedReaders);
+                
+                checkExtendedReaders(filePlan, testMap);
+                checkExtendedReaders(rmContainer, testMap);
+                checkExtendedReaders(rmFolder, testMap);
+                checkExtendedReaders(record, testMap);
+                assertFalse(extendedSecurityService.hasExtendedReaders(moveRecordCategory));
+                assertFalse(extendedSecurityService.hasExtendedReaders(moveRecordFolder));
+                
+                fileFolderService.move(record, moveRecordFolder, "movedRecord");
                 
                 return null;
             }
             
-            private boolean hasExtendedReadersAspect(NodeRef nodeRef)
+            @Override
+            public void test(Void result) throws Exception
             {
-                return nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_READERS);
+                checkExtendedReaders(filePlan, testMap);
+                assertFalse(extendedSecurityService.hasExtendedReaders(rmContainer));
+                assertFalse(extendedSecurityService.hasExtendedReaders(rmFolder));
+                checkExtendedReaders(moveRecordCategory, testMap);
+                checkExtendedReaders(moveRecordFolder, testMap);
+                checkExtendedReaders(record, testMap);
             }
+        });        
+    }
+    
+    
+    @SuppressWarnings("unchecked")
+    private void checkExtendedReaders(NodeRef nodeRef, Map<String, Integer> testMap)
+    {
+        assertTrue(extendedSecurityService.hasExtendedReaders(nodeRef));
+        
+        Map<String, Integer> readersMap = (Map<String,Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
+        assertNotNull(readersMap);
+        assertEquals(testMap.size(), readersMap.size());
+        
+        for (Map.Entry<String, Integer> entry: testMap.entrySet())
+        {
+            assertTrue(readersMap.containsKey(entry.getKey()));
+            assertEquals(entry.getKey(), entry.getValue(), readersMap.get(entry.getKey()));
             
-            @SuppressWarnings("unchecked")
-            private void test(NodeRef nodeRef, Map<String, Integer> testMap)
-            {
-                assertTrue(hasExtendedReadersAspect(nodeRef));
-                
-                Map<String, Integer> readersMap = (Map<String,Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
-                assertNotNull(readersMap);
-                assertEquals(testMap.size(), readersMap.size());
-                
-                for (Map.Entry<String, Integer> entry: testMap.entrySet())
-                {
-                    assertTrue(readersMap.containsKey(entry.getKey()));
-                    assertEquals(entry.getKey(), entry.getValue(), readersMap.get(entry.getKey()));
-                    
-                }
-                
-                Set<String> readers = extendedSecurityService.getExtendedReaders(nodeRef);
-                assertNotNull(readers);
-                assertEquals(testMap.size(), readers.size());
-            }
-        });
-    }     
+        }
+        
+        Set<String> readers = extendedSecurityService.getExtendedReaders(nodeRef);
+        assertNotNull(readers);
+        assertEquals(testMap.size(), readers.size());
+    }
 }

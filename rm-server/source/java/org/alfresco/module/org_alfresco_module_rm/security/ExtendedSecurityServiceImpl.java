@@ -260,15 +260,19 @@ public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
     }
     
     /**
+     * Removes a set of readers from a node reference.
+     * <p>
+     * Removes the aspect and resets the property to null if all readers are removed.
      * 
-     * @param nodeRef
-     * @param readers
+     * @param nodeRef   node reference
+     * @param readers   {@link Set} of readers
      */
     @SuppressWarnings("unchecked")
     private void removeExtendedReadersImpl(NodeRef nodeRef, Set<String> readers)
     {
         Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
         
+        // remove the readers
         for (String reader : readers)
         {
             Integer readerCount = readersMap.get(reader);
@@ -276,21 +280,29 @@ public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
             {
                 if (readerCount == 1)
                 {
+                    // remove entry all together if the reference count is now 0
                     readersMap.remove(reader);
                 }
                 else
                 {
+                    // decrement the reference count by 1
                     readersMap.put(reader, Integer.valueOf(readerCount.intValue()-1));
                 }
             }
         }
         
+        // reset the map to null if now empty
         if (readersMap.isEmpty() == true)
         {
             readersMap = null;
         }
         
+        // set the property and remove the aspect if appropriate
         nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)readersMap);
+        if (readersMap == null)
+        {
+            nodeService.removeAspect(nodeRef, ASPECT_EXTENDED_READERS);
+        }
     }
     
     /**
@@ -337,7 +349,7 @@ public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
                 if (readers != null && readers.size() != 0)
                 {
                     setExtendedReaders(newParent, readers);
-                    removeExtendedReadersImpl(oldParent, readers);
+                    removeExtendedReaders(oldParent, readers);
                 }
                 
                 return null;

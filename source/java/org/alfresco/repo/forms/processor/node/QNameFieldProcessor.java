@@ -28,6 +28,7 @@ import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.service.cmr.dictionary.ClassAttributeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -61,9 +62,17 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
     @Override
     protected Field generateTypedField(String fieldName, FormCreationData formData, ContentModelItemData<?> typedData)
     {
-        QName fullName = getFullName(fieldName);
-        boolean isForcedField = formData.isForcedField(fieldName);
-        Field field = generateField(fullName, typedData, isForcedField);
+        Field field = null;
+        try
+        {
+            QName fullName = getFullName(fieldName);
+            boolean isForcedField = formData.isForcedField(fieldName);
+            field = generateField(fullName, typedData, isForcedField);
+        }
+        catch (NamespaceException ne)
+        {
+            // ignore fields with an invalid namespace - the model may no longer be present in the repository
+        }
         return field;
     }
     

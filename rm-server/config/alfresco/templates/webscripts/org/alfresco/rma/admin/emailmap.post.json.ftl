@@ -2,6 +2,11 @@
 
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-	"data": <@emailmapLib.emailmapJSON emailmap=emailmap />       
+   "success": ${success?string},
+   <#if success>
+      "data": <@emailmapLib.emailmapJSON emailmap=emailmap />
+   <#else>
+      "message": "${message}"
+   </#if>
 }
 </#escape>

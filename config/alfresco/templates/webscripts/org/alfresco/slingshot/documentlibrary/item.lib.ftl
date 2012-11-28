@@ -1,7 +1,7 @@
 <#assign workingCopyLabel = " " + message("coci_service.working_copy_label")>
 
 <#-- This function is used below to detect numerical property values of Infinity, -Infinity and NaN -->
-<#macro renderNumber value>
+<#macro renderNumber value=0>
 <#if value?is_number>
    <#if value?c == '\xfffd' || value?c == '\x221e' || value?c == '-\x221e'>0
    <#else>${value?c}

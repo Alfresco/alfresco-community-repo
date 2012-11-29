@@ -3,59 +3,65 @@
 
 <beans>
 
-    <!--  Assignable Capabilities -->
-    <bean id="rmAccessAuditCapability"
-          parent="rmAuditGroup">
-        <property name="name" value="AccessAudit"/>
-        <property name="permission" value="AccessAudit"/>
-    </bean>
+   <!--  Assignable Capabilities -->
+   <bean id="rmAccessAuditCapability"
+      parent="declarativeCapability">
+      <property name="name" value="AccessAudit"/>
+      <property name="permission" value="AccessAudit"/>
+      <property name="groupId" value="audit" />
+   </bean>
 
-    <bean id="rmDeclareAuditAsRecordCapability"
-          parent="rmAuditGroup">
-        <property name="name" value="DeclareAuditAsRecord" />
-        <property name="permission" value="DeclareAuditAsRecord" />
-    </bean>
+   <bean id="rmDeclareAuditAsRecordCapability"
+      parent="declarativeCapability">
+      <property name="name" value="DeclareAuditAsRecord" />
+      <property name="permission" value="DeclareAuditAsRecord" />
+      <property name="groupId" value="audit" />
+   </bean>
 
-    <bean id="rmDeleteAuditCapability"
-          parent="rmAuditGroup">
-        <property name="name" value="DeleteAudit" />
-        <property name="permission" value="DeleteAudit" />
-    </bean>
+   <bean id="rmDeleteAuditCapability"
+      parent="declarativeCapability">
+      <property name="name" value="DeleteAudit" />
+      <property name="permission" value="DeleteAudit" />
+      <property name="groupId" value="audit" />
+   </bean>
 
-    <bean id="rmEnableDisableAuditByTypesCapability"
-          parent="rmAuditGroup">
-        <property name="name" value="EnableDisableAuditByTypes" />
-        <property name="permission" value="EnableDisableAuditByTypes" />
-    </bean>
+   <bean id="rmEnableDisableAuditByTypesCapability"
+      parent="declarativeCapability">
+      <property name="name" value="EnableDisableAuditByTypes" />
+      <property name="permission" value="EnableDisableAuditByTypes" />
+      <property name="groupId" value="audit" />
+   </bean>
 
-    <bean id="rmExportAuditCapability"
-          parent="rmAuditGroup">
-        <property name="name" value="ExportAudit" />
-        <property name="permission" value="ExportAudit" />
-    </bean>
+   <bean id="rmExportAuditCapability"
+      parent="declarativeCapability">
+      <property name="name" value="ExportAudit" />
+      <property name="permission" value="ExportAudit" />
+      <property name="groupId" value="audit" />
+   </bean>
 
-    <bean id="rmSelectAuditMetadataCapability"
-          parent="rmAuditGroup">
-        <property name="name" value="SelectAuditMetadata" />
-        <property name="permission" value="SelectAuditMetadata" />
-    </bean>
+   <bean id="rmSelectAuditMetadataCapability"
+      parent="declarativeCapability">
+      <property name="name" value="SelectAuditMetadata" />
+      <property name="permission" value="SelectAuditMetadata" />
+      <property name="groupId" value="audit" />
+   </bean>
 
-    <!--  Non-Assignable Capabilities -->
+   <!--  Non-Assignable Capabilities -->
 
-    <bean id="rmAuditAdmin"
-          parent="compositeCapability">
-        <property name="name" value="AuditAdmin"/>
-        <property name="private" value="true"/>
-        <property name="capabilities">
-            <list>
-                <ref bean="rmAccessAuditCapability"/>
-                <ref bean="rmDeclareAuditAsRecordCapability"/>
-                <ref bean="rmDeleteAuditCapability"/>
-                <ref bean="rmEnableDisableAuditByTypesCapability"/>
-                <ref bean="rmExportAuditCapability"/>
-                <ref bean="rmSelectAuditMetadataCapability"/>
-            </list>
-        </property>
-    </bean>
+   <bean id="rmAuditAdmin"
+      parent="compositeCapability">
+      <property name="name" value="AuditAdmin"/>
+      <property name="private" value="true"/>
+      <property name="capabilities">
+         <list>
+            <ref bean="rmAccessAuditCapability"/>
+            <ref bean="rmDeclareAuditAsRecordCapability"/>
+            <ref bean="rmDeleteAuditCapability"/>
+            <ref bean="rmEnableDisableAuditByTypesCapability"/>
+            <ref bean="rmExportAuditCapability"/>
+            <ref bean="rmSelectAuditMetadataCapability"/>
+         </list>
+      </property>
+   </bean>
 
 </beans>

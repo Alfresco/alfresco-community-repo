@@ -3,94 +3,98 @@
 
 <beans>
 
-    <bean id="rmCloseFoldersCapability"
-          parent="rmFolderControlGroup">
-        <property name="name" value="CloseFolders"/>
-        <property name="permission" value="CloseFolders"/>
-        <property name="kinds">
-            <list>
-                <value>RECORD_FOLDER</value>
-            </list>
-        </property>
-        <property name="conditions">
-            <map>
-                <entry key="capabilityCondition.filling" value="true"/>
-                <entry key="capabilityCondition.cutoff" value="false"/>
-                <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
-                <entry key="capabilityCondition.closed" value="false"/>
-            </map>
-        </property>
-    </bean>
+   <bean id="rmCloseFoldersCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CloseFolders"/>
+      <property name="permission" value="CloseFolders"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+         </map>
+      </property>
+      <property name="groupId" value="folderControl" />
+   </bean>
 
-    <bean id="rmCreateModifyDestroyFoldersCapability"
-          parent="rmFolderControlGroup">
-        <property name="name" value="CreateModifyDestroyFolders"/>
-        <property name="permission" value="CreateModifyDestroyFolders"/>
-        <property name="kinds">
-            <list>
-                <value>RECORD_CATEGORY</value>
-                <value>RECORD_FOLDER</value>
-            </list>
-        </property>
-        <property name="conditions">
-            <map>
-                <entry key="capabilityCondition.filling" value="true"/>
-                <entry key="capabilityCondition.cutoff" value="false"/>
-                <entry key="capabilityCondition.frozen" value="false"/>
-                <entry key="capabilityCondition.closed" value="false"/>
-            </map>
-        </property>
-    </bean>
+   <bean id="rmCreateModifyDestroyFoldersCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CreateModifyDestroyFolders"/>
+      <property name="permission" value="CreateModifyDestroyFolders"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_CATEGORY</value>
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+         </map>
+      </property>
+      <property name="groupId" value="folderControl" />
+   </bean>
 
-    <bean id="rmMoveRecordFolderCapability"  
-    	  parent="compositeCapability">
-        <property name="name" value="MoveRecordFolder"/>
-    	<property name="private" value="true"/>   
-    	<property name="undetermined" value="true"/> 	
-    	<property name="capabilities">
-    		<list>
-    			<ref bean="rmCreateModifyDestroyFoldersCapability"/>    	    			
-    		</list>
-    	</property>
-    	<property name="targetCapability" ref="rmCreateModifyDestroyFoldersCapability"/>
-    </bean>
+   <bean id="rmMoveRecordFolderCapability"
+      parent="compositeCapability">
+      <property name="name" value="MoveRecordFolder"/>
+      <property name="private" value="true"/>
+      <property name="undetermined" value="true"/>
+      <property name="capabilities">
+         <list>
+            <ref bean="rmCreateModifyDestroyFoldersCapability"/>
+         </list>
+      </property>
+      <property name="targetCapability" ref="rmCreateModifyDestroyFoldersCapability"/>
+   </bean>
 
-    <bean id="rmReOpenFoldersCapability"
-          parent="rmFolderControlGroup">
-        <property name="name" value="ReOpenFolders"/>
-        <property name="permission" value="ReOpenFolders"/>
-        <property name="kinds">
-            <list>
-                <value>RECORD_FOLDER</value>
-            </list>
-        </property>
-        <property name="conditions">
-            <map>
-                <entry key="capabilityCondition.filling" value="true"/>
-                <entry key="capabilityCondition.cutoff" value="false"/>
-                <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
-                <entry key="capabilityCondition.closed" value="true"/>
-            </map>
-        </property>
-    </bean>
+   <bean id="rmReOpenFoldersCapability"
+      parent="declarativeCapability">
+      <property name="name" value="ReOpenFolders"/>
+      <property name="permission" value="ReOpenFolders"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+            <entry key="capabilityCondition.closed" value="true"/>
+         </map>
+      </property>
+      <property name="groupId" value="folderControl" />
+   </bean>
 
-    <bean id="rmDeclareRecordsInClosedFoldersCapability"
-          parent="rmFolderControlGroup">
-        <property name="name" value="DeclareRecordsInClosedFolders"/>
-        <property name="permission" value="DeclareRecordsInClosedFolders"/>
-        <property name="kinds">
-            <list>
-                <value>RECORD</value>
-            </list>
-        </property>
-        <property name="conditions">
-            <map>
-                <entry key="capabilityCondition.filling" value="true"/>
-                <entry key="capabilityCondition.cutoff" value="false"/>
-                <entry key="capabilityCondition.frozen" value="false"/>
-                <entry key="capabilityCondition.closed" value="true"/>
-                <entry key="capabilityCondition.declared" value="false"/>
-            </map>
-        </property>
-    </bean>
+   <bean id="rmDeclareRecordsInClosedFoldersCapability"
+      parent="declarativeCapability">
+      <property name="name" value="DeclareRecordsInClosedFolders"/>
+      <property name="permission" value="DeclareRecordsInClosedFolders"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.closed" value="true"/>
+            <entry key="capabilityCondition.declared" value="false"/>
+         </map>
+      </property>
+      <property name="groupId" value="folderControl" />
+   </bean>
 </beans>

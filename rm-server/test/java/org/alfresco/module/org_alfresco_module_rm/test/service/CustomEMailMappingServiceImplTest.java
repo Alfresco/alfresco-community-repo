@@ -26,28 +26,28 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 
 /**
  * Custom EMail Mapping Service
- * 
+ *
  * @author Roy Wetherall
  * @since 2.0
  */
-public class CustomEMailMappingServiceServiceImplTest extends BaseRMTestCase
+public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
 {
     private CustomEmailMappingService eMailMappingService;
-    
+
     @Override
     protected void initServices()
     {
         super.initServices();
-        
+
         eMailMappingService = (CustomEmailMappingService)applicationContext.getBean("customEmailMappingService");
     }
-    
+
     @Override
     protected boolean isUserTest()
     {
         return true;
     }
-    
+
     public void testCRUD() throws Exception
     {
         doTestInTransaction(new Test<Void>()
@@ -55,30 +55,30 @@ public class CustomEMailMappingServiceServiceImplTest extends BaseRMTestCase
             public Void run()
             {
                 checkCustomMappingSize(20);
-                
+
                 eMailMappingService.addCustomMapping("monkey", "cm:monkeyFace");
-                
+
                 CustomMapping monkeyMapping = getCustomMapping("monkey", "cm:monkeyFace", checkCustomMappingSize(21), true);
                 assertNotNull(monkeyMapping);
                 assertEquals("monkey", monkeyMapping.getFrom());
                 assertEquals("cm:monkeyFace", monkeyMapping.getTo());
-                
+
                 eMailMappingService.deleteCustomMapping("monkey", "cm:monkeyFace");
-                getCustomMapping("monkey", "cm:monkeyFace", checkCustomMappingSize(20), false);                
-                
+                getCustomMapping("monkey", "cm:monkeyFace", checkCustomMappingSize(20), false);
+
                 return null;
             }
         }, rmAdminName);
     }
-    
+
     private CustomMapping getCustomMapping(String from, String to, Set<CustomMapping> maps, boolean contains)
     {
         CustomMapping result = null;
         CustomMapping key = new CustomMapping(from, to);
         assertEquals(contains, maps.contains(key));
-        
+
         if (contains == true)
-        {            
+        {
             for (CustomMapping map : maps)
             {
                 if (map.equals(key) == true)
@@ -86,18 +86,18 @@ public class CustomEMailMappingServiceServiceImplTest extends BaseRMTestCase
                     result = key;
                     break;
                 }
-            }            
+            }
         }
         return result;
     }
-    
+
     private Set<CustomMapping> checkCustomMappingSize(int expected)
     {
         Set<CustomMapping> maps = eMailMappingService.getCustomMappings();
         assertEquals(expected, maps.size());
         return maps;
     }
-    
+
     @SuppressWarnings("unused")
     private void print(Set<CustomMapping> maps)
     {

@@ -18,28 +18,23 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 
+/**
+ * Freeze service implementation test.
+ * 
+ * @author Tuna Askoy
+ * @since 2.1
+ */
 public class FreezeServiceImplTest extends BaseRMTestCase
 {
-   /** Id of the test data set*/
-   private static final String DATA_SET_ID = "testExampleData";
-
    /** First Record */
    private NodeRef recordOne;
 
@@ -51,26 +46,31 @@ public class FreezeServiceImplTest extends BaseRMTestCase
 
    /** Fourth Record */
    private NodeRef recordFour;
+   
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupTestDataImpl()
+    */
+   @Override
+   protected void setupTestDataImpl()
+   {
+       super.setupTestDataImpl();
+       
+       // create test records
+       recordOne = utils.createRecord(rmFolder, "one.txt");
+       recordTwo = utils.createRecord(rmFolder, "two.txt");  
+       recordThree = utils.createRecord(rmFolder, "three.txt");
+       recordFour = utils.createRecord(rmFolder, "four.txt");
+   }
 
+   /**
+    * Test freeze service methods
+    */
    public void testFreezeService() throws Exception
    {
-      doTestInTransaction(new Test<NodeRef>()
+      doTestInTransaction(new Test<Void>()
       {
          @Override
-         public NodeRef run() throws Exception
-         {
-            NodeRef recordFolder = getRecordFolder();
-
-            recordOne = createRecord(recordFolder, "one.txt", "1");
-            recordTwo = createRecord(recordFolder, "two.txt", "22");
-            recordThree = createRecord(recordFolder, "three.txt", "333");
-            recordFour = createRecord(recordFolder, "four.txt", "4444");
-
-            return recordFolder;
-         }
-
-         @Override
-         public void test(NodeRef result) throws Exception
+         public Void run() throws Exception
          {
             assertTrue(recordService.isRecord(recordOne));
             assertTrue(recordService.isRecord(recordTwo));
@@ -83,7 +83,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
 
             // Freeze a record
             freezeService.freeze("FreezeReason", recordOne);
-            assertTrue(freezeService.hasFrozenChildren(result));
+            assertTrue(freezeService.hasFrozenChildren(rmFolder));
 
             // Check the hold exists
             Set<NodeRef> holdAssocs = freezeService.getHolds(filePlan);
@@ -213,7 +213,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertFalse(freezeService.isFrozen(recordTwo));
             assertFalse(freezeService.isFrozen(recordThree));
             assertFalse(freezeService.isFrozen(recordFour));
-            assertFalse(freezeService.hasFrozenChildren(result));
+            assertFalse(freezeService.hasFrozenChildren(rmFolder));
 
             // Test freezing nodes, adding them to an existing hold
             NodeRef hold = freezeService.freeze("AnotherFreezeReason", recordFour);
@@ -222,7 +222,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             nodes.add(recordTwo);
             nodes.add(recordThree);
             freezeService.freeze(hold, nodes);
-            assertTrue(freezeService.hasFrozenChildren(result));
+            assertTrue(freezeService.hasFrozenChildren(rmFolder));
 
             // Check the hold
             holdAssocs = freezeService.getHolds(filePlan);
@@ -237,61 +237,9 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertFalse(freezeService.isFrozen(recordTwo));
             assertFalse(freezeService.isFrozen(recordThree));
             assertFalse(freezeService.isFrozen(recordFour));
-            assertFalse(freezeService.hasFrozenChildren(result));
-         }
-
-         /**
-          * Helper method for getting a record folder from the test data
-          * 
-          * @return  NodeRef of a record folder from the test data
-          */
-         private NodeRef getRecordFolder()
-         {
-            // Load the data set into the specified file plan
-            dataSetService.loadDataSet(filePlan, DATA_SET_ID);
-
-            // Get the record category
-            NodeRef recCat1 = nodeService.getChildByName(filePlan, ContentModel.ASSOC_CONTAINS, "TestRecordCategory1");
-            assertNotNull(recCat1);
-            assertEquals("TestRecordCategory1", nodeService.getProperty(recCat1, ContentModel.PROP_NAME));
-
-            NodeRef recCat12 = nodeService.getChildByName(recCat1, ContentModel.ASSOC_CONTAINS, "TestRecordCategory12");
-            assertNotNull(recCat12);
-            assertEquals("TestRecordCategory12", nodeService.getProperty(recCat12, ContentModel.PROP_NAME));
-
-            // Get the record folder
-            NodeRef recFol13 = nodeService.getChildByName(recCat12, ContentModel.ASSOC_CONTAINS, "TestRecordFolder3");
-            assertNotNull(recFol13);
-            assertEquals("TestRecordFolder3", nodeService.getProperty(recFol13, ContentModel.PROP_NAME));
-
-            return recFol13;
-         }
-
-         /**
-          * Helper method for creating a record
-          * 
-          * @param recordFolder     Record folder in which the record will be created
-          * @param name             The name of the record
-          * @param someTextContent  The content of the record
-          * @return                 NodeRef of the created record
-          */
-         private NodeRef createRecord(NodeRef recordFolder, String name, String someTextContent)
-         {
-            // Create the document
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-            props.put(ContentModel.PROP_NAME, name);
-            NodeRef record = nodeService.createNode(recordFolder,
-                  ContentModel.ASSOC_CONTAINS,
-                  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
-                  ContentModel.TYPE_CONTENT, props).getChildRef();
-
-            // Set the content
-            ContentWriter writer = contentService.getWriter(record, ContentModel.PROP_CONTENT, true);
-            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-            writer.setEncoding("UTF-8");
-            writer.putContent(someTextContent);
-
-            return record;
+            assertFalse(freezeService.hasFrozenChildren(rmFolder));
+            
+            return null;
          }
       });
    }

@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * Freeze service implementation test.
  * 
- * @author Tuna Askoy
+ * @author Tuna Aksoy
  * @since 2.1
  */
 public class FreezeServiceImplTest extends BaseRMTestCase
@@ -46,7 +46,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
 
    /** Fourth Record */
    private NodeRef recordFour;
-   
+
    /**
     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupTestDataImpl()
     */
@@ -54,10 +54,10 @@ public class FreezeServiceImplTest extends BaseRMTestCase
    protected void setupTestDataImpl()
    {
        super.setupTestDataImpl();
-       
+
        // create test records
        recordOne = utils.createRecord(rmFolder, "one.txt");
-       recordTwo = utils.createRecord(rmFolder, "two.txt");  
+       recordTwo = utils.createRecord(rmFolder, "two.txt");
        recordThree = utils.createRecord(rmFolder, "three.txt");
        recordFour = utils.createRecord(rmFolder, "four.txt");
    }
@@ -238,7 +238,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertFalse(freezeService.isFrozen(recordThree));
             assertFalse(freezeService.isFrozen(recordFour));
             assertFalse(freezeService.hasFrozenChildren(rmFolder));
-            
+
             return null;
          }
       });

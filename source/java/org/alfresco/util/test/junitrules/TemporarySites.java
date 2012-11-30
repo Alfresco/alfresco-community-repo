@@ -161,7 +161,18 @@ public class TemporarySites extends AbstractPersonRule
             {
                 final SiteService siteService = appContextRule.getApplicationContext().getBean("siteService", SiteService.class);
                 
-                return siteService.createSite(sitePreset, siteShortName, siteTitle, siteDescription, visibility, siteType);
+                SiteInfo newSite = siteService.createSite(sitePreset, siteShortName, siteTitle, siteDescription, visibility, siteType);
+                
+                // ensure that the Document Library folder is pre-created so that test code can start creating content straight away.
+                // At the time of writing HEAD does not create this folder automatically, but Thor does.
+                // So to be safe, I'll pre-check if the node is there.
+                NodeRef docLibFolder = siteService.getContainer(siteShortName, SiteService.DOCUMENT_LIBRARY);
+                if (docLibFolder == null)
+                {
+                    docLibFolder = siteService.createContainer(siteShortName, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+                }
+                
+                return newSite;
             }
         });
         
@@ -194,22 +205,6 @@ public class TemporarySites extends AbstractPersonRule
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(siteCreator);
         
-        // ensure that the Document Library folder is pre-created so that test code can start creating content straight away.
-        // At the time of writing HEAD does not create this folder automatically, but Thor does.
-        // So to be safe, I'll pre-check if the node is there.
-        NodeRef doclibFolder = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
-            @Override public NodeRef execute() throws Throwable
-            {
-                NodeRef result = siteService.getContainer(siteShortName, SiteService.DOCUMENT_LIBRARY);
-                if (result == null)
-                {
-                    result = siteService.createContainer(siteShortName, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
-                }
-                return result;
-            }
-        });
-        
         // Create users for this test site that cover the various roles.
         List<String> userNames = transactionHelper.doInTransaction(new RetryingTransactionCallback<List<String>>()
         {
@@ -231,6 +226,14 @@ public class TemporarySites extends AbstractPersonRule
                 }
                 
                 return users;
+            }
+        });
+        
+        NodeRef doclibFolder = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                return siteService.getContainer(siteShortName, SiteService.DOCUMENT_LIBRARY);
             }
         });
         

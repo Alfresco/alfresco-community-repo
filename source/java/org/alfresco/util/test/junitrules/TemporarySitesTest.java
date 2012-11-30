@@ -63,10 +63,14 @@ public class TemporarySitesTest
                                                             .around(STATIC_TEST_SITES);
     
     // A rule to manage test sites use in each test method
-    @Rule public TemporarySites testSites = new TemporarySites(APP_CONTEXT_INIT);
+    public TemporarySites testSites = new TemporarySites(APP_CONTEXT_INIT);
     
     // A rule to allow individual test methods all to be run as "admin".
-    @Rule public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getAdminUserName());
+    public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getAdminUserName());
+    
+    // A non-static rule chain to ensure execution order is correct.
+    @Rule public RuleChain nonStaticRules = RuleChain.outerRule(runAsRule)
+                                                        .around(testSites);
     
     // Various services
     private static NamespaceService            NAMESPACE_SERVICE;
@@ -113,6 +117,11 @@ public class TemporarySitesTest
                 assertEquals("preset was wrong", "sitePreset", recoveredSite1.getSitePreset());
                 
                 assertEquals("site visibility was wrong", SiteVisibility.PUBLIC, recoveredSite1.getVisibility());
+                
+                for (String siteShortName : new String[] { testSite1.getShortName(), testSite2.getShortName() })
+                {
+                    assertNotNull("site had no doclib container node", SITE_SERVICE.getContainer(siteShortName, SiteService.DOCUMENT_LIBRARY));
+                }
                 
                 return null;
             }

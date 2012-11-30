@@ -20,6 +20,7 @@
 package org.alfresco.util.test.junitrules;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -233,6 +235,68 @@ public class TemporaryNodesTest
                 {
                     fail("Node '" + NODE_SERVICE.getProperty(siteNodeRef, ContentModel.PROP_NAME) + "' still exists.");
                 }
+                return null;
+            }
+        });
+    }
+    
+    @Test public void testCreateFolderAndQuickFile() throws Throwable
+    {
+        // Note that because we need to test that the Rule's 'after' behaviour has worked correctly, we cannot
+        // use the Rule that has been declared in the normal way - otherwise nothing would be cleaned up until
+        // after our test method.
+        // Therefore we have to manually poke the Rule to get it to cleanup during test execution.
+        // NOTE! This is *not* how a JUnit Rule would normally be used.
+        TemporaryNodes myTemporaryNodes = new TemporaryNodes(APP_CONTEXT_INIT);
+        
+        // Currently this is a no-op, but just in case that changes.
+        myTemporaryNodes.before();
+        
+        
+        
+        // Create the temporary nodes relevant for this test.
+        //
+        // Create a target folder
+        final NodeRef folder = myTemporaryNodes.createFolder(COMPANY_HOME, "testFolder", AuthenticationUtil.getAdminUserName());
+        
+        // create a 'quick' node under it.
+        final NodeRef quickTxt = myTemporaryNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, folder, "quickFile", AuthenticationUtil.getAdminUserName());
+        
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Check the nodes were created ok
+                assertTrue(NODE_SERVICE.exists(folder));
+                assertTrue(NODE_SERVICE.exists(quickTxt));
+                
+                assertEquals(ContentModel.TYPE_FOLDER, NODE_SERVICE.getType(folder));
+                assertEquals(ContentModel.TYPE_CONTENT, NODE_SERVICE.getType(quickTxt));
+                
+                assertEquals(AuthenticationUtil.getAdminUserName(), NODE_SERVICE.getProperty(folder, ContentModel.PROP_CREATOR));
+                assertEquals(AuthenticationUtil.getAdminUserName(), NODE_SERVICE.getProperty(quickTxt, ContentModel.PROP_CREATOR));
+                
+                ContentReader reader = CONTENT_SERVICE.getReader(quickTxt, ContentModel.PROP_CONTENT);
+                assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, reader.getMimetype());
+                
+                assertEquals(235, reader.getSize()); // 235 chars in the quick.txt file
+                final String content = reader.getContentString();
+                assertTrue(content.contains("quick brown fox"));
+                
+                return null;
+            }
+        });
+        
+        // Now trigger the Rule's cleanup behaviour.
+        myTemporaryNodes.after();
+        
+        // and ensure that the temporary nodes are gone.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertFalse(NODE_SERVICE.exists(folder));
+                assertFalse(NODE_SERVICE.exists(quickTxt));
                 return null;
             }
         });

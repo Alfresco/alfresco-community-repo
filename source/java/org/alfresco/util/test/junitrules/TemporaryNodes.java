@@ -19,7 +19,9 @@
  */
 package org.alfresco.util.test.junitrules;
 
+import java.io.File;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
@@ -49,7 +52,8 @@ import org.junit.rules.ExternalResource;
 import org.springframework.context.ApplicationContext;
 
 /**
- * A JUnit rule designed to help with the automatic cleanup of temporary test nodes.
+ * A JUnit rule designed to help with the automatic cleanup of temporary test nodes and to ake it easier to
+ * create common test content with JUnit code.
  * 
  * @author Neil Mc Erlean
  * @since 4.1
@@ -227,5 +231,120 @@ public class TemporaryNodes extends ExternalResource
         
         this.temporaryNodeRefs.add(newNodeRef);
         return newNodeRef;
+    }
+    
+    /**
+     * This method creates a cm:folder NodeRef and adds it to the internal list of NodeRefs to be tidied up by the rule.
+     * This method will be run in its own transaction and will be run with the specified user as the fully authenticated user,
+     * thus ensuring the named user is the cm:creator of the new node.
+     * 
+     * @param parentNode the parent node
+     * @param nodeCmName the cm:name of the new node
+     * @param nodeCreator the username of the person who will create the node
+     * @return the newly created NodeRef.
+     */
+    public NodeRef createFolder(final NodeRef parentNode, final String nodeCmName, final String nodeCreator)
+    {
+        final RetryingTransactionHelper transactionHelper = (RetryingTransactionHelper) appContextRule.getApplicationContext().getBean("retryingTransactionHelper");
+        
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(nodeCreator);
+        
+        NodeRef newNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                final NodeRef result = createNode(nodeCmName, parentNode, ContentModel.TYPE_FOLDER);
+                
+                return result;
+            }
+        });
+        
+        AuthenticationUtil.popAuthentication();
+        
+        this.temporaryNodeRefs.add(newNodeRef);
+        return newNodeRef;
+    }
+    
+    /**
+     * This method creates a cm:content NodeRef whose content is taken from an Alfresco 'quick' file and adds it to the internal
+     * list of NodeRefs to be tidied up by the rule.
+     * This method will be run in its own transaction and will be run with the specified user as the fully authenticated user,
+     * thus ensuring the named user is the cm:creator of the new node.
+     * 
+     * @param mimetype the MimeType of the content to put in the new node.
+     * @param parentNode the parent node
+     * @param nodeCmName the cm:name of the new node
+     * @param nodeCreator the username of the person who will create the node
+     * @return the newly created NodeRef.
+     */
+    public NodeRef createQuickFile(final String mimetype, final NodeRef parentNode, final String nodeCmName, final String nodeCreator)
+    {
+        final RetryingTransactionHelper transactionHelper = (RetryingTransactionHelper) appContextRule.getApplicationContext().getBean("retryingTransactionHelper");
+        
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(nodeCreator);
+        
+        NodeRef newNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                final NodeRef result = createNode(nodeCmName, parentNode, ContentModel.TYPE_CONTENT);
+                
+                File quickFile = loadQuickFile(mimetype);
+                
+                ContentService contentService = appContextRule.getApplicationContext().getBean("contentService", ContentService.class);
+                ContentWriter writer = contentService.getWriter(result, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(mimetype);
+                writer.setEncoding("UTF-8");
+                writer.putContent(quickFile);
+                
+                return result;
+            }
+        });
+        
+        AuthenticationUtil.popAuthentication();
+        
+        this.temporaryNodeRefs.add(newNodeRef);
+        return newNodeRef;
+    }
+    
+    private NodeRef createNode(String cmName, NodeRef parentNode, QName nodeType)
+    {
+        final NodeService nodeService = (NodeService) appContextRule.getApplicationContext().getBean("nodeService");
+        
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, cmName);
+        ChildAssociationRef childAssoc = nodeService.createNode(parentNode,
+                    ContentModel.ASSOC_CONTAINS,
+                    ContentModel.ASSOC_CONTAINS,
+                    nodeType,
+                    props);
+        
+        return childAssoc.getChildRef();
+    }
+    
+    private File loadQuickFile(String mimetype)
+    {
+        final MimetypeMap mimetypeService = (MimetypeMap) appContextRule.getApplicationContext().getBean("mimetypeService");
+        final String extension = mimetypeService.getExtension(mimetype);
+        
+        if (extension == null)
+        {
+            throw new UnsupportedOperationException("No 'quick' file for unrecognised mimetype: " + mimetype);
+        }
+        
+        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource("quick/quick." + extension);
+        
+        if (url == null)
+        {
+            throw new UnsupportedOperationException("No 'quick' file for extension: " + extension);
+        }
+        File file = new File(url.getFile());
+        if (!file.exists())
+        {
+            throw new UnsupportedOperationException("No 'quick' file for extension: " + extension);
+        }
+        return file;
     }
 }

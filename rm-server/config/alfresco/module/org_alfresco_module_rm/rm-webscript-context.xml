@@ -496,4 +496,11 @@
       <property name="dataSetService" ref="DataSetService" />
       <property name="siteService" ref="SiteService" />
    </bean>
+
+   <!-- REST impl for GET Email Mapping Keys -->
+   <bean id="webscript.org.alfresco.rma.admin.emailmapkeys.get"
+      class="org.alfresco.module.org_alfresco_module_rm.script.EmailMapKeysGet"
+      parent="webscript">
+      <property name="emailMappingKeyService" ref="EmailMappingKeyService" />
+   </bean>
 </beans>

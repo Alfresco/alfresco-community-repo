@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>RM Email Mapping Keys</shortname>
+   <description>Gets the list of email mapping keys</description>
+   <url>/api/rma/admin/emailmapkeys</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

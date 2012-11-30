@@ -5,25 +5,25 @@
 
     <!-- Records Management Service Registry -->
 
-    <bean id="RecordsManagementServiceRegistry" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistryImpl" />    
-    
+    <bean id="RecordsManagementServiceRegistry" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistryImpl" />
+
     <!-- Disposition selection strategy -->
     <bean id="org_alfresco_module_rm_dispositionSelectionStrategy"
-          class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSelectionStrategy" >        
+          class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSelectionStrategy" >
         <property name="dispositionService" ref="dispositionService"/>
-    </bean>    
+    </bean>
 
     <!-- Records Management Service -->
-    
+
     <bean id="recordsManagementService" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceImpl"
-          depends-on="org_alfresco_module_rm_dictionaryBootstrap" init-method="init">        
+          depends-on="org_alfresco_module_rm_dictionaryBootstrap" init-method="init">
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
         <property name="rmActionService" ref="recordsManagementActionService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="nodeDAO" ref="nodeDAO"/>
     </bean>
-    
+
     <bean id="RecordsManagementService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.RecordsManagementService</value>
@@ -88,26 +88,26 @@
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createRecordCategory=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordFolderDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordFolderClosed=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createRecordFolder=RM.Write.0                
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecords=RM.Read.0,AFTER_RM.FilterNode       
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode                      
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createRecordFolder=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecords=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecordMetaDataAspects=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordDeclared=RM.Read.0          
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.*=RM_DENY
                 ]]>
             </value>
         </property>
     </bean>
-    
+
     <!--  Vital Record Service -->
-    
-    <bean id="vitalRecordService" class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl" init-method="init">        
+
+    <bean id="vitalRecordService" class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl" init-method="init">
         <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
     </bean>
-    
+
     <bean id="VitalRecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService</value>
@@ -147,25 +147,25 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[             
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService.*=RM_ALLOW
                 ]]>
             </value>
         </property>
     </bean>
-    
+
     <!--  Disposition Service -->
-    
-    <bean id="dispositionService" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl">        
+
+    <bean id="dispositionService" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl">
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
-        <property name="behaviourFilter" ref="policyBehaviourFilter" /> 	
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="dispositionSelectionStrategy">
            <ref local="org_alfresco_module_rm_dispositionSelectionStrategy" />
         </property>
     </bean>
-    
+
     <bean id="DispositionService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService</value>
@@ -207,32 +207,32 @@
             <value>
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.registerDispositionProperty=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionProperties=RM_ALLOW 
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionProperties=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedRecordsManagementContainer=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.hasDisposableItems=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isDisposableItem=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDisposableItems=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.createDispositionSchedule=RM_ALLOW               
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.createDispositionSchedule=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.addDispositionActionDefinition=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.removeDispositionActionDefinition=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.updateDispositionActionDefinition=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isNextDispositionActionEligible=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getNextDispositionAction=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getCompletedDispositionActions=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0                                               
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.*=RM_DENY
                 ]]>
             </value>
         </property>
     </bean>
-    
+
     <!--  Capability Service -->
-    
-    <bean id="capabilityService" class="org.alfresco.module.org_alfresco_module_rm.capability.CapabilityServiceImpl">        
+
+    <bean id="capabilityService" class="org.alfresco.module.org_alfresco_module_rm.capability.CapabilityServiceImpl">
     </bean>
-    
+
     <bean id="CapabilityService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService</value>
@@ -278,12 +278,12 @@
             </value>
         </property>
     </bean>
-    
+
     <!--  Records Management Search Service -->
-    
-    <bean id="recordsManagementSearchService" class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl">        
+
+    <bean id="recordsManagementSearchService" class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl">
         <property name="fileFolderService" ref="FileFolderService"/>
-        <property name="siteService" ref="SiteService"/>  
+        <property name="siteService" ref="SiteService"/>
         <property name="namespaceService" ref="NamespaceService" />
         <property name="searchService" ref="SearchService" />
         <property name="reportsJSON">
@@ -298,7 +298,7 @@
                 		{
                 			"records" : true,
                 			"vitalrecords" : true
-                		}                		
+                		}
                 	},
                 	{
                 		"name" : "Undeclared Records",
@@ -306,7 +306,7 @@
                 		"search" : "ISNODE:T AND NOT ASPECT:\"rma:declaredRecord\"",
                 		"searchparams" :
                 		{
-                			"records" : true,                			
+                			"records" : true,
                 			"recordfolders" : false,
                 			"undeclaredrecords" : true
                 		}
@@ -358,9 +358,9 @@
                 ]
                 ]]>
             </value>
-        </property>   
+        </property>
     </bean>
-    
+
     <bean id="RecordsManagementSearchService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService</value>
@@ -405,29 +405,29 @@
                 org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.getSavedSearches=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.getSavedSearch=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.saveSearch=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.deleteSavedSearch=RM_ALLOW   
-                org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.addReports=RM_ALLOW            
+                org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.deleteSavedSearch=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.addReports=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.*=RM_DENY
                 ]]>
             </value>
         </property>
     </bean>
-    
+
     <!-- Records Management Security Service -->
-    
-    <bean id="recordsManagementSecurityService" 
-          class="org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityServiceImpl" 
-          depends-on="org_alfresco_module_rm_dictionaryBootstrap" 
-          init-method="init">        
+
+    <bean id="recordsManagementSecurityService"
+          class="org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityServiceImpl"
+          depends-on="org_alfresco_module_rm_dictionaryBootstrap"
+          init-method="init">
         <property name="voter" ref="rmEntryVoter"/>
         <property name="capabilityService" ref="CapabilityService"/>
         <property name="authorityService" ref="AuthorityService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>        
+        <property name="recordsManagementService" ref="RecordsManagementService"/>
     </bean>
-    
+
     <bean id="RecordsManagementSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService</value>
@@ -467,11 +467,11 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[  
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getProtectedAspects=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getProtectedProperties=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.setPermission=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deletePermission=RM_ALLOW                            
+                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deletePermission=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.bootstrapDefaultRoles=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getRoles=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getRolesByUser=RM_ALLOW
@@ -481,24 +481,24 @@
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.createRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.updateRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deleteRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW   
-    			org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.*=RM_DENY             
+                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW
+    			org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.*=RM_DENY
                 ]]>
             </value>
         </property>
     </bean>
-    
+
     <!--  Records Management Extended Security Service -->
-    
-    <bean id="extendedSecurityService" 
-          class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl"           
-          init-method="init">        
-        <property name="policyComponent" ref="policyComponent"/>  
+
+    <bean id="extendedSecurityService"
+          class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl"
+          init-method="init">
+        <property name="policyComponent" ref="policyComponent"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="recordService" ref="recordService"/>
         <property name="recordsManagementService" ref="recordsManagementService"/>
     </bean>
-    
+
     <bean id="ExtendedSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService</value>
@@ -538,21 +538,21 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[   
-    			org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService.*=RM_ALLOW             
+                <![CDATA[
+    			org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService.*=RM_ALLOW
                 ]]>
             </value>
         </property>
     </bean>
-    
-    
+
+
     <!-- Records Management Action Service -->
-    
-    <bean id="recordsManagementActionService" class="org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionServiceImpl" init-method="init">        
+
+    <bean id="recordsManagementActionService" class="org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionServiceImpl" init-method="init">
         <property name="policyComponent" ref="policyComponent"/>
         <property name="nodeService" ref="NodeService"/>
     </bean>
-    
+
     <bean id="RecordsManagementActionService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService</value>
@@ -580,7 +580,7 @@
         </property>
     </bean>
 
-    
+
     <bean id="RecordsManagementActionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -593,7 +593,7 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[  
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getRecordsManagementActions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getDispositionActions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getRecordsManagementAction=RM_ALLOW
@@ -609,14 +609,14 @@
             </value>
         </property>
     </bean>
-    
+
     <!-- Records Management Event Service -->
-    
+
     <bean id="recordsManagementEventService" class="org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventServiceImpl">
       <property name="nodeService" ref="NodeService"/>
       <property name="contentService" ref="ContentService"/>
     </bean>
-    
+
     <bean id="RecordsManagementEventService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService</value>
@@ -644,7 +644,7 @@
         </property>
     </bean>
 
-   
+
     <bean id="RecordsManagementEventService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -657,7 +657,7 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[  
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.registerEventType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.getEventTypes=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.getEventType=RM_ALLOW
@@ -672,9 +672,9 @@
             </value>
         </property>
     </bean>
-    
+
     <!-- Records Management Admin Service -->
-    
+
     <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminServiceImpl" init-method="init">
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="namespaceService" ref="NamespaceService"/>
@@ -687,11 +687,11 @@
         	    <value>rma:recordCategory</value>
         		<value>rma:recordFolder</value>
         		<value>rma:record</value>
-        		<value>rma:nonElectronicDocument</value>        		       
+        		<value>rma:nonElectronicDocument</value>
         	</list>
         </property>
     </bean>
-    
+
     <bean id="RecordsManagementAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService</value>
@@ -719,7 +719,7 @@
         </property>
     </bean>
 
-    
+
     <bean id="RecordsManagementAdminService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -732,7 +732,7 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[  
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.initialiseCustomModel=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomisable=RM_ALLOW
 				org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.isCustomisable=RM_ALLOW
@@ -769,16 +769,16 @@
             </value>
         </property>
     </bean>
-    
+
     <!--  Freeze Service  -->
-    
+
     <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl" init-method="init">
         <property name="policyComponent" ref="policyComponent" />
         <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dictionaryService" ref="dictionaryService" />
     </bean>
-    
+
     <bean id="FreezeService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService</value>
@@ -794,7 +794,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="FreezeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -805,7 +805,7 @@
             </props>
         </property>
     </bean>
-    
+
     <bean id="FreezeService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -836,9 +836,9 @@
             </value>
         </property>
     </bean>
-    
+
     <!-- Records Management Audit Service -->
-    
+
     <bean id="recordsManagementAuditService" class="org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl" init-method="init">
         <property name="policyComponent" ref="policyComponent" />
         <property name="dictionaryService" ref="dictionaryService" />
@@ -850,7 +850,7 @@
         <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
     </bean>
-    
+
     <bean id="RecordsManagementAuditService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService</value>
@@ -877,7 +877,7 @@
             </props>
         </property>
     </bean>
-    
+
     <bean id="RecordsManagementAuditService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -890,7 +890,7 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[  
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.clear=RM_CAP.-1.rma:filePlanComponent.DeleteAudit
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrail=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrailFile=RM_ALLOW
@@ -906,9 +906,9 @@
             </value>
         </property>
     </bean>
-    
+
     <!--  Record Service -->
-    
+
     <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
         <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
@@ -916,7 +916,7 @@
         <property name="permissionService" ref="PermissionService"/>
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />
     </bean>
-    
+
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.record.RecordService</value>
@@ -943,7 +943,7 @@
             </props>
         </property>
     </bean>
-    
+
     <bean id="RecordService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -969,21 +969,21 @@
     </bean>
 
     <!--  Custom EMail Mapping Service -->
-    
-    <bean id="customEmailMappingService" 
+
+   <bean id="customEmailMappingService"
       class="org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingServiceImpl" >
       <property name="extracter" ref="extracter.RFC822" />
       <property name="nodeService" ref="nodeService" />
       <property name="contentService" ref="contentService"/>
       <property name="namespacePrefixResolver">
-            <ref bean="namespaceService"></ref>
+         <ref bean="namespaceService"></ref>
       </property>
       <property name="policyComponent"><ref bean="policyComponent" /></property>
       <property name="transactionService"><ref bean="transactionService" /></property>
-   
-    </bean>
-    
-    
+
+   </bean>
+
+
     <bean id="CustomEmailMappingService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -994,7 +994,7 @@
             </props>
         </property>
     </bean>
-    
+
         <bean id="CustomEmailMappingService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -1007,7 +1007,7 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[ 
+                <![CDATA[
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.getCustomMappings=RM_ALLOW
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.addCustomMapping=RM_ALLOW
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.deleteCustomMapping=RM_ALLOW
@@ -1017,7 +1017,7 @@
         </property>
     </bean>
 
-        
+
     <bean id="CustomEmailMappingService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -1035,10 +1035,75 @@
             </list>
         </property>
     </bean>
-    
+
+   <!-- EMail Mapping Key Service -->
+
+   <bean id="emailMappingKeyService"
+      class="org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyServiceImpl" >
+      <property name="emailMappingKeys">
+         <list>
+            <value>Thread-Index</value>
+            <value>messageFrom</value>
+            <value>messageTo</value>
+            <value>messageCc</value>
+            <value>messageSubject</value>
+            <value>messageSent</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="EmailMappingKeyService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager"/>
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <bean id="EmailMappingKeyService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+      <property name="authenticationManager">
+         <ref bean="authenticationManager"/>
+      </property>
+      <property name="accessDecisionManager">
+         <ref bean="accessDecisionManager"/>
+      </property>
+      <property name="afterInvocationManager">
+         <ref bean="afterInvocationManager"/>
+      </property>
+      <property name="objectDefinitionSource">
+         <value>
+            <![CDATA[
+               org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyService.getEmailMappingKeys=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyService.*=RM_DENY
+            ]]>
+         </value>
+      </property>
+   </bean>
+
+   <bean id="EmailMappingKeyService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <list>
+            <value>org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyService</value>
+         </list>
+      </property>
+      <property name="targetName">
+         <value>emailMappingKeyService</value>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="EmailMappingKeyService_transaction"/>
+            <idref local="EmailMappingKeyService_security"/>
+            <idref bean="exceptionTranslator"/>
+         </list>
+      </property>
+   </bean>
+
     <!--  RM Notification Helper -->
-            
-    <bean id="recordsManagementNotificationHelper" class="org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper" >        
+
+    <bean id="recordsManagementNotificationHelper" class="org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper" >
         <property name="securityService" ref="RecordsManagementSecurityService"/>
     	<property name="notificationService" ref="NotificationService"/>
     	<property name="recordsManagementService" ref="RecordsManagementService"/>
@@ -1049,17 +1114,17 @@
         <property name="siteService" ref="SiteService" />
         <property name="authorityService" ref="authorityService" />
     	<property name="notificationRole" value="${rm.notification.role}"/>
-    </bean>    
-    
+    </bean>
+
     <!-- RM caveats -->
-    
+
     <bean id="caveatConfigService" class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigServiceImpl">
         <property name="caveatConfigComponent" ref="caveatConfigComponent"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="namespaceService" ref="namespaceService" />
         <property name="recordsManagementAdminService" ref = "recordsManagementAdminService"/>
     </bean>
-    
+
     <bean id="caveatConfigComponent" class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponentImpl">
         <property name="policyComponent" ref="policyComponent"/>
         <property name="contentService" ref="contentService"/>
@@ -1068,12 +1133,12 @@
         <property name="authorityService" ref="authorityService"/>
         <property name="personService" ref="personService"/>
         <property name="nodeService" ref="nodeService"/>
-        
+
         <property name="caveatAspects" ref="caveatAspects"/>
         <property name="caveatModels" ref="caveatModels"/>
-        
+
     </bean>
-    
+
     <bean id="caveatAspects" class="java.util.ArrayList" >
       <constructor-arg>
          <list>
@@ -1081,7 +1146,7 @@
          </list>
       </constructor-arg>
    </bean>
-   
+
    <bean id="caveatModels" class="java.util.ArrayList" >
       <constructor-arg>
          <list>
@@ -1089,11 +1154,11 @@
          </list>
       </constructor-arg>
    </bean>
-    
+
     <bean id="rmListOfValuesContraintInit" class="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
         <property name="caveatConfigService" ref="caveatConfigService"/>
     </bean>
-    
+
     <bean id="CaveatConfigService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -1106,8 +1171,8 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[ 
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getRMAllowedValues=RM_ALLOW  
+                <![CDATA[
+                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getRMAllowedValues=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.hasAccess=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getRMConstraint=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getAllRMConstraints=RM_ALLOW
@@ -1117,7 +1182,7 @@
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.updateRMConstraintAllowedValues=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.updateRMConstraintTitle=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.deleteRMConstraint=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.addRMConstraintListValue=RM_ALLOW 
+                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.addRMConstraintListValue=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.updateRMConstraintListAuthority=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.removeRMConstraintListAuthority=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.updateRMConstraintListValue=RM_ALLOW
@@ -1126,7 +1191,7 @@
                 ]]>
             </value>
         </property>
-    </bean>         
+    </bean>
 
     <bean id="CaveatConfigService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
@@ -1138,7 +1203,7 @@
             </props>
         </property>
     </bean>
-    
+
     <bean id="CaveatConfigService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
@@ -1156,7 +1221,7 @@
             </list>
         </property>
     </bean>
-    
+
     <!--  Site service work around (see https://issues.alfresco.com/jira/browse/RM-387) -->
      <bean name="siteGetChildrenCannedQueryFactory" class="org.alfresco.module.org_alfresco_module_rm.site.GetChildrenCannedQueryFactory">
         <property name="registry" ref="siteCannedQueryRegistry"/>
@@ -1169,7 +1234,7 @@
         <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
         <property name="methodSecurity" ref="SiteService_security_listSites"/>
     </bean>
-    
+
     <!--  Data Set Service -->
 
     <bean id="dataSetService" class="org.alfresco.module.org_alfresco_module_rm.dataset.DataSetServiceImpl">
@@ -1236,11 +1301,11 @@
     <bean id="dataSetBase" abstract="true" init-method="register" class="org.alfresco.module.org_alfresco_module_rm.dataset.DataSetBase">
         <property name="dataSetService" ref="dataSetService"/>
     </bean>
-    
+
     <bean id="dataSetDOD5015" parent="dataSetBase">
         <property name="label" value="DOD 5015 Example Data"/>
         <property name="id" value="dod5015"/>
         <property name="path" value="alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml" />
     </bean>
-    
-</beans>    
+
+</beans>

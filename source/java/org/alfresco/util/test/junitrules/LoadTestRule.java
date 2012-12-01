@@ -31,9 +31,7 @@ import java.util.concurrent.CountDownLatch;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.ClassRule;
 import org.junit.rules.ErrorCollector;
-import org.junit.rules.RuleChain;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -68,7 +66,7 @@ import org.junit.runners.model.Statement;
  *     &#64;ClassRule public static RuleChain STATIC_RULE_CHAIN = RuleChain.outerRule(APP_CONTEXT_RULE)
  *                                                                     .around(TEST_USERS);
  *                                                              
- *     &#64;Rule LoadTestRule loadTestRule = new LoadTestRule(TEST_USERS);
+ *     &#64;Rule public LoadTestRule loadTestRule = new LoadTestRule(TEST_USERS);
  *     
  *     &#64;Test public void aNormalTestMethod()
  *     {
@@ -97,6 +95,10 @@ public class LoadTestRule extends ErrorCollector
         this.people = people;
     }
     
+    /**
+     * Gets the number of users/concurrent threads that this Rule has been configured to use.
+     * @return the number of users/threads.
+     */
     public int getCount()
     {
         return this.people.getUsernames().size();
@@ -180,6 +182,9 @@ public class LoadTestRule extends ErrorCollector
         }
     }
     
+    /**
+     * This annotation is a marker used to identify a JUnit &#64;Test method as a "load test".
+     */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Documented

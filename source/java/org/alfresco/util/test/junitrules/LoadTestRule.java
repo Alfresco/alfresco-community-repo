@@ -31,12 +31,58 @@ import java.util.concurrent.CountDownLatch;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.ClassRule;
 import org.junit.rules.ErrorCollector;
+import org.junit.rules.RuleChain;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- * TODO
+ * This JUnit rule can be used to turn existing test code into Load Tests.
+ * It does this in conjunction with the {@link AlfrescoPeople} JUnit rule.
+ * That rule is used to {@link AlfrescoPeople#AlfrescoPeople(ApplicationContextInit, int) create} a
+ * fixed number of Alfresco users. Then {@link LoadTestRule} will do the following for each of your JUnit 4 &#64;Test methods:
+ * <ul>
+ * <li>if they are annotated with the {@link LoadTest} marker annotation:
+ *    <ol>
+ *    <li>one Java thread for each of the users created by the {@link AlfrescoPeople} rule will be created and started.</li>
+ *    <li>each of those threads will start by authenticating as a different user from the above set.</li>
+ *    <li>each of those threads will concurrently execute the same JUnit &#64;Test method.</li>
+ *    <li>if all the concurrent threads complete execution successfully, the &#64;Test method is passed.</li>
+ *    <li>but if one or more of those concurrent threads fail, the error messages will be aggregated together into a single error for that method.</li>
+ *    </ol>
+ * <li>else they will be executed as normal and will pass or fail as normal.</li>
+ * </ul>
+ * <p/>
+ * Example usage, where we have a 'normal' feature test and a load test for the same feature.:
+ * <pre>
+ * public class YourTestClass
+ * {
+ *     // We need to ensure that JUnit Rules in the same 'group' (in this case the 'static' group) execute in the correct
+ *     // order. To do this we do not annotate the JUnit Rule fields themselves, but instead wrap them up in a RuleChain.
+ *     
+ *     // Initialise the spring application context with a rule.
+ *     public static final ApplicationContextInit APP_CONTEXT_RULE = new ApplicationContextInit();
+ *     public static final AlfrescoPeople         TEST_USERS       = new AlfrescoPeople(APP_CONTEXT_RULE, 32);
+ *     
+ *     &#64;ClassRule public static RuleChain STATIC_RULE_CHAIN = RuleChain.outerRule(APP_CONTEXT_RULE)
+ *                                                                     .around(TEST_USERS);
+ *                                                              
+ *     &#64;Rule LoadTestRule loadTestRule = new LoadTestRule(TEST_USERS);
+ *     
+ *     &#64;Test public void aNormalTestMethod()
+ *     {
+ *         ensureFeatureFooWorks()
+ *     }
+ *     
+ *     &#64;LoadTest &#64;Test public void aLoadTestMethod()
+ *     {
+ *         ensureFeatureFooWorks()
+ *     }
+ *     
+ *     public void ensureFeatureFooWorks() {}
+ * }
+ * </pre>
  * 
  * @author Neil Mc Erlean
  */

@@ -84,6 +84,8 @@ Inbound settings from iBatis
         
         <!-- Authority CQ -->
         <typeAlias alias="AuthorityInfo" type="org.alfresco.repo.security.authority.AuthorityInfoEntity"/>
+        <typeAlias alias="AuthorityBridgeParameters" type="org.alfresco.repo.security.authority.AuthorityBridgeParametersEntity"/>
+        <typeAlias alias="AuthorityBridgeLink" type="org.alfresco.repo.security.authority.AuthorityBridgeLink"/>
         
         <!-- Blog CQ -->
         <typeAlias alias="Blog" type="org.alfresco.repo.blog.cannedqueries.BlogEntity"/>

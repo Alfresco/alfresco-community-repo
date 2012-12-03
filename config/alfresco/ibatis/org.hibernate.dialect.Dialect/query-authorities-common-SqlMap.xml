@@ -16,6 +16,11 @@
         <result property="authorityName" column="authority_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <association property="node" resultMap="alfresco.node.result_Node"/>
     </resultMap>
+    
+    <resultMap id="result_AuthorityBridgeLink" type="AuthorityBridgeLink">
+        <result property="childName" column="child_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="parentName" column="parent_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
   
     <!--                -->
     <!-- Parameter Maps -->
@@ -41,6 +46,35 @@
             left join alf_node_properties adn on (adn.node_id = childNode.id and adn.qname_id = #{authorityDisplayNameQNameId})
         where
             assoc.parent_node_id = #{parentNodeId}
+    </select>
+    
+    <!--  Get all relationships between authorities -->
+    <select id="select_GetAuthorityBridgeEntries" parameterType="AuthorityBridgeParameters" resultMap="result_AuthorityBridgeLink">
+    	select 
+    	    ca.qname_localname    			as child_name,
+    	    parentName.string_value         as parent_name
+    	from
+    		alf_child_assoc ca
+    		join alf_node childNode on ((childNode.id = ca.child_node_id) and (childNode.type_qname_id = #{typeQNameId} )and (childNode.store_id = #{storeId})) 
+    		join alf_node parentNode on ((parentNode.id = ca.parent_node_id) and (parentNode.type_qname_id = #{typeQNameId}) and (parentNode.store_id = #{storeId}))
+    		join alf_node_properties parentName on (parentName.node_id = parentNode.id and parentName.qname_id = #{authorityNameQNameId})
+        where 
+            ca.type_qname_id         = #{childAssocTypeQNameId}
+    </select>
+    
+    <!--  Get direct parent authorities -->
+    <select id="select_GetDirectAuthoritiesForUser" parameterType="AuthorityBridgeParameters" resultMap="result_AuthorityBridgeLink">
+    	select 
+    	    ''    			                as child_name,
+    	    parentName.string_value         as parent_name
+    	from
+    		alf_child_assoc ca
+    		join alf_node childNode on ((childNode.id = ca.child_node_id) and (childNode.store_id = #{storeId})) 
+    		join alf_node parentNode on ((parentNode.id = ca.parent_node_id) and (parentNode.type_qname_id = #{typeQNameId}) and (parentNode.store_id = #{storeId}))
+    		join alf_node_properties parentName on (parentName.node_id = parentNode.id and parentName.qname_id = #{authorityNameQNameId})
+        where 
+                ca.type_qname_id         = #{childAssocTypeQNameId}
+            and childNode.id       = #{nodeId}
     </select>
     
 </mapper>

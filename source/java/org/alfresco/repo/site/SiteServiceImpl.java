@@ -1036,22 +1036,20 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private List<SiteInfo> listSitesImpl(final String userName, int size)
     {
         final int maxResults = size > 0 ? size : 1000;
+        Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, userName, false);
         final Set<String> siteNames = new TreeSet<String>();
-        authorityService.getContainingAuthoritiesInZone(AuthorityType.GROUP, userName, AuthorityService.ZONE_APP_SHARE, new AuthorityFilter(){
-            @Override
-            public boolean includeAuthority(String authority)
+        for(String authority : containingAuthorities)
+        {
+            if (siteNames.size() < maxResults)
             {
-                if (siteNames.size() < maxResults)
+                String siteName = resolveSite(authority);
+                if (siteName != null)
                 {
-                    String siteName = resolveSite(authority);
-                    if (siteName == null)
-                    {
-                        return false;
-                    }
-                    return siteNames.add(siteName);
+                    siteNames.add(siteName);
                 }
-                return false;
-            }}, maxResults);
+            }
+        }
+        
         if (siteNames.isEmpty())
         {
             return Collections.emptyList();

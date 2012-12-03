@@ -944,21 +944,21 @@ public class SiteServiceTestHuge
 //        allocateUsersToGroups(NUM_USERS, NUM_GROUPS, Allocation.ALL_TO_EACH);
 //    }
 
-//    @Test
-//    public void testInit() throws Exception
-//    {
-//        createUsers(NUM_USERS);
-//        createGroups(NUM_GROUPS);
-//        allocateUsersToGroups(NUM_USERS, NUM_GROUPS, Allocation.ALL_TO_EACH);
-//
-//        createSites(NUM_SITES, NUM_USERS, 0, OnFailure.KEEP_GOING);
-//
-//        int blockSize = 10;
-//        for (int siteId = getNextSiteToAddGroupTo(1); siteId <= NUM_SITES; siteId += blockSize)
-//        {
-//            allocateGroupToSite(siteId, NUM_USERS, ADMIN_USER, OnFailure.KEEP_GOING, blockSize);
-//        }
-//    }
+    @Test
+    public void testInit() throws Exception
+    {
+        createUsers(NUM_USERS);
+        createGroups(NUM_GROUPS);
+        allocateUsersToGroups(NUM_USERS, NUM_GROUPS, Allocation.ALL_TO_EACH);
+
+        createSites(NUM_SITES, NUM_USERS, 0, OnFailure.KEEP_GOING);
+
+        int blockSize = 10;
+        for (int siteId = getNextSiteToAddGroupTo(1); siteId <= NUM_SITES; siteId += blockSize)
+        {
+            allocateGroupToSite(siteId, NUM_USERS, ADMIN_USER, OnFailure.KEEP_GOING, blockSize);
+        }
+    }
 
     // ------------------ Test to load data from cmd line --------------------
 

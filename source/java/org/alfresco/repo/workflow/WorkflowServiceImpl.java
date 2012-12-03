@@ -747,8 +747,7 @@ public class WorkflowServiceImpl implements WorkflowService
         // Expand authorities to include associated groups (and parent groups)
         List<String> authorities = new ArrayList<String>();
         authorities.add(authority);
-        Set<String> parents = authorityService.getContainingAuthoritiesInZone(AuthorityType.GROUP, authority,
-                null, null, 100);
+        Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, authority, false);
         authorities.addAll(parents);
         
         // Retrieve pooled tasks for authorities (from each of the registered
@@ -758,7 +757,10 @@ public class WorkflowServiceImpl implements WorkflowService
         for (String id : ids)
         {
             TaskComponent component = registry.getTaskComponent(id);
-            tasks.addAll(component.getPooledTasks(authorities));
+            for(int i = 0; i < authorities.size(); i+=1000)
+            {
+                tasks.addAll(component.getPooledTasks(authorities.subList(i*1000, ((i+1)*1000) > authorities.size() ? authorities.size() : ((i+1)*1000))));
+            }
         }
         return Collections.unmodifiableList(tasks);
     }

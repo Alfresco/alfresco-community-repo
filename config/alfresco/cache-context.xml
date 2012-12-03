@@ -140,7 +140,18 @@
    <bean name="authorityToChildAuthoritySharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
       <property name="maxItems" value="${cache.authorityToChildAuthoritySharedCache.maxItems}"/>
    </bean>
+   
+   
+   <!-- =========================== -->
+   <!-- Authority BridgeTable cache -->
+   <!-- =========================== -->
 
+   <!-- The cross-transaction shared cache for authority bridge -->
+   
+   <bean name="authorityBridgeTableByTenantSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+       <property name="maxItems" value="${cache.authorityBridgeTableByTenantSharedCache.maxItems}"/>
+   </bean>
+ 
    <!-- ================================================ -->
    <!-- Zone lookup to ChildAssociationRefs              -->
    <!-- ================================================ -->

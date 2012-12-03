@@ -54,7 +54,7 @@
     <!-- This bean uses the authorityLookupCache configured in cache-context.xml  -->
     <!--                                                                          -->
 
-    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl" init-method="init">   
+    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOBridgeTableImpl" init-method="init">   
         <property name="storeUrl">
             <value>${spaces.store}</value>
         </property>
@@ -97,6 +97,22 @@
         <property name="aclDAO">
             <ref bean="aclDAO" />
         </property>
+        <property name="authorityBridgeDAO">
+            <ref bean="authorityBridgeDAO" />
+        </property>
+        <property name="authorityBridgeTableByTenantCache">
+            <ref bean="authorityBridgeTableByTenantCache" />
+        </property>
+        <property name="useBridgeTable">
+            <value>${authority.useBridgeTable}</value>
+        </property>
+    </bean>
+    
+    <bean name="authorityBridgeDAO" class="org.alfresco.repo.security.authority.AuthorityBridgeDAOImpl">
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
     </bean>
     
     <bean name="authsGetAuthoritiesCannedQueryFactory" class="org.alfresco.repo.security.authority.GetAuthoritiesCannedQueryFactory">
@@ -106,9 +122,8 @@
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
         <property name="methodSecurity" ref="AuthorityService_security_getAuthorities"/>
-   </bean>
-    
-    
+    </bean>
+
     <!--  Expose the Authority service to Java script API ROOT Scopeable object called "groups" -->
     <bean id="authorityServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.security.authority.script.ScriptAuthorityService">
         <property name="extensionName">

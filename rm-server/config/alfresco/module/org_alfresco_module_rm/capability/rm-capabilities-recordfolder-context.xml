@@ -20,7 +20,7 @@
             <entry key="capabilityCondition.closed" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="folderControl" />
+      <property name="group"><ref bean="folderControlGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyDestroyFoldersCapability"
@@ -41,7 +41,7 @@
             <entry key="capabilityCondition.closed" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="folderControl" />
+      <property name="group"><ref bean="folderControlGroup"/></property>
    </bean>
 
    <bean id="rmMoveRecordFolderCapability"
@@ -74,7 +74,7 @@
             <entry key="capabilityCondition.closed" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="folderControl" />
+      <property name="group"><ref bean="folderControlGroup"/></property>
    </bean>
 
    <bean id="rmDeclareRecordsInClosedFoldersCapability"
@@ -95,6 +95,6 @@
             <entry key="capabilityCondition.declared" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="folderControl" />
+      <property name="group"><ref bean="folderControlGroup"/></property>
    </bean>
 </beans>

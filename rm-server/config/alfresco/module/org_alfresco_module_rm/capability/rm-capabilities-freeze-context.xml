@@ -21,7 +21,7 @@
             <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="holdControls" />
+      <property name="group"><ref bean="holdControlsGroup"/></property>
    </bean>
 
    <bean id="rmUnfreezeCapability"
@@ -34,7 +34,7 @@
             <entry key="capabilityCondition.frozenOrHold" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="holdControls" />
+      <property name="group"><ref bean="holdControlsGroup"/></property>
    </bean>
 
    <bean id="rmViewUpdateReasonsForFreezeCapability"
@@ -46,7 +46,7 @@
             <entry key="capabilityCondition.frozenOrHold" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="holdControls" />
+      <property name="group"><ref bean="holdControlsGroup"/></property>
    </bean>
 
 </beans>

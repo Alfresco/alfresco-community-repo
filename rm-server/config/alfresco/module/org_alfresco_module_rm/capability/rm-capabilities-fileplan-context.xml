@@ -3,86 +3,86 @@
 
 <beans>
 
-    <!--  Assignable Capabilities -->
+   <!--  Assignable Capabilities -->
 
-    <bean id="rmCreateModifyDestroyFileplanMetadataCapability"
-          parent="compositeCapability">
-        <property name="name" value="CreateModifyDestroyFileplanMetadata"/>
-        <property name="permission" value="CreateModifyDestroyFileplanMetadata"/>
-        <property name="capabilities">
-            <list>
-                <ref bean="rmCreateRootRecordCategoryCapability"/>
-                <ref bean="rmCreateModifyDestroyRecordCategoryCapability"/>
-                <ref bean="rmCreateModifyDestroyUnfiledRecordContainerCapability"/>
-            </list>
-        </property>
-        <property name="groupId" value="filePlanMetadataListsAndEmail" />
-    </bean>
+   <bean id="rmCreateModifyDestroyFileplanMetadataCapability"
+      parent="compositeCapability">
+      <property name="name" value="CreateModifyDestroyFileplanMetadata"/>
+      <property name="permission" value="CreateModifyDestroyFileplanMetadata"/>
+      <property name="capabilities">
+         <list>
+            <ref bean="rmCreateRootRecordCategoryCapability"/>
+            <ref bean="rmCreateModifyDestroyRecordCategoryCapability"/>
+            <ref bean="rmCreateModifyDestroyUnfiledRecordContainerCapability"/>
+         </list>
+      </property>
+      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+   </bean>
 
-    <!--  Unassignable Capabilities -->    
+   <!--  Unassignable Capabilities -->
 
-    <bean id="rmCreateRootRecordCategoryCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="CreateRootRecordCategory"/>	   		
-   		<property name="permission" value="CreateModifyDestroyFileplanMetadata"/>   
-    	<property name="private" value="true"/>    	
-		<property name="kinds">
-			<list>
-			    <value>FILE_PLAN</value>
-			</list>
-		</property>			
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/>
-   			</map>
-   		</property>
-    </bean>
-    
-    <bean id="rmCreateModifyDestroyRecordCategoryCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="CreateModifyDestroyRecordCategory"/>
-   		<property name="permission" value="CreateModifyDestroyFileplanMetadata"/>  
-    	<property name="private" value="true"/>    		
-		<property name="kinds">
-			<list>
-				<value>RECORD_CATEGORY</value>
-				<value>DISPOSITION_SCHEDULE</value>
-			</list>
-		</property>		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/>
-   			</map>
-   		</property>
-    </bean>
-    
-    <bean id="rmMoveRecordCategoryCapability"  
-    	  parent="compositeCapability">
-        <property name="name" value="MoveRecordCategory"/>
-    	<property name="private" value="true"/>   
-    	<property name="undetermined" value="true"/> 	
-    	<property name="capabilities">
-    		<list>
-    			<ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>    	    			
-    		</list>
-    	</property>
-    	<property name="targetCapability" ref="rmCreateModifyDestroyFileplanMetadataCapability"/>
-    </bean>
-    
-    <bean id="rmCreateModifyDestroyUnfiledRecordContainerCapability"
-          parent="declarativeCapability">
-    	<property name="name" value="CreateModifyDestroyUnfiledRecordContainer"/>
-    	<property name="private" value="true"/>
-    	<property name="kinds">
-    		<list>
-    			<value>UNFILED_RECORD_CONTAINER</value>
-    		</list>
-    	</property>		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.filling" value="true"/>
-   			</map>
-   		</property>
-    </bean>
+   <bean id="rmCreateRootRecordCategoryCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CreateRootRecordCategory"/>
+      <property name="permission" value="CreateModifyDestroyFileplanMetadata"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>FILE_PLAN</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+   </bean>
+
+   <bean id="rmCreateModifyDestroyRecordCategoryCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CreateModifyDestroyRecordCategory"/>
+      <property name="permission" value="CreateModifyDestroyFileplanMetadata"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_CATEGORY</value>
+            <value>DISPOSITION_SCHEDULE</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+   </bean>
+
+   <bean id="rmMoveRecordCategoryCapability"
+      parent="compositeCapability">
+      <property name="name" value="MoveRecordCategory"/>
+      <property name="private" value="true"/>
+      <property name="undetermined" value="true"/>
+      <property name="capabilities">
+         <list>
+            <ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>
+         </list>
+      </property>
+      <property name="targetCapability" ref="rmCreateModifyDestroyFileplanMetadataCapability"/>
+   </bean>
+
+   <bean id="rmCreateModifyDestroyUnfiledRecordContainerCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CreateModifyDestroyUnfiledRecordContainer"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>UNFILED_RECORD_CONTAINER</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+   </bean>
 
 </beans>

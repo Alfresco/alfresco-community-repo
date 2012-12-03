@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
  * Capability service implementation
- * 
+ *
  * @author Roy Wetherall
  * @since 2.0
  */
@@ -35,14 +35,14 @@ public interface CapabilityService
 {
    /**
     * Register a capability
-    * 
+    *
     * @param capability    capability
     */
    void registerCapability(Capability capability);
 
    /**
     * Get a named capability.
-    * 
+    *
     * @param name  capability name
     * @return {@link Capability}   capability or null if not found
     */
@@ -50,14 +50,14 @@ public interface CapabilityService
 
    /**
     * Get a list of all the assignable capabilities.
-    * 
+    *
     * @return  {@link Set}<{@link Capability}>     set of all the assignable capabilities
     */
    Set<Capability> getCapabilities();
 
    /**
     * Get a list of all the capabilities, optionally including those that are non-assignable.
-    * 
+    *
     * @param includePrivate    indicates that the private, or non-assignable capabilities are included in the result
     * @return  {@link Set}<{@link Capability}>     set of capabilities
     */
@@ -65,7 +65,7 @@ public interface CapabilityService
 
    /**
     * Get all the capabilities access state based on the current user for the assignable capabilities.
-    * 
+    *
     * @param nodeRef   node reference
     * @return
     */
@@ -73,14 +73,14 @@ public interface CapabilityService
 
    /**
     * Get all the capabilities access state based on the current user.
-    * 
+    *
     * @param nodeRef   node reference
     * @return
     */
    Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef, boolean includePrivate);
 
    /**
-    * 
+    *
     * @param nodeRef
     * @param capabilityNames
     * @return
@@ -89,10 +89,55 @@ public interface CapabilityService
 
    /**
     * Helper method to get the access state for a single capability.
-    * 
+    *
     * @param nodeRef
     * @param capabilityName
     * @return
     */
    AccessStatus getCapabilityAccessState(NodeRef nodeRef, String capabilityName);
+
+   /**
+    * Gets the list of all the capability groups (in index order)
+    *
+    * @return {@link List}<{@link Group}> List of all the capability groups (in index order) 
+    */
+   List<Group> getGroups();
+
+   /**
+    * Gets a list of capabilities for the given group id
+    *
+    * @param groupId The id of a group for which the list of capabilities should be retrieved
+    * @return {@link List}<{@link Capability}> List of capabilities for the given group
+    */
+   List<Capability> getCapabilitiesByGroup(String groupId);
+
+   /**
+    * Get a list of capabilities for the given group
+    *
+    * @param group The group for which the list of capabilities should be retrieved
+    * @return {@link List}<{@link Capability}> List of capabilities for the given group
+    */
+   List<Capability> getCapabilitiesByGroup(Group group);
+
+   /**
+    * Gets a group from it's id
+    *
+    * @param groupId The id of the group which should be retrieved
+    * @return Group The group with the id groupId
+    */
+   Group getGroup(String groupId);
+
+   /**
+    * Adds a group to the list of groups
+    *
+    * @param group The group which should be added
+    */
+   void addGroup(Group group);
+
+   /**
+    * Removes a group from the list of groups
+    *
+    * @param group The group which should be removed
+    */
+   void removeGroup(Group group);
 }

@@ -18,91 +18,81 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
-import java.util.List;
-
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
  * Capability Interface.
- * 
+ *
  * @author andyh
  * @author Roy Wetherall
  */
 public interface Capability
 {
-   /**
-    * Does this capability apply to this nodeRef?
-    * @param nodeRef
-    * @return
-    */
-   AccessStatus hasPermission(NodeRef nodeRef);
+    /**
+     * Does this capability apply to this nodeRef?
+     * @param nodeRef
+     * @return
+     */
+    AccessStatus hasPermission(NodeRef nodeRef);
 
-   /**
-    * 
-    * @param nodeRef
-    * @return
-    */
-   int hasPermissionRaw(NodeRef nodeRef);
+    /**
+     *
+     * @param nodeRef
+     * @return
+     */
+    int hasPermissionRaw(NodeRef nodeRef);
 
-   /**
-    * Evaluates the capability.
-    * 
-    * @param nodeRef
-    * @return
-    */
-   int evaluate(NodeRef nodeRef);
+    /**
+     * Evaluates the capability.
+     *
+     * @param nodeRef
+     * @return
+     */
+    int evaluate(NodeRef nodeRef);
 
-   /**
-    * Evaluates the capability, taking into account a target.
-    * 
-    * @param source    source node reference
-    * @param target    target node reference
-    * @return int      permission value
-    */
-   int evaluate(NodeRef source, NodeRef target);
+    /**
+     * Evaluates the capability, taking into account a target.
+     *
+     * @param source    source node reference
+     * @param target    target node reference
+     * @return int      permission value
+     */
+    int evaluate(NodeRef source, NodeRef target);
 
-   /**
-    * Indicates whether this is a private capability or not.  Private capabilities are used internally, otherwise
-    * they are made available to the user to assign to roles.
-    * 
-    * @return  boolean true if private, false otherwise
-    */
-   boolean isPrivate();
+    /**
+     * Indicates whether this is a private capability or not.  Private capabilities are used internally, otherwise
+     * they are made available to the user to assign to roles.
+     *
+     * @return  boolean true if private, false otherwise
+     */
+    boolean isPrivate();
 
-   /**
-    * Get the name of the capability
-    * 
-    * @return  String  capability name
-    */
-   String getName();
+    /**
+     * Get the name of the capability
+     *
+     * @return  String  capability name
+     */
+    String getName();
 
-   /**
-    * Get the title of the capability
-    * 
-    * @return  String  capability title  
-    */
-   String getTitle();
+    /**
+     * Get the title of the capability
+     *
+     * @return  String  capability title
+     */
+    String getTitle();
 
-   /**
-    * Get the description of the capability
-    * 
-    * @return  String  capability description
-    */
-   String getDescription();
+    /**
+     * Get the description of the capability
+     *
+     * @return  String  capability description
+     */
+    String getDescription();
 
-   /**
-    * Gets the group id of a capability
-    * 
-    * @return String capability group id
-    */
-   String getGroupId();
-
-   /**
-    * Gets the group title of a capability
-    * 
-    * @return String capability group title
-    */
-   String getGroupTitle();
+    /**
+     * Gets the group of a capability
+     *
+     * @return Group capability group
+     */
+    Group getGroup();
 }

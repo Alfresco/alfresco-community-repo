@@ -45,14 +45,14 @@
             <entry key="capabilityCondition.hasEvents" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="events" />
+      <property name="group"><ref bean="eventsGroup"/></property>
    </bean>
 
    <bean id="rmAttachRulesToMetadataPropertiesCapability"
       parent="declarativeCapability">
       <property name="name" value="AttachRulesToMetadataProperties"/>
       <property name="permission" value="AttachRulesToMetadataProperties"/>
-      <property name="groupId" value="filePlanMetadataListsAndEmail" />
+      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
    </bean>
 
    <bean id="rmChangeOrDeleteReferencesCapability"
@@ -66,63 +66,63 @@
             <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="referencesAndLinks" />
+      <property name="group"><ref bean="referencesAndLinksGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyDestroyClassificationGuidesCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyClassificationGuides"/>
       <property name="permission" value="CreateModifyDestroyClassificationGuides"/>
-      <property name="groupId" value="classifiedRecords" />
+      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyDestroyEventsCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyEvents" />
       <property name="permission" value="CreateModifyDestroyEvents" />
-      <property name="groupId" value="events" />
+      <property name="group"><ref bean="eventsGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyDestroyFileplanTypesCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyFileplanTypes" />
       <property name="permission" value="CreateModifyDestroyFileplanTypes" />
-      <property name="groupId" value="filePlanMetadataListsAndEmail" />
+      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyDestroyRecordTypesCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyRecordTypes" />
       <property name="permission" value="CreateModifyDestroyRecordTypes" />
-      <property name="groupId" value="filePlanMetadataListsAndEmail" />
+      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyDestroyReferenceTypesCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyReferenceTypes" />
       <property name="permission" value="CreateModifyDestroyReferenceTypes" />
-      <property name="groupId" value="filePlanMetadataListsAndEmail" />
+      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyDestroyRolesCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyRoles" />
       <property name="permission" value="CreateModifyDestroyRoles" />
-      <property name="groupId" value="rolesAndAccessRights" />
+      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyDestroyTimeframesCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyTimeframes" />
       <property name="permission" value="CreateModifyDestroyTimeframes" />
-      <property name="groupId" value="classifiedRecords" />
+      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyDestroyUsersAndGroupsCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyUsersAndGroups" />
       <property name="permission" value="CreateModifyDestroyUsersAndGroups" />
-      <property name="groupId" value="rolesAndAccessRights" />
+      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
    </bean>
 
    <bean id="rmCycleVitalRecordsCapability"
@@ -145,7 +145,7 @@
             <entry key="capabilityCondition.vitalRecordOrFolder" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="vitalRecords" />
+      <property name="group"><ref bean="vitalRecordsGroup"/></property>
    </bean>
 
    <bean id="rmDeleteLinksCapability"
@@ -160,28 +160,28 @@
             <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="referencesAndLinks" />
+      <property name="group"><ref bean="referencesAndLinksGroup"/></property>
    </bean>
 
    <bean id="rmDisplayRightsReportCapability"
       parent="declarativeCapability">
       <property name="name" value="DisplayRightsReport" />
       <property name="permission" value="DisplayRightsReport" />
-      <property name="groupId" value="rolesAndAccessRights" />
+      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
    </bean>
 
    <bean id="rmMakeOptionalPropertiesMandatoryCapability"
       parent="declarativeCapability">
       <property name="name" value="MakeOptionalParametersMandatory" />
       <property name="permission" value="MakeOptionalParametersMandatory" />
-      <property name="groupId" value="filePlanMetadataListsAndEmail" />
+      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
    </bean>
 
    <bean id="rmManageAccessControlsCapability"
       parent="declarativeCapability">
       <property name="name" value="ManageAccessControls" />
       <property name="permission" value="ManageAccessControls" />
-      <property name="groupId" value="rolesAndAccessRights" />
+      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
    </bean>
 
    <bean id="rmManageAccessRightsCapability"
@@ -194,28 +194,28 @@
             <entry key="capabilityCondition.filling" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="rolesAndAccessRights" />
+      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
    </bean>
 
    <bean id="rmMapClassificationGuideMetadataCapability"
       parent="declarativeCapability">
       <property name="name" value="MapClassificationGuideMetadata" />
       <property name="permission" value="MapClassificationGuideMetadata" />
-      <property name="groupId" value="classifiedRecords" />
+      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
    </bean>
 
    <bean id="rmMapEmailMetadataCapability"
       parent="declarativeCapability">
       <property name="name" value="MapEmailMetadata" />
       <property name="permission" value="MapEmailMetadata" />
-      <property name="groupId" value="filePlanMetadataListsAndEmail" />
+      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
    </bean>
 
    <bean id="rmPasswordControlCapability"
       parent="declarativeCapability">
       <property name="name" value="PasswordControl" />
       <property name="permission" value="PasswordControl" />
-      <property name="groupId" value="rolesAndAccessRights" />
+      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
    </bean>
 
    <bean id="rmPlanningReviewCyclesCapability"
@@ -230,7 +230,7 @@
             <entry key="capabilityCondition.vitalRecordOrFolder" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="vitalRecords" />
+      <property name="group"><ref bean="vitalRecordsGroup"/></property>
    </bean>
 
    <bean id="rmTriggerAnEventCapability"
@@ -250,21 +250,21 @@
             <entry key="capabilityCondition.hasEvents" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="dispositionAndTransfers" />
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
    </bean>
 
    <bean id="rmUpdateClassificationDatesCapability"
       parent="declarativeCapability">
       <property name="name" value="UpdateClassificationDates" />
       <property name="permission" value="UpdateClassificationDates" />
-      <property name="groupId" value="classifiedRecords" />
+      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
    </bean>
 
    <bean id="rmUpdateExemptionCategoriesCapability"
       parent="declarativeCapability">
       <property name="name" value="UpdateExemptionCategories" />
       <property name="permission" value="UpdateExemptionCategories" />
-      <property name="groupId" value="classifiedRecords" />
+      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
    </bean>
 
    <bean id="rmUpdateTriggerDatesCapability"
@@ -276,7 +276,7 @@
             <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="dispositionAndTransfers" />
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
    </bean>
 
    <bean id="rmUpdateVitalRecordCycleInformationCapability"
@@ -288,7 +288,7 @@
             <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="vitalRecords" />
+      <property name="group"><ref bean="vitalRecordsGroup"/></property>
    </bean>
 
    <!-- Record Folder capabilities -->

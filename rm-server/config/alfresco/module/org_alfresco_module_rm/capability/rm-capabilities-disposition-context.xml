@@ -21,7 +21,7 @@
             <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="cutoff" />
+      <property name="group"><ref bean="cutoffGroup"/></property>
    </bean>
 
    <!--  Transfer -->
@@ -35,7 +35,7 @@
             <ref bean="rmCompleteAllTransfersCapability"/>
          </list>
       </property>
-      <property name="groupId" value="dispositionAndTransfers" />
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
    </bean>
 
    <!--  Accession -->
@@ -49,7 +49,7 @@
             <ref bean="rmCompleteNominatedTransfersCapability"/>
          </list>
       </property>
-      <property name="groupId" value="dispositionAndTransfers" />
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
    </bean>
 
    <!--  Destroy -->
@@ -70,7 +70,7 @@
             <entry key="capabilityCondition.destroyIsScheduled" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="dispositionAndTransfers" />
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
    </bean>
 
    <!--  Unscheduled Destroy -->
@@ -91,7 +91,7 @@
             <entry key="capabilityCondition.destroyMayBeScheduled" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="dispositionAndTransfers" />
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
    </bean>
 
    <!--  Manually Change Disposition Dates -->
@@ -113,7 +113,7 @@
             <entry key="capabilityCondition.isTransferring" value="false" />
          </map>
       </property>
-      <property name="groupId" value="dispositionAndTransfers" />
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
    </bean>
 
    <!--  Non-assignable Capabilities -->

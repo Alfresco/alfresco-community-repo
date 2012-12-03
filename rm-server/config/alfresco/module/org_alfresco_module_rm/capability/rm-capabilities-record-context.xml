@@ -7,7 +7,7 @@
       parent="rmBaseCapability"
       class="org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability">
       <property name="name" value="ViewRecords" />
-      <property name="groupId" value="records" />
+      <property name="group"><ref bean="recordsGroup"/></property>
    </bean>
 
    <bean id="rmUndeclareRecordsCapability"
@@ -27,7 +27,7 @@
             <entry key="capabilityCondition.cutoff" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="records" />
+      <property name="group"><ref bean="recordsGroup"/></property>
    </bean>
 
    <bean id="rmCreateModifyRecordsInCuttoffFoldersCapability"
@@ -48,7 +48,7 @@
             <entry key="capabilityCondition.closed" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="cutoff" />
+      <property name="group"><ref bean="cutoffGroup"/></property>
    </bean>
 
    <bean id="rmFileCapability"
@@ -106,7 +106,7 @@
             <entry key="capabilityCondition.declared" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="records"/>
+      <property name="group"><ref bean="recordsGroup"/></property>
    </bean>
 
    <bean id="rmDeleteRecordsCapability"
@@ -123,7 +123,7 @@
             <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="dispositionAndTransfers" />
+      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
    </bean>
 
    <bean id="rmEditDeclaredRecordMetadataCapability"
@@ -143,7 +143,7 @@
             <entry key="capabilityCondition.declared" value="true"/>
          </map>
       </property>
-      <property name="groupId" value="metadataControl"/>
+      <property name="group"><ref bean="metadataControlGroup"/></property>
    </bean>
 
    <!-- TODO .. this is being used for the wrong thing! ... should indicate that the use can edit the non-record meta-data of a record -->
@@ -159,7 +159,7 @@
             <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="metadataControl"/>
+      <property name="group"><ref bean="metadataControlGroup"/></property>
    </bean>
 
    <bean id="rmEditRecordMetadataCapability"
@@ -181,7 +181,7 @@
             <entry key="capabilityCondition.declared" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="metadataControl"/>
+      <property name="group"><ref bean="metadataControlGroup"/></property>
    </bean>
 
    <bean id="rmMoveRecordsCapability"
@@ -197,7 +197,7 @@
          </map>
       </property>
       <property name="targetCapability" ref="rmFileRecordsCapability"/>
-      <property name="groupId" value="metadataControl"/>
+      <property name="group"><ref bean="metadataControlGroup"/></property>
    </bean>
 
    <bean id="rmUpgradeDowngradeAndDeclassifyRecordsCapability"
@@ -209,7 +209,7 @@
             <entry key="capabilityCondition.frozen" value="false"/>
          </map>
       </property>
-      <property name="groupId" value="classifiedRecords" />
+      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
    </bean>
 
 </beans>

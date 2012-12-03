@@ -18,7 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,138 +37,233 @@ import org.alfresco.util.ParameterCheck;
  */
 public class CapabilityServiceImpl implements CapabilityService
 {
-   /** Capabilities */
-   private Map<String, Capability> capabilities = new HashMap<String, Capability>(57);
+    /** Capabilities */
+    private Map<String, Capability> capabilities = new HashMap<String, Capability>(57);
 
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapability(java.lang.String)
-    */
-   @Override
-   public Capability getCapability(String name)
-   {
-      ParameterCheck.mandatoryString("name", name);
+    /** Groups */
+    private Map<String, Group> groups = new HashMap<String, Group>(13);
 
-      return capabilities.get(name);
-   }
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapability(java.lang.String)
+     */
+    @Override
+    public Capability getCapability(String name)
+    {
+        ParameterCheck.mandatoryString("name", name);
 
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#registerCapability(org.alfresco.module.org_alfresco_module_rm.capability.Capability)
-    */
-   @Override
-   public void registerCapability(Capability capability)
-   {
-      ParameterCheck.mandatory("capability", capability);
+        return capabilities.get(name);
+    }
 
-      capabilities.put(capability.getName(), capability);
-   }
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#registerCapability(org.alfresco.module.org_alfresco_module_rm.capability.Capability)
+     */
+    @Override
+    public void registerCapability(Capability capability)
+    {
+        ParameterCheck.mandatory("capability", capability);
 
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilities()
-    */
-   @Override
-   public Set<Capability> getCapabilities()
-   {
-      return getCapabilities(true);
-   }
-    
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilities(boolean)
-    */
-   @Override
-   public Set<Capability> getCapabilities(boolean includePrivate)
-   {
-      Set<Capability> result = null;
-      if (includePrivate == true)
-      {
-         result = new HashSet<Capability>(capabilities.values());
-      }
-      else
-      {
-         result = new HashSet<Capability>(capabilities.size());
-         for (Capability capability : capabilities.values())
-         {
-            if (capability.isPrivate() == false)
+        capabilities.put(capability.getName(), capability);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilities()
+     */
+    @Override
+    public Set<Capability> getCapabilities()
+    {
+        return getCapabilities(true);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilities(boolean)
+     */
+    @Override
+    public Set<Capability> getCapabilities(boolean includePrivate)
+    {
+        Set<Capability> result = null;
+        if (includePrivate == true)
+        {
+            result = new HashSet<Capability>(capabilities.values());
+        }
+        else
+        {
+            result = new HashSet<Capability>(capabilities.size());
+            for (Capability capability : capabilities.values())
             {
-               result.add(capability);
+                if (capability.isPrivate() == false)
+                {
+                    result.add(capability);
+                }
             }
-         }
-      }
+        }
+        return result;
+    }
 
-      return result;
-   }
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesAccessState(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
 
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesAccessState(org.alfresco.service.cmr.repository.NodeRef)
-    */
-   public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef)
-   {
-      ParameterCheck.mandatory("nodeRef", nodeRef);
+        return getCapabilitiesAccessState(nodeRef, false);
+    }
 
-      return getCapabilitiesAccessState(nodeRef, false);
-   }
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesAccessState(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef, boolean includePrivate)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
 
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesAccessState(org.alfresco.service.cmr.repository.NodeRef, boolean)
-    */
-   @Override
-   public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef, boolean includePrivate)
-   {
-      ParameterCheck.mandatory("nodeRef", nodeRef);
-
-      Set<Capability> listOfCapabilites = getCapabilities(includePrivate);
-      HashMap<Capability, AccessStatus> answer = new HashMap<Capability, AccessStatus>();
-      for (Capability capability : listOfCapabilites)
-      {
-         AccessStatus status = capability.hasPermission(nodeRef);
-         if (answer.put(capability, status) != null)
-         {
-            throw new IllegalStateException();
-         }
-      }
-      return answer;
-   }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesAccessState(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
-    */
-   public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef, List<String> capabilityNames)
-   {
-      ParameterCheck.mandatory("nodeRef", nodeRef);
-      ParameterCheck.mandatory("capabilityNames", capabilityNames);
-
-      HashMap<Capability, AccessStatus> answer = new HashMap<Capability, AccessStatus>();
-      for (String capabilityName : capabilityNames)
-      {
-         Capability capability = capabilities.get(capabilityName);
-         if (capability != null)
-         {
+        Set<Capability> listOfCapabilites = getCapabilities(includePrivate);
+        HashMap<Capability, AccessStatus> answer = new HashMap<Capability, AccessStatus>();
+        for (Capability capability : listOfCapabilites)
+        {
             AccessStatus status = capability.hasPermission(nodeRef);
             if (answer.put(capability, status) != null)
             {
-               throw new IllegalStateException();
+                throw new IllegalStateException();
             }
-         }
-      }
-      return answer;
-   }
+        }
+        return answer;
+    }
 
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilityAccessState(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-    */
-   @Override
-   public AccessStatus getCapabilityAccessState(NodeRef nodeRef, String capabilityName)
-   {
-      ParameterCheck.mandatory("nodeRef", nodeRef);
-      ParameterCheck.mandatory("capabilityName", capabilityName);
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesAccessState(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
+     */
+    public Map<Capability, AccessStatus> getCapabilitiesAccessState(NodeRef nodeRef, List<String> capabilityNames)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("capabilityNames", capabilityNames);
 
-      AccessStatus result = AccessStatus.UNDETERMINED;
-      Capability capability = getCapability(capabilityName);
-      if (capability != null)
-      {
-         List<String> list = Collections.singletonList(capabilityName);
-         Map<Capability, AccessStatus> map = getCapabilitiesAccessState(nodeRef, list);
-         result = map.get(capability);
-      }
-      return result;
-   }
+        HashMap<Capability, AccessStatus> answer = new HashMap<Capability, AccessStatus>();
+        for (String capabilityName : capabilityNames)
+        {
+            Capability capability = capabilities.get(capabilityName);
+            if (capability != null)
+            {
+                AccessStatus status = capability.hasPermission(nodeRef);
+                if (answer.put(capability, status) != null)
+                {
+                    throw new IllegalStateException();
+                }
+            }
+        }
+        return answer;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilityAccessState(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    @Override
+    public AccessStatus getCapabilityAccessState(NodeRef nodeRef, String capabilityName)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("capabilityName", capabilityName);
+
+        AccessStatus result = AccessStatus.UNDETERMINED;
+        Capability capability = getCapability(capabilityName);
+        if (capability != null)
+        {
+            List<String> list = Collections.singletonList(capabilityName);
+            Map<Capability, AccessStatus> map = getCapabilitiesAccessState(nodeRef, list);
+            result = map.get(capability);
+        }
+        return result;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getGroups()
+     */
+    @Override
+    public List<Group> getGroups()
+    {
+        List<Group> groups = new ArrayList<Group>();
+        for (Map.Entry<String, Group> entry : this.groups.entrySet())
+        {
+            groups.add(entry.getValue());
+        }
+
+        Collections.sort(groups, new Comparator<Group>()
+        {
+            public int compare(Group g1, Group g2)
+            {
+                return Integer.parseInt(g1.getIndex()) - Integer.parseInt(g2.getIndex());
+            }
+        });
+
+        return groups;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesByGroup(java.lang.String)
+     */
+    @Override
+    public List<Capability> getCapabilitiesByGroup(String groupId)
+    {
+        ParameterCheck.mandatoryString("groupId", groupId);
+
+        String id = this.groups.get(groupId).getId();
+
+        List<Capability> capabilities =  new ArrayList<Capability>();
+        for (Capability capability : getCapabilities())
+        {
+            Group group = capability.getGroup();
+            if (group != null)
+            {
+                if (group.getId().equalsIgnoreCase(id))
+                {
+                    capabilities.add(capability);
+                }
+            }
+        }
+
+        return capabilities;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesByGroup(org.alfresco.module.org_alfresco_module_rm.capability.Group)
+     */
+    @Override
+    public List<Capability> getCapabilitiesByGroup(Group group)
+    {
+        ParameterCheck.mandatory("group", group);
+
+        return getCapabilitiesByGroup(group.getId());
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getGroup(java.lang.String)
+     */
+    @Override
+    public Group getGroup(String groupId)
+    {
+        ParameterCheck.mandatoryString("groupId", groupId);
+
+        return this.groups.get(groupId);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#addGroup(org.alfresco.module.org_alfresco_module_rm.capability.Group)
+     */
+    @Override
+    public void addGroup(Group group)
+    {
+        ParameterCheck.mandatory("group", group);
+
+        groups.put(group.getId(), group);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#removeGroup(org.alfresco.module.org_alfresco_module_rm.capability.Group)
+     */
+    @Override
+    public void removeGroup(Group group)
+    {
+        ParameterCheck.mandatory("group", group);
+
+        groups.remove(group.getId());
+    }
 }

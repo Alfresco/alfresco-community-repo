@@ -33,7 +33,18 @@
    
    <aspects>
       		
-      <aspect name="rmt:customAspect">            
+      <aspect name="rmt:customAspect">         	         
+      </aspect>
+      
+      <aspect name="rmt:customProtectedAspect">
+      	<properties>
+            <property name="rmt:customProperty">
+               <type>d:text</type>               
+            </property>
+            <property name="rmt:customProtectedProperty">
+               <type>d:text</type>
+            </property>            
+		</properties>         	         
       </aspect>
      
       <aspect name="rmt:recordMetaData">

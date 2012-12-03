@@ -78,7 +78,7 @@ public class CreateCapability extends DeclarativeCapability
             {
                 if(linkee == null)
                 {
-                    if(rmService.isRecord(destination) && recordService.isDeclared(destination) == false)
+                    if(recordService.isRecord(destination) && recordService.isDeclared(destination) == false)
                     {
                         if (permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                         {
@@ -88,7 +88,7 @@ public class CreateCapability extends DeclarativeCapability
                 }
                 else
                 {
-                    if(rmService.isRecord(linkee) && rmService.isRecord(destination) && recordService.isDeclared(destination) == false)
+                    if(recordService.isRecord(linkee) && recordService.isRecord(destination) && recordService.isDeclared(destination) == false)
                     {
                         if (permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                         {

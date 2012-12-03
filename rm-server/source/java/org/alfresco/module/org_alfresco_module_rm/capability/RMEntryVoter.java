@@ -21,13 +21,10 @@ package org.alfresco.module.org_alfresco_module_rm.capability;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import net.sf.acegisecurity.Authentication;
@@ -36,7 +33,6 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdateCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.UpdatePropertiesCapability;
@@ -57,7 +53,6 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.EqualsHelper;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,11 +87,6 @@ public class RMEntryVoter extends RMSecurityCommon
     
     private static HashMap<String, Policy> policies = new HashMap<String, Policy>();
 
-    private HashSet<QName> protectedProperties = new HashSet<QName>();
-
-    private HashSet<QName> protectedAspects = new HashSet<QName>();
-
-
     static
     {
         policies.put("Read", new ReadPolicy());
@@ -110,9 +100,6 @@ public class RMEntryVoter extends RMSecurityCommon
         policies.put("Capability", new CapabilityPolicy());
         policies.put("Declare", new DeclarePolicy());
         policies.put("ReadProperty", new ReadPropertyPolicy());
-
-        // restrictedProperties.put(RecordsManagementModel.PROP_IS_CLOSED, value)
-
     }
 
     /**
@@ -207,26 +194,6 @@ public class RMEntryVoter extends RMSecurityCommon
     public boolean supports(Class clazz)
     {
         return (MethodInvocation.class.isAssignableFrom(clazz));
-    }
-
-    public void addProtectedProperties(Set<QName> properties)
-    {
-        protectedProperties.addAll(properties);
-    }
-
-    public void addProtectedAspects(Set<QName> aspects)
-    {
-        protectedAspects.addAll(aspects);
-    }
-
-    public Set<QName> getProtectedProperties()
-    {
-        return Collections.unmodifiableSet(protectedProperties);
-    }
-
-    public Set<QName> getProtetcedAscpects()
-    {
-        return Collections.unmodifiableSet(protectedAspects);
     }
 
     @SuppressWarnings("unchecked")
@@ -656,72 +623,6 @@ public class RMEntryVoter extends RMSecurityCommon
     public DictionaryService getDictionaryService()
     {
         return dictionaryService;
-    }
-
-    public boolean isProtectedAspect(NodeRef nodeRef, QName aspectQName)
-    {
-        if(protectedAspects.contains(aspectQName))
-        {
-            for(Capability capability : capabilityService.getCapabilities())
-            {
-                for(RecordsManagementAction action : capability.getActions())
-                {
-                    if(action.getProtectedAspects().contains(aspectQName))
-                    {
-                        if(action.isExecutable(nodeRef, null))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public boolean isProtectedProperty(NodeRef nodeRef, QName propertyQName)
-    {
-        if(protectedProperties.contains(propertyQName))
-        {
-            for(Capability capability : capabilityService.getCapabilities())
-            {
-                for(RecordsManagementAction action : capability.getActions())
-                {
-                    if(action.getProtectedProperties().contains(propertyQName))
-                    {
-                        if(action.isExecutable(nodeRef, null))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public boolean includesProtectedPropertyChange(NodeRef nodeRef, Map<QName, Serializable> properties)
-    {
-        Map<QName, Serializable> originals = nodeService.getProperties(nodeRef);
-        for (QName test : properties.keySet())
-        {
-            if (isProtectedProperty(nodeRef, test))
-            {
-                if (!EqualsHelper.nullSafeEquals(originals.get(test), properties.get(test)))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private class ConfigAttributeDefintion

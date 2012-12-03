@@ -20,12 +20,9 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
@@ -336,22 +333,4 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     {
         return true;
     }
-
-    @Override
-    public Set<QName> getProtectedProperties()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(PROP_DISPOSITION_AS_OF);
-        qnames.add(PROP_DISPOSITION_EVENT);
-        qnames.add(PROP_DISPOSITION_EVENT_COMBINATION);
-        qnames.add(PROP_DISPOSITION_EVENTS_ELIGIBLE);
-        return qnames;
-    }
-
-    @Override
-    public Set<QName> getProtectedAspects()
-    {
-        return Collections.emptySet();
-    }
-
 }

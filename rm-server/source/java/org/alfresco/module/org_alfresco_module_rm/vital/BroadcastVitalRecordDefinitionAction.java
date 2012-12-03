@@ -20,10 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.vital;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
@@ -77,7 +75,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
             NodeRef nextChild = nextAssoc.getChildRef();
 
             // If the child is a record, then the VitalRecord aspect needs to be applied or updated
-            if (recordsManagementService.isRecord(nextChild))
+            if (recordService.isRecord(nextChild))
             {
                 if (parentVri)
                 {
@@ -102,7 +100,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
             }
 
             // Recurse down the containment hierarchy to all containers
-            if (recordsManagementService.isRecord(nextChild) == false)
+            if (recordService.isRecord(nextChild) == false)
             {
                 this.propagateChangeToChildrenOf(nextChild);
             }
@@ -114,23 +112,4 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
     {
         return true;
     }
-
-    @Override
-    public Set<QName> getProtectedProperties()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(PROP_REVIEW_PERIOD);
-        qnames.add(PROP_VITAL_RECORD_INDICATOR);
-        qnames.add(PROP_REVIEW_AS_OF);
-        return qnames;
-    }
-
-    @Override
-    public Set<QName> getProtectedAspects()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(RecordsManagementModel.ASPECT_VITAL_RECORD);
-        return qnames;
-    }
-
 }

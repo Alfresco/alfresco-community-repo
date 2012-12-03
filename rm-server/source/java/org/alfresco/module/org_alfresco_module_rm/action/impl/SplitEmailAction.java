@@ -112,7 +112,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
             logger.debug("split email:" + actionedUponNodeRef);
         }
 
-        if (recordsManagementService.isRecord(actionedUponNodeRef) == true)
+        if (recordService.isRecord(actionedUponNodeRef) == true)
         {
             if (recordService.isDeclared(actionedUponNodeRef) == false)
             {
@@ -173,7 +173,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     @Override
     protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
     {
-        if (recordsManagementService.isRecord(filePlanComponent) == true)
+        if (recordService.isRecord(filePlanComponent) == true)
         {
             if (recordService.isDeclared(filePlanComponent))
             {

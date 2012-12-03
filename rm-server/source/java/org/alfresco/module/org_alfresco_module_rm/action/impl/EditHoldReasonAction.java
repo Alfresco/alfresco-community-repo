@@ -19,15 +19,12 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -66,28 +63,6 @@ public class EditHoldReasonAction extends RMActionExecuterAbstractBase
       {
          throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_HOLD_EDIT_TYPE, TYPE_HOLD.toString(), actionedUponNodeRef.toString()));
       }
-   }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedAspects()
-    */
-   @Override
-   public Set<QName> getProtectedAspects()
-   {
-      HashSet<QName> qnames = new HashSet<QName>();
-      qnames.add(ASPECT_FROZEN);
-      return qnames;
-   }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedProperties()
-    */
-   @Override
-   public Set<QName> getProtectedProperties()
-   {
-      HashSet<QName> qnames = new HashSet<QName>();
-      qnames.add(PROP_HOLD_REASON);
-      return qnames;
    }
 
    /**

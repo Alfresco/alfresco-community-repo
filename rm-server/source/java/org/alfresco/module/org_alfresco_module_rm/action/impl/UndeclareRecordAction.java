@@ -19,15 +19,12 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -46,7 +43,7 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (recordsManagementService.isRecord(actionedUponNodeRef) == true)
+        if (recordService.isRecord(actionedUponNodeRef) == true)
         {
             if (recordService.isDeclared(actionedUponNodeRef) == true)
             {
@@ -59,19 +56,11 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORDS_ONLY_UNDECLARED));
         }
     }
-    
-    @Override
-    public Set<QName> getProtectedAspects()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(ASPECT_DECLARED_RECORD);
-        return qnames;
-    }
 
     @Override
     protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
     {
-        if (recordsManagementService.isRecord(filePlanComponent) == true)
+        if (recordService.isRecord(filePlanComponent) == true)
         {
             if (recordService.isDeclared(filePlanComponent) == true)
             {

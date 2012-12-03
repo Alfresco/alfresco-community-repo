@@ -19,15 +19,12 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -53,36 +50,13 @@ public class FreezeAction extends RMActionExecuterAbstractBase
    }
 
    /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedAspects()
-    */
-   @Override
-   public Set<QName> getProtectedAspects()
-   {
-      HashSet<QName> qnames = new HashSet<QName>();
-      qnames.add(ASPECT_FROZEN);
-      return qnames;
-   }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedProperties()
-    */
-   @Override
-   public Set<QName> getProtectedProperties()
-   {
-      HashSet<QName> qnames = new HashSet<QName>();
-      qnames.add(PROP_HOLD_REASON);
-      //TODO Add prop frozen at/by?
-      return qnames;
-   }
-
-   /**
     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
     */
    @Override
    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
    {
       if (this.recordService.isRecord(filePlanComponent) == true ||
-               this.recordsManagementService.isRecordFolder(filePlanComponent) == true)
+          this.recordsManagementService.isRecordFolder(filePlanComponent) == true)
       {
          // Get the property values
          if(parameters != null)

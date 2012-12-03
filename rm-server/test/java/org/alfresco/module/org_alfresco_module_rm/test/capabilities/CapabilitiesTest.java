@@ -67,24 +67,17 @@ public class CapabilitiesTest extends BaseRMTestCase implements
     }
     
     @Override
+    protected boolean isFillingForAllUsers()
+    {
+        return true;
+    }
+    
+    @Override
     protected void setupTestDataImpl()
     {
         super.setupTestDataImpl();
         
         record = utils.createRecord(rmFolder, "CapabilitiesTest.txt");
-    }
-    
-    @Override
-    protected void setupTestUsersImpl(NodeRef filePlan)
-    {
-        super.setupTestUsersImpl(filePlan);
-        
-        // Give all the users file permission objects
-        for (String user : testUsers)
-        {
-            securityService.setPermission(filePlan, user, FILING);
-            securityService.setPermission(rmContainer, user, FILING);
-        }                
     }
 
     protected void check(Map<Capability, AccessStatus> access, String name, AccessStatus accessStatus)
@@ -287,124 +280,6 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                     RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, role)));
         }
 
-    }
-
-    /**
-     * Test the capability configuration
-     */
-    public void testConfig()
-    {
-        retryingTransactionHelper.doInTransaction(
-                new RetryingTransactionCallback<Object>()
-                {
-                    @Override
-                    public Object execute() throws Throwable
-                    {
-                        // As system user
-                        AuthenticationUtil
-                                .setFullyAuthenticatedUser(AuthenticationUtil
-                                        .getSystemUserName());
-
-                        assertEquals(6, securityService.getProtectedAspects()
-                                .size());
-                        assertEquals(13, securityService
-                                .getProtectedProperties().size());
-
-                        // Test action wire up
-                        testCapabilityActions(0, ACCESS_AUDIT);
-                        testCapabilityActions(2, ADD_MODIFY_EVENT_DATES);
-                        testCapabilityActions(2,
-                                APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF);
-                        testCapabilityActions(0,
-                                ATTACH_RULES_TO_METADATA_PROPERTIES);
-                        testCapabilityActions(2, AUTHORIZE_ALL_TRANSFERS);
-                        testCapabilityActions(2, AUTHORIZE_NOMINATED_TRANSFERS);
-                        testCapabilityActions(0, CHANGE_OR_DELETE_REFERENCES);
-                        testCapabilityActions(1, CLOSE_FOLDERS);
-                        testCapabilityActions(0,
-                                CREATE_AND_ASSOCIATE_SELECTION_LISTS);
-                        testCapabilityActions(0,
-                                CREATE_MODIFY_DESTROY_CLASSIFICATION_GUIDES);
-                        testCapabilityActions(0, CREATE_MODIFY_DESTROY_EVENTS);
-                        testCapabilityActions(0,
-                                CREATE_MODIFY_DESTROY_FILEPLAN_METADATA);
-                        testCapabilityActions(0,
-                                CREATE_MODIFY_DESTROY_FILEPLAN_TYPES);
-                        testCapabilityActions(0, CREATE_MODIFY_DESTROY_FOLDERS);
-                        testCapabilityActions(0,
-                                CREATE_MODIFY_DESTROY_RECORD_TYPES);
-                        testCapabilityActions(0,
-                                CREATE_MODIFY_DESTROY_REFERENCE_TYPES);
-                        testCapabilityActions(0, CREATE_MODIFY_DESTROY_ROLES);
-                        testCapabilityActions(0,
-                                CREATE_MODIFY_DESTROY_TIMEFRAMES);
-                        testCapabilityActions(0,
-                                CREATE_MODIFY_DESTROY_USERS_AND_GROUPS);
-                        testCapabilityActions(0,
-                                CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS);
-                        testCapabilityActions(1, CYCLE_VITAL_RECORDS);
-                        testCapabilityActions(0, DECLARE_AUDIT_AS_RECORD);
-                        testCapabilityActions(2, DECLARE_RECORDS);
-                        testCapabilityActions(1,
-                                DECLARE_RECORDS_IN_CLOSED_FOLDERS);
-                        testCapabilityActions(0, DELETE_AUDIT);
-                        testCapabilityActions(0, DELETE_LINKS);
-                        testCapabilityActions(0, DELETE_RECORDS);
-                        testCapabilityActions(0, DESTROY_RECORDS);
-                        testCapabilityActions(1,
-                                DESTROY_RECORDS_SCHEDULED_FOR_DESTRUCTION);
-                        testCapabilityActions(0, DISPLAY_RIGHTS_REPORT);
-                        testCapabilityActions(0, EDIT_DECLARED_RECORD_METADATA);
-                        testCapabilityActions(0, EDIT_NON_RECORD_METADATA);
-                        testCapabilityActions(0, EDIT_RECORD_METADATA);
-                        testCapabilityActions(0, EDIT_SELECTION_LISTS);
-                        testCapabilityActions(0, ENABLE_DISABLE_AUDIT_BY_TYPES);
-                        testCapabilityActions(0, EXPORT_AUDIT);
-                        testCapabilityActions(1,
-                                EXTEND_RETENTION_PERIOD_OR_FREEZE);
-                        testCapabilityActions(1, FILE_RECORDS);
-                        testCapabilityActions(0,
-                                MAKE_OPTIONAL_PARAMETERS_MANDATORY);
-                        testCapabilityActions(0, MANAGE_ACCESS_CONTROLS);
-                        testCapabilityActions(0, MANAGE_ACCESS_RIGHTS);
-                        testCapabilityActions(1,
-                                MANUALLY_CHANGE_DISPOSITION_DATES);
-                        testCapabilityActions(0,
-                                MAP_CLASSIFICATION_GUIDE_METADATA);
-                        testCapabilityActions(0, MAP_EMAIL_METADATA);
-                        testCapabilityActions(0, MOVE_RECORDS);
-                        testCapabilityActions(0, PASSWORD_CONTROL);
-                        testCapabilityActions(1, PLANNING_REVIEW_CYCLES);
-                        testCapabilityActions(1, RE_OPEN_FOLDERS);
-                        testCapabilityActions(0, SELECT_AUDIT_METADATA);
-                        testCapabilityActions(0, TRIGGER_AN_EVENT);
-                        testCapabilityActions(1, UNDECLARE_RECORDS);
-                        testCapabilityActions(2, UNFREEZE);
-                        testCapabilityActions(0, UPDATE_CLASSIFICATION_DATES);
-                        testCapabilityActions(0, UPDATE_EXEMPTION_CATEGORIES);
-                        testCapabilityActions(0, UPDATE_TRIGGER_DATES);
-                        testCapabilityActions(0,
-                                UPDATE_VITAL_RECORD_CYCLE_INFORMATION);
-                        testCapabilityActions(0,
-                                UPGRADE_DOWNGRADE_AND_DECLASSIFY_RECORDS);
-                        testCapabilityActions(0, VIEW_RECORDS);
-                        testCapabilityActions(1, VIEW_UPDATE_REASONS_FOR_FREEZE);
-
-                        return null;
-                    }
-                }, false, true);
-    }
-
-    /**
-     * Test the capability actions
-     * 
-     * @param count
-     * @param capability
-     */
-    private void testCapabilityActions(int count, String capability)
-    {
-        assertEquals(count, capabilityService.getCapability(capability)
-                .getActionNames().size());
     }
 
     /**

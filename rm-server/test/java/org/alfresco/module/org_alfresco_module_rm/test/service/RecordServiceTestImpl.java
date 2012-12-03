@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,7 +22,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -147,7 +146,7 @@ public class RecordServiceTestImpl extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 
-                assertTrue(rmService.isRecord(dmDocument));
+                assertTrue(recordService.isRecord(dmDocument));
                 
                 // 
                 Capability createCapability = capabilityService.getCapability("Create");

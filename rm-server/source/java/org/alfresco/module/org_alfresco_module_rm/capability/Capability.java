@@ -93,18 +93,6 @@ public interface Capability
    String getDescription();
 
    /**
-    * Get the name of optional actions tied to this capability
-    * @return
-    */
-   List<String> getActionNames();
-
-   /**
-    * 
-    * @return
-    */
-   List<RecordsManagementAction> getActions();
-
-   /**
     * Gets the group id of a capability
     * 
     * @return String capability group id

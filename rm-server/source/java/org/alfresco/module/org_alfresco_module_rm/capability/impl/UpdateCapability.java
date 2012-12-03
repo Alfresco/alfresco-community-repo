@@ -21,8 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 import java.io.Serializable;
 import java.util.Map;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -43,15 +41,15 @@ public class UpdateCapability extends CompositeCapability
      */
     public int evaluate(NodeRef nodeRef, QName aspectQName, Map<QName, Serializable> properties)
     {
-        if ((aspectQName != null) && (voter.isProtectedAspect(nodeRef, aspectQName)))
-        {
-            return AccessDecisionVoter.ACCESS_DENIED;
-        }
+       // if ((aspectQName != null) && (voter.isProtectedAspect(nodeRef, aspectQName)))
+       // {
+       //     return AccessDecisionVoter.ACCESS_DENIED;
+       // }
         
-        if ((properties != null) && (voter.includesProtectedPropertyChange(nodeRef, properties)))
-        {
-            return AccessDecisionVoter.ACCESS_DENIED;
-        }
+      //  if ((properties != null) && (voter.includesProtectedPropertyChange(nodeRef, properties)))
+      //  {
+      //      return AccessDecisionVoter.ACCESS_DENIED;
+      //  }
         
         return evaluate(nodeRef);
     }

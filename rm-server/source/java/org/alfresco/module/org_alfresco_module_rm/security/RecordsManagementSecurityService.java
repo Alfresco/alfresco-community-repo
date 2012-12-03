@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -31,20 +32,6 @@ import org.alfresco.service.namespace.QName;
  */
 public interface RecordsManagementSecurityService
 {    
-    /**
-     * Get the set of aspect QNames which can not be added direct via the public node service;
-     * they must be managed via the appropriate actions.
-     * @return
-     */
-    Set<QName> getProtectedAspects();
-    
-    /**
-     * Get the set of property QNames which can not be added, updated or removed direct via the public node service;
-     * they must be managed via the appropriate actions.
-     * @return
-     */
-    Set<QName> getProtectedProperties();
-    
     /**
      * Creates the initial set of default roles for a root records management node
      * 
@@ -152,4 +139,17 @@ public interface RecordsManagementSecurityService
      * @param permission    permission
      */
     void deletePermission(NodeRef nodeRef, String authority, String permission);
+    
+    /**
+     * @return  {@link Set}<{@link QName}>  protected aspect names
+     * @deprecated As of release 2.1, replaced by {@link ModelSecurityService#getProtectedAspects}
+     */
+    @Deprecated
+    Set<QName> getProtectedAspects();
+   
+    /**
+     * @return {@link Set}<{@link QName}>   protected properties
+     * @deprecated  As of release 2.1, replaced by {@link ModelSecurityService#getProtectedProperties}
+     */
+    Set<QName> getProtectedProperties();
 }

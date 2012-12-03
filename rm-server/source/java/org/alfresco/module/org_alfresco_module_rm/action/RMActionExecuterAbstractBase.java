@@ -19,19 +19,14 @@
 package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
-import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -122,7 +117,7 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
     /** Freeze Service */
     protected FreezeService freezeService;
     
-    protected LinkedList<AbstractCapability> capabilities = new LinkedList<AbstractCapability>();;
+   // protected LinkedList<AbstractCapability> capabilities = new LinkedList<AbstractCapability>();;
     
     /** Default constructor */
     public RMActionExecuterAbstractBase()
@@ -259,19 +254,19 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
      * Register with a single capability
      * @param capability
      */
-    public void setCapability(AbstractCapability capability)
-    {
-        capabilities.add(capability);
-    }
+ //   public void setCapability(AbstractCapability capability)
+ //   {
+ //       capabilities.add(capability);
+ //   }
     
     /**
      * Register with several capabilities
      * @param capabilities
      */
-    public void setCapabilities(Collection<AbstractCapability> capabilities)
-    {
-        this.capabilities.addAll(capabilities);
-    }
+ //   public void setCapabilities(Collection<AbstractCapability> capabilities)
+ //   {
+ //       this.capabilities.addAll(capabilities);
+ //   }
     
     public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
     {
@@ -302,10 +297,10 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         PropertyCheck.mandatory(this, "recordsManagementAdminService", recordsManagementAdminService);
         PropertyCheck.mandatory(this, "recordsManagementEventService", recordsManagementEventService);
         
-        for(AbstractCapability capability : capabilities)
-        {
-            capability.registerAction(this);
-        }
+    //    for(AbstractCapability capability : capabilities)
+    //    {
+    //        capability.registerAction(this);
+    //    }
     }
     
     /**
@@ -428,23 +423,6 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         // No parameters
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getProtectedProperties()
-     */
-    public Set<QName> getProtectedProperties()
-    {
-       return Collections.<QName>emptySet();
-    }
-    
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getProtectedAspects()
-     */
-    public Set<QName> getProtectedAspects()
-    {
-        return Collections.<QName>emptySet();
     }
 
     /**

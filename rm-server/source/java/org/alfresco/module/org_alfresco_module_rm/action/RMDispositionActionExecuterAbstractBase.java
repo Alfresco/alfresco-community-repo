@@ -20,10 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -32,7 +30,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -97,7 +94,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
             if (di.isRecordLevelDisposition() == true)
             {
                 // Check that we do indeed have a record
-                if (this.recordsManagementService.isRecord(actionedUponNodeRef) == true)
+                if (recordService.isRecord(actionedUponNodeRef) == true)
                 {
                     // Can only execute disposition action on record if declared
                     if (recordService.isDeclared(actionedUponNodeRef) == true)
@@ -273,16 +270,16 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
         return result;
     }
 
-    @Override
-    public Set<QName> getProtectedProperties()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(PROP_DISPOSITION_ACTION_STARTED_AT);
-        qnames.add(PROP_DISPOSITION_ACTION_STARTED_BY);
-        qnames.add(PROP_DISPOSITION_ACTION_COMPLETED_AT);
-        qnames.add(PROP_DISPOSITION_ACTION_COMPLETED_BY);
-        return qnames;
-    }
+//    @Override
+//    public Set<QName> getProtectedProperties()
+//    {
+//        HashSet<QName> qnames = new HashSet<QName>();
+//        qnames.add(PROP_DISPOSITION_ACTION_STARTED_AT);
+//        qnames.add(PROP_DISPOSITION_ACTION_STARTED_BY);
+//        qnames.add(PROP_DISPOSITION_ACTION_COMPLETED_AT);
+//        qnames.add(PROP_DISPOSITION_ACTION_COMPLETED_BY);
+//        return qnames;
+//    }
 
     @Override
     protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
@@ -312,7 +309,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
             if (di.isRecordLevelDisposition() == true)
             {
                 // Check that we do indeed have a record
-                if (this.recordsManagementService.isRecord(filePlanComponent) == true)
+                if (recordService.isRecord(filePlanComponent) == true)
                 {
                     // Can only execute disposition action on record if declared
                     if (recordService.isDeclared(filePlanComponent) == true)

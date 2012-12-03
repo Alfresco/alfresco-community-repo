@@ -159,8 +159,9 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getDispositionActions(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @SuppressWarnings("unused")
     public List<RecordsManagementAction> getDispositionActions(NodeRef nodeRef)
-    {
+    {        
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
         List<RecordsManagementAction> result = new ArrayList<RecordsManagementAction>(this.rmActions.size());
         

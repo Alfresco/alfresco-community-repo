@@ -27,6 +27,7 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -70,7 +71,7 @@ import org.springframework.context.ApplicationContext;
  * @author Roy Wetherall
  */
 public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase 
-                                     implements RecordsManagementModel, ContentModel
+                                     implements RecordsManagementModel, ContentModel, RMPermissionModel
 {    
     /** Application context */
     protected static final String[] CONFIG_LOCATIONS = new String[] 
@@ -217,6 +218,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      * @return
      */
     protected boolean isUserTest()
+    {
+        return false;
+    }
+    
+    /**
+     * Indicates whether the test users should have filling on the file plan structure
+     * by default or not.
+     */
+    protected boolean isFillingForAllUsers()
     {
         return false;
     }
@@ -431,8 +441,23 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 recordsManagerName, 
                 rmAdminName
         };
+        
+        if (isFillingForAllUsers() == true)
+        {
+            // Give all the users file permission objects
+            for (String user : testUsers)
+            {
+                securityService.setPermission(filePlan, user, FILING);
+                securityService.setPermission(rmContainer, user, FILING);
+            } 
+        }
     }
     
+    /**
+     * Util method to create a person.
+     * @param userName  user name  
+     * @return NodeRef  user node reference
+     */
     protected NodeRef createPerson(String userName)
     {
         authenticationService.createAuthentication(userName, "password".toCharArray());
@@ -497,5 +522,36 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         mhRecordFolder43 = rmService.createRecordFolder(mhContainer33, "mhFolder43");
         mhRecordFolder44 = rmService.createRecordFolder(mhContainer34, "mhFolder44");
         mhRecordFolder45 = rmService.createRecordFolder(mhContainer35, "mhFolder45");        
+    }
+    
+    /**
+     * Helper class to try and simplify {@link Void} tests.
+     * 
+     * @author Roy Wetherall
+     * @since 2.1
+     */
+    protected abstract class VoidTest extends Test<Void>
+    {
+        @Override
+        public Void run() throws Exception
+        {
+            runImpl();
+            return null;
+        }
+        
+        public abstract void runImpl() throws Exception;
+        
+        @Override
+        public void test(Void result) throws Exception
+        {
+            testImpl();
+        }
+        
+        public void testImpl() throws Exception
+        {
+            // empty implementation
+        }
+        
+        
     }
 }

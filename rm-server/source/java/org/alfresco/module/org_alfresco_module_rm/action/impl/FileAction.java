@@ -22,10 +22,8 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -143,23 +141,23 @@ public class FileAction extends RMActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_RECORD_METADATA_ASPECTS, DataTypeDefinition.QNAME, false, "Record Metadata Aspects", true));
     }
 
-    @Override
-    public Set<QName> getProtectedAspects()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(ASPECT_RECORD);
-        qnames.add(ASPECT_VITAL_RECORD);
-        return qnames;
-    }
-
-    @Override
-    public Set<QName> getProtectedProperties()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(PROP_DATE_FILED);
-        qnames.add(PROP_REVIEW_AS_OF);
-        return qnames;
-    }
+//    @Override
+//    public Set<QName> getProtectedAspects()
+//    {
+//        HashSet<QName> qnames = new HashSet<QName>();
+//        qnames.add(ASPECT_RECORD);
+//        qnames.add(ASPECT_VITAL_RECORD);
+//        return qnames;
+//    }
+//
+//    @Override
+//    public Set<QName> getProtectedProperties()
+//    {
+//        HashSet<QName> qnames = new HashSet<QName>();
+//        qnames.add(PROP_DATE_FILED);
+//        qnames.add(PROP_REVIEW_AS_OF);
+//        return qnames;
+//    }
 
     @Override
     protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)

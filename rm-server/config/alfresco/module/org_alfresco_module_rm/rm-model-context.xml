@@ -107,6 +107,9 @@
       parent="org_alfresco_module_rm_BaseBehaviour">
       <property name="permissionService" ref="PermissionService"/>
    </bean>
+   
+   <!--  Model Security Definitions -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/model/rm-model-security-context.xml"/>
 
    <!-- Base bean definition for customisable email mapping keys bootstrap -->
    <bean id="customisableEmailMappingKeyBootstrap"

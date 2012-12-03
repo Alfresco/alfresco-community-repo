@@ -73,4 +73,23 @@
         <property name="id" value="testExampleData"/>
         <property name="path" value="test-filePlan.xml" />
     </bean>
+    
+    <bean id="rm.protectedAspect.rmt_customProtectedAspect" parent="protectedAspect">
+		<property name="name" value="rmt:customProtectedAspect"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmPasswordControlCapability" />
+			</set>
+		</property>
+	</bean>
+	
+	<bean id="rm.protectedProperty.rmt_customProtectedProperty" parent="protectedProperty">
+		<property name="name" value="rmt:customProtectedProperty"/>
+		<property name="capabilities">
+			<set>
+				<ref bean="rmPasswordControlCapability" />
+			</set>
+		</property>
+	</bean>
+   
 </beans> 

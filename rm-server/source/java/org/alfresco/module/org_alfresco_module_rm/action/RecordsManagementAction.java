@@ -20,10 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 
 /**
@@ -87,14 +85,14 @@ public interface RecordsManagementAction
      * 
      * @return the set of protected properties
      */
-    public Set<QName> getProtectedProperties();
+    //public Set<QName> getProtectedProperties();
     
     /**
      * Get a set of aspects that should be updated via this or other actions.
      * The aspect can not be added via public services, such as the NodeService.
      * @return
      */
-    public Set<QName> getProtectedAspects();
+    //public Set<QName> getProtectedAspects();
 
     /**
      * Some admin-related rmActions execute against a target nodeRef which is not provided

@@ -113,7 +113,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
     public boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
     {
 
-        if (recordsManagementService.isRecord(filePlanComponent))
+        if (recordService.isRecord(filePlanComponent))
         {
             return true;
         }

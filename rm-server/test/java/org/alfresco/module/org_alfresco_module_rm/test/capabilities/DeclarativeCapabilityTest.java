@@ -150,8 +150,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 capability.isPrivate() == false &&
                 capability.getName().equals("MoveRecords") == false &&
                 capability.getName().equals("DeleteLinks") == false &&
-                capability.getName().equals("ChangeOrDeleteReferences") == false &&
-                capability.getActionNames().isEmpty() == true)
+                capability.getName().equals("ChangeOrDeleteReferences") == false)
             {
                 testDeclarativeCapability((DeclarativeCapability)capability);
             }

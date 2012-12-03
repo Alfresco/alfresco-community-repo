@@ -20,10 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
@@ -122,25 +120,25 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
 
     }
 
-    @Override
-    public Set<QName> getProtectedProperties()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(PROP_EVENT_EXECUTION_COMPLETE);
-        qnames.add(PROP_EVENT_EXECUTION_COMPLETED_AT);
-        qnames.add(PROP_EVENT_EXECUTION_COMPLETED_BY);
-        return qnames;
-    }
+//    @Override
+//    public Set<QName> getProtectedProperties()
+//    {
+//        HashSet<QName> qnames = new HashSet<QName>();
+//        qnames.add(PROP_EVENT_EXECUTION_COMPLETE);
+//        qnames.add(PROP_EVENT_EXECUTION_COMPLETED_AT);
+//        qnames.add(PROP_EVENT_EXECUTION_COMPLETED_BY);
+//        return qnames;
+//    }
 
     
     
-    @Override
-    public Set<QName> getProtectedAspects()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(ASPECT_DISPOSITION_LIFECYCLE);
-        return qnames;
-    }
+   // @Override
+   // public Set<QName> getProtectedAspects()
+   // {
+   //     HashSet<QName> qnames = new HashSet<QName>();
+   //     qnames.add(ASPECT_DISPOSITION_LIFECYCLE);
+   //     return qnames;
+   // }
 
     @Override
     protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)

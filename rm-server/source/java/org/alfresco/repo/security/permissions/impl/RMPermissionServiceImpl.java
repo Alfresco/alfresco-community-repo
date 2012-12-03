@@ -25,6 +25,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
+import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**

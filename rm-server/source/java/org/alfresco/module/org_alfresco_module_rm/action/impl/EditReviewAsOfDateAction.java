@@ -20,17 +20,14 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -59,8 +56,8 @@ public class EditReviewAsOfDateAction extends RMActionExecuterAbstractBase
 	@Override
 	protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
 	{
-	    if (recordsManagementService.isRecord(actionedUponNodeRef) == true &&
-	        this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_VITAL_RECORD) == true)
+	    if (recordService.isRecord(actionedUponNodeRef) == true &&
+	        nodeService.hasAspect(actionedUponNodeRef, ASPECT_VITAL_RECORD) == true)
 	    {
 	        // Get the action parameter
 	        Date reviewAsOf = (Date)action.getParameterValue(PARAM_AS_OF_DATE);
@@ -84,21 +81,13 @@ public class EditReviewAsOfDateAction extends RMActionExecuterAbstractBase
 	{
 		// Intentionally empty
 	}
-	
-	@Override
-    public Set<QName> getProtectedProperties()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(PROP_REVIEW_AS_OF);
-        return qnames;
-    }
 
     @Override
     protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
     {
         boolean result = false;
-        if (recordsManagementService.isRecord(filePlanComponent) == true &&
-            this.nodeService.hasAspect(filePlanComponent, ASPECT_VITAL_RECORD) == true)
+        if (recordService.isRecord(filePlanComponent) == true &&
+            nodeService.hasAspect(filePlanComponent, ASPECT_VITAL_RECORD) == true)
         {
             result = true;
         }

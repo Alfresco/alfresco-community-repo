@@ -34,9 +34,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMEntryVoter;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -84,11 +84,11 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     /** Records management service */
     private RecordsManagementService recordsManagementService;
     
+    /** Model security service */
+    private ModelSecurityService modelSecurityService;
+    
     /** Node service */
     private NodeService nodeService;
-    
-    /** RM Entry voter */
-    private RMEntryVoter voter;
     
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
@@ -160,13 +160,11 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     }
     
     /**
-     * Set the RM voter
-     * 
-     * @param voter
+     * @param modelSecurityService  model security service
      */
-    public void setVoter(RMEntryVoter voter)
+    public void setModelSecurityService(ModelSecurityService modelSecurityService)
     {
-        this.voter = voter;
+        this.modelSecurityService = modelSecurityService;
     }
         
     /**
@@ -415,22 +413,6 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 }
             }, AuthenticationUtil.getSystemUserName());         
         }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getProtectedAspects()
-     */
-    public Set<QName> getProtectedAspects()
-    {
-        return voter.getProtetcedAscpects();
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getProtectedProperties()
-     */
-    public Set<QName> getProtectedProperties()
-    {
-       return voter.getProtectedProperties();
     }
     
     /**
@@ -1015,5 +997,25 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());        
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getProtectedAspects()
+     */
+    @Deprecated
+    @Override
+    public Set<QName> getProtectedAspects()
+    {
+        return modelSecurityService.getProtectedAspects();
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getProtectedProperties()
+     */
+    @Deprecated
+    @Override
+    public Set<QName> getProtectedProperties()
+    {
+        return modelSecurityService.getProtectedProperties();
     }
 }

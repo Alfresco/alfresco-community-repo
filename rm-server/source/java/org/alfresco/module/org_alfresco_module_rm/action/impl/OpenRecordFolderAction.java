@@ -19,17 +19,14 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -71,14 +68,6 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         // TODO Auto-generated method stub
-    }
-
-    @Override
-    public Set<QName> getProtectedProperties()
-    {
-        HashSet<QName> qnames = new HashSet<QName>();
-        qnames.add(PROP_IS_CLOSED);
-        return qnames;
     }
 
     @Override

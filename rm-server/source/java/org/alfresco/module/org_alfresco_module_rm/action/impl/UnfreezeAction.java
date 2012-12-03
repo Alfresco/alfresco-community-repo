@@ -19,14 +19,11 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Unfreeze Action
@@ -42,17 +39,6 @@ public class UnfreezeAction extends RMActionExecuterAbstractBase
    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
    {
       freezeService.unFreeze(actionedUponNodeRef);
-   }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedAspects()
-    */
-   @Override
-   public Set<QName> getProtectedAspects()
-   {
-      HashSet<QName> qnames = new HashSet<QName>();
-      qnames.add(ASPECT_FROZEN);
-      return qnames;
    }
 
    /**

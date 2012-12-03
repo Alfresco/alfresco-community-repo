@@ -90,10 +90,7 @@
     </bean>
     
     <!-- disable normal registration - the proxy will do it so the proxy is registered -->
-    <bean id="file" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileAction" parent="rmAction" depends-on="rmFileRecordsCapability">
-        <property name="capability" ref="rmFileRecordsCapability"/>
-    </bean>    
-    
+    <bean id="file" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileAction" parent="rmAction" />
 
     <!-- Cutoff action -->
     
@@ -119,9 +116,7 @@
         </property>
     </bean>
     
-    <bean id="cutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction" parent="rmAction" depends-on="rmApproveRecordsScheduledForCutoffCapability">
-        <property name="capability" ref="rmApproveRecordsScheduledForCutoffCapability"/>
-    </bean>   
+    <bean id="cutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction" parent="rmAction"/>   
     
     <!-- UnCutoff action -->    
     
@@ -146,9 +141,7 @@
         </property>
     </bean>
     
-    <bean id="unCutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnCutoffAction" parent="rmAction" depends-on="rmApproveRecordsScheduledForCutoffCapability">
-        <property name="capability" ref="rmApproveRecordsScheduledForCutoffCapability"/>
-    </bean> 
+    <bean id="unCutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnCutoffAction" parent="rmAction" /> 
     
     <!-- Destroy -->
     
@@ -182,7 +175,6 @@
         <property name="ghostingEnabled">
             <value>${rm.ghosting.enabled}</value>
         </property>
-        <property name="capability" ref="rmDestroyRecordsScheduledForDestructionCapability" />
     </bean>    
     
     <!-- retain -->
@@ -234,9 +226,7 @@
         </property>
     </bean>
     
-    <bean id="openRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.OpenRecordFolderAction" parent="rmAction" depends-on="rmReOpenFoldersCapability">
-        <property name="capability" ref="rmReOpenFoldersCapability"/>
-    </bean>    
+    <bean id="openRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.OpenRecordFolderAction" parent="rmAction" />    
     
     <!-- close record folder -->
     
@@ -261,9 +251,7 @@
         </property>
     </bean>
     
-    <bean id="closeRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CloseRecordFolderAction" parent="rmAction" depends-on="rmCloseFoldersCapability">
-        <property name="capability" ref="rmCloseFoldersCapability"/>
-    </bean>    
+    <bean id="closeRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CloseRecordFolderAction" parent="rmAction" />    
     
     <!-- reviewed -->
     
@@ -288,9 +276,7 @@
         </property>
     </bean>
     
-    <bean id="reviewed" class="org.alfresco.module.org_alfresco_module_rm.vital.ReviewedAction" parent="rmAction" depends-on="rmCycleVitalRecordsCapability">
-        <property name="capability" ref="rmCycleVitalRecordsCapability"/>
-    </bean>    
+    <bean id="reviewed" class="org.alfresco.module.org_alfresco_module_rm.vital.ReviewedAction" parent="rmAction" depends-on="rmCycleVitalRecordsCapability" />    
     
     <!-- set up record folder -->
     <!-- bound to policy: allow -->
@@ -316,7 +302,7 @@
         </property>
     </bean>
     
-    <bean id="setupRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SetupRecordFolderAction" parent="rmAction" depends-on="rmFileRecordsCapability"/>
+    <bean id="setupRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SetupRecordFolderAction" parent="rmAction" />
     
     <!-- declare record -->
     <!-- fileable?? -->
@@ -342,14 +328,7 @@
         </property>
     </bean>
     
-    <bean id="declareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction" parent="rmAction" depends-on="rmDeclareRecordsCapability">
-        <property name="capabilities">
-            <list>
-                <ref bean="rmDeclareRecordsCapability" />
-                <ref bean="rmDeclareRecordsInClosedFoldersCapability" />
-            </list>
-        </property>
-        <property name="capability" ref="rmDeclareRecordsCapability"/>
+    <bean id="declareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction" parent="rmAction">
     </bean>    
     
     <!-- undeclare record -->
@@ -375,8 +354,7 @@
         </property>
     </bean>
     
-    <bean id="undeclareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UndeclareRecordAction" parent="rmAction" depends-on="rmUndeclareRecordsCapability">
-        <property name="capability" ref="rmUndeclareRecordsCapability"/>
+    <bean id="undeclareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UndeclareRecordAction" parent="rmAction">
     </bean>    
 
     <!-- Freeze record -->
@@ -402,9 +380,7 @@
         </property>
     </bean>
     
-    <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability">
-        <property name="capability" ref="rmExtendRetentionPeriodOrFreezeCapability" />
-    </bean>
+    <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability" />
 
     <!-- Unfreeze record -->
 
@@ -429,9 +405,7 @@
         </property>
     </bean>
     
-    <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction" depends-on="rmUnfreezeCapability">
-        <property name="capability" ref="rmUnfreezeCapability" />
-    </bean>
+    <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction" />
     
     <!-- Relinquish Hold Action-->
 
@@ -446,9 +420,7 @@
         </property>
     </bean>
     
-    <bean id="relinquishHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RelinquishHoldAction" parent="rmAction" depends-on="rmUnfreezeCapability">
-        <property name="capability" ref="rmUnfreezeCapability" />
-    </bean>
+    <bean id="relinquishHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RelinquishHoldAction" parent="rmAction" />
     
     <!-- Edit hold reason -->
 
@@ -473,9 +445,7 @@
         </property>
     </bean>
     
-    <bean id="editHoldReason" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditHoldReasonAction" parent="rmAction" depends-on="rmViewUpdateReasonsForFreezeCapability">
-        <property name="capability" ref="rmViewUpdateReasonsForFreezeCapability" />
-    </bean>  
+    <bean id="editHoldReason" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditHoldReasonAction" parent="rmAction" />  
     
     <!-- Edit review as of date -->
 
@@ -500,9 +470,7 @@
         </property>
     </bean>
     
-    <bean id="editReviewAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditReviewAsOfDateAction" parent="rmAction" depends-on="rmPlanningReviewCyclesCapability">
-        <property name="capability" ref="rmPlanningReviewCyclesCapability"/>
-    </bean> 
+    <bean id="editReviewAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditReviewAsOfDateAction" parent="rmAction" /> 
     
     <!-- Edit disposition action as of date -->
 
@@ -527,9 +495,7 @@
         </property>
     </bean>
     
-    <bean id="editDispositionActionAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditDispositionActionAsOfDateAction" parent="rmAction" depends-on="rmManuallyChangeDispositionDatesCapability">
-        <property name="capability" ref="rmManuallyChangeDispositionDatesCapability"/>
-    </bean> 
+    <bean id="editDispositionActionAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditDispositionActionAsOfDateAction" parent="rmAction" /> 
     
     <!-- broadcast vital record definition -->
     <!-- bound to policy: allow -->
@@ -612,8 +578,7 @@
         </property>
     </bean>
     
-    <bean id="completeEvent" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction" parent="rmAction" depends-on="rmAddModifyEventDatesCapability">
-        <property name="capability" ref="rmAddModifyEventDatesCapability"/>
+    <bean id="completeEvent" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction" parent="rmAction">
     </bean>    
     
     <!-- undo event -->
@@ -639,8 +604,7 @@
         </property>
     </bean>
     
-    <bean id="undoEvent" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UndoEventAction" parent="rmAction" depends-on="rmAddModifyEventDatesCapability">
-        <property name="capability" ref="rmAddModifyEventDatesCapability"/>
+    <bean id="undoEvent" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UndoEventAction" parent="rmAction">
     </bean>   
     
     <!-- transfer -->
@@ -666,8 +630,7 @@
         </property>
     </bean>
     
-    <bean id="transfer" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction" depends-on="rmAuthorizeAllTransfersCapability">
-        <property name="capability" ref="rmAuthorizeAllTransfersCapability"/>
+    <bean id="transfer" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction">
         <property name="isAccession" value="false"/>
     </bean>  
     
@@ -684,8 +647,7 @@
         </property>
     </bean>
     
-    <bean id="transferComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction" depends-on="rmAuthorizeAllTransfersCapability">
-        <property name="capability" ref="rmAuthorizeAllTransfersCapability"/>
+    <bean id="transferComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction" >
     </bean> 
     
     <!-- accession -->
@@ -711,8 +673,7 @@
         </property>
     </bean>
     
-    <bean id="accession" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction" depends-on="rmAuthorizeNominatedTransfersCapability">
-        <property name="capability" ref="rmAuthorizeNominatedTransfersCapability"/>
+    <bean id="accession" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction">
         <property name="isAccession" value="true"/>
     </bean> 
         
@@ -729,8 +690,7 @@
         </property>
     </bean>
     
-    <bean id="accessionComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction" depends-on="rmAuthorizeNominatedTransfersCapability">
-        <property name="capability" ref="rmAuthorizeNominatedTransfersCapability"/>
+    <bean id="accessionComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction">
     </bean> 
     
     <!-- Split Email -->

@@ -419,13 +419,13 @@
           class="org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityServiceImpl"
           depends-on="org_alfresco_module_rm_dictionaryBootstrap"
           init-method="init">
-        <property name="voter" ref="rmEntryVoter"/>
         <property name="capabilityService" ref="CapabilityService"/>
         <property name="authorityService" ref="AuthorityService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="recordsManagementService" ref="RecordsManagementService"/>    
+        <property name="modelSecurityService" ref="modelSecurityService" />    
     </bean>
 
     <bean id="RecordsManagementSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -544,8 +544,64 @@
             </value>
         </property>
     </bean>
+    
+    <!--  Model Security service -->
+    
+    <bean id="modelSecurityService" 
+          class="org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityServiceImpl"
+          init-method="init">        
+    	<property name="policyComponent" ref="policyComponent" />
+    	<property name="nodeService" ref="NodeService" />
+    	<property name="capabilityService" ref="CapabilityService" />
+    	<property name="namespaceService" ref="namespaceService" />
+    </bean>
+    
+    <bean id="ModelSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService</value>
+        </property>
+        <property name="target">
+            <ref bean="modelSecurityService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="ModelSecurityService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="ModelSecurityService_security"/>
+            </list>
+        </property>
+    </bean>
 
+    <bean id="ModelSecurityService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
+    <bean id="ModelSecurityService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[   
+    			org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService.*=RM_ALLOW             
+                ]]>
+            </value>
+        </property>
+    </bean>    
+    
     <!-- Records Management Action Service -->
 
     <bean id="recordsManagementActionService" class="org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionServiceImpl" init-method="init">

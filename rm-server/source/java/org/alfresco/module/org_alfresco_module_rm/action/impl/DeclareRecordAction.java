@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -174,17 +173,6 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
          logger.warn(msg.toString());
       }
       missingProperties.add(propDef.getName().toString());
-   }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#getProtectedAspects()
-    */
-   @Override
-   public Set<QName> getProtectedAspects()
-   {
-      HashSet<QName> qnames = new HashSet<QName>();
-      qnames.add(ASPECT_DECLARED_RECORD);
-      return qnames;
    }
 
    /**

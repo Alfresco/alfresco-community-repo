@@ -983,9 +983,21 @@
     <select id="select_GetChildrenCannedQueryWithProps" parameterType="FilterSortNode" resultMap="result_FilterSortNode">
        select
             childNode.id             as id,
+            childNode.version        as version,
+            childStore.id            as store_id,
             childStore.protocol      as protocol,
             childStore.identifier    as identifier,
-            childNode.uuid           as uuid
+            childNode.uuid           as uuid,
+            childNode.type_qname_id  as type_qname_id,
+            childNode.locale_id      as locale_id,
+            childNode.acl_id         as acl_id,
+            childTxn.id              as txn_id,
+            childTxn.change_txn_id   as txn_change_id,
+            childNode.audit_creator  as audit_creator,
+            childNode.audit_created  as audit_created,
+            childNode.audit_modifier as audit_modifier,
+            childNode.audit_modified as audit_modified,
+            childNode.audit_accessed  as audit_accessed
             <if test="prop1qnameId != null">
           , prop1.node_id            as prop1_node_id,
             prop1.qname_id           as prop1_qname_id,
@@ -1025,20 +1037,11 @@
             prop3.double_value       as prop3_double_value,
             prop3.string_value       as prop3_string_value
             </if>
-            <if test="auditableProps == true">
-          , childNode.audit_creator  as audit_creator,
-            childNode.audit_created  as audit_created,
-            childNode.audit_modifier as audit_modifier,
-            childNode.audit_modified as audit_modified,
-            childNode.audit_accessed as audit_accessed
-            </if>
-            <if test="nodeType == true">
-          , childNode.type_qname_id  as type_qname_id
-            </if>
         from
             alf_child_assoc assoc
             join alf_node childNode on (childNode.id = assoc.child_node_id)
             join alf_store childStore on (childStore.id = childNode.store_id)
+            join alf_transaction childTxn on (childTxn.id = childNode.transaction_id)
             <if test="prop1qnameId != null">
             left join alf_node_properties prop1 on (prop1.node_id = childNode.id and prop1.qname_id = #{prop1qnameId})
             </if>

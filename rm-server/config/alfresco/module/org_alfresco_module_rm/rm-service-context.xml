@@ -550,10 +550,12 @@
     <bean id="modelSecurityService" 
           class="org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityServiceImpl"
           init-method="init">        
+        <property name="enabled" value="false" />  
     	<property name="policyComponent" ref="policyComponent" />
     	<property name="nodeService" ref="NodeService" />
-    	<property name="capabilityService" ref="CapabilityService" />
     	<property name="namespaceService" ref="namespaceService" />
+    	<property name="securityService" ref="RecordsManagementSecurityService" />
+    	<property name="recordsManagementService" ref="RecordsManagementService" />
     </bean>
     
     <bean id="ModelSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">

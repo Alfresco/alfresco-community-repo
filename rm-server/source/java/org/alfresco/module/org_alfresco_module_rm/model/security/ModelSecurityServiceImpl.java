@@ -24,9 +24,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.security.Role;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -34,7 +36,6 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -54,17 +55,23 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
                                                  NodeServicePolicies.BeforeRemoveAspectPolicy,
                                                  NodeServicePolicies.OnUpdatePropertiesPolicy
 {
+    /** Indicates whether model security is enabled or not */
+    private boolean enabled = true;
+    
     /** Policy component */
     private PolicyComponent policyComponent;
     
     /** Node service */
     private NodeService nodeService;
     
-    /** Capability service */
-    private CapabilityService capabilityService;
-    
     /** Namespace service */
     private NamespaceService namespaceService;
+    
+    /** Security service */
+    private RecordsManagementSecurityService securityService;
+    
+    /** Records management service */
+    private RecordsManagementService recordsManagementService;
     
     /** Map of protected properties keyed by name */
     private Map<QName, ProtectedProperty> protectedProperties = new HashMap<QName, ProtectedProperty>(21);
@@ -84,6 +91,22 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
                                                                           NotificationFrequency.EVERY_EVENT);
     
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#setEnabled(boolean)
+     */
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#isEnabled()
+     */
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+    
+    /**
      * @param policyComponent   policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -100,19 +123,27 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     }
     
     /**
-     * @param capabilityService capability service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
-        this.capabilityService = capabilityService;
-    }
-    
-    /**
      * @param namespaceService  namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+    
+    /**
+     * @param securityService   records management security service
+     */
+    public void setSecurityService(RecordsManagementSecurityService securityService)
+    {
+        this.securityService = securityService;
+    }
+    
+    /**
+     * @param recordsManagementService  records management service
+     */
+    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    {
+        this.recordsManagementService = recordsManagementService;
     }
     
     /**
@@ -213,13 +244,17 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     {
         boolean result = false;
         
-        for (Capability capability : artifact.getCapabilities())
+        NodeRef filePlan = recordsManagementService.getFilePlan(nodeRef);
+        if (filePlan != null)
         {
-            AccessStatus accessStatus = capabilityService.getCapabilityAccessState(nodeRef, capability.getName());
-            if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+            Set<Role> roles = securityService.getRolesByUser(filePlan, AuthenticationUtil.getFullyAuthenticatedUser());
+            for (Role role : roles)
             {
-                result = true;
-                break;
+                if (Collections.disjoint(role.getCapabilities(), artifact.getCapilityNames()) == false)
+                {
+                    result = true;
+                    break;
+                }
             }
         }
                 
@@ -280,17 +315,20 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     @Override
     public void beforeAddAspect(NodeRef nodeRef, QName aspect)
     {
-        if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-            AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
-            isProtectedAspect(aspect) == true &&
-            nodeService.exists(nodeRef) == true && 
-            canEditProtectedAspect(nodeRef, aspect) == false)
+        if (enabled == true)
         {
-            // the user can't edit the protected aspect
-            throw new ModelAccessDeniedException(
-                    "The user " + AuthenticationUtil.getFullyAuthenticatedUser() + 
-                    " does not have the permission to add the protected aspect " + aspect.toPrefixString(namespaceService) +
-                    " from the node " + nodeRef.toString());
+            if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
+                AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
+                isProtectedAspect(aspect) == true &&
+                nodeService.exists(nodeRef) == true && 
+                canEditProtectedAspect(nodeRef, aspect) == false)
+            {
+                // the user can't edit the protected aspect
+                throw new ModelAccessDeniedException(
+                        "The user " + AuthenticationUtil.getFullyAuthenticatedUser() + 
+                        " does not have the permission to add the protected aspect " + aspect.toPrefixString(namespaceService) +
+                        " from the node " + nodeRef.toString());
+            }
         }
     }
 
@@ -300,18 +338,21 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     @Override
     public void beforeRemoveAspect(NodeRef nodeRef, QName aspect)
     {
-        if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-            AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
-            isProtectedAspect(aspect) == true &&
-            nodeService.exists(nodeRef) == true && 
-            canEditProtectedAspect(nodeRef, aspect) == false)
+        if (enabled == true)
         {
-            // the user can't edit the protected aspect
-            throw new ModelAccessDeniedException(
-                    "The user " + AuthenticationUtil.getFullyAuthenticatedUser() + 
-                    " does not have the permission to remove the protected aspect " + aspect.toPrefixString(namespaceService) +
-                    " from the node " + nodeRef.toString());
-        }      
+            if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
+                AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
+                isProtectedAspect(aspect) == true &&
+                nodeService.exists(nodeRef) == true && 
+                canEditProtectedAspect(nodeRef, aspect) == false)
+            {
+                // the user can't edit the protected aspect
+                throw new ModelAccessDeniedException(
+                        "The user " + AuthenticationUtil.getFullyAuthenticatedUser() + 
+                        " does not have the permission to remove the protected aspect " + aspect.toPrefixString(namespaceService) +
+                        " from the node " + nodeRef.toString());
+            }
+        }
     }
 
     /**
@@ -319,31 +360,33 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
      */
     @Override
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
-    {                
-        if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-            AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
-            nodeService.exists(nodeRef) == true)
+    {
+        if (enabled == true)
         {
-            for (QName property : after.keySet())
+            if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
+                AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
+                nodeService.exists(nodeRef) == true)
             {
-                if (isProtectedProperty(property) == true)
+                for (QName property : after.keySet())
                 {
-                    ProtectedProperty protectedProperty = getProtectedProperty(property);
-                    if ((before == null || before.isEmpty() || before.get(property) == null) &&
-                         protectedProperty.isAllwaysAllowNew() == true)
+                    if (isProtectedProperty(property) == true)
                     {
-                        return;
+                        // always allow if this is the first time we are setting the protected property
+                        if (before == null || before.isEmpty() || before.get(property) == null)
+                        {
+                            return;
+                        }
+                        
+                        if (EqualsHelper.nullSafeEquals(before.get(property), after.get(property)) == false &&
+                           canEditProtectedProperty(nodeRef, property) == false)
+                        {
+                            // the user can't edit the protected property
+                            throw new ModelAccessDeniedException(
+                                "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
+                                " does not have the permission to edit the protected property " + property.toPrefixString(namespaceService) +
+                                " on the node " + nodeRef.toString());
+                        }                    
                     }
-                    
-                    if (EqualsHelper.nullSafeEquals(before.get(property), after.get(property)) == false &&
-                       canEditProtectedProperty(nodeRef, property) == false)
-                    {
-                        // the user can't edit the protected property
-                        throw new ModelAccessDeniedException(
-                            "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
-                            " does not have the permission to edit the protected property " + property.toPrefixString(namespaceService) +
-                            " on the node " + nodeRef.toString());
-                    }                    
                 }
             }
         }

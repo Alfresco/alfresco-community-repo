@@ -43,7 +43,9 @@ public class ModelSecurityServiceImplTest extends BaseRMTestCase
     
     
     /** Model security service */
-    private ModelSecurityService modelSecurityService;
+    private ModelSecurityService modelSecurityService;    
+    
+    private boolean enabled;
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest()
@@ -76,7 +78,20 @@ public class ModelSecurityServiceImplTest extends BaseRMTestCase
     @Override
     protected void setupTestDataImpl()
     {
-        super.setupTestDataImpl();             
+        super.setupTestDataImpl();
+        
+        enabled = modelSecurityService.isEnabled();
+        modelSecurityService.setEnabled(true);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#tearDownImpl()
+     */
+    @Override
+    protected void tearDownImpl()
+    {
+        super.tearDownImpl();
+        modelSecurityService.setEnabled(enabled);
     }
     
     /**
@@ -194,27 +209,27 @@ public class ModelSecurityServiceImplTest extends BaseRMTestCase
                 protectedProperty = modelSecurityService.getProtectedProperty(CUSTOM_PROTECTED_PROPERTY);
                 assertNotNull(protectedProperty);
                 assertNotNull(protectedProperty.getQName());
-                assertNotNull(protectedProperty.getCapabilities());    
-                
-                doTestInTransaction(new VoidTest()
-                {            
-                    @Override
-                    public void runImpl() throws Exception
-                    {
-                        assertTrue(modelSecurityService.canEditProtectedProperty(rmFolder, CUSTOM_PROTECTED_PROPERTY));
-                    }
-                }, rmAdminName);
-                
-                doTestInTransaction(new VoidTest()
-                {            
-                    @Override
-                    public void runImpl() throws Exception
-                    {
-                        assertFalse(modelSecurityService.canEditProtectedProperty(rmFolder, CUSTOM_PROTECTED_PROPERTY));                
-                    }
-                }, powerUserName);          
+                assertNotNull(protectedProperty.getCapabilities());                              
             }
-        });    
+        });  
+        
+        doTestInTransaction(new VoidTest()
+        {            
+            @Override
+            public void runImpl() throws Exception
+            {
+                assertTrue(modelSecurityService.canEditProtectedProperty(rmFolder, CUSTOM_PROTECTED_PROPERTY));
+            }
+        }, rmAdminName);
+        
+        doTestInTransaction(new VoidTest()
+        {            
+            @Override
+            public void runImpl() throws Exception
+            {
+                assertFalse(modelSecurityService.canEditProtectedProperty(rmFolder, CUSTOM_PROTECTED_PROPERTY));                
+            }
+        }, powerUserName);  
         
         doTestInTransaction(new VoidTest()
         {            

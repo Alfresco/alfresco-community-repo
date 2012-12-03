@@ -23,7 +23,9 @@ import junit.framework.TestSuite;
 
 import org.alfresco.module.org_alfresco_module_rm.test.service.DataSetServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.DispositionServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedSecurityServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FreezeServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.ModelSecurityServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementActionServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementAdminServiceImplTest;
@@ -48,6 +50,8 @@ public class ServicesTestSuite extends TestSuite
     public static Test suite() 
     {
         TestSuite suite = new TestSuite();
+        suite.addTestSuite(ExtendedSecurityServiceImplTest.class);
+        suite.addTestSuite(ModelSecurityServiceImplTest.class);
         suite.addTestSuite(RecordsManagementServiceImplTest.class);
         suite.addTestSuite(DispositionServiceImplTest.class);
         suite.addTestSuite(RecordsManagementActionServiceImplTest.class);

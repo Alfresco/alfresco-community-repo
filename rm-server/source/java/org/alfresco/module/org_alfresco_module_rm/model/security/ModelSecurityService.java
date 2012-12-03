@@ -32,6 +32,20 @@ import org.alfresco.service.namespace.QName;
 public interface ModelSecurityService
 {
     /**
+     * Sets whether model security is enabled or not.
+     * 
+     * @param enabled
+     */
+    void setEnabled(boolean enabled);
+    
+    /**
+     * Indicates whether model security is enabled or not.
+     * 
+     * @return
+     */
+    boolean isEnabled();
+    
+    /**
      * Registers a protected model artifact with the service.
      * 
      * @param atrifact  protected model artifact

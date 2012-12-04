@@ -36,7 +36,7 @@ public class GroupImpl implements Group
     private String title;
 
     /** The group index */
-    private String index;
+    private int index;
 
     /** Capability service */
     private CapabilityService capabilityService;
@@ -93,12 +93,12 @@ public class GroupImpl implements Group
      * @see org.alfresco.module.org_alfresco_module_rm.capability.Group#getIndex()
      */
     @Override
-    public String getIndex()
+    public int getIndex()
     {
         return this.index;
     }
 
-    public void setIndex(String index)
+    public void setIndex(int index)
     {
         this.index = index;
     }

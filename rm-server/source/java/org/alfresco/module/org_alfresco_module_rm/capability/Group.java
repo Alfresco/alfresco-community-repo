@@ -43,7 +43,7 @@ public interface Group
     /**
      * Gets the index of a group
      *
-     * @return String the group index
+     * @return int the group index
      */
-    String getIndex();
+    int getIndex();
 }

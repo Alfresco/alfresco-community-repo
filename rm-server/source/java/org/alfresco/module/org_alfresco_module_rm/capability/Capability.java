@@ -99,7 +99,7 @@ public interface Capability
     /**
      * Gets the index of a capability
      *
-     * @return String capability index
+     * @return int capability index
      */
-    String getIndex();
+    int getIndex();
 }

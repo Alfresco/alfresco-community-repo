@@ -95,7 +95,7 @@ public class CapabilitiesGet extends DeclarativeWebScript
             grouped = Boolean.parseBoolean(groupedString);
         }
 
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new TreeMap<String, Object>();
         if (grouped == true)
         {
             // Construct the map which is needed to build the model
@@ -174,7 +174,7 @@ public class CapabilitiesGet extends DeclarativeWebScript
             this.capabilityGroupTitle = capabilityGroupTitle;
             this.capabilityName = capabilityName;
             this.capabilityTitle = capabilityTitle;
-            this.capabilities = new HashMap<String, String>(5);
+            this.capabilities = new TreeMap<String, String>();
         }
 
         public String getGroupId()

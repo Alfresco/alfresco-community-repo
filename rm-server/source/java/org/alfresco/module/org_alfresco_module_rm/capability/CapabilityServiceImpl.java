@@ -188,6 +188,7 @@ public class CapabilityServiceImpl implements CapabilityService
 
         Collections.sort(groups, new Comparator<Group>()
         {
+            @Override
             public int compare(Group g1, Group g2)
             {
                 return Integer.parseInt(g1.getIndex()) - Integer.parseInt(g2.getIndex());
@@ -219,6 +220,15 @@ public class CapabilityServiceImpl implements CapabilityService
                 }
             }
         }
+
+        Collections.sort(capabilities, new Comparator<Capability>()
+        {
+            @Override
+            public int compare(Capability c1, Capability c2)
+            {
+                return Integer.parseInt(c1.getIndex()) - Integer.parseInt(c2.getIndex());
+            }
+        });
 
         return capabilities;
     }

@@ -4,7 +4,7 @@
       <#if groupedCapabilities??>
       "groupedCapabilities":
       [
-         <#list groupedCapabilities?keys as groupedCapabilityKey>
+         <#list groupedCapabilities?keys?sort as groupedCapabilityKey>
          {
             "${groupedCapabilityKey}":
             {
@@ -13,7 +13,7 @@
                capabilities:
                {
                <#assign capabilities = groupedCapability.capabilities>
-               <#list capabilities?keys as capabilityKey>
+               <#list capabilities?keys?sort as capabilityKey>
                   "${capabilityKey}": "${capabilities[capabilityKey]}"<#if capabilityKey_has_next>,</#if>
                </#list>
                }

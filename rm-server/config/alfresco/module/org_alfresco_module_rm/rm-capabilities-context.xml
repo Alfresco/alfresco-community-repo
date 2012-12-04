@@ -46,6 +46,7 @@
          </map>
       </property>
       <property name="group"><ref bean="eventsGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <bean id="rmAttachRulesToMetadataPropertiesCapability"
@@ -53,6 +54,7 @@
       <property name="name" value="AttachRulesToMetadataProperties"/>
       <property name="permission" value="AttachRulesToMetadataProperties"/>
       <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <bean id="rmChangeOrDeleteReferencesCapability"
@@ -67,6 +69,7 @@
          </map>
       </property>
       <property name="group"><ref bean="referencesAndLinksGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <bean id="rmCreateModifyDestroyClassificationGuidesCapability"
@@ -74,6 +77,7 @@
       <property name="name" value="CreateModifyDestroyClassificationGuides"/>
       <property name="permission" value="CreateModifyDestroyClassificationGuides"/>
       <property name="group"><ref bean="classifiedRecordsGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <bean id="rmCreateModifyDestroyEventsCapability"
@@ -81,6 +85,7 @@
       <property name="name" value="CreateModifyDestroyEvents" />
       <property name="permission" value="CreateModifyDestroyEvents" />
       <property name="group"><ref bean="eventsGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmCreateModifyDestroyFileplanTypesCapability"
@@ -88,6 +93,7 @@
       <property name="name" value="CreateModifyDestroyFileplanTypes" />
       <property name="permission" value="CreateModifyDestroyFileplanTypes" />
       <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+      <property name="index" value="4" />
    </bean>
 
    <bean id="rmCreateModifyDestroyRecordTypesCapability"
@@ -95,6 +101,7 @@
       <property name="name" value="CreateModifyDestroyRecordTypes" />
       <property name="permission" value="CreateModifyDestroyRecordTypes" />
       <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+      <property name="index" value="5" />
    </bean>
 
    <bean id="rmCreateModifyDestroyReferenceTypesCapability"
@@ -102,6 +109,7 @@
       <property name="name" value="CreateModifyDestroyReferenceTypes" />
       <property name="permission" value="CreateModifyDestroyReferenceTypes" />
       <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+      <property name="index" value="6" />
    </bean>
 
    <bean id="rmCreateModifyDestroyRolesCapability"
@@ -109,6 +117,7 @@
       <property name="name" value="CreateModifyDestroyRoles" />
       <property name="permission" value="CreateModifyDestroyRoles" />
       <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <bean id="rmCreateModifyDestroyTimeframesCapability"
@@ -116,6 +125,7 @@
       <property name="name" value="CreateModifyDestroyTimeframes" />
       <property name="permission" value="CreateModifyDestroyTimeframes" />
       <property name="group"><ref bean="classifiedRecordsGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmCreateModifyDestroyUsersAndGroupsCapability"
@@ -123,6 +133,7 @@
       <property name="name" value="CreateModifyDestroyUsersAndGroups" />
       <property name="permission" value="CreateModifyDestroyUsersAndGroups" />
       <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmCycleVitalRecordsCapability"
@@ -146,6 +157,7 @@
          </map>
       </property>
       <property name="group"><ref bean="vitalRecordsGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <bean id="rmDeleteLinksCapability"
@@ -161,6 +173,7 @@
          </map>
       </property>
       <property name="group"><ref bean="referencesAndLinksGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmDisplayRightsReportCapability"
@@ -168,6 +181,7 @@
       <property name="name" value="DisplayRightsReport" />
       <property name="permission" value="DisplayRightsReport" />
       <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
+      <property name="index" value="3" />
    </bean>
 
    <bean id="rmMakeOptionalPropertiesMandatoryCapability"
@@ -175,6 +189,7 @@
       <property name="name" value="MakeOptionalParametersMandatory" />
       <property name="permission" value="MakeOptionalParametersMandatory" />
       <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+      <property name="index" value="8" />
    </bean>
 
    <bean id="rmManageAccessControlsCapability"
@@ -182,6 +197,7 @@
       <property name="name" value="ManageAccessControls" />
       <property name="permission" value="ManageAccessControls" />
       <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
+      <property name="index" value="4" />
    </bean>
 
    <bean id="rmManageAccessRightsCapability"
@@ -195,6 +211,7 @@
          </map>
       </property>
       <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
+      <property name="index" value="5" />
    </bean>
 
    <bean id="rmMapClassificationGuideMetadataCapability"
@@ -202,6 +219,7 @@
       <property name="name" value="MapClassificationGuideMetadata" />
       <property name="permission" value="MapClassificationGuideMetadata" />
       <property name="group"><ref bean="classifiedRecordsGroup"/></property>
+      <property name="index" value="3" />
    </bean>
 
    <bean id="rmMapEmailMetadataCapability"
@@ -209,6 +227,7 @@
       <property name="name" value="MapEmailMetadata" />
       <property name="permission" value="MapEmailMetadata" />
       <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+      <property name="index" value="9" />
    </bean>
 
    <bean id="rmPasswordControlCapability"
@@ -216,6 +235,7 @@
       <property name="name" value="PasswordControl" />
       <property name="permission" value="PasswordControl" />
       <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
+      <property name="index" value="6" />
    </bean>
 
    <bean id="rmPlanningReviewCyclesCapability"
@@ -231,6 +251,7 @@
          </map>
       </property>
       <property name="group"><ref bean="vitalRecordsGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmTriggerAnEventCapability"
@@ -251,6 +272,7 @@
          </map>
       </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
+      <property name="index" value="7" />
    </bean>
 
    <bean id="rmUpdateClassificationDatesCapability"
@@ -258,6 +280,7 @@
       <property name="name" value="UpdateClassificationDates" />
       <property name="permission" value="UpdateClassificationDates" />
       <property name="group"><ref bean="classifiedRecordsGroup"/></property>
+      <property name="index" value="4" />
    </bean>
 
    <bean id="rmUpdateExemptionCategoriesCapability"
@@ -265,6 +288,7 @@
       <property name="name" value="UpdateExemptionCategories" />
       <property name="permission" value="UpdateExemptionCategories" />
       <property name="group"><ref bean="classifiedRecordsGroup"/></property>
+      <property name="index" value="5" />
    </bean>
 
    <bean id="rmUpdateTriggerDatesCapability"
@@ -277,6 +301,7 @@
          </map>
       </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
+      <property name="index" value="8" />
    </bean>
 
    <bean id="rmUpdateVitalRecordCycleInformationCapability"
@@ -289,6 +314,7 @@
          </map>
       </property>
       <property name="group"><ref bean="vitalRecordsGroup"/></property>
+      <property name="index" value="3" />
    </bean>
 
    <!-- Record Folder capabilities -->

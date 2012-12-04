@@ -22,6 +22,7 @@
          </map>
       </property>
       <property name="group"><ref bean="holdControlsGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <bean id="rmUnfreezeCapability"
@@ -35,6 +36,7 @@
          </map>
       </property>
       <property name="group"><ref bean="holdControlsGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmViewUpdateReasonsForFreezeCapability"
@@ -47,6 +49,7 @@
          </map>
       </property>
       <property name="group"><ref bean="holdControlsGroup"/></property>
+      <property name="index" value="3" />
    </bean>
 
 </beans>

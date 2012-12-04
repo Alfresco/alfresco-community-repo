@@ -22,6 +22,7 @@
          </map>
       </property>
       <property name="group"><ref bean="cutoffGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <!--  Transfer -->
@@ -36,6 +37,7 @@
          </list>
       </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <!--  Accession -->
@@ -50,6 +52,7 @@
          </list>
       </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <!--  Destroy -->
@@ -71,6 +74,7 @@
          </map>
       </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
+      <property name="index" value="5" />
    </bean>
 
    <!--  Unscheduled Destroy -->
@@ -92,6 +96,7 @@
          </map>
       </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
+      <property name="index" value="4" />
    </bean>
 
    <!--  Manually Change Disposition Dates -->
@@ -114,6 +119,7 @@
          </map>
       </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
+      <property name="index" value="6" />
    </bean>
 
    <!--  Non-assignable Capabilities -->

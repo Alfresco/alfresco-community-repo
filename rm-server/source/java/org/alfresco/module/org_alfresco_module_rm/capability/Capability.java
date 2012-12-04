@@ -95,4 +95,11 @@ public interface Capability
      * @return Group capability group
      */
     Group getGroup();
+
+    /**
+     * Gets the index of a capability
+     *
+     * @return String capability index
+     */
+    String getIndex();
 }

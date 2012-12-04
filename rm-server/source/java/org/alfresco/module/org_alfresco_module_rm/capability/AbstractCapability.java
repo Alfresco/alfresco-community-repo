@@ -54,8 +54,11 @@ public abstract class AbstractCapability extends RMSecurityCommon
     protected String title;
     protected String description;
 
-    /** Capability Group */
+    /** Capability group */
     protected Group group;
+
+    /** Capability index */
+    protected String index;
 
     /** Indicates whether this is a private capability or not */
     protected boolean isPrivate = false;
@@ -320,6 +323,19 @@ public abstract class AbstractCapability extends RMSecurityCommon
     public void setGroup(Group group)
     {
         this.group = group;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#getIndex()
+     */
+    public String getIndex()
+    {
+        return this.index;
+    }
+
+    public void setIndex(String index)
+    {
+        this.index = index;
     }
 
     /**

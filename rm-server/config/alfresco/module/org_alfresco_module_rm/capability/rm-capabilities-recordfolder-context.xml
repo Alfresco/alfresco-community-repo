@@ -21,6 +21,7 @@
          </map>
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <bean id="rmCreateModifyDestroyFoldersCapability"
@@ -42,6 +43,7 @@
          </map>
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmMoveRecordFolderCapability"
@@ -75,6 +77,7 @@
          </map>
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>
+      <property name="index" value="4" />
    </bean>
 
    <bean id="rmDeclareRecordsInClosedFoldersCapability"
@@ -96,5 +99,6 @@
          </map>
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>
+      <property name="index" value="3" />
    </bean>
 </beans>

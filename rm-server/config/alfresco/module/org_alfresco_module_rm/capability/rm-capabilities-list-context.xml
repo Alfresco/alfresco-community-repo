@@ -10,6 +10,7 @@
         <property name="name" value="CreateAndAssociateSelectionLists"/>
         <property name="permission" value="CreateAndAssociateSelectionLists"/>
         <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+        <property name="index" value="2" />
     </bean>
 
     <bean id="rmEditSelectionListsCapability"
@@ -17,6 +18,7 @@
         <property name="name" value="EditSelectionLists" />
         <property name="permission" value="EditSelectionLists" />
         <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+        <property name="index" value="7" />
     </bean>
 
     <!--  Non-Assignable Capabilities -->

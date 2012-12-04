@@ -8,6 +8,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability">
       <property name="name" value="ViewRecords" />
       <property name="group"><ref bean="recordsGroup"/></property>
+      <property name="index" value="3" />
    </bean>
 
    <bean id="rmUndeclareRecordsCapability"
@@ -28,6 +29,7 @@
          </map>
       </property>
       <property name="group"><ref bean="recordsGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmCreateModifyRecordsInCuttoffFoldersCapability"
@@ -49,6 +51,7 @@
          </map>
       </property>
       <property name="group"><ref bean="cutoffGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmFileCapability"
@@ -107,6 +110,7 @@
          </map>
       </property>
       <property name="group"><ref bean="recordsGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <bean id="rmDeleteRecordsCapability"
@@ -124,6 +128,7 @@
          </map>
       </property>
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
+      <property name="index" value="3" />
    </bean>
 
    <bean id="rmEditDeclaredRecordMetadataCapability"
@@ -144,6 +149,7 @@
          </map>
       </property>
       <property name="group"><ref bean="metadataControlGroup"/></property>
+      <property name="index" value="1" />
    </bean>
 
    <!-- TODO .. this is being used for the wrong thing! ... should indicate that the use can edit the non-record meta-data of a record -->
@@ -160,6 +166,7 @@
          </map>
       </property>
       <property name="group"><ref bean="metadataControlGroup"/></property>
+      <property name="index" value="2" />
    </bean>
 
    <bean id="rmEditRecordMetadataCapability"
@@ -182,6 +189,7 @@
          </map>
       </property>
       <property name="group"><ref bean="metadataControlGroup"/></property>
+      <property name="index" value="3" />
    </bean>
 
    <bean id="rmMoveRecordsCapability"
@@ -198,6 +206,7 @@
       </property>
       <property name="targetCapability" ref="rmFileRecordsCapability"/>
       <property name="group"><ref bean="metadataControlGroup"/></property>
+      <property name="index" value="4" />
    </bean>
 
    <bean id="rmUpgradeDowngradeAndDeclassifyRecordsCapability"
@@ -210,6 +219,7 @@
          </map>
       </property>
       <property name="group"><ref bean="classifiedRecordsGroup"/></property>
+      <property name="index" value="6" />
    </bean>
 
 </beans>

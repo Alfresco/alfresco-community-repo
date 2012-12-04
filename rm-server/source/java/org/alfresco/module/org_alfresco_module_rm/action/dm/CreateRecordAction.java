@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,16 +21,21 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Creates a new record from an existing content object.
@@ -42,8 +47,14 @@ import org.alfresco.service.cmr.repository.NodeService;
 public class CreateRecordAction extends ActionExecuterAbstractBase
                                 implements RecordsManagementModel
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(CreateRecordAction.class);
+    
     /** Action name */
     public static final String NAME = "create-record";
+    
+    /** Parameter names */
+    public static final String PARAM_FILE_PLAN = "file-plan";
     
     /** Records management service */
     private RecordsManagementService recordsManagementService;
@@ -82,36 +93,69 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, final NodeRef actionedUponNodeRef)
-    {
-        // skip everything if the actioned upon node reference is already a record
-        if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == false)
+    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
+    {       
+        if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == true)
         {
-            // TODO we should use the file plan passed as a parameter
-            // grab the file plan
-            List<NodeRef> filePlans = recordsManagementService.getFilePlans();
-            if (filePlans.size() == 1)
+            // Do not create record if the actioned upon node is already a record!
+            if (logger.isDebugEnabled() == true)
             {
-                // TODO parameterise the action with the file plan
-                final NodeRef filePlan = filePlans.get(0);
-    
-                // run record creation as system
-                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
-                    @Override
-                    public Void doWork() throws Exception
-                    {
-                        // create record from existing document
-                        recordService.createRecordFromDocument(filePlan, actionedUponNodeRef);
-                        
-                        return null;
-                    }
-                });            
+                logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " is already a record.");
             }
-            else
+        }
+        else if (nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
+        {
+            // We can not create records from working copies
+            if (logger.isDebugEnabled() == true)
             {
-                throw new AlfrescoRuntimeException("Unable to find file plan.");
-            }       
+                logger.debug("Can node create record, because " + actionedUponNodeRef.toString() + " is a working copy.");
+            }
+            
+        }
+        else 
+        {
+            // run record creation as system
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {   
+                    NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);
+                    if (filePlan == null)
+                    {
+                        List<NodeRef> filePlans = recordsManagementService.getFilePlans();
+                        if (filePlans.size() == 1)
+                        {
+                            filePlan = filePlans.get(0);
+                        }
+                        else
+                        {
+                            if (logger.isDebugEnabled() == true)
+                            {
+                                logger.debug("Can not create record, because the default file plan can not be determined.");
+                            }
+                            throw new AlfrescoRuntimeException("Can not create record, because the default file plan can not be determined.");
+                        } 
+                    }
+                    else
+                    {
+                        // verify that the provided file plan is actually a file plan
+                        if (recordsManagementService.isFilePlan(filePlan) == false)
+                        {
+                            if (logger.isDebugEnabled() == true)
+                            {
+                                logger.debug("Can not create record, because the provided file plan node reference is not a file plan.");
+                            }
+                            throw new AlfrescoRuntimeException("Can not create record, because the provided file plan node reference is not a file plan.");
+                        }
+                    }
+            
+                    // create record from existing document
+                    recordService.createRecordFromDocument(filePlan, actionedUponNodeRef);
+                    
+                    return null;
+                }
+            });                                       
         }
     }
 
@@ -121,8 +165,8 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> params)
     {
-        // TODO eventually we will need to pass in the file plan as a parameter
-        // TODO .. or the RM site
+        // Optional parameter used to specify the file plan
+        params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
     }
    
 }

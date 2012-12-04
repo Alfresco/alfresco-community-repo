@@ -131,14 +131,15 @@
             <bean parent="defaultImageTransformationOptions">
                 <property name="resizeOptions">
                     <bean parent="defaultImageResizeOptions">
-                        <property name="width" value="480"/>
-                        <property name="height" value="480"/>
+                        <property name="width" value="960"/>
+                        <property name="height" value="960"/>
                         <property name="allowEnlargement" value="false" />
                     </bean> 
                 </property>
             </bean>
         </property>
-        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_imgpreview.png" />
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_256.png" />
+        <property name="mimeAwarePlaceHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_256{0}.png" />
         <property name="runAs" value="System"/>
         <property name="failureHandlingOptions" ref="standardFailureOptions"/>
     </bean>

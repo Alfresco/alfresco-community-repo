@@ -31,8 +31,8 @@ public class CustomisableEmailMappingKeyBootstrap
     /** List of mappings to register as customisable */
     private List<String> customisable;
 
-    /** Email mapping key service */
-    private EmailMappingKeyService emailMappingKeyService;
+    /** Custom email mapping service */
+    private CustomEmailMappingService customEmailMappingService;
 
     /**
      * @param customizable  list of mappings to register as customisable
@@ -43,13 +43,13 @@ public class CustomisableEmailMappingKeyBootstrap
     }
 
     /**
-     * Email mapping key service
+     * Custom email mapping service
      *
-     * @param emailMappingKeyService the email mapping key service
+     * @param customEmailMappingService the custom email mapping service
      */
-    public void setEmailMappingKeyService(EmailMappingKeyService emailMappingKeyService)
+    public void setCustomEmailMappingService(CustomEmailMappingService customEmailMappingService)
     {
-        this.emailMappingKeyService = emailMappingKeyService;
+        this.customEmailMappingService = customEmailMappingService;
     }
 
     /**
@@ -59,7 +59,7 @@ public class CustomisableEmailMappingKeyBootstrap
     {
         for (String customEmailMappingKey : customisable)
         {
-            emailMappingKeyService.makeCustomisable(customEmailMappingKey);
+            customEmailMappingService.registerEMailMappingKey(customEmailMappingKey);
         }
     }
 }

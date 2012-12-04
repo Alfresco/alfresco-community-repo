@@ -501,6 +501,6 @@
    <bean id="webscript.org.alfresco.rma.admin.emailmapkeys.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.EmailMapKeysGet"
       parent="webscript">
-      <property name="emailMappingKeyService" ref="EmailMappingKeyService" />
+      <property name="customEmailMappingService" ref="CustomEmailMappingService" />
    </bean>
 </beans>

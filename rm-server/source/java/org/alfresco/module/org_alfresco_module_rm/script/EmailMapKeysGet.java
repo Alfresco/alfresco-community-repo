@@ -21,7 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyService;
+import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -35,17 +35,17 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class EmailMapKeysGet extends DeclarativeWebScript
 {
-    /** Email mapping key service */
-    private EmailMappingKeyService emailMappingKeyService;
+    /** Custom email mapping service */
+    private CustomEmailMappingService customEmailMappingService;
 
     /**
-     * Email mapping key service
+     * Custom email mapping service
      *
-     * @param emailMappingKeyService the email mapping key service
+     * @param customEmailMappingService the custom email mapping service
      */
-    public void setEmailMappingKeyService(EmailMappingKeyService emailMappingKeyService)
+    public void setCustomEmailMappingService(CustomEmailMappingService customEmailMappingService)
     {
-        this.emailMappingKeyService = emailMappingKeyService;
+        this.customEmailMappingService = customEmailMappingService;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class EmailMapKeysGet extends DeclarativeWebScript
     {
         // Create model object with the lists of email mapping keys
         Map<String, Object> model = new HashMap<String, Object>(1);
-        model.put("emailmapkeys", emailMappingKeyService.getEmailMappingKeys());
+        model.put("emailmapkeys", customEmailMappingService.getEmailMappingKeys());
         return model;
     }
 }

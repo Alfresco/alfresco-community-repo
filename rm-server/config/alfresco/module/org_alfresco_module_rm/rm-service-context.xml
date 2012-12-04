@@ -424,8 +424,8 @@
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>    
-        <property name="modelSecurityService" ref="modelSecurityService" />    
+        <property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="modelSecurityService" ref="modelSecurityService" />
     </bean>
 
     <bean id="RecordsManagementSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -544,20 +544,20 @@
             </value>
         </property>
     </bean>
-    
+
     <!--  Model Security service -->
-    
-    <bean id="modelSecurityService" 
+
+    <bean id="modelSecurityService"
           class="org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityServiceImpl"
-          init-method="init">        
-        <property name="enabled" value="false" />  
+          init-method="init">
+        <property name="enabled" value="false" />
     	<property name="policyComponent" ref="policyComponent" />
     	<property name="nodeService" ref="NodeService" />
     	<property name="namespaceService" ref="namespaceService" />
     	<property name="securityService" ref="RecordsManagementSecurityService" />
     	<property name="recordsManagementService" ref="RecordsManagementService" />
     </bean>
-    
+
     <bean id="ModelSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService</value>
@@ -597,13 +597,13 @@
         </property>
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[   
-    			org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService.*=RM_ALLOW             
+                <![CDATA[
+    			org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService.*=RM_ALLOW
                 ]]>
             </value>
         </property>
-    </bean>    
-    
+    </bean>
+
     <!-- Records Management Action Service -->
 
     <bean id="recordsManagementActionService" class="org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionServiceImpl" init-method="init">
@@ -793,10 +793,10 @@
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.initialiseCustomModel=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomisable=RM_ALLOW
-				org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.isCustomisable=RM_ALLOW
-				org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.makeCustomisable=RM_ALLOW
-				org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.unmakeCustomisable=RM_ALLOW
-				org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.existsCustomProperty=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.isCustomisable=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.makeCustomisable=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.unmakeCustomisable=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.existsCustomProperty=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.getCustomPropertyDefinitions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.addCustomPropertyDefinition=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService.updateCustomPropertyDefinitionName=RM_ALLOW
@@ -1038,7 +1038,16 @@
       </property>
       <property name="policyComponent"><ref bean="policyComponent" /></property>
       <property name="transactionService"><ref bean="transactionService" /></property>
-
+      <property name="emailMappingKeys">
+         <list>
+            <value>Thread-Index</value>
+            <value>messageFrom</value>
+            <value>messageTo</value>
+            <value>messageCc</value>
+            <value>messageSubject</value>
+            <value>messageSent</value>
+         </list>
+      </property>
    </bean>
 
 
@@ -1069,6 +1078,7 @@
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.getCustomMappings=RM_ALLOW
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.addCustomMapping=RM_ALLOW
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.deleteCustomMapping=RM_ALLOW
+                    org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.getEmailMappingKeys=RM_ALLOW
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.*=RM_DENY
                 ]]>
             </value>
@@ -1093,71 +1103,6 @@
             </list>
         </property>
     </bean>
-
-   <!-- EMail Mapping Key Service -->
-
-   <bean id="emailMappingKeyService"
-      class="org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyServiceImpl" >
-      <property name="emailMappingKeys">
-         <list>
-            <value>Thread-Index</value>
-            <value>messageFrom</value>
-            <value>messageTo</value>
-            <value>messageCc</value>
-            <value>messageSubject</value>
-            <value>messageSent</value>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="EmailMappingKeyService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager"/>
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
-
-   <bean id="EmailMappingKeyService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-      <property name="authenticationManager">
-         <ref bean="authenticationManager"/>
-      </property>
-      <property name="accessDecisionManager">
-         <ref bean="accessDecisionManager"/>
-      </property>
-      <property name="afterInvocationManager">
-         <ref bean="afterInvocationManager"/>
-      </property>
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
-               org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyService.getEmailMappingKeys=RM_ALLOW
-               org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyService.*=RM_DENY
-            ]]>
-         </value>
-      </property>
-   </bean>
-
-   <bean id="EmailMappingKeyService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <list>
-            <value>org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyService</value>
-         </list>
-      </property>
-      <property name="targetName">
-         <value>emailMappingKeyService</value>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="EmailMappingKeyService_transaction"/>
-            <idref local="EmailMappingKeyService_security"/>
-            <idref bean="exceptionTranslator"/>
-         </list>
-      </property>
-   </bean>
 
     <!--  RM Notification Helper -->
 

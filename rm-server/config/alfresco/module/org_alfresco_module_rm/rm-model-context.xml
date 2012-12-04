@@ -116,7 +116,7 @@
       abstract="true"
       class="org.alfresco.module.org_alfresco_module_rm.email.CustomisableEmailMappingKeyBootstrap"
       init-method="init">
-      <property name="emailMappingKeyService" ref="emailMappingKeyService"/>
+      <property name="customEmailMappingService" ref="customEmailMappingService"/>
    </bean>
 
    <bean id="customEmailMappingKey"

@@ -6,8 +6,8 @@
    "displayLabel": "${role.displayLabel}",
    "capabilities":
    {
-   <#list role.capabilities?keys as capability>
-      "${capability}": "${role.capabilities[capability]}" <#if capability_has_next>,</#if>
+   <#list role.capabilities as capability>
+      "${capability.name}": "${capability.title}" <#if capability_has_next>,</#if>
    </#list>
    }
 }

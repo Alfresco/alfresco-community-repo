@@ -249,7 +249,7 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
             Set<Role> roles = securityService.getRolesByUser(filePlan, AuthenticationUtil.getFullyAuthenticatedUser());
             for (Role role : roles)
             {
-                if (Collections.disjoint(role.getCapabilities().keySet(), artifact.getCapilityNames()) == false)
+                if (Collections.disjoint(role.getCapabilities(), artifact.getCapabilities()) == false)
                 {
                     result = true;
                     break;

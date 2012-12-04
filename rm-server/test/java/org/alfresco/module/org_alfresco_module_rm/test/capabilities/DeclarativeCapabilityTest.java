@@ -200,8 +200,8 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                         Role role = new ArrayList<Role>(roles).get(0);
                         assertNotNull(role);
 
-                        Map<String, String> roleCapabilities = role.getCapabilities();
-                        if (roleCapabilities.containsKey(capability.getName()) == true && conditionResult == true)
+                        Set<Capability> roleCapabilities = role.getCapabilities();
+                        if (roleCapabilities.contains(capability) == true && conditionResult == true)
                         {
                             assertEquals("User " + userName + " has the role " + role.getDisplayLabel() +
                                          " so we expect access to be allowed for capability " + capability.getName() + " on the object " +

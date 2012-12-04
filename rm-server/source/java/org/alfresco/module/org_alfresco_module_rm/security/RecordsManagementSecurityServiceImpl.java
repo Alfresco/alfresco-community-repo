@@ -578,9 +578,8 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 {
                     String name = getShortRoleName(authorityService.getShortName(roleAuthority), rmRootNode);
                     String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
-                    Map<String, String> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
 
-                    Role role = new Role(name, displayLabel, capabilities, roleAuthority);
+                    Role role = new Role(name, displayLabel, getCapabilitiesImpl(rmRootNode, roleAuthority), roleAuthority);
                     result.add(role);
                 }
 
@@ -608,9 +607,8 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                     {
                         String name = getShortRoleName(authorityService.getShortName(roleAuthority), rmRootNode);
                         String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
-                        Map<String, String> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
-
-                        Role role = new Role(name, displayLabel, capabilities, roleAuthority);
+                        
+                        Role role = new Role(name, displayLabel, getCapabilitiesImpl(rmRootNode, roleAuthority), roleAuthority);
                         result.add(role);
                     }
                 }
@@ -670,7 +668,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 {
                     String name = getShortRoleName(authorityService.getShortName(roleAuthority), rmRootNode);
                     String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
-                    Map<String, String> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
+                    Set<Capability> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
 
                     result = new Role(name, displayLabel, capabilities, roleAuthority);
                 }
@@ -686,10 +684,10 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
      * @param roleAuthority
      * @return
      */
-    private Map<String, String> getCapabilitiesImpl(NodeRef rmRootNode, String roleAuthority)
+    private Set<Capability> getCapabilitiesImpl(NodeRef rmRootNode, String roleAuthority)
     {
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(rmRootNode);
-        Map<String, String> capabilities = new HashMap<String, String>(52);
+        Set<Capability> capabilities = new HashSet<Capability>(52);
         for (AccessPermission permission : permissions)
         {
             if (permission.getAuthority().equals(roleAuthority) == true)
@@ -698,7 +696,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 Capability capability = capabilityService.getCapability(capabilityName);
                 if (capability != null)
                 {
-                    capabilities.put(capabilityName, capability.getTitle());
+                    capabilities.add(capability);
                 }
             }
         }
@@ -777,22 +775,15 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 authorityService.addAuthority(allRoleGroup, roleGroup);
 
                 // Assign the various capabilities to the group on the root records management node
-                Map<String, String> capStrings = new HashMap<String, String>(53);
                 if (capabilities != null)
                 {
                     for (Capability capability : capabilities)
                     {
                         permissionService.setPermission(rmRootNode, roleGroup, capability.getName(), true);
-                    }
-
-                    // Create the role
-                    for (Capability capability : capabilities)
-                    {
-                        capStrings.put(capability.getName(), capability.getTitle());
-                    }
+                    }                
                 }
 
-                return new Role(role, roleDisplayLabel, capStrings, roleGroup);
+                return new Role(role, roleDisplayLabel, capabilities, roleGroup);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -822,12 +813,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                     permissionService.setPermission(rmRootNode, roleAuthority, capability.getName(), true);
                 }
 
-                Map<String, String> capStrings = new HashMap<String, String>(capabilities.size());
-                for (Capability capability : capabilities)
-                {
-                    capStrings.put(capability.getName(), capability.getTitle());
-                }
-                return new Role(role, roleDisplayLabel, capStrings, roleAuthority);
+                return new Role(role, roleDisplayLabel, capabilities, roleAuthority);
 
             }
         }, AuthenticationUtil.getSystemUserName());

@@ -18,7 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.security;
 
-import java.util.Map;
+import java.util.Set;
+
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 
 /**
  * Records management role class
@@ -29,7 +31,7 @@ public class Role
 {
     private String name;
     private String displayLabel;
-    private Map<String, String> capabilities;
+    private Set<Capability> capabilities;
     private String roleGroupName;
 
     /**
@@ -37,7 +39,7 @@ public class Role
      * @param displayLabel
      * @param capabilities
      */
-    public Role(String name, String displayLabel, Map<String, String> capabilities, String roleGroupName)
+    public Role(String name, String displayLabel, Set<Capability> capabilities, String roleGroupName)
     {
         this.name = name;
         this.displayLabel = displayLabel;
@@ -64,7 +66,7 @@ public class Role
     /**
      * @return the capabilities
      */
-    public Map<String, String> getCapabilities()
+    public Set<Capability> getCapabilities()
     {
         return capabilities;
     }

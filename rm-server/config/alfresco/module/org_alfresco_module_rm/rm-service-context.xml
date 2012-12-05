@@ -1306,7 +1306,6 @@
     </bean>
 
     <bean id="dataSetDOD5015" parent="dataSetBase">
-        <property name="label" value="DOD 5015 Example Data"/>
         <property name="id" value="dod5015"/>
         <property name="path" value="alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml" />
     </bean>

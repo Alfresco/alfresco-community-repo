@@ -1707,7 +1707,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
         assertEquals(MimetypeMap.MIMETYPE_IMAGE_JPEG, mediumRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
         assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, doclibRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, imgpreviewRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_JPEG, imgpreviewRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
         assertEquals(MimetypeMap.MIMETYPE_FLASH, webpreviewRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
         assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, avatarRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
     }

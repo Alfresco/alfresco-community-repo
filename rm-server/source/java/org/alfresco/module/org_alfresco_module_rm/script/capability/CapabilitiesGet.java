@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.script.capability;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -109,7 +108,7 @@ public class CapabilitiesGet extends DeclarativeWebScript
                 {
                     String capabilityGroupId = group.getId();
 
-                    List<Capability> capabilities = capabilityService.getCapabilitiesByGroup(capabilityGroupId);
+                    List<Capability> capabilities = capabilityService.getCapabilitiesByGroupId(capabilityGroupId);
                     for (Capability capability : capabilities)
                     {
                        String capabilityName = capability.getName();

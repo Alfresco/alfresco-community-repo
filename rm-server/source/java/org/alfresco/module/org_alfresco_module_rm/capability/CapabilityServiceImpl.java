@@ -199,10 +199,10 @@ public class CapabilityServiceImpl implements CapabilityService
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesByGroup(java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapabilitiesByGroupId(java.lang.String)
      */
     @Override
-    public List<Capability> getCapabilitiesByGroup(String groupId)
+    public List<Capability> getCapabilitiesByGroupId(String groupId)
     {
         ParameterCheck.mandatoryString("groupId", groupId);
 
@@ -241,7 +241,7 @@ public class CapabilityServiceImpl implements CapabilityService
     {
         ParameterCheck.mandatory("group", group);
 
-        return getCapabilitiesByGroup(group.getId());
+        return getCapabilitiesByGroupId(group.getId());
     }
 
     /**

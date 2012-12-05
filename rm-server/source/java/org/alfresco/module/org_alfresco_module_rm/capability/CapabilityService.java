@@ -109,7 +109,7 @@ public interface CapabilityService
     * @param groupId The id of a group for which the list of capabilities should be retrieved
     * @return {@link List}<{@link Capability}> List of capabilities for the given group
     */
-   List<Capability> getCapabilitiesByGroup(String groupId);
+   List<Capability> getCapabilitiesByGroupId(String groupId);
 
    /**
     * Get a list of capabilities for the given group

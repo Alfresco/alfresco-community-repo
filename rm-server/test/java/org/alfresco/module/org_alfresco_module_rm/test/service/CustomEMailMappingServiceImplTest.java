@@ -18,8 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomMapping;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -48,62 +46,74 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
         return true;
     }
 
+    @Override
+    protected void setUp() throws Exception
+    {
+        super.setUp();
+        eMailMappingService.registerEMailMappingKey("EmailMappingKeyTest1");
+        eMailMappingService.registerEMailMappingKey("EmailMappingKeyTest2");
+    }
+
     public void testCRUD() throws Exception
     {
         doTestInTransaction(new Test<Void>()
         {
             public Void run()
             {
-                checkCustomMappingSize(20);
+                // Check the initial custom mapping size
+                assertTrue(checkCustomMappingsSize(20));
 
+                // Add a custom mapping
                 eMailMappingService.addCustomMapping("monkey", "cm:monkeyFace");
 
-                CustomMapping monkeyMapping = getCustomMapping("monkey", "cm:monkeyFace", checkCustomMappingSize(21), true);
+                // Check the new size
+                assertTrue(checkCustomMappingsSize(21));
+
+                // Check the new added custom mapping
+                CustomMapping monkeyMapping = getCustomMapping("monkey", "cm:monkeyFace");
                 assertNotNull(monkeyMapping);
                 assertEquals("monkey", monkeyMapping.getFrom());
                 assertEquals("cm:monkeyFace", monkeyMapping.getTo());
 
+                // Delete the new added custom mapping
                 eMailMappingService.deleteCustomMapping("monkey", "cm:monkeyFace");
-                getCustomMapping("monkey", "cm:monkeyFace", checkCustomMappingSize(20), false);
+
+                // Check the size after deletion
+                assertTrue(checkCustomMappingsSize(20));
+
+                // Check the custom mapping after deletion if it exists
+                assertNull(getCustomMapping("monkey", "cm:monkeyFace"));
+
+                // Check the email mapping keys size
+                // There are 6 "standard" EmailMappingKeys + 2 CustomEmailMappingKeys are added on setUp
+                assertTrue(checkEmailMappingKeysSize(8));
 
                 return null;
             }
         }, rmAdminName);
     }
 
-    private CustomMapping getCustomMapping(String from, String to, Set<CustomMapping> maps, boolean contains)
+    private CustomMapping getCustomMapping(String from, String to)
     {
         CustomMapping result = null;
-        CustomMapping key = new CustomMapping(from, to);
-        assertEquals(contains, maps.contains(key));
-
-        if (contains == true)
+        for (CustomMapping customMapping : eMailMappingService.getCustomMappings())
         {
-            for (CustomMapping map : maps)
+            if (customMapping.getFrom().equalsIgnoreCase(from) && customMapping.getTo().equalsIgnoreCase(to))
             {
-                if (map.equals(key) == true)
-                {
-                    result = key;
-                    break;
-                }
+                result = customMapping;
+                break;
             }
         }
         return result;
     }
 
-    private Set<CustomMapping> checkCustomMappingSize(int expected)
+    private boolean checkCustomMappingsSize(int expected)
     {
-        Set<CustomMapping> maps = eMailMappingService.getCustomMappings();
-        assertEquals(expected, maps.size());
-        return maps;
+        return expected == eMailMappingService.getCustomMappings().size() ? true : false;
     }
 
-    @SuppressWarnings("unused")
-    private void print(Set<CustomMapping> maps)
+    private boolean checkEmailMappingKeysSize(int expected)
     {
-        for (CustomMapping map : maps)
-        {
-            System.out.println(map.getFrom() + " -> " + map.getTo());
-        }
+        return expected == eMailMappingService.getEmailMappingKeys().size() ? true : false;
     }
 }

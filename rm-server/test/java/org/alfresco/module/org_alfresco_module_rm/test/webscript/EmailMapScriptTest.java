@@ -18,133 +18,94 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 
+import java.io.IOException;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 public class EmailMapScriptTest extends BaseRMWebScriptTestCase
 {
-
+    /** URLs for the REST APIs */
     public final static String URL_RM_EMAILMAP = "/api/rma/admin/emailmap";
-    
-    AuthenticationService authenticationService;
-    
-    @Override
-    protected void setUp() throws Exception
-    {
-        this.authenticationService = (AuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
-//        setCurrentUser(AuthenticationUtil.getAdminUserName());
-        super.setUp();
-        
-        // Set the current security context as admin
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
-    }
-    
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
- 
-    }
-    
-    public void testGetEmailMap() throws Exception
-    {
-        {
-            Response response = sendRequest(new GetRequest(URL_RM_EMAILMAP), Status.STATUS_OK);    
-    
-            @SuppressWarnings("unused")
-            JSONObject top = new JSONObject(response.getContentAsString());
-            System.out.println(response.getContentAsString());
-            //JSONArray data = top.getJSONArray("data");
-        }
-    } 
-    
-    public void testUpdateEmailMap() throws Exception
-    {
-        /**
-         * Update the list by adding two values  
-         */
-        {
-           JSONObject obj = new JSONObject();
-           
-           JSONArray add = new JSONArray();  
-           JSONObject val = new JSONObject();
-           val.put("from", "whatever");
-           val.put("to", "rmc:Wibble");
-           add.put(val);
-           JSONObject val2 = new JSONObject();
-           val2.put("from", "whatever");
-           val2.put("to", "rmc:wobble");
-           add.put(val2);
- 
-           obj.put("add", add);
-           
-           System.out.println(obj.toString());
-           
-           /**
-             * Now do a post to add a couple of values
-             */
-           Response response = sendRequest(new PostRequest(URL_RM_EMAILMAP, obj.toString(), "application/json"), Status.STATUS_OK); 
-           System.out.println(response.getContentAsString());
-           // Check the response
-           
-           
-           JSONArray delete = new JSONArray(); 
-           delete.put(val2);
-           
-        }
-        
-        /**
-         * Update the list by deleting a value
-         * 
-         * "whatever" has two mappings, delete one of them
-         */
-        {
-            JSONObject obj = new JSONObject();
-            JSONObject val2 = new JSONObject();
-            JSONArray delete = new JSONArray();  
-            val2.put("from", "whatever");
-            val2.put("to", "rmc:wobble");
-            delete.put(val2);
-            obj.put("delete", delete);
-            
-            /**
-             * Now do a post to delete a couple of values
-             */
-           Response response = sendRequest(new PostRequest(URL_RM_EMAILMAP, obj.toString(), "application/json"), Status.STATUS_OK); 
-           System.out.println(response.getContentAsString());
+    public final static String URL_RM_EMAILMAP_DELETE = "/api/rma/admin/emailmap/%s/%s";
 
-           JSONObject top = new JSONObject(response.getContentAsString());
-           JSONObject data = top.getJSONObject("data");
-           JSONArray mappings = data.getJSONArray("mappings");
-           
-           boolean wibbleFound = false; 
-           for(int i = 0; i < mappings.length(); i++)
-           {
-               JSONObject mapping = mappings.getJSONObject(i);
-               
-        
-               if(mapping.get("from").equals("whatever"))
-               {
-                   if(mapping.get("to").equals("rmc:Wibble"))
-                   {
-                       wibbleFound = true;
-                   }
-                   else
-                   {
-                       fail("custom mapping for field not deleted");
-                   }
-               }
-           }
-           assertTrue(wibbleFound);
+    /** Constant for the content type */
+    private static final String APPLICATION_JSON = "application/json";
+
+    /**
+     * Tests the REST APIs for a custom mapping
+     *
+     * @throws IOException
+     * @throws JSONException
+     */
+    public void testEmailMap() throws IOException, JSONException
+    {
+        // Test Get
+        Response getResponse = sendRequest(new GetRequest(URL_RM_EMAILMAP), Status.STATUS_OK);
+
+        JSONObject getResponseContent = new JSONObject(getResponse.getContentAsString());
+        JSONObject getData = getResponseContent.getJSONObject("data");
+        JSONArray getMappings = getData.getJSONArray("mappings");
+        assertTrue(getMappings.length() == 20);
+
+        // Test Post
+        JSONObject newMapping = new JSONObject();
+        newMapping.put("from", "whatever");
+        newMapping.put("to", "rmc:Wibble");
+
+        Response postResponse = sendRequest(new PostRequest(URL_RM_EMAILMAP, newMapping.toString(), APPLICATION_JSON), Status.STATUS_OK);
+
+        JSONObject postResponseContent = new JSONObject(postResponse.getContentAsString());
+        assertTrue(Boolean.parseBoolean(postResponseContent.getString("success")));
+
+        JSONObject postData = postResponseContent.getJSONObject("data");
+        JSONArray postMappings = postData.getJSONArray("mappings");
+
+        assertTrue(postMappings.length() == 21);
+        assertTrue(existsMapping(postMappings));
+
+        postResponse = sendRequest(new PostRequest(URL_RM_EMAILMAP, newMapping.toString(), APPLICATION_JSON), Status.STATUS_OK);
+        postResponseContent = new JSONObject(postResponse.getContentAsString());
+        assertFalse(Boolean.parseBoolean(postResponseContent.getString("success")));
+        assertFalse(postResponseContent.getString("message").isEmpty());
+
+        // Test Delete
+        Response deleteResponse = sendRequest(new DeleteRequest(String.format(URL_RM_EMAILMAP_DELETE, "whatever", "rmc:Wibble")), Status.STATUS_OK);
+        JSONObject deleteResponseContent = new JSONObject(deleteResponse.getContentAsString());
+        JSONObject deleteData = deleteResponseContent.getJSONObject("data");
+        JSONArray deleteMappings = deleteData.getJSONArray("mappings");
+
+        assertTrue(deleteMappings.length() == 20);
+        assertFalse(existsMapping(deleteMappings));
+    }
+
+    /**
+     * Helper method for checking if a custom mapping exists
+     *
+     * @param mappings The list of available mappings
+     * @return true if the custom mapping exists in the list of available mappings, false otherwise
+     * @throws JSONException
+     */
+    private boolean existsMapping(JSONArray mappings) throws JSONException
+    {
+        boolean result = false;
+        for (int i = 0; i < mappings.length(); i++)
+        {
+            String from = mappings.getJSONObject(i).getString("from");
+            String to = mappings.getJSONObject(i).getString("to");
+            if (from.equalsIgnoreCase("whatever") && to.equalsIgnoreCase("rmc:Wibble"))
+            {
+                result = true;
+                break;
+            }
         }
+        return result;
     }
 }
-

@@ -126,7 +126,7 @@
     <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
     <bean id="thumbnailDefinitionImgpreview" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
         <property name="name" value="imgpreview" />
-        <property name="mimetype" value="image/png"/>
+        <property name="mimetype" value="image/jpg"/>
         <property name="transformationOptions">
             <bean parent="defaultImageTransformationOptions">
                 <property name="resizeOptions">

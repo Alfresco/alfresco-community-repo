@@ -47,7 +47,7 @@ public class EmailMapScriptTest extends BaseRMWebScriptTestCase
      */
     public void testEmailMap() throws IOException, JSONException
     {
-        // Test Get
+        /** Test GET */
         Response getResponse = sendRequest(new GetRequest(URL_RM_EMAILMAP), Status.STATUS_OK);
 
         JSONObject getResponseContent = new JSONObject(getResponse.getContentAsString());
@@ -55,7 +55,7 @@ public class EmailMapScriptTest extends BaseRMWebScriptTestCase
         JSONArray getMappings = getData.getJSONArray("mappings");
         assertTrue(getMappings.length() == 20);
 
-        // Test Post
+        /** Test POST */
         JSONObject newMapping = new JSONObject();
         newMapping.put("from", "whatever");
         newMapping.put("to", "rmc:Wibble");
@@ -76,7 +76,7 @@ public class EmailMapScriptTest extends BaseRMWebScriptTestCase
         assertFalse(Boolean.parseBoolean(postResponseContent.getString("success")));
         assertFalse(postResponseContent.getString("message").isEmpty());
 
-        // Test Delete
+        /** Test DELETE */
         Response deleteResponse = sendRequest(new DeleteRequest(String.format(URL_RM_EMAILMAP_DELETE, "whatever", "rmc:Wibble")), Status.STATUS_OK);
         JSONObject deleteResponseContent = new JSONObject(deleteResponse.getContentAsString());
         JSONObject deleteData = deleteResponseContent.getJSONObject("data");

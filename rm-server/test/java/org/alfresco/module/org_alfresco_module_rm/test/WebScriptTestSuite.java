@@ -22,8 +22,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.BootstraptestDataRestApiTest;
-import org.alfresco.module.org_alfresco_module_rm.test.webscript.DataSetPostTest;
-import org.alfresco.module.org_alfresco_module_rm.test.webscript.DataSetsGetTest;
+import org.alfresco.module.org_alfresco_module_rm.test.webscript.DataSetRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.DispositionRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.EventRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RMCaveatConfigScriptTest;
@@ -34,17 +33,17 @@ import org.alfresco.module.org_alfresco_module_rm.test.webscript.RoleRestApiTest
 
 /**
  * RM WebScript test suite
- * 
+ *
  * @author Roy Wetherall
  */
 public class WebScriptTestSuite extends TestSuite
 {
     /**
      * Creates the test suite
-     * 
+     *
      * @return  the test suite
      */
-    public static Test suite() 
+    public static Test suite()
     {
         TestSuite suite = new TestSuite();
         suite.addTestSuite(BootstraptestDataRestApiTest.class);
@@ -54,8 +53,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite(RMConstraintScriptTest.class);
         suite.addTestSuite(RmRestApiTest.class);
         suite.addTestSuite(RoleRestApiTest.class);
-        suite.addTestSuite(DataSetsGetTest.class);
-        suite.addTestSuite(DataSetPostTest.class);
+        suite.addTestSuite(DataSetRestApiTest.class);
         return suite;
     }
 }

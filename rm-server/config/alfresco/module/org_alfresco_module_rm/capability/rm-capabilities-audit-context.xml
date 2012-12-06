@@ -9,7 +9,7 @@
       <property name="name" value="AccessAudit"/>
       <property name="permission" value="AccessAudit"/>
       <property name="group"><ref bean="auditGroup"/></property>
-      <property name="index" value="1" />
+      <property name="index" value="10" />
    </bean>
 
    <bean id="rmDeclareAuditAsRecordCapability"
@@ -17,7 +17,7 @@
       <property name="name" value="DeclareAuditAsRecord" />
       <property name="permission" value="DeclareAuditAsRecord" />
       <property name="group"><ref bean="auditGroup"/></property>
-      <property name="index" value="2" />
+      <property name="index" value="20" />
    </bean>
 
    <bean id="rmDeleteAuditCapability"
@@ -25,7 +25,7 @@
       <property name="name" value="DeleteAudit" />
       <property name="permission" value="DeleteAudit" />
       <property name="group"><ref bean="auditGroup"/></property>
-      <property name="index" value="3" />
+      <property name="index" value="30" />
    </bean>
 
    <bean id="rmEnableDisableAuditByTypesCapability"
@@ -33,7 +33,7 @@
       <property name="name" value="EnableDisableAuditByTypes" />
       <property name="permission" value="EnableDisableAuditByTypes" />
       <property name="group"><ref bean="auditGroup"/></property>
-      <property name="index" value="4" />
+      <property name="index" value="40" />
    </bean>
 
    <bean id="rmExportAuditCapability"
@@ -41,7 +41,7 @@
       <property name="name" value="ExportAudit" />
       <property name="permission" value="ExportAudit" />
       <property name="group"><ref bean="auditGroup"/></property>
-      <property name="index" value="5" />
+      <property name="index" value="50" />
    </bean>
 
    <bean id="rmSelectAuditMetadataCapability"
@@ -49,7 +49,7 @@
       <property name="name" value="SelectAuditMetadata" />
       <property name="permission" value="SelectAuditMetadata" />
       <property name="group"><ref bean="auditGroup"/></property>
-      <property name="index" value="6" />
+      <property name="index" value="60" />
    </bean>
 
    <!--  Non-Assignable Capabilities -->

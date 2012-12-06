@@ -13,79 +13,79 @@
    <bean id="auditGroup"
       parent="groupBase">
       <property name="id" value="audit"/>
-      <property name="index" value="1"/>
+      <property name="index" value="10" />
    </bean>
 
    <bean id="classifiedRecordsGroup"
       parent="groupBase">
       <property name="id" value="classifiedRecords"/>
-      <property name="index" value="2"/>
+      <property name="index" value="20"/>
    </bean>
 
    <bean id="cutoffGroup"
       parent="groupBase">
       <property name="id" value="cutoff"/>
-      <property name="index" value="3"/>
+      <property name="index" value="30"/>
    </bean>
 
    <bean id="dispositionAndTransfersGroup"
       parent="groupBase">
       <property name="id" value="dispositionAndTransfers"/>
-      <property name="index" value="4"/>
+      <property name="index" value="40"/>
    </bean>
 
    <bean id="eventsGroup"
       parent="groupBase">
       <property name="id" value="events"/>
-      <property name="index" value="5"/>
+      <property name="index" value="50"/>
    </bean>
 
    <bean id="filePlanMetadataListsAndEmailGroup"
       parent="groupBase">
       <property name="id" value="filePlanMetadataListsAndEmail"/>
-      <property name="index" value="6"/>
+      <property name="index" value="60"/>
    </bean>
 
    <bean id="folderControlGroup"
       parent="groupBase">
       <property name="id" value="folderControl"/>
-      <property name="index" value="7"/>
+      <property name="index" value="70"/>
    </bean>
 
    <bean id="holdControlsGroup"
       parent="groupBase">
       <property name="id" value="holdControls"/>
-      <property name="index" value="8"/>
+      <property name="index" value="80"/>
    </bean>
 
    <bean id="metadataControlGroup"
       parent="groupBase">
       <property name="id" value="metadataControl"/>
-      <property name="index" value="9"/>
+      <property name="index" value="90"/>
    </bean>
 
    <bean id="recordsGroup"
       parent="groupBase">
       <property name="id" value="records"/>
-      <property name="index" value="10"/>
+      <property name="index" value="100"/>
    </bean>
 
    <bean id="referencesAndLinksGroup"
       parent="groupBase">
       <property name="id" value="referencesAndLinks"/>
-      <property name="index" value="11"/>
+      <property name="index" value="110"/>
    </bean>
 
    <bean id="rolesAndAccessRightsGroup"
       parent="groupBase">
       <property name="id" value="rolesAndAccessRights"/>
-      <property name="index" value="12"/>
+      <property name="index" value="120"/>
    </bean>
 
    <bean id="vitalRecordsGroup"
       parent="groupBase">
       <property name="id" value="vitalRecords"/>
-      <property name="index" value="13"/>
+      <property name="index" value="130"/>
    </bean>
 
 </beans>

@@ -17,7 +17,7 @@
          </list>
       </property>
       <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
-      <property name="index" value="3" />
+      <property name="index" value="30" />
    </bean>
 
    <!--  Unassignable Capabilities -->

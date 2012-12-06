@@ -973,6 +973,7 @@
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />
+        <property name="recordsManagementService" ref="RecordsManagementService" />
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1018,8 +1019,10 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromDocument=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getUnfiledRecordContainer=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isFiled=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.fileRecord=RM.WRITE.0.1
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getUnfiledContainer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>

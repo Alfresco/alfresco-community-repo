@@ -133,6 +133,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef rmContainer;
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef rmFolder;
+    protected NodeRef unfiledContainer;
     
     /** multi-hierarchy test data 
      *
@@ -204,6 +205,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef recordsManagerPerson;
     protected NodeRef rmAdminPerson;
     
+    /** test records */
+    protected NodeRef recordOne;
+    protected NodeRef recordTwo;
+    protected NodeRef recordThree;
+    protected NodeRef recordFour;
+    protected NodeRef recordFive;
+    protected NodeRef recordDeclaredOne;
+    protected NodeRef recordDeclaredTwo;
+    
     /**
      * Indicates whether this is a multi-hierarchy test or not.  If it is then the multi-hierarchy record
      * taxonomy test data is loaded.
@@ -215,9 +225,16 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     
     /**
      * Indicates whether the test users should be created or not.
-     * @return
      */
     protected boolean isUserTest()
+    {
+        return false;
+    }
+    
+    /**
+     * Indicates whether the test records should be created or not.
+     */
+    protected boolean isRecordTest()
     {
         return false;
     }
@@ -346,7 +363,28 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             public Void run()
             {
             	setupTestDataImpl();
+            	
+            	if (isRecordTest() == true)
+            	{
+            	    setupTestRecords();
+            	}
+            	
             	return null;
+            }
+            
+            @Override
+            public void test(Void result) throws Exception
+            {
+                if (isRecordTest() == true)
+                {
+                    // declare a record
+                    utils.declareRecord(recordDeclaredOne);
+                    utils.declareRecord(recordDeclaredTwo);
+                    
+                    // unfiled container
+                    unfiledContainer = recordService.getUnfiledContainer(filePlan);
+                    assertNotNull(unfiledContainer);
+                }
             }
         }, 
         AuthenticationUtil.getSystemUserName());    	
@@ -387,6 +425,17 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         // Create RM folder
         rmFolder = rmService.createRecordFolder(rmContainer, "rmFolder");
         assertNotNull("Could not create rm folder", rmFolder);
+    }
+    
+    protected void setupTestRecords()
+    {
+        recordOne = utils.createRecord(rmFolder, "one.txt");
+        recordTwo = utils.createRecord(rmFolder, "two.txt");
+        recordThree = utils.createRecord(rmFolder, "three.txt");
+        recordFour = utils.createRecord(rmFolder, "four.txt");
+        recordFive = utils.createRecord(rmFolder, "five.txt");
+        recordDeclaredOne = utils.createRecord(rmFolder, "declaredOne.txt");
+        recordDeclaredTwo = utils.createRecord(rmFolder, "declaredTwo.txt");
     }
     
     protected void setupTestUsers(final NodeRef filePlan)

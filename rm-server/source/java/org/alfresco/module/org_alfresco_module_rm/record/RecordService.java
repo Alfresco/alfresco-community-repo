@@ -54,32 +54,36 @@ public interface RecordService
     * @return boolean  true if record is declared, false otherwise
     */
    boolean isDeclared(NodeRef nodeRef);  
-
+   
    /**
-    * Creates a new record from an existing document.
+    * Indicates whether the record is filed or not
     * 
-    * @param filePlan   The filePlan in which the record should be placed
-    * @param document   The document from which the record will be created
+    * @param nodeRef    record
+    * @return boolean   true if filed, false otherwise
     */
-   void createRecordFromDocument(NodeRef filePlan, NodeRef document);
-
+   boolean isFiled(NodeRef nodeRef);
+   
    /**
-    * Gets the unfiled record container for the given file plan
+    * Gets the unfiled root container for the given file plan
     * 
     * @param filePlan   The filePlan for which the unfiled record container should be retrieved
     * @return NodeRef   The nodeRef of the container object
     */
-   public NodeRef getUnfiledRecordContainer(NodeRef filePlan);
+   public NodeRef getUnfiledContainer(NodeRef filePlan);
 
-   // TODO boolean isRecordFiled(NodeRef record);
-
-   // TODO boolean isRecordClassified(NodeRef record);
-
-   // TODO NodeRef getNewRecordContainer(NodeRef filePlan);
-
-   // TODO NodeRef createRecord(NodeRef filePlan, NodeRef document);
-
-   // TODO NodeRef createAndFileRecord(NodeRef recordFolder, NodeRef document);
-
-   // TODO void fileRecord(NodeRef recordFolder, NodeRef record);
+   /**
+    * Creates a new unfiled record from an existing node.
+    * 
+    * @param filePlan  The filePlan in which the record should be placed
+    * @param nodeRef   The node from which the record will be created
+    */
+   void createRecord(NodeRef filePlan, NodeRef nodeRef);
+   
+   /**
+    * Files an unfiled record.
+    * 
+    * @param record         record
+    * @param recordFolder   record folder
+    */
+   void fileRecord(NodeRef record, NodeRef recordFolder);
 }

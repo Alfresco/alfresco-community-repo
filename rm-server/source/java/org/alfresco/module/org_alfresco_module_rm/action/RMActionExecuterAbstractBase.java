@@ -250,24 +250,6 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         this.recordService = recordService;
     }
     
-    /**
-     * Register with a single capability
-     * @param capability
-     */
- //   public void setCapability(AbstractCapability capability)
- //   {
- //       capabilities.add(capability);
- //   }
-    
-    /**
-     * Register with several capabilities
-     * @param capabilities
-     */
- //   public void setCapabilities(Collection<AbstractCapability> capabilities)
- //   {
- //       this.capabilities.addAll(capabilities);
- //   }
-    
     public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
     {
         this.recordsManagementAdminService = recordsManagementAdminService;
@@ -296,11 +278,6 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         PropertyCheck.mandatory(this, "recordsManagementService", recordsManagementService);
         PropertyCheck.mandatory(this, "recordsManagementAdminService", recordsManagementAdminService);
         PropertyCheck.mandatory(this, "recordsManagementEventService", recordsManagementEventService);
-        
-    //    for(AbstractCapability capability : capabilities)
-    //    {
-    //        capability.registerAction(this);
-    //    }
     }
     
     /**

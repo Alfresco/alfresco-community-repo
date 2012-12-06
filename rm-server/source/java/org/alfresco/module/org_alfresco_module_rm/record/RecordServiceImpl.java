@@ -25,14 +25,19 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -60,6 +65,9 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
 
     /** Extended security service */
     private ExtendedSecurityService extendedSecurityService;
+    
+    /** Records management service */
+    private RecordsManagementService recordsManagementService;
 
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;
@@ -104,9 +112,20 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
         this.extendedSecurityService = extendedSecurityService;
     }
 
+    /**
+     * @param recordsManagementService  records management service
+     */
+    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    {
+        this.recordsManagementService = recordsManagementService;
+    }
+    
+    /**
+     * Init method
+     */
     public void init()
     {
-
+        // TODO
     }
 
     /**
@@ -156,52 +175,39 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
 
         return nodeService.hasAspect(record, ASPECT_DECLARED_RECORD);
     }
-
+    
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecordFromDocument(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isFiled(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void createRecordFromDocument(NodeRef filePlan, NodeRef document)
+    public boolean isFiled(NodeRef nodeRef)
     {
-        ParameterCheck.mandatory("filePlan", filePlan);
-        ParameterCheck.mandatory("document", document);
-
-        // skip everything if the document is already a record
-        if (nodeService.hasAspect(document, ASPECT_RECORD) == false)
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
+        boolean result = false;
+        
+        if (isRecord(nodeRef) == true)
         {
-            // get the new record container for the file plan
-            NodeRef newRecordContainer = getUnfiledRecordContainer(filePlan);
-            if (newRecordContainer == null) { throw new AlfrescoRuntimeException(
-                    "Unable to create record, because new record container could not be found."); }
-
-            // get the documents primary parent assoc
-            ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(document);
-
-            // move the document into the file plan
-            nodeService.moveNode(document, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-
-            // maintain the original primary location
-            nodeService.addChild(parentAssoc.getParentRef(), document, parentAssoc.getTypeQName(), parentAssoc
-                    .getQName());
-
-            // make the document a record
-            makeRecord(document);
-
-            // get the documents readers
-            Long aclId = nodeService.getNodeAclId(document);
-            Set<String> readers = permissionService.getReaders(aclId);
-
-            // set the readers
-            extendedSecurityService.setExtendedReaders(document, readers);
+            ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(nodeRef);
+            if (childAssocRef != null)
+            {
+                NodeRef parent = childAssocRef.getParentRef();
+                if (parent != null && 
+                    recordsManagementService.isRecordFolder(parent) == true)
+                {
+                    result = true;
+                }
+            }
         }
+        
+        return result;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getUnfiledRecordContainer(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getUnfiledRootContainer(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public NodeRef getUnfiledRecordContainer(NodeRef filePlan)
+    public NodeRef getUnfiledContainer(NodeRef filePlan)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
 
@@ -213,6 +219,93 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
         return assocs.get(0).getChildRef();
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef,
+     *      org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void createRecord(final NodeRef filePlan, final NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("filePlan", filePlan);
+        ParameterCheck.mandatory("document", nodeRef);
+        
+        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == false)
+        {        
+            // first we do a sanity check to ensure that the user has at least write permissions on the document
+            if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
+            {
+                throw new AccessDeniedException("Can not create record from document, because the user " + 
+                                                AuthenticationUtil.getFullyAuthenticatedUser() +
+                                                " does not have Write permissions on the doucment " +
+                                                nodeRef.toString());
+            }
+            
+            // do the work of creating the record as the system user
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() 
+            {
+    
+                @Override
+                public Void doWork() throws Exception
+                {
+                    // get the new record container for the file plan
+                    NodeRef newRecordContainer = getUnfiledContainer(filePlan);
+                    if (newRecordContainer == null) 
+                    { 
+                        throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found."); 
+                    }
+                                        
+                    // get the documents readers
+                    Long aclId = nodeService.getNodeAclId(nodeRef);
+                    Set<String> readers = permissionService.getReaders(aclId);
+    
+                    // get the documents primary parent assoc
+                    ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
+    
+                    // move the document into the file plan
+                    nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
+    
+                    // maintain the original primary location
+                    nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
+    
+                    // make the document a record
+                    makeRecord(nodeRef);
+    
+                    // set the readers
+                    extendedSecurityService.setExtendedReaders(nodeRef, readers);
+                    
+                    return null;
+                }
+            });
+        }
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#fileRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void fileRecord(NodeRef record, NodeRef recordFolder)
+    {
+        // check if this is a record
+        if (isRecord(record) == false)
+        {
+            // TODO .. should we make this a record?
+            throw new UnsupportedOperationException("Currently unable to file something that isn't already a record");
+        }
+        
+        if (isFiled(record) == false)
+        {
+            // TODO .. refactor the existing code to file a record here ... this will include moving the code that
+            //         currently manages the properties of the disposition lifecycle aspect into the disposition service
+            throw new UnsupportedOperationException("Currently unsuported.");
+        }
+        else
+        {
+            // TODO .. figure out how we 'refile' a currently filed record
+            throw new UnsupportedOperationException("Currently unable to file an already filed record.");
+        }
+        
+    }
+    
     /**
      * Helper Methods
      */

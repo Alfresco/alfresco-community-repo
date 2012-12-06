@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.service;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
-import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -42,7 +41,7 @@ import org.alfresco.util.GUID;
  * 
  * @author Roy Wetherall
  */
-public class RecordServiceTestImpl extends BaseRMTestCase
+public class CreateRecordActionTest extends BaseRMTestCase
 {
     protected static final String COLLABORATION_SITE_ID = "collab-site-id";
     
@@ -107,6 +106,8 @@ public class RecordServiceTestImpl extends BaseRMTestCase
         // create a folder and documents
         dmFolder = fileFolderService.create(documentLibrary, "collabFolder", ContentModel.TYPE_FOLDER).getNodeRef();
         dmDocument = fileFolderService.create(dmFolder, "collabDocument.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+        
+        
     }
     
     @Override
@@ -146,27 +147,9 @@ public class RecordServiceTestImpl extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 
-                assertTrue(recordService.isRecord(dmDocument));
-                
-                // 
-                Capability createCapability = capabilityService.getCapability("Create");
-                assertNotNull(createCapability);
-                createCapability.evaluate(dmDocument);
-                
-                
-                
+                assertTrue(recordService.isRecord(dmDocument));                  
             };
         }, 
         dmUserName);  
-        
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-
-                return null;
-            }            
-        }); 
-    }
-        
+    }        
 }

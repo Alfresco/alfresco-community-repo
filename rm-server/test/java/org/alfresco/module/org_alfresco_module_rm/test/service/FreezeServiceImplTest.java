@@ -35,32 +35,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class FreezeServiceImplTest extends BaseRMTestCase
 {
-   /** First Record */
-   private NodeRef recordOne;
-
-   /** Second Record */
-   private NodeRef recordTwo;
-
-   /** Third Record */
-   private NodeRef recordThree;
-
-   /** Fourth Record */
-   private NodeRef recordFour;
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupTestDataImpl()
-    */
    @Override
-   protected void setupTestDataImpl()
-   {
-       super.setupTestDataImpl();
-
-       // create test records
-       recordOne = utils.createRecord(rmFolder, "one.txt");
-       recordTwo = utils.createRecord(rmFolder, "two.txt");
-       recordThree = utils.createRecord(rmFolder, "three.txt");
-       recordFour = utils.createRecord(rmFolder, "four.txt");
-   }
+    protected boolean isRecordTest()
+    {
+        return true;
+    }
 
    /**
     * Test freeze service methods

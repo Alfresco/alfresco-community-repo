@@ -27,8 +27,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -114,48 +112,38 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
         }
         else 
         {
-            // run record creation as system
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);
+            if (filePlan == null)
             {
-                @Override
-                public Void doWork() throws Exception
-                {   
-                    NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);
-                    if (filePlan == null)
-                    {
-                        List<NodeRef> filePlans = recordsManagementService.getFilePlans();
-                        if (filePlans.size() == 1)
-                        {
-                            filePlan = filePlans.get(0);
-                        }
-                        else
-                        {
-                            if (logger.isDebugEnabled() == true)
-                            {
-                                logger.debug("Can not create record, because the default file plan can not be determined.");
-                            }
-                            throw new AlfrescoRuntimeException("Can not create record, because the default file plan can not be determined.");
-                        } 
-                    }
-                    else
-                    {
-                        // verify that the provided file plan is actually a file plan
-                        if (recordsManagementService.isFilePlan(filePlan) == false)
-                        {
-                            if (logger.isDebugEnabled() == true)
-                            {
-                                logger.debug("Can not create record, because the provided file plan node reference is not a file plan.");
-                            }
-                            throw new AlfrescoRuntimeException("Can not create record, because the provided file plan node reference is not a file plan.");
-                        }
-                    }
-            
-                    // create record from existing document
-                    recordService.createRecordFromDocument(filePlan, actionedUponNodeRef);
-                    
-                    return null;
+                List<NodeRef> filePlans = recordsManagementService.getFilePlans();
+                if (filePlans.size() == 1)
+                {
+                    filePlan = filePlans.get(0);
                 }
-            });                                       
+                else
+                {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Can not create record, because the default file plan can not be determined.");
+                    }
+                    throw new AlfrescoRuntimeException("Can not create record, because the default file plan can not be determined.");
+                } 
+            }
+            else
+            {
+                // verify that the provided file plan is actually a file plan
+                if (recordsManagementService.isFilePlan(filePlan) == false)
+                {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("Can not create record, because the provided file plan node reference is not a file plan.");
+                    }
+                    throw new AlfrescoRuntimeException("Can not create record, because the provided file plan node reference is not a file plan.");
+                }
+            }
+    
+            // create record from existing document
+            recordService.createRecord(filePlan, actionedUponNodeRef);
         }
     }
 

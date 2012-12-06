@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.capabilities;
+package org.alfresco.module.org_alfresco_module_rm.test.service;
 
 import java.util.List;
 
@@ -32,8 +32,60 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class CapabilityServiceTest extends BaseRMTestCase
+public class CapabilityServiceImplTest extends BaseRMTestCase
 {
+    public void testGetCapability() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                // FIXME
+                return null;
+            }
+        });
+    }
+
+    public void testGetCapabilities() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                // FIXME
+                return null;
+            }
+        });
+    }
+
+    public void testGetCapabilityAccessState() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                // FIXME
+                return null;
+            }
+        });
+    }
+
+    public void testGetCapabilitiesAccessState() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                // FIXME
+                return null;
+            }
+        });
+    }
+
     public void testGetAddRemoveGroups() throws Exception
     {
         doTestInTransaction(new Test<Void>()

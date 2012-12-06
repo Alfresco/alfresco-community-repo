@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.test;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.module.org_alfresco_module_rm.test.service.CapabilityServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.DataSetServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.DispositionServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedSecurityServiceImplTest;
@@ -37,17 +38,17 @@ import org.alfresco.module.org_alfresco_module_rm.test.service.VitalRecordServic
 
 /**
  * RM test suite
- * 
+ *
  * @author Roy Wetherall
  */
 public class ServicesTestSuite extends TestSuite
 {
     /**
      * Creates the test suite
-     * 
+     *
      * @return  the test suite
      */
-    public static Test suite() 
+    public static Test suite()
     {
         TestSuite suite = new TestSuite();
         suite.addTestSuite(ExtendedSecurityServiceImplTest.class);
@@ -64,6 +65,7 @@ public class ServicesTestSuite extends TestSuite
         suite.addTestSuite(DataSetServiceImplTest.class);
         suite.addTestSuite(FreezeServiceImplTest.class);
         suite.addTestSuite(RecordServiceImplTest.class);
+        suite.addTestSuite(CapabilityServiceImplTest.class);
         return suite;
     }
 }

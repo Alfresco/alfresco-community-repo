@@ -640,22 +640,7 @@ public class WebDAVHelper
     
     public final static String encodeURL(String s, String userAgent)
     {
-        try
-        {
-            if (userAgent != null && (userAgent.startsWith(WebDAV.AGENT_MICROSOFT_DATA_ACCESS_INTERNET_PUBLISHING_PROVIDER_DAV) 
-                    || userAgent.contains(WebDAV.AGENT_INTERNET_EXPLORER)))
-            {
-                return encodeUrlReservedSymbols(s);
-            }
-            else
-            {
-                return URLEncoder.encode(s);
-            }
-        }
-        catch (UnsupportedEncodingException err)
-        {
-            throw new RuntimeException(err);
-        }
+          return URLEncoder.encode(s);
     }
     
     public final static String decodeURL(String s)

@@ -24,11 +24,14 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.Writer;
 import java.net.SocketException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -109,6 +112,12 @@ public class ADMRemoteStore extends BaseRemoteStore
     private SiteService siteService;
     private ContentService contentService;
     private HiddenAspect hiddenAspect;
+    
+    /**
+     * Date format pattern used to parse HTTP date headers in RFC 1123 format.
+     */
+    private static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
     
     
     /**
@@ -249,7 +258,9 @@ public class ADMRemoteStore extends BaseRemoteStore
                     // set mimetype for the content and the character encoding + length for the stream
                     res.setContentType(mimetype);
                     res.setContentEncoding(reader.getEncoding());
-                    res.setHeader("Last-Modified", Long.toString(fileInfo.getModifiedDate().getTime()));
+                    SimpleDateFormat formatter = new SimpleDateFormat(PATTERN_RFC1123, Locale.US);
+                    formatter.setTimeZone(GMT);
+                    res.setHeader("Last-Modified", formatter.format(fileInfo.getModifiedDate()));
                     res.setHeader("Content-Length", Long.toString(reader.getSize()));
                     
                     if (logger.isDebugEnabled())

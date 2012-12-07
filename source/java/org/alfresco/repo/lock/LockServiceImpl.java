@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +32,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
-import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -72,7 +70,6 @@ public class LockServiceImpl implements LockService,
                                         NodeServicePolicies.BeforeDeleteNodePolicy,
                                         NodeServicePolicies.OnMoveNodePolicy,
                                         CopyServicePolicies.OnCopyNodePolicy,
-                                        VersionServicePolicies.BeforeCreateVersionPolicy,
                                         VersionServicePolicies.OnCreateVersionPolicy
 {
     /** Key to the nodes ref's to ignore when checking for locks */
@@ -148,10 +145,10 @@ public class LockServiceImpl implements LockService,
                 new JavaBehaviour(this, "getCopyCallback"));
 
         // Register the onCreateVersion behavior for the version aspect
-        this.policyComponent.bindClassBehaviour(
-                VersionServicePolicies.BeforeCreateVersionPolicy.QNAME,
-                ContentModel.ASPECT_LOCKABLE,
-                new JavaBehaviour(this, "beforeCreateVersion"));
+
+        // BeforeCreateVersion behavior was removed
+        // we should be able to version a node regardless of its lock state, see ALF-16540
+
         this.policyComponent.bindClassBehaviour(
                 VersionServicePolicies.OnCreateVersionPolicy.QNAME,
                 ContentModel.ASPECT_LOCKABLE,
@@ -543,16 +540,6 @@ public class LockServiceImpl implements LockService,
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return DoNothingCopyBehaviourCallback.getInstance();
-    }
-    
-    /**
-     * Ensures that node is not locked.
-     * 
-     * @see #checkForLock(NodeRef)
-     */
-    public void beforeCreateVersion(NodeRef versionableNode)
-    {
-        checkForLock(versionableNode);
     }
 
     /**

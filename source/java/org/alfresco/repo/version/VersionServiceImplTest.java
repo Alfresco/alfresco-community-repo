@@ -2052,6 +2052,36 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         assertEquals(USER_NAME_A, nodeService.getProperty(versioned, ContentModel.PROP_MODIFIER));
     }
 
+    /*
+     * It should be possible to create a version for a locked node, see ALF-16540
+     */
+    public void testVersionLockedNode()
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+                
+                // create versionable node and ensure it has the necessary aspect
+                NodeRef versionableNode = createNewVersionableNode();
+                assertEquals(true, nodeService.hasAspect(versionableNode, ContentModel.ASPECT_VERSIONABLE));
+                
+                // add lockable aspect and write lock the node
+                dbNodeService.addAspect(versionableNode, ContentModel.ASPECT_LOCKABLE, new HashMap<QName, Serializable>());
+                assertEquals(true, nodeService.hasAspect(versionableNode, ContentModel.ASPECT_LOCKABLE));
+                
+                checkOutCheckInService.checkout(versionableNode);
+                
+                // try to create a version
+                createVersion(versionableNode);
+                VersionHistory vh = versionService.getVersionHistory(versionableNode);
+                assertEquals(1, vh.getAllVersions().size());
+                return null;
+            }
+        });
+    }
+
     public static void main(String ... args)
     {
         try

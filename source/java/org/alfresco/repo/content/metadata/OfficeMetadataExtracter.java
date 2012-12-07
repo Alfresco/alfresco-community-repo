@@ -92,6 +92,7 @@ public class OfficeMetadataExtracter extends TikaPoweredMetadataExtracter
       return new OfficeParser();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
          Map<String, Serializable> properties, Map<String,String> headers) 

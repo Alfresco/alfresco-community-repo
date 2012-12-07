@@ -562,6 +562,23 @@ class ScenarioOpenFileInstance implements ScenarioInstance, DependentInstance
                     logger.debug("returning merged high priority executor");
                     return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
                 }
+                
+                
+                if(looser.scenario instanceof ScenarioDeleteOnCloseRenameInstance)
+                {
+                    CompoundCommand l = (CompoundCommand)looser.command; 
+                    ArrayList<Command> commands = new ArrayList<Command>();
+                    ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                    ArrayList<Command> postErrorCommands = new ArrayList<Command>();
+                    commands.addAll(c.getCommands());
+                    postCommitCommands.addAll(c.getPostCommitCommands());
+                    // Merge in the loosing post commit
+                    postCommitCommands.addAll(l.getPostCommitCommands());
+                    postErrorCommands.addAll(c.getPostErrorCommands());
+                    
+                    logger.debug("returning merged high priority executor");
+                    return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
+                }
             }
         }
         // No change

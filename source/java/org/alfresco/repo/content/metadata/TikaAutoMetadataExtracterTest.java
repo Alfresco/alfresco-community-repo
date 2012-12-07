@@ -225,7 +225,8 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
     * Instead, these will be handled by the Auto Tika Parser, and
     *  this test ensures that they are
     */
-   public void testImageVideo() throws Throwable {
+   @SuppressWarnings("deprecation")
+public void testImageVideo() throws Throwable {
       Map<String, Serializable> p;
       
       // Image

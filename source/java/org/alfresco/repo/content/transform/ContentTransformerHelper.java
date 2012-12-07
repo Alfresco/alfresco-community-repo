@@ -38,6 +38,7 @@ public class ContentTransformerHelper
     private MimetypeService mimetypeService;
     private List<ExplictTransformationDetails> explicitTransformations;
     private List<SupportedTransformation> supportedTransformations;
+    private List<SupportedTransformation> unsupportedTransformations;
 
     /**
      * 
@@ -46,6 +47,7 @@ public class ContentTransformerHelper
     {
         setExplicitTransformations(Collections.<ExplictTransformationDetails> emptyList());
         setSupportedTransformations(null);
+        setUnsupportedTransformations(null);
     }
 
     /**
@@ -78,7 +80,7 @@ public class ContentTransformerHelper
 
     /**
      * Restricts the transformations that may be performed even though the transformer
-     * may perform other transformations. An null value applies no additional  restrictions.
+     * may perform other transformations. An null value applies no additional restrictions.
      * Even if a list is specified, the
      * {@link ContentTransformer#isTransformableMimetype(String, String, TransformationOptions)}
      * method will still be called.
@@ -86,6 +88,18 @@ public class ContentTransformerHelper
     public void setSupportedTransformations(List<SupportedTransformation> supportedTransformations)
     {
         this.supportedTransformations = supportedTransformations;
+    }
+
+    /**
+     * Restricts the transformations that may be performed even though the transformer
+     * may claim to perform the transformations. An null value applies no additional restrictions.
+     * Even if a list is specified, the
+     * {@link ContentTransformer#isTransformableMimetype(String, String, TransformationOptions)}
+     * method will still be called.
+     */
+    public void setUnsupportedTransformations(List<SupportedTransformation> unsupportedTransformations)
+    {
+        this.unsupportedTransformations = unsupportedTransformations;
     }
 
     /**
@@ -131,10 +145,10 @@ public class ContentTransformerHelper
 
     public boolean isSupportedTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        boolean result = true;
+        boolean supported = true;
         if (supportedTransformations != null)
         {
-            result = false;
+            supported = false;
             for (SupportedTransformation suportedTransformation : supportedTransformations)
             {
                 String supportedSourceMimetype = suportedTransformation.getSourceMimetype();
@@ -142,11 +156,25 @@ public class ContentTransformerHelper
                 if ((supportedSourceMimetype == null || sourceMimetype.equals(supportedSourceMimetype)) &&
                     (supportedTargetMimetype == null || targetMimetype.equals(supportedTargetMimetype)))
                 {
-                    result = true;
+                    supported = true;
                     break;
                 }
             }
         }
-        return result;
+        if (supported && unsupportedTransformations != null)
+        {
+            for (SupportedTransformation unsuportedTransformation : unsupportedTransformations)
+            {
+                String unsupportedSourceMimetype = unsuportedTransformation.getSourceMimetype();
+                String unsupportedTargetMimetype = unsuportedTransformation.getTargetMimetype();
+                if ((unsupportedSourceMimetype == null || sourceMimetype.equals(unsupportedSourceMimetype)) &&
+                    (unsupportedTargetMimetype == null || targetMimetype.equals(unsupportedTargetMimetype)))
+                {
+                    supported = false;
+                    break;
+                }
+            }
+        }
+        return supported;
     }
 }

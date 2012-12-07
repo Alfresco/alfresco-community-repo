@@ -77,6 +77,7 @@ public class MP3MetadataExtracter extends TikaAudioMetadataExtracter
        return new Mp3Parser();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
          Map<String, Serializable> properties, Map<String,String> headers) 

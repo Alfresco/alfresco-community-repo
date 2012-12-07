@@ -800,9 +800,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private void debugActiveTransformers(String sourceMimetype, String targetMimetype,
             long sourceSize, TransformationOptions transformOptions)
     {
-        // check the file name, but do faster tests first
-        if (sourceSize == 18 &&
-            MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) &&
+        // check the file name
+        if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) &&
             MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) &&
             "debugTransformers.txt".equals(transformerDebug.getFileName(transformOptions, true, 0)))
         {

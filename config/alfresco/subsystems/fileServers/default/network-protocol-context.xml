@@ -140,6 +140,14 @@
                     <property name="timeout"><value>60000</value></property>
                     <property name="ranking"><value>MEDIUM</value></property>
                 </bean>
+                
+                <!--  Mac Mountain Lion Preview -->
+               <bean id="deleteDeleteOnCloseRenameShuffle" class="org.alfresco.filesys.repo.rules.ScenarioDeleteOnCloseRename">
+                    <property name="pattern"><value>.*</value></property>
+                    <property name="timeout"><value>20000</value></property>
+                    <property name="ranking"><value>MEDIUM</value></property>
+                </bean>
+              
                 <!-- Open/Close reference counting -->
                 <bean id="openFileScenario" class="org.alfresco.filesys.repo.rules.ScenarioOpenFile">
                     <property name="pattern"><value>.*</value></property>
@@ -207,7 +215,16 @@
                     <property name="timeout"><value>20000</value></property>
                     <property name="ranking"><value>MEDIUM</value></property>
                     <property name="deleteBackup"><value>true</value></property>
-                </bean>           
+                </bean> 
+                
+                <!--  Mac word 2011 on Mountain Lion -->
+                <bean id="word2011MountainLion" class="org.alfresco.filesys.repo.rules.ScenarioDoubleRenameShuffle">
+                    <property name="pattern"><value>^Word Work File L_.*\.tmp?</value></property>
+                    <property name="timeout"><value>20000</value></property>
+                    <property name="ranking"><value>MEDIUM</value></property>
+                    <property name="deleteBackup"><value>false</value></property>
+                </bean> 
+                          
             </list>
         </property>
        

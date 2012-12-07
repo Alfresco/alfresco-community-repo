@@ -1505,7 +1505,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             // Inhibit versioning for this transaction        
             getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
                     
-            // Check if the file is being marked for deletion, if so then check if the file is locked       
+            // Check if the file is being marked for deletion, if so then check if the file is locked     
+            
+           /* 
+            * Which DeleteOnClose flag has priority?
+            * SetDeleteOnClose is not set or used in this method.   
+            * The NTProtocolHandler sets the deleteOnClose in both
+            * info and the NetworkFile - it's the one in NetworkFile that results in the file being deleted.
+            */ 
             if ( info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
             {
                if(logger.isDebugEnabled())
@@ -1542,6 +1549,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                         throw new DirectoryNotEmptyException( name);
                     }                                                   
                 }
+                
+                
             }
             
             if(info.hasSetFlag(FileInfo.SetAttributes))
@@ -1618,10 +1627,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             // Set the creation and modified date/time
             Map<QName, Serializable> auditableProps = new HashMap<QName, Serializable>(5);
             
-            // Which DeleteOnClose flag has priority?
-            // SetDeleteOnClose is not set or used in this method.   
-            // The NTProtocolHandler sets the deleteOnClose in both
-            // info and the NetworkFile - it's the one in NetworkFile that works.
+
             
             if ( info.hasSetFlag(FileInfo.SetCreationDate) && info.hasCreationDateTime())
             {
@@ -2725,8 +2731,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * Close the file.
      * 
      * @exception java.io.IOException If an error occurs.
+     * @return node ref of deleted file
      */
-    public void closeFile(NodeRef rootNode, String path, NetworkFile file) throws IOException
+    public NodeRef closeFile(NodeRef rootNode, String path, NetworkFile file) throws IOException
     {   
         if ( logger.isDebugEnabled())
         {
@@ -2736,7 +2743,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         if( file instanceof PseudoNetworkFile)
         {
             file.close();
-            return;
+            return null;
         }
         
         /**
@@ -2744,13 +2751,15 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
          */
         if(file.hasDeleteOnClose())
         {
+            NodeRef target = null;
+            
             if(logger.isDebugEnabled())
             {
                 logger.debug("closeFile has delete on close set path:" + path);
             }
             try
             {
-                NodeRef target = getCifsHelper().getNodeRef(rootNode, path);
+                target = getCifsHelper().getNodeRef(rootNode, path);
                 if(target!=null)
                 {
                     nodeService.deleteNode(target);
@@ -2774,7 +2783,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
             }
           
-            return;
+            return target;
         }
         
         // Check for a temp file - which will be a new file or a read/write file
@@ -2890,6 +2899,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     logger.debug("  File " + file.getFullName() + ", version=" + nodeService.getProperty( cFile.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
                 }
             }
+            
+            return null;
         }
         catch (IOException e)
         {

@@ -65,6 +65,7 @@ public class DWGMetadataExtracter extends TikaPoweredMetadataExtracter
         super(SUPPORTED_MIMETYPES);
     }
     
+    @SuppressWarnings("deprecation")
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
          Map<String, Serializable> properties, Map<String,String> headers) 

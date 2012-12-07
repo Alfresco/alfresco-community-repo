@@ -70,8 +70,8 @@ public class OpenDocumentMetadataExtracter extends TikaPoweredMetadataExtracter
     private static final String KEY_INITIAL_CREATOR = "initialCreator";
     private static final String KEY_KEYWORD = "keyword";
     private static final String KEY_LANGUAGE = "language";
-    private static final String KEY_PRINT_DATE = "printDate";
-    private static final String KEY_PRINTED_BY = "printedBy";
+//    private static final String KEY_PRINT_DATE = "printDate";
+//    private static final String KEY_PRINTED_BY = "printedBy";
     
     private static final String CUSTOM_PREFIX = "custom:";
 
@@ -110,6 +110,7 @@ public class OpenDocumentMetadataExtracter extends TikaPoweredMetadataExtracter
        return new OpenDocumentParser();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
          Map<String, Serializable> properties, Map<String, String> headers) 

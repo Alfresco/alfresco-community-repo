@@ -18,7 +18,6 @@
  */
 package org.alfresco.filesys.alfresco;
 
-import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.DiskInterface;

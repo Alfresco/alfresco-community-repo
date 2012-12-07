@@ -20,7 +20,6 @@ package org.alfresco.repo.content.metadata;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;

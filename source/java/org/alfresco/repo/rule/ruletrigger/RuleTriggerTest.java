@@ -199,7 +199,30 @@ public class RuleTriggerTest extends BaseSpringTest
         this.nodeService.createAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_CHILDREN);
         
         // Check to see if the rule type has been triggered
-        assertTrue(ruleType.rulesTriggered);        
+        assertTrue(ruleType.rulesTriggered);
+    }
+    
+    public void testOnCreateOriginalAssociationTrigger()
+    {
+        NodeRef nodeRef = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        NodeRef nodeRef2 = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        TestRuleType ruleType = createTestRuleType(ON_CREATE_ASSOCIATION_TRIGGER);
+        assertFalse(ruleType.rulesTriggered);
+        
+        // Try and trigger the type
+        this.nodeService.createAssociation(nodeRef, nodeRef2, ContentModel.ASSOC_ORIGINAL);
+        
+        // Check to see if the rule type has been triggered
+        assertFalse(ruleType.rulesTriggered);
     }
     
     public void testOnDeleteAssociationTrigger()

@@ -353,11 +353,20 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         // Create the version data object
         Version version = getVersion(newVersionRef);
 
-        // Set the new version label on the 'live' (versioned) node
-        this.nodeService.setProperty(
-                nodeRef,
-                ContentModel.PROP_VERSION_LABEL,
-                version.getVersionLabel());
+        // Disabling behavior to be able to create properties for a locked node, see ALF-16540
+        policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_LOCKABLE);
+        try
+        {
+            // Set the new version label on the 'live' (versioned) node
+            this.nodeService.setProperty(
+                    nodeRef,
+                    ContentModel.PROP_VERSION_LABEL,
+                    version.getVersionLabel());
+        }
+        finally
+        {
+            policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_LOCKABLE);
+        }
 
         // Re-enable the auditable aspect (if we turned it off earlier)
         policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);

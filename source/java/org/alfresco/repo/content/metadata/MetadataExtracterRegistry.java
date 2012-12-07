@@ -173,6 +173,7 @@ public class MetadataExtracterRegistry
         return liveExtractor;
     }
     
+    @SuppressWarnings("deprecation")
     private String getName(MetadataExtracter extractor)
     {
         return extractor == null

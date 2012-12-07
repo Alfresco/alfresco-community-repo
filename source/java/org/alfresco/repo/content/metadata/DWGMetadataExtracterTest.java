@@ -45,6 +45,7 @@ public class DWGMetadataExtracterTest extends AbstractMetadataExtracterTest
     private static final QName TIKA_LAST_AUTHOR_TEST_PROPERTY =
        QName.createQName("TikaLastAuthorTestProp");
 
+    @SuppressWarnings("deprecation")
     @Override
     public void setUp() throws Exception
     {

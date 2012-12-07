@@ -155,6 +155,7 @@ public class TikaAudioMetadataExtracter extends TikaPoweredMetadataExtracter
      * @param props     the properties extracted from the file
      * @return          the description
      */
+    @SuppressWarnings("deprecation")
     private String generateDescription(Metadata metadata)
     {
         StringBuilder result = new StringBuilder();

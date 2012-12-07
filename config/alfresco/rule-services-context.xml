@@ -143,13 +143,24 @@
       </property>
    </bean>
    
-   <bean id="on-create-association-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleAssocRefPolicyRuleTrigger" parent="rule-trigger-base">
+   <bean id="association-trigger-base" abstract="true">
+      <!-- Creation or deletion of these association types will not cause rules to be triggered on their source nodes -->
+      <property name="excludedAssociationTypes">
+         <set>
+            <bean class="org.alfresco.service.namespace.QName" factory-method="createQName">
+               <constructor-arg value="{http://www.alfresco.org/model/content/1.0}original"/>
+            </bean>
+         </set>
+      </property>
+   </bean>
+   
+   <bean id="on-create-association-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleAssocRefPolicyRuleTrigger" parent="association-trigger-base">
       <property name="policyName">
          <value>onCreateAssociation</value>
       </property>
    </bean>
    
-   <bean id="on-delete-association-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleAssocRefPolicyRuleTrigger" parent="rule-trigger-base">
+   <bean id="on-delete-association-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleAssocRefPolicyRuleTrigger" parent="association-trigger-base">
       <property name="policyName">
          <value>onDeleteAssociation</value>
       </property>

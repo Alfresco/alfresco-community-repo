@@ -35,6 +35,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -66,6 +67,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected NodeArchiveService nodeArchiveService;
     protected NodeService nodeService;
     protected PermissionService permissionService;
+    protected CheckOutCheckInService checkOutCheckInService;
     
     /*
      * Data used by tests
@@ -155,6 +157,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.nodeArchiveService = (NodeArchiveService) applicationContext.getBean("nodeArchiveService");
         this.nodeService = (NodeService)applicationContext.getBean("nodeService");
         this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
+        this.checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
         
         setVersionService((VersionService)applicationContext.getBean("versionService"));
         

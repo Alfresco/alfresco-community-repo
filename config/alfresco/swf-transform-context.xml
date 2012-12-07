@@ -31,7 +31,7 @@
         parent="baseComplexContentTransformer" >
       <property name="transformers">
          <list>
-            <ref bean="transformer.OpenOffice" />
+            <ref bean="transformer.OpenOffice.2Pdf" />
             <ref bean="transformer.Pdf2swf" />
          </list>
       </property>

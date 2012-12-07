@@ -242,7 +242,7 @@ public class CommandExecutorImpl implements CommandExecutor
             {
                 logger.debug("close file command");
                 CloseFileCommand c = (CloseFileCommand)command;
-                repositoryDiskInterface.closeFile(c.getRootNodeRef(), c.getPath(), c.getNetworkFile());
+                return repositoryDiskInterface.closeFile(c.getRootNodeRef(), c.getPath(), c.getNetworkFile());
             }
             else if(command instanceof ReduceQuotaCommand)
             {

@@ -149,6 +149,7 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("rawtypes")
     public Iterator getPrefixes(String namespaceURI)
     {
         ParameterCheck.mandatoryString("namespaceURI", namespaceURI);
@@ -341,6 +342,7 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
      * 
      * @see #setMappingProperties(Properties)
      */
+    @SuppressWarnings("rawtypes")
     protected void readXPathMappingProperties(Properties xpathMappingProperties)
     {
         // Get the namespaces

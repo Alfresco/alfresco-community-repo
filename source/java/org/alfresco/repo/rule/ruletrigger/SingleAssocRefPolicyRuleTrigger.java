@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.rule.ruletrigger;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -36,6 +38,7 @@ public class SingleAssocRefPolicyRuleTrigger extends RuleTriggerAbstractBase
     
     private String policyNamespace = NamespaceService.ALFRESCO_URI;
     private String policyName;
+    private Set<QName> excludedAssocTypes = Collections.emptySet();
     
     public void setPolicyNamespace(String policyNamespace)
     {
@@ -45,6 +48,10 @@ public class SingleAssocRefPolicyRuleTrigger extends RuleTriggerAbstractBase
     public void setPolicyName(String policyName)
     {
         this.policyName = policyName;
+    }
+    
+    public void setExcludedAssociationTypes(Set<QName> assocTypes) {
+        this.excludedAssocTypes = assocTypes;
     }
     
     /**
@@ -63,19 +70,23 @@ public class SingleAssocRefPolicyRuleTrigger extends RuleTriggerAbstractBase
     
     public void policyBehaviour(AssociationRef assocRef)
     {
-        NodeRef nodeRef = assocRef.getSourceRef();
-        
-        if (nodeService.exists(nodeRef))
+        final QName assocTypeQName = assocRef.getTypeQName();
+        if ( !excludedAssocTypes.contains(assocTypeQName))
         {
-            List<ChildAssociationRef> parentsAssocRefs = this.nodeService.getParentAssocs(nodeRef);
-            for (ChildAssociationRef parentAssocRef : parentsAssocRefs)
+            NodeRef nodeRef = assocRef.getSourceRef();
+            
+            if (nodeService.exists(nodeRef))
             {
-                triggerRules(parentAssocRef.getParentRef(), nodeRef);
-                if (logger.isDebugEnabled() == true)
+                List<ChildAssociationRef> parentsAssocRefs = this.nodeService.getParentAssocs(nodeRef);
+                for (ChildAssociationRef parentAssocRef : parentsAssocRefs)
                 {
-                    logger.debug(
-                            "OnUpdateAssoc rule triggered (parent); " +
-                            "nodeRef=" + parentAssocRef.getParentRef());
+                    triggerRules(parentAssocRef.getParentRef(), nodeRef);
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug(
+                                "OnUpdateAssoc rule triggered (parent); " +
+                                        "nodeRef=" + parentAssocRef.getParentRef());
+                    }
                 }
             }
         }

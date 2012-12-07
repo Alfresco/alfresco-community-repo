@@ -59,7 +59,7 @@ public class MailMetadataExtracter extends TikaPoweredMetadataExtracter
 
     public static ArrayList<String> SUPPORTED_MIMETYPES = buildSupportedMimetypes( 
           new String[] {MimetypeMap.MIMETYPE_OUTLOOK_MSG},
-          null
+          (Parser[])null
     );
     
     public MailMetadataExtracter()
@@ -74,6 +74,7 @@ public class MailMetadataExtracter extends TikaPoweredMetadataExtracter
        return new OfficeParser();
     }
     
+    @SuppressWarnings("deprecation")
     @Override
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
          Map<String, Serializable> properties, Map<String,String> headers) 

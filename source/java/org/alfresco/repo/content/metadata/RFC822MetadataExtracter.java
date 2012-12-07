@@ -162,6 +162,7 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
                  * Extract values from all header fields, including extension fields "X-"
                  */
                 Set<String> keys = getMapping().keySet();
+                @SuppressWarnings("unchecked")
                 Enumeration<Header> headers = mimeMessage.getAllHeaders();
                 while (headers.hasMoreElements())
                 {

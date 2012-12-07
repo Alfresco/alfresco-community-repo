@@ -92,9 +92,10 @@ public interface RepositoryDiskInterface
      * @param rootNode
      * @param fromPath - the source node
      * @param toPath - the target node
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException
+     * @return node ref of deleted file or null if no file deleted
      */
-    public void closeFile(NodeRef rootNode, String Path, NetworkFile file) throws IOException;
+    public NodeRef closeFile(NodeRef rootNode, String Path, NetworkFile file) throws IOException;
     
     
     /**

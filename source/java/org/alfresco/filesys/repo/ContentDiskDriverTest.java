@@ -5432,6 +5432,354 @@ public class ContentDiskDriverTest extends TestCase
         
     } // testMacDragAndDrop
     
+    
+    /**
+     * Mountain Lion 2011 Word
+     * a) Create new file (Word Work File D2.tmp)  
+     * (Actually in real life its renamed from a temp directory.
+     * c) Existing file rename out of the way.   (Word Work File L_5.tmp)
+     * d) New file rename into place. (MacWord1.docx)
+     * e) Old file deleted
+     */
+     public void testScenarioMountainLionWord2011() throws Exception
+     {  
+         logger.debug("testScenarioMountainLionWord2011");
+         
+         final String FILE_NAME = "MacWord1.docx";
+         final String FILE_OLD_TEMP = "Word Work File L_5.tmp";
+         final String FILE_NEW_TEMP = "Word Work File D_2.tmp";
+         
+         class TestContext
+         {
+             NetworkFile firstFileHandle;
+             String mimetype;
+         };
+         
+         final TestContext testContext = new TestContext();
+         
+         final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testScenarioMountainLionWord2011";
+         
+         ServerConfiguration scfg = new ServerConfiguration("testServer");
+         TestServer testServer = new TestServer("testServer", scfg);
+         final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+         DiskSharedDevice share = getDiskSharedDevice();
+         final TreeConnection testConnection = testServer.getTreeConnection(share);
+         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();        
+
+         /**
+          * Clean up just in case garbage is left from a previous run
+          */
+         RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                 return null;
+             }
+         };
+         
+         try
+         {
+             tran.doInTransaction(deleteGarbageFileCB);
+         }
+         catch (Exception e)
+         {
+             // expect to go here
+         }
+         
+         logger.debug("a) create new file");
+         RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 /**
+                  * Create the test directory we are going to use 
+                  */
+                 FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 driver.createDirectory(testSession, testConnection, createRootDirParams);
+                 driver.createDirectory(testSession, testConnection, createDirParams);
+                 
+                 /**
+                  * Create the file we are going to test
+                  */
+                 FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                 assertNotNull(testContext.firstFileHandle);
+                 
+                 ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest3.doc");
+                 assertNotNull("unable to find test resource filesys/ContentDiskDriverTest3.doc", fileResource);
+                 writeResourceToNetworkFile(fileResource, testContext.firstFileHandle);
+                 driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                 NodeRef file1NodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                 nodeService.addAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+
+                 return null;
+             }
+         };
+         tran.doInTransaction(createFileCB, false, true);
+              
+         /**
+          * b) Save the new file
+          * Write ContentDiskDriverTest3.doc,
+          */
+         logger.debug("b) move new file into place");
+         RetryingTransactionCallback<Void> writeFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);    
+          
+                 ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest3.doc");
+                 assertNotNull("unable to find test resource filesys/ContentDiskDriverTest3.doc", fileResource);
+                 writeResourceToNetworkFile(fileResource, testContext.firstFileHandle);
+                 driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
+                 
+                 
+                 NodeRef file1NodeRef = getNodeForPath(testConnection,  TEST_DIR + "\\" + FILE_NAME);
+                 Map<QName, Serializable> props = nodeService.getProperties(file1NodeRef);
+                 ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+//                 assertNotNull("data is null", data);
+//                 assertEquals("size is wrong", 166912, data.getSize());
+                 testContext.mimetype = data.getMimetype();
+                 
+                 return null;
+             }
+         };
+         tran.doInTransaction(writeFileCB, false, true);
+         
+         /**
+          * c) rename the old file
+          */
+         logger.debug("c) rename old file");
+         RetryingTransactionCallback<Void> renameOldFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + FILE_OLD_TEMP);
+                 return null;
+             }
+         };
+         tran.doInTransaction(renameOldFileCB, false, true);
+            
+         /**
+          * d) Move the new file into place, stuff should get shuffled
+          */
+         logger.debug("d) move new file into place");
+         RetryingTransactionCallback<Void> moveNewFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NAME); 
+                 return null;
+             }
+         };
+         
+         tran.doInTransaction(moveNewFileCB, false, true);
+         
+         /**
+          * d) Delete the old file
+          */
+         logger.debug("d) delete the old file");
+         RetryingTransactionCallback<Void> deleteOldFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_OLD_TEMP);
+                 return null;
+             }
+         };
+         
+         tran.doInTransaction(deleteOldFileCB, false, true);
+         
+         logger.debug("e) validate results");
+         
+         /**
+          * Now validate everything is correct
+          */
+         RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                
+                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+                
+                ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+                //assertNotNull("data is null", data);
+                //assertEquals("size is wrong", 123904, data.getSize());
+                
+                NodeRef file1NodeRef = getNodeForPath(testConnection,  TEST_DIR + "\\" + FILE_NAME); 
+                assertTrue("file has lost versionable aspect", nodeService.hasAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE));
+
+                assertEquals("mimeType is wrong", testContext.mimetype, data.getMimetype());
+                
+            
+                return null;
+             }
+         };
+         
+         tran.doInTransaction(validateCB, true, true);
+     }  // Test Word 2011 Mountain Lion
+
+     /**
+      * This test tries to simulate the cifs shuffling that is done 
+      * from Save from Mac Mountain Lion by Preview
+      * 
+      * a) Temp file created in temporary folder (Crysanthemum.jpg)
+      * b) Target file deleted by open / delete on close flag / close
+      * c) Temp file moved to target file.
+      */
+     public void testScenarioMacMountainLionPreview() throws Exception
+     {
+         logger.debug("testScenarioMountainLionPreview");
+         final String FILE_NAME = "Crysanthemeum.jpg";
+         final String TEMP_FILE_NAME = "Crysanthemeum.jpg";
+         
+         final String UPDATED_TEXT = "Mac Lion Preview Updated Content";
+         
+         class TestContext
+         {
+             NetworkFile firstFileHandle;
+             NetworkFile tempFileHandle;            
+             NodeRef testNodeRef;   // node ref Crysanthemenum.jpg
+         };
+         
+         final TestContext testContext = new TestContext();
+         
+         final String TEST_ROOT_DIR = "\\ContentDiskDriverTest";
+         final String TEST_DIR = "\\ContentDiskDriverTest\\testScenarioMountainLionPreview";
+         final String TEST_TEMP_DIR = "\\ContentDiskDriverTest\\testScenarioMountainLionPreview\\.Temporary Items";
+         
+         ServerConfiguration scfg = new ServerConfiguration("testServer");
+         TestServer testServer = new TestServer("testServer", scfg);
+         final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+         DiskSharedDevice share = getDiskSharedDevice();
+         final TreeConnection testConnection = testServer.getTreeConnection(share);
+         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+         
+         /**
+          * Create a file in the test directory
+          */           
+         RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 /**
+                  * Create the test directory we are going to use 
+                  */
+                 FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 FileOpenParams createTempDirParams = new FileOpenParams(TEST_TEMP_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 driver.createDirectory(testSession, testConnection, createRootDirParams);
+                 driver.createDirectory(testSession, testConnection, createDirParams);
+                 driver.createDirectory(testSession, testConnection, createTempDirParams);
+                 
+                 /**
+                  * Create the file we are going to use
+                  */
+                 FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                 assertNotNull(testContext.firstFileHandle);
+                 
+                 String testContent = "Mac Mountain Lion Text";
+                 byte[] testContentBytes = testContent.getBytes();
+                  
+                 driver.writeFile(testSession, testConnection, testContext.firstFileHandle, testContentBytes, 0, testContentBytes.length, 0);
+                 driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                 
+                 /**
+                  * Create the temp file we are going to use
+                  */
+                 FileOpenParams createTempFileParams = new FileOpenParams(TEST_TEMP_DIR + "\\" + TEMP_FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 testContext.tempFileHandle = driver.createFile(testSession, testConnection, createTempFileParams);
+                 assertNotNull(testContext.tempFileHandle);
+                                
+                 testContent = UPDATED_TEXT;
+                 testContentBytes = testContent.getBytes();
+                 driver.writeFile(testSession, testConnection, testContext.tempFileHandle, testContentBytes, 0, testContentBytes.length, 0);
+                 driver.closeFile(testSession, testConnection, testContext.tempFileHandle); 
+                                  
+                 /**
+                  * Also add versionable to target file
+                  */
+                 testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                 nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                 
+                 return null;
+             }
+         };
+         tran.doInTransaction(createFileCB, false, true);
+             
+         /**
+          * b) Delete the target file by opening it and set the delete on close bit
+          */
+         RetryingTransactionCallback<Void> deleteTargetFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 FileOpenParams openFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 testContext.tempFileHandle = driver.openFile(testSession, testConnection, openFileParams);
+                 FileInfo info = new FileInfo();
+                 info.setFileInformationFlags(FileInfo.SetDeleteOnClose);
+                 info.setDeleteOnClose(true);
+                 testContext.tempFileHandle.setDeleteOnClose(true);
+                 
+                 driver.setFileInformation(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, info);
+                 
+                 assertNotNull(testContext.tempFileHandle);
+                 logger.debug("this close should result in a file being deleted");
+                 driver.closeFile(testSession, testConnection,  testContext.tempFileHandle);
+                 return null;
+             }
+         };
+         tran.doInTransaction(deleteTargetFileCB, false, true);
+         
+         /**
+          * c) Move the temp file into target directory
+          */
+         RetryingTransactionCallback<Void> moveTempFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.renameFile(testSession, testConnection, TEST_TEMP_DIR + "\\" + TEMP_FILE_NAME, TEST_DIR + "\\" + FILE_NAME); 
+                 return null;
+             }
+         };
+         tran.doInTransaction(moveTempFileCB, false, true);
+         
+         /**
+          * Validate results.
+          */
+         RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+
+                 NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                 assertTrue("node is not versionable", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                 assertEquals("shuffledNode ref is different", shuffledNodeRef, testContext.testNodeRef);
+                 return null;
+             }
+         };
+         
+         tran.doInTransaction(validateCB, false, true);
+
+     } // testScenarioMountainLionPreview
+
+    
     /**
      * Test server
      */

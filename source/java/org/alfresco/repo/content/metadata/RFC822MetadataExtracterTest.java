@@ -91,6 +91,7 @@ public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
      * Check that this was sprung-in - if not, then
      *  other tests will fail!
      */
+    @SuppressWarnings("unchecked")
     public void testHasDateFormats() throws Exception {
        Set<DateFormat> supportedDateFormats;
        

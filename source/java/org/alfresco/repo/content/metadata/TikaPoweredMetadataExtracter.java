@@ -269,6 +269,7 @@ public abstract class TikaPoweredMetadataExtracter
        }
     }
     
+    @SuppressWarnings("deprecation")
     @Override
     protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
     {

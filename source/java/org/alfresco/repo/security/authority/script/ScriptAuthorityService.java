@@ -48,7 +48,10 @@ import org.alfresco.util.ScriptPagingDetails;
  * @author Mark Rogers
  */
 public class ScriptAuthorityService extends BaseScopableProcessorExtension
-{    
+{
+    /** RegEx to split a String on the first space. */
+    public static final String ON_FIRST_SPACE = " +";
+    
     /** The group/authority service */
     private AuthorityService authorityService;
     /** The person service */
@@ -468,6 +471,15 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
        filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, nameFilter));
        filter.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, nameFilter));
        
+       // In order to support queries for "Alan Smithee", we'll parse these tokens
+       // and add them in to the query.
+       final Pair<String, String> tokenisedName = tokeniseName(nameFilter);
+       if (tokenisedName != null)
+       {
+           filter.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, tokenisedName.getFirst()));
+           filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, tokenisedName.getSecond()));
+       }
+       
        // Build the sorting. The user controls the primary sort, we supply
        // additional ones automatically
        List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName,Boolean>>();
@@ -505,5 +517,40 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
        }
        
        return users;
+    }
+    
+    /**
+     * This method will tokenise a name string in order to extract first name, last name - if possible.
+     * The split is simple - it's made on the first whitespace within the trimmed nameFilter String. So
+     * <p/>
+     * "Luke Skywalker" becomes ["Luke", "Skywalker"].
+     * <p/>
+     * "Jar Jar Binks" becomes ["Jar", "Jar Binks"].
+     * <p/>
+     * "C-3PO" becomes null.
+     * 
+     * @param nameFilter
+     * @return A Pair<firstName, lastName> if the String is valid, else <tt>null</tt>.
+     */
+    private Pair<String, String> tokeniseName(String nameFilter)
+    {
+        Pair<String, String> result = null;
+        
+        if (nameFilter != null)
+        {
+            final String trimmedNameFilter = nameFilter.trim();
+            
+            // We can only have a first name and a last name if we have at least 3 characters e.g. "A B".
+            if (trimmedNameFilter.length() > 3)
+            {
+                final String[] tokens = trimmedNameFilter.split(ON_FIRST_SPACE, 2);
+                if (tokens.length == 2)
+                {
+                    result = new Pair<String, String>(tokens[0], tokens[1]);
+                }
+            }
+        }
+        
+        return result;
     }
 }

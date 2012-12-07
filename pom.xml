@@ -529,7 +529,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>${dependency.poi.version}-alfresco-patched</version>
+            <version>3.9-beta1-20121129-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>

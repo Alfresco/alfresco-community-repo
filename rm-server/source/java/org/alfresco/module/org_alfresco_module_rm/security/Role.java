@@ -29,9 +29,16 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
  */
 public class Role
 {
+    /** Role name */
     private String name;
+    
+    /** Role label */
     private String displayLabel;
+    
+    /** Role capabilities */
     private Set<Capability> capabilities;
+    
+    /** Role group name */
     private String roleGroupName;
 
     /**

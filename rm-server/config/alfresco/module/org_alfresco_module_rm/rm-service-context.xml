@@ -482,6 +482,7 @@
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.updateRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deleteRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getAllRolesContainerGroup=RM_ALLOW
     			org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.*=RM_DENY
                 ]]>
             </value>

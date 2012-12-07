@@ -31,5 +31,19 @@
        <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
        <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
+   
+   <bean id="org_alfresco_module_rm_RMv21InPlacePatch" 
+         parent="module.baseComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21InPlacePatch">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_RMv21InPlacePatch"/>
+       <property name="description" value="Patches the existing RM data for the RM v2.1 InPlace features."/>
+       <property name="sinceVersion" value="2.1"/>
+       <property name="appliesFromVersion" value="2.1"/>
+       <property name="nodeService" ref="NodeService"/>
+       <property name="permissionService" ref="PermissionService" />
+       <property name="recordsManagementService" ref="RecordsManagementService"/>
+       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
+   </bean>
 
 </beans>

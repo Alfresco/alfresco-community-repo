@@ -94,7 +94,7 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
 
     /** Unfiled record container name */
-    private static final String NAME_UNFILED_CONTAINER = "Unfiled Records";
+    public static final String NAME_UNFILED_CONTAINER = "Unfiled Records";
 
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementSecurityServiceImpl.class);
@@ -786,6 +786,15 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 return new Role(role, roleDisplayLabel, capabilities, roleGroup);
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getAllRolesContainerGroup(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public String getAllRolesContainerGroup(NodeRef filePlan)
+    {
+        return authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(filePlan));
     }
 
     /**

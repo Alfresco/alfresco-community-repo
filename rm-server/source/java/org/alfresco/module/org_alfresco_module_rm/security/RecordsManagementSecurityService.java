@@ -40,6 +40,15 @@ public interface RecordsManagementSecurityService
     void bootstrapDefaultRoles(NodeRef rmRootNode);
     
     /**
+     * Returns the name of the container group for all roles of a specified file
+     * plan.
+     * 
+     * @param filePlan  file plan node reference
+     * @return String   group name
+     */
+    String getAllRolesContainerGroup(NodeRef filePlan);
+    
+    /**
      * Get all the available roles for the given records management root node
      * 
      * @param rmRootNode

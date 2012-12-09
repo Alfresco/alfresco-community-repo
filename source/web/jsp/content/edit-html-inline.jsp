@@ -45,10 +45,10 @@ tinyMCE.init({
    theme_advanced_toolbar_location : "top",
    theme_advanced_toolbar_align : "left",
    theme_advanced_buttons1_add : "fontselect,fontsizeselect",
-   theme_advanced_buttons2_add : "separator,forecolor,backcolor",
+   theme_advanced_buttons2_add : "separator,forecolor",
    theme_advanced_buttons3_add_before : "tablecontrols,separator",
    theme_advanced_disable: "styleselect",
-   extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
+   extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style],p[align]"
 });
 
 function saveContent(id, content)

@@ -448,10 +448,11 @@ public class GroupsDialog extends BaseDialogBean
          }
          else
          {
-            if (search != null && search.startsWith("*"))
+            boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
+            if ((search != null && search.startsWith("*")) || immediate)
             {
-               // if the search term starts with a wildcard use Lucene based search to find groups (results will be inconsistent)
-               boolean immediate = (this.filterMode.equals(FILTER_CHILDREN));
+               // if the search term starts with a wildcard or is for immediate children only then use Solr/Lucene based search query to find groups (note:
+               // results will be eventually consistent if using Solr, rather than embedded Lucene)
                Set<String> results = this.authService.findAuthorities(AuthorityType.GROUP, this.group, immediate, search, AuthorityService.ZONE_APP_DEFAULT);
                authorities = new ArrayList<String>(results);
             }

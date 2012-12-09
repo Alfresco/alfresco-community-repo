@@ -49,6 +49,8 @@ public class SolrJSONResultSet implements ResultSet
     
     private ArrayList<Pair<Long, Float>> page;
     
+    private ArrayList<NodeRef> refs;
+    
     private ResultSetMetaData rsmd;
     
     private Long status;
@@ -89,18 +91,23 @@ public class SolrJSONResultSet implements ResultSet
             
             int numDocs = docs.length();
             page = new ArrayList<Pair<Long, Float>>(numDocs);
+            refs = new ArrayList<NodeRef>(numDocs);
             for(int i = 0; i < numDocs; i++)
             {
                 JSONObject doc = docs.getJSONObject(i);
                 JSONArray dbids = doc.getJSONArray("DBID");
                 Long dbid = dbids.getLong(0);
                 Float score = Float.valueOf(doc.getString("score"));
-                page.add(new Pair<Long, Float>(dbid, score));
                 
-                for(Iterator it = doc.keys(); it.hasNext(); /* */)
+                NodeRef nodeRef = nodeService.getNodeRef(dbid);
+                
+                if(nodeRef != null)
                 {
-                    String key = (String)it.next();
+                    page.add(new Pair<Long, Float>(dbid, score));
+                    refs.add(nodeRef);
                 }
+                
+                
             }
             
             if(json.has("facet_counts"))
@@ -212,16 +219,7 @@ public class SolrJSONResultSet implements ResultSet
     @Override
     public NodeRef getNodeRef(int n)
     {
-        // TODO: lost nodes?
-        NodeRef nodeRef = nodeService.getNodeRef(page.get(n).getFirst());
-        if(nodeRef != null)
-        {
-            return nodeRef;
-        }
-        else
-        {
-            return new NodeRef(new StoreRef("missing", "missing"), "missing");
-        }
+        return refs.get(n);
     }
 
     /*
@@ -231,12 +229,7 @@ public class SolrJSONResultSet implements ResultSet
     @Override
     public List<NodeRef> getNodeRefs()
     {
-        ArrayList<NodeRef> refs = new ArrayList<NodeRef>(page.size());
-        for(int i = 0; i < page.size(); i++ )
-        {
-            refs.add( getNodeRef(i));
-        }
-        return refs;
+        return Collections.unmodifiableList(refs);
     }
 
     /*

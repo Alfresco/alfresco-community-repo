@@ -96,6 +96,8 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
     private static final int MIGRATE_BATCH_THREADS = 4;
     private static final int MIGRATE_BATCH_SIZE = 250;
     
+    private static final String SEPARATOR = "@";
+    
     private Map<String, NodeRef> siteReferenceCache = null;
     private SortedMap<String, AVMNodeDescriptor> paths;
     private SortedMap<String, AVMNodeDescriptor> retryPaths;
@@ -198,11 +200,14 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
     {
         this.retryPaths = new TreeMap<String, AVMNodeDescriptor>();
         
+        // get user names that will be used to RunAs and set permissions later
+        final String systemUser = AuthenticationUtil.getSystemUserName();
+        
         // firstly retrieve all AVM paths and descriptors that we need to process
         // execute in a single transaction to retrieve the stateless object list
-        RetryingTransactionCallback<Void> work = new RetryingTransactionCallback<Void>()
+        RetryingTransactionCallback<String> work = new RetryingTransactionCallback<String>()
         {
-            public Void execute() throws Exception
+            public String execute() throws Exception
             {
                 long start = System.currentTimeMillis();
                 paths = retrieveAVMPaths();
@@ -220,20 +225,16 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                 folderPath.add("user");
                 FileFolderUtil.makeFolders(fileFolderService, surfConfigRef, folderPath, ContentModel.TYPE_FOLDER);
                 
-                return null;
+                // return the tenant system user name while in the txn
+                return tenantAdminService.getDomainUser(systemUser, tenantAdminService.getCurrentUserDomain());
             }
         };
-        this.transactionHelper.doInTransaction(work, false, true);
+        final String tenantSystemUser = this.transactionHelper.doInTransaction(work, false, true);
         
         try
         {
             // init the siteid to surf-config noderef cache
             this.siteReferenceCache = new ConcurrentHashMap<String, NodeRef>(16384);
-            
-            // get user names that will be used to RunAs and set permissions later
-            String systemUser = AuthenticationUtil.getSystemUserName();
-            final String tenantSystemUser = this.tenantAdminService.getDomainUser(
-                    systemUser, this.tenantAdminService.getCurrentUserDomain());
             
             // build a set of unique site names
             final Set<String> sites = new HashSet<String>(paths.size());
@@ -421,7 +422,7 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
             if (this.retryPaths.size() != 0)
             {
                 logger.info("Retrying " + this.retryPaths.size() + " paths...");
-                work = new RetryingTransactionCallback<Void>()
+                RetryingTransactionCallback<Void> retrywork = new RetryingTransactionCallback<Void>()
                 {
                     public Void execute() throws Exception
                     {
@@ -432,7 +433,7 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
                         return null;
                     }
                 };
-                this.transactionHelper.doInTransaction(work, false, true);
+                this.transactionHelper.doInTransaction(retrywork, false, true);
             }
             
             logger.info("Migrated: " + this.paths.size() + " AVM nodes to DM in " + (System.currentTimeMillis()-start) + "ms");
@@ -650,7 +651,16 @@ public class AVMToADMRemoteStorePatch extends AbstractPatch
         
         SortedMap<String, AVMNodeDescriptor> paths = new TreeMap<String, AVMNodeDescriptor>();
         
-        String avmPath = this.avmStore + ":" + this.avmRootPath;
+        String avmPath;
+        if (this.tenantAdminService.getCurrentUserDomain().isEmpty())
+        {
+            avmPath = this.avmStore + ":" + this.avmRootPath;
+        }
+        else
+        {
+            avmPath = SEPARATOR + this.tenantAdminService.getCurrentUserDomain() + SEPARATOR + this.avmStore + ":" + this.avmRootPath;
+        }
+        
         AVMNodeDescriptor node = this.avmService.lookup(-1, avmPath);
         if (node != null)
         {

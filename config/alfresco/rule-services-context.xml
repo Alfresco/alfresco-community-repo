@@ -143,7 +143,7 @@
       </property>
    </bean>
    
-   <bean id="association-trigger-base" abstract="true">
+   <bean id="association-trigger-base" abstract="true" parent="rule-trigger-base">
       <!-- Creation or deletion of these association types will not cause rules to be triggered on their source nodes -->
       <property name="excludedAssociationTypes">
          <set>

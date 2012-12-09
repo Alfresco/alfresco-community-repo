@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -50,6 +52,8 @@ import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -68,6 +72,8 @@ import org.springframework.context.ApplicationContext;
  */
 public class MiscellaneousRulesTest
 {
+    private static final Log log = LogFactory.getLog(MiscellaneousRulesTest.class);
+    
     // Static JUnit Rules
     public static ApplicationContextInit APP_CTXT_INIT = new ApplicationContextInit();
     public static AlfrescoPerson         TEST_USER     = new AlfrescoPerson(APP_CTXT_INIT);
@@ -300,6 +306,76 @@ public class MiscellaneousRulesTest
             public Void execute() throws Throwable
             {
                 assertFalse("Rule executed when it shouldn't have.", NODE_SERVICE.hasAspect(copyNode, exifAspectQName));
+                
+                return null;
+            }
+        });
+    }
+    
+    @Test public void alf13192_rulesFromFirstFolderMoveToSecondWhenDeleteFirstFolder() throws Exception
+    {
+        final NodeRef testSiteDocLib = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                return SITE_SERVICE.getContainer(testSite.getShortName(), SiteService.DOCUMENT_LIBRARY);
+            }
+        });
+        assertNotNull("Null doclib", testSiteDocLib);
+        
+        final NodeRef folder1 = testNodes.createFolder(testSiteDocLib, "folder 1", TEST_USER.getUsername());
+        final NodeRef folder2 = testNodes.createFolder(testSiteDocLib, "folder 2", TEST_USER.getUsername());
+        
+        // Put a rule on folder1.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Clashes with the JUnit annotation @Rule
+                org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();
+                rule.setRuleType(RuleType.OUTBOUND);
+                rule.applyToChildren(false);
+                rule.setRuleDisabled(false);
+                rule.setTitle("Copy to folder2");
+                rule.setExecuteAsynchronously(false);
+                
+                Map<String, Serializable> params = new HashMap<String, Serializable>();
+                params.put(CopyActionExecuter.PARAM_DESTINATION_FOLDER, folder2);
+                Action copyAction = ACTION_SERVICE.createAction("copy", params);
+                rule.setAction(copyAction);
+                
+                RULE_SERVICE.saveRule(folder1, rule);
+                
+                // While we're here, let's log some information about the rules.
+                List<ChildAssociationRef> ruleFolders = NODE_SERVICE.getChildAssocs(folder1, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
+                assertEquals(1, ruleFolders.size());
+                log.debug("Rule SystemFolder noderef is " + ruleFolders.get(0).getChildRef());
+                
+                return null;
+            }
+        });
+        
+        // Now delete folder1.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                log.debug("About to delete the ruled folder: " + folder1);
+                
+                NODE_SERVICE.deleteNode(folder1);
+                
+                return null;
+            }
+        });
+        
+        
+        // folder2 should have no rules-related elements
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertFalse(RULE_SERVICE.hasRules(folder2));
+                assertFalse(NODE_SERVICE.hasAspect(folder2, RuleModel.ASPECT_RULES));
                 
                 return null;
             }

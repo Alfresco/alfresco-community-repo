@@ -1509,5 +1509,32 @@
     </bean>
 	
 	<bean id="publicServiceAccessService" class="org.alfresco.repo.security.permissions.impl.PublicServiceAccessServiceImpl"/>
-      
+   
+    <!-- Tenant Admin Service -->
+    <bean id="TenantAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.tenant.TenantAdminService</value>
+        </property>
+        <property name="target">
+            <ref bean="tenantAdminService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="TenantAdminService_transaction"/>
+                <idref local="exceptionTranslator"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="TenantAdminService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+   
 </beans>

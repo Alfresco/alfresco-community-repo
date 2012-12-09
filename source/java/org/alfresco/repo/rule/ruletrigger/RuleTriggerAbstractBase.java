@@ -53,6 +53,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
         IGNORE_TYPES.add(ContentModel.TYPE_THUMBNAIL);
         // Workaround to prevent rules running on cm:rating nodes (which happened for 'liked' folders ALF-8308 & ALF-8382)
         IGNORE_TYPES.add(ContentModel.TYPE_RATING);
+        IGNORE_TYPES.add(ContentModel.TYPE_SYSTEM_FOLDER);
 
         IGNORE_ASPECTS = new HashSet<QName>(13);
         IGNORE_ASPECTS.add(ContentModel.ASPECT_TEMPORARY);

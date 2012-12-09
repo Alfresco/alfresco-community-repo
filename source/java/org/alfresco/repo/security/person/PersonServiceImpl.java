@@ -73,6 +73,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -1282,11 +1283,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         final List<PersonInfo> personInfos = new ArrayList<PersonInfo>(nodeRefs.size());
         for (NodeRef nodeRef : nodeRefs)
         {
-            Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-            personInfos.add(new PersonInfo(nodeRef, 
-                                           (String)props.get(ContentModel.PROP_USERNAME), 
-                                           (String)props.get(ContentModel.PROP_FIRSTNAME),
-                                           (String)props.get(ContentModel.PROP_LASTNAME)));
+            if (nodeService.exists(nodeRef))
+            {
+                Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+                personInfos.add(new PersonInfo(nodeRef, 
+                                               (String)props.get(ContentModel.PROP_USERNAME), 
+                                               (String)props.get(ContentModel.PROP_FIRSTNAME),
+                                               (String)props.get(ContentModel.PROP_LASTNAME)));
+            }
         }
         
         return new PagingResults<PersonInfo>()

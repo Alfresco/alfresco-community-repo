@@ -51,7 +51,7 @@
         <property name="searchService" ref="searchService" />
         <property name="nodeService" ref="nodeService"/>
         <property name="authenticationContext" ref="authenticationContext" />
-        <property name="tenantAdminService" ref="tenantAdminService" />
+        <property name="tenantAdminService" ref="TenantAdminService" />
     </bean>
     
     <!-- Example patches -->
@@ -2395,6 +2395,7 @@
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.fixNameCrcValues-2" />
+                <ref bean="patch.migrateTenantsFromAttrsToTable" />
             </list>
         </property>
         <property name="qnameDAO">

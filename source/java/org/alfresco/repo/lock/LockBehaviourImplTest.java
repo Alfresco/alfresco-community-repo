@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
@@ -257,10 +258,10 @@ public class LockBehaviourImplTest extends BaseSpringTest
         try
         {
             this.versionService.createVersion(this.nodeRef, new HashMap<String, Serializable>());
-            fail("Should have failed since this node has been locked with a read only lock.");
         }
         catch (NodeLockedException exception)
         {
+            fail("Should have passed, as we should be able to create a version. See ALF-16540");
         }
         this.lockService.unlock(this.nodeRef);
     }
@@ -282,8 +283,9 @@ public class LockBehaviourImplTest extends BaseSpringTest
             this.versionService.createVersion(this.nodeRef, new HashMap<String, Serializable>());
             fail("Should have failed since this node has been locked by another user with a write lock.");
         }
-        catch (NodeLockedException exception)
+        catch (AccessDeniedException exception)
         {
+            // Exception occurs when the properties are updated for a node
         }
     }
     

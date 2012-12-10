@@ -426,6 +426,7 @@
         <property name="policyComponent" ref="policyComponent"/>
         <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="modelSecurityService" ref="modelSecurityService" />
+        <property name="recordService" ref="RecordService" />
     </bean>
 
     <bean id="RecordsManagementSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">

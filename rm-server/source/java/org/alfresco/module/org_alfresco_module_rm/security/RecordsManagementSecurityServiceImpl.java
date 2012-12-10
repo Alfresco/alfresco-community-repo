@@ -37,6 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -86,6 +87,9 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
 
     /** Model security service */
     private ModelSecurityService modelSecurityService;
+    
+    /** Record service */
+    private RecordService recordService;
 
     /** Node service */
     private NodeService nodeService;
@@ -147,6 +151,16 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     public void setRecordsManagementService(RecordsManagementService recordsManagementService)
     {
         this.recordsManagementService = recordsManagementService;
+    }
+    
+    /**
+     * Set record service
+     * 
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
     }
 
     /**
@@ -239,22 +253,27 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
      */
     private NodeRef createUnfiledContainer(NodeRef rmRootNode, String allRoles)
     {
-        // create the properties map
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-        properties.put(ContentModel.PROP_NAME, NAME_UNFILED_CONTAINER);
-
-        // create the unfiled container
-        NodeRef container = nodeService.createNode(
-                        rmRootNode,
-                        ASSOC_UNFILED_RECORDS,
-                        QName.createQName(RM_URI, NAME_UNFILED_CONTAINER),
-                        TYPE_UNFILED_RECORD_CONTAINER,
-                        properties).getChildRef();
-
-        // set inheritance to false
-        permissionService.setInheritParentPermissions(container, false);
-        permissionService.setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-        permissionService.setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+        NodeRef container = recordService.getUnfiledContainer(rmRootNode);
+        
+        if (container == null)
+        {
+            // create the properties map
+            Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+            properties.put(ContentModel.PROP_NAME, NAME_UNFILED_CONTAINER);
+    
+            // create the unfiled container
+            container = nodeService.createNode(
+                            rmRootNode,
+                            ASSOC_UNFILED_RECORDS,
+                            QName.createQName(RM_URI, NAME_UNFILED_CONTAINER),
+                            TYPE_UNFILED_RECORD_CONTAINER,
+                            properties).getChildRef();
+    
+            // set inheritance to false
+            permissionService.setInheritParentPermissions(container, false);
+            permissionService.setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
+            permissionService.setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+        }
 
         return container;
     }

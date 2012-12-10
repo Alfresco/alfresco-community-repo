@@ -210,13 +210,27 @@ public class RecordServiceImpl implements RecordService, RecordsManagementModel
     public NodeRef getUnfiledContainer(NodeRef filePlan)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
+        
+        if (recordsManagementService.isFilePlan(filePlan) == false)
+        {
+            throw new AlfrescoRuntimeException("Unable to get the unfiled container, because passed node is not a file plan.");
+        }
 
+        NodeRef result = null;
+        
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_UNFILED_RECORDS,
                 RegexQNamePattern.MATCH_ALL);
-        if (assocs.size() != 1) { throw new AlfrescoRuntimeException(
-                "Error getting the unfiled container, because the container cannot be indentified."); }
-
-        return assocs.get(0).getChildRef();
+        if (assocs.size() > 1) 
+        { 
+            throw new AlfrescoRuntimeException(
+                "Unable to get the unfiled container, because the container cannot be indentified."); 
+        }
+        else if (assocs.size() == 1 )
+        {    
+            result = assocs.get(0).getChildRef();
+        }
+        
+        return result;
     }
 
     /**

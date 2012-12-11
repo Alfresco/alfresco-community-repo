@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-parent</artifactId>
-        <version>4.2.c-SNAPSHOT</version>
+        <version>4.2.d-SNAPSHOT</version>
         <relativePath>../../pom-experimental.xml</relativePath>
     </parent>
     <artifactId>alfresco</artifactId>

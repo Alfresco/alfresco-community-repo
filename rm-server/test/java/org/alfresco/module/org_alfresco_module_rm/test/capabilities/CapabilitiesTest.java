@@ -679,7 +679,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.DENIED);
+                                AccessStatus.UNDETERMINED);
                         check(access, CLOSE_FOLDERS, AccessStatus.DENIED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -689,7 +689,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_EVENTS,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_METADATA,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,
@@ -2001,7 +2001,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
                         check(access, APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, ATTACH_RULES_TO_METADATA_PROPERTIES,
                                 AccessStatus.ALLOWED);
                         check(access, AUTHORIZE_ALL_TRANSFERS,
@@ -2130,7 +2130,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
                         check(access, APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, ATTACH_RULES_TO_METADATA_PROPERTIES,
                                 AccessStatus.ALLOWED);
                         check(access, AUTHORIZE_ALL_TRANSFERS,
@@ -2253,7 +2253,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
                         check(access, APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, ATTACH_RULES_TO_METADATA_PROPERTIES,
                                 AccessStatus.ALLOWED);
                         check(access, AUTHORIZE_ALL_TRANSFERS,
@@ -2374,7 +2374,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
                         check(access, APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, ATTACH_RULES_TO_METADATA_PROPERTIES,
                                 AccessStatus.ALLOWED);
                         check(access, AUTHORIZE_ALL_TRANSFERS,
@@ -2850,7 +2850,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
                         check(access, APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, ATTACH_RULES_TO_METADATA_PROPERTIES,
                                 AccessStatus.ALLOWED);
                         check(access, AUTHORIZE_ALL_TRANSFERS,
@@ -2888,7 +2888,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CYCLE_VITAL_RECORDS, AccessStatus.DENIED);
                         check(access, DECLARE_AUDIT_AS_RECORD,
                                 AccessStatus.ALLOWED);
-                        check(access, DECLARE_RECORDS, AccessStatus.DENIED);
+                        check(access, DECLARE_RECORDS, AccessStatus.ALLOWED);
                         check(access, DECLARE_RECORDS_IN_CLOSED_FOLDERS,
                                 AccessStatus.DENIED);
                         check(access, DELETE_AUDIT, AccessStatus.ALLOWED);
@@ -2974,7 +2974,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
                         check(access, APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, ATTACH_RULES_TO_METADATA_PROPERTIES,
                                 AccessStatus.ALLOWED);
                         check(access, AUTHORIZE_ALL_TRANSFERS,
@@ -3012,7 +3012,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CYCLE_VITAL_RECORDS, AccessStatus.DENIED);
                         check(access, DECLARE_AUDIT_AS_RECORD,
                                 AccessStatus.ALLOWED);
-                        check(access, DECLARE_RECORDS, AccessStatus.DENIED);
+                        check(access, DECLARE_RECORDS, AccessStatus.ALLOWED);
                         check(access, DECLARE_RECORDS_IN_CLOSED_FOLDERS,
                                 AccessStatus.DENIED);
                         check(access, DELETE_AUDIT, AccessStatus.ALLOWED);
@@ -3097,7 +3097,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
                         check(access, APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, ATTACH_RULES_TO_METADATA_PROPERTIES,
                                 AccessStatus.ALLOWED);
                         check(access, AUTHORIZE_ALL_TRANSFERS,
@@ -3135,7 +3135,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CYCLE_VITAL_RECORDS, AccessStatus.DENIED);
                         check(access, DECLARE_AUDIT_AS_RECORD,
                                 AccessStatus.ALLOWED);
-                        check(access, DECLARE_RECORDS, AccessStatus.DENIED);
+                        check(access, DECLARE_RECORDS, AccessStatus.ALLOWED);
                         check(access, DECLARE_RECORDS_IN_CLOSED_FOLDERS,
                                 AccessStatus.DENIED);
                         check(access, DELETE_AUDIT, AccessStatus.ALLOWED);
@@ -3221,7 +3221,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
                         check(access, APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, ATTACH_RULES_TO_METADATA_PROPERTIES,
                                 AccessStatus.ALLOWED);
                         check(access, AUTHORIZE_ALL_TRANSFERS,
@@ -3259,7 +3259,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CYCLE_VITAL_RECORDS, AccessStatus.DENIED);
                         check(access, DECLARE_AUDIT_AS_RECORD,
                                 AccessStatus.ALLOWED);
-                        check(access, DECLARE_RECORDS, AccessStatus.DENIED);
+                        check(access, DECLARE_RECORDS, AccessStatus.ALLOWED);
                         check(access, DECLARE_RECORDS_IN_CLOSED_FOLDERS,
                                 AccessStatus.DENIED);
                         check(access, DELETE_AUDIT, AccessStatus.ALLOWED);
@@ -3383,7 +3383,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CYCLE_VITAL_RECORDS, AccessStatus.DENIED);
                         check(access, DECLARE_AUDIT_AS_RECORD,
                                 AccessStatus.DENIED);
-                        check(access, DECLARE_RECORDS, AccessStatus.DENIED);
+                        check(access, DECLARE_RECORDS, AccessStatus.ALLOWED);
                         check(access, DECLARE_RECORDS_IN_CLOSED_FOLDERS,
                                 AccessStatus.DENIED);
                         check(access, DELETE_AUDIT, AccessStatus.DENIED);
@@ -3505,7 +3505,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CYCLE_VITAL_RECORDS, AccessStatus.DENIED);
                         check(access, DECLARE_AUDIT_AS_RECORD,
                                 AccessStatus.DENIED);
-                        check(access, DECLARE_RECORDS, AccessStatus.DENIED);
+                        check(access, DECLARE_RECORDS, AccessStatus.ALLOWED);
                         check(access, DECLARE_RECORDS_IN_CLOSED_FOLDERS,
                                 AccessStatus.DENIED);
                         check(access, DELETE_AUDIT, AccessStatus.DENIED);
@@ -3626,7 +3626,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CYCLE_VITAL_RECORDS, AccessStatus.DENIED);
                         check(access, DECLARE_AUDIT_AS_RECORD,
                                 AccessStatus.DENIED);
-                        check(access, DECLARE_RECORDS, AccessStatus.DENIED);
+                        check(access, DECLARE_RECORDS, AccessStatus.ALLOWED);
                         check(access, DECLARE_RECORDS_IN_CLOSED_FOLDERS,
                                 AccessStatus.DENIED);
                         check(access, DELETE_AUDIT, AccessStatus.DENIED);

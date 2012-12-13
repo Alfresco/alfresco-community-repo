@@ -47,6 +47,7 @@
       <property name="maxCacheSize" value="10000" />
       <property name="mutable" value="true" /><!-- Null value markers are allowed -->
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="tenantAware" value="false" />
    </bean>
    
    

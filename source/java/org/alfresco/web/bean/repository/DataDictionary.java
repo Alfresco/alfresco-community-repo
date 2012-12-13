@@ -58,7 +58,7 @@ public final class DataDictionary implements Serializable
    /**
     *@return dictionaryService
     */
-   private DictionaryService getDictionaryService()
+   public DictionaryService getDictionaryService()
    {
     //check for null for cluster environment
       if (dictionaryService == null)

@@ -106,7 +106,7 @@ public class UIProperty extends PropertySheetItem
          if (displayLabel == null)
          {
             // try and get the repository assigned label
-            displayLabel = propDef.getTitle();
+            displayLabel = propDef.getTitle(dd.getDictionaryService());
             
             // if the label is still null default to the local name of the property
             if (displayLabel == null)

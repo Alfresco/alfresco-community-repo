@@ -224,7 +224,7 @@ public abstract class BaseServlet extends HttpServlet
    public static void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res, ServletContext sc)
          throws IOException
    {
-      redirectToLoginPage(req, res, sc, AuthenticationHelper.getRemoteUser(sc, req) == null);
+      redirectToLoginPage(req, res, sc, AuthenticationHelper.getRemoteUserMapper(sc) == null);
    }
    
    /**

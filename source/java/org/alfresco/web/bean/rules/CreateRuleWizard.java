@@ -317,7 +317,7 @@ public class CreateRuleWizard extends BaseActionWizard
                      TypeDefinition typeDef = this.getDictionaryService().getType(idQName);
                      if (typeDef != null)
                      {
-                        label = typeDef.getTitle();
+                        label = typeDef.getTitle(this.getDictionaryService());
                      }
                      else
                      {

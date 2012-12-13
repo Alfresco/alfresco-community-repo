@@ -238,12 +238,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.activiti</groupId>
-            <artifactId>activiti-webapp-explorer2</artifactId>
-            <version>5.7</version>
-            <classifier>ui-jar</classifier>
-        </dependency>
-        <dependency>
             <groupId>axis2</groupId>
             <artifactId>addressing</artifactId>
             <version>1.0</version>
@@ -307,10 +301,7 @@
         <profile>
             <id>enterprise</id>
             <activation>
-                <property>
-                    <name>alfresco.enterprise</name>
-                    <value>true</value>    
-                </property>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <dependencies>
                 <dependency>

@@ -337,7 +337,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
                      // if there wasn't a client based label try and get it from the dictionary
                      if (parentLabel == null)
                      {
-                        parentLabel = parentType.getTitle();
+                        parentLabel = parentType.getTitle(this.getDictionaryService());
                      }
                      
                      // finally, just use the localname
@@ -370,7 +370,7 @@ public abstract class BaseContentWizard extends BaseWizardBean
                               // if there wasn't a client based label try and get it from the dictionary
                               if (label == null)
                               {
-                                 label = typeDef.getTitle();
+                                 label = typeDef.getTitle(this.getDictionaryService());
                               }
                               
                               // finally, just use the localname

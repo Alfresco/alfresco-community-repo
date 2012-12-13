@@ -499,17 +499,10 @@ public final class AuthenticationHelper
       String userId = null;
 
       // If the remote user mapper is configured, we may be able to map in an externally authenticated user
-      final WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
-      RemoteUserMapper remoteUserMapper = (RemoteUserMapper) wc.getBean(REMOTE_USER_MAPPER);
-      if (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive())
+      RemoteUserMapper remoteUserMapper = getRemoteUserMapper(sc);
+      if (remoteUserMapper != null)
       {
-          if (logger.isDebugEnabled())
-              logger.debug("Remote user mapper configured and active. Asking for external user ID.");
          userId = remoteUserMapper.getRemoteUser(httpRequest);
-      }
-      else if (logger.isDebugEnabled())
-      {
-         logger.debug("No active remote user mapper.");
       }
       if (logger.isDebugEnabled())
       {
@@ -524,6 +517,31 @@ public final class AuthenticationHelper
       }
       
       return userId;
+   }
+
+   /**
+    * Gets the remote user mapper if one is configured and active (i.e. external authentication is in use).
+    * @param sc
+    *           the servlet context
+    * @return the remote user mapper if one is configured and active; otherwise <code>null</code>
+    */
+   public static RemoteUserMapper getRemoteUserMapper(final ServletContext sc)
+   {
+      final WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+      RemoteUserMapper remoteUserMapper = (RemoteUserMapper) wc.getBean(REMOTE_USER_MAPPER);
+      if (remoteUserMapper != null && !(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive())
+      {
+          if (logger.isDebugEnabled())
+          {
+              logger.debug("Remote user mapper configured and active.");
+          }
+          return remoteUserMapper;
+      }
+      if (logger.isDebugEnabled())
+      {
+         logger.debug("No active remote user mapper.");
+      }
+      return null;
    }
 
    /**

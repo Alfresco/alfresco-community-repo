@@ -401,7 +401,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
                      // if there wasn't a client based label try and get it from the dictionary
                      if (label == null)
                      {
-                        label = typeDef.getTitle();
+                        label = typeDef.getTitle(this.getDictionaryService());
                      }
                      
                      // finally, just use the localname
@@ -1053,7 +1053,7 @@ public abstract class BaseActionWizard extends BaseWizardBean
                AspectDefinition aspectDef = this.getDictionaryService().getAspect(idQName);
                if (aspectDef != null)
                {
-                  label = aspectDef.getTitle();
+                  label = aspectDef.getTitle(this.getDictionaryService());
                }
                else
                {

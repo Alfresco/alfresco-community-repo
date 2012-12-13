@@ -200,7 +200,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
                   else
                   {
                      // or use dictionary label or QName as last resort
-                     label = propDef.getTitle() != null ? propDef.getTitle() : propDef.getName().getLocalName();
+                     label = propDef.getTitle(dd) != null ? propDef.getTitle(dd) : propDef.getName().getLocalName();
                   }
                   
                   // special handling for Date and DateTime

@@ -172,7 +172,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
          // add the well known cm:content object type by default
          properties.setContentTypes(new ArrayList<SelectItem>(5));
          properties.getContentTypes().add(new SelectItem(ContentModel.TYPE_CONTENT.toString(), 
-               dictionaryService.getType(ContentModel.TYPE_CONTENT).getTitle()));
+               dictionaryService.getType(ContentModel.TYPE_CONTENT).getTitle(dictionaryService)));
          
          // add any configured content sub-types to the list
          List<String> types = getSearchConfig().getContentTypes();
@@ -188,7 +188,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
                   if (typeDef != null && dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_CONTENT))
                   {
                      // try and get label from the dictionary
-                     String label = typeDef.getTitle();
+                     String label = typeDef.getTitle(dictionaryService);
                      
                      // else just use the localname
                      if (label == null)
@@ -220,7 +220,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
          // add the well known cm:folder object type by default
          properties.setFolderTypes(new ArrayList<SelectItem>(5));
          properties.getFolderTypes().add(new SelectItem(ContentModel.TYPE_FOLDER.toString(), 
-               dictionaryService.getType(ContentModel.TYPE_FOLDER).getTitle()));
+               dictionaryService.getType(ContentModel.TYPE_FOLDER).getTitle(dictionaryService)));
          
          // add any configured folder sub-types to the list
          List<String> types = getSearchConfig().getFolderTypes();
@@ -236,7 +236,7 @@ public class AdvancedSearchDialog extends BaseDialogBean
                   if (typeDef != null && dictionaryService.isSubClass(typeDef.getName(), ContentModel.TYPE_FOLDER))
                   {
                      // try and get label from the dictionary
-                     String label = typeDef.getTitle();
+                     String label = typeDef.getTitle(dictionaryService);
                      
                      // else just use the localname
                      if (label == null)

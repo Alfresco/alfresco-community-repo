@@ -66,7 +66,7 @@ public abstract class BaseComponentGenerator implements IComponentGenerator
    
    protected enum ControlType { FIELD, SELECTOR; }
    
-   private DataDictionary dataDictionary;
+   protected DataDictionary dataDictionary;
    
    @SuppressWarnings("unchecked")
    public UIComponent generateAndAdd(FacesContext context, UIPropertySheet propertySheet, 

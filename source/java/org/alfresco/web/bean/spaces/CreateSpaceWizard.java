@@ -567,7 +567,7 @@ public class CreateSpaceWizard extends BaseWizardBean
                            // if there wasn't a client based label try and get it from the dictionary
                            if (label == null)
                            {
-                              label = typeDef.getTitle();
+                              label = typeDef.getTitle(this.getDictionaryService());
                            }
    
                            // finally use the localname if we still haven't found a label

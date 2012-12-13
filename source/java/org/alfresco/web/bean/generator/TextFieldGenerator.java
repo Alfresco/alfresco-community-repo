@@ -160,7 +160,7 @@ public class TextFieldGenerator extends BaseComponentGenerator
                }
                
                // retrieve the display label
-               String label = constraint.getDisplayLabel(value);
+               String label = constraint.getDisplayLabel(value, dataDictionary.getDictionaryService());
                if (label == null)
                {
                   label = value;

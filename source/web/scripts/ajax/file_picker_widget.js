@@ -207,7 +207,7 @@ _showSelectedValue: function()
   this._selectButton.value = (this.value == null 
                               ? alfresco.resources["select"] 
                               : alfresco.resources["change"]);
-  this._selectButton.title = (null == this.node.widget.labelNode) ? ("") : (this.node.widget.labelNode.getText() + " ") + this._selectButton.value + " " + alfresco.resources["path"];
+  this._selectButton.title = ((null == this.node.widget) || (null == this.node.widget.labelNode)) ? ("") : (this.node.widget.labelNode.getText() + " ") + this._selectButton.value + " " + alfresco.resources["path"];
   this._selectButton.disabled = this.readonly;
   this._selectButton.style.margin = "0px 10px";
   this.node.appendChild(this._selectButton);
@@ -427,7 +427,7 @@ _showPicker: function(data)
   cancelButton.filePickerWidget = this;
 
   cancelButton.value = alfresco.resources["cancel"];
-  cancelButton.title = (null == this.node.widget.labelNode) ? ("") : (this.node.widget.labelNode.getText() + " ") + alfresco.resources["cancel"];
+  cancelButton.title = ((null == this.node.widget) || (null == this.node.widget.labelNode)) ? ("") : (this.node.widget.labelNode.getText() + " ") + alfresco.resources["cancel"];
   footerDiv.appendChild(cancelButton);
 
   cancelButton.style.margin = ((.5 * footerDiv.offsetHeight) - 
@@ -515,7 +515,8 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, f
     e.type = "button";
     e.name = webappRelativePath;
     e.value = "Select";
-    e.title = ((null != this.node.widget.labelNode) ? (this.node.widget.labelNode.getText()) : ("")) + " " + e.value + " " + webappRelativePath;
+    e.title = ((null != this.node.widget) && (null != this.node.widget.labelNode) ? (this.node.widget.labelNode.getText()) : ("")) + " " + e.value + " " + webappRelativePath;
+    
     result.appendChild(e);
       
     e.style.position = "absolute";
@@ -848,7 +849,7 @@ _showSelectedValue: function()
 		}
 	  });
   this._selectButton.filePickerWidget = this;
-  this._selectButton.title = (null == this.node.widget.labelNode) ? ("") : (this.node.widget.labelNode.getText() + " ") + this._selectButton.value + " " + alfresco.resources["path"],
+  this._selectButton.title = ((null == this.node.widget) || (null == this.node.widget.labelNode)) ? ("") : (this.node.widget.labelNode.getText() + " ") + this._selectButton.value + " " + alfresco.resources["path"],
   this._selectButton.inject(this.wrapper);
   var nodeSize = node.getSize();
   var selectButtonSize = this._selectButton.getSize();
@@ -1035,7 +1036,7 @@ _showPicker: function(data)
 		  {
 	  		"type" : "button",
 	  		"value" : alfresco.resources["cancel"],
-	  		"title": ((null == this.node.widget.labelNode) ? ("") : (this.node.widget.labelNode.getText() + " ") + alfresco.resources["cancel"]),
+	  		"title": ((null == this.node.widget) || (null == this.node.widget.labelNode) ? ("") : (this.node.widget.labelNode.getText() + " ") + alfresco.resources["cancel"]),
 	  		"events" : {
 	  			"click" : function(event)
                 {
@@ -1168,7 +1169,7 @@ _createRow: function(fileName, webappRelativePath,  isDirectory, isSelectable, f
 				}
 			}
 		);
-	e.title = ((null != this.node.widget.labelNode) ? (this.node.widget.labelNode.getText()) : ("")) + " " + e.value + " " + webappRelativePath;
+	e.title = ((null != this.node.widget) && (null != this.node.widget.labelNode) ? (this.node.widget.labelNode.getText()) : ("")) + " " + e.value + " " + webappRelativePath;
     e.inject(result);
   }
   return result;

@@ -804,6 +804,11 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
                 name = workingCopyLabel;
             }
         }
+        else
+        {
+        	throw new IllegalArgumentException("workingCopyLabel is null or empty");
+        }
+
         return name;
     }
     

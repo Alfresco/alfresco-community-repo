@@ -86,6 +86,8 @@ class ScenarioRenameShuffleInstance implements ScenarioInstance
             {
                 logger.debug("Instance timed out");
             }
+            isComplete = true;
+            return null;
         }
         
         switch (state)

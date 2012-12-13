@@ -379,7 +379,7 @@ public class JCRDocumentXMLExporter implements Exporter
     {
     }
 
-    public void startValueMLText(NodeRef nodeRef, Locale locale)
+    public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull)
     {
     }
 

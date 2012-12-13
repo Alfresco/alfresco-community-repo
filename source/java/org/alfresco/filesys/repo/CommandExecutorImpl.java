@@ -254,13 +254,14 @@ public class CommandExecutorImpl implements CommandExecutor
             {
                 logger.debug("rename command");
                 RenameFileCommand rename = (RenameFileCommand)command;
-                diskInterface.renameFile(sess, tree, rename.getFromPath(), rename.getToPath());    
+                
+                repositoryDiskInterface.renameFile(rename.getRootNode(), rename.getFromPath(), rename.getToPath(), rename.isSoft());    
             }
             else if(command instanceof MoveFileCommand)
             {
                 logger.debug("move command");
-                MoveFileCommand rename = (MoveFileCommand)command;
-                diskInterface.renameFile(sess, tree, rename.getFromPath(), rename.getToPath());    
+                MoveFileCommand move = (MoveFileCommand)command;
+                repositoryDiskInterface.renameFile(move.getRootNode(), move.getFromPath(), move.getToPath(), false);    
             }
             else if(command instanceof CopyContentCommand)
             {

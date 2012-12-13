@@ -1555,6 +1555,14 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 break;      // Reason for do-while
             }
 
+            if(info.hasPWC())
+            {
+            	// is a checked out document. If a delete, don't allow unless checkout is canceled. If a cancel
+            	// checkout, not allowed.
+            	throw new CmisConstraintException(
+                "Could not delete/cancel checkout on the original checked out document");
+            }
+
             // handle versions
             if (allVersions)
             {

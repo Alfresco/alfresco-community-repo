@@ -18,6 +18,7 @@
 package org.alfresco.filesys.repo;
 
 import org.alfresco.filesys.alfresco.AlfrescoNetworkFile;
+import org.alfresco.filesys.alfresco.NetworkFileLegacyReferenceCount;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 
@@ -26,7 +27,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author gkspencer
  */
-public abstract class NodeRefNetworkFile extends AlfrescoNetworkFile {
+public abstract class NodeRefNetworkFile extends AlfrescoNetworkFile 
+    implements  NetworkFileLegacyReferenceCount
+{
 
 	// Associated node ref
 	
@@ -128,5 +131,36 @@ public abstract class NodeRefNetworkFile extends AlfrescoNetworkFile {
      */
     public final int getOpenCount() {
         return m_openCount;
+    }
+    
+    private int legacyOpenCount = 0;
+    
+    /**
+     * Increment the legacy file open count
+     * 
+     * @return int
+     */
+    public synchronized final int incrementLegacyOpenCount() {
+        legacyOpenCount++;
+        return legacyOpenCount;
+    }
+    
+    /**
+     * Decrement the legacy file open count
+     * 
+     * @return int
+     */
+    public synchronized final int decrementLagacyOpenCount() {
+        legacyOpenCount--;
+        return legacyOpenCount;
+    }
+    
+    /**
+     * Return the legacy open file count
+     * 
+     * @return int
+     */
+    public final int getLegacyOpenCount() {
+        return legacyOpenCount;
     }
 }

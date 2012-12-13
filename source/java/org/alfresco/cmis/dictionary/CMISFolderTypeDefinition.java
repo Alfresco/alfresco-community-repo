@@ -24,6 +24,7 @@ import org.alfresco.cmis.CMISTypeId;
 import org.alfresco.cmis.mapping.CMISMapping;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 
@@ -45,15 +46,15 @@ public class CMISFolderTypeDefinition extends CMISAbstractTypeDefinition
      * @param typeId
      * @param cmisClassDef
      */
-    public CMISFolderTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef, boolean isSystem)
+    public CMISFolderTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, DictionaryService dictionaryService, ClassDefinition cmisClassDef, boolean isSystem)
     {
         isPublic = true;
         
         // Object type properties
         this.cmisClassDef = cmisClassDef;
         objectTypeId = typeId;
-        displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
-        description = cmisClassDef.getDescription() != null ? cmisClassDef.getDescription() : displayName;
+        displayName = (cmisClassDef.getTitle(dictionaryService) != null) ? cmisClassDef.getTitle(dictionaryService) : typeId.getId();
+        description = cmisClassDef.getDescription(dictionaryService) != null ? cmisClassDef.getDescription(dictionaryService) : displayName;
         
         QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
         if (typeId == CMISDictionaryModel.FOLDER_TYPE_ID)

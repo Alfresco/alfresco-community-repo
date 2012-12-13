@@ -645,7 +645,7 @@ public final class Export extends Tool
         {
         }
 
-        public void startValueMLText(NodeRef nodeRef, Locale locale)
+        public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull)
         {
         }
     }

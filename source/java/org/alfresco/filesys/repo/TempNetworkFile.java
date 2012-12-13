@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.alfresco.filesys.alfresco.NetworkFileLegacyReferenceCount;
 import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.NetworkFileStateInterface;
@@ -14,10 +15,14 @@ import org.alfresco.jlan.smb.server.disk.JavaNetworkFile;
  * 
  * @author mrogers
  */
-public class TempNetworkFile extends JavaNetworkFile implements NetworkFileStateInterface
+public class TempNetworkFile extends JavaNetworkFile 
+    implements NetworkFileStateInterface,
+    NetworkFileLegacyReferenceCount
 {
     private boolean changed = false;
     boolean modificationDateSetDirectly = false;
+    
+ 
     
     /**
      * Create a new temporary file with no existing content.
@@ -169,6 +174,37 @@ public class TempNetworkFile extends JavaNetworkFile implements NetworkFileState
     public void setModificationDateSetDirectly(boolean  modificationDateSetDirectly)
     {
         this.modificationDateSetDirectly =  modificationDateSetDirectly;
+    }
+
+    private int legacyOpenCount = 0;
+    
+    /**
+     * Increment the legacy file open count
+     * 
+     * @return int
+     */
+    public synchronized final int incrementLegacyOpenCount() {
+        legacyOpenCount++;
+        return legacyOpenCount;
+    }
+    
+    /**
+     * Decrement the legacy file open count
+     * 
+     * @return int
+     */
+    public synchronized final int decrementLagacyOpenCount() {
+        legacyOpenCount--;
+        return legacyOpenCount;
+    }
+    
+    /**
+     * Return the legacy open file count
+     * 
+     * @return int
+     */
+    public final int getLegacyOpenCount() {
+        return legacyOpenCount;
     }
 
 

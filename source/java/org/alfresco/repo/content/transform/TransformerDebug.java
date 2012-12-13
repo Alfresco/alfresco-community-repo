@@ -643,13 +643,20 @@ public class TransformerDebug
         {
             // Trim messages of the form: "Failed... : \n   reader:...\n    writer:..."
             String msg = t.getMessage();
-            int i = msg.indexOf(": \n");
-            if (i != -1)
+            if (msg != null)
             {
-                msg = msg.substring(0, i);
+                int i = msg.indexOf(": \n");
+                if (i != -1)
+                {
+                    msg = msg.substring(0, i);
+                }
+                log(message + ' ' + msg);
+            }
+            else
+            {
+                log(message);
             }
             
-            log(message + ' ' + msg);
             
             Deque<Frame> ourStack = ThreadInfo.getStack();
             if (!ourStack.isEmpty())

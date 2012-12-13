@@ -49,6 +49,7 @@ import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.util.ISO9075;
 
@@ -106,14 +107,14 @@ public class CMISBasePropertyDefinition implements CMISPropertyDefinition, Seria
      * @param propDef
      * @param typeDef
      */
-    public CMISBasePropertyDefinition(CMISMapping cmisMapping, CMISPropertyId propertyId, PropertyDefinition propDef,
+    public CMISBasePropertyDefinition(CMISMapping cmisMapping, CMISPropertyId propertyId, DictionaryService dictionaryService, PropertyDefinition propDef,
             CMISTypeDefinition typeDef)
     {
         this.propertyId = propertyId;
         this.typeDef = typeDef;
         queryName = ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(propertyId.getQName()));
-        displayName = (propDef.getTitle() != null) ? propDef.getTitle() : propertyId.getId();
-        description = propDef.getDescription() != null ? propDef.getDescription() : displayName;
+        displayName = (propDef.getTitle(dictionaryService) != null) ? propDef.getTitle(dictionaryService) : propertyId.getId();
+        description = propDef.getDescription(dictionaryService) != null ? propDef.getDescription(dictionaryService) : displayName;
         propertyType = cmisMapping.getDataType(propDef.getDataType());
         cardinality = propDef.isMultiValued() ? CMISCardinalityEnum.MULTI_VALUED : CMISCardinalityEnum.SINGLE_VALUED;
         for (ConstraintDefinition constraintDef : propDef.getConstraints())

@@ -346,11 +346,11 @@ import org.alfresco.service.namespace.QName;
         }
     }
 
-    public void startValueMLText(NodeRef nodeRef, Locale locale)
+    public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull)
     {
         for (Exporter exporter : exporters)
         {
-            exporter.startValueMLText(nodeRef, locale);
+            exporter.startValueMLText(nodeRef, locale, isNull);
         }
     }
 

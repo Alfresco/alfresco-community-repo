@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -55,6 +56,7 @@ import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.debug.NodeStoreInspector;
@@ -69,6 +71,7 @@ public class ExporterComponentTest extends BaseSpringTest
     private ImporterService importerService;
     private FileFolderService fileFolderService;
     private CategoryService categoryService;
+    private TransactionService transactionService;
     private StoreRef storeRef;
     private AuthenticationComponent authenticationComponent;
 
@@ -81,7 +84,8 @@ public class ExporterComponentTest extends BaseSpringTest
         importerService = (ImporterService)applicationContext.getBean("importerComponent");
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
         categoryService = (CategoryService) applicationContext.getBean("categoryService");     
-        
+        transactionService = (TransactionService) applicationContext.getBean("transactionService");
+
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
         this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
@@ -142,7 +146,7 @@ public class ExporterComponentTest extends BaseSpringTest
         ChildAssociationRef contentChildAssocRef = createContentWithCategories(storeRef, rootNode);
         
         // Export/import
-        File acpFile = exportContent(contentChildAssocRef);
+        File acpFile = exportContent(contentChildAssocRef.getParentRef());
         FileInfo importFolderFileInfo = importContent(acpFile, rootNode);
         
         // Check categories
@@ -171,7 +175,7 @@ public class ExporterComponentTest extends BaseSpringTest
         ChildAssociationRef contentChildAssocRef = createContentWithCategories(storeRef, rootNode);
         
         // Export
-        File acpFile = exportContent(contentChildAssocRef);
+        File acpFile = exportContent(contentChildAssocRef.getParentRef());
         // Import - destination store is different from export store.
         NodeRef destRootNode = nodeService.getRootNode(this.storeRef);
         FileInfo importFolderFileInfo = importContent(acpFile, destRootNode);
@@ -184,6 +188,54 @@ public class ExporterComponentTest extends BaseSpringTest
             nodeService.getProperty(importedFileNode, ContentModel.PROP_CATEGORIES);
         assertEquals("No categories should have been imported for the content", 0, importedFileCategories.size());
     }
+    
+    public void testMLText() throws Exception
+    {
+	    NodeRef rootNode = nodeService.getRootNode(storeRef);
+	    NodeRef folderNodeRef = nodeService.createNode(
+	            rootNode,
+	            ContentModel.ASSOC_CHILDREN,
+	            ContentModel.ASSOC_CHILDREN,
+	            ContentModel.TYPE_FOLDER).getChildRef();
+	    
+	    FileInfo exportFolder = fileFolderService.create(folderNodeRef, "export", ContentModel.TYPE_FOLDER);
+	    FileInfo content = fileFolderService.create(exportFolder.getNodeRef(), "file", ContentModel.TYPE_CONTENT);
+	    MLText title = new MLText();
+	    title.addValue(Locale.ENGLISH, null);
+	    title.addValue(Locale.FRENCH, "bonjour");
+	    nodeService.setProperty(content.getNodeRef(), ContentModel.PROP_TITLE, title);
+	    nodeService.setProperty(content.getNodeRef(), ContentModel.PROP_NAME, "file");
+	    
+	    FileInfo importFolder = fileFolderService.create(folderNodeRef, "import", ContentModel.TYPE_FOLDER);
+	
+	    // export
+	    File acpFile = exportContent(exportFolder.getNodeRef());
+	
+	    // import
+	    FileInfo importFolderFileInfo = importContent(acpFile, importFolder.getNodeRef());
+	    assertNotNull(importFolderFileInfo);
+	    NodeRef importedFileNode = fileFolderService.searchSimple(importFolderFileInfo.getNodeRef(), "file");
+	    assertNotNull("Couldn't find imported file: file", importedFileNode);
+	    
+    	Locale currentLocale = I18NUtil.getContentLocale();
+    	try
+    	{
+        	I18NUtil.setContentLocale(Locale.ENGLISH);
+
+		    String importedTitle = (String)nodeService.getProperty(importedFileNode, ContentModel.PROP_TITLE);
+		    assertNull(importedTitle);
+	        
+        	I18NUtil.setContentLocale(Locale.FRENCH);
+
+		    importedTitle = (String)nodeService.getProperty(importedFileNode, ContentModel.PROP_TITLE);
+		    assertNotNull(importedTitle);
+	        assertEquals("bonjour", importedTitle);
+    	}
+    	finally
+    	{
+        	I18NUtil.setContentLocale(currentLocale);
+    	}
+    }
 
     /**
      * @param contentChildAssocRef
@@ -191,11 +243,11 @@ public class ExporterComponentTest extends BaseSpringTest
      * @throws FileNotFoundException
      * @throws IOException
      */
-    private File exportContent(ChildAssociationRef contentChildAssocRef)
+    private File exportContent(NodeRef nodeRef)
                 throws FileNotFoundException, IOException
     {
         TestProgress testProgress = new TestProgress();
-        Location location = new Location(contentChildAssocRef.getParentRef());
+        Location location = new Location(nodeRef);
         ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
         parameters.setExportFrom(location);
         File acpFile = TempFileProvider.createTempFile("category-export-test", ACPExportPackageHandler.ACP_EXTENSION);
@@ -446,7 +498,7 @@ public class ExporterComponentTest extends BaseSpringTest
 //             System.out.println("TestProgress: end MLValue.");            
         }
 
-        public void startValueMLText(NodeRef nodeRef, Locale locale)
+        public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull)
         {
 //             System.out.println("TestProgress: start MLValue for locale: " + locale);            
         }

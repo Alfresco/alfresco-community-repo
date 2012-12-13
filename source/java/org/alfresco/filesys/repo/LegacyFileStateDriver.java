@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
+import org.alfresco.filesys.alfresco.NetworkFileLegacyReferenceCount;
 import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
@@ -38,6 +39,8 @@ import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.jlan.server.filesys.cache.NetworkFileStateInterface;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
+import org.alfresco.jlan.server.locking.FileLockingInterface;
+import org.alfresco.jlan.server.locking.LockManager;
 import org.alfresco.jlan.server.locking.OpLockInterface;
 import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.jlan.smb.SharingMode;
@@ -86,12 +89,15 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
     {
         ContentContext tctx = (ContentContext) tree.getContext();
         
+        FileStateCache cache = null;
+        FileState fstate = null;
+  
         FileAccessToken token = null;
         
         if(tctx.hasStateCache())
         {
-            FileStateCache cache = tctx.getStateCache();
-            FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
+            cache = tctx.getStateCache();
+            fstate = tctx.getStateCache().findFileState( params.getPath(), true);
             token = cache.grantFileAccess(params, fstate, FileStatus.NotExist);
             if(logger.isDebugEnabled())
             {
@@ -103,11 +109,18 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
         {
             NetworkFile newFile = diskInterface.createFile(sess, tree, params);
             
-            newFile.setAccessToken(token);
+            int openCount = 1;
+            
+            if(newFile instanceof NetworkFileLegacyReferenceCount)
+            {
+                NetworkFileLegacyReferenceCount counter = (NetworkFileLegacyReferenceCount)newFile;
+                openCount = counter.incrementLegacyOpenCount();
+            }
+            // This is the create so we store the first access token always
+            newFile.setAccessToken(token);   
           
             if(tctx.hasStateCache())
             {
-                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
                 fstate.setProcessId(params.getProcessId());
                 fstate.setSharedAccess( params.getSharedAccess());
             
@@ -158,9 +171,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
             }    
             if(tctx.hasStateCache() && token != null)
             {
-                FileStateCache cache = tctx.getStateCache();
-                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), false);
-                if(fstate != null && token != null)
+                if(cache != null && fstate != null && token != null)
                 {
                     if(logger.isDebugEnabled())
                     {
@@ -171,6 +182,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
             }
             throw ie;
         }
+        // TODO what about other throwables ?
     }
 
     @Override
@@ -179,30 +191,90 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
     {
         ContentContext tctx = (ContentContext) tree.getContext();
         String path = params.getPath();
+        
+        boolean rollbackOpen = false;
+        boolean rollbackToken = false;
+        boolean rollbackCount = false;
+        boolean rollbackSetToken = false;
 
         FileAccessToken token = null;
+        
+        FileStateCache cache = null;
+        FileState fstate = null;
+        NetworkFile openFile = null;
 
         if(tctx.hasStateCache())
         {
+            cache = tctx.getStateCache();
+            fstate = tctx.getStateCache().findFileState( params.getPath(), true);
+            
             if(!params.isDirectory())
             {
-                FileStateCache cache = tctx.getStateCache();
-                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), true);
-                token = cache.grantFileAccess(params, fstate, FileStatus.Unknown);
+                try
+                {
+                    token = cache.grantFileAccess(params, fstate, FileStatus.Unknown);
+                }
+                catch (IOException e)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("UNABLE to grant file access for path:" + path + ", params" + params, e);
+                    }
+                    throw e;
+                }
+                
+                rollbackToken = true;
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("open file created lock token:" + token);
+                    logger.debug("open file created lock token:" + token + ", for path:" + path);
                 }
             }
         }
 
         try
         {
-            NetworkFile openFile = diskInterface.openFile(sess, tree, params);
+            openFile = diskInterface.openFile(sess, tree, params);
+            rollbackOpen = true;
+             
+            if(openFile instanceof NetworkFileLegacyReferenceCount)
+            {
+                NetworkFileLegacyReferenceCount counter = (NetworkFileLegacyReferenceCount)openFile;
+                int legacyOpenCount = counter.incrementLegacyOpenCount();
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("openFile: legacyOpenCount: " + legacyOpenCount);
+                }
+                
+                rollbackCount = true;
+            }
+            else
+            {
+                logger.debug("openFile does not implement NetworkFileLegacyReferenceCount");
+            }
             
-            openFile.setAccessToken(token);
-            
-            FileState fstate = null;
+            if( openFile.hasAccessToken())
+            {
+                // already has an access token, release the second token
+                if(cache != null && fstate != null && token != null)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("already has access token, release lock token:" + token);
+                    }
+                    cache.releaseFileAccess(fstate, token);
+                }
+            }
+            else
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("store access token on open network file object token:" + token);
+                }
+  
+                // first access token
+                openFile.setAccessToken(token);
+                rollbackSetToken = true;
+            }
             
             if(tctx.hasStateCache())
             {
@@ -257,20 +329,28 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.setFileStatus(FileStatus.FileExists);
                 }           
             }
+            
+            rollbackToken = false;
+            rollbackCount = false;
+            rollbackSetToken = false;
+            rollbackOpen = false;
+            
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("successfully opened file:" + openFile);
+            }
 
             return openFile;
         }
-        catch(IOException ie)
+        finally
         {
-            if(logger.isDebugEnabled())
+            if(rollbackToken)
             {
-                logger.debug("open file exception caught", ie);   
-            }  
-            if(tctx.hasStateCache() && token != null)
-            {
-                FileStateCache cache = tctx.getStateCache();
-                FileState fstate = tctx.getStateCache().findFileState( params.getPath(), false);
-                if(fstate != null)
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("rollback token:" + token);
+                }
+                if(cache != null && fstate != null && token != null)
                 {
                     if(logger.isDebugEnabled())
                     {
@@ -279,55 +359,139 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     cache.releaseFileAccess(fstate, token);
                 }
             }
-            throw ie;
+            if(rollbackCount)
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("rollback legacy open count:" + token);
+                }
+                if(openFile instanceof NetworkFileLegacyReferenceCount)
+                {
+                    NetworkFileLegacyReferenceCount counter = (NetworkFileLegacyReferenceCount)openFile;
+                    counter.decrementLagacyOpenCount();
+                }
+            }
+            if(rollbackSetToken)
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("rollback set access token:" + token);
+                }
+                openFile.setAccessToken(null);
+            }
+            if(rollbackOpen)
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("rollback open:" + token);
+                }
+                diskInterface.closeFile(sess, tree, openFile);
+            }
         }
-
     }
     
     @Override
     public void closeFile(SrvSession sess, TreeConnection tree,
-            NetworkFile param) throws IOException
+            NetworkFile file) throws IOException
     {
         ContentContext tctx = (ContentContext) tree.getContext();
-        
+        FileStateCache cache = null;
+        FileState fstate = null;
+   
         if(logger.isDebugEnabled())
         {
-            logger.debug("closeFile:" + param.getFullName() + ", accessToken:" + param.getAccessToken());
+            logger.debug("closeFile:" + file.getFullName() + ", accessToken:" + file.getAccessToken());
         }
         
-        try
+        int legacyOpenCount = 0;
+        
+        if(file instanceof NetworkFileLegacyReferenceCount)
         {
-            if ( param.hasOpLock()) {
-                
+            NetworkFileLegacyReferenceCount counter = (NetworkFileLegacyReferenceCount)file;
+            legacyOpenCount = counter.decrementLagacyOpenCount();
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("closeFile: legacyOpenCount=" + legacyOpenCount);
+            }
+        }
+        else
+        {
+            logger.debug("file to close does not implement NetworkFileLegacyReferenceCount");
+        }
+
+        try
+        {            
+            if ( file.hasOpLock()) 
+            {
+                if ( logger.isDebugEnabled())
+                {
+                   logger.debug("File Has OpLock - release oplock for closed file, file=" + file.getFullName());
+                }
                 // Release the oplock
                 
                 OpLockInterface flIface = (OpLockInterface) this;
                 OpLockManager oplockMgr = flIface.getOpLockManager(sess, tree);
                 
-                oplockMgr.releaseOpLock( param.getOpLock().getPath());
+                oplockMgr.releaseOpLock( file.getOpLock().getPath());
 
                 //  DEBUG
                 
                 if ( logger.isDebugEnabled())
-                  logger.debug("Released oplock for closed file, file=" + param.getFullName());
+                {
+                   logger.debug("Released oplock for closed file, file=" + file.getFullName());
+                }
+            }
+            
+            
+            //  Release any locks on the file owned by this session
+            
+            if ( file.hasLocks()) 
+            {
+                if ( logger.isDebugEnabled())
+                {
+                   logger.debug("Release all locks, file=" + file.getFullName());
+                }
+              
+                //  Get the lock manager
+                FileLockingInterface flIface = (FileLockingInterface) this;
+                LockManager lockMgr = flIface.getLockManager(sess, tree);
+                
+                if(lockMgr != null)
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("Releasing locks for closed file, file=" + file.getFullName() + ", locks=" + file.numberOfLocks());
+                    }              
+                    //  Release all locks on the file owned by this session
+              
+                    lockMgr.releaseLocksForFile(sess, tree, file);
+                }
             }
 
-            diskInterface.closeFile(sess, tree, param);
-
+            diskInterface.closeFile(sess, tree, file);
+            
+            logger.debug("file closed");
+            
+        } 
+        finally
+        {
             if(tctx.hasStateCache())
             {
-                FileStateCache cache = tctx.getStateCache();
-                FileState fstate = cache.findFileState( param.getFullName(), true);
-                             
-                if(fstate != null && param.getAccessToken() != null)
+                cache = tctx.getStateCache();
+                fstate = cache.findFileState( file.getFullName(), true);
+                
+                if(legacyOpenCount == 0 || file.isForce())
                 {
-                    FileAccessToken token = param.getAccessToken();
-                    if(logger.isDebugEnabled() && token != null)
+                    if(cache != null && fstate != null && file.getAccessToken() != null)
                     {
-                        logger.debug("close file, release access token:" + token);
+                        FileAccessToken token = file.getAccessToken();
+                        if(logger.isDebugEnabled() && token != null)
+                        {
+                            logger.debug("close file, legacy count == 0 release access token:" + token);
+                        }
+                        cache.releaseFileAccess(fstate, token);
+                        file.setAccessToken( null);
                     }
-                    cache.releaseFileAccess(fstate, token);
-                    
                 }
                 
                 if(fstate.getOpenCount() == 0 )
@@ -338,20 +502,8 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                     fstate.updateChangeDateTime(0);
                     fstate.updateModifyDateTime(0);    
                 }
-                
-                // Clear the access token
-                
-                param.setAccessToken( null);
             }
         }
-        catch(IOException ie)
-        {
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("close file exception caught", ie);   
-            }  
-            throw ie;
-        }    
     }
 
     @Override

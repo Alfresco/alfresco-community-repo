@@ -24,13 +24,14 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * Utility class providing methods to access the Locale of the current thread and to get
  * Localised strings. These strings may be loaded from resource bundles deployed in the Repository.
  */
-public interface MessageService extends TenantDeployer
+public interface MessageService extends TenantDeployer, MessageLookup
 {
     /**
      * Set the locale for the current thread.
@@ -97,42 +98,6 @@ public interface MessageService extends TenantDeployer
      */
     public void registerResourceBundle(String bundleBasePath);
     
-    /**
-     * Get message from registered resource bundle.
-     *
-     * @param messageKey    message key
-     * @return              localised message string, null if not found
-     */
-    public String getMessage(String messageKey);
-
-    /**
-     * Get a localised message string
-     *
-     * @param messageKey        the message key
-     * @param locale            override the current locale
-     * @return                  the localised message string, null if not found
-     */
-    public String getMessage(final String messageKey, final Locale locale);
-
-    /**
-     * Get a localised message string, parameterized using standard MessageFormatter.
-     *
-     * @param messageKey    message key
-     * @param params        format parameters
-     * @return              the localised string, null if not found
-     */
-    public String getMessage(String messageKey, Object ... params);
-    
-    /**
-     * Get a localised message string, parameterized using standard MessageFormatter.
-     *
-     * @param messageKey        the message key
-     * @param locale            override current locale
-     * @param params            the localised message string
-     * @return                  the localised string, null if not found
-     */
-    public String getMessage(String messageKey, Locale locale, Object ... params);
-
     /**
      * Unregister a resource bundle
      * <p>

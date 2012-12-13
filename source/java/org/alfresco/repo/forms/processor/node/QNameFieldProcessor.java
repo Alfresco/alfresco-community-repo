@@ -118,10 +118,10 @@ public abstract class QNameFieldProcessor<Type extends ClassAttributeDefinition>
     {
         String attribName = fieldDef.getName();
         fieldDef.setGroup(group);
-        String title = attribDef.getTitle();
+        String title = attribDef.getTitle(dictionaryService);
         title = title == null ? attribName : title;
         fieldDef.setLabel(title);
-        fieldDef.setDescription(attribDef.getDescription());
+        fieldDef.setDescription(attribDef.getDescription(dictionaryService));
         fieldDef.setProtectedField(attribDef.isProtected());
 
         // define the data key name and set

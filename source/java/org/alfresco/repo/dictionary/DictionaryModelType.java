@@ -675,7 +675,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         // Update the meta data for the model
                                         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
                                         props.put(ContentModel.PROP_MODEL_NAME, modelDefinition.getName());
-                                        props.put(ContentModel.PROP_MODEL_DESCRIPTION, modelDefinition.getDescription());
+                                        props.put(ContentModel.PROP_MODEL_DESCRIPTION, modelDefinition.getDescription(null));
                                         props.put(ContentModel.PROP_MODEL_AUTHOR, modelDefinition.getAuthor());
                                         props.put(ContentModel.PROP_MODEL_PUBLISHED_DATE, modelDefinition.getPublishedDate());
                                         props.put(ContentModel.PROP_MODEL_VERSION, modelDefinition.getVersion());

@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.authority.script;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -124,5 +125,18 @@ public class ScriptUser implements Authority, Serializable
     public ScriptNode getPerson()
     {
        return new ScriptNode(getPersonNodeRef(), serviceRegistry, this.scope);
+    }
+
+    /**
+     * Gets all the zones of this user
+     *
+     * @return The name of the zones of this user.
+     *
+     * @since 4.1.3
+     */
+    @Override
+    public Set<String> getZones()
+    {
+        return authorityService.getAuthorityZones(fullName);
     }
 }

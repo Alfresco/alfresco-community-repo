@@ -27,6 +27,7 @@ import java.util.Map;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 
@@ -54,9 +55,10 @@ public class FieldUtils
                 PropertyDefinition propDef,
                 Object value,
                 FieldGroup group,
-                NamespaceService namespaceService)
+                NamespaceService namespaceService,
+                DictionaryService dictionaryService)
     {
-        PropertyFieldProcessor processor = new PropertyFieldProcessor(namespaceService, null);
+        PropertyFieldProcessor processor = new PropertyFieldProcessor(namespaceService, dictionaryService);
         return processor.makeField(propDef, value, group);
     }
     
@@ -71,9 +73,10 @@ public class FieldUtils
     public static List<Field> makePropertyFields(
                 Collection<PropertyDefinition> propDefs,
                 FieldGroup group,
-                NamespaceService namespaceService)
+                NamespaceService namespaceService,
+                DictionaryService dictionaryService)
     {
-        return makePropertyFields(propDefs, null, group, namespaceService);
+        return makePropertyFields(propDefs, null, group, namespaceService, dictionaryService);
     }
     
     /**
@@ -87,9 +90,10 @@ public class FieldUtils
     public static List<Field> makePropertyFields(
                 Map<PropertyDefinition, Object> propDefAndValue,
                 FieldGroup group,
-                NamespaceService namespaceService)
+                NamespaceService namespaceService,
+                DictionaryService dictionaryService)
     {
-        return makePropertyFields(propDefAndValue.keySet(), propDefAndValue, group, namespaceService);
+        return makePropertyFields(propDefAndValue.keySet(), propDefAndValue, group, namespaceService, dictionaryService);
     }
     
     /**
@@ -105,9 +109,10 @@ public class FieldUtils
                 Collection<PropertyDefinition> propDefs,
                 Map<PropertyDefinition, Object> values,
                 FieldGroup group,
-                NamespaceService namespaceService)
+                NamespaceService namespaceService,
+                DictionaryService dictionaryService)
     {
-        PropertyFieldProcessor processor = new PropertyFieldProcessor(namespaceService, null);
+        PropertyFieldProcessor processor = new PropertyFieldProcessor(namespaceService, dictionaryService);
         ArrayList<Field> fields = new ArrayList<Field>(propDefs.size());
         for (PropertyDefinition propDef : propDefs)
         {
@@ -131,9 +136,10 @@ public class FieldUtils
                 AssociationDefinition assocDef,
                 Object value,
                 FieldGroup group,
-                NamespaceService namespaceService)
+                NamespaceService namespaceService,
+                DictionaryService dictionaryService)
     {
-        AssociationFieldProcessor processor = new AssociationFieldProcessor(namespaceService, null);
+        AssociationFieldProcessor processor = new AssociationFieldProcessor(namespaceService, dictionaryService);
         return processor.makeField(assocDef, value, group);
     }
     
@@ -148,9 +154,10 @@ public class FieldUtils
     public static List<Field> makeAssociationFields(
                 Collection<AssociationDefinition> assocDefs,
                 FieldGroup group,
-                NamespaceService namespaceService)
+                NamespaceService namespaceService,
+                DictionaryService dictionaryService)
     {
-        return makeAssociationFields(assocDefs, null, group, namespaceService);
+        return makeAssociationFields(assocDefs, null, group, namespaceService, dictionaryService);
     }
     
     /**
@@ -164,9 +171,10 @@ public class FieldUtils
     public static List<Field> makeAssociationFields(
                 Map<AssociationDefinition, Object> assocDefAndValue,
                 FieldGroup group,
-                NamespaceService namespaceService)
+                NamespaceService namespaceService,
+                DictionaryService dictionaryService)
     {
-        return makeAssociationFields(assocDefAndValue.keySet(), assocDefAndValue, group, namespaceService);
+        return makeAssociationFields(assocDefAndValue.keySet(), assocDefAndValue, group, namespaceService, dictionaryService);
     }
     
     /**
@@ -182,9 +190,10 @@ public class FieldUtils
                 Collection<AssociationDefinition> assocDefs,
                 Map<AssociationDefinition, Object> values,
                 FieldGroup group,
-                NamespaceService namespaceService)
+                NamespaceService namespaceService,
+                DictionaryService dictionaryService)
     {
-        AssociationFieldProcessor processor = new AssociationFieldProcessor(namespaceService, null);
+        AssociationFieldProcessor processor = new AssociationFieldProcessor(namespaceService, dictionaryService);
         ArrayList<Field> fields = new ArrayList<Field>(assocDefs.size());
         for (AssociationDefinition propDef : assocDefs)
         {

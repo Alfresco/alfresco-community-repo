@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -50,6 +51,7 @@ import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSizeInterface;
 import org.alfresco.jlan.server.filesys.FileAttribute;
+import org.alfresco.jlan.server.filesys.FileExistsException;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileOpenParams;
@@ -173,10 +175,11 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     
     protected static final long DiskSizeDefault		= 1 * MemorySize.TERABYTE;
     protected static final long DiskFreeDefault		= DiskSizeDefault / 2;
-    
+
     private boolean isReadOnly;
     private boolean isLockedFilesAsOffline;
-    
+    // pattern for detect CSV files.
+    private Pattern renameCSVShufflePattern = Pattern.compile(".*[a-f0-9]{8}+$");
     // Services and helpers
     
     private CifsHelper cifsHelper;
@@ -509,6 +512,17 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         this.ownableService = ownableService;
     }
 
+    /**
+     * Set the regular expression that will be applied to CSV files during renames.
+     * <b>MNT-211</b>
+     * 
+     * @param renameCSVShufflePattern      a regular expression CSV filename match
+     */
+    public void setRenameCSVShufflePattern(Pattern renameCSVShufflePattern)
+    {
+        this.renameCSVShufflePattern = renameCSVShufflePattern;
+    }
+    
     /**
      * Parse and validate the parameter string and create a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple
@@ -2091,9 +2105,23 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     {
                         logger.debug("create new file" + path);
                     }
-            
-                    NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_CONTENT);
-                    nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
+
+
+                    NodeRef nodeRef = null;
+
+                    try
+                    {
+                        nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_CONTENT);
+                        nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
+                    }
+                    catch ( FileExistsException ex)
+                    {
+                        nodeRef = cifsHelper.getNodeRef(deviceRootNodeRef, path);
+                        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_SOFT_DELETE))
+                        {
+                            throw ex;
+                        }
+                    }
                     
                     return new Pair<String, NodeRef>(parentPath, nodeRef);
                 }});
@@ -2108,6 +2136,12 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     parentState = ctx.getStateCache().findFileState(parentPath, true);
             }
             
+            NodeRef nodeRef = result.getSecond();
+            if (nodeRef != null && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_SOFT_DELETE))
+            {
+                nodeService.removeAspect(nodeRef, ContentModel.ASPECT_SOFT_DELETE);
+            }
+  
             // Create the network file
             
             ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, result.getSecond(), params.getPath(), params.isReadOnlyAccess(), params.isAttributesOnlyAccess(), sess);
@@ -3338,6 +3372,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
                                     newState.setFileStatus(FileExists);
                                     newState.setFilesystemObject(nodeToMoveRef);
+                                    newState.setFileSize(oldState.getFileSize());
 
                                     // Make sure the old file state is cached for a short while, the file may not be open so the
                                     // file state could be expired
@@ -3387,6 +3422,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
                                     newState.setFileStatus(FileExists);
                                     newState.setFilesystemObject(finalTargetNodeRef);
+                                    newState.setFileSize(oldState.getFileSize());
 
                                     // Make sure the old file state is cached for a short while, the file may not be open so the
                                     // file state could be expired
@@ -3423,7 +3459,15 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                                         {
                                             logger.debug("Rename shuffle for versioning content is assumed. Deleting " + nodeToMoveRef + " as system user");
                                         }
-                                        nodeService.deleteNode(nodeToMoveRef);
+                                        if (renameCSVShufflePattern.matcher(newName.toLowerCase()).matches())
+                                        {
+                                            Map<QName, Serializable> props = Collections.emptyMap();
+                                            nodeService.addAspect(nodeToMoveRef, ContentModel.ASPECT_SOFT_DELETE, props);
+                                        }
+                                        else
+                                        {
+                                            nodeService.deleteNode(nodeToMoveRef);
+                                        }
                                         return null;
                                     }
 

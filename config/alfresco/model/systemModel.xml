@@ -288,6 +288,12 @@
          </properties>
       </aspect>
 
+      <!-- aspect used for soft delete in rename shuffle -->
+      <aspect name="sys:softDelete">
+         <title>SoftDelete</title>
+         <archive>false</archive>
+      </aspect>
+
    </aspects>
 
 </model>

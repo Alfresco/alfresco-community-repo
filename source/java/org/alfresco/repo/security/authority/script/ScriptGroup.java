@@ -616,4 +616,17 @@ public class ScriptGroup implements Authority, Serializable
         
         return groups;
     }
+
+    /**
+     * Gets all the zones of this group
+     *
+     * @return The name of the zones of this group.
+     *
+     * @since 4.1.3
+     */
+    @Override
+    public Set<String> getZones()
+    {
+        return authorityService.getAuthorityZones(fullName);
+    }
 }

@@ -124,7 +124,7 @@ public abstract class CMISAbstractTypeDefinition implements CMISTypeDefinition, 
             {
                 if (cmisMapping.getDataType(propDef.getDataType()) != null)
                 {
-                    CMISPropertyDefinition cmisPropDef = createProperty(cmisMapping, propDef);
+                    CMISPropertyDefinition cmisPropDef = createProperty(cmisMapping, dictionaryService, propDef);
                     properties.put(cmisPropDef.getPropertyId().getId(), cmisPropDef);
                 }
             }
@@ -140,12 +140,12 @@ public abstract class CMISAbstractTypeDefinition implements CMISTypeDefinition, 
      * @param propDef
      * @return
      */
-    private CMISPropertyDefinition createProperty(CMISMapping cmisMapping, PropertyDefinition propDef)
+    private CMISPropertyDefinition createProperty(CMISMapping cmisMapping, DictionaryService dictionaryService, PropertyDefinition propDef)
     {
         QName propertyQName = propDef.getName(); 
         String propertyId = cmisMapping.getCmisPropertyId(propertyQName);
         CMISPropertyId cmisPropertyId = new CMISPropertyId(propertyQName, propertyId);
-        return new CMISBasePropertyDefinition(cmisMapping, cmisPropertyId, propDef, this);
+        return new CMISBasePropertyDefinition(cmisMapping, cmisPropertyId, dictionaryService, propDef, this);
     }
 
     /**

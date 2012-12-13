@@ -71,7 +71,7 @@ public class RepoModelDefinition
         sb.append("RepoVersion: " + repoVersion + " , ");
         sb.append("RepoName: " + repoName + " , ");
         sb.append("ModelQName: " + (model == null ? "n/a" : model.getName()) + " , ");
-        sb.append("Description: " + (model == null ? "n/a" : model.getDescription()) + " , ");
+        sb.append("Description: " + (model == null ? "n/a" : model.getDescription(null)) + " , ");
         sb.append("Author: " + (model == null ? "n/a" : model.getAuthor()) + " , ");
         sb.append("Published: " + (model == null ? "n/a" : model.getPublishedDate()) + " , ");
         sb.append("Version: " + (model == null ? "n/a" : model.getVersion()));

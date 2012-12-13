@@ -84,6 +84,7 @@
       <property name="ownableService"><ref bean="ownableService" /></property>
       <property name="actionService"><ref bean="actionService" /></property>
       <property name="ioControlHandler"><ref bean="contentIOHandler"/></property>
+	  <property name="renameCSVShufflePattern"><value>${filesystem.renameCSVShufflePattern}</value></property>
    </bean>
    
    <!-- The filesystem command executor -->
@@ -193,9 +194,21 @@
                     <property name="timeout"><value>60000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>
+                <!--  Excel Mac 2011 -->
+                <bean id="createShuffleExcel2011" class="org.alfresco.filesys.repo.rules.ScenarioCreateDeleteRenameShuffle">
+                    <property name="pattern"><value>\._[0-9A-F]{8}\b</value></property>
+                    <property name="timeout"><value>60000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
                 <!--  Vi -->
                 <bean id="renameShuffleScenario" class="org.alfresco.filesys.repo.rules.ScenarioRenameShuffle">
                     <property name="pattern"><value>.*~$</value></property>
+                    <property name="timeout"><value>30000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
+                <!--  Excel 2003 with CSV -->
+                <bean id="renameShuffleCSVScenario" class="org.alfresco.filesys.repo.rules.ScenarioRenameCreateShuffle">
+                    <property name="pattern"><value>^[0-9A-F]{8}$</value></property>
                     <property name="timeout"><value>30000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>

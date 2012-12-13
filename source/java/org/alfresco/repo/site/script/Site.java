@@ -721,7 +721,7 @@ public class Site implements Serializable
                 if (propDef != null)
                 {
                     type = propDef.getDataType().getName().toString();
-                    title = propDef.getTitle();
+                    title = propDef.getTitle(this.serviceRegistry.getDictionaryService());
                 }
                 
                 // create the custom property and add to the map

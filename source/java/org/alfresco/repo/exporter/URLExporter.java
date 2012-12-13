@@ -271,9 +271,9 @@ import org.springframework.extensions.surf.util.ParameterCheck;
         exporter.endReference(nodeRef);
     }
 
-    public void startValueMLText(NodeRef nodeRef, Locale locale)
+    public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull)
     {
-        exporter.startValueMLText(nodeRef, locale);
+        exporter.startValueMLText(nodeRef, locale, isNull);
     }
 
     public void endValueMLText(NodeRef nodeRef)

@@ -109,6 +109,12 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
     @Override
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
+        if (!nodeService.exists(childAssocRef.getParentRef()))
+        {
+            // We are in the process of deleting the parent.
+            return;
+        }
+        
         // When a failedThumbnail node has been deleted, we should check if there are any other
         // failedThumbnail peer nodes left.
         // If there are not, then we can remove the failedThumbnailSource aspect.

@@ -54,9 +54,9 @@ public class TypeParameterConstraint extends BaseParameterConstraint
         for (QName type : types)
         {
             TypeDefinition typeDef = dictionaryService.getType(type);
-            if (typeDef != null && typeDef.getTitle() != null)
+            if (typeDef != null && typeDef.getTitle(dictionaryService) != null)
             {
-                result.put(type.toPrefixString(), typeDef.getTitle());
+                result.put(type.toPrefixString(), typeDef.getTitle(dictionaryService));
             }
         }        
         return result;

@@ -1296,34 +1296,34 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         }
         return null;
     }
-
+    
+    public void renameFile(final SrvSession session, final TreeConnection tree, final String oldName, final String newName)
+    throws IOException
+    {
+        throw new AlfrescoRuntimeException("obsolete method called");
+    }
+    
     /**
      * Rename the specified file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param oldName java.lang.String
-     * @param newName java.lang.String
+     * @param rootNode
+     * @param oldName path/name of old file
+     * @param newName path/name of new file
      * @exception java.io.IOException The exception description.
      */
-    public void renameFile(final SrvSession session, final TreeConnection tree, final String oldName, final String newName)
+    public void renameFile(NodeRef rootNode, final String oldName, final String newName, boolean soft)
             throws IOException
     {
-        // Get the device context
-        final ContentContext ctx = (ContentContext) tree.getContext();
-
-        // DEBUG
-
+ 
         if (logger.isDebugEnabled())
         {
-            logger.debug("RenameFile oldName=" + oldName + ", newName=" + newName + ", session:" + session.getUniqueId());
+            logger.debug("RenameFile oldName=" + oldName + ", newName=" + newName + ", soft" + soft);
         }
         
         try
         {
             // Get the file/folder to move
-
-            final NodeRef nodeToMoveRef = getNodeForPath(tree, oldName);
+            final NodeRef nodeToMoveRef = getCifsHelper().getNodeRef(rootNode, oldName);
 
             // Check if the node is a link node
 
@@ -1336,8 +1336,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             String[] splitPaths = FileName.splitPath(newName);
             String[] oldPaths = FileName.splitPath(oldName);
 
-            final NodeRef targetFolderRef = getNodeForPath(tree, splitPaths[0]);
-            final NodeRef sourceFolderRef = getNodeForPath(tree, oldPaths[0]);
+            final NodeRef targetFolderRef = getCifsHelper().getNodeRef(rootNode, splitPaths[0]);
+            final NodeRef sourceFolderRef = getCifsHelper().getNodeRef(rootNode, oldPaths[0]);
             final String name = splitPaths[1];
 
             // Check if this is a rename within the same folder
@@ -1347,7 +1347,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             // Check if we are renaming a folder, or the rename is to a different folder
             boolean isFolder = getCifsHelper().isDirectory(nodeToMoveRef);
 
-            if ( isFolder == true || sameFolder == false) {
+            if ( isFolder == true || sameFolder == false) 
+            {
                 
                 // Rename or move the file/folder to another folder
                 if (sameFolder == true)
@@ -1383,7 +1384,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             else 
             {
                 // Rename a file within the same folder
-                
+            
+
                 if (logger.isDebugEnabled())
                 {
                             logger.debug(
@@ -1395,8 +1397,16 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                                     "   Node:          " + nodeToMoveRef + "\n" +
                                     "   Aspects:       " + nodeService.getAspects(nodeToMoveRef));                             
                 }
-                fileFolderService.rename(nodeToMoveRef, name);
-                       
+                if(soft)
+                {
+                    logger.debug("this is a soft delete - use copy rather than rename");
+                    fileFolderService.copy(nodeToMoveRef, null, name);
+                    nodeService.addAspect(nodeToMoveRef, ContentModel.ASPECT_SOFT_DELETE, null);
+                }
+                else
+                {
+                    fileFolderService.rename(nodeToMoveRef, name);
+                }        
             }
         } 
         catch (org.alfresco.service.cmr.model.FileNotFoundException e)
@@ -2347,12 +2357,31 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 dirNodeRef =  rootNode;
                 folderName = path;  
             }
-                             
-            NodeRef nodeRef = cifsHelper.createNode(dirNodeRef, folderName, ContentModel.TYPE_CONTENT);
-
             
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
-                                    
+            boolean soft = false;
+            
+            NodeRef existing = fileFolderService.searchSimple(dirNodeRef, folderName);
+            if (existing != null)
+            {
+                if(nodeService.hasAspect(existing, ContentModel.ASPECT_SOFT_DELETE))
+                {
+                    logger.debug("existing node has soft delete aspect");
+                    soft = true;
+                }
+            }
+            
+            NodeRef nodeRef = null;
+            
+            if(soft)
+            {
+                nodeRef = existing;
+            }
+            else
+            {
+                nodeRef = cifsHelper.createNode(dirNodeRef, folderName, ContentModel.TYPE_CONTENT);
+                nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
+            }
+            
             File file = TempFileProvider.createTempFile("cifs", ".bin");
             
             TempNetworkFile netFile = new TempNetworkFile(file, path);

@@ -149,9 +149,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         // order as specified in CMIS-Core.xsd
         // so that schema validation passes
 
-        registerEvaluator(BaseTypeId.CMIS_DOCUMENT,
-                new CurrentVersionEvaluator(serviceRegistry, new PermissionActionEvaluator(serviceRegistry,
-                        Action.CAN_DELETE_OBJECT, PermissionService.DELETE_NODE), false));
+        registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CanDeleteDocumentEvaluator(serviceRegistry));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new PermissionActionEvaluator(serviceRegistry, Action.CAN_UPDATE_PROPERTIES,
                         PermissionService.WRITE_PROPERTIES), false));

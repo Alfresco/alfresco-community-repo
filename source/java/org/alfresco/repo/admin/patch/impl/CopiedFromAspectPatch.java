@@ -359,7 +359,8 @@ public class CopiedFromAspectPatch extends AbstractPatch
                 }
             };
             // Keep querying until we have enough results to give back
-            while (currentId <= maxId)
+            int minResults = batchMaxQueryRange / 2;
+            while (currentId <= maxId && results.size() < minResults)
             {
                 nodeDAO.getNodesWithAspects(
                         aspectQNames,

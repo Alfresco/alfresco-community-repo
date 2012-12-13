@@ -277,6 +277,7 @@ public class ContentDiskDriverTest extends TestCase
         final NetworkFile file = driver.createFile(testSession, testConnection, params);
         assertNotNull("file is null", file);
         assertFalse("file is read only, should be read-write", file.isReadOnly());
+        assertFalse("file is not closed ", file.isClosed());
         
         RetryingTransactionCallback<Void> writeStuffCB = new RetryingTransactionCallback<Void>() {
 
@@ -643,6 +644,7 @@ public class ContentDiskDriverTest extends TestCase
         
         NetworkFile file = driver.openFile(testSession, testConnection, params);
         assertNotNull(file);
+        assertFalse("file is closed", file.isClosed());
         
         /**
          * Step 3: Open the root directory.
@@ -652,6 +654,7 @@ public class ContentDiskDriverTest extends TestCase
         FileOpenParams rootParams = new FileOpenParams("\\", FileAction.CreateNotExist, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
         NetworkFile file3 = driver.openFile(testSession, testConnection, rootParams);
         assertNotNull(file3);
+        assertFalse("file is closed", file3.isClosed());
 
                 
     } // testOpenFile
@@ -3216,8 +3219,223 @@ public class ContentDiskDriverTest extends TestCase
         
     }
 
+    /**
+     * Excel 2003 CSV file with Versionable file 
+     * 
+     * CreateFile csv.csv and 5EE27101 
+     * Add versionable aspect 
+     * RenameFile oldPath:\Espaces Utilisateurs\System\csv.csv, newPath:\Espaces\Utilisateurs\System\5EE27101 
+     * CreateFile name=\Espaces Utilisateurs\System\csv.csv
+     * Add content
+     */
+    public void testCSVExcel2003SaveShuffle() throws Exception
+    {
+        logger.debug("testCSVExcel2003SaveShuffle");
+        final String FILE_NAME = "csv.csv";
+        final String FILE_TITLE = "csv";
+        final String FILE_DESCRIPTION = "This is a test document to test CIFS shuffle";
+        final String FILE_TEMP = "AAAA0000";
 
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+            NetworkFile newFileHandle;
 
+            NodeRef testNodeRef;
+
+            Serializable testCreatedDate;
+        }
+        ;
+
+        final TestContext testContext = new TestContext();
+
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testMSExcel2003CSVShuffle";
+
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+
+        /**
+         * Clean up from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>()
+        {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+
+        /**
+         * Create a file in the test directory
+         */
+        RetryingTransactionCallback<Void> createTestFileFirstTime = new RetryingTransactionCallback<Void>()
+        {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+
+                /**
+                 * Create the test directory we are going to use
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+
+                /**
+                 * Create the file we are going to use
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+
+                testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+
+                nodeService.setProperty(testContext.testNodeRef, ContentModel.PROP_TITLE, FILE_TITLE);
+                nodeService.setProperty(testContext.testNodeRef, ContentModel.PROP_DESCRIPTION, FILE_DESCRIPTION);
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createTestFileFirstTime, false, true);
+
+        /**
+         * Write some content to the test file. Add versionable aspect
+         */
+        RetryingTransactionCallback<Void> writeToTestFileAndAddVersionableAspect = new RetryingTransactionCallback<Void>()
+        {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                String testContent = "MS Excel 2003 for CSV shuffle test";
+                byte[] testContentBytes = testContent.getBytes();
+                testContext.firstFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+                testContext.firstFileHandle.close();
+
+                testContext.testCreatedDate = nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_CREATED);
+
+                nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+
+                return null;
+            }
+        };
+        tran.doInTransaction(writeToTestFileAndAddVersionableAspect, false, true);
+
+        /**
+         * rename the test file to the temp
+         */
+        RetryingTransactionCallback<Void> renameTestFileToTemp = new RetryingTransactionCallback<Void>()
+        {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + FILE_TEMP);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameTestFileToTemp, false, true);
+
+        /**
+         * create the test file one more
+         */
+        RetryingTransactionCallback<Void> createTestFileOneMore = new RetryingTransactionCallback<Void>()
+        {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+
+                FileOpenParams params = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, FileAction.TruncateExisting, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                NetworkFile file = driver.createFile(testSession, testConnection, params);
+                driver.closeFile(testSession, testConnection, file);
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createTestFileOneMore, false, true);
+        
+      /**
+      * Write the new content
+      */
+     RetryingTransactionCallback<Void> writeUpdate = new RetryingTransactionCallback<Void>()
+     {
+
+         @Override
+         public Void execute() throws Throwable
+         {
+             FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+             testContext.newFileHandle = driver.openFile(testSession, testConnection, createFileParams);
+             assertNotNull(testContext.newFileHandle);
+             String testContent = "MS Word 2003 for CSV shuffle test This is new content";
+             byte[] testContentBytes = testContent.getBytes();
+             testContext.newFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+             testContext.newFileHandle.close();
+
+             return null;
+         }
+     };
+     tran.doInTransaction(writeUpdate, false, true);
+
+        // Check results
+        RetryingTransactionCallback<Void> validate = new RetryingTransactionCallback<Void>()
+        {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+
+                // Check versionable aspect, version label and nodeRef
+                assertTrue("VERSIONABLE aspect not present", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                assertEquals("nodeRef changed", testContext.testNodeRef, shuffledNodeRef);
+    
+                // Check the titled aspect is correct
+                assertEquals("name wrong", FILE_NAME, nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_NAME));
+                assertEquals("title wrong", FILE_TITLE, nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_TITLE));
+                assertEquals("description wrong", FILE_DESCRIPTION, nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_DESCRIPTION));
+
+                return null;
+            }
+        };
+
+        tran.doInTransaction(validate, true, true);
+
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteTestFile = new RetryingTransactionCallback<Void>()
+        {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+
+        tran.doInTransaction(deleteTestFile, false, true);
+
+    }
 
     /**
      * Simulates a SaveAs from Word2003
@@ -3468,9 +3686,12 @@ public class ContentDiskDriverTest extends TestCase
             {   
                 logger.debug("create file and close it immediatly");
                 FileOpenParams createFileParams = new FileOpenParams(FILE_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
-                NetworkFile dummy = driver.createFile(testSession, testConnection, createFileParams);    
+                NetworkFile dummy = driver.createFile(testSession, testConnection, createFileParams);  
+                assertFalse("file is closed after create", dummy.isClosed());
                 driver.closeFile(testSession, testConnection, dummy);
                 logger.debug("after create and close");
+// TODO Bug in JavaNetworkFile                
+//                assertTrue("file is not closed after close", dummy.isClosed());
                 return null;
             }
         };
@@ -3487,6 +3708,7 @@ public class ContentDiskDriverTest extends TestCase
         logger.debug("open file1 read only");
         NetworkFile file1 = driver.openFile(testSession, testConnection, openRO);
         assertNotNull(file1);
+        assertFalse("file1 is closed", file1.isClosed());
         
         final String testString = "Yankee doodle went to town";
         byte[] stuff = testString.getBytes("UTF-8");
@@ -3507,6 +3729,7 @@ public class ContentDiskDriverTest extends TestCase
         logger.debug("open file 2 for read write");
         NetworkFile file2 = driver.openFile(testSession, testConnection, openRW);
         assertNotNull(file2);
+        assertFalse("file is closed", file2.isClosed());
 
         /**
          * Write Some Content 
@@ -3531,8 +3754,8 @@ public class ContentDiskDriverTest extends TestCase
         /**
          * Step 2: Negative test - Close the file again - should do nothing quietly!
          */
-//        logger.debug("this is a negative test - should do nothing");
-//        driver.closeFile(testSession, testConnection, file1);
+        logger.debug("this is a negative test - should do nothing");
+        driver.closeFile(testSession, testConnection, file1);
         
         logger.debug("now validate");
          
@@ -5079,6 +5302,197 @@ public class ContentDiskDriverTest extends TestCase
         tran.doInTransaction(validateCB, true, true);
         
     } // testScenarioMSPowerpoint2011MacSaveShuffle
+
+    /**
+     * Simulates a Save from Excel 2011 Mac
+     * 0. FileA.xlsx already exists.
+     * 1. Create new document ._A8A09200
+     * 2. Delete FileA.xlsx
+     * 3. Rename ._A8A09200 to FileA.xlsx 
+     */
+    public void testScenarioMSExcel2011MacSaveShuffle() throws Exception
+    {
+        logger.debug("testScenarioMSExcel2011MacSaveShuffle(");
+        
+        final String FILE_NAME = "FileA.xlsx";
+        final String FILE_NEW_TEMP = "._A8A09200";
+        
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+        };
+        
+        final TestContext testContext = new TestContext();
+        
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testScenarioMSExcel2011MacSaveShuffle";
+        
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "cifs", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();        
+
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+     
+        /**
+         * Create a file in the test directory
+         */    
+        
+        try
+        {
+            logger.debug("expect to get exception - cleaning garbage");
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+        
+        logger.debug("0) create new file");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+  
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+                
+                /**
+                 * Create the file we are going to use (FileA.xlsx)
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+                
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                
+                NodeRef file1NodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                nodeService.addAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+             
+        /**
+         * b) Save the new file
+         * Write ContentDiskDriverTest3.doc to the test file,
+         */
+        logger.debug("b) write some content");
+        RetryingTransactionCallback<Void> writeFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);    
+         
+                ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTest3.doc");
+                assertNotNull("unable to find test resource filesys/ContentDiskDriverTest3.doc", fileResource);
+
+                byte[] buffer= new byte[1000];
+                InputStream is = fileResource.getInputStream();
+                try
+                {
+                    long offset = 0;
+                    int i = is.read(buffer, 0, buffer.length);
+                    while(i > 0)
+                    {
+                        testContext.firstFileHandle.writeFile(buffer, i, 0, offset);
+                        offset += i;
+                        i = is.read(buffer, 0, buffer.length);
+                    }                 
+                }
+                finally
+                {
+                    is.close();
+                }
+            
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);   
+                    
+                return null;
+            }
+        };
+        tran.doInTransaction(writeFileCB, false, true);
+        
+        /**
+         * c) delete the old file
+         */
+        logger.debug("c) delete old file");
+        RetryingTransactionCallback<Void> renameOldFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameOldFileCB, false, true);
+           
+        /**
+         * d) Move the new file into place, stuff should get shuffled
+         */
+        logger.debug("d) rename new file into place");
+        RetryingTransactionCallback<Void> moveNewFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NAME); 
+                return null;
+            }
+        };
+        
+        tran.doInTransaction(moveNewFileCB, false, true);
+        
+        logger.debug("e) validate results");
+        /**
+         * Now validate everything is correct
+         */
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               
+               Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+               
+               ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+               assertNotNull("data is null", data);
+               assertEquals("size is wrong", 26112, data.getSize());
+               assertEquals("mimeType is wrong", "application/msword",data.getMimetype());
+               
+               assertTrue("versionable aspect missing", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+               assertTrue("hidden aspect still applied", !nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_HIDDEN));
+               assertTrue("temporary aspect still applied", !nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_TEMPORARY));
+           
+               return null;
+            }
+        };
+        
+        tran.doInTransaction(validateCB, true, true);
+        
+    } // testScenarioMSExcel2011MacSaveShuffle
 
     /**
      * This test tries to simulate the cifs shuffling that is done to

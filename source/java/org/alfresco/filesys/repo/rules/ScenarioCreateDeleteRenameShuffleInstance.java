@@ -175,12 +175,27 @@ public class ScenarioCreateDeleteRenameShuffleInstance implements ScenarioInstan
                 /**
                  * For Mac 2011 powerpoint files - add an extra check based on the filename
                  * e.g FileA1 - delete FileA.
+                 * For Mac 2011 excel files - check that file to delete is not temporary
                  */
                 if(checkFilename)
                 {
+                    boolean isRightTarget = false;
                     int i = deleteName.lastIndexOf('.');
                     
-                    if((i > 0) && (i < createName.length()) && deleteName.substring(0, i).equalsIgnoreCase(createName.substring(0,i))) 
+                    if (i > 0)
+                    {
+                        String extension = deleteName.substring(i+1,deleteName.length());
+                        if (extension.startsWith("ppt"))
+                        {
+                            isRightTarget = (i < createName.length()) && deleteName.substring(0, i).equalsIgnoreCase(createName.substring(0,i)); 
+                        }
+                        else if (extension.startsWith("xls"))
+                        {
+                            isRightTarget = !deleteName.startsWith("._") && !deleteName.startsWith("~$");
+                        }
+                    }
+                    
+                    if (isRightTarget)
                     {
                         logger.debug("check filenames - does match");
                     }

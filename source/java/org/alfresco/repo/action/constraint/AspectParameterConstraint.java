@@ -54,9 +54,9 @@ public class AspectParameterConstraint extends BaseParameterConstraint
         for (QName aspect : aspects)
         {
             AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
-            if (aspectDef != null && aspectDef.getTitle() != null)
+            if (aspectDef != null && aspectDef.getTitle(dictionaryService) != null)
             {
-                result.put(aspect.toPrefixString(), aspectDef.getTitle());
+                result.put(aspect.toPrefixString(), aspectDef.getTitle(dictionaryService));
             }
         }        
         return result;

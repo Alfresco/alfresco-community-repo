@@ -485,12 +485,7 @@ public class ExporterComponent
                         for (Locale locale : locales)
                         {
                             String localeValue = valueMLT.getValue(locale);
-                            if (localeValue == null)
-                            {
-                                walkProperty(nodeRef, property, localeValue, -1, parameters, exporter);
-                                continue;
-                            }
-                            exporter.startValueMLText(nodeRef, locale);
+                            exporter.startValueMLText(nodeRef, locale, localeValue == null);
                             walkProperty(nodeRef, property, localeValue, -1, parameters, exporter);
                             exporter.endValueMLText(nodeRef);
                         }

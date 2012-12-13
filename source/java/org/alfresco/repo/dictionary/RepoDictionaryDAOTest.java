@@ -41,6 +41,7 @@ import org.alfresco.repo.dictionary.constraint.RegexConstraint;
 import org.alfresco.repo.dictionary.constraint.RegisteredConstraint;
 import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
 import org.alfresco.repo.dictionary.constraint.UserNameConstraint;
+import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -111,6 +112,7 @@ public class RepoDictionaryDAOTest extends TestCase
         
         DictionaryComponent component = new DictionaryComponent();
         component.setDictionaryDAO(dictionaryDAO);
+        component.setMessageLookup(new StaticMessageLookup());
         service = component;
     }
     
@@ -163,19 +165,19 @@ public class RepoDictionaryDAOTest extends TestCase
     {
         QName model = QName.createQName(TEST_URL, "dictionarydaotest");
         ModelDefinition modelDef = service.getModel(model);
-        assertEquals("Model Description", modelDef.getDescription());
+        assertEquals("Model Description", modelDef.getDescription(service));
         QName type = QName.createQName(TEST_URL, "base");
         TypeDefinition typeDef = service.getType(type);
-        assertEquals("Base Title", typeDef.getTitle());
-        assertEquals("Base Description", typeDef.getDescription());
+        assertEquals("Base Title", typeDef.getTitle(service));
+        assertEquals("Base Description", typeDef.getDescription(service));
         QName prop = QName.createQName(TEST_URL, "prop1");
         PropertyDefinition propDef = service.getProperty(prop);
-        assertEquals("Prop1 Title", propDef.getTitle());
-        assertEquals("Prop1 Description", propDef.getDescription());
+        assertEquals("Prop1 Title", propDef.getTitle(service));
+        assertEquals("Prop1 Description", propDef.getDescription(service));
         QName assoc = QName.createQName(TEST_URL, "assoc1");
         AssociationDefinition assocDef = service.getAssociation(assoc);
-        assertEquals("Assoc1 Title", assocDef.getTitle());
-        assertEquals("Assoc1 Description", assocDef.getDescription());
+        assertEquals("Assoc1 Title", assocDef.getTitle(service));
+        assertEquals("Assoc1 Description", assocDef.getDescription(service));
         QName datatype = QName.createQName(TEST_URL, "datatype");
         DataTypeDefinition datatypeDef = service.getDataType(datatype);
         assertEquals("alfresco/model/dataTypeAnalyzers", datatypeDef.getAnalyserResourceBundleName());
@@ -201,15 +203,15 @@ public class RepoDictionaryDAOTest extends TestCase
         {
             if (constraintDef.getName().equals(conRegExp1QName))
             {
-                assertEquals("Regex1 title", constraintDef.getTitle());
-                assertEquals("Regex1 description", constraintDef.getDescription());
+                assertEquals("Regex1 title", constraintDef.getTitle(service));
+                assertEquals("Regex1 description", constraintDef.getDescription(service));
                 found1 = true;
             }
             
             if (constraintDef.getName().equals(conStrLen1QName))
             {
-                assertNull(constraintDef.getTitle());
-                assertNull(constraintDef.getDescription());
+                assertNull(constraintDef.getTitle(service));
+                assertNull(constraintDef.getDescription(service));
                 found2 = true;
             }
         }
@@ -236,14 +238,14 @@ public class RepoDictionaryDAOTest extends TestCase
         assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().startsWith("prop1_anon"));
         
         // inherit title / description for reference constraint
-        assertTrue("Constraint title incorrect", constraintDef.getTitle().equals("Regex1 title"));
-        assertTrue("Constraint description incorrect", constraintDef.getDescription().equals("Regex1 description"));
+        assertTrue("Constraint title incorrect", constraintDef.getTitle(service).equals("Regex1 title"));
+        assertTrue("Constraint description incorrect", constraintDef.getDescription(service).equals("Regex1 description"));
         
         constraintDef = constraints.get(1);
         assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().startsWith("prop1_anon"));
         
-        assertTrue("Constraint title incorrect", constraintDef.getTitle().equals("Prop1 Strlen1 title"));
-        assertTrue("Constraint description incorrect", constraintDef.getDescription().equals("Prop1 Strlen1 description"));
+        assertTrue("Constraint title incorrect", constraintDef.getTitle(service).equals("Prop1 Strlen1 title"));
+        assertTrue("Constraint description incorrect", constraintDef.getDescription(service).equals("Prop1 Strlen1 description"));
         
         // check that the constraint implementation is valid (it used a reference)
         Constraint constraint = constraintDef.getConstraint();

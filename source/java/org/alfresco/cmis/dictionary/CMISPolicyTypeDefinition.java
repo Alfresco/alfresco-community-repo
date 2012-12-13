@@ -50,14 +50,14 @@ public class CMISPolicyTypeDefinition extends CMISAbstractTypeDefinition
      * @param typeId
      * @param cmisClassDef
      */
-    public CMISPolicyTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef)
+    public CMISPolicyTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, DictionaryService dictionaryService, ClassDefinition cmisClassDef)
     {
         isPublic = true;
         
         // Object Type definitions
         this.cmisClassDef = cmisClassDef;
         objectTypeId = typeId;
-        displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
+        displayName = (cmisClassDef.getTitle(dictionaryService) != null) ? cmisClassDef.getTitle(dictionaryService) : typeId.getId();
         if (typeId == CMISDictionaryModel.POLICY_TYPE_ID)
         {
             objectTypeQueryName = typeId.getId();
@@ -72,7 +72,7 @@ public class CMISPolicyTypeDefinition extends CMISAbstractTypeDefinition
             objectTypeQueryName = ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(typeId.getQName()));
             parentTypeId = CMISDictionaryModel.POLICY_TYPE_ID;
         }
-        description = cmisClassDef.getDescription() != null ? cmisClassDef.getDescription() : displayName;
+        description = cmisClassDef.getDescription(dictionaryService) != null ? cmisClassDef.getDescription(dictionaryService) : displayName;
         
         actionEvaluators = cmisMapping.getActionEvaluators(objectTypeId.getScope());
         

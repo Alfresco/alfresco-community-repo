@@ -718,10 +718,12 @@ public class ViewParser implements Parser
                     isMLProperty = false;
 
                     locale = xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_LOCALE_ATTR);
+                    Boolean isNull = Boolean.valueOf(xpp.getAttributeValue(NamespaceService.REPOSITORY_VIEW_1_0_URI, VIEW_ISNULL_ATTR));
+                    String decoratedValue = isNull ? null : "";
                     eventType = xpp.next();
                     if (eventType == XmlPullParser.TEXT)
                     {
-                        value = xpp.getText();
+                    	decoratedValue = xpp.getText();
                         eventType = xpp.next();
                     }
                     if (eventType == XmlPullParser.END_TAG)
@@ -730,7 +732,7 @@ public class ViewParser implements Parser
                         {
                             logger.debug("Found ML entry: " + locale + "=" + value);
                         }
-                        mlText.addValue(DefaultTypeConverter.INSTANCE.convert(Locale.class, locale), value);
+                        mlText.addValue(DefaultTypeConverter.INSTANCE.convert(Locale.class, locale), decoratedValue);
 
                         eventType = xpp.next();
                         if (eventType == XmlPullParser.TEXT)

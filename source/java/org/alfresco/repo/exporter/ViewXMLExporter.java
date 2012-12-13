@@ -555,6 +555,8 @@ import org.xml.sax.helpers.AttributesImpl;
                 }
             }
 
+        	boolean isMLText = (dataTypeDef != null && dataTypeDef.getName().equals(DataTypeDefinition.MLTEXT));
+
             // convert node references to paths
             if (value instanceof NodeRef && referenceType.equals(ReferenceType.PATHREF))
             {
@@ -589,7 +591,11 @@ import org.xml.sax.helpers.AttributesImpl;
                 {
                     attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_PREFIX, DATATYPE_LOCALNAME, DATATYPE_QNAME.toPrefixString(), null, toPrefixString(valueDataType));
                 }
-                contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUE_LOCALNAME, toPrefixString(VALUE_QNAME), attrs);
+                if(!isMLText)
+                {
+                	// only output for non MLTEXT values
+                	contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUE_LOCALNAME, toPrefixString(VALUE_QNAME), attrs);
+                }
             }
             
             // output value
@@ -604,10 +610,11 @@ import org.xml.sax.helpers.AttributesImpl;
             }
 
             // output value wrapper if property data type is any
-            if (value == null || valueDataType != null || index != -1)
-            {
-                contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUE_LOCALNAME, toPrefixString(VALUE_QNAME));
-            }
+            if ((value == null || valueDataType != null || index != -1) && !isMLText)
+        	{
+            	// only output for non MLTEXT values
+        		contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUE_LOCALNAME, toPrefixString(VALUE_QNAME));
+        	}
         }
         catch (SAXException e)
         {
@@ -736,10 +743,14 @@ import org.xml.sax.helpers.AttributesImpl;
         }
     }
 
-    public void startValueMLText(NodeRef nodeRef, Locale locale)
+    public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull)
     {
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_PREFIX, LOCALE_LOCALNAME, LOCALE_QNAME.toPrefixString(), null, locale.toString());
+        if(isNull)
+        {
+            attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_PREFIX, ISNULL_LOCALNAME, ISNULL_QNAME.toPrefixString(), null, "true");
+        }
         try
         {
             contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, MLVALUE_LOCALNAME, MLVALUE_QNAME.toPrefixString(), attrs);

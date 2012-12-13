@@ -21,6 +21,7 @@ package org.alfresco.repo.security.authority.script;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public interface Authority 
 {
@@ -29,6 +30,7 @@ public interface Authority
     public String getShortName();
     public String getFullName();
     public String getDisplayName();
+    public Set<String> getZones();
 
     
     /**

@@ -47,7 +47,7 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
      * @param typeId
      * @param cmisClassDef
      */
-    public CMISObjectTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef, boolean isPublic)
+    public CMISObjectTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, DictionaryService dictionaryService, ClassDefinition cmisClassDef, boolean isPublic)
     {
         this.isPublic = isPublic;
         
@@ -58,8 +58,8 @@ public class CMISObjectTypeDefinition extends CMISAbstractTypeDefinition
         if (cmisClassDef != null)
         {
             this.cmisClassDef = cmisClassDef;
-            displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
-            description = cmisClassDef.getDescription() != null ? cmisClassDef.getDescription() : displayName;
+            displayName = (cmisClassDef.getTitle(dictionaryService) != null) ? cmisClassDef.getTitle(dictionaryService) : typeId.getId();
+            description = cmisClassDef.getDescription(dictionaryService) != null ? cmisClassDef.getDescription(dictionaryService) : displayName;
             QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
             if (parentQName != null)
             {

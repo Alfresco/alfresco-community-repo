@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
- * Alfresco is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Alfresco is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- */
 package org.alfresco.filesys.repo.rules;
 
 import java.util.List;
@@ -27,18 +9,9 @@ import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-/**
- * The "Vi" rename shuffle is a sequence where a file is moved out of the way
- * and then a new copy of the file put into place.
- * 
- * a) Rename File to File~
- * b) Create File
- * c) Delete File~
- *
- */
-public class ScenarioRenameShuffle implements Scenario
+public class ScenarioRenameCreateShuffle implements Scenario
 {
-    private static Log logger = LogFactory.getLog(ScenarioRenameShuffle.class);
+    private static Log logger = LogFactory.getLog(ScenarioRenameCreateShuffle.class);
 
     /**
      * The regex pattern of a create that will trigger a new instance of
@@ -65,9 +38,9 @@ public class ScenarioRenameShuffle implements Scenario
             {
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("New Scenario Rename Shuffle Instance strPattern:" + pattern);
+                    logger.debug("New Scenario Rename Shuffle Create Instance strPattern:" + pattern);
                 }
-                ScenarioRenameShuffleInstance instance = new ScenarioRenameShuffleInstance();
+                ScenarioRenameCreateShuffleInstance instance = new ScenarioRenameCreateShuffleInstance();
                 instance.setTimeout(timeout);
                 instance.setRanking(ranking);
                 return instance;
@@ -110,6 +83,6 @@ public class ScenarioRenameShuffle implements Scenario
     {
         return ranking;
     }
-
-
 }
+
+

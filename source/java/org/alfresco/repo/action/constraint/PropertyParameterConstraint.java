@@ -54,9 +54,9 @@ public class PropertyParameterConstraint extends BaseParameterConstraint
         for (QName property : properties)
         {
             PropertyDefinition propertyDef = dictionaryService.getProperty(property);
-            if (propertyDef != null && propertyDef.getTitle() != null)
+            if (propertyDef != null && propertyDef.getTitle(dictionaryService) != null)
             {
-                result.put(property.toPrefixString(), propertyDef.getTitle());
+                result.put(property.toPrefixString(), propertyDef.getTitle(dictionaryService));
             }
         }        
         return result;

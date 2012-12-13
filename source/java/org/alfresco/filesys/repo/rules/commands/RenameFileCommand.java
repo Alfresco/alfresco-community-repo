@@ -33,6 +33,7 @@ public class RenameFileCommand implements Command
     private NodeRef rootNode;
     private String fromPath;
     private String toPath;
+    private boolean isSoft = false;
     
     public RenameFileCommand(String from, String to, NodeRef rootNode, String fromPath, String toPath)
     {
@@ -95,5 +96,10 @@ public class RenameFileCommand implements Command
     public String getToPath()
     {
         return toPath;
+    }
+    
+    public boolean isSoft()
+    {
+        return isSoft;
     }
 }

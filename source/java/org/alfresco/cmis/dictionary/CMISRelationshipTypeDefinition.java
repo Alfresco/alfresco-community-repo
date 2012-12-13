@@ -65,7 +65,7 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
      * @param cmisClassDef
      * @param assocDef
      */
-    public CMISRelationshipTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, ClassDefinition cmisClassDef, AssociationDefinition assocDef)
+    public CMISRelationshipTypeDefinition(CMISMapping cmisMapping, CMISTypeId typeId, DictionaryService dictionaryService, ClassDefinition cmisClassDef, AssociationDefinition assocDef)
     {
         isPublic = true;
         this.cmisClassDef = cmisClassDef;
@@ -83,22 +83,22 @@ public class CMISRelationshipTypeDefinition extends CMISAbstractTypeDefinition
         {
             // TODO: Add CMIS Association mapping??
             creatable = false;
-            displayName = (cmisClassDef.getTitle() != null) ? cmisClassDef.getTitle() : typeId.getId();
+            displayName = (cmisClassDef.getTitle(dictionaryService) != null) ? cmisClassDef.getTitle(dictionaryService) : typeId.getId();
             objectTypeQueryName = typeId.getId();
             QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
             if (parentQName != null)
             {
                 parentTypeId = cmisMapping.getCmisTypeId(CMISScope.OBJECT, parentQName);
             }
-            description = cmisClassDef.getDescription() != null ? cmisClassDef.getDescription() : displayName;
+            description = cmisClassDef.getDescription(dictionaryService) != null ? cmisClassDef.getDescription(dictionaryService) : displayName;
         }
         else
         {
             creatable = true;
-            displayName = (assocDef.getTitle() != null) ? assocDef.getTitle() : typeId.getId();
+            displayName = (assocDef.getTitle(dictionaryService) != null) ? assocDef.getTitle(dictionaryService) : typeId.getId();
             objectTypeQueryName = ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(typeId.getQName()));
             parentTypeId = CMISDictionaryModel.RELATIONSHIP_TYPE_ID;
-            description = assocDef.getDescription() != null ? assocDef.getDescription() : displayName;
+            description = assocDef.getDescription(dictionaryService) != null ? assocDef.getDescription(dictionaryService) : displayName;
 
             CMISTypeId sourceTypeId = cmisMapping.getCmisTypeId(cmisMapping.getCmisType(assocDef.getSourceClass().getName()));
             if (sourceTypeId != null)

@@ -397,7 +397,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
                 // Check that the model is now available from the dictionary
                 ModelDefinition modelDefinition2 = DictionaryModelTypeTest.this.dictionaryService.getModel(TEST_MODEL_ONE);
                 assertNotNull(modelDefinition2);
-                assertEquals("Test model one", modelDefinition2.getDescription());
+                assertEquals("Test model one", modelDefinition2.getDescription(DictionaryModelTypeTest.this.dictionaryService));
                 
                 // Check that the namespace has been added to the namespace service
                 String uri2 = DictionaryModelTypeTest.this.namespaceService.getNamespaceURI("test1");

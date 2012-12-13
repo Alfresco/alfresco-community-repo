@@ -179,7 +179,7 @@ public interface Exporter
      * @param nodeRef the node reference
      * @param locale
      */
-    public void startValueMLText(NodeRef nodeRef, Locale locale);
+    public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull);
 
     /**
      * End export MLText

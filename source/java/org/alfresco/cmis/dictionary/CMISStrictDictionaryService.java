@@ -76,20 +76,20 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
             CMISAbstractTypeDefinition objectTypeDef = null;
             if (typeId.getScope() == CMISScope.DOCUMENT)
             {
-                objectTypeDef = new CMISDocumentTypeDefinition(cmisMapping, typeId, classDef);
+                objectTypeDef = new CMISDocumentTypeDefinition(cmisMapping, typeId, dictionaryService, classDef);
             }
             else if (typeId.getScope() == CMISScope.FOLDER)
             {
                 boolean isSystem = dictionaryService.isSubClass(classDef.getName(), ContentModel.TYPE_SYSTEM_FOLDER);
-                objectTypeDef = new CMISFolderTypeDefinition(cmisMapping, typeId, classDef, isSystem);
+                objectTypeDef = new CMISFolderTypeDefinition(cmisMapping, typeId, dictionaryService, classDef, isSystem);
             }
             else if (typeId.getScope() == CMISScope.POLICY)
             {
-                objectTypeDef = new CMISPolicyTypeDefinition(cmisMapping, typeId, classDef);
+                objectTypeDef = new CMISPolicyTypeDefinition(cmisMapping, typeId, dictionaryService, classDef);
             }
             else if (typeId.getScope() == CMISScope.OBJECT)
             {
-                objectTypeDef = new CMISObjectTypeDefinition(cmisMapping, typeId, classDef, false);
+                objectTypeDef = new CMISObjectTypeDefinition(cmisMapping, typeId, dictionaryService, classDef, false);
             }
 
             registry.registerTypeDefinition(objectTypeDef);
@@ -106,7 +106,7 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
     {
         CMISTypeId typeId = cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, CMISMapping.RELATIONSHIP_QNAME);
         ClassDefinition classDef = dictionaryService.getClass(cmisMapping.getCmisType(typeId.getQName()));
-        CMISAbstractTypeDefinition objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, classDef, null);
+        CMISAbstractTypeDefinition objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, dictionaryService, classDef, null);
         registry.registerTypeDefinition(objectTypeDef);
         
         for (QName classQName : classQNames)
@@ -117,7 +117,7 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
             // create appropriate kind of type definition
             typeId = cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, classQName);
             AssociationDefinition assocDef = dictionaryService.getAssociation(classQName);
-            objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, null, assocDef);
+            objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, dictionaryService, null, assocDef);
 
             registry.registerTypeDefinition(objectTypeDef);
         }

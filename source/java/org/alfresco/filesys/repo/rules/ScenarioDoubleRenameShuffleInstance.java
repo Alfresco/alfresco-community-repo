@@ -101,6 +101,8 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                 logger.debug("Instance timed out");
                 
             }
+            isComplete = true;
+            return null;
         }
         
         switch (internalState)

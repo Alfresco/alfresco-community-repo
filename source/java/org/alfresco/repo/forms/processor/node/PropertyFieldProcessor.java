@@ -236,7 +236,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
                     // Look up each localised display-label in turn.
                     for (String value : allowedValues)
                     {
-                        String displayLabel = lovConstraint.getDisplayLabel(value);
+                        String displayLabel = lovConstraint.getDisplayLabel(value, dictionaryService);
                         // Change the allowedValue entry to the format the FormsService expects for localised strings: "value|label"
                         // If there is no localisation defined for any value, then this will give us "value|value".
                         localisedValues.add(value + "|" + displayLabel);

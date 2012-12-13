@@ -994,8 +994,20 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     }
 
 
-    // Take advantage of the fact that the authority name is on the child association
     public boolean isAuthorityContained(NodeRef authorityNodeRef, String authorityToFind)
+    {
+        // Look up the desired authority using case sensitivity rules appropriate for the authority type
+        NodeRef authorityToFindRef = getAuthorityOrNull(authorityToFind);
+        if (authorityToFindRef == null)
+        {
+            // No such authority so it won't be contained anywhere
+            return false;
+        }
+        // Now we can just search for the NodeRef
+        return isAuthorityContainedImpl(authorityNodeRef, authorityToFindRef);
+    }
+
+    private boolean isAuthorityContainedImpl(NodeRef authorityNodeRef, NodeRef authorityToFindRef)
     {
       List<ChildAssociationRef> cars = getCachedChildAuthorities(authorityNodeRef);
         if (cars == null)
@@ -1008,10 +1020,10 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         // Loop over children recursively to find authorityToFind
         for (ChildAssociationRef car : cars)
         {
-            String authorityName = car.getQName().getLocalName();
-            if (authorityToFind.equals(authorityName)
-                    || AuthorityType.getAuthorityType(authorityName) != AuthorityType.USER
-                    && isAuthorityContained(car.getChildRef(), authorityToFind))
+            NodeRef childRef = car.getChildRef();
+            if (authorityToFindRef.equals(childRef)
+                    || AuthorityType.getAuthorityType(car.getQName().getLocalName()) != AuthorityType.USER
+                    && isAuthorityContainedImpl(childRef, authorityToFindRef))
             {
                 return true;
             }

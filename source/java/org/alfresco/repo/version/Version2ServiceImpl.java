@@ -1141,7 +1141,8 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     
                 // Add/remove the child nodes
                 List<ChildAssociationRef> children = new ArrayList<ChildAssociationRef>(this.nodeService.getChildAssocs(nodeRef));
-                for (ChildAssociationRef versionedChild : this.nodeService.getChildAssocs(versionNodeRef))
+                List<ChildAssociationRef> versionedChildren = this.nodeService.getChildAssocs(versionNodeRef);
+                for (ChildAssociationRef versionedChild : versionedChildren)
                 {
                     if (children.contains(versionedChild) == false)
                     {
@@ -1150,8 +1151,13 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                             // The node was a primary child of the parent, but that is no longer the case.  Despite this
                             // the node still exits so this means it has been moved.
                             // The best thing to do in this situation will be to re-add the node as a child, but it will not
-                            // be a primary child.
-                            this.nodeService.addChild(nodeRef, versionedChild.getChildRef(), versionedChild.getTypeQName(), versionedChild.getQName());
+                            // be a primary child
+                        	String childRefName = (String) this.nodeService.getProperty(versionedChild.getChildRef(), ContentModel.PROP_NAME);
+                        	NodeRef childAssocOnVersionNode = this.nodeService.getChildByName(nodeRef, versionedChild.getTypeQName(), childRefName);
+                        	if (childAssocOnVersionNode == null )
+                        	{
+                              this.nodeService.addChild(nodeRef, versionedChild.getChildRef(), versionedChild.getTypeQName(), versionedChild.getQName());
+                        	}
                         }
                         else
                         {

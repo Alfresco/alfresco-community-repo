@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -167,7 +168,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     @Override
-    public String getDescription()
+    public String getDescription(MessageLookup messageLookup)
     {
         return description;
     }
@@ -191,7 +192,7 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     @Override
-    public String getTitle()
+    public String getTitle(MessageLookup messageLookup)
     {
         return title;
     }

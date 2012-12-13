@@ -30,6 +30,8 @@ import java.util.Set;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -41,6 +43,7 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -488,6 +491,97 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
        
        // TODO Shouldn't the node now be at 0.1 not 0.2?
        //assertEquals("0.1", nodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));
+    }
+    
+    
+    /**
+     * Test reverting a node that has comments, see ALF-13129
+     */
+    public void testRevertWithComments()
+    {
+        NodeRef versionableNode = createNewVersionableNode();
+
+    	this.dbNodeService.setProperty(versionableNode, PROP_1, "I am before version");
+    	Version version1 = createVersion(versionableNode);
+    	this.dbNodeService.setProperty(versionableNode, PROP_1, "I am after version 1");
+      
+        VersionHistory vh = this.versionService.getVersionHistory(versionableNode);
+        assertNotNull(vh);
+        assertEquals(1, vh.getAllVersions().size());
+        
+    	// Create a new version
+    	Version version2 = createVersion(versionableNode);
+    	
+    	//Test a revert with no comments
+    	this.versionService.revert(versionableNode, version1);
+        assertEquals("I am before version", this.dbNodeService.getProperty(versionableNode, PROP_1));
+    	
+        createComment(versionableNode, "my comment", "Do great work", false);
+        assertTrue(nodeService.hasAspect(versionableNode, ForumModel.ASPECT_DISCUSSABLE));
+        assertEquals(1, this.dbNodeService.getProperty(versionableNode,  ForumModel.PROP_COMMENT_COUNT));
+    	
+    	// Create a new version
+    	this.dbNodeService.setProperty(versionableNode, PROP_1, "I am version 3");
+    	Version version3 = createVersion(versionableNode);
+    	this.dbNodeService.setProperty(versionableNode, PROP_1, "I am after version 3");
+    	
+        createComment(versionableNode, "v3", "Great version", false);
+        assertEquals(2, this.dbNodeService.getProperty(versionableNode,  ForumModel.PROP_COMMENT_COUNT));
+    	
+    	//Revert to a version that has comments.
+    	this.versionService.revert(versionableNode, version3);
+        assertTrue(nodeService.hasAspect(versionableNode, ForumModel.ASPECT_DISCUSSABLE));
+        assertEquals("I am version 3", this.dbNodeService.getProperty(versionableNode, PROP_1));
+
+    }
+    
+    /**
+     * This method was taken from the CommmentServiceImpl on the cloud branch
+     * 
+     * TODO: When this is merged to HEAD, please remove this method and use the one in CommmentServiceImpl
+     */
+    private NodeRef createComment(final NodeRef discussableNode, String title, String comment, boolean suppressRollups)
+    {
+    	if(comment == null)
+    	{
+    		throw new IllegalArgumentException("Must provide a non-null comment");
+    	}
+
+        // There is no CommentService, so we have to create the node structure by hand.
+        // This is what happens within e.g. comment.put.json.js when comments are submitted via the REST API.
+        if (!nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
+        {
+            nodeService.addAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE, null);
+        }
+        if (!nodeService.hasAspect(discussableNode, ForumModel.ASPECT_COMMENTS_ROLLUP) && !suppressRollups)
+        {
+            nodeService.addAspect(discussableNode, ForumModel.ASPECT_COMMENTS_ROLLUP, null);
+        }
+        // Forum node is created automatically by DiscussableAspect behaviour.
+        NodeRef forumNode = nodeService.getChildAssocs(discussableNode, ForumModel.ASSOC_DISCUSSION, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion")).get(0).getChildRef();
+        
+        final List<ChildAssociationRef> existingTopics = nodeService.getChildAssocs(forumNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments"));
+        NodeRef topicNode = null;
+        if (existingTopics.isEmpty())
+        {
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+            props.put(ContentModel.PROP_NAME, "Comments");
+            topicNode = nodeService.createNode(forumNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments"), ForumModel.TYPE_TOPIC, props).getChildRef();
+        }
+        else
+        {
+            topicNode = existingTopics.get(0).getChildRef();
+        }
+
+        NodeRef postNode = nodeService.createNode(topicNode, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ForumModel.TYPE_POST).getChildRef();
+        nodeService.setProperty(postNode, ContentModel.PROP_CONTENT, new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null));
+        nodeService.setProperty(postNode, ContentModel.PROP_TITLE, title);
+        ContentWriter writer = contentService.getWriter(postNode, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
+        writer.setEncoding("UTF-8");
+        writer.putContent(comment);
+
+        return postNode;
     }
     
     /**

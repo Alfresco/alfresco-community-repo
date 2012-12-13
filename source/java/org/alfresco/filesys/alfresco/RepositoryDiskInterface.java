@@ -123,5 +123,18 @@ public interface RepositoryDiskInterface
      * @param path
      */
     public void deleteEmptyFile(NodeRef rootNode, String path);
+    
+    /**
+     * Rename the specified file.
+     *
+     * @param sess            Server session
+     * @param tree        Tree connection
+     * @param oldName     java.lang.String
+     * @param newName     java.lang.String
+     * @exception java.io.IOException The exception description.
+     */
+    public void renameFile(NodeRef rootNode, String oldName, String newName, boolean soft)
+      throws java.io.IOException;
+
 
 }

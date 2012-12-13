@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.webdav;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 
@@ -79,17 +80,23 @@ public class OptionsMethod extends WebDAVMethod
      */
     protected void executeImpl() throws WebDAVServerException
     {
-        boolean isFolder;
-        try
+        Boolean isFolder = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
         {
-            FileInfo fileInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
-            isFolder = fileInfo.isFolder();
-        }
-        catch (FileNotFoundException e)
-        {
-            // Do nothing; just default to a folder
-            isFolder = true;
-        }
+            @Override
+            public Boolean doWork() throws FileNotFoundException
+            {
+                try
+                {
+                    FileInfo fileInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
+                    return fileInfo.isFolder();
+                }
+                catch (FileNotFoundException e)
+                {
+                    // Do nothing; just default to a folder
+                    return true;
+                }
+            }
+        }, AuthenticationUtil.getSystemUserName());
         // Add the header to advertise the level of support the server has
         m_response.addHeader(DAV_HEADER, DAV_HEADER_CONTENT);
 

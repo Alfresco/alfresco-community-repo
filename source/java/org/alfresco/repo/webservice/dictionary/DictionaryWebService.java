@@ -92,7 +92,7 @@ public class DictionaryWebService extends AbstractWebService implements Dictiona
             List<ClassDefinition> wsClassDefs = new ArrayList<ClassDefinition>(classDefs.size());
             for (org.alfresco.service.cmr.dictionary.ClassDefinition classDef : classDefs)
             {
-                wsClassDefs.add(Utils.setupClassDefObject(classDef));
+                wsClassDefs.add(Utils.setupClassDefObject(dictionaryService, classDef));
             }
             
             return wsClassDefs.toArray(new ClassDefinition[wsClassDefs.size()]);
@@ -127,7 +127,7 @@ public class DictionaryWebService extends AbstractWebService implements Dictiona
                 {
                     throw new AlfrescoRuntimeException("Property propertyName does not exist.");
                 }
-                propDefs[i++] = Utils.setupPropertyDefObject(ddPropDef);
+                propDefs[i++] = Utils.setupPropertyDefObject(dictionaryService, ddPropDef);
             }
             
             return propDefs;
@@ -162,7 +162,7 @@ public class DictionaryWebService extends AbstractWebService implements Dictiona
                 {
                     throw new AlfrescoRuntimeException("Property propertyName does not exist.");
                 }
-                assocDefs[i++] = Utils.setupAssociationDefObject(ddAssocDef);
+                assocDefs[i++] = Utils.setupAssociationDefObject(dictionaryService, ddAssocDef);
             }
             
             return assocDefs;

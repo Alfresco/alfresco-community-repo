@@ -103,11 +103,12 @@ public abstract class AbstractPropertiesGet extends DictionaryWebServiceBase
         }
 
         // Order property definitions by title
-        Collections.sort(props, new DictionaryComparators.PropertyDefinitionComparator());
+        Collections.sort(props, new DictionaryComparators.PropertyDefinitionComparator(dictionaryservice));
 
         // Pass list of property definitions to template
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, props);
+        model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, dictionaryservice);
         return model;
     }
 

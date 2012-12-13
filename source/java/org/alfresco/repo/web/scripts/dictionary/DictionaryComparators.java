@@ -23,6 +23,7 @@ import java.util.Comparator;
 
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.i18n.MessageLookup;
 
 /**
  * Comparators used when ordering dictionary elements
@@ -38,16 +39,23 @@ public interface DictionaryComparators
      */
     public class ClassDefinitionComparator implements Comparator<ClassDefinition>
     {
+        private final MessageLookup messageLookup;
+
+        public ClassDefinitionComparator(MessageLookup messageLookup)
+        {
+            this.messageLookup = messageLookup;            
+        }
+
         public int compare(ClassDefinition arg0, ClassDefinition arg1)
         {
             int result = 0;
             
-            String title0 = arg0.getTitle();
+            String title0 = arg0.getTitle(messageLookup);
             if (title0 == null)
             {
                 title0 = arg0.getName().toPrefixString();
             }
-            String title1 = arg1.getTitle();
+            String title1 = arg1.getTitle(messageLookup);
             if (title1 == null)
             {
                 title1 = arg1.getName().getPrefixString();
@@ -77,16 +85,23 @@ public interface DictionaryComparators
      */
     public class PropertyDefinitionComparator implements Comparator<PropertyDefinition>
     {
+        private final MessageLookup messageLookup;
+
+        public PropertyDefinitionComparator(MessageLookup messageLookup)
+        {
+            this.messageLookup = messageLookup;            
+        }
+
         public int compare(PropertyDefinition arg0, PropertyDefinition arg1)
         {
             int result = 0;
             
-            String title0 = arg0.getTitle();
+            String title0 = arg0.getTitle(messageLookup);
             if (title0 == null)
             {
                 title0 = arg0.getName().toPrefixString();
             }
-            String title1 = arg1.getTitle();
+            String title1 = arg1.getTitle(messageLookup);
             if (title1 == null)
             {
                 title1 = arg1.getName().getPrefixString();

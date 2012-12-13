@@ -467,10 +467,10 @@ public class UserCSVUploadPost extends DeclarativeWebScript
         PropertyDefinition unPD = dictionaryService.getProperty(ContentModel.PROP_USERNAME);
         if (unPD != null)
         {
-            if(unPD.getTitle() != null)
-                usernameIsUsername.add(unPD.getTitle().toLowerCase());
-            if(unPD.getDescription() != null)
-                usernameIsUsername.add(unPD.getDescription().toLowerCase());
+            if(unPD.getTitle(dictionaryService) != null)
+                usernameIsUsername.add(unPD.getTitle(dictionaryService).toLowerCase());
+            if(unPD.getDescription(dictionaryService) != null)
+                usernameIsUsername.add(unPD.getDescription(dictionaryService).toLowerCase());
         }
         
         

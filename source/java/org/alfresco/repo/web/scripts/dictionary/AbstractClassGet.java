@@ -59,6 +59,7 @@ public abstract class AbstractClassGet extends DictionaryWebServiceBase
         model.put(MODEL_PROP_KEY_CLASS_DETAILS, classdef.values());
         model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
         model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
+        model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, this.dictionaryservice);
 
         return model;
     }

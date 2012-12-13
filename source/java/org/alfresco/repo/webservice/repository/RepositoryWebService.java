@@ -386,7 +386,7 @@ public class RepositoryWebService extends AbstractWebService implements
                 .getType(this.nodeService.getType(nodeRef));
 
         // create the web service ClassDefinition type from the data dictionary TypeDefinition
-        ClassDefinition typeDef = Utils.setupClassDefObject(ddTypeDef);
+        ClassDefinition typeDef = Utils.setupClassDefObject(this.dictionaryService, ddTypeDef);
 
         Set<QName> aspectsQNames = this.nodeService.getAspects(nodeRef);
         ClassDefinition[] aspectDefs = new ClassDefinition[aspectsQNames.size()];
@@ -394,7 +394,7 @@ public class RepositoryWebService extends AbstractWebService implements
         for (QName aspectQName : aspectsQNames)
         {
             AspectDefinition aspectDef = this.dictionaryService.getAspect(aspectQName);
-            aspectDefs[pos] = Utils.setupClassDefObject(aspectDef);
+            aspectDefs[pos] = Utils.setupClassDefObject(this.dictionaryService, aspectDef);
             pos++;
         }
 

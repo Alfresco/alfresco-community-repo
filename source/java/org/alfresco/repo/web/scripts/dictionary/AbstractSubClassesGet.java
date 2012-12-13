@@ -134,10 +134,11 @@ public abstract class AbstractSubClassesGet extends DictionaryWebServiceBase
         }
 
         List<ClassDefinition> classDefinitions = new ArrayList<ClassDefinition>(classdef.values());
-        Collections.sort(classDefinitions, new DictionaryComparators.ClassDefinitionComparator());
+        Collections.sort(classDefinitions, new DictionaryComparators.ClassDefinitionComparator(dictionaryservice));
         model.put(MODEL_PROP_KEY_CLASS_DEFS, classDefinitions);
         model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, reorderedValues(classDefinitions, propdef));
         model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, reorderedValues(classDefinitions, assocdef));
+        model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, this.dictionaryservice);
         return model;
 
     }

@@ -4,13 +4,13 @@
    <#if assocdefs.name?exists>
     "name" : "${assocdefs.name.toPrefixString()}",
    </#if>
-   <#if assocdefs.title?exists>
-    "title" : "${assocdefs.title}",
+   <#if assocdefs.getTitle(messages)?has_content>
+    "title" : "${assocdefs.getTitle(messages)}",
    <#else>
     "title" : "",
    </#if>
-   <#if assocdefs.description?exists>
-    "description" : "${assocdefs.description}",
+   <#if assocdefs.getDescription(messages)?has_content>
+    "description" : "${assocdefs.getDescription(messages)}",
    <#else>
     "description" : "",
    </#if>

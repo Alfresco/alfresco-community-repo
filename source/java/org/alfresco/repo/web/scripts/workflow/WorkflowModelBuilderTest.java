@@ -18,7 +18,8 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -69,6 +71,7 @@ public class WorkflowModelBuilderTest extends TestCase
     private PersonService personService;
     private NodeService nodeService;
     private WorkflowService workflowService;
+    private DictionaryService dictionaryService;
     private AuthenticationService authenticationService;
     private WorkflowModelBuilder builder;
 
@@ -183,8 +186,8 @@ public class WorkflowModelBuilderTest extends TestCase
         Map<String, Object> actualType = (Map<String, Object>) actualDefinition.get(WorkflowModelBuilder.TASK_DEFINITION_TYPE);
         TypeDefinition taskType = taskDef.getMetadata();
         assertEquals(taskType.getName(), actualType.get(WorkflowModelBuilder.TYPE_DEFINITION_NAME));
-        assertEquals(taskType.getTitle(), actualType.get(WorkflowModelBuilder.TYPE_DEFINITION_TITLE));
-        assertEquals(taskType.getDescription(), actualType.get(WorkflowModelBuilder.TYPE_DEFINITION_DESCRIPTION));
+        assertEquals(taskType.getTitle(dictionaryService), actualType.get(WorkflowModelBuilder.TYPE_DEFINITION_TITLE));
+        assertEquals(taskType.getDescription(dictionaryService), actualType.get(WorkflowModelBuilder.TYPE_DEFINITION_DESCRIPTION));
 
         Map<String, Object> actualNode = (Map<String, Object>) actualDefinition.get(WorkflowModelBuilder.TASK_DEFINITION_NODE);
         WorkflowNode taskNode = taskDef.getNode();
@@ -256,8 +259,8 @@ public class WorkflowModelBuilderTest extends TestCase
         WorkflowTaskDefinition workflowTaskDefinition = makeTaskDefinition();
         QName taskTypeName = WorkflowModel.TYPE_WORKFLOW_TASK;
         when(workflowTaskDefinition.getMetadata().getName()).thenReturn(taskTypeName);
-        when(workflowTaskDefinition.getMetadata().getTitle()).thenReturn("The Type Title");
-        when(workflowTaskDefinition.getMetadata().getDescription()).thenReturn("The Type Description");
+        when(workflowTaskDefinition.getMetadata().getTitle(dictionaryService)).thenReturn("The Type Title");
+        when(workflowTaskDefinition.getMetadata().getDescription(dictionaryService)).thenReturn("The Type Description");
         
         WorkflowInstance workflowInstance = makeWorkflowInstance(workflowTaskDefinition);
         
@@ -322,8 +325,8 @@ public class WorkflowModelBuilderTest extends TestCase
     {
         TypeDefinition typeDef = mock(TypeDefinition.class);
         when(typeDef.getName()).thenReturn(QName.createQName(URI, "The Type Name"));
-        when(typeDef.getTitle()).thenReturn("The Type Title");
-        when(typeDef.getDescription()).thenReturn("The Type Description");
+        when(typeDef.getTitle(dictionaryService)).thenReturn("The Type Title");
+        when(typeDef.getDescription(dictionaryService)).thenReturn("The Type Description");
         return typeDef;
     }
 
@@ -406,8 +409,9 @@ public class WorkflowModelBuilderTest extends TestCase
         when(nodeService.getProperty(person, ContentModel.PROP_LASTNAME)).thenReturn(lastName);
         
         workflowService = mock(WorkflowService.class);
+        dictionaryService = mock(DictionaryService.class);
         authenticationService = mock(AuthenticationService.class);
         
-        builder = new WorkflowModelBuilder(namespaceService, nodeService, authenticationService, personService, workflowService);
+        builder = new WorkflowModelBuilder(namespaceService, nodeService, authenticationService, personService, workflowService, dictionaryService);
     }
 }

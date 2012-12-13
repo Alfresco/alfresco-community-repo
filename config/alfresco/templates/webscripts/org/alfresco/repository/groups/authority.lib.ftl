@@ -12,6 +12,14 @@
 		   <#if authority.authorityType = "USER">
 		   "url": "/api/people/${authority.shortName?url}"
 		   </#if>
+           <#if authority.zones?exists>
+           ,"zones":
+           [
+           <#list authority.zones as zone>
+              "${zone}"<#if zone_has_next>,</#if>
+           </#list>
+           ]
+           </#if>
 }
 </#escape>
 </#macro>

@@ -107,7 +107,7 @@ public class BulkMetadataGet extends AbstractWebScript
                                     jsonOut.writeValue("type", type.toString());
                                     jsonOut.writeValue("shortType", shortType);
                                     TypeDefinition typeDef = dictionaryService.getType(type);
-                                    jsonOut.writeValue("typeTitle", typeDef.getTitle());
+                                    jsonOut.writeValue("typeTitle", typeDef.getTitle(dictionaryService));
 
                                     jsonOut.writeValue("name", (String)properties.get(ContentModel.PROP_NAME));
                                     jsonOut.writeValue("title", (String)properties.get(ContentModel.PROP_TITLE));

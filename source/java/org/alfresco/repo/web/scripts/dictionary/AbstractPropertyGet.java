@@ -48,6 +48,7 @@ public abstract class AbstractPropertyGet extends DictionaryWebServiceBase
         if (this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname) != null)
         {
             model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, this.dictionaryservice.getClass(classQname).getProperties().get(propertyQname));
+            model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, this.dictionaryservice);
         }
 
         return model;

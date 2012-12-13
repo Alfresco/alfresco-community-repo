@@ -109,7 +109,7 @@ public class WebDAVHelper
     private HiddenAspect m_hiddenAspect;
     
     // pattern is tested against full path after it has been lower cased.
-    private Pattern m_renameShufflePattern = Pattern.compile("(.*/\\..*)|(.*[a-f0-9]{8}+$)|(.*\\.tmp$)|(.*\\.wbk$)|(.*\\.bak$)|(.*\\~$)");
+    private Pattern m_renameShufflePattern = Pattern.compile("(.*/\\..*)|(.*[a-f0-9]{8}+$)|(.*\\.tmp$)|(.*\\.wbk$)|(.*\\.bak$)|(.*\\~$)|(.*backup.*\\.do[ct]{1}[x]?[m]?$)");
     
     //  Empty XML attribute list
     

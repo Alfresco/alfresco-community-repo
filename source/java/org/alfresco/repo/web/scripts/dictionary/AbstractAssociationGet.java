@@ -47,6 +47,7 @@ public abstract class AbstractAssociationGet extends DictionaryWebServiceBase
         if (this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname) != null)
         {
             model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, this.dictionaryservice.getClass(classQname).getAssociations().get(associationQname));
+            model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, this.dictionaryservice);
         }
 
         return model;

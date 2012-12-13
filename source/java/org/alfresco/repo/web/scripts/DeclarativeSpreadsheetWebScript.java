@@ -179,11 +179,11 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
                 
                 // Ask the dictionary service nicely for the details
                 PropertyDefinition pd = dictionaryService.getProperty(column);
-                if(pd != null && pd.getTitle() != null)
+                if(pd != null && pd.getTitle(dictionaryService) != null)
                 {
                     // Use the friendly titles, which may even be localised!
-                    headings[i] = pd.getTitle();
-                    descriptions[i] = pd.getDescription();
+                    headings[i] = pd.getTitle(dictionaryService);
+                    descriptions[i] = pd.getDescription(dictionaryService);
                 }
                 else
                 {

@@ -37,6 +37,7 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.repo.workflow.WorkflowAdminServiceImpl;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowTestHelper;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -109,6 +110,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
     private NodeRef packageRef;
     private NodeRef contentNodeRef;
     private AuthenticationComponent authenticationComponent;
+    private DictionaryService dictionaryService;
 
     private List<String> workflows = new LinkedList<String>(); 
 
@@ -540,8 +542,8 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(type);
 
         assertEquals(startType.getName().toPrefixString(), type.getString("name"));
-        assertEquals(startType.getTitle(), type.getString("title"));
-        assertEquals(startType.getDescription(), type.getString("description"));
+        assertEquals(startType.getTitle(this.dictionaryService), type.getString("title"));
+        assertEquals(startType.getDescription(this.dictionaryService), type.getString("description"));
         assertTrue(type.has("url"));
 
         JSONObject node = definition.getJSONObject("node");
@@ -1402,6 +1404,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         groupManager = new TestGroupManager(authorityService, searchService);
 
         authenticationComponent = (AuthenticationComponent) appContext.getBean("authenticationComponent");
+        dictionaryService = (DictionaryService) appContext.getBean("dictionaryService");
 
         personManager.createPerson(USER1);
         personManager.createPerson(USER2);

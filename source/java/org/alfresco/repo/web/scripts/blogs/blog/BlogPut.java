@@ -83,7 +83,9 @@ public class BlogPut extends AbstractBlogWebScript
         
         if (nodeService.hasAspect(node, BlogIntegrationModel.ASPECT_BLOG_DETAILS))
         {
-            nodeService.setProperties(node, arr);
+            Map<QName, Serializable> properties = nodeService.getProperties(node);
+            properties.putAll(arr);
+            nodeService.setProperties(node, properties);
         }
         else
         {

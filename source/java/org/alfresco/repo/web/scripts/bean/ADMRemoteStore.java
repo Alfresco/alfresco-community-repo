@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -97,29 +97,36 @@ public class ADMRemoteStore extends BaseRemoteStore
     
     // name of the surf config folder
     private static final String SURF_CONFIG = "surf-config";
-    
+
     // patterns used to match site and user specific configuration locations
-    private static final Pattern USER_PATTERN_1 = Pattern.compile(".*/components/.*\\.user~(.*)~.*");
-    private static final Pattern USER_PATTERN_2 = Pattern.compile(".*/pages/user/(.*?)(/.*)?$");
-    private static final Pattern SITE_PATTERN_1 = Pattern.compile(".*/components/.*\\.site~(.*)~.*");
-    private static final Pattern SITE_PATTERN_2 = Pattern.compile(".*/pages/site/(.*?)(/.*)?$");
+    private static final String PATH_COMPONENTS = "components";
+    private static final String PATH_PAGES      = "pages";
+    private static final String PATH_USER       = "user";
+    private static final String PATH_SITE       = "site";
+    private static final String USER_CONFIG = ".*\\." + PATH_USER + "~(.*)~.*";
+    private static final String USER_CONFIG_PATTERN = USER_CONFIG.replaceAll("\\.\\*", "*").replace("\\", "");
+    private static final Pattern USER_PATTERN_1 = Pattern.compile(".*/" + PATH_COMPONENTS + "/" + USER_CONFIG);
+    private static final Pattern USER_PATTERN_2 = Pattern.compile(".*/" + PATH_PAGES + "/" + PATH_USER + "/(.*?)(/.*)?$");
+    private static final Pattern SITE_PATTERN_1 = Pattern.compile(".*/" + PATH_COMPONENTS + "/.*\\." + PATH_SITE + "~(.*)~.*");
+    private static final Pattern SITE_PATTERN_2 = Pattern.compile(".*/" + PATH_PAGES + "/" + PATH_SITE + "/(.*?)(/.*)?$");
+    
     
     // service beans
-    private NodeService nodeService;
-    private NodeService unprotNodeService;
-    private FileFolderService fileFolderService;
-    private NamespaceService namespaceService;
-    private SiteService siteService;
-    private ContentService contentService;
-    private HiddenAspect hiddenAspect;
+    protected NodeService nodeService;
+    protected NodeService unprotNodeService;
+    protected FileFolderService fileFolderService;
+    protected NamespaceService namespaceService;
+    protected SiteService siteService;
+    protected ContentService contentService;
+    protected HiddenAspect hiddenAspect;
     
     /**
      * Date format pattern used to parse HTTP date headers in RFC 1123 format.
      */
     private static final String PATTERN_RFC1123 = "EEE, dd MMM yyyy HH:mm:ss zzz";
     private static final TimeZone GMT = TimeZone.getTimeZone("GMT");
-    
-    
+
+
     /**
      * @param nodeService       the NodeService to set
      */
@@ -856,7 +863,7 @@ public class ADMRemoteStore extends BaseRemoteStore
      * 
      * @return surf-config folder ref if found, null otherwise if not creating
      */
-    private NodeRef getSurfConfigNodeRef(final NodeRef rootRef, final boolean create)
+    protected NodeRef getSurfConfigNodeRef(final NodeRef rootRef, final boolean create)
     {
         NodeRef surfConfigRef = this.unprotNodeService.getChildByName(
                 rootRef, ContentModel.ASSOC_CONTAINS, SURF_CONFIG);
@@ -875,7 +882,54 @@ public class ADMRemoteStore extends BaseRemoteStore
         }
         return surfConfigRef;
     }
-    
+
+    /**
+     * @return NodeRef to the shared components config folder
+     */
+    protected NodeRef getGlobalComponentsNodeRef()
+    {
+        NodeRef result = null;
+        
+        NodeRef surfRef = getSurfConfigNodeRef(siteService.getSiteRoot());
+        if (surfRef != null)
+        {
+            result = nodeService.getChildByName(surfRef, ContentModel.ASSOC_CONTAINS, PATH_COMPONENTS);
+        }
+        
+        return result;
+    }
+
+    /**
+     * @return NodeRef to the shared user config folder
+     */
+    protected NodeRef getGlobalUserFolderNodeRef()
+    {
+        NodeRef result = null;
+        
+        NodeRef surfRef = getSurfConfigNodeRef(siteService.getSiteRoot());
+        if (surfRef != null)
+        {
+            NodeRef pagesRef = nodeService.getChildByName(surfRef, ContentModel.ASSOC_CONTAINS, PATH_PAGES);
+            if (pagesRef != null)
+            {
+                result = nodeService.getChildByName(pagesRef, ContentModel.ASSOC_CONTAINS, PATH_USER);
+            }
+        }
+        
+        return result;
+    }
+
+    /**
+     * Generate the search pattern for a Surf config location for a user name.
+     * 
+     * @param userName  to build pattern for
+     * @return the search pattern
+     */
+    protected String buildUserConfigSearchPattern(String userName)
+    {
+        return USER_CONFIG_PATTERN.replace("(*)", encodePath(userName));
+    }
+
     /**
      * @return the Sites folder root node reference
      */
@@ -898,22 +952,19 @@ public class ADMRemoteStore extends BaseRemoteStore
     /**
      * Output the matching file paths a node contains based on a pattern search.
      * 
-     * @param out       Writer for output - relative paths separated by newline characters
+     * @param out Writer for output - relative paths separated by newline characters
      * @param surfConfigRef Surf-Config folder
-     * @param fileInfo  The FileInfo node to use as the parent
-     * @param pattern   Optional pattern to match filenames against ("*" is match all)
-     * @param recurse   True to recurse sub-directories
-     * 
+     * @param fileInfo The FileInfo node to use as the parent
+     * @param pattern Optional pattern to match filenames against ("*" is match all)
+     * @param recurse True to recurse sub-directories
      * @throws IOException
      */
-    private void outputFileNodes(Writer out, FileInfo fileInfo, NodeRef surfConfigRef, String pattern, boolean recurse)
-        throws IOException
+    private void outputFileNodes(Writer out, FileInfo fileInfo, NodeRef surfConfigRef, String pattern, boolean recurse) throws IOException
     {
         final boolean debug = logger.isDebugEnabled();
+        PagingResults<FileInfo> files = getFileNodes(fileInfo, surfConfigRef, pattern, recurse);
+        
         final Map<NodeRef, String> nameCache = new HashMap<NodeRef, String>();
-        PagingResults<FileInfo> files = fileFolderService.list(
-                fileInfo.getNodeRef(), true, false, pattern, null, null,
-                new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
         for (final FileInfo file : files.getPage())
         {
             // walking up the parent tree manually until the "surf-config" parent is hit
@@ -925,7 +976,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                 String name = nameCache.get(ref);
                 if (name == null)
                 {
-                    name = (String)unprotNodeService.getProperty(ref, ContentModel.PROP_NAME);
+                    name = (String) unprotNodeService.getProperty(ref, ContentModel.PROP_NAME);
                     nameCache.put(ref, name);
                 }
                 displayPath.insert(0, '/');
@@ -939,5 +990,13 @@ public class ADMRemoteStore extends BaseRemoteStore
             out.write('\n');
             if (debug) logger.debug("   /alfresco/site-data/" + displayPath.toString() + file.getName());
         }
+    }
+    
+    protected PagingResults<FileInfo> getFileNodes(FileInfo fileInfo, NodeRef surfConfigRef, String pattern, boolean recurse)
+    {
+        return fileFolderService.list(
+                fileInfo.getNodeRef(), true, false,
+                pattern, null, null,
+                new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
     }
 }

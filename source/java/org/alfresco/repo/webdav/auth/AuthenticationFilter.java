@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
+import org.alfresco.repo.webdav.WebDAV;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
@@ -215,7 +216,7 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
 
             // Check if the user is authenticated, if not then prompt again
             
-            if ( user == null)
+            if ( user == null && !WebDAV.METHOD_OPTIONS.equalsIgnoreCase(httpReq.getMethod()))
             {
                 if (logger.isDebugEnabled())
                     logger.debug("No user/ticket, force the client to prompt for logon details.");

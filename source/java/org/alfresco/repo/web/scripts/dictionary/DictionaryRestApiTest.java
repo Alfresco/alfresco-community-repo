@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.dictionary;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -44,12 +45,15 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 	protected void setUp() throws Exception 
 	{ 
 		super.setUp();
+		getServer();
+		AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 	}
 	
 	@Override
 	protected void tearDown() throws Exception
     {
 		super.tearDown();
+		AuthenticationUtil.clearCurrentSecurityContext();
     }
 	
 	private void validatePropertyDef(JSONObject result) throws Exception

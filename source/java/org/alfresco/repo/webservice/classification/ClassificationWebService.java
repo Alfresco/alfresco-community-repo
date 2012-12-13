@@ -126,7 +126,7 @@ public class ClassificationWebService extends AbstractWebService implements
                                 org.alfresco.service.cmr.dictionary.ClassDefinition aspectDefinition = ClassificationWebService.this.dictionaryService.getClass(aspect);
                                 if (aspectDefinition != null)
                                 {
-                                    title = aspectDefinition.getTitle();
+                                    title = aspectDefinition.getTitle(dictionaryService);
                                 }
                                 
                                 if (logger.isDebugEnabled())
@@ -442,7 +442,7 @@ public class ClassificationWebService extends AbstractWebService implements
                         public ClassDefinition execute()
                         {
                             org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition = ClassificationWebService.this.dictionaryService.getClass(QName.createQName(classification));
-                            return Utils.setupClassDefObject(classDefinition);
+                            return Utils.setupClassDefObject(dictionaryService, classDefinition);
                         }
                     });
         }

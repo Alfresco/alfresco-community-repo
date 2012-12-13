@@ -4,11 +4,11 @@
 		<#if propertydefs.name?exists>
 		"name" : "${propertydefs.name.toPrefixString()}",
 		</#if>
-		<#if propertydefs.title?exists>
-		"title" : "${propertydefs.title}",
+		<#if propertydefs.getTitle(messages)?has_content>
+		"title" : "${propertydefs.getTitle(messages)}",
 		</#if>
-		<#if propertydefs.description?exists>
-		"description" : "${propertydefs.description}",
+		<#if propertydefs.getDescription(messages)?has_content>
+		"description" : "${propertydefs.getDescription(messages)}",
 		</#if>
 		<#if propertydefs.defaultValues?exists>
 		"defaultValues" : "${propertydefs.defaultValues}",

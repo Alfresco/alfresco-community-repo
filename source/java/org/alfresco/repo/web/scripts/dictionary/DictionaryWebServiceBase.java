@@ -40,6 +40,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
 public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
 {
     private static final String NAME_DELIMITER = "_";
+    protected static final String MODEL_PROP_KEY_MESSAGE_LOOKUP = "messages";
     
     /** Namespace service */
     protected NamespaceService namespaceService;

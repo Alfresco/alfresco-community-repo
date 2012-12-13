@@ -205,7 +205,18 @@ public class MoveMethod extends HierarchicalMethod
             setHidden(destFileInfo.getNodeRef(), false);
             if (isMove)
             {
-                fileFolderService.delete(sourceNodeRef);
+                if (getDAVHelper().isRenameShuffle(destPath) && !getDAVHelper().isRenameShuffle(sourcePath))
+                {
+                    // if temporary or backup file already exists
+                    // don't delete source that is node with version history
+                    setHidden(sourceNodeRef, true);
+                    // As per the WebDAV spec, we make sure the node is unlocked once moved
+                    getDAVHelper().getLockService().unlock(sourceNodeRef);
+                }
+                else
+                {
+                    fileFolderService.delete(sourceNodeRef);
+                }
             }
         }
         // If this is a copy then the source is just copied to destination.

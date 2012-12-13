@@ -663,19 +663,19 @@ public class Utils
      * @param ddClassDef The repository ClassDefinition to generate
      * @return The web service ClassDefinition representation
      */
-    public static ClassDefinition setupClassDefObject(org.alfresco.service.cmr.dictionary.ClassDefinition ddClassDef)
+    public static ClassDefinition setupClassDefObject(DictionaryService dictionaryService, org.alfresco.service.cmr.dictionary.ClassDefinition ddClassDef)
     {
        ClassDefinition classDef = new ClassDefinition();
        classDef.setName(ddClassDef.getName().toString());
        classDef.setIsAspect(ddClassDef.isAspect());
        
-       if (ddClassDef.getTitle() != null)
+       if (ddClassDef.getTitle(dictionaryService) != null)
        {
-          classDef.setTitle(ddClassDef.getTitle());
+          classDef.setTitle(ddClassDef.getTitle(dictionaryService));
        }
-       if (ddClassDef.getDescription() != null)
+       if (ddClassDef.getDescription(dictionaryService) != null)
        {
-          classDef.setDescription(ddClassDef.getDescription());
+          classDef.setDescription(ddClassDef.getDescription(dictionaryService));
        }
        if (ddClassDef.getParentName() != null)
        {
@@ -690,7 +690,7 @@ public class Utils
           int pos = 0;
           for (org.alfresco.service.cmr.dictionary.PropertyDefinition ddPropDef : props.values())
           {
-             PropertyDefinition propDef = setupPropertyDefObject(ddPropDef);
+             PropertyDefinition propDef = setupPropertyDefObject(dictionaryService, ddPropDef);
              propDefs[pos] = propDef;
              pos++;
           }
@@ -707,7 +707,7 @@ public class Utils
           int pos = 0;
           for (org.alfresco.service.cmr.dictionary.AssociationDefinition ddAssocDef : assocs.values())
           {
-             AssociationDefinition assocDef = setupAssociationDefObject(ddAssocDef);
+             AssociationDefinition assocDef = setupAssociationDefObject(dictionaryService, ddAssocDef);
              assocDefs[pos] = assocDef;
              pos++;
           }
@@ -725,7 +725,7 @@ public class Utils
      * @param ddPropertyDef The repository PropertyDefinition to generate
      * @return The web service PropertyDefinition representation
      */
-    public static PropertyDefinition setupPropertyDefObject(org.alfresco.service.cmr.dictionary.PropertyDefinition ddPropDef)
+    public static PropertyDefinition setupPropertyDefObject(DictionaryService dictionaryService, org.alfresco.service.cmr.dictionary.PropertyDefinition ddPropDef)
     {
         PropertyDefinition propDef = new PropertyDefinition();
         propDef.setName(ddPropDef.getName().toString());
@@ -736,13 +736,13 @@ public class Utils
         {
            propDef.setDefaultValue(ddPropDef.getDefaultValue());
         }
-        if (ddPropDef.getTitle() != null)
+        if (ddPropDef.getTitle(dictionaryService) != null)
         {
-           propDef.setTitle(ddPropDef.getTitle());
+           propDef.setTitle(ddPropDef.getTitle(dictionaryService));
         }
-        if (ddPropDef.getDescription() != null)
+        if (ddPropDef.getDescription(dictionaryService) != null)
         {
-           propDef.setDescription(ddPropDef.getDescription());
+           propDef.setDescription(ddPropDef.getDescription(dictionaryService));
         }
         return propDef;
     }
@@ -754,18 +754,18 @@ public class Utils
      * @param ddAssociationDef The repository AssociationDefinition to generate
      * @return The web service AssociationDefinition representation
      */
-    public static AssociationDefinition setupAssociationDefObject(org.alfresco.service.cmr.dictionary.AssociationDefinition ddAssocDef)
+    public static AssociationDefinition setupAssociationDefObject(DictionaryService dictionaryService, org.alfresco.service.cmr.dictionary.AssociationDefinition ddAssocDef)
     {
         AssociationDefinition assocDef = new AssociationDefinition();
         assocDef.setName(ddAssocDef.getName().toString());
         assocDef.setIsChild(ddAssocDef.isChild());
-        if (ddAssocDef.getTitle() != null)
+        if (ddAssocDef.getTitle(dictionaryService) != null)
         {
-           assocDef.setTitle(ddAssocDef.getTitle());
+           assocDef.setTitle(ddAssocDef.getTitle(dictionaryService));
         }
-        if (ddAssocDef.getDescription() != null)
+        if (ddAssocDef.getDescription(dictionaryService) != null)
         {
-           assocDef.setDescription(ddAssocDef.getDescription());
+           assocDef.setDescription(ddAssocDef.getDescription(dictionaryService));
         }
         
         RoleDefinition sourceRole = new RoleDefinition();

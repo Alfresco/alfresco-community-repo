@@ -21,7 +21,6 @@
 [#if importStatus.targetSpace??]
   <TargetSpace>${importStatus.targetSpace}</TargetSpace>
 [/#if]
-  <BatchWeight>${importStatus.batchWeight?c}</BatchWeight>
 [#if importStatus.startDate??]
   <StartDate>${importStatus.startDate?datetime?string("yyyy-MM-dd'T'HH:mm:ss.SSS")}</StartDate>
 [/#if]

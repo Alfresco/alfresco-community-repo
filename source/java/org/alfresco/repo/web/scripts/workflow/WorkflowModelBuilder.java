@@ -36,6 +36,7 @@ import org.alfresco.repo.workflow.WorkflowQNameConverter;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -154,18 +155,20 @@ public class WorkflowModelBuilder
     private final NodeService nodeService;
     private final PersonService personService;
     private final WorkflowService workflowService;
+    private final DictionaryService dictionaryService;
     private final AuthenticationService authenticationService;
     private final WorkflowQNameConverter qNameConverter;
     
     public WorkflowModelBuilder(NamespaceService namespaceService, NodeService nodeService, 
                 AuthenticationService authenticationService, PersonService personService, 
-                WorkflowService workflowService)
+                WorkflowService workflowService, DictionaryService dictionaryService)
     {
         this.nodeService = nodeService;
         this.personService = personService;
         this.workflowService = workflowService;
         this.authenticationService = authenticationService;
         this.qNameConverter = new WorkflowQNameConverter(namespaceService);
+        this.dictionaryService = dictionaryService;
     }
 
     /**
@@ -439,7 +442,7 @@ public class WorkflowModelBuilder
                         if (constraint instanceof ListOfValuesConstraint)
                         {
                             ListOfValuesConstraint listConstraint = (ListOfValuesConstraint) constraint;
-                            String label = listConstraint.getDisplayLabel(String.valueOf(entry.getValue()));
+                            String label = listConstraint.getDisplayLabel(String.valueOf(entry.getValue()), dictionaryService);
                             return new Pair<String, String>(propName, label);
                         }
                     }
@@ -540,8 +543,8 @@ public class WorkflowModelBuilder
         Map<String, Object> model = new HashMap<String, Object>();
 
         model.put(TYPE_DEFINITION_NAME, typeDefinition.getName());
-        model.put(TYPE_DEFINITION_TITLE, typeDefinition.getTitle());
-        model.put(TYPE_DEFINITION_DESCRIPTION, typeDefinition.getDescription());
+        model.put(TYPE_DEFINITION_TITLE, typeDefinition.getTitle(dictionaryService));
+        model.put(TYPE_DEFINITION_DESCRIPTION, typeDefinition.getDescription(dictionaryService));
         model.put(TYPE_DEFINITION_URL, getUrl(typeDefinition));
 
         return model;

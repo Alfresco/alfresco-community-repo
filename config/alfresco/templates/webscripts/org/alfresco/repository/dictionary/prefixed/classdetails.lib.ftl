@@ -5,8 +5,8 @@
       <#if classdef.name??>"name": "${classdef.name.toPrefixString()}",</#if>
       "isAspect": ${classdef.isAspect()?string},
       "isContainer": ${classdef.isContainer()?string},
-      "title": "${classdef.title!""}",
-      "description": "${classdef.description!""}",
+      "title": "${classdef.getTitle(messages)!""}",
+      "description": "${classdef.getDescription(messages)!""}",
       "parent":
       {
          <#if classdef.parentName??>
@@ -22,7 +22,7 @@
          "${aspectdef.name.toPrefixString()}":
          {
             "name": "${aspectdef.name.toPrefixString()}",
-            "title": "${aspectdef.title!""}",
+            "title": "${aspectdef.getTitle(messages)!""}",
             "url": "/api/defclasses/${classdefprefix}/property/${aspectdef.name.toPrefixString()?replace(":","/")}"
          }<#if aspectdef_has_next>,</#if>
          </#list>
@@ -34,8 +34,8 @@
          "${propertydef.name.toPrefixString()}":
          {
             "name": "${propertydef.name.toPrefixString()}",
-            "title": "${propertydef.title!""}",
-            "description": "${propertydef.description!""}",
+            "title": "${propertydef.getTitle(messages)!""}",
+            "description": "${propertydef.getDescription(messages)!""}",
             "dataType": <#if propertydef.dataType??>"${propertydef.dataType.name.toPrefixString()}"<#else>"<unknown>"</#if>,
             "defaultValue": <#if propertydef.defaultValue??>"${propertydef.defaultValue}"<#else>null</#if>,
             "multiValued": ${propertydef.multiValued?string},
@@ -57,7 +57,7 @@
          "${assocdef.name.toPrefixString()}":
          {
             "name": "${assocdef.name.toPrefixString()}",
-            "title": "${assocdef.title!""}",
+            "title": "${assocdef.getTitle(messages)!""}",
             "url": "/api/defclasses/${classdefprefix}/association/${assocdef.name.toPrefixString()?replace(":","/")}",
             "source":
             {
@@ -87,7 +87,7 @@
          "${assocdef.name.toPrefixString()}":
          {
             <#if assocdef.name??>"name": "${assocdef.name.toPrefixString()}",</#if>
-            "title": "${assocdef.title!""}",
+            "title": "${assocdef.getTitle(messages)!""}",
             "url": "/api/defclasses/${classdefprefix}/association/${assocdef.name.toPrefixString()?replace(":","/")}",
             "source":
             {

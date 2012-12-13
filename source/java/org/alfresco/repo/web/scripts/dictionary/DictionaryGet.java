@@ -103,6 +103,7 @@ public class DictionaryGet extends DictionaryWebServiceBase
         model.put(MODEL_CLASS_DEFS, classdef.values());     
         model.put(MODEL_PROPERTY_DEFS, propdef.values());          
         model.put(MODEL_ASSOCIATION_DEFS, assocdef.values());
+        model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, this.dictionaryservice);
         return model;
     }
 }

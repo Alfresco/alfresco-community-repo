@@ -75,4 +75,12 @@
          <value>${system.webdav.url.path.prefix}</value>
       </property>
    </bean>
+
+    <bean id="surfConfigCleaner" parent="webscript.org.alfresco.repository.store.remoteadm.get" class="org.alfresco.repo.surf.policy.SurfConfigCleaner" init-method="init">
+        <property name="fileFolderService" ref="fileFolderService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="siteService" ref="siteService" />
+    </bean>
+
 </beans>

@@ -26,6 +26,7 @@ import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
 import org.alfresco.web.app.Application;
+import org.alfresco.web.ui.common.Utils;
 import org.springframework.extensions.webscripts.ui.common.component.SelfRenderingComponent;
 
 /**
@@ -77,7 +78,7 @@ public abstract class BaseDebugComponent extends SelfRenderingComponent
       for (Object key : session.keySet())
       {
          out.write("<tr style='border: 1px solid #dddddd;'><td>");
-         out.write(key.toString());
+         out.write(Utils.encode(key.toString()));
          out.write("</td><td>");
          Object obj = session.get(key);
          if (obj == null)
@@ -95,7 +96,7 @@ public abstract class BaseDebugComponent extends SelfRenderingComponent
             {
                // replace any ; characters with ;<space> as that will help break up long lines
                value = value.replaceAll(";", "; ");
-               out.write(value);
+               out.write(Utils.encode(value));
             }
          }
          out.write("</td></tr>");

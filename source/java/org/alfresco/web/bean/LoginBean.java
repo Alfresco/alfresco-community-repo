@@ -349,7 +349,9 @@ public class LoginBean implements Serializable
       {
          try
          {
-            Map session = fc.getExternalContext().getSessionMap();
+            // Perform a full session invalidation to ensure no cached data is left around
+            // - important if the login page has been accessed directly rather than via the Login/out action links
+            Application.logOut(fc);
             
             // Authenticate via the authentication service, then save the details of user in an object
             // in the session - this is used by the servlet filter etc. on each page to check for login
@@ -357,9 +359,6 @@ public class LoginBean implements Serializable
             
             // Set the user name as stored by the back end 
             this.username = this.getAuthenticationService().getCurrentUserName();
-            
-            // remove the session invalidated flag (used to remove last username cookie by AuthenticationFilter)
-            session.remove(AuthenticationHelper.SESSION_INVALIDATED);
             
             // setup User object and Home space ID
             User user = new User(

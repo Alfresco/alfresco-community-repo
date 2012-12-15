@@ -1092,10 +1092,7 @@ public class NavigationBean implements Serializable
    // ------------------------------------------------------------------------------
    // Inner classes
    
-
-
-
-/**
+   /**
     * Class to handle breadcrumb interaction for top-level navigation pages
     */
    public class NavigationBreadcrumbHandler implements IRepoBreadcrumbHandler

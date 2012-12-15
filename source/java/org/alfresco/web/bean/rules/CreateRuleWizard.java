@@ -23,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -32,9 +33,6 @@ import javax.faces.model.DataModel;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -58,6 +56,9 @@ import org.alfresco.web.data.QuickSort;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 
 /**
  * Bean implementation for the "Create Rule" wizard
@@ -70,6 +71,9 @@ public class CreateRuleWizard extends BaseActionWizard
    
    protected static final String PROP_CONDITION_NAME = "conditionName";
    protected static final String PROP_CONDITION_SUMMARY = "conditionSummary";
+
+   private static final String RULE_OUTBOUND = "outbound";
+   private static final String ACTION_CHECK_OUT = "check-out";
 
    transient private RuleService ruleService;
    protected RulesDialog rulesDialog;
@@ -413,7 +417,38 @@ public class CreateRuleWizard extends BaseActionWizard
          }
       }
       
-      return this.types;
+      return shouldFilterTypes() ? filterTypes(this.types) : this.types;
+   }
+   
+   private boolean shouldFilterTypes()
+   {
+      boolean filter = false;
+      
+      for (Map<String, Serializable> actionProperty: this.allActionsProperties)
+      {
+         if (actionProperty.get(PROP_ACTION_NAME).toString().equalsIgnoreCase(ACTION_CHECK_OUT))
+         {
+            filter = true;
+            break;
+         }
+      }
+      
+      return filter;
+   }
+   
+   private List<SelectItem> filterTypes(List<SelectItem> types)
+   {
+      List<SelectItem> filteredTypes = new ArrayList<SelectItem>(types);
+      for (Iterator<SelectItem> iterator = filteredTypes.iterator(); iterator.hasNext();)
+      {
+         SelectItem selectItem = iterator.next();
+         if (selectItem.getValue().toString().equalsIgnoreCase(RULE_OUTBOUND))
+         {
+            iterator.remove();
+         }
+      }
+      
+      return filteredTypes;
    }
    
    /**

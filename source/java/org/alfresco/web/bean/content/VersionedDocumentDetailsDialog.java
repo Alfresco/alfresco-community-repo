@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,7 +32,6 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.version.common.VersionHistoryImpl.VersionComparatorDesc;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
@@ -70,8 +69,6 @@ public class VersionedDocumentDetailsDialog implements Serializable
 	 transient private NodeService nodeService;
 	 transient private MultilingualContentService multilingualContentService;
 	 transient private ContentFilterLanguagesService contentFilterLanguagesService;
-
-    private static final Comparator<Version> VERSION_COMPARATOR_DESC = new VersionComparatorDesc();
 
     /** Determine if the version is a translation of a old edition */
     private boolean fromPreviousEditon;
@@ -175,7 +172,6 @@ public class VersionedDocumentDetailsDialog implements Serializable
    /**
     * Navigates to next item in the list of versioned content for the current VersionHistory
     */
-   @SuppressWarnings("unchecked")
    public void nextItem(ActionEvent event)
    {
        // Get the properties of the action event
@@ -196,7 +192,6 @@ public class VersionedDocumentDetailsDialog implements Serializable
            }
            else
            {
-               Collections.sort(nextVersions, VERSION_COMPARATOR_DESC);
                this.documentVersion = nextVersions.get(0);
            }
        }
@@ -209,7 +204,6 @@ public class VersionedDocumentDetailsDialog implements Serializable
    /**
     * Navigates to previous item in the list of versioned content for the current VersionHistory
     */
-   @SuppressWarnings("unchecked")
    public void previousItem(ActionEvent event)
    {
        // Get the properties of the action event

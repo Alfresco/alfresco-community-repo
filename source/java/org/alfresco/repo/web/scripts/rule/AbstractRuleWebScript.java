@@ -66,6 +66,11 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
 
     public static final SimpleDateFormat dateFormate = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
 
+    private static final String RULE_OUTBOUND = "outbound";
+    private static final String ACTION_CHECK_OUT = "check-out";
+
+    private static final String CANNOT_CREATE_RULE = "cannot.create.rule.checkout.outbound";
+    
     protected NodeService nodeService;
     protected RuleService ruleService;
     protected DictionaryService dictionaryService;
@@ -407,5 +412,21 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         }
         
         return value;
+    }
+
+    protected void checkRule(Rule rule)
+    {
+        List<String> ruleTypes = rule.getRuleTypes();
+        if (ruleTypes.contains(RULE_OUTBOUND))
+        {
+            List<Action> actions = ((CompositeActionImpl) rule.getAction()).getActions();
+            for (Action action : actions)
+            {
+                if (action.getActionDefinitionName().equalsIgnoreCase(ACTION_CHECK_OUT))
+                {
+                    throw new WebScriptException(CANNOT_CREATE_RULE);
+                }
+            }
+        }
     }
 }

@@ -95,6 +95,9 @@ public class RulePut extends RulePost
             // parse request json
             updateRuleFromJSON(json, ruleToUpdate);
 
+            // check the rule
+            checkRule(ruleToUpdate);
+
             // save changes
             ruleService.saveRule(nodeRef, ruleToUpdate);
 

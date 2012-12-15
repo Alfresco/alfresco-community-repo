@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -212,18 +212,15 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        
        // FTL needs a script node of the person, if available
        String creator = link.getCreator();
-       Object creatorO = "";
-       if (creator != null)
+       Object creatorO;
+       if ((null == creator) || !personService.personExists(creator))
        {
-           try
-           {
-               NodeRef person = personService.getPerson(creator);
-               creatorO = person;
-           }
-           catch (NoSuchPersonException ignored)
-           {
-               // Intentionally empty - treat deleted users as no user.
-           }
+          creatorO = "";
+       }
+       else
+       {
+          NodeRef person = personService.getPerson(creator);
+          creatorO = person;
        }
        res.put("creator", creatorO);
        

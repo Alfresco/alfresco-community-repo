@@ -63,6 +63,9 @@ public class RulePost extends AbstractRuleWebScript
             // parse request json
             rule = parseJsonRule(json);
 
+            // check the rule
+            checkRule(rule);
+
             // create rule
             ruleService.saveRule(nodeRef, rule);
 

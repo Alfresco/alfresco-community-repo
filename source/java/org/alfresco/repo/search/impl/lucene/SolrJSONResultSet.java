@@ -71,11 +71,10 @@ public class SolrJSONResultSet implements ResultSet
      * Detached result set based on that provided
      * @param resultSet
      */
-    public SolrJSONResultSet(JSONObject json, SearchParameters searchParameters, NodeService nodeService)
+    public SolrJSONResultSet(JSONObject json, SearchParameters searchParameters, NodeService nodeService, LimitBy limitBy, int maxResults)
     {
         // Note all properties are returned as multi-valued from the WildcardField "*" definition in the SOLR schema.xml
         this.nodeService = nodeService;
-        this.resultSetMetaData = new SimpleResultSetMetaData(LimitBy.UNLIMITED, PermissionEvaluationMode.EAGER, searchParameters);
         try
         {
             JSONObject responseHeader = json.getJSONObject("responseHeader");
@@ -139,7 +138,10 @@ public class SolrJSONResultSet implements ResultSet
         {
            
         }
-        
+        // We'll say we were unlimited if we got a number less than the limit
+        this.resultSetMetaData = new SimpleResultSetMetaData(
+                maxResults > 0 && numberFound < maxResults ? LimitBy.UNLIMITED : limitBy,
+                PermissionEvaluationMode.EAGER, searchParameters);
     }
     
 

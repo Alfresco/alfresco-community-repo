@@ -21,6 +21,8 @@ package org.alfresco.repo.remoteconnector;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.StringTokenizer;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -30,10 +32,15 @@ import org.alfresco.service.cmr.remoteconnector.RemoteConnectorResponse;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorServerException;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorService;
 import org.alfresco.util.HttpClientHelper;
+import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.ProxyHost;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -58,7 +65,32 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
      */
     private static Log logger = LogFactory.getLog(RemoteConnectorServiceImpl.class);
     private static final long MAX_BUFFER_RESPONSE_SIZE = 10*1024*1024;
+ 
+    private static ProxyHost httpProxyHost;
+    private static ProxyHost httpsProxyHost;
+    private static Credentials httpProxyCredentials;
+    private static Credentials httpsProxyCredentials;
+    private static AuthScope httpAuthScope;
+    private static AuthScope httpsAuthScope;
             
+    /**
+     * Initialise the HTTP Proxy Hosts and Params Factory
+     */
+    static
+    {
+        // Create an HTTP Proxy Host if appropriate system property set
+        httpProxyHost = createProxyHost("http.proxyHost", "http.proxyPort", 80);
+        httpProxyCredentials = createProxyCredentials("http.proxyUser", "http.proxyPassword");
+        httpAuthScope = createProxyAuthScope(httpProxyHost);
+        
+        // Create an HTTPS Proxy Host if appropriate system property set
+        httpsProxyHost = createProxyHost("https.proxyHost", "https.proxyPort", 443);
+        httpsProxyCredentials = createProxyCredentials("https.proxyUser", "https.proxyPassword");
+        httpsAuthScope = createProxyAuthScope(httpsProxyHost);
+        
+        
+    }
+    
     public RemoteConnectorServiceImpl()
     {}
     
@@ -102,13 +134,48 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             }
         }
         
-        // Log what we're doing
-        if (logger.isDebugEnabled())
-            logger.debug("Performing " + request.getMethod() + " request to " + request.getURL());
-        
         // Grab our thread local HttpClient instance
         // Remember - we must then clean it up!
         HttpClient httpClient = HttpClientHelper.getHttpClient();
+        
+        // The url should already be vetted by the RemoteConnectorRequest
+        URL url = new URL(request.getURL());
+        
+        // Use the appropriate Proxy Host if required
+        if (httpProxyHost != null && url.getProtocol().equals("http") && requiresProxy(url.getHost()))
+        {
+            httpClient.getHostConfiguration().setProxyHost(httpProxyHost);
+            if (logger.isDebugEnabled())
+                logger.debug(" - using HTTP proxy host for: " + url);
+            if (httpProxyCredentials != null)
+            {
+                httpClient.getState().setProxyCredentials(httpAuthScope, httpProxyCredentials);
+                if (logger.isDebugEnabled())
+                    logger.debug(" - using HTTP proxy credentials for proxy: " + httpProxyHost.getHostName());
+            }
+        }
+        else if (httpsProxyHost != null && url.getProtocol().equals("https") && requiresProxy(url.getHost()))
+        {
+            httpClient.getHostConfiguration().setProxyHost(httpsProxyHost);
+            if (logger.isDebugEnabled())
+                logger.debug(" - using HTTPS proxy host for: " + url);
+            if (httpsProxyCredentials != null)
+            {
+                httpClient.getState().setProxyCredentials(httpsAuthScope, httpsProxyCredentials);
+                if (logger.isDebugEnabled())
+                    logger.debug(" - using HTTPS proxy credentials for proxy: " + httpsProxyHost.getHostName());
+            }
+        } 
+        else 
+        {
+            //host should not be proxied remove any configured proxies
+            httpClient.getHostConfiguration().setProxyHost(null);
+            httpClient.getState().clearProxyCredentials();
+        }
+        
+        // Log what we're doing
+        if (logger.isDebugEnabled())
+            logger.debug("Performing " + request.getMethod() + " request to " + request.getURL());
         
         // Perform the request, and wrap the response
         int status = -1;
@@ -304,5 +371,98 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             // Let the InputStream tidy up if it wants to too
             super.finalize();
         }
+    }
+    
+    /**
+     * Create proxy host for the given system host and port properties.
+     * If the properties are not set, no proxy will be created.
+     * 
+     * @param hostProperty
+     * @param portProperty
+     * @param defaultPort
+     * 
+     * @return ProxyHost if appropriate properties have been set, null otherwise
+     */
+    private static ProxyHost createProxyHost(final String hostProperty, final String portProperty, final int defaultPort)
+    {
+        final String proxyHost = System.getProperty(hostProperty);
+        ProxyHost proxy = null;
+        if (proxyHost != null && proxyHost.length() != 0)
+        {
+            final String strProxyPort = System.getProperty(portProperty);
+            if (strProxyPort == null || strProxyPort.length() == 0)
+            {
+                proxy = new ProxyHost(proxyHost, defaultPort);
+            }
+            else
+            {
+                proxy = new ProxyHost(proxyHost, Integer.parseInt(strProxyPort));
+            }
+            if (logger.isDebugEnabled())
+                logger.debug("ProxyHost: " + proxy.toString());
+        }
+        return proxy;
+    }
+    
+    /**
+     * Create the proxy credentials for the given proxy user and password properties.
+     * If the properties are not set, not credentials will be created.
+     * @param proxyUserProperty
+     * @param proxyPasswordProperty
+     * @return Credentials if appropriate properties have been set, null otherwise
+     */
+    private static Credentials createProxyCredentials(final String proxyUserProperty, final String proxyPasswordProperty) 
+    {
+        final String proxyUser = System.getProperty(proxyUserProperty);
+        final String proxyPassword = System.getProperty(proxyPasswordProperty);
+        Credentials creds = null;
+        if (StringUtils.isNotBlank(proxyUser))
+        {
+            creds = new UsernamePasswordCredentials(proxyUser, proxyPassword);
+        }
+        return creds;
+    }
+    
+    /**
+     * Create suitable AuthScope for ProxyHost.
+     * If the ProxyHost is null, no AuthsScope will be created.
+     * @param proxyHost
+     * @return Authscope for provided ProxyHost, null otherwise.
+     */
+    private static AuthScope createProxyAuthScope(final ProxyHost proxyHost)
+    {
+        AuthScope authScope = null;
+        if (proxyHost !=  null) 
+        {
+            authScope = new AuthScope(proxyHost.getHostName(), proxyHost.getPort());
+        }
+        return authScope;
+    }
+    
+    /**
+     * Return true unless the given target host is specified in the <code>http.nonProxyHosts</code> system property.
+     * See http://download.oracle.com/javase/1.4.2/docs/guide/net/properties.html
+     * @param targetHost    Non-null host name to test
+     * @return true if not specified in list, false if it is specifed and therefore should be excluded from proxy
+     */
+    private boolean requiresProxy(final String targetHost)
+    {
+        boolean requiresProxy = true;
+        final String nonProxyHosts = System.getProperty("http.nonProxyHosts");
+        if (nonProxyHosts != null)
+        {
+            StringTokenizer tokenizer = new StringTokenizer(nonProxyHosts, "|");
+            while (tokenizer.hasMoreTokens())
+            {
+                String pattern = tokenizer.nextToken();
+                pattern = pattern.replaceAll("\\.", "\\\\.").replaceAll("\\*", ".*");
+                if (targetHost.matches(pattern))
+                {
+                    requiresProxy = false;
+                    break;
+                }
+            }
+        }
+        return requiresProxy;
     }
 }

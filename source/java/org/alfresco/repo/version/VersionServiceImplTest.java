@@ -21,12 +21,15 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import junit.framework.AssertionFailedError;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -296,6 +299,78 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         addToVersionHistory(versionableNode, version4);    
     }
     
+    /**
+     * Same as testGetVersionHistorySameWorkspace except that the order of
+     * of db ids is mixed up and a comparator is need to fix it (MNT-226).
+     */
+    public void testIdsOutOfOrder()
+    {
+        if (versionService instanceof Version2ServiceImpl)
+        {
+            setOutOfOrderIdsVersionService("org.alfresco.repo.version.common.VersionLabelComparator");
+            testGetVersionHistorySameWorkspace();
+        }
+    }
+
+    /**
+     * Same as testIdsOutOfOrder but without the comparator so should fail.
+     */
+    public void testIdsOutOfOrderFails()
+    {
+        if (versionService instanceof Version2ServiceImpl)
+        {
+            try
+            {
+                setOutOfOrderIdsVersionService("");
+                testGetVersionHistorySameWorkspace();
+                fail("Expected this to fail");
+            }
+            catch (AssertionFailedError e)
+            {
+                System.out.print("A test failed as EXPECTED: "+e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Sets the versionService to be one that has is db ids out of order
+     * so would normally have versions displayed in the wrong order.
+     * @param versionComparatorClass name of class to correct the situation.
+     */
+    private void setOutOfOrderIdsVersionService(String versionComparatorClass)
+    {
+        Version2ServiceImpl versionService = new Version2ServiceImpl()
+        {
+            @Override
+            protected List<Version> getAllVersions(NodeRef versionHistoryRef)
+            {
+                List<Version> versions = super.getAllVersions(versionHistoryRef);
+                if (versions.size() > 1)
+                {
+                    // Make sure the order changes
+                    List<Version> copy = new ArrayList<Version>(versions);
+                    do
+                    {
+                        Collections.shuffle(versions);
+                    } while (versions.equals(copy));
+                }
+                return versions;
+            }
+        };
+        versionService.setNodeService(nodeService);
+        versionService.setDbNodeService(dbNodeService); // mtAwareNodeService
+        versionService.setSearcher(versionSearchService);
+        versionService.setDictionaryService(dictionaryService);
+        versionService.setPolicyComponent(policyComponent);
+        versionService.setPolicyBehaviourFilter(policyBehaviourFilter);
+        versionService.setPermissionService(permissionService);
+        versionService.setOnlyUseDeprecatedV1(false);
+        versionService.setVersionMigrator(versionMigrator);
+        versionService.setVersionComparatorClass(versionComparatorClass);
+        versionService.initialise();
+        setVersionService(versionService);
+    }
+
     /**
      * Adds another version to the version history then checks that getVersionHistory is returning
      * the correct data.

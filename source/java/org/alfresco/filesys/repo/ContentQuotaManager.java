@@ -137,7 +137,7 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	    // Check if content usage is enabled
 	    
 	    if ( m_usageService.getEnabled() == false)
-	        return 0L;
+	        return -1L;
 	    
 	    // Check if there is a live usage record for the user
 	    
@@ -150,7 +150,7 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	    
 	    // No quota details available
 	    
-		return 0L;
+		return -1L;
 	}
 
     /**

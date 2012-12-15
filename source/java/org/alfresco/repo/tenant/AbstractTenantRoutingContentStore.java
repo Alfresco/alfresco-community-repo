@@ -182,5 +182,33 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         destroy();
     }
     
+    @Override
+    public long getSpaceFree()
+    {
+        ContentStore x = getTenantContentStore();
+        if(x != null)
+        {
+            return x.getSpaceFree();
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    @Override
+    public long getSpaceTotal()
+    {
+        ContentStore x = getTenantContentStore();
+        if(x != null)
+        {
+            return x.getSpaceTotal();
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    
     protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);
 }

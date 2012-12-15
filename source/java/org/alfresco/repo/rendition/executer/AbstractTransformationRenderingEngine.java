@@ -19,12 +19,14 @@
 
 package org.alfresco.repo.rendition.executer;
 
-import java.io.IOException;
+import java.util.Collection;
 
+import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
@@ -184,5 +186,28 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         }
 
         return options;
+    }
+
+    /*
+     * @seeorg.alfresco.repo.rendition.executer.AbstractRenderingEngine#getParameterDefinitions()
+     */
+    protected Collection<ParameterDefinition> getParameterDefinitions()
+    {
+        Collection<ParameterDefinition> paramList = super.getParameterDefinitions();
+        
+        paramList.add(new ParameterDefinitionImpl(PARAM_TIMEOUT_MS, DataTypeDefinition.LONG, false,
+                getParamDisplayLabel(PARAM_TIMEOUT_MS)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_READ_LIMIT_TIME_MS, DataTypeDefinition.LONG, false,
+                getParamDisplayLabel(PARAM_READ_LIMIT_TIME_MS)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_MAX_SOURCE_SIZE_K_BYTES, DataTypeDefinition.LONG, false,
+                getParamDisplayLabel(PARAM_MAX_SOURCE_SIZE_K_BYTES)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_READ_LIMIT_K_BYTES, DataTypeDefinition.LONG, false,
+                getParamDisplayLabel(PARAM_READ_LIMIT_K_BYTES)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_MAX_PAGES, DataTypeDefinition.INT, false,
+                getParamDisplayLabel(PARAM_MAX_PAGES)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_PAGE_LIMIT, DataTypeDefinition.INT, false,
+                getParamDisplayLabel(PARAM_PAGE_LIMIT)));
+        
+        return paramList;
     }
 }

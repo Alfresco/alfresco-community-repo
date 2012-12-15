@@ -25,7 +25,6 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.content.transform.magick.ImageCropOptions;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
-import org.alfresco.repo.rendition.executer.AbstractRenderingEngine.RenderingContext;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -420,19 +419,6 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
         
         paramList.add(new ParameterDefinitionImpl(PARAM_COMMAND_OPTIONS, DataTypeDefinition.TEXT, false,
                 getParamDisplayLabel(PARAM_COMMAND_OPTIONS)));
-        
-        paramList.add(new ParameterDefinitionImpl(PARAM_TIMEOUT_MS, DataTypeDefinition.LONG, false,
-                getParamDisplayLabel(PARAM_TIMEOUT_MS)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_READ_LIMIT_TIME_MS, DataTypeDefinition.LONG, false,
-                getParamDisplayLabel(PARAM_READ_LIMIT_TIME_MS)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_MAX_SOURCE_SIZE_K_BYTES, DataTypeDefinition.LONG, false,
-                getParamDisplayLabel(PARAM_MAX_SOURCE_SIZE_K_BYTES)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_READ_LIMIT_K_BYTES, DataTypeDefinition.LONG, false,
-                getParamDisplayLabel(PARAM_READ_LIMIT_K_BYTES)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_MAX_PAGES, DataTypeDefinition.INT, false,
-                getParamDisplayLabel(PARAM_MAX_PAGES)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_PAGE_LIMIT, DataTypeDefinition.INT, false,
-                getParamDisplayLabel(PARAM_PAGE_LIMIT)));
         
         return paramList;
     }

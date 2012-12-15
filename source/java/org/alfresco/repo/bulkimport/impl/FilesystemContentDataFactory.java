@@ -27,11 +27,13 @@ package org.alfresco.repo.bulkimport.impl;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.bulkimport.ContentDataFactory;
 import org.alfresco.repo.content.ContentStore;
@@ -62,7 +64,6 @@ public class FilesystemContentDataFactory implements ContentDataFactory, Initial
     private static final Log logger   = LogFactory.getLog(FilesystemContentDataFactory.class);
     
     private static final String PROTOCOL_DELIMITER = ContentStore.PROTOCOL_DELIMITER;
-    private static final String OS_FILE_SEPARATOR  = System.getProperty("file.separator");
     
     private MimetypeService mimetypeService;
     private String defaultEncoding;
@@ -101,41 +102,36 @@ public class FilesystemContentDataFactory implements ContentDataFactory, Initial
      */
     public ContentData createContentData(ContentStore store, File contentFile)
     {
-        if(!contentIsInStore(contentFile, store))
+        try
         {
-            throw new IllegalArgumentException("Can't create content URL : file '" + contentFile.getAbsolutePath() + 
-                    "' is not located within the store's tree ! The store's root is :'" + store.getRootLocation());
+            String rootLocation = new File(store.getRootLocation()).getCanonicalPath();
+            String contentLocation = contentFile.getCanonicalPath();
+            if (!contentLocation.startsWith(rootLocation + File.separator))
+            {
+                throw new IllegalArgumentException("Can't create content URL : file '" + contentLocation
+                        + "' is not located within the store's tree ! The store's root is :'" + rootLocation);
+            }
+            String relativeFilePath = contentLocation.substring(rootLocation.length() + File.separator.length());
+            String mimetype = mimetypeService.guessMimetype(contentFile.getName());
+            String encoding = defaultEncoding;
+            if (!contentFile.isDirectory())
+            {
+                encoding = guessEncoding(contentFile, mimetype);
+            }
+
+            ContentData contentData = new ContentData(storeProtocol + PROTOCOL_DELIMITER + relativeFilePath, mimetype,
+                    contentFile.length(), encoding);
+
+            Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+            contentProps.put(ContentModel.PROP_NAME, contentFile.getName());
+            contentProps.put(ContentModel.PROP_CONTENT, contentData);
+
+            return contentData;
         }
-            
-        String relativeFilePath = contentFile.getAbsolutePath().replace(store.getRootLocation() + OS_FILE_SEPARATOR, "");
-        String mimetype = mimetypeService.guessMimetype(contentFile.getName());
-        String encoding = defaultEncoding;
-        if(!contentFile.isDirectory())
+        catch (IOException e)
         {
-            encoding = guessEncoding(contentFile, mimetype);
+            throw new AlfrescoRuntimeException(e.getMessage(), e);
         }
-        
-        ContentData contentData = new ContentData(storeProtocol + PROTOCOL_DELIMITER + relativeFilePath, mimetype, contentFile.length(), encoding);
-        
-        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-        contentProps.put(ContentModel.PROP_NAME, contentFile.getName());
-        contentProps.put(ContentModel.PROP_CONTENT, contentData);
-         
-        return contentData;        
-    }
-    
-    /**
-     * Check if file is in the store's tree, by checking if the file path starts 
-     * with the store's configured root location.
-     * 
-     * @param store            The {@link ContentStore} in which the file should be
-     * @param contentFile    The {@link File} to check
-     * @return boolean : whether or not the file is in the expected file tree
-     */
-    private boolean contentIsInStore(File contentFile,ContentStore store)
-    {
-        File contentStoreFile = new File(store.getRootLocation());
-        return contentFile.getAbsolutePath().startsWith(contentStoreFile.getAbsolutePath());
     }
     
     /**

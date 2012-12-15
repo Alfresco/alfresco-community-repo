@@ -98,6 +98,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     private BeanFactory beanFactory;
     
     private boolean includeGroupsForRoleAdmin = false;
+    
+    private int maximumResultsFromUnlimitedQuery = Integer.MAX_VALUE;
 	
     public SolrQueryHTTPClient()
     {
@@ -165,6 +167,15 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     {
         this.includeGroupsForRoleAdmin = includeGroupsForRoleAdmin;
     }
+    
+    /**
+     * @param maximumResultsFromUnlimitedQuery
+     *            the maximum number of results to request from an otherwise unlimited query
+     */
+    public void setMaximumResultsFromUnlimitedQuery(int maximumResultsFromUnlimitedQuery)
+    {
+        this.maximumResultsFromUnlimitedQuery = maximumResultsFromUnlimitedQuery;
+    }
 
     public ResultSet executeQuery(SearchParameters searchParameters, String language)
     {   
@@ -206,18 +217,29 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             url.append("?wt=").append(encoder.encode("json", "UTF-8"));
             url.append("&fl=").append(encoder.encode("DBID,score", "UTF-8"));
             
+            // Emulate old limiting behaviour and metadata
+            final LimitBy limitBy;
+            int maxResults = -1;
             if (searchParameters.getMaxItems() >= 0)
             {
-                url.append("&rows=").append(encoder.encode("" + searchParameters.getMaxItems(), "UTF-8"));
+                maxResults = searchParameters.getMaxItems();
+                limitBy = LimitBy.FINAL_SIZE;
             }
-            else if(searchParameters.getLimitBy() == LimitBy.FINAL_SIZE)
+            else if(searchParameters.getLimitBy() == LimitBy.FINAL_SIZE && searchParameters.getLimit() >= 0)
             {
-                url.append("&rows=").append(encoder.encode("" + searchParameters.getLimit(), "UTF-8"));
+                maxResults = searchParameters.getLimit();
+                limitBy = LimitBy.FINAL_SIZE;
             }
             else
             {
-                url.append("&rows=").append(encoder.encode("" + Integer.MAX_VALUE, "UTF-8"));
+                maxResults = searchParameters.getMaxPermissionChecks();
+                if (maxResults < 0)
+                {
+                    maxResults = maximumResultsFromUnlimitedQuery;
+                }
+                limitBy = LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS;
             }
+            url.append("&rows=").append(String.valueOf(maxResults));
             
             url.append("&df=").append(encoder.encode(searchParameters.getDefaultFieldName(), "UTF-8"));
             url.append("&start=").append(encoder.encode("" + searchParameters.getSkipCount(), "UTF-8"));
@@ -401,7 +423,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                 Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream()));
                 // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
                 JSONObject json = new JSONObject(new JSONTokener(reader));
-                SolrJSONResultSet results = new SolrJSONResultSet(json, searchParameters, nodeService);
+                SolrJSONResultSet results = new SolrJSONResultSet(json, searchParameters, nodeService, limitBy, maxResults);
                 if (s_logger.isDebugEnabled())
                 {
                     s_logger.debug("Sent :" + url);

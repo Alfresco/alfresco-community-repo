@@ -24,9 +24,13 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -50,6 +54,7 @@ public class VersionHistoryImplTest extends TestCase
     /**
      * Data used in the tests
      */
+    private NodeRef nodeRef;
     private Version rootVersion = null;    
     private Version childVersion1 = null;
     private Version childVersion2 = null;
@@ -62,27 +67,22 @@ public class VersionHistoryImplTest extends TestCase
         super.setUp();
         
         // Create dummy node ref
-        NodeRef nodeRef = new NodeRef(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "test"), "test");
+        nodeRef = new NodeRef(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "test"), "test");
         
-        HashMap<String, Serializable> versionProperties1 = new HashMap<String, Serializable>();
-        versionProperties1.put(VersionModel.PROP_VERSION_LABEL, "1");
-        versionProperties1.put(VersionModel.PROP_CREATED_DATE, new Date());
-        versionProperties1.put("testProperty", "testValue");
-        this.rootVersion = new VersionImpl(versionProperties1, nodeRef);
-        
-        HashMap<String, Serializable> versionProperties2 = new HashMap<String, Serializable>();
-        versionProperties2.put(VersionModel.PROP_VERSION_LABEL, "2");
-        versionProperties2.put(VersionModel.PROP_CREATED_DATE, new Date());
-        versionProperties2.put("testProperty", "testValue");
-        this.childVersion1 = new VersionImpl(versionProperties2, nodeRef);
-        
-        HashMap<String, Serializable> versionProperties3 = new HashMap<String, Serializable>();
-        versionProperties3.put(VersionModel.PROP_VERSION_LABEL, "3");
-        versionProperties3.put(VersionModel.PROP_CREATED_DATE, new Date());
-        versionProperties3.put("testProperty", "testValue");
-        this.childVersion2 = new VersionImpl(versionProperties3, nodeRef);                
+        this.rootVersion = newVersion(nodeRef, "1");
+        this.childVersion1 = newVersion(nodeRef, "2");
+        this.childVersion2 = newVersion(nodeRef, "3");
     }
 
+    private VersionImpl newVersion(NodeRef nodeRef, String label)
+    {
+        HashMap<String, Serializable> versionProperties1 = new HashMap<String, Serializable>();
+        versionProperties1.put(VersionModel.PROP_VERSION_LABEL, label);
+        versionProperties1.put(VersionModel.PROP_CREATED_DATE, new Date());
+        versionProperties1.put("testProperty", "testValue");
+        return new VersionImpl(versionProperties1, nodeRef);
+    }
+    
     /**
      * Test constructor
      */
@@ -98,7 +98,7 @@ public class VersionHistoryImplTest extends TestCase
      */
     private VersionHistoryImpl testContructorImpl()
     {
-        VersionHistoryImpl vh = new VersionHistoryImpl(this.rootVersion);
+        VersionHistoryImpl vh = new VersionHistoryImpl(this.rootVersion, null);
         assertNotNull(vh);
         
         return vh;
@@ -112,7 +112,7 @@ public class VersionHistoryImplTest extends TestCase
     {
         try
         {
-            new VersionHistoryImpl(null);
+            new VersionHistoryImpl(null, null);
             fail();
         }
         catch(VersionServiceException exception)
@@ -144,6 +144,42 @@ public class VersionHistoryImplTest extends TestCase
         Collection<Version> allVersions = vh.getAllVersions();
         assertNotNull(allVersions);
         assertEquals(3, allVersions.size());
+    }
+    
+    /**
+     * Test getAllVersions using a comparator to resort versions which are in the
+     * wrong order.
+     */
+    public void testGetAllVersionsComparator()
+    {
+        String[] labels = new String[] { "1.0", "1.1", "1.2", "2.0", "2.1" };
+        List<Version> versions = new ArrayList<Version>(labels.length);
+        for (String label: labels)
+        {
+            versions.add(newVersion(nodeRef, label));
+        }
+        Collections.shuffle(versions);
+
+        Iterator<Version> itr = versions.iterator();
+        Version version = itr.next();
+        Version predecessor;
+        VersionHistoryImpl vh = new VersionHistoryImpl(version,
+                Collections.reverseOrder(new VersionLabelComparator()));
+        while (itr.hasNext())
+        {
+            predecessor = version;
+            version = itr.next();
+            vh.addVersion(version, predecessor);
+        }
+
+        Collection<Version> allVersions = vh.getAllVersions();
+        assertNotNull(allVersions);
+        assertEquals(labels.length, allVersions.size());
+        itr = allVersions.iterator();
+        for (String label: labels)
+        {
+            assertEquals(label, itr.next().getVersionLabel());
+        }
     }
     
     /**
@@ -210,7 +246,6 @@ public class VersionHistoryImplTest extends TestCase
     /**
      * Test getSuccessors
      */
-    @SuppressWarnings("unchecked")
     public void testGetSuccessors()
     {
         VersionHistoryImpl vh = testAddVersionImpl();
@@ -237,6 +272,40 @@ public class VersionHistoryImplTest extends TestCase
         assertTrue(versions3.isEmpty());
     }
     
+    /**
+     * Test getSuccessors using a comparator to resort versions which are in the
+     * wrong order.
+     */
+    public void testGetSuccessorsComparator()
+    {
+        rootVersion = newVersion(nodeRef, "1.0");
+        String[] labels = new String[] { "1.1", "1.2", "2.0", "2.1" };
+        List<Version> versions = new ArrayList<Version>(labels.length);
+        for (String label: labels)
+        {
+            versions.add(newVersion(nodeRef, label));
+        }
+        Collections.shuffle(versions);
+
+        Iterator<Version> itr = versions.iterator();
+        Version version = rootVersion;
+        VersionHistoryImpl vh = new VersionHistoryImpl(version,
+                Collections.reverseOrder(new VersionLabelComparator()));
+        while (itr.hasNext())
+        {
+            vh.addVersion(itr.next(), rootVersion);
+        }
+
+        Collection<Version> allVersions = vh.getSuccessors(rootVersion);
+        assertNotNull(allVersions);
+        assertEquals(labels.length, allVersions.size());
+        itr = allVersions.iterator();
+        for (String label: labels)
+        {
+            assertEquals(label, itr.next().getVersionLabel());
+        }
+    }
+
     /**
      * Test getVersion
      */

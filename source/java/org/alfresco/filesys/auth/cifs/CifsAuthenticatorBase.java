@@ -40,7 +40,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -463,15 +462,47 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
                     AlfrescoClientInfo alfClient = (AlfrescoClientInfo) client;
                     if (alfClient.hasAuthenticationTicket())
                     {
+                    	boolean ticketFailed = false;
+                    	
                         try
                         {
                             getAuthenticationService().validate(alfClient.getAuthenticationTicket());
                         }
                         catch (AuthenticationException e)
                         {
-                            // Ticket no longer valid or maximum tickets exceeded
-                            alfClient.setAuthenticationTicket(null);
-                            getAuthenticationComponent().clearCurrentSecurityContext();
+                        	// Indicate the existing ticket is bad
+                        	
+                        	ticketFailed = true;
+                        	
+                        	// DEBUG
+                        	
+                        	if ( logger.isDebugEnabled())
+                        		logger.debug("Failed to validate ticket, user=" + client.getUserName() + ", ticket=" + alfClient.getAuthenticationTicket());
+                        }
+                        
+                        // If the ticket did not validate then try and get a new ticket for the user
+                        
+                        if ( ticketFailed == true) {
+                        	
+                        	try {
+                        		String normalized = mapUserNameToPerson( client.getUserName(), false);
+                        		getAuthenticationComponent().setCurrentUser( normalized);
+                                alfClient.setAuthenticationTicket(getAuthenticationService().getCurrentTicket());
+                        	}
+                        	catch ( AuthenticationException ex) {
+                            	
+                                // Cannot get a new ticket for the user
+
+                        		if ( logger.isErrorEnabled()) {
+                        			logger.error("Failed to get new ticket for user=" + client.getUserName());
+                        			logger.error( ex);
+                        		}
+
+                        		// Clear the ticket/security context
+                        		
+                        		alfClient.setAuthenticationTicket(null);
+                                getAuthenticationComponent().clearCurrentSecurityContext();
+                        	}
                         }
                     }
                     else
@@ -608,10 +639,10 @@ public abstract class CifsAuthenticatorBase extends CifsAuthenticator implements
 
         // DEBUG
 
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
-        }
+//        if (logger.isDebugEnabled())
+//        {
+//            logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
+//        }
 	    //
 	    // the repository is read-only, we settle for a read-only transaction
 	    if (txService.isReadOnly())

@@ -288,21 +288,21 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * @return      Returns <tt>Long.MAX_VALUE</tt> always
+     * @return      Returns <tt>-1</tt> always
      */
     @Override
     public long getSpaceFree()
     {
-        return Long.MAX_VALUE;
+        return -1;
     }
 
     /**
-     * @return      Returns <tt>Long.MAX_VALUE</tt> always
+     * @return      Returns <tt>-1</tt> always
      */
     @Override
     public long getSpaceTotal()
     {
-        return Long.MAX_VALUE;
+        return -1;
     }
 
     /**

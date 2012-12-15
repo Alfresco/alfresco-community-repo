@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,12 +22,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -98,6 +100,8 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
      */
     protected SearchService searcher; // unused
 
+    protected Comparator<Version> versionComparatorDesc;
+
     /**
      * Sets the db node service, used as the version store implementation
      *
@@ -126,6 +130,33 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
         this.policyBehaviourFilter = policyBehaviourFilter;
     }
 
+    /**
+     * Sets an optional comparator to sort a versions in descending order (eg. 2.1, 2.0, 1.1, 1.0).
+     * Really only needed in a 4.1.3 system (or above) that has been upgraded from an earlier system
+     * that used NON ordered sequence numbers in a cluster. Not something we really support but was
+     * the subject of MNT-226.
+     * @param versionComparatorClass the name of a comparator. For example
+     *        "org.alfresco.repo.version.common.VersionLabelComparator".
+     */
+    @SuppressWarnings("unchecked")
+    public void setVersionComparatorClass(String versionComparatorClass)
+    {
+        if (versionComparatorClass != null && versionComparatorClass.trim().length() != 0)
+        {
+            try
+            {
+                versionComparatorDesc = (Comparator<Version>) getClass().getClassLoader().
+                        loadClass(versionComparatorClass.trim()).newInstance();
+            }
+            catch (Exception e)
+            {
+                throw new AlfrescoRuntimeException(
+                        "Failed to create a Comparator<Version> using the class name "+
+                        versionComparatorClass, e);
+            }
+        }
+    }
+    
     /**
      * Register version label policy for the specified type
      * 
@@ -747,6 +778,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
     {
         VersionHistory versionHistory = null;
 
+        // List of versions with current one last and root one first.
         ArrayList<NodeRef> versionHistoryNodeRefs = new ArrayList<NodeRef>();
         
         NodeRef currentVersion;
@@ -793,7 +825,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
 
             if (isRoot == true)
             {
-                versionHistory = new VersionHistoryImpl(version);
+                versionHistory = new VersionHistoryImpl(version, versionComparatorDesc);
                 isRoot = false;
             }
             else

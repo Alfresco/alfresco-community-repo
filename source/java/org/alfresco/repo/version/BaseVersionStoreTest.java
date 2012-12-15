@@ -31,11 +31,14 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -43,6 +46,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
@@ -68,7 +72,12 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected NodeService nodeService;
     protected PermissionService permissionService;
     protected CheckOutCheckInService checkOutCheckInService;
-    
+    protected VersionMigrator versionMigrator;
+    protected SearchService versionSearchService;
+    protected DictionaryService dictionaryService;
+    protected PolicyComponent policyComponent;
+    protected BehaviourFilter policyBehaviourFilter;
+
     /*
      * Data used by tests
      */
@@ -158,6 +167,11 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.nodeService = (NodeService)applicationContext.getBean("nodeService");
         this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
         this.checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
+        this.versionSearchService = (SearchService)this.applicationContext.getBean("versionSearchService");
+        this.versionMigrator = (VersionMigrator)this.applicationContext.getBean("versionMigrator");
+        this.dictionaryService = (DictionaryService)this.applicationContext.getBean("dictionaryService");
+        this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
+        this.policyBehaviourFilter = (BehaviourFilter)this.applicationContext.getBean("policyBehaviourFilter");
         
         setVersionService((VersionService)applicationContext.getBean("versionService"));
         

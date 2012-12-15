@@ -59,6 +59,9 @@
         <property name="includeGroupsForRoleAdmin">
         	<value>${solr.query.includeGroupsForRoleAdmin}</value>
         </property>
+        <property name="maximumResultsFromUnlimitedQuery">
+            <value>${solr.query.maximumResultsFromUnlimitedQuery}</value>
+        </property>
     </bean>
     
     

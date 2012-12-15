@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,7 +28,7 @@ import org.alfresco.util.VersionNumber;
  *
  * @author Yanick Pignot
  * 
- * @deprecated see VersionHistory (getAllVersions, VersionComparatorAsc, VersionComparatorDesc)
+ * @deprecated See {@link VersionHistory}
  */
 public class VersionLabelComparator implements Comparator<Version>
 {

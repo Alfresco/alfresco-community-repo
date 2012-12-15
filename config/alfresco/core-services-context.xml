@@ -532,6 +532,9 @@
         <property name="versionMigrator">
             <ref bean="versionMigrator"/>
         </property>
+        <property name="versionComparatorClass">
+            <value>${version.store.versionComparatorClass}</value>
+        </property>
     </bean>
 
     <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">

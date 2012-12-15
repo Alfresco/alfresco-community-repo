@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,7 +34,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.common.VersionHistoryImpl;
-import org.alfresco.repo.version.common.VersionHistoryImpl.VersionComparatorAsc;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy;
@@ -69,8 +68,6 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     
     private VersionServiceImpl version1Service = new VersionServiceImpl();
     private VersionMigrator versionMigrator;
-    
-    private static Comparator<Version> versionComparatorAsc = new VersionComparatorAsc();
     
     public void setPermissionService(PermissionService permissionService)
     {
@@ -779,9 +776,13 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         VersionHistory versionHistory = null;
         
+        // List of versions with current one last and root one first.
         List<Version> versions = getAllVersions(versionHistoryRef);
         
-        Collections.sort(versions, versionComparatorAsc);
+        if (versionComparatorDesc != null)
+        {
+            Collections.sort(versions, Collections.reverseOrder(versionComparatorDesc));
+        }
         
         // Build the version history object
         boolean isRoot = true;
@@ -790,7 +791,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         {
             if (isRoot == true)
             {
-                versionHistory = new VersionHistoryImpl(version);
+                versionHistory = new VersionHistoryImpl(version, versionComparatorDesc);
                 isRoot = false;
             }
             else

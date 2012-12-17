@@ -33,7 +33,6 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryParser;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -153,11 +152,12 @@ public class SearchContext implements Serializable
       // the QName for the well known "name" attribute
       String nameAttr = Repository.escapeQName(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, ELEMENT_NAME));
       
-      StringBuilder plBuf = new StringBuilder("(");
-      StringBuilder mnBuf = new StringBuilder("-(");
+      StringBuilder plBuf = new StringBuilder(500).append("(");
+      StringBuilder mnBuf = new StringBuilder(500).append("-(");
       
       // match against content text
       String text = this.text.trim();
+      boolean appendText = mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL;
       
       if (text.length() != 0 && text.length() >= minimum)
       {
@@ -174,19 +174,26 @@ public class SearchContext implements Serializable
             
             if (text.length() != 0)
             {
-               // prepend NOT operator if supplied
                if (operatorNOT)
                {
-                  processSearchTextAttribute(nameAttr, text, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, mnBuf);
+                  processSearchTextAttribute(nameAttr, text, appendText, mnBuf);
+                  processSearchAdditionalAttributes(text, mnBuf, this.simpleSearchAdditionalAttrs);
                }
-               
-               // prepend AND operator if supplied
                else
                {
-              	 processSearchTextAttribute(nameAttr, text, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, plBuf);
+                  if (plBuf.length() > 1)
+                  {
+                     plBuf.append(' ');
+                  }
+                  if (operatorAND)
+                  {
+                     plBuf.append(OP_AND);
+                  }
+                  plBuf.append('(');
+                  processSearchTextAttribute(nameAttr, text, appendText, plBuf);
+                  processSearchAdditionalAttributes(text, plBuf, this.simpleSearchAdditionalAttrs);
+                  plBuf.append(')');
                }
-               
-               processSearchAdditionalAttribute(text, operatorNOT, operatorAND, mnBuf, plBuf, this.simpleSearchAdditionalAttrs);
             }
          }
          else
@@ -196,11 +203,14 @@ public class SearchContext implements Serializable
             {
                // as a single quoted phrase
                String quotedSafeText = '"' + QueryParser.escape(text.substring(1, text.length() - 1)) + '"';
-               plBuf.append("TEXT:").append(quotedSafeText);
+               if (appendText)
+               {
+                  plBuf.append("TEXT:").append(quotedSafeText);
+               }
                plBuf.append(" @").append(nameAttr).append(":").append(quotedSafeText);
                for (QName qname : this.simpleSearchAdditionalAttrs)
                {
-            	   plBuf.append(" @").append(
+                  plBuf.append(" @").append(
                         Repository.escapeQName(qname)).append(":").append(quotedSafeText);
                }
             }
@@ -209,7 +219,6 @@ public class SearchContext implements Serializable
                // as individual search terms
                StringTokenizer t = new StringTokenizer(text, " ");
                
-               int termCount = 0;
                int tokenCount = t.countTokens();
                for (int i=0; i<tokenCount; i++)
                {
@@ -233,24 +242,32 @@ public class SearchContext implements Serializable
                   
                   if (term.length() != 0)
                   {
-                     // prepend NOT operator if supplied
                      if (operatorNOT)
                      {
-                        processSearchTextAttribute(nameAttr, term, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, mnBuf);
+                        processSearchTextAttribute(nameAttr, term, appendText, mnBuf);
+                        if (mode == SearchContext.SEARCH_ALL)
+                        {
+                            processSearchAdditionalAttributes(term, mnBuf, this.simpleSearchAdditionalAttrs);
+                        }
                      }
-                     
-                     // prepend AND operator if supplied
                      else
                      {
-                    	 processSearchTextAttribute(nameAttr, term, mode == SEARCH_FILE_NAMES_CONTENTS || mode == SEARCH_ALL, plBuf);
+                        if (plBuf.length() > 0)
+                        {
+                           plBuf.append(' ');
+                        }
+                        if (operatorAND)
+                        {
+                           plBuf.append(OP_AND);
+                        }
+                        plBuf.append('(');
+                        processSearchTextAttribute(nameAttr, term, appendText, plBuf);
+                        if (mode == SearchContext.SEARCH_ALL)
+                        {
+                            processSearchAdditionalAttributes(term, plBuf, this.simpleSearchAdditionalAttrs);
+                        }
+                        plBuf.append(')');
                      }
-                     
-                     if (mode == SearchContext.SEARCH_ALL)
-                     {
-                    	 processSearchAdditionalAttribute(term, operatorNOT, operatorAND, mnBuf, plBuf, this.simpleSearchAdditionalAttrs);
-                     }
-                     
-                     termCount++;
                   }
                }
             }
@@ -475,12 +492,10 @@ public class SearchContext implements Serializable
     * @param qname      QName of the attribute
     * @param value      Non-null value of the attribute
     * @param buf        Buffer to append lucene terms to
-    * @param andOp      If true apply the '+' AND operator as the prefix to the attribute term
-    * @param notOp      If true apply the '-' NOT operator as the prefix to the attribute term
     */
    private static void processSearchAttribute(QName qname, String value, StringBuilder buf)
    {
-      buf.append(" @").append(Repository.escapeQName(qname)).append(":\"")
+      buf.append(" +@").append(Repository.escapeQName(qname)).append(":\"")
          .append(SearchContext.escape(value)).append("\" ");
    }
    
@@ -503,24 +518,15 @@ public class SearchContext implements Serializable
       }
    } 
    
-   private static void processSearchAdditionalAttribute(String value, boolean operatorNOT, boolean operatorAND, StringBuilder mnBuf, StringBuilder plBuf,
-		   List<QName> simpleSearchAdditionalAttrs) 
+   private static void processSearchAdditionalAttributes(String value, StringBuilder buf,
+         List<QName> simpleSearchAdditionalAttrs)
    {
-   for (QName qname : simpleSearchAdditionalAttrs)
-   {
-	// prepend NOT operator if supplied
-       if (operatorNOT)
-       {
-  	     processSearchAttribute(qname, value, mnBuf);
-       }
-   
-       // prepend AND operator if supplied
-       else
-       {
-  	     processSearchAttribute(qname, value, plBuf);
-       } 
+      for (QName qname : simpleSearchAdditionalAttrs)
+      {
+         buf.append(" @").append(Repository.escapeQName(qname)).append(":\"").append(SearchContext.escape(value))
+               .append("\" ");
+      }
    }
-   } 
    
    /**
     * Returns a String where those characters that QueryParser

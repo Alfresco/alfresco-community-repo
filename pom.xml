@@ -300,9 +300,6 @@
         <!-- Profile to build alfresco-enterprise -->
         <profile>
             <id>enterprise</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <dependencies>
                 <dependency>
                     <groupId>${project.groupId}</groupId>

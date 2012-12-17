@@ -3374,6 +3374,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                                     newState.setFilesystemObject(nodeToMoveRef);
                                     newState.setFileSize(oldState.getFileSize());
 
+                                    // the date is updated to be properly saved when the document is closed, see MNT-214
+                                    newState.updateModifyDateTime(oldState.getModifyDateTime());
+
                                     // Make sure the old file state is cached for a short while, the file may not be open so the
                                     // file state could be expired
 
@@ -3423,6 +3426,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                                     newState.setFileStatus(FileExists);
                                     newState.setFilesystemObject(finalTargetNodeRef);
                                     newState.setFileSize(oldState.getFileSize());
+
+                                    // the date is updated to be properly saved when the document is closed, see MNT-214
+                                    newState.updateModifyDateTime(oldState.getModifyDateTime());
 
                                     // Make sure the old file state is cached for a short while, the file may not be open so the
                                     // file state could be expired

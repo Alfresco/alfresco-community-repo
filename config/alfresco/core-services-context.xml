@@ -8,8 +8,8 @@
       <property name="host" value="${alfresco.rmi.services.host}" />
       <property name="retries" value="${alfresco.rmi.services.retries}" />
    </bean>
-
-   <bean id="baseServiceExporter" class="org.springframework.remoting.rmi.RmiServiceExporter" abstract="true">
+                         
+   <bean id="baseServiceExporter" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter" abstract="true">
       <property name="registryPort" value="${alfresco.rmi.services.port}" />
       <property name="registryServerSocketFactory" ref="hostConfigurableSocketFactory" />
       <property name="registryClientSocketFactory" ref="hostConfigurableSocketFactory" />

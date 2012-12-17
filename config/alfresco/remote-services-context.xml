@@ -20,7 +20,7 @@
 	
 	<!-- The RMI wrapper around the AVM remote interface. -->
 	
-	<bean id="avmRemoteService" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
+	<bean id="avmRemoteService" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter" parent="baseServiceExporter">
 		<property name="service">
 			<ref bean="avmRemoteTransport"/>
 		</property>
@@ -32,6 +32,9 @@
 		</property>
 		<property name="servicePort">
 			<value>${avm.rmi.service.port}</value>
+		</property>
+	    <property name="enabled">
+			<value>${avm.rmi.service.enabled}</value>
 		</property>
 		<property name="clientSocketFactory">
 			<ref bean="hostConfigurableSocketFactory" />
@@ -47,7 +50,7 @@
         </property>
     </bean>
 			
-    <bean id="avmSyncServiceTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
+    <bean id="avmSyncServiceTransportRMI" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter" parent="baseServiceExporter">
         <property name="service">
             <ref bean="avmSyncServiceTransport"/>
         </property>
@@ -60,13 +63,16 @@
         <property name="servicePort">
 			<value>${avmsync.rmi.service.port}</value>
 		</property>
+	    <property name="enabled">
+			<value>${avmsync.rmi.service.enabled}</value>
+		</property>
 		<property name="clientSocketFactory">
 			<ref bean="hostConfigurableSocketFactory" />
 		</property>
     </bean>
     
     <!-- The AuthenticationService exported as an RMI service. -->
-	<bean id="rmiAuthenticationService" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
+	<bean id="rmiAuthenticationService" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter" parent="baseServiceExporter">
 		<property name="service">
 			<ref bean="AuthenticationService"/>
 		</property>
@@ -75,6 +81,9 @@
 		</property>
 		<property name="serviceName">
 			<value>authentication</value>
+		</property>
+	    <property name="enabled">
+			<value>${authentication.rmi.service.enabled}</value>
 		</property>
 		<property name="servicePort">
 			<value>${authentication.rmi.service.port}</value>
@@ -136,7 +145,7 @@
 	</bean>
 
 	<!-- The RMI export of the repo remote transport. -->
-    <bean id="repoRemoteTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
+    <bean id="repoRemoteTransportRMI" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter" parent="baseServiceExporter">
         <property name="service">
             <ref bean="repoRemoteTransport"/>
         </property>
@@ -146,6 +155,9 @@
         <property name="serviceName">
             <value>repo</value>
         </property>
+        <property name="enabled">
+			<value>${repo.rmi.service.enabled}</value>
+		</property>
         <property name="servicePort">
 			<value>${repo.rmi.service.port}</value>
 		</property>
@@ -165,7 +177,7 @@
     </bean>
     
     <!-- The RMI export of the ActionService Transport -->
-    <bean id="actionServiceTransportRMI" class="org.springframework.remoting.rmi.RmiServiceExporter"  parent="baseServiceExporter">
+    <bean id="actionServiceTransportRMI" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter"  parent="baseServiceExporter">
         <property name="service">
             <ref bean="actionServiceTransport"/>
         </property>
@@ -175,6 +187,9 @@
         <property name="serviceName">
             <value>action</value>
         </property>
+        <property name="enabled">
+			<value>${action.rmi.service.enabled}</value>
+		</property>
         <property name="servicePort">
 			<value>${action.rmi.service.port}</value>
 		</property>

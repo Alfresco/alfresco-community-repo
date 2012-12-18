@@ -429,7 +429,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 }
             }
         }, 
-        AuthenticationUtil.getSystemUserName());    	
+        AuthenticationUtil.getAdminUserName());    	
     }
     
     /**

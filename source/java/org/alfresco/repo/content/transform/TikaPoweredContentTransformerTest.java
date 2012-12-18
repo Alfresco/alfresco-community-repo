@@ -80,6 +80,10 @@ public abstract class TikaPoweredContentTransformerTest extends AbstractContentT
                "HTML footer not found",
                contents.contains("</html>")
          );
+         assertTrue(
+               "Expanded HTML title not found",
+               contents.contains("</title>")
+         );
       }
       else if(targetMimetype.equals(MimetypeMap.MIMETYPE_TEXT_PLAIN))
       {

@@ -41,6 +41,7 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.apache.tika.sax.ExpandedTitleContentHandler;
 import org.xml.sax.ContentHandler;
 
 /**
@@ -135,6 +136,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
        if(MimetypeMap.MIMETYPE_HTML.equals(targetMimeType))
        {
           handler.getTransformer().setOutputProperty(OutputKeys.METHOD, "html");
+          return new ExpandedTitleContentHandler(handler);
        }
        else if(MimetypeMap.MIMETYPE_XHTML.equals(targetMimeType) ||
                MimetypeMap.MIMETYPE_XML.equals(targetMimeType))

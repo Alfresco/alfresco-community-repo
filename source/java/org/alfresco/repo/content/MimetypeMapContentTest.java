@@ -115,7 +115,13 @@ public class MimetypeMapContentTest extends TestCase
         assertEquals(
               "application/msword", 
               mimetypeService.guessMimetype("something.doc", truncReader)
-      );
+        );
+        
+        // Lotus notes EML files (ALF-16381 / TIKA-1042)
+        assertEquals(
+              "message/rfc822", 
+              mimetypeService.guessMimetype("something.eml", openQuickTestFile("quickLotus.eml"))
+        );
     }
     
     private ContentReader openQuickTestFile(String filename)

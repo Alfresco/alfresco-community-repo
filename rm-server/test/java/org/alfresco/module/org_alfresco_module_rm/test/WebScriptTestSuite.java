@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.test;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.alfresco.module.org_alfresco_module_rm.test.webscript.BootstraptestDataRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.DataSetRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.DispositionRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.EventRestApiTest;
@@ -46,7 +45,6 @@ public class WebScriptTestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        suite.addTestSuite(BootstraptestDataRestApiTest.class);
         suite.addTestSuite(DispositionRestApiTest.class);
         suite.addTestSuite(EventRestApiTest.class);
         suite.addTestSuite(RMCaveatConfigScriptTest.class);

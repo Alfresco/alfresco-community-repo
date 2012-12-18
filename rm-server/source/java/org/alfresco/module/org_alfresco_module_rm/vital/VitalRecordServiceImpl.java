@@ -19,8 +19,11 @@
 package org.alfresco.module.org_alfresco_module_rm.vital;
 
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
@@ -31,6 +34,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
@@ -46,10 +50,8 @@ import org.alfresco.util.ParameterCheck;
 public class VitalRecordServiceImpl implements VitalRecordService, 
                                                RecordsManagementModel,
                                                NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                               NodeServicePolicies.OnAddAspectPolicy
+                                               NodeServicePolicies.OnCreateChildAssociationPolicy
 {
-    private static final Period PERIOD_NONE = new Period("none|0");
-    
     /** Services */
     private NodeService nodeService;
     private PolicyComponent policyComponent;
@@ -58,7 +60,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     
     /** Behaviours */
     private JavaBehaviour onUpdateProperties;
-    private JavaBehaviour onAddAspect;
+    private JavaBehaviour onCreateChildAssociation;
     
     /**
      * @param nodeService   node service
@@ -103,11 +105,17 @@ public class VitalRecordServiceImpl implements VitalRecordService,
                 ASPECT_VITAL_RECORD_DEFINITION,
                 onUpdateProperties);
         
-        onAddAspect = new JavaBehaviour(this, "onAddAspect", NotificationFrequency.TRANSACTION_COMMIT);
-        policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnAddAspectPolicy.QNAME, 
-                ASPECT_VITAL_RECORD_DEFINITION, 
-                onAddAspect);
+        onCreateChildAssociation = new JavaBehaviour(this, "onCreateChildAssociation", NotificationFrequency.TRANSACTION_COMMIT);        
+        policyComponent.bindAssociationBehaviour(
+                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, 
+                TYPE_RECORD_FOLDER, 
+                ContentModel.ASSOC_CONTAINS,
+                onCreateChildAssociation);
+        policyComponent.bindAssociationBehaviour(
+                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, 
+                TYPE_RECORD_CATEGORY, 
+                ContentModel.ASSOC_CONTAINS,
+                onCreateChildAssociation);
     }
 
     /**
@@ -121,62 +129,112 @@ public class VitalRecordServiceImpl implements VitalRecordService,
             rmActionService.executeRecordsManagementAction(nodeRef, "broadcastVitalRecordDefinition");
         }        
     }
-
+    
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
-    @Override
-    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
+    public void onCreateChildAssociation(ChildAssociationRef childAssociationRef, boolean bNew)
     {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("aspectTypeQName", aspectTypeQName);
-        
-        if (nodeService.exists(nodeRef) == true)
+        if (childAssociationRef != null)
         {
-            onUpdateProperties.disable();
-            try
-            {
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork() throws Exception 
-                    {
-                        // get the current review period value
-                        Period currentReviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
-                        if (currentReviewPeriod == null ||
-                            PERIOD_NONE.equals(currentReviewPeriod) == true)
-                        {                        
-                            // get the immediate parent
-                            NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-                            
-                            // is the parent a record category
-                            if (parentRef != null && 
-                                FilePlanComponentKind.RECORD_CATEGORY.equals(rmService.getFilePlanComponentKind(parentRef)) == true)
-                            {
-                                // is the child a record category or folder
-                                FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
-                                if (kind.equals(FilePlanComponentKind.RECORD_CATEGORY) == true ||
-                                    kind.equals(FilePlanComponentKind.RECORD_FOLDER) == true)
-                                {
-                                    // set the vital record definition values to match that of the parent
-                                    nodeService.setProperty(nodeRef, 
-                                                            PROP_VITAL_RECORD_INDICATOR, 
-                                                            nodeService.getProperty(parentRef, PROP_VITAL_RECORD_INDICATOR));
-                                    nodeService.setProperty(nodeRef, 
-                                                            PROP_REVIEW_PERIOD, 
-                                                            nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
-                                }
-                            }
-                        }
-                        
-                        return null;
-                    }
-                }, AuthenticationUtil.getSystemUserName());
-            }
-            finally
-            {
-                onUpdateProperties.enable();
-            }
+           final NodeRef nodeRef = childAssociationRef.getChildRef();
+           if (nodeService.exists(nodeRef) == true)
+           {
+              onCreateChildAssociation.disable();
+              onUpdateProperties.disable();               
+              try
+              {
+                  AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                  {
+                      @Override
+                      public Void doWork() throws Exception
+                      {
+                          if (rmService.isRecordCategory(nodeRef) == true ||
+                              rmService.isRecordFolder(nodeRef) == true)
+                          {
+                              inheritVitalRecordDefinition(nodeRef);
+                          }
+                          
+                          return null;
+                      }
+                  });
+              }
+              finally
+              {
+                  onCreateChildAssociation.enable();
+                  onUpdateProperties.enable();  
+              }
+           }
         }
+    }
+    
+    /**
+     * Helper method to set the inherited vital record definition details.
+     * 
+     * @param nodeRef   node reference
+     */
+    private void inheritVitalRecordDefinition(NodeRef nodeRef)
+    {
+        // get the current review period value
+        Period currentReviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
+        if (currentReviewPeriod == null ||
+            PERIOD_NONE.equals(currentReviewPeriod) == true)
+        {                        
+            // get the immediate parent
+            NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+            
+            // is the parent a record category
+            if (parentRef != null && 
+                FilePlanComponentKind.RECORD_CATEGORY.equals(rmService.getFilePlanComponentKind(parentRef)) == true)
+            {
+                // is the child a record category or folder
+                FilePlanComponentKind kind = rmService.getFilePlanComponentKind(nodeRef);
+                if (kind.equals(FilePlanComponentKind.RECORD_CATEGORY) == true ||
+                    kind.equals(FilePlanComponentKind.RECORD_FOLDER) == true)
+                {
+                    // set the vital record definition values to match that of the parent
+                    nodeService.setProperty(nodeRef, 
+                                            PROP_VITAL_RECORD_INDICATOR, 
+                                            nodeService.getProperty(parentRef, PROP_VITAL_RECORD_INDICATOR));
+                    nodeService.setProperty(nodeRef, 
+                                            PROP_REVIEW_PERIOD, 
+                                            nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
+                }
+            }
+        }        
+    }
+    
+    /**
+     * Helper method used by services with access to the private bean to initialise vital record details.
+     * 
+     * TODO consider what (if any of this) should be on the public interface
+     * 
+     * @param nodeRef   node reference to initialise with vital record details
+     */
+    public void initialiseVitalRecord(NodeRef nodeRef)
+    {
+        // Calculate the review schedule
+        VitalRecordDefinition viDef = getVitalRecordDefinition(nodeRef);
+        if (viDef != null && viDef.isEnabled() == true)
+        {
+            Date reviewAsOf = viDef.getNextReviewDate();
+            if (reviewAsOf != null)
+            {
+                Map<QName, Serializable> reviewProps = new HashMap<QName, Serializable>(1);
+                reviewProps.put(RecordsManagementModel.PROP_REVIEW_AS_OF, reviewAsOf);
+                
+                if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD) == false)
+                {
+                    nodeService.addAspect(nodeRef, RecordsManagementModel.ASPECT_VITAL_RECORD, reviewProps);
+                }
+                else
+                {
+                    Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+                    props.putAll(reviewProps);
+                    nodeService.setProperties(nodeRef, props);
+                }
+            }
+        }        
     }
     
     /**

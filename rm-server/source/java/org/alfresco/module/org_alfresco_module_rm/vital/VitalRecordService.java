@@ -29,6 +29,9 @@ import org.alfresco.service.cmr.repository.Period;
  */
 public interface VitalRecordService
 {  
+    /** Period 'none' */
+    static final Period PERIOD_NONE = new Period("none|0");
+    
     /**
      * Gets the vital record definition details for the node.  
      * 
@@ -53,6 +56,5 @@ public interface VitalRecordService
      * @param nodeRef   node reference
      * @return boolean  true if this is a vital record, false otherwise
      */
-    boolean isVitalRecord(NodeRef nodeRef);   
- 
+    boolean isVitalRecord(NodeRef nodeRef);  
 }

@@ -143,11 +143,12 @@ public class RecordCopyBehaviours implements RecordsManagementModel
      * @param oldChildAssocRef
      * @param newChildAssocRef
      */
+    @SuppressWarnings("unused")
     public void onMoveRecordFolderNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         final NodeRef newNodeRef = newChildAssocRef.getChildRef();
         final NodeService nodeService = rmServiceRegistry.getNodeService();
-        final RecordsManagementService rmService = rmServiceRegistry.getRecordsManagementService();
+        final RecordsManagementService rmService = rmServiceRegistry.getRecordsManagementService();        
         final RecordsManagementActionService rmActionService = rmServiceRegistry.getRecordsManagementActionService();
         
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
@@ -159,15 +160,21 @@ public class RecordCopyBehaviours implements RecordsManagementModel
                     // Remove unwanted aspects
                     removeUnwantedAspects(nodeService, newNodeRef);
                     
-                    // Trigger folder setup
-                    rmActionService.executeRecordsManagementAction(newNodeRef, "setupRecordFolder");
+                    // TODO .. this isn't right!!
+                    //      .. what if the folder is in motion .. do we really want to lose all the disposition information?
+                    //      .. how do we merge from one disposition schedule to another
+                    //      .. for now throw unsupportedOperationException and refactor when considered
+                    throw new UnsupportedOperationException("Moving a record folder is currently not supported.");
                     
-                    // Sort out the child records
-                    for (NodeRef record : rmService.getRecords(newNodeRef))
-                    {
-                        removeUnwantedAspects(nodeService, record);
-                        rmActionService.executeRecordsManagementAction(record, "file");
-                    }
+//                    // Trigger folder setup
+//                    rmActionService.executeRecordsManagementAction(newNodeRef, "setupRecordFolder");
+//                    
+//                    // Sort out the child records
+//                    for (NodeRef record : rmService.getRecords(newNodeRef))
+//                    {
+//                        removeUnwantedAspects(nodeService, record);
+//                        rmActionService.executeRecordsManagementAction(record, "file");
+//                    }
                 }
                 
                 return null;

@@ -23,8 +23,10 @@ import java.util.Date;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordDefinition;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.util.GUID;
@@ -47,6 +49,15 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
     private NodeRef mhRecord53;
     private NodeRef mhRecord54;
     private NodeRef mhRecord55;
+    
+    /** 
+     * Indicate this test uses the collaboration site test data 
+     */
+    @Override
+    protected boolean isCollaborationSiteTest()
+    {
+        return true;
+    }
     
     /** Indicate this is a multi hierarchy test */
     @Override
@@ -211,6 +222,75 @@ public class VitalRecordServiceImplTest extends BaseRMTestCase
             }
         });
     }
+    
+    /** Filling tests */
+    
+    public void testFileNewContent() throws Exception
+    {
+        doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run()
+            {
+                NodeRef record = fileFolderService.create(mhRecordFolder41, "test101.txt" , TYPE_CONTENT).getNodeRef();
+                
+                ContentWriter writer = contentService.getWriter(record, PROP_CONTENT, true);
+                writer.setEncoding("UTF-8");
+                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                writer.putContent("hello world this is some test content");
+                
+                return record;
+            }
+            
+            @Override
+            public void test(NodeRef record) throws Exception 
+            {
+                assertVitalRecord(record, true, PERIOD_WEEK);
+            }            
+        });        
+    }
+    
+//    public void testFileUnfiledrecord() throws Exception
+//    {
+//        doTestInTransaction(new Test<NodeRef>()
+//        {
+//            @Override
+//            public NodeRef run() throws Exception
+//            {
+//                recordService.createRecord(filePlan, dmDocument); 
+//                fileFolderService.move(dmDocument, mhRecordFolder41, "record.txt");
+//                
+//                return dmDocument;
+//            }
+//            
+//            @Override
+//            public void test(NodeRef record) throws Exception 
+//            {
+//                assertVitalRecord(record, true, PERIOD_WEEK);
+//            }            
+//        });        
+//    }
+//    
+//    public void testFileDirectlyFromCollab() throws Exception
+//    {
+//        doTestInTransaction(new Test<NodeRef>()
+//        {
+//            @Override
+//            public NodeRef run() throws Exception
+//            {
+//                fileFolderService.move(dmDocument, mhRecordFolder41, "record.txt");
+//                return dmDocument;
+//            }
+//            
+//            @Override
+//            public void test(NodeRef record) throws Exception 
+//            {
+//                assertVitalRecord(record, true, PERIOD_WEEK);
+//            }            
+//        }); 
+//    }
+    
+    /** Helper Methods */
     
     /**
      * Test to ensure that changes made to vital record definitions are reflected down the hierarchy.

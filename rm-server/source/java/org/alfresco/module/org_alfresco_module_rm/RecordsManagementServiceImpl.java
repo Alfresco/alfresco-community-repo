@@ -175,13 +175,7 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
      */
     public void init()
     {        
-        // Register the association behaviours
-        policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
-                TYPE_RECORD_FOLDER, 
-                ContentModel.ASSOC_CONTAINS,
-                new JavaBehaviour(this, "onFileContent", NotificationFrequency.TRANSACTION_COMMIT));
-        
+        // Register the association behaviours    
         policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                 TYPE_FILE_PLAN, 
@@ -193,6 +187,7 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
                   ContentModel.ASSOC_CONTAINS, 
                   new JavaBehaviour(this, "onAddContentToContainer", NotificationFrequency.EVERY_EVENT));
        
+        // TODO move this into the record service
         policyComponent.bindAssociationBehaviour(
                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), 
                ASPECT_RECORD,
@@ -225,32 +220,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
                                            ASPECT_RECORD_COMPONENT_ID,
                                            new JavaBehaviour(this, "onIdentifierUpdate", NotificationFrequency.TRANSACTION_COMMIT));    
     }
-    
-    /**
-     * Try to file any record created in a record folder
-     * 
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
-     */
-    public void onFileContent(ChildAssociationRef childAssocRef, boolean bNew)
-    {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) == true)
-        {
-            // Ensure that the filed item is cm:content
-            QName type = nodeService.getType(nodeRef);
-            if (ContentModel.TYPE_CONTENT.equals(type) == true ||
-                dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT) == true)
-            {
-                // File the document
-                rmActionService.executeRecordsManagementAction(childAssocRef.getChildRef(), "file");
-            }
-            else
-            {
-                // Raise an exception since we should only be filling content into a record folder
-                throw new AlfrescoRuntimeException("Unable to complete operation, because only content can be filed within a record folder.");
-            }        
-        }
-    }    
     
     /**
      * On add content to container

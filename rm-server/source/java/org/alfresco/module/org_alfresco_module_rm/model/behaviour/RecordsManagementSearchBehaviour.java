@@ -399,17 +399,20 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate()); 
         props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, this.nodeService.getProperty(dispositionAction, PROP_DISPOSITION_EVENTS_ELIGIBLE));
         
-        DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();        
-        Period period = daDefinition.getPeriod();
-        if (period != null)
+        DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();    
+        if (daDefinition != null)
         {
-            props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
-            props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());            
-        }
-        else
-        {
-            props.put(PROP_RS_DISPOSITION_PERIOD, null);
-            props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
+            Period period = daDefinition.getPeriod();
+            if (period != null)
+            {
+                props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
+                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());            
+            }
+            else
+            {
+                props.put(PROP_RS_DISPOSITION_PERIOD, null);
+                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
+            }
         }
         
         nodeService.setProperties(record, props);

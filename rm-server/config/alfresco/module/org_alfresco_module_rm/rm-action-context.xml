@@ -64,34 +64,6 @@
         
     </bean>
 
-    <!-- file action -->
-    <!-- Bound to policy: allow -->
-
-    
-    <bean id="file_proxy" parent="rmProxyAction">
-        <property name="target">
-            <ref bean="file"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref bean="file_security"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="file_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
-        <property name="objectDefinitionSource">
-            <value>
-                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-            </value>
-        </property>
-    </bean>
-    
-    <!-- disable normal registration - the proxy will do it so the proxy is registered -->
-    <bean id="file" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileAction" parent="rmAction" />
-
     <!-- Cutoff action -->
     
     
@@ -277,32 +249,6 @@
     </bean>
     
     <bean id="reviewed" class="org.alfresco.module.org_alfresco_module_rm.vital.ReviewedAction" parent="rmAction" depends-on="rmCycleVitalRecordsCapability" />    
-    
-    <!-- set up record folder -->
-    <!-- bound to policy: allow -->
-    
-    <bean id="setupRecordFolder_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
-        <property name="target">
-            <ref bean="setupRecordFolder"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref bean="setupRecordFolder_security"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="setupRecordFolder_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
-        <property name="objectDefinitionSource">
-            <value>
-                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-            </value>
-        </property>
-    </bean>
-    
-    <bean id="setupRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SetupRecordFolderAction" parent="rmAction" />
     
     <!-- declare record -->
     <!-- fileable?? -->

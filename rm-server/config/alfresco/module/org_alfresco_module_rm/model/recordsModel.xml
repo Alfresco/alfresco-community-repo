@@ -254,7 +254,8 @@
             <aspect>cm:titled</aspect>
             <aspect>rma:recordComponentIdentifier</aspect>
             <aspect>rma:commonRecordDetails</aspect>
-            <aspect>rma:filePlanComponent</aspect>
+            <aspect>rma:filePlanComponent</aspect>            
+        <!-- <aspect>rma:vitalRecordDefinition</aspect> -->
          </mandatory-aspects>
 
       </type>

@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordFolderServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -52,6 +53,9 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -62,7 +66,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 @Deprecated
 public class BootstrapTestDataGet extends DeclarativeWebScript
-                                  implements RecordsManagementModel
+                                  implements RecordsManagementModel, ApplicationContextAware
 {
     private static Log logger = LogFactory.getLog(BootstrapTestDataGet.class);
     
@@ -83,7 +87,14 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
     private RecordsManagementSecurityService recordsManagementSecurityService;
     private AuthorityService authorityService;
     private RecordsManagementSearchBehaviour recordsManagementSearchBehaviour;
-    private DispositionService dispositionService;
+    private DispositionService dispositionService;    
+    private ApplicationContext applicationContext;
+    
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+    }
         
     public void setNodeService(NodeService nodeService)
     {
@@ -184,7 +195,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
         }
         
         // Patch data
-        BootstrapTestDataGet.patchLoadedData(searchService, nodeService, recordsManagementService, 
+        BootstrapTestDataGet.patchLoadedData(applicationContext, searchService, nodeService, recordsManagementService, 
                                              recordsManagementActionService, permissionService,
                                              authorityService, recordsManagementSecurityService,
                                              recordsManagementSearchBehaviour,
@@ -204,7 +215,8 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
      * @param recordsManagementService
      * @param recordsManagementActionService
      */
-    public static void patchLoadedData( final SearchService searchService, 
+    public static void patchLoadedData( final ApplicationContext applicationContext,
+                                        final SearchService searchService, 
                                         final NodeService nodeService, 
                                         final RecordsManagementService recordsManagementService,
                                         final RecordsManagementActionService recordsManagementActionService,
@@ -302,7 +314,8 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                             {
                                 // Fire action to "set-up" the folder correctly
                                 logger.info("Setting up bootstraped record folder: " + folderName);
-                                recordsManagementActionService.executeRecordsManagementAction(recordFolder, "setupRecordFolder");
+                                RecordFolderServiceImpl recordService = (RecordFolderServiceImpl)applicationContext.getBean("recordFolderService");
+                                recordService.initialiseRecordFolder(recordFolder);
                             }
                         }
                         

@@ -145,13 +145,7 @@ public class RecordContainerType implements RecordsManagementModel,
                 
                 // Assume any created folder is a rma:recordFolder
                 nodeService.setType(child, TYPE_RECORD_FOLDER);     
-            }
-                            
-            if (TYPE_RECORD_FOLDER.equals(nodeService.getType(child)) == true)
-            {            
-                // Setup record folder
-                recordsManagementActionService.executeRecordsManagementAction(child, "setupRecordFolder"); 
-            }
+            }                           
 
             // Catch all to generate the rm id (assuming it doesn't already have one!)
             setIdenifierProperty(child);

@@ -140,7 +140,6 @@ public class RecordsManagementAuditServiceImpl
     protected static final String AUDIT_TRAIL_FILE_PREFIX = "audit_";
     protected static final String AUDIT_TRAIL_JSON_FILE_SUFFIX = ".json";
     protected static final String AUDIT_TRAIL_HTML_FILE_SUFFIX = ".html";
-    protected static final String FILE_ACTION = "file";
     
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
@@ -268,8 +267,6 @@ public class RecordsManagementAuditServiceImpl
         this.auditEvents.put(RM_AUDIT_EVENT_LOGIN_FAILURE,
                 new AuditEvent(RM_AUDIT_EVENT_LOGIN_FAILURE, MSG_LOGIN_FAILED));
         
-        this.auditEvents.put("file", 
-                    new AuditEvent("file", MSG_FILED_RECORD));
         this.auditEvents.put("reviewed", 
                     new AuditEvent("reviewed", MSG_REVIEWED));
         this.auditEvents.put("cutoff", 
@@ -282,8 +279,6 @@ public class RecordsManagementAuditServiceImpl
                     new AuditEvent("openRecordFolder", MSG_OPENED_RECORD_FOLDER));
         this.auditEvents.put("closeRecordFolder", 
                     new AuditEvent("closeRecordFolder", MSG_CLOSED_RECORD_FOLDER));
-        this.auditEvents.put("setupRecordFolder", 
-                    new AuditEvent("setupRecordFolder", MSG_SETUP_RECORD_FOLDER));
         this.auditEvents.put("declareRecord", 
                     new AuditEvent("declareRecord", MSG_DECLARED_RECORD));
         this.auditEvents.put("undeclareRecord", 
@@ -994,10 +989,7 @@ public class RecordsManagementAuditServiceImpl
             ContentWriter writer = this.contentService.getWriter(record, ContentModel.PROP_CONTENT, true);
             writer.setMimetype(format == ReportFormat.HTML ? MimetypeMap.MIMETYPE_HTML : MimetypeMap.MIMETYPE_JSON);
             writer.setEncoding("UTF-8");
-            writer.putContent(auditTrail);
-            
-            // file the node as a record
-            this.rmActionService.executeRecordsManagementAction(record, FILE_ACTION);
+            writer.putContent(auditTrail);            
         }
         finally
         {

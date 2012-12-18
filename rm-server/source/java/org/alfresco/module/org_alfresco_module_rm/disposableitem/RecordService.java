@@ -32,7 +32,7 @@ import org.alfresco.service.namespace.QName;
  */
 public interface RecordService
 {
-   /**
+    /**
     * Gets a list of all the record meta-data aspects
     * 
     * @return {@link Set}<{@link QName}>   list of record meta-data aspects
@@ -55,14 +55,7 @@ public interface RecordService
     */
    boolean isDeclared(NodeRef nodeRef);  
    
-   /**
-    * Indicates whether the record is filed or not
-    * 
-    * @param nodeRef    record
-    * @return boolean   true if filed, false otherwise
-    */
-   boolean isFiled(NodeRef nodeRef);
-   
+   // TODO move to filePlan service
    /**
     * Gets the unfiled root container for the given file plan
     * 
@@ -80,10 +73,10 @@ public interface RecordService
    void createRecord(NodeRef filePlan, NodeRef nodeRef);
    
    /**
-    * Files an unfiled record.
+    * Indicates whether the record is filed or not
     * 
-    * @param record         record
-    * @param recordFolder   record folder
+    * @param nodeRef    record
+    * @return boolean   true if filed, false otherwise
     */
-   void fileRecord(NodeRef record, NodeRef recordFolder);
+   boolean isFiled(NodeRef record);
 }

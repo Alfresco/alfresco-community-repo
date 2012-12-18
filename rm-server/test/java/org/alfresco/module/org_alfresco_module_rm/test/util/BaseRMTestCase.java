@@ -29,18 +29,20 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
+import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -57,6 +59,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -81,15 +84,16 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     };
     protected ApplicationContext applicationContext;
     
-    /** Test model contants */
+    /** test model constants */
     protected String URI = "http://www.alfresco.org/model/rmtest/1.0";
     protected String PREFIX = "rmt";
     protected QName TYPE_CUSTOM_TYPE = QName.createQName(URI, "customType");
     protected QName ASPECT_CUSTOM_ASPECT = QName.createQName(URI, "customAspect");
     protected QName ASPECT_RECORD_META_DATA = QName.createQName(URI, "recordMetaData");
     
-    /** Site id */
+    /** site id's */
     protected static final String SITE_ID = "mySite";
+    protected static final String COLLABORATION_SITE_ID = "collab-site-id";
     
     /** Common test utils */
     protected CommonRMTestUtils utils;
@@ -109,6 +113,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected TransactionService transactionService;
     protected FileFolderService fileFolderService;
     protected PermissionService permissionService;
+    protected TaggingService taggingService;
     
     /** RM Services */
     protected RecordsManagementService rmService;
@@ -214,6 +219,18 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef recordDeclaredOne;
     protected NodeRef recordDeclaredTwo;
     
+    /** collaboration site artifacts */
+    protected SiteInfo collaborationSite;
+    protected NodeRef documentLibrary;
+    protected NodeRef dmFolder;
+    protected NodeRef dmDocument;
+
+    /** collaboration site users */
+    protected String dmConsumer;
+    protected NodeRef dmConsumerNodeRef;
+    protected String dmCollaborator;
+    protected NodeRef dmCollaboratorNodeRef;
+    
     /**
      * Indicates whether this is a multi-hierarchy test or not.  If it is then the multi-hierarchy record
      * taxonomy test data is loaded.
@@ -249,6 +266,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     }
     
     /**
+     * Indicates whether the test collaboration site should be created
+     * or not.
+     */
+    protected boolean isCollaborationSiteTest()
+    {
+        return false;
+    }
+    
+    /**
      * @see junit.framework.TestCase#setUp()
      */
     @Override
@@ -263,17 +289,26 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         
         // Setup test data
         setupTestData();
+        
+        // Create multi hierarchy data
         if (isMultiHierarchyTest() == true)
         {
             setupMultiHierarchyTestData();
-        }        
+        }    
+        
+        // Create collaboration data
+        if (isCollaborationSiteTest() == true)
+        {
+            setupCollaborationSiteTestData();
+        }
+        
         // Create the users here
         if (isUserTest() == true)
         {
             setupTestUsers(filePlan);
         }
     }
-    
+
     /**
      * Initialise the service beans.
      */
@@ -294,6 +329,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         transactionService = (TransactionService)applicationContext.getBean("TransactionService");
         fileFolderService = (FileFolderService)applicationContext.getBean("FileFolderService");
         permissionService = (PermissionService)applicationContext.getBean("PermissionService");
+        taggingService = (TaggingService)applicationContext.getBean("TaggingService");
         
         // Get RM services
         rmService = (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
@@ -342,6 +378,12 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         
         // Delete the site
         siteService.deleteSite(SITE_ID);
+        
+        // delete the collaboration site (if required)
+        if (isCollaborationSiteTest() == true)
+        {
+            siteService.deleteSite(COLLABORATION_SITE_ID);
+        }
     }
     
     /**
@@ -571,6 +613,45 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         mhRecordFolder43 = rmService.createRecordFolder(mhContainer33, "mhFolder43");
         mhRecordFolder44 = rmService.createRecordFolder(mhContainer34, "mhFolder44");
         mhRecordFolder45 = rmService.createRecordFolder(mhContainer35, "mhFolder45");        
+    }
+    
+    protected void setupCollaborationSiteTestData()
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            public Void run()
+            {
+                setupCollaborationSiteTestDataImpl();
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    protected void setupCollaborationSiteTestDataImpl()
+    {
+        // create collaboration site
+        collaborationSite = siteService.createSite("preset", COLLABORATION_SITE_ID, "title", "description", SiteVisibility.PRIVATE);
+        documentLibrary = SiteServiceImpl.getSiteContainer(
+                COLLABORATION_SITE_ID, 
+                SiteService.DOCUMENT_LIBRARY, 
+                true,
+                siteService, 
+                transactionService, 
+                taggingService);
+
+        assertNotNull("Collaboration site document library component was not successfully created.", documentLibrary);
+
+        // create a folder and documents
+        dmFolder = fileFolderService.create(documentLibrary, "collabFolder", ContentModel.TYPE_FOLDER).getNodeRef();
+        dmDocument = fileFolderService.create(dmFolder, "collabDocument.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+                
+        dmConsumer = GUID.generate();
+        dmConsumerNodeRef = createPerson(dmConsumer);
+        siteService.setMembership(COLLABORATION_SITE_ID, dmConsumer, SiteModel.SITE_CONSUMER);
+        
+        dmCollaborator = GUID.generate();
+        dmCollaboratorNodeRef = createPerson(dmCollaborator);
+        siteService.setMembership(COLLABORATION_SITE_ID, dmCollaborator, SiteModel.SITE_COLLABORATOR);
     }
     
     /**

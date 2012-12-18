@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Disposition service
+ * Disposition service interface.
  * 
  * @author Roy Wetherall
  * @since 2.0
@@ -157,24 +157,28 @@ public interface DispositionService
                 DispositionActionDefinition actionDefinition,
                 Map<QName, Serializable> actionDefinitionParams);
     
+        
+    /** ========= Disposition Action Methods ========= */
     
     /**
-     * TODO MOVE THIS FROM THIS API
+     * Indicates whether the next disposition action is eligible or not.
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef   node reference to disposable item
+     * @return boolean  true if next disposition action is eligible, false otherwise
      */     
     boolean isNextDispositionActionEligible(NodeRef nodeRef);
-  
-    /** ========= Disposition Action Methods ========= */
     
     /**
      * Gets the next disposition action for a given node
      *  
-     * @param nodeRef
-     * @return
+     * @param nodeRef               node reference to disposable item
+     * @return DispositionAction    next disposition action, null if none
      */
     DispositionAction getNextDispositionAction(NodeRef nodeRef);
+    
+    // TODO void startNextDispositionAction(NodeRef nodeRef);
+    
+    // TODO void completeNextDispositionAction(NodeRef nodeRef);
      
     
     /** ========= Disposition Action History Methods ========= */

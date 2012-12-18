@@ -73,7 +73,6 @@ public class TransferReportPost extends BaseTransferWebScript
     protected static final String RESPONSE_SUCCESS = "success";
     protected static final String RESPONSE_RECORD = "record";
     protected static final String RESPONSE_RECORD_NAME = "recordName";
-    protected static final String FILE_ACTION = "file";
     
     protected DictionaryService ddService;
     protected RecordsManagementActionService rmActionService;
@@ -418,10 +417,7 @@ public class TransferReportPost extends BaseTransferWebScript
         ContentWriter writer = this.contentService.getWriter(record, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
         writer.setEncoding("UTF-8");
-        writer.putContent(report);
-        
-        // file the node as a record
-        this.rmActionService.executeRecordsManagementAction(record, FILE_ACTION); 
+        writer.putContent(report); 
         
         return record;
     }

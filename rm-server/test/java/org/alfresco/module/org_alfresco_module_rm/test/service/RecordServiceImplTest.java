@@ -22,26 +22,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 
 /**
  * Records Service Implementation Test
@@ -52,35 +45,20 @@ import org.alfresco.util.GUID;
  */
 public class RecordServiceImplTest extends BaseRMTestCase
 {
-    protected static final String COLLABORATION_SITE_ID = "collab-site-id";
-
+    /** Services */
     protected ActionService dmActionService;
-
-    protected TaggingService taggingService;
-
-    protected PermissionService dmPermissionService;
-    
+    protected PermissionService dmPermissionService;    
     protected ExtendedSecurityService extendedSecurityService;
 
-    // collaboration site artifacts
-    protected SiteInfo collaborationSite;
-    protected NodeRef documentLibrary;
-    protected NodeRef dmFolder;
-    protected NodeRef dmDocument;
-
-    // dm users
-    protected String dmConsumer;
-    protected NodeRef dmConsumerNodeRef;
-    protected String dmCollaborator;
-    protected NodeRef dmCollaboratorNodeRef;
-
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
+     */
     @Override
     protected void initServices()
     {
         super.initServices();
 
         dmActionService = (ActionService) applicationContext.getBean("ActionService");
-        taggingService = (TaggingService) applicationContext.getBean("TaggingService");
         dmPermissionService = (PermissionService) applicationContext.getBean("PermissionService");
         extendedSecurityService = (ExtendedSecurityService) applicationContext.getBean("ExtendedSecurityService");
     }
@@ -106,64 +84,14 @@ public class RecordServiceImplTest extends BaseRMTestCase
     {
         return true;
     }
-
+    
     /**
-     * Setup the collaboration site test data
+     * This is a collaboration site test
      */
     @Override
-    protected void setupTestData()
+    protected boolean isCollaborationSiteTest()
     {
-        super.setupTestData();
-
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                setupCollaborationSiteTestDataImpl();
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-    }
-
-    protected void setupCollaborationSiteTestDataImpl()
-    {
-        // create collaboration site
-        collaborationSite = siteService.createSite("preset", COLLABORATION_SITE_ID, "title", "description", SiteVisibility.PRIVATE);
-        documentLibrary = SiteServiceImpl.getSiteContainer(
-                COLLABORATION_SITE_ID, 
-                SiteService.DOCUMENT_LIBRARY, 
-                true,
-                siteService, 
-                transactionService, 
-                taggingService);
-
-        assertNotNull("Collaboration site document library component was not successfully created.", documentLibrary);
-
-        // create a folder and documents
-        dmFolder = fileFolderService.create(documentLibrary, "collabFolder", ContentModel.TYPE_FOLDER).getNodeRef();
-        dmDocument = fileFolderService.create(dmFolder, "collabDocument.txt", ContentModel.TYPE_CONTENT).getNodeRef();
-
-    }
-
-    @Override
-    protected void setupTestUsersImpl(NodeRef filePlan)
-    {
-        super.setupTestUsersImpl(filePlan);
-
-        dmConsumer = GUID.generate();
-        dmConsumerNodeRef = createPerson(dmConsumer);
-        siteService.setMembership(COLLABORATION_SITE_ID, dmConsumer, SiteModel.SITE_CONSUMER);
-        
-        dmCollaborator = GUID.generate();
-        dmCollaboratorNodeRef = createPerson(dmCollaborator);
-        siteService.setMembership(COLLABORATION_SITE_ID, dmCollaborator, SiteModel.SITE_COLLABORATOR);
-    }
-
-    @Override
-    protected void tearDownImpl()
-    {
-        super.tearDownImpl();
-        siteService.deleteSite(COLLABORATION_SITE_ID);
+        return true;
     }
 
     /**
@@ -329,9 +257,89 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, dmCollaborator);
-        
-        
-
+    }
+    
+    public void testFileNewContent() throws Exception
+    {
+        doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run()
+            {
+                NodeRef record = fileFolderService.create(rmFolder, "test101.txt" , TYPE_CONTENT).getNodeRef();
+                
+                ContentWriter writer = contentService.getWriter(record, PROP_CONTENT, true);
+                writer.setEncoding("UTF-8");
+                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                writer.putContent("hello world this is some test content");
+                
+                return record;
+            }
+            
+            @Override
+            public void test(NodeRef record) throws Exception 
+            {
+                assertTrue(recordService.isRecord(record));
+                assertTrue(recordService.isFiled(record));
+                
+                assertNotNull(nodeService.getProperty(record, PROP_DATE_FILED));
+            }            
+        });        
+    }
+    
+    public void testFileUnfiledrecord() throws Exception
+    {
+        doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                recordService.createRecord(filePlan, dmDocument);
+                
+                assertTrue(recordService.isRecord(dmDocument));
+                assertFalse(recordService.isFiled(dmDocument));
+                
+                assertNull(nodeService.getProperty(dmDocument, PROP_DATE_FILED));
+                
+                fileFolderService.move(dmDocument, rmFolder, "record.txt");
+                
+                return dmDocument;
+            }
+            
+            @Override
+            public void test(NodeRef record) throws Exception 
+            {
+                assertTrue(recordService.isRecord(record));
+                assertTrue(recordService.isFiled(record));
+                
+                assertNotNull(nodeService.getProperty(record, PROP_DATE_FILED));
+            }            
+        });        
+    }
+    
+    public void testFileDirectlyFromCollab() throws Exception
+    {
+        doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                assertNull(nodeService.getProperty(dmDocument, PROP_DATE_FILED));
+                
+                fileFolderService.move(dmDocument, rmFolder, "record.txt");
+                
+                return dmDocument;
+            }
+            
+            @Override
+            public void test(NodeRef record) throws Exception 
+            {
+                assertTrue(recordService.isRecord(record));
+                assertTrue(recordService.isFiled(record));
+                
+                assertNotNull(nodeService.getProperty(record, PROP_DATE_FILED));
+            }            
+        }); 
     }
     
     private void checkPermissions(String permission, AccessStatus filePlanExpected, 

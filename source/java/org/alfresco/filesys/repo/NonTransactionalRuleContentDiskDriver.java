@@ -161,6 +161,8 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         Command c = ruleEvaluator.evaluate(ctx, o);
         
         commandExecutor.execute(sess, tree, c);
+        
+        releaseEvaluatorContextIfEmpty(driverState, ctx, folder);
 
     }
 
@@ -265,6 +267,8 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
         Operation o = new DeleteFileOperation(file, rootNode, name);
         Command c = ruleEvaluator.evaluate(ctx, o);
         commandExecutor.execute(sess, tree, c);
+        
+        releaseEvaluatorContextIfEmpty(driverState, ctx, folder);
         
     
     } // End of deleteFile
@@ -424,6 +428,11 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             Operation o = new RenameFileOperation(oldFile, newFile, oldPath, newPath, rootNode);
             Command c = ruleEvaluator.evaluate(ctx, o); 
             commandExecutor.execute(sess, tree, c);
+            
+            ruleEvaluator.notifyRename(ctx, o, c);
+            
+            releaseEvaluatorContextIfEmpty(driverState, ctx, oldFolder);
+            
         }
         else    
         {
@@ -443,6 +452,8 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
             Command c = ruleEvaluator.evaluate(ctx2, o);
             
             commandExecutor.execute(sess, tree, c);
+            
+            releaseEvaluatorContextIfEmpty(driverState, ctx2, newFolder);
             
             //  diskInterface.renameFile(sess, tree, oldPath, newPath);
 
@@ -590,6 +601,30 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
                 }
             }
             return ctx;
+        }
+    }
+    
+    /**
+     * Release the  evaluator context if there are no active scenarios.
+     * @param driverState
+     * @param ctx
+     * @param folder
+     */
+    private void releaseEvaluatorContextIfEmpty(DriverState driverState, EvaluatorContext ctx, String folder)
+    {
+        synchronized(driverState.contextMap)
+        {
+            if(ctx != null)
+            {
+                if(ctx.getScenarioInstances().size() > 0)
+                {
+                }
+                else
+                {
+                    driverState.contextMap.remove(folder);
+                }
+            }
+
         }
     }
 

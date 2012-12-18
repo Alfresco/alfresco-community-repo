@@ -54,7 +54,7 @@
     <!-- This bean uses the authorityLookupCache configured in cache-context.xml  -->
     <!--                                                                          -->
 
-    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOBridgeTableImpl" init-method="init">   
+    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl" init-method="init">   
         <property name="storeUrl">
             <value>${spaces.store}</value>
         </property>

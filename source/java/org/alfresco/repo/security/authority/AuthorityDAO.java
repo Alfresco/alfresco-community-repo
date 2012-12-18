@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -95,9 +95,21 @@ public interface AuthorityDAO
      */
     public Set<String> getContainingAuthoritiesInZone(AuthorityType type, String authority, final String zoneName, AuthorityFilter filter, int size);
 
-    
     /**
-     * Get authorities by type and/or zone
+     * Get AuthorityInfo by type and/or zone (both cannot be null).
+     * 
+     * @param type
+     * @param zoneName
+     * @param displayNameFilter
+     * @param sortBy either "displayName", "shortName", "authorityName" or null if no sorting.
+     * @param sortAscending
+     * @param pagingRequest
+     * @return
+     */
+    public PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType type, String zoneName, String displayNameFilter, String sortBy, boolean sortAscending, PagingRequest pagingRequest);
+
+    /**
+     * Get authority names by type and/or zone (both cannot be null).
      * 
      * @param type
      * @param zoneName

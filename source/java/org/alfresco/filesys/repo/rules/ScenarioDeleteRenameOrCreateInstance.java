@@ -28,6 +28,8 @@ import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
 import org.alfresco.filesys.repo.rules.commands.DeleteFileCommand;
 import org.alfresco.filesys.repo.rules.commands.RestoreFileCommand;
 import org.alfresco.filesys.repo.rules.operations.CloseFileOperation;
+import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
+import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
 import org.alfresco.filesys.repo.rules.operations.MoveFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -46,9 +48,9 @@ import org.apache.commons.logging.LogFactory;
  * This rule will kick in and ...
  * 
  */
-class ScenarioDeleteOnCloseRenameInstance implements ScenarioInstance
+class ScenarioDeleteRenameOrCreateInstance implements ScenarioInstance
 {
-    private static Log logger = LogFactory.getLog(ScenarioDeleteOnCloseRenameInstance.class);
+    private static Log logger = LogFactory.getLog(ScenarioDeleteRenameOrCreateInstance.class);
       
     private Date startTime = new Date();
     
@@ -66,7 +68,7 @@ class ScenarioDeleteOnCloseRenameInstance implements ScenarioInstance
     enum InternalState
     {
         NONE,
-        LOOK_FOR_RENAME
+        INITIALISED
     } ;
     
     InternalState state = InternalState.NONE;
@@ -101,7 +103,7 @@ class ScenarioDeleteOnCloseRenameInstance implements ScenarioInstance
                     CloseFileOperation c = (CloseFileOperation)operation;
                     this.name = c.getName();
                     logger.debug("New scenario initialised for file " + name);
-                    state = InternalState.LOOK_FOR_RENAME;
+                    state = InternalState.INITIALISED;
                     
                     ArrayList<Command> commands = new ArrayList<Command>();
                     ArrayList<Command> postCommitCommands = new ArrayList<Command>();
@@ -110,15 +112,47 @@ class ScenarioDeleteOnCloseRenameInstance implements ScenarioInstance
                     postCommitCommands.add(newDeleteFileCallbackCommand());
                     return new CompoundCommand(commands, postCommitCommands, postErrorCommands);  
                 }
+                if(operation instanceof DeleteFileOperation)
+                {
+                    DeleteFileOperation c = (DeleteFileOperation)operation;
+                    this.name = c.getName();
+                    logger.debug("New scenario initialised for file " + name);
+                    state = InternalState.INITIALISED;
+                    
+                    ArrayList<Command> commands = new ArrayList<Command>();
+                    ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                    ArrayList<Command> postErrorCommands = new ArrayList<Command>();
+                    commands.add(new DeleteFileCommand(c.getName(), c.getRootNodeRef(), c.getPath()));
+                    postCommitCommands.add(newDeleteFileCallbackCommand());
+                    return new CompoundCommand(commands, postCommitCommands, postErrorCommands);  
+                }
                 break;
                 
-            case LOOK_FOR_RENAME:
+                
+            case INITIALISED:
+                
+                if(operation instanceof CreateFileOperation)
+                {
+                    CreateFileOperation c = (CreateFileOperation)operation;
+                    
+                    if(c.getName().equalsIgnoreCase(name))
+                    {
+                        isComplete = true;
+                        if(originalNodeRef != null)
+                        {
+                            logger.debug("Delete create shuffle fire!:" + this);
+                            return new RestoreFileCommand(c.getName(), c.getRootNodeRef(), c.getPath(), c.getAllocationSize(), originalNodeRef);
+                        }   
+                        return null;
+                    }
+                }    
+                
                 if(operation instanceof RenameFileOperation)
                 {
                     RenameFileOperation r = (RenameFileOperation)operation;
                     if(name.equals(r.getTo()))
                     {
-                        logger.debug("Delete on close Rename shuffle - fire!");
+                        logger.debug("Delete Rename shuffle - fire!");
                        
                         if(originalNodeRef != null)
                         {
@@ -155,7 +189,7 @@ class ScenarioDeleteOnCloseRenameInstance implements ScenarioInstance
                     MoveFileOperation r = (MoveFileOperation)operation;
                     if(name.equals(r.getTo()))
                     {
-                        logger.debug("Delete on close Rename shuffle - fire!");
+                        logger.debug("Delete Rename shuffle - fire!");
                        
                         if(originalNodeRef != null)
                         {
@@ -198,7 +232,7 @@ class ScenarioDeleteOnCloseRenameInstance implements ScenarioInstance
     
     public String toString()
     {
-        return "ScenarioDeleteOnCloseRenameShuffleInstance name:" + name ;
+        return "ScenarioDeleteRenameOrCreate name:" + name ;
     }
 
     public void setTimeout(long timeout)

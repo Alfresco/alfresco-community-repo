@@ -42,6 +42,11 @@ public interface RuleEvaluator
      * @return Command the command to fulfil the operation
      */
     public Command evaluate(EvaluatorContext context, Operation operation);  
+    
+    /**
+     * Tell the context of a rename
+     */
+    public void notifyRename(EvaluatorContext context, Operation operation, Command c);
       
     
 }

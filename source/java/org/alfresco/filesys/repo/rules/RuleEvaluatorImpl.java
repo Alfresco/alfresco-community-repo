@@ -204,5 +204,31 @@ public class RuleEvaluatorImpl implements RuleEvaluator
         EvaluatorContextImpl impl = new EvaluatorContextImpl(sessionState);
         
         return impl;
+    }
+
+    @Override
+    public void notifyRename(EvaluatorContext context, Operation operation,
+            Command command)
+    {
+        // currentScenarioInstances needs to be protected for concurrency.
+        synchronized (context.getScenarioInstances())
+        {
+            /**
+             * For each active scenario.
+             */
+            Iterator<ScenarioInstance> i = context.getScenarioInstances().iterator();
+
+            while(i.hasNext())
+            {
+                ScenarioInstance scenario = i.next();
+                if(scenario instanceof ScenarioInstanceRenameAware)
+                {
+                    ScenarioInstanceRenameAware awareScenario = (ScenarioInstanceRenameAware)scenario;
+                    awareScenario.notifyRename(operation, command);
+                }
+                
+            }
+        }
+      
     } 
 }

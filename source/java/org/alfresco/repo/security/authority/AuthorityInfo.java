@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.authority;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityType;
 
 /**
  * Authority Info - used by GetAuthorities CQ
@@ -28,21 +29,21 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class AuthorityInfo
 {
-    private NodeRef nodeRef;
+    private Long nodeId;
     
     private String authorityDisplayName; // eg. My Group, My Role
     private String authorityName;        // eg. GROUP_my1, ROLE_myA
     
-    public AuthorityInfo(NodeRef nodeRef, String authorityDisplayName, String authorityName)
+    public AuthorityInfo(Long nodeId, String authorityDisplayName, String authorityName)
     {
-        this.nodeRef = nodeRef;
+        this.nodeId = nodeId;
         this.authorityDisplayName = authorityDisplayName;
         this.authorityName = authorityName;
     }
     
-    public NodeRef getNodeRef()
+    public Long getNodeId()
     {
-        return nodeRef;
+        return nodeId;
     }
     
     public String getAuthorityDisplayName()
@@ -53,5 +54,22 @@ public class AuthorityInfo
     public String getAuthorityName()
     {
         return authorityName;
+    }
+
+    public String getShortName()
+    {
+        AuthorityType type = AuthorityType.getAuthorityType(authorityName);
+        if (type.isFixedString())
+        {
+            return "";
+        }
+        else if (type.isPrefixed())
+        {
+            return authorityName.substring(type.getPrefixString().length());
+        }
+        else
+        {
+            return authorityName;
+        }
     }
 }

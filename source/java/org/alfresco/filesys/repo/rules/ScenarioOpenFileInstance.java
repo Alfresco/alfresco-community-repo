@@ -74,7 +74,7 @@ import org.apache.commons.logging.LogFactory;
  * 4) close
  * 
  */
-class ScenarioOpenFileInstance implements ScenarioInstance, DependentInstance
+class ScenarioOpenFileInstance implements ScenarioInstance, DependentInstance, ScenarioInstanceRenameAware
 {
     private static Log logger = LogFactory.getLog(ScenarioOpenFileInstance.class);
       
@@ -242,6 +242,20 @@ class ScenarioOpenFileInstance implements ScenarioInstance, DependentInstance
                 
             case OPEN:
                 
+                if(operation instanceof RenameFileOperation)
+                {
+                    RenameFileOperation r = (RenameFileOperation)operation;
+                    if(r.getFrom() == null)
+                    {
+                        return null;
+                    }
+                    
+                    if(name.equalsIgnoreCase(r.getFrom()))
+                    {
+                        logger.warn("rename of an open file");
+                    }
+                }
+
                 if(operation instanceof CloseFileOperation)
                 {
                     CloseFileOperation c = (CloseFileOperation)operation;
@@ -564,25 +578,70 @@ class ScenarioOpenFileInstance implements ScenarioInstance, DependentInstance
                 }
                 
                 
-                if(looser.scenario instanceof ScenarioDeleteOnCloseRenameInstance)
+                if(looser.scenario instanceof ScenarioDeleteRenameOrCreateInstance)
                 {
-                    CompoundCommand l = (CompoundCommand)looser.command; 
-                    ArrayList<Command> commands = new ArrayList<Command>();
-                    ArrayList<Command> postCommitCommands = new ArrayList<Command>();
-                    ArrayList<Command> postErrorCommands = new ArrayList<Command>();
-                    commands.addAll(c.getCommands());
-                    postCommitCommands.addAll(c.getPostCommitCommands());
-                    // Merge in the loosing post commit
-                    postCommitCommands.addAll(l.getPostCommitCommands());
-                    postErrorCommands.addAll(c.getPostErrorCommands());
                     
-                    logger.debug("returning merged high priority executor");
-                    return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
+                    Command x = looser.command;
+                    if(x instanceof CompoundCommand)
+                    {
+                        CompoundCommand l = (CompoundCommand)x;
+                        
+                        ArrayList<Command> commands = new ArrayList<Command>();
+                        ArrayList<Command> postCommitCommands = new ArrayList<Command>();
+                        ArrayList<Command> postErrorCommands = new ArrayList<Command>();
+                        commands.addAll(c.getCommands());
+                        postCommitCommands.addAll(c.getPostCommitCommands());
+                        // Merge in the loosing post commit
+                        postCommitCommands.addAll(l.getPostCommitCommands());
+                        postErrorCommands.addAll(c.getPostErrorCommands());
+                    
+                        logger.debug("returning merged high priority executor");
+                        return new CompoundCommand(commands, postCommitCommands, postErrorCommands);
+                    }
+                    else
+                    {
+                        return x;
+                    }
                 }
             }
         }
         // No change
         return command;
+    }
+
+    @Override
+    public void notifyRename(Operation operation, Command command)
+    {
+        if(operation instanceof RenameFileOperation)
+        {
+            RenameFileOperation r = (RenameFileOperation)operation;
+            if(r.getFrom() == null)
+            {
+                return;
+            }
+            
+            if(name.equalsIgnoreCase(r.getFrom()))
+            {
+                if(logger.isWarnEnabled())
+                {
+                    logger.warn("rename of this scenario: to " + r.getTo());
+                }
+                
+                name = r.getTo();
+                
+                if (fileHandleReadWrite != null)
+                {
+                    fileHandleReadWrite.setName(r.getTo());
+                    fileHandleReadWrite.setFullName(r.getToPath());
+                }
+                
+                if (fileHandleReadOnly != null)
+                {
+                    fileHandleReadOnly.setName(r.getTo());
+                    fileHandleReadOnly.setFullName(r.getToPath());
+                }
+            }
+        } 
     }
 }
 

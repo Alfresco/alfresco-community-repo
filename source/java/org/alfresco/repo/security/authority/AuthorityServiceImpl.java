@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -332,6 +332,21 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         Set<String> authorities = new HashSet<String>(auths.size());
         authorities.addAll(auths);
         return authorities;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType type, String zoneName, String displayNameFilter, String sortBy, boolean sortAscending, PagingRequest pagingRequest)
+    {
+        ParameterCheck.mandatory("pagingRequest", pagingRequest);
+        ParameterCheck.mandatory("type", type);
+        
+        if (type != AuthorityType.USER && type != AuthorityType.GROUP && type != AuthorityType.ROLE)
+        {
+            throw new UnsupportedOperationException("Unexpected authority type: "+type);
+        }
+        return authorityDAO.getAuthoritiesInfo(type, zoneName, displayNameFilter, sortBy, sortAscending, pagingRequest);
     }
     
     /**
@@ -700,7 +715,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
     /**
      * Lazy load set of authorities. Try not to iterate or ask for the size. Needed for the case where there
-     * is a large number of sites/groups.
+     * are a large number of sites/groups.
      * 
      * @author David Ward, Alan Davis
      */

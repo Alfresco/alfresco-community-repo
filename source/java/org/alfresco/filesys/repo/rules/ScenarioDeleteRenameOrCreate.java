@@ -23,12 +23,13 @@ import java.util.regex.Pattern;
 
 import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
 import org.alfresco.filesys.repo.rules.operations.CloseFileOperation;
+import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * The DeleteOnClose rename shuffle is a delete on close of a file resulting in a file being deleted followed by a rename of a file from 
- * somewhere else.
+ * The DeleteOnClose rename shuffle is a delete on close of a file resulting in a file being deleted followed by a 
+ * rename or a create  
  * 
  * First case of this is Mac Mountain Lion Preview application.
  * and then a new copy of the file put into place.
@@ -36,11 +37,23 @@ import org.apache.commons.logging.LogFactory;
  * a) DeleteOnClose fileA
  * b) Close fileA
  * c) Rename whatever fileA
+ * 
+ * Second case First case of this is Mac Drag and drop.
+ * and then a new copy of the file put into place.
+ * 
+ * a) Delete fileA
+ * b) Close fileA
+ * c) Create fileA
+ * 
+ * Third case Gedit.
+ * 
+ * a) Delete fileA
+ * b) Rename .goutputstream fileA
  *
  */
-public class ScenarioDeleteOnCloseRename implements Scenario
+public class ScenarioDeleteRenameOrCreate implements Scenario
 {
-    private static Log logger = LogFactory.getLog(ScenarioDeleteOnCloseRename.class);
+    private static Log logger = LogFactory.getLog(ScenarioDeleteRenameOrCreate.class);
 
     /**
      * The regex pattern of a close that will trigger a new instance of
@@ -67,9 +80,27 @@ public class ScenarioDeleteOnCloseRename implements Scenario
             {
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("New Scenario ScenarioDeleteOnCloseRename strPattern:" + pattern);
+                    logger.debug("New Scenario ScenarioDeleteRenameOrCreate strPattern:" + pattern);
                 }
-                ScenarioDeleteOnCloseRenameInstance instance = new ScenarioDeleteOnCloseRenameInstance();
+                ScenarioDeleteRenameOrCreateInstance instance = new ScenarioDeleteRenameOrCreateInstance();
+                instance.setTimeout(timeout);
+                instance.setRanking(ranking);
+                return instance;
+            }
+        }
+        
+        if(operation instanceof DeleteFileOperation)
+        {          
+            DeleteFileOperation c = (DeleteFileOperation)operation;
+            
+            Matcher m = pattern.matcher(c.getName());
+            if(m.matches())
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("New Scenario ScenarioDeleteRenameOrCreate strPattern:" + pattern);
+                }
+                ScenarioDeleteRenameOrCreateInstance instance = new ScenarioDeleteRenameOrCreateInstance();
                 instance.setTimeout(timeout);
                 instance.setRanking(ranking);
                 return instance;

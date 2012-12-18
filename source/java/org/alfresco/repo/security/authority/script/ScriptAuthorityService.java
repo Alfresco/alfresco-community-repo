@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.authority.script;
 
 import static org.alfresco.repo.security.authority.script.ScriptGroup.makeScriptGroups;
+import static org.alfresco.repo.security.authority.script.ScriptGroup.makeScriptGroupsInfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,6 +41,9 @@ import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ScriptPagingDetails;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.mozilla.javascript.Scriptable;
 
 /**
  * Script object representing the authority service.
@@ -51,6 +56,8 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 {
     /** RegEx to split a String on the first space. */
     public static final String ON_FIRST_SPACE = " +";
+    
+    private static final Log logger = LogFactory.getLog(ScriptAuthorityService.class);
     
     /** The group/authority service */
     private AuthorityService authorityService;
@@ -234,7 +241,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      * 
      * @param filter Pattern to filter groups by
      * @param paging Paging details
-     * @return Array of mathcing groups
+     * @return Array of matching groups
      * @since 4.0
      */
     public ScriptGroup[] getGroups(String filter, ScriptPagingDetails paging)
@@ -252,7 +259,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      * @param paging Paging details
      * @param sortBy Field to sort by, can be <code>shortName</code> or <code>displayName</code> otherwise 
      *        the results are ordered by the authorityName
-     * @return Array of mathcing groups
+     * @return Array of matching groups
      * @since 4.0
      */
     public ScriptGroup[] getGroups(String filter, ScriptPagingDetails paging, String sortBy)
@@ -261,54 +268,62 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
     }
     
     /**
-     * Retreives groups matching the given filter from the given zone.
+     * Retrieves groups matching the given filter from the given zone.
      * 
      * NOTE: If the filter is null, an empty string or * all groups found will be returned.
-     * If the filter starts with * or contains a ? character results returned could be inconsistent.
      * 
      * @param filter Pattern to filter groups by
      * @param zone The zone in which to search for groups
      * @param paging Paging details
      * @param sortBy Field to sort by, can be <code>shortName</code>, <code>displayName</code> or
      *        <code>authorityName</code>, the default is displayName
-     * @return Array of mathcing groups
+     * @return Array of matching groups
      * @since 4.0
      */
     public ScriptGroup[] getGroupsInZone(String filter, String zone, ScriptPagingDetails paging, String sortBy)
     {
+        if (sortBy == null)
+        {
+            sortBy = "displayName";
+        }
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Start getGroupsInZone("+(filter == null ? "null" : '"'+filter+'"')+", "+zone+", {"+paging.getMaxItems()+" "+paging.getSkipCount()+"}, "+sortBy+")");
+        }
+        
         // reset filter if necessary
         if (filter != null && (filter.length() == 0 || filter.equals("*")))
         {
             filter = null;
         }
         
-        if (filter != null && (filter.startsWith("*") || filter.indexOf("?") != -1))
+        ScriptGroup[] scriptGroups = null;
+        try
         {
-            // contains and ? wildcard queries are not supported by canned queries so use search
-            return searchGroupsInZone(filter, zone, paging, sortBy);
+            // for backwards compatibility request a total count of found items, once the UI can deal with
+            // results that do not specify the total number of results this can be removed
+            paging.setRequestTotalCountMax(10000);
+
+            // get the paged results (NOTE: we can only sort by display name currently)
+            PagingResults<AuthorityInfo> groups = authorityService.getAuthoritiesInfo(AuthorityType.GROUP, zone, filter, sortBy, true, paging);
+            
+            // create ScriptGroup array from paged results
+            scriptGroups = makeScriptGroupsInfo(groups, paging, serviceRegistry, this.getScope());
         }
-        else
+        catch (UnknownAuthorityException e)
         {
-            try
-            {
-                // for backwards compatibility request a total count of found items, once the UI can deal with
-                // results that do not specify the total number of results this can be removed
-                paging.setRequestTotalCountMax(10000);
-                
-                // get the paged results (NOTE: we can only sort by display name currently)
-                PagingResults<String> groups = authorityService.getAuthorities(AuthorityType.GROUP, zone, filter, true, true, paging);
-                
-                // create ScriptGroup array from paged results
-                return makeScriptGroups(groups, paging, serviceRegistry, this.getScope());
-            }
-            catch (UnknownAuthorityException e)
-            {
-                return new ScriptGroup[] {};
-            }
+            scriptGroups = new ScriptGroup[] {};
         }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("End   getGroupsInZone("+(filter == null ? "null" : '"'+filter+'"')+", "+zone+", {"+paging.getMaxItems()+" "+paging.getSkipCount()+"}, "+sortBy+") returns "+scriptGroups.length+"\n");
+        }
+        return scriptGroups;
     }
     
-	/**
+    /**
 	 * Get a group given its short name
 	 * @param shortName, the shortName of the group
 	 * @return the authority or null if it can't be found

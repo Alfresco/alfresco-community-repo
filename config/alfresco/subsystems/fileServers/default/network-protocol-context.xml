@@ -135,17 +135,11 @@
        
        <property name="scenarios">
             <list>
-               <!--  Mac Finder Drag and Drop -->
-               <bean id="deleteRestoreShuffle" class="org.alfresco.filesys.repo.rules.ScenarioDeleteRestore">
+                
+                <!--  Mac Mountain Lion Preview / Mac Drag and Drop / Gedit  -->
+               <bean id="deleteDeleteRenameOrCreateShuffle" class="org.alfresco.filesys.repo.rules.ScenarioDeleteRenameOrCreate">
                     <property name="pattern"><value>.*</value></property>
                     <property name="timeout"><value>60000</value></property>
-                    <property name="ranking"><value>MEDIUM</value></property>
-                </bean>
-                
-                <!--  Mac Mountain Lion Preview -->
-               <bean id="deleteDeleteOnCloseRenameShuffle" class="org.alfresco.filesys.repo.rules.ScenarioDeleteOnCloseRename">
-                    <property name="pattern"><value>.*</value></property>
-                    <property name="timeout"><value>20000</value></property>
                     <property name="ranking"><value>MEDIUM</value></property>
                 </bean>
               

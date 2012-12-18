@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -65,9 +66,19 @@ public class ScriptGroup implements Authority, Serializable
      * @param fullName
      * @param serviceRegistry
      */
+    public ScriptGroup(String fullName, String displayName, ServiceRegistry serviceRegistry, Scriptable scope)
+    {
+       this(fullName, displayName, serviceRegistry, serviceRegistry.getAuthorityService(), scope);
+    }
+    
+    /**
+     * New script group
+     * @param fullName
+     * @param serviceRegistry
+     */
     public ScriptGroup(String fullName, ServiceRegistry serviceRegistry, Scriptable scope)
     {
-       this(fullName, serviceRegistry, serviceRegistry.getAuthorityService(), scope);
+       this(fullName, null, serviceRegistry, serviceRegistry.getAuthorityService(), scope);
     }
     
     /**
@@ -78,22 +89,23 @@ public class ScriptGroup implements Authority, Serializable
      */
     public ScriptGroup(String fullName, AuthorityService authorityService)
     {
-       this(fullName, null, authorityService, null);
+       this(fullName, null, null, authorityService, null);
     }
     
     /**
      * New script group
      * @param fullName
+     * @param displayName
      * @param authorityService
      */
-    private ScriptGroup(String fullName, ServiceRegistry serviceRegistry, AuthorityService authorityService, Scriptable scope)
+    private ScriptGroup(String fullName, String displayName, ServiceRegistry serviceRegistry, AuthorityService authorityService, Scriptable scope)
     {
        this.authorityService = authorityService;
        this.serviceRegistry = serviceRegistry;
        this.fullName = fullName;
        this.scope = scope;
        shortName = authorityService.getShortName(fullName);
-       displayName = authorityService.getAuthorityDisplayName(fullName);
+       this.displayName = displayName;
     }
     
     /**
@@ -147,6 +159,7 @@ public class ScriptGroup implements Authority, Serializable
      */
     public void setDisplayName(String displayName) 
     {
+        getDisplayName();
         if (this.displayName != null && !this.displayName.equals(displayName))
         {
             authorityService.setAuthorityDisplayName(fullName, displayName);
@@ -156,6 +169,10 @@ public class ScriptGroup implements Authority, Serializable
 
     public String getDisplayName() 
     {
+        if (displayName == null)
+        {
+            displayName = authorityService.getAuthorityDisplayName(fullName);
+        }
         return displayName;
     }
 	
@@ -185,7 +202,7 @@ public class ScriptGroup implements Authority, Serializable
         Set<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
         for (String authority : children)
         {
-            ScriptGroup group = new ScriptGroup(authority, serviceRegistry, authorityService, this.scope);
+            ScriptGroup group = new ScriptGroup(authority, null, serviceRegistry, authorityService, this.scope);
             groups.add(group);	
         }
         return groups.toArray(new ScriptGroup[groups.size()]);
@@ -370,7 +387,7 @@ public class ScriptGroup implements Authority, Serializable
         LinkedHashSet<ScriptGroup> groups = new LinkedHashSet<ScriptGroup>();
         for (String authority : sortedParents)
         {
-            ScriptGroup group = new ScriptGroup(authority, serviceRegistry, authorityService, this.scope);
+            ScriptGroup group = new ScriptGroup(authority, null, serviceRegistry, authorityService, this.scope);
             groups.add(group);
 
         }
@@ -437,7 +454,7 @@ public class ScriptGroup implements Authority, Serializable
     {
         String authorityName = authorityService.createAuthority(AuthorityType.GROUP, newShortName, newDisplayName, authorityService.getDefaultZones());
         authorityService.addAuthority(fullName, authorityName);
-        ScriptGroup childGroup = new ScriptGroup(authorityName, serviceRegistry, authorityService, this.scope);
+        ScriptGroup childGroup = new ScriptGroup(authorityName, null, serviceRegistry, authorityService, this.scope);
         clearCaches();
         return childGroup;
     }
@@ -530,7 +547,7 @@ public class ScriptGroup implements Authority, Serializable
     }
     
     public static ScriptGroup[] makeScriptGroups(Collection<String> authorities,
-            ScriptPagingDetails paging, final String sortBy, ServiceRegistry serviceRegistry, 
+            ScriptPagingDetails paging, String sortBy, ServiceRegistry serviceRegistry, 
             Scriptable scope)
     {
         
@@ -612,6 +629,35 @@ public class ScriptGroup implements Authority, Serializable
         for (int i=0; i<groups.length; i++)
         {
             groups[i] = new ScriptGroup(groupNames.get(i), serviceRegistry, scope);
+        }
+        
+        return groups;
+    }
+
+    /**
+     * Returns an array of ScriptGroup objects representing the given paged results.
+     * 
+     * @param groups The paged results
+     * @param paging Object representing the paging details
+     * @param serviceRegistry
+     * @param scope
+     * @return Array of ScriptGroup objects
+     * 
+     * @since 4.1.3
+     */
+    public static ScriptGroup[] makeScriptGroupsInfo(PagingResults<AuthorityInfo> pagedGroups, ScriptPagingDetails paging, 
+                ServiceRegistry serviceRegistry, Scriptable scope)
+    {
+        // set the total on the paging object
+        paging.setTotalItems(pagedGroups);
+        
+        // retrive the page of results and create a ScriptGroup for each one
+        List<AuthorityInfo> groupInfo = pagedGroups.getPage();
+        ScriptGroup[] groups = new ScriptGroup[groupInfo.size()];
+        for (int i=0; i<groups.length; i++)
+        {
+            AuthorityInfo authorityInfo = groupInfo.get(i);
+            groups[i] = new ScriptGroup(authorityInfo.getAuthorityName(), authorityInfo.getAuthorityDisplayName(), serviceRegistry, scope);
         }
         
         return groups;

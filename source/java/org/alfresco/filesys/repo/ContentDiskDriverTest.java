@@ -269,7 +269,7 @@ public class ContentDiskDriverTest extends TestCase
         int openAction = FileAction.CreateNotExist;
         
 
-        final String FILE_NAME="testCreateFileA.new";
+        final String FILE_NAME="testCreateFile.new";
         final String FILE_PATH="\\"+FILE_NAME;
                   
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
@@ -366,7 +366,7 @@ public class ContentDiskDriverTest extends TestCase
          * Step 1 : Create a new file in read/write mode and add some content.
          */
         int openAction = FileAction.CreateNotExist;
-        String FILE_PATH="\\testDeleteFileX.new";
+        String FILE_PATH="\\testDeleteFile.new";
           
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
                 
@@ -5679,7 +5679,7 @@ public class ContentDiskDriverTest extends TestCase
      */
     public void testMacDragAndDrop() throws Exception
     {
-        logger.debug("testMacDragAndDrop(");
+        logger.debug("testMacDragAndDrop()");
         
         final String FILE_NAME = "ALF-15158.diff";
         
@@ -5843,6 +5843,7 @@ public class ContentDiskDriverTest extends TestCase
         };
         
         tran.doInTransaction(validateCB, true, true);
+        logger.debug("end testMacDragAndDrop");
         
     } // testMacDragAndDrop
     
@@ -6192,6 +6193,218 @@ public class ContentDiskDriverTest extends TestCase
          tran.doInTransaction(validateCB, false, true);
 
      } // testScenarioMountainLionPreview
+     
+     /**
+      *  Gedit has the nasty behaviour of renaming an open file.
+      *  1) create file (gedit12345678.txt)
+      *  2) create temp file (.goutputStream-IRYDPW) write and flush
+      *  3) rename (fails name collision)
+      *  4) delete target
+      *  5) rename this one succeeds
+      *  6) close temp file
+      *  
+      */
+     public void testGedit() throws Exception
+     {
+         logger.debug("testGEdit");
+         
+         final String FILE_NAME = "gedit12345678.txt";
+         final String FILE_TITLE = "Gedit";
+         final String FILE_DESCRIPTION = "This is a test document to test CIFS shuffle";
+         final String TEMP_FILE_NAME = ".goutputStream-IRYDPW";
+         final String UPDATE_TEXT = "Shuffle an open file";
+
+         class TestContext
+         {
+             NetworkFile firstFileHandle;
+             NetworkFile tempFileHandle;
+             NodeRef testNodeRef;
+         };
+
+         final TestContext testContext = new TestContext();
+
+         final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testGEdit";
+
+         ServerConfiguration scfg = new ServerConfiguration("testServer");
+         TestServer testServer = new TestServer("testServer", scfg);
+         final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+         DiskSharedDevice share = getDiskSharedDevice();
+         final TreeConnection testConnection = testServer.getTreeConnection(share);
+         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+
+         /**
+          * Clean up from a previous run
+          */
+         RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>()
+         {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                 return null;
+             }
+         };
+
+         try
+         {
+             tran.doInTransaction(deleteGarbageFileCB);
+         }
+         catch (Exception e)
+         {
+             // expect to go here
+         }
+
+         /**
+          * Create a file in the test directory
+          */
+         RetryingTransactionCallback<Void> createTestFileFirstTime = new RetryingTransactionCallback<Void>()
+         {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+
+                 /**
+                  * Create the test directory we are going to use
+                  */
+                 FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 driver.createDirectory(testSession, testConnection, createRootDirParams);
+                 driver.createDirectory(testSession, testConnection, createDirParams);
+
+                 /**
+                  * Create the file we are going to use
+                  */
+                 FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                 assertNotNull(testContext.firstFileHandle);
+
+                 testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+
+                 nodeService.setProperty(testContext.testNodeRef, ContentModel.PROP_TITLE, FILE_TITLE);
+                 nodeService.setProperty(testContext.testNodeRef, ContentModel.PROP_DESCRIPTION, FILE_DESCRIPTION);
+
+                 String testContent = "Gedit shuffle test";
+                 byte[] testContentBytes = testContent.getBytes();
+                 testContext.firstFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+
+                 driver.closeFile(testSession, testConnection, testContext.firstFileHandle);
+                 
+                 nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                 
+                 return null;
+             }
+         };
+         tran.doInTransaction(createTestFileFirstTime, false, true);
+
+        /**
+          * Create the temp file
+          * add content
+          * leave open
+          */
+         RetryingTransactionCallback<Void> createTempFile = new RetryingTransactionCallback<Void>()
+         {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+
+                 FileOpenParams params = new FileOpenParams(TEST_DIR + "\\" + TEMP_FILE_NAME, FileAction.TruncateExisting, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 NetworkFile file = driver.createFile(testSession, testConnection, params);
+                 testContext.tempFileHandle = file;
+                 String testContent = UPDATE_TEXT;
+                 byte[] testContentBytes = testContent.getBytes();
+                 testContext.tempFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+                  /**     driver.closeFile(testSession, testConnection, file);   **/
+
+                 return null;
+             }
+         };
+         tran.doInTransaction(createTempFile, false, true);
+
+         /**
+          * rename the test file to the temp
+          */
+         RetryingTransactionCallback<Void> renameTestFileToTemp = new RetryingTransactionCallback<Void>()
+         {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + TEMP_FILE_NAME, TEST_DIR + "\\" + FILE_NAME);
+                 return null;
+             }
+         };
+         
+         // expect this one to fail
+         try
+         {
+             tran.doInTransaction(renameTestFileToTemp, false, true);
+             fail("should have failed");
+         }
+         catch (Exception e)
+         {
+             // expect to go here
+         }
+         
+         /**
+          * delete the target file
+          */
+         RetryingTransactionCallback<Void> deleteTargetFile = new RetryingTransactionCallback<Void>()
+         {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                 return null;
+             }
+         };
+         
+         tran.doInTransaction(deleteTargetFile, false, true);
+         
+         // This one should succeed
+         tran.doInTransaction(renameTestFileToTemp, false, true);
+         
+         RetryingTransactionCallback<Void> closeTempFile = new RetryingTransactionCallback<Void>()
+         {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.closeFile(testSession, testConnection, testContext.tempFileHandle);
+                 return null;
+             }
+         };
+         
+         tran.doInTransaction(closeTempFile, false, true);
+         
+         // Now validate
+         RetryingTransactionCallback<Void> validate = new RetryingTransactionCallback<Void>()
+         {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                  
+                 ContentReader reader = contentService.getReader(shuffledNodeRef, ContentModel.PROP_CONTENT);
+                 String s = reader.getContentString();
+                 assertEquals("content not written", UPDATE_TEXT, s);
+                 
+                 assertTrue("node is not versionable", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                 assertEquals("shuffledNode ref is different", shuffledNodeRef, testContext.testNodeRef);
+      
+        
+                 return null;
+             }
+         };
+         
+         tran.doInTransaction(validate, false, true);
+
+         logger.debug("end testGedit");
+     } // testGedit
 
     
     /**

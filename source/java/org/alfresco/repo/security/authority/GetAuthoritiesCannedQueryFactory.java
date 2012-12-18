@@ -87,7 +87,7 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
         return (CannedQuery<AuthorityInfo>) new GetAuthoritiesCannedQuery(cannedQueryDAO, tenantService, methodSecurity, parameters);
     }
     
-    public CannedQuery<AuthorityInfo> getCannedQuery(AuthorityType type, NodeRef containerRef, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)
+    public CannedQuery<AuthorityInfo> getCannedQuery(AuthorityType type, NodeRef containerRef, String displayNameFilter, String sortBy, boolean sortAscending, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("containerRef", containerRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
@@ -120,10 +120,10 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
         
         // sort details
         CannedQuerySortDetails cqsd = null;
-        if (sortByDisplayName)
+        if (sortBy != null)
         {
             List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>(1);
-            sortPairs.add(new Pair<String, SortOrder>("sortByName", (sortAscending ? SortOrder.ASCENDING : SortOrder.DESCENDING))); // note: sortByName is implied
+            sortPairs.add(new Pair<String, SortOrder>(sortBy, (sortAscending ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
             cqsd = new CannedQuerySortDetails(sortPairs);
         }
         

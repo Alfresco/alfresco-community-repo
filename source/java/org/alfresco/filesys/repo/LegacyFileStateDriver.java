@@ -595,7 +595,25 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
     public void renameFile(SrvSession sess, TreeConnection tree,
             String oldName, String newName) throws IOException
     {
-        diskInterface.renameFile(sess, tree, oldName, newName);        
+        ContentContext tctx = (ContentContext) tree.getContext();
+        
+        diskInterface.renameFile(sess, tree, oldName, newName);  
+        
+        if(tctx.hasStateCache())
+        {
+            FileStateCache cache = tctx.getStateCache();
+            FileState fstate = cache.findFileState( oldName, false);
+            
+            if(fstate != null)
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("rename file state from:" + oldName + ", to:" + newName);
+                }
+                cache.renameFileState(newName, fstate, fstate.isDirectory());               
+            }
+        }
+        
     }
 
     @Override

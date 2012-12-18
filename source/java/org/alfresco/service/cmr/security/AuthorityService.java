@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -137,6 +138,25 @@ public interface AuthorityService
      */
     @Auditable(parameters = {"type"})
     public Set<String> getAllAuthorities(AuthorityType type);
+    
+    /**
+     * Get authorities by type and/or zone
+     * 
+     * @param type                the type of authorities (note: mandatory if zoneName is null)
+     * @param zoneName            the zoneName (note: mandatory if type is null)
+     * @param displayNameFilter   optional filter (startsWith / ignoreCase) for authority display name (note: implied trailing "*")
+     * @param sortBy              either "displayName", "shortName", "authorityName" or null if no sorting.
+     *                            note: for users, displayName/shortName is equivalent to the userName, for groups if the display is null then use the short name
+     * @param sortAscending       if true then sort ascending else sort descending (ignore if sortByDisplayName is false)
+     * @param pagingRequest       the requested page (skipCount, maxItems, queryExectionId)
+     * 
+     * @throws UnknownAuthorityException - if zoneName is not null and does not exist
+     * 
+     * @author janv
+     * @since 4.0
+     */
+    @Auditable(parameters = {"type", "zoneName", "displayNameFilter", "sortByDisplayName", "sortAscending", "pagingRequest"})
+    public PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType type, String zoneName, String displayNameFilter, String sortBy, boolean sortAscending, PagingRequest pagingRequest);
     
     /**
      * Get authorities by type and/or zone

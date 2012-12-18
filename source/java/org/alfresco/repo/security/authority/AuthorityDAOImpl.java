@@ -1507,6 +1507,4 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             return auths;
         }
     };
- }
-
 }

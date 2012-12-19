@@ -44,6 +44,9 @@ public class DWGMetadataExtracterTest extends AbstractMetadataExtracterTest
     private DWGMetadataExtracter extracter;
     private static final QName TIKA_LAST_AUTHOR_TEST_PROPERTY =
        QName.createQName("TikaLastAuthorTestProp");
+    private static final QName TIKA_CUSTOM_TEST_PROPERTY =
+            QName.createQName("TikaCustomTestProp");
+    private static final String TIKA_CUSTOM_KEY = "customprop1";
 
     @SuppressWarnings("deprecation")
     @Override
@@ -63,7 +66,10 @@ public class DWGMetadataExtracterTest extends AbstractMetadataExtracterTest
         
         Set<QName> tlaSet = new HashSet<QName>();
         tlaSet.add(TIKA_LAST_AUTHOR_TEST_PROPERTY);
+        Set<QName> custSet = new HashSet<QName>();
+        custSet.add(TIKA_CUSTOM_TEST_PROPERTY);
         newMap.put( Metadata.LAST_AUTHOR, tlaSet );
+        newMap.put( TIKA_CUSTOM_KEY, custSet );
         
         extracter.setMapping(newMap);
     }
@@ -137,6 +143,29 @@ public class DWGMetadataExtracterTest extends AbstractMetadataExtracterTest
             "Test Property " + TIKA_LAST_AUTHOR_TEST_PROPERTY + " incorrect for mimetype " + mimetype,
             "paolon",
             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(TIKA_LAST_AUTHOR_TEST_PROPERTY)));
+   }
+   
+   /**
+    * Test 2010 custom properties (ALF-16628)
+    */
+   public void test2010CustomProperties() throws Exception
+   {
+       String mimetype = MimetypeMap.MIMETYPE_APP_DWG; 
+          
+       String filename = "quick2010CustomProps.dwg";
+       URL url = AbstractContentTransformerTest.class.getClassLoader().getResource("quick/" + filename);
+       File file = new File(url.getFile());
+
+       Map<QName, Serializable> properties = extractFromFile(file, mimetype);
+      
+       // check we got something
+       assertFalse("extractFromMimetype should return at least some properties, none found for " + mimetype,
+               properties.isEmpty());
+      
+       // check common metadata
+       testCommonMetadata(mimetype, properties);
+      
+       assertEquals("Custom DWG property not found", "valueforcustomprop1", properties.get(TIKA_CUSTOM_TEST_PROPERTY));
    }
     
 }

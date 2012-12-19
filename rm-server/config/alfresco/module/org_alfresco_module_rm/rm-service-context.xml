@@ -414,7 +414,66 @@
         </property>
     </bean>
 
-    <!-- Records Management Security Service -->
+	<!--  File Plan Permission Service -->
+	
+	<bean id="filePlanPermissionService"
+          class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImpl"
+          init-method="init">
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="recordsManagementService" ref="RecordsManagementService"/>
+    </bean>
+
+    <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService</value>
+        </property>
+        <property name="target">
+            <ref bean="filePlanPermissionService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FilePlanPermissionService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FilePlanPermissionService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="FilePlanPermissionService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="FilePlanPermissionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.setPermission=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.deletePermission=RM_ALLOW
+    			org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.*=RM_DENY
+                ]]>
+            </value>
+        </property>
+    </bean>
+
+    <!-- File Plan Role Service -->
 
     <bean id="filePlanRoleService"
           class="org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleServiceImpl"
@@ -483,80 +542,7 @@
         </property>
     </bean>
 
-    <!-- Records Management Security Service -->
-
-    <bean id="recordsManagementSecurityService"
-          class="org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityServiceImpl"
-          depends-on="org_alfresco_module_rm_dictionaryBootstrap"
-          init-method="init">
-        <property name="permissionService" ref="PermissionService"/>
-        <property name="nodeService" ref="NodeService"/>
-        <property name="policyComponent" ref="policyComponent"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
-        <property name="modelSecurityService" ref="modelSecurityService" />
-        <property name="filePlanRoleService" ref="FilePlanRoleService" />
-    </bean>
-
-    <bean id="RecordsManagementSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService</value>
-        </property>
-        <property name="target">
-            <ref bean="recordsManagementSecurityService"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="RecordsManagementSecurityService_transaction"/>
-                <idref bean="exceptionTranslator"/>
-                <idref local="RecordsManagementSecurityService_security"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="RecordsManagementSecurityService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
-
-    <bean id="RecordsManagementSecurityService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
-        <property name="objectDefinitionSource">
-            <value>
-                <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getProtectedAspects=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getProtectedProperties=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.setPermission=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deletePermission=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.bootstrapDefaultRoles=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getRoles=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getRolesByUser=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.existsRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.hasRMAdminRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.createRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.updateRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.deleteRole=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.assignRoleToAuthority=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.getAllRolesContainerGroup=RM_ALLOW
-    			org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService.*=RM_DENY
-                ]]>
-            </value>
-        </property>
-    </bean>
+    
 
     <!--  Records Management Extended Security Service -->
 

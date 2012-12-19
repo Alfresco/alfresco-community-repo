@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,8 @@ import org.alfresco.service.namespace.QName;
  * Records management permission service interface
  * 
  * @author Roy Wetherall
+ * 
+ * @deprecated As of release 2.1, replaced by {@link ModelSecurityService}, {@link FilePlanRoleService} and {@link FilePlanPermissionService}
  */
 public interface RecordsManagementSecurityService
 {    
@@ -38,7 +40,7 @@ public interface RecordsManagementSecurityService
      * 
      * @param rmRootNode    root node
      * 
-     * @deprecatedAs of release 2.1, operation no longer supported 
+     * @deprecated As of release 2.1, operation no longer supported 
      */
     @Deprecated
     void bootstrapDefaultRoles(NodeRef rmRootNode);
@@ -171,7 +173,10 @@ public interface RecordsManagementSecurityService
      * @param nodeRef       node reference
      * @param authority     authority 
      * @param permission    permission
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanPermissionService#setPermission(NodeRef, String, String)}
      */
+    @Deprecated
     void setPermission(NodeRef nodeRef, String authority, String permission);
     
     /**
@@ -180,7 +185,10 @@ public interface RecordsManagementSecurityService
      * @param nodeRef       node reference
      * @param authority     authority 
      * @param permission    permission
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanPermissionService#deletePermission(NodeRef, String, String)}
      */
+    @Deprecated
     void deletePermission(NodeRef nodeRef, String authority, String permission);
     
     /**

@@ -145,6 +145,9 @@
    <!-- Import the RM action's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-action-context.xml"/>
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/action-context.xml"/>
+   
+   <!--  Import the deprecated beans -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-deprecated-context.xml"/>
 
    <!--  Import the RM module patches -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-patch-context.xml"/>

@@ -23,11 +23,8 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -39,19 +36,17 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Records management permission service implementation
- *
  * @author Roy Wetherall
+ * @since 2.1
  */
-public class RecordsManagementSecurityServiceImpl implements RecordsManagementSecurityService,
-                                                             RecordsManagementModel
+public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
+                                                      RecordsManagementModel
 {
     /** Permission service */
     private PermissionService permissionService;
@@ -62,74 +57,12 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     /** Records management service */
     private RecordsManagementService recordsManagementService;
 
-    /** Model security service */
-    private ModelSecurityService modelSecurityService;
-
     /** Node service */
     private NodeService nodeService;
-    
-    /** File plan role service */
-    private FilePlanRoleService filePlanRoleService;
 
     /** Logger */
-    private static Log logger = LogFactory.getLog(RecordsManagementSecurityServiceImpl.class);
-
-    /**
-     * Set the permission service
-     *
-     * @param permissionService
-     */
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
-    }
-
-    /**
-     * Set the policy component
-     *
-     * @param policyComponent
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
-        this.policyComponent = policyComponent;
-    }
-
-    /**
-     * Set records management service
-     *
-     * @param recordsManagementService  records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }
-
-    /**
-     * Set the node service
-     *
-     * @param nodeService
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
-     * @param modelSecurityService  model security service
-     */
-    public void setModelSecurityService(ModelSecurityService modelSecurityService)
-    {
-        this.modelSecurityService = modelSecurityService;
-    }
+    private static Log logger = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
     
-    /**
-     * @param filePlanRoleService   file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-
     /**
      * Initialisation method
      */
@@ -143,6 +76,38 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
                 NodeServicePolicies.OnCreateNodePolicy.QNAME,
                 TYPE_RECORD_FOLDER,
                 new JavaBehaviour(this, "onCreateRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));
+    }
+    
+    /**
+     * @param permissionService permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+    
+    /**
+     * @param nodeService   node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+    
+    /**
+     * @param policyComponent   policy component
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+    
+    /**
+     * @param recordsManagementService  records management service
+     */
+    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    {
+        this.recordsManagementService = recordsManagementService;
     }
 
     /**
@@ -210,24 +175,24 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
             {
                 public Object doWork()
                 {
-                	Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
-                	for (AccessPermission perm : perms)
-                	{
-                	    if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false)
-                	    {
-                    		AccessStatus accessStatus = perm.getAccessStatus();
-                    		boolean allow = false;
-                    		if (AccessStatus.ALLOWED.equals(accessStatus) == true)
-                    		{
-                    			allow = true;
-                    		}
-                    		permissionService.setPermission(
-                    				folderNodeRef,
-                    				perm.getAuthority(),
-                    				perm.getPermission(),
-                    				allow);
-                	    }
-        			}
+                    Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
+                    for (AccessPermission perm : perms)
+                    {
+                        if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false)
+                        {
+                            AccessStatus accessStatus = perm.getAccessStatus();
+                            boolean allow = false;
+                            if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                            {
+                                allow = true;
+                            }
+                            permissionService.setPermission(
+                                    folderNodeRef,
+                                    perm.getAuthority(),
+                                    perm.getPermission(),
+                                    allow);
+                        }
+                    }
 
                     return null;
                 }
@@ -389,136 +354,5 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
-    /** Deprecated method implementations */
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getProtectedAspects()
-     */
-    @Deprecated
-    @Override
-    public Set<QName> getProtectedAspects()
-    {
-        return modelSecurityService.getProtectedAspects();
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getProtectedProperties()
-     */
-    @Deprecated
-    @Override
-    public Set<QName> getProtectedProperties()
-    {
-        return modelSecurityService.getProtectedProperties();
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#assignRoleToAuthority(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public void assignRoleToAuthority(NodeRef rmRootNode, String role, String authorityName)
-    {
-        filePlanRoleService.assignRoleToAuthority(rmRootNode, role, authorityName);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#bootstrapDefaultRoles(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Deprecated
-    @Override
-    public void bootstrapDefaultRoles(NodeRef rmRootNode)
-    {
-        throw new UnsupportedOperationException("This method is no longer supported.");
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#createRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, java.util.Set)
-     */
-    @Deprecated
-    @Override
-    public Role createRole(NodeRef rmRootNode, String role, String roleDisplayLabel, Set<Capability> capabilities)
-    {
-        return Role.toRole(filePlanRoleService.createRole(rmRootNode, role, roleDisplayLabel, capabilities));
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#deleteRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public void deleteRole(NodeRef rmRootNode, String role)
-    {
-        filePlanRoleService.deleteRole(rmRootNode, role);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#existsRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public boolean existsRole(NodeRef rmRootNode, String role)
-    {
-        return filePlanRoleService.existsRole(rmRootNode, role);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getAllRolesContainerGroup(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Deprecated
-    @Override
-    public String getAllRolesContainerGroup(NodeRef filePlan)
-    {
-        return filePlanRoleService.getAllRolesContainerGroup(filePlan);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public Role getRole(NodeRef rmRootNode, String role)
-    {
-        return Role.toRole(filePlanRoleService.getRole(rmRootNode, role));
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getRoles(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Deprecated
-    @Override
-    public Set<Role> getRoles(NodeRef rmRootNode)
-    {
-        return Role.toRoleSet(filePlanRoleService.getRoles(rmRootNode));
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getRolesByUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public Set<Role> getRolesByUser(NodeRef rmRootNode, String user)
-    {
-        return Role.toRoleSet(filePlanRoleService.getRolesByUser(rmRootNode, user));
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#hasRMAdminRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public boolean hasRMAdminRole(NodeRef rmRootNode, String user)
-    {
-        return filePlanRoleService.hasRMAdminRole(rmRootNode, user);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#updateRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, java.util.Set)
-     */
-    @Deprecated
-    @Override
-    public Role updateRole(NodeRef rmRootNode, String role, String roleDisplayLabel, Set<Capability> capabilities)
-    {
-        return updateRole(rmRootNode, role, roleDisplayLabel, capabilities);
-    }
 }

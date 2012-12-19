@@ -416,18 +416,85 @@
 
     <!-- Records Management Security Service -->
 
-    <bean id="recordsManagementSecurityService"
-          class="org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityServiceImpl"
-          depends-on="org_alfresco_module_rm_dictionaryBootstrap"
+    <bean id="filePlanRoleService"
+          class="org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleServiceImpl"
           init-method="init">
         <property name="capabilityService" ref="CapabilityService"/>
         <property name="authorityService" ref="AuthorityService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
+        <property name="policyComponent" ref="policyComponent"/>   
+        <property name="recordService" ref="RecordService" />     
+    </bean>
+
+    <bean id="FilePlanRoleService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService</value>
+        </property>
+        <property name="target">
+            <ref bean="filePlanRoleService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FilePlanRoleService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FilePlanRoleService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="FilePlanRoleService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="FilePlanRoleService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRoles=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRolesByUser=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRole=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.existsRole=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.hasRMAdminRole=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.createRole=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.updateRole=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.deleteRole=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.assignRoleToAuthority=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getAllRolesContainerGroup=RM_ALLOW
+    			org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.*=RM_DENY
+                ]]>
+            </value>
+        </property>
+    </bean>
+
+    <!-- Records Management Security Service -->
+
+    <bean id="recordsManagementSecurityService"
+          class="org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityServiceImpl"
+          depends-on="org_alfresco_module_rm_dictionaryBootstrap"
+          init-method="init">
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="modelSecurityService" ref="modelSecurityService" />
-        <property name="recordService" ref="RecordService" />
+        <property name="filePlanRoleService" ref="FilePlanRoleService" />
     </bean>
 
     <bean id="RecordsManagementSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -970,7 +1037,7 @@
     
     <!--  Record Folder Service -->
     
-    <bean id="recordFolderService" class="org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordFolderServiceImpl" init-method="init">
+    <bean id="recordFolderService" class="org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl" init-method="init">
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent" />
         <property name="dispositionService" ref="DispositionService" />
@@ -978,7 +1045,7 @@
 
     <!--  Record Service -->
 
-    <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordServiceImpl" init-method="init">
+    <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
         <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
@@ -991,7 +1058,7 @@
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
-            <value>org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService</value>
+            <value>org.alfresco.module.org_alfresco_module_rm.record.RecordService</value>
         </property>
         <property name="target">
             <ref bean="recordService"/>
@@ -1029,13 +1096,13 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService.getRecordMetaDataAspects=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService.isRecord=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService.isDeclared=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService.isFiled=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService.createRecord=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService.getUnfiledContainer=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService.*=RM_DENY
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isRecord=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isFiled=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getUnfiledContainer=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>
         </property>

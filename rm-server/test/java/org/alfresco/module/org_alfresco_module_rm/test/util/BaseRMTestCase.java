@@ -29,13 +29,13 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
-import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;

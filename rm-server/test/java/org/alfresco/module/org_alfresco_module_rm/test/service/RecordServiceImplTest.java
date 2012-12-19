@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;

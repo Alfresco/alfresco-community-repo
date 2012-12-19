@@ -17,7 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.module.org_alfresco_module_rm.disposableitem;
+package org.alfresco.module.org_alfresco_module_rm.record;
 
 import java.util.Set;
 

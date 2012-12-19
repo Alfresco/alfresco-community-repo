@@ -26,8 +26,8 @@ import java.util.Set;
 
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;

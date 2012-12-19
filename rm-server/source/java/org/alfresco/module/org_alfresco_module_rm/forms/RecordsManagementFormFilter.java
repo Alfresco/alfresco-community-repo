@@ -25,7 +25,7 @@ import java.util.Map;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
-import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;

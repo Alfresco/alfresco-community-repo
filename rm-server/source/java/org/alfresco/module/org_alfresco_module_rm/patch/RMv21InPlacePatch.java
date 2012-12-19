@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityServiceImpl;
@@ -144,13 +145,13 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
         
         // create the properties map
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-        properties.put(ContentModel.PROP_NAME, RecordsManagementSecurityServiceImpl.NAME_UNFILED_CONTAINER);
+        properties.put(ContentModel.PROP_NAME, FilePlanRoleServiceImpl.NAME_UNFILED_CONTAINER);
 
         // create the unfiled container
         NodeRef container = nodeService.createNode(
                         filePlan,
                         ASSOC_UNFILED_RECORDS,
-                        QName.createQName(RM_URI, RecordsManagementSecurityServiceImpl.NAME_UNFILED_CONTAINER),
+                        QName.createQName(RM_URI, FilePlanRoleServiceImpl.NAME_UNFILED_CONTAINER),
                         TYPE_UNFILED_RECORD_CONTAINER,
                         properties).getChildRef();
 

@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -35,8 +36,11 @@ public interface RecordsManagementSecurityService
     /**
      * Creates the initial set of default roles for a root records management node
      * 
-     * @param rmRootNode  
+     * @param rmRootNode    root node
+     * 
+     * @deprecatedAs of release 2.1, operation no longer supported 
      */
+    @Deprecated
     void bootstrapDefaultRoles(NodeRef rmRootNode);
     
     /**
@@ -45,15 +49,21 @@ public interface RecordsManagementSecurityService
      * 
      * @param filePlan  file plan node reference
      * @return String   group name
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#getAllRolesContainerGroup(NodeRef)}
      */
+    @Deprecated
     String getAllRolesContainerGroup(NodeRef filePlan);
     
     /**
      * Get all the available roles for the given records management root node
      * 
-     * @param rmRootNode
-     * @return
+     * @param rmRootNode    root node
+     * @return {@link Set}<{@link Role}>    all roles for a given root node
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#getRoles(NodeRef)}
      */
+    @Deprecated
     Set<Role> getRoles(NodeRef rmRootNode);
     
     /**
@@ -62,7 +72,10 @@ public interface RecordsManagementSecurityService
      * @param rmRootNode
      * @param user
      * @return
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#getRolesByUser(NodeRef, String)}
      */
+    @Deprecated
     Set<Role> getRolesByUser(NodeRef rmRootNode, String user);
     
     /**
@@ -71,7 +84,10 @@ public interface RecordsManagementSecurityService
      * @param rmRootNode
      * @param role
      * @return
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#getRole(NodeRef, String)}
      */
+    @Deprecated
     Role getRole(NodeRef rmRootNode, String role);    
     
     /**
@@ -79,7 +95,10 @@ public interface RecordsManagementSecurityService
      * @param rmRootNode
      * @param role
      * @return
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#existsRole(NodeRef, String)}
      */
+    @Deprecated
     boolean existsRole(NodeRef rmRootNode, String role);
     
     /**
@@ -88,7 +107,10 @@ public interface RecordsManagementSecurityService
      * @param rmRootNode RM root node
      * @param user user name to check
      * @return true if the user has the RM Admin role, false otherwise
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#hasRMAdminRole(NodeRef, String)}
      */
+    @Deprecated
     boolean hasRMAdminRole(NodeRef rmRootNode, String user);
     
     /**
@@ -99,7 +121,10 @@ public interface RecordsManagementSecurityService
      * @param roleDisplayLabel
      * @param capabilities
      * @return
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#createRole(NodeRef, String, String, Set)}
      */
+    @Deprecated
     Role createRole(NodeRef rmRootNode, String role, String roleDisplayLabel, Set<Capability> capabilities);
     
     /**
@@ -110,7 +135,10 @@ public interface RecordsManagementSecurityService
      * @param roleDisplayLabel
      * @param capabilities
      * @return
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#updateRole(NodeRef, String, String, Set)}
      */
+    @Deprecated
     Role updateRole(NodeRef rmRootNode, String role, String roleDisplayLabel, Set<Capability> capabilities);
     
     /**
@@ -118,7 +146,10 @@ public interface RecordsManagementSecurityService
      * 
      * @param rmRootNode
      * @param role
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#deleteRole(NodeRef, String)}
      */
+    @Deprecated
     void deleteRole(NodeRef rmRootNode, String role);
     
     /**
@@ -127,7 +158,10 @@ public interface RecordsManagementSecurityService
      * @param authorityName
      * @param rmRootNode
      * @param role
+     * 
+     * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#assignRoleToAuthority(NodeRef, String, String)}
      */
+    @Deprecated
     void assignRoleToAuthority(NodeRef rmRootNode, String role, String authorityName);
     
     /**

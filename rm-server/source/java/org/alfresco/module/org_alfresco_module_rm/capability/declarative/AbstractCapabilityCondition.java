@@ -19,9 +19,9 @@
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.springframework.beans.factory.BeanNameAware;

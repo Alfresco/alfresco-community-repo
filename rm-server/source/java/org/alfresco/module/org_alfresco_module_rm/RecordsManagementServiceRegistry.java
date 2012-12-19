@@ -21,10 +21,11 @@ package org.alfresco.module.org_alfresco_module_rm;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.service.NotAuditable;
@@ -51,6 +52,7 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     static final QName RECORD_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordService");
     static final QName FREEZE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FreezeService");
     static final QName EXTENDED_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ExtendedSecurityService");
+    static final QName FILE_PLAN_ROLE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanRoleService");
     
     /**
      * @return  records management service
@@ -117,4 +119,10 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
      */
     @NotAuditable
     ExtendedSecurityService getExtendedSecurityService();
+    
+    /**
+     * @return  file plan role service
+     */
+    @NotAuditable
+    FilePlanRoleService getFilePlanRoleService();
 }

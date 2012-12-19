@@ -25,7 +25,7 @@ import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;

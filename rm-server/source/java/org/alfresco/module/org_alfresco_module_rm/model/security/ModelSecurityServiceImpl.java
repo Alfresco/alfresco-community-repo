@@ -26,12 +26,12 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -66,8 +66,8 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     /** Namespace service */
     private NamespaceService namespaceService;
 
-    /** Security service */
-    private RecordsManagementSecurityService securityService;
+    /** File plan role service */
+    private FilePlanRoleService filePlanRoleService;
 
     /** Records management service */
     private RecordsManagementService recordsManagementService;
@@ -130,11 +130,11 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     }
 
     /**
-     * @param securityService   records management security service
+     * @param filePlanRoleService   file plan role service
      */
-    public void setSecurityService(RecordsManagementSecurityService securityService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.securityService = securityService;
+        this.filePlanRoleService = filePlanRoleService;
     }
 
     /**
@@ -246,7 +246,7 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
         NodeRef filePlan = recordsManagementService.getFilePlan(nodeRef);
         if (filePlan != null)
         {
-            Set<Role> roles = securityService.getRolesByUser(filePlan, AuthenticationUtil.getFullyAuthenticatedUser());
+            Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getFullyAuthenticatedUser());
             for (Role role : roles)
             {
                 if (Collections.disjoint(role.getCapabilities(), artifact.getCapabilities()) == false)

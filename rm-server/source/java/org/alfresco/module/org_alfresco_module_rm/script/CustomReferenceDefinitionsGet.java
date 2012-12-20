@@ -29,15 +29,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * This class provides the implementation for the customrefdefinitions.get webscript.
@@ -55,12 +54,6 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
     private static Log logger = LogFactory.getLog(CustomReferenceDefinitionsGet.class);
     
     private RecordsManagementAdminService rmAdminService;
-    private NamespaceService namespaceService;
-
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-    	this.namespaceService = namespaceService;
-    }
 
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {

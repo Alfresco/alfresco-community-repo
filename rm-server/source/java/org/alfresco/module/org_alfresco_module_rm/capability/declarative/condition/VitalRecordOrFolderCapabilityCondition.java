@@ -32,7 +32,7 @@ public class VitalRecordOrFolderCapabilityCondition extends AbstractCapabilityCo
     {
         boolean result = false;        
         
-        if (rmService.isRecord(nodeRef) == true)
+        if (recordService.isRecord(nodeRef) == true)
         {
             // Check the record for the vital record aspect
             result = nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_VITAL_RECORD);

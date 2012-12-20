@@ -28,8 +28,8 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,12 +54,12 @@ public class RmRolePut extends DeclarativeWebScript
     private static Log logger = LogFactory.getLog(RmRolePut.class);
     
     private RecordsManagementService rmService;
-    private RecordsManagementSecurityService rmSecurityService;
     private CapabilityService capabilityService;
+    private FilePlanRoleService filePlanRoleService;
     
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService rmSecurityService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.rmSecurityService = rmSecurityService;
+        this.filePlanRoleService = filePlanRoleService;
     }
     
     public void setRecordsManagementService(RecordsManagementService rmService)
@@ -105,12 +105,12 @@ public class RmRolePut extends DeclarativeWebScript
             NodeRef root = roots.get(0);
             
             // Check that the role exists
-            if (rmSecurityService.existsRole(root, roleParam) == false)
+            if (filePlanRoleService.existsRole(root, roleParam) == false)
             {
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, "The role " + roleParam + " does not exist on the records managment root " + root);
             }
             
-            Role role = rmSecurityService.updateRole(root, name, displayLabel, capabilites);                      
+            Role role = filePlanRoleService.updateRole(root, name, displayLabel, capabilites);                      
             model.put("role", role);
             
         }

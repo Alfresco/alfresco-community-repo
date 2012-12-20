@@ -24,9 +24,11 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
+import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.ServiceRegistry;
@@ -38,6 +40,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
+@SuppressWarnings("deprecation")
 public interface RecordsManagementServiceRegistry extends ServiceRegistry
 {
     /** Service QName constants */
@@ -46,13 +49,16 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     static final QName RECORDS_MANAGEMENT_ADMIN_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementAdminService");
     static final QName RECORDS_MANAGEMENT_ACTION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementActionService");
     static final QName RECORDS_MANAGEMENT_EVENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementEventService");
-    static final QName RECORDS_MANAGEMENT_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementSecurityService");
     static final QName RECORDS_MANAGEMENT_AUDIT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementAuditService");
     static final QName CAPABILITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CapabilityService");
     static final QName RECORD_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordService");
     static final QName FREEZE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FreezeService");
     static final QName EXTENDED_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ExtendedSecurityService");
     static final QName FILE_PLAN_ROLE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanRoleService");
+    static final QName FILE_PLAN_PERMISSION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "FilePlanPermissionService");
+    @Deprecated
+    static final QName RECORDS_MANAGEMENT_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementSecurityService");
+    
     
     /**
      * @return  records management service
@@ -92,7 +98,10 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     
     /**
      * @return  records management security service
+     * 
+     * @deprecated As of release 2.1, replaced with {@link FilePlanRoleService}, {@link FilePlanPermissionService} and {@link ModelSecurityService}
      */
+    @Deprecated
     @NotAuditable
     RecordsManagementSecurityService getRecordsManagementSecurityService();
     
@@ -104,25 +113,36 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     
     /**
      * @return  capability service
+     * @since 2.0
      */
     @NotAuditable
     CapabilityService getCapabilityService();
     
     /**
      * @return  freeze service
+     * @since 2.1
      */
     @NotAuditable
     FreezeService getFreezeService();
     
     /**
      * @return extended security service
+     * @since 2.1
      */
     @NotAuditable
     ExtendedSecurityService getExtendedSecurityService();
     
     /**
      * @return  file plan role service
+     * @since 2.1
      */
     @NotAuditable
     FilePlanRoleService getFilePlanRoleService();
+    
+    /**
+     * @return  file plan permission service
+     * @since 2.1 
+     */
+    @NotAuditable
+    FilePlanPermissionService getFilePlanPermissionService();
 }

@@ -24,7 +24,6 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
@@ -42,6 +41,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  *
  * @author Mark Rogers
  */
+@SuppressWarnings("unused")
 public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 {
     private MutableAuthenticationService authenticationService;
@@ -90,7 +90,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
         
             JSONObject top = new JSONObject(response.getContentAsString());
             System.out.println(response.getContentAsString());
-            JSONArray data = top.getJSONArray("data");
+            assertNotNull(top.getJSONArray("data"));
         }
         
         /**
@@ -167,7 +167,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             
             String constraintName = data.getString("constraintName");
             assertNotNull("constraintName is null", constraintName);
-            JSONArray allowedValues = data.getJSONArray("allowedValues");
+//            JSONArray allowedValues = data.getJSONArray("allowedValues");
             
 //            assertTrue("values not correct", compare(array, allowedValues));
             

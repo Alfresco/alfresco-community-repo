@@ -21,7 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.jscript;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.scripts.ScriptException;
@@ -93,8 +93,8 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
      */
     public void setPermission(ScriptNode node, String permission, String authority)
     {
-        RecordsManagementSecurityService securityService = rmServices.getRecordsManagementSecurityService();
-        securityService.setPermission(node.getNodeRef(), authority, permission);
+        FilePlanPermissionService filePlanPermissionService = rmServices.getFilePlanPermissionService();
+        filePlanPermissionService.setPermission(node.getNodeRef(), authority, permission);
     }
     
     /**
@@ -106,8 +106,8 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
      */
     public void deletePermission(ScriptNode node, String permission, String authority)
     {
-        RecordsManagementSecurityService securityService = rmServices.getRecordsManagementSecurityService();
-        securityService.deletePermission(node.getNodeRef(), authority, permission);
+        FilePlanPermissionService filePlanPermissionService = rmServices.getFilePlanPermissionService();
+        filePlanPermissionService.deletePermission(node.getNodeRef(), authority, permission);
     }
     
     /**

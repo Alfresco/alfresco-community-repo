@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -41,6 +41,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.util.TempFileProvider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -49,8 +51,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.extensions.webscripts.servlet.FormData.FormField;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -72,7 +72,7 @@ public class ImportPost extends DeclarativeWebScript
     protected DictionaryService dictionaryService;
     protected ImporterService importerService;
     protected RecordsManagementService rmService;
-    protected RecordsManagementSecurityService rmSecurityService;
+    protected FilePlanRoleService filePlanRoleService;
     
     /**
      * @param nodeService
@@ -103,13 +103,11 @@ public class ImportPost extends DeclarativeWebScript
     }
     
     /**
-     * Sets the RecordsManagementSecurityService instance
-     * 
-     * @param rmSecurityService The RecordsManagementSecurityService instance
+     * @param filePlanRoleService   file plan role service
      */
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService rmSecurityService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.rmSecurityService = rmSecurityService;
+        this.filePlanRoleService = filePlanRoleService;
     }
     
     /**
@@ -179,7 +177,7 @@ public class ImportPost extends DeclarativeWebScript
             // as there is no 'import capability' and the RM admin user is different from
             // the DM admin user (meaning the webscript 'admin' authentication can't be used)
             // perform a manual check here to ensure the current user has the RM admin role.
-            boolean isAdmin = this.rmSecurityService.hasRMAdminRole(
+            boolean isAdmin = filePlanRoleService.hasRMAdminRole(
                         this.rmService.getFilePlan(destination), 
                         AuthenticationUtil.getRunAsUser());
             if (!isAdmin)

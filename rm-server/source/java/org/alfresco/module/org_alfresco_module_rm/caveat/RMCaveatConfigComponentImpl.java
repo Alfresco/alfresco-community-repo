@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -511,7 +510,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             if (! (AuthenticationUtil.isMtEnabled() && AuthenticationUtil.isRunAsUserTheSystemUser()))
             {
                 // note: userName and userGroupNames must not be null
-                Map<String, List<String>> caveatConstraintDef = caveatConfig.get(constraintName);                
+                caveatConfig.get(constraintName);                
                 Set<String> userGroupFullNames = authorityService.getAuthoritiesForUser(userName);
                 allowedValues = getRMAllowedValues(userName, userGroupFullNames, constraintName);
             }

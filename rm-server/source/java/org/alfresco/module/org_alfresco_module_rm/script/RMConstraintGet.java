@@ -41,7 +41,6 @@ public class RMConstraintGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {     
-        String requestUrl = req.getURL();
         String extensionPath = req.getExtensionPath();
         
         String constraintName = extensionPath.replace('_', ':');

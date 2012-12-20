@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -51,7 +51,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
     protected PersonService personService;
     protected NodeService nodeService;
     protected RecordsManagementService rmService;
-    protected RecordsManagementSecurityService rmSecurityService;
+    protected FilePlanRoleService filePlanRoleService;
     
     /**
      * Sets the AuthorityService instance
@@ -84,23 +84,19 @@ public class UserRightsReportGet extends DeclarativeWebScript
     }
     
     /**
-     * Sets the RecordsManagementService instance
-     * 
-     * @param rmService The RecordsManagementService instance
+     * @param recordsManagementService  records management service
      */
-    public void setRecordsManagementService(RecordsManagementService rmService)
+    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
     {
-        this.rmService = rmService;
+        this.rmService = recordsManagementService;
     }
     
     /**
-     * Sets the RecordsManagementSecurityService instance
-     * 
-     * @param rmSecurityService The RecordsManagementSecurityService instance
+     * @param filePlanRoleService   file plan role service
      */
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService rmSecurityService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.rmSecurityService = rmSecurityService;
+        this.filePlanRoleService = filePlanRoleService;
     }
     
     /*
@@ -128,7 +124,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
         NodeRef rmRootNode = rmRoots.get(0);
         
         // iterate over all the roles for the file plan and construct models
-        Set<Role> roles = this.rmSecurityService.getRoles(rmRootNode);
+        Set<Role> roles = this.filePlanRoleService.getRoles(rmRootNode);
         for (Role role : roles)
         {
             // get or create the RoleModel object for current role

@@ -53,6 +53,7 @@ public class CustomReferenceDefinitionPut extends AbstractRmWebScript
     private static final String SOURCE = "source";
     private static final String LABEL = "label";
 
+    @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(CustomReferenceDefinitionPut.class);
     
     private RecordsManagementAdminService rmAdminService;

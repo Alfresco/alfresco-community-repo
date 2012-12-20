@@ -43,7 +43,8 @@
        <property name="nodeService" ref="NodeService"/>
        <property name="permissionService" ref="PermissionService" />
        <property name="recordsManagementService" ref="RecordsManagementService"/>
-       <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
+       <property name="filePlanPermissionService" ref="FilePlanPermissionService"/>
+       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
    </bean>
 
 </beans>

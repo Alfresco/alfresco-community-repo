@@ -30,7 +30,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
@@ -98,9 +97,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
 
     /** Policy component */
     private PolicyComponent policyComponent;
-    
-    /** Records management action service */
-    private RecordsManagementActionService rmActionService;
 
     /** Well-known location of the scripts folder. */
     private NodeRef scriptsFolderNodeRef = new NodeRef("workspace", "SpacesStore", "rm_scripts");
@@ -148,16 +144,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
-    }
-    
-    /**
-     * Set records management action service
-     * 
-     * @param rmActionService   records management action service
-     */
-    public void setRmActionService(RecordsManagementActionService rmActionService)
-    {
-        this.rmActionService = rmActionService;
     }
     
     /**

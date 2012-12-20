@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -47,9 +46,6 @@ public class RecordContainerType implements RecordsManagementModel,
     /** Policy component */
     private PolicyComponent policyComponent;
     
-    /** Records Management Action Service */
-    private RecordsManagementActionService recordsManagementActionService;
-    
     /** Node service */
     private NodeService nodeService;
     
@@ -66,16 +62,6 @@ public class RecordContainerType implements RecordsManagementModel,
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
-    }
-    
-    /**
-     * Set the records management action service
-     * 
-     * @param recordsManagementActionService  records management action service
-     */
-    public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
-    {
-        this.recordsManagementActionService = recordsManagementActionService;
     }
     
     /**

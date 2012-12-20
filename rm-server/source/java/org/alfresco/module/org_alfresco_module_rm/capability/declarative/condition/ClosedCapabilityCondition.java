@@ -42,7 +42,7 @@ public class ClosedCapabilityCondition extends AbstractCapabilityCondition
         {
             result = rmService.isRecordFolderClosed(nodeRef);
         }
-        else if (rmService.isRecord(nodeRef) == true)
+        else if (recordService.isRecord(nodeRef) == true)
         {
             List<ChildAssociationRef> assocs = nodeService.getParentAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef assoc : assocs)

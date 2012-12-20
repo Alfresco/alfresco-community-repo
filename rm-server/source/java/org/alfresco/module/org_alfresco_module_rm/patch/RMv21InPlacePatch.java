@@ -28,10 +28,10 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -62,8 +62,11 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
     /** Records management service */
     private RecordsManagementService recordsManagementService;
     
-    /** Records management security service */
-    private RecordsManagementSecurityService recordsManagementSecurityService;
+    /** File plan permission service */
+    private FilePlanPermissionService filePlanPermissionService;
+    
+    /** File plan role service */
+    private FilePlanRoleService filePlanRoleService;
     
     /**
      * @param nodeService   node service
@@ -90,11 +93,19 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
     }
     
     /**
-     * @param recordsManagementSecurityService  records management security service
+     * @param filePlanPermissionService file plan permission service
      */
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService recordsManagementSecurityService)
+    public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
     {
-        this.recordsManagementSecurityService = recordsManagementSecurityService;
+        this.filePlanPermissionService = filePlanPermissionService;
+    }
+    
+    /**
+     * @param filePlanRoleService   file plan role service
+     */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
+    {
+        this.filePlanRoleService = filePlanRoleService;
     }
     
     /**
@@ -123,7 +134,7 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
             }
             
             // set permissions
-            recordsManagementSecurityService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
+            filePlanPermissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
             permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
             
             // create unfiled container
@@ -141,7 +152,7 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
      */
     private NodeRef createUnfiledContainer(NodeRef filePlan)
     {
-        String allRoles = recordsManagementSecurityService.getAllRolesContainerGroup(filePlan);
+        String allRoles = filePlanRoleService.getAllRolesContainerGroup(filePlan);
         
         // create the properties map
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);

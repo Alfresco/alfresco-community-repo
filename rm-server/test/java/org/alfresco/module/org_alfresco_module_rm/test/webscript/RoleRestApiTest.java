@@ -38,7 +38,8 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * 
  * @author Roy Wetherall
  */
-public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsManagementModel
+public class RoleRestApiTest extends BaseRMWebScriptTestCase 
+                             implements RecordsManagementModel
 {
     protected static final String GET_ROLES_URL = "/api/rma/admin/rmroles";
     protected static final String SERVICE_URL_PREFIX = "/alfresco/service";
@@ -50,11 +51,11 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsM
         String role2 = GUID.generate();
         
         // Create a couple or roles by hand
-        securityService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
-        securityService.createRole(filePlan, role2, "My Test Role Too", getListOfCapabilities(5));
+        filePlanRoleService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
+        filePlanRoleService.createRole(filePlan, role2, "My Test Role Too", getListOfCapabilities(5));
         
         // Add the admin user to one of the roles
-        securityService.assignRoleToAuthority(filePlan, role1, "admin");
+        filePlanRoleService.assignRoleToAuthority(filePlan, role1, "admin");
         
         try
         {
@@ -103,8 +104,8 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsM
         finally
         {
             // Clean up 
-            securityService.deleteRole(filePlan, role1);
-            securityService.deleteRole(filePlan, role2);
+            filePlanRoleService.deleteRole(filePlan, role1);
+            filePlanRoleService.deleteRole(filePlan, role2);
         }
         
     }
@@ -143,7 +144,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsM
         }
         finally
         {
-            securityService.deleteRole(filePlan, roleName);
+            filePlanRoleService.deleteRole(filePlan, roleName);
         }
         
     }
@@ -151,7 +152,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsM
     public void testPutRole() throws Exception
     {
         String role1 = GUID.generate();        
-        securityService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
+        filePlanRoleService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
         
         try
         {
@@ -189,7 +190,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsM
         finally
         {
             // Clean up 
-            securityService.deleteRole(filePlan, role1);
+            filePlanRoleService.deleteRole(filePlan, role1);
         }
         
     }
@@ -197,7 +198,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsM
     public void testGetRole() throws Exception
     {
         String role1 = GUID.generate();        
-        securityService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
+        filePlanRoleService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
         
         try
         {
@@ -222,7 +223,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsM
         finally
         {
             // Clean up 
-            securityService.deleteRole(filePlan, role1);
+            filePlanRoleService.deleteRole(filePlan, role1);
         }
         
     }
@@ -230,11 +231,11 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase implements RecordsM
     public void testDeleteRole() throws Exception
     {
         String role1 = GUID.generate();
-        assertFalse(securityService.existsRole(filePlan, role1));        
-        securityService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));        
-        assertTrue(securityService.existsRole(filePlan, role1));        
+        assertFalse(filePlanRoleService.existsRole(filePlan, role1));        
+        filePlanRoleService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));        
+        assertTrue(filePlanRoleService.existsRole(filePlan, role1));        
         sendRequest(new DeleteRequest(GET_ROLES_URL + "/" + role1),200);        
-        assertFalse(securityService.existsRole(filePlan, role1));     
+        assertFalse(filePlanRoleService.existsRole(filePlan, role1));     
         
         // Bad request
         sendRequest(new DeleteRequest(GET_ROLES_URL + "/cheese"), 404);  

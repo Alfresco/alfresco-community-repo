@@ -64,6 +64,7 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * RM After Invocation Provider
  */
+@SuppressWarnings("unused")
 public class RMAfterInvocationProvider extends RMSecurityCommon
                                        implements AfterInvocationProvider, InitializingBean
 {

@@ -91,7 +91,7 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
     {
         boolean result = false;
         boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
-        if (rmService.isRecord(nodeRef) == true && isRecordLevelDisposition == true)
+        if (recordService.isRecord(nodeRef) == true && isRecordLevelDisposition == true)
         {
             result = true;
         }

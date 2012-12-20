@@ -85,7 +85,7 @@ public class CompositeCapabilityTest extends BaseRMTestCase
         // Give all the users file permission objects
         for (String user : testUsers)
         {
-            securityService.setPermission(rmContainer, user, RMPermissionModel.FILING);
+            filePlanPermissionService.setPermission(rmContainer, user, RMPermissionModel.FILING);
         }                
     }
     

@@ -18,7 +18,6 @@
     <bean id="recordsManagementService" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceImpl"
           depends-on="org_alfresco_module_rm_dictionaryBootstrap" init-method="init">
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
-        <property name="rmActionService" ref="recordsManagementActionService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="nodeDAO" ref="nodeDAO"/>
@@ -610,7 +609,7 @@
     	<property name="policyComponent" ref="policyComponent" />
     	<property name="nodeService" ref="NodeService" />
     	<property name="namespaceService" ref="namespaceService" />
-    	<property name="securityService" ref="RecordsManagementSecurityService" />
+    	<property name="filePlanRoleService" ref="FilePlanRoleService" />
     	<property name="recordsManagementService" ref="RecordsManagementService" />
     </bean>
 
@@ -891,6 +890,7 @@
         <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="nodeService" ref="nodeService" />
         <property name="dictionaryService" ref="dictionaryService" />
+        <property name="recordService" ref="RecordService" />
     </bean>
 
     <bean id="FreezeService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1175,7 +1175,7 @@
     <!--  RM Notification Helper -->
 
     <bean id="recordsManagementNotificationHelper" class="org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper" >
-        <property name="securityService" ref="RecordsManagementSecurityService"/>
+        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
     	<property name="notificationService" ref="NotificationService"/>
     	<property name="recordsManagementService" ref="RecordsManagementService"/>
   		<property name="nodeService" ref="nodeService"/>
@@ -1313,10 +1313,9 @@
         <property name="searchService" ref="SearchService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="recordsManagementService" ref="RecordsManagementService"/>
-        <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="authorityService" ref="AuthorityService"/>
-        <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService"/>
+        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
         <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour"/>
         <property name="dispositionService" ref="DispositionService"/>
     </bean>

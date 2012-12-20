@@ -23,8 +23,8 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -42,7 +42,7 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
 {
     private NodeService nodeService;
     private RecordsManagementService rmService;
-    private RecordsManagementSecurityService rmSecurityService;
+    private FilePlanRoleService filePlanRoleService;
 
     /**
      * Used to check that the node in the context is a fileplan component
@@ -61,11 +61,11 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
     }
 
     /**
-     * Used to get roles
+     * @param filePlanRoleService   file plan role service
      */
-    public void setRmSecurityService(RecordsManagementSecurityService rmSecurityService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.rmSecurityService = rmSecurityService;
+        this.filePlanRoleService = filePlanRoleService;
     }
 
     /**
@@ -94,7 +94,7 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
         // Get the rm root
         NodeRef rmRootNodeRef = rmService.getFilePlan(nodeRef);
         
-        Set<Role> roles = rmSecurityService.getRolesByUser(rmRootNodeRef, user);
+        Set<Role> roles = filePlanRoleService.getRolesByUser(rmRootNodeRef, user);
         StringBuilder sb = new StringBuilder(100);
         for (Role role : roles)
         {

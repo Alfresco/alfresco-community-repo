@@ -33,8 +33,9 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -89,7 +90,8 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected RecordsManagementAdminService adminService;    
     protected RecordsManagementActionService actionService;
     protected RecordsManagementSearchService rmSearchService;
-    protected RecordsManagementSecurityService securityService;
+    protected FilePlanRoleService filePlanRoleService;
+    protected FilePlanPermissionService filePlanPermissionService;
     protected RecordsManagementAuditService auditService;
     protected CapabilityService capabilityService;
     protected VitalRecordService vitalRecordService;
@@ -148,7 +150,8 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         adminService = (RecordsManagementAdminService)applicationContext.getBean("RecordsManagementAdminService");
         actionService = (RecordsManagementActionService)applicationContext.getBean("RecordsManagementActionService");
         rmSearchService = (RecordsManagementSearchService)applicationContext.getBean("RecordsManagementSearchService");
-        securityService = (RecordsManagementSecurityService)applicationContext.getBean("RecordsManagementSecurityService");
+        filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
+        filePlanPermissionService = (FilePlanPermissionService)applicationContext.getBean("FilePlanPermissionService");
         auditService = (RecordsManagementAuditService)applicationContext.getBean("RecordsManagementAuditService");
         capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
         vitalRecordService = (VitalRecordService)applicationContext.getBean("VitalRecordService");

@@ -97,7 +97,7 @@
       <property name="registry" ref="auditModel.extractorRegistry" />
       <property name="nodeService" ref="nodeService" />
       <property name="rmService" ref="recordsManagementService" />
-      <property name="rmSecurityService" ref="recordsManagementSecurityService" />
+      <property name="filePlanRoleService" ref="filePlanRoleService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_namePathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.FilePlanNamePathDataExtractor">
@@ -209,6 +209,7 @@
       <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
       <property name="policyComponent" ref="policyComponent"/>
+      <property name="recordService" ref="recordService" />
    </bean>
 
    <!--  Job context -->
@@ -249,7 +250,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementNodeFormFilter">
       <property name="filterRegistry" ref="nodeFilterRegistry" />
       <property name="dictionaryService" ref="DictionaryService" />
-      <property name="dispositionService" ref="dispositionService"/>
+      <property name="dispositionService" ref="dispositionService"/>      
    </bean>
 
    <bean id="rmTypeFormFilter"

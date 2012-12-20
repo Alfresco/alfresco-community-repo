@@ -36,8 +36,9 @@ import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -122,7 +123,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected RecordsManagementAdminService adminService;    
     protected RecordsManagementActionService actionService;
     protected RecordsManagementSearchService rmSearchService;
-    protected RecordsManagementSecurityService securityService;
+    protected FilePlanRoleService filePlanRoleService;
+    protected FilePlanPermissionService filePlanPermissionService;
     protected CapabilityService capabilityService;
     protected VitalRecordService vitalRecordService;
     protected DataSetService dataSetService;
@@ -338,7 +340,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         adminService = (RecordsManagementAdminService)applicationContext.getBean("RecordsManagementAdminService");
         actionService = (RecordsManagementActionService)this.applicationContext.getBean("RecordsManagementActionService");
         rmSearchService = (RecordsManagementSearchService)this.applicationContext.getBean("RecordsManagementSearchService");
-        securityService = (RecordsManagementSecurityService)this.applicationContext.getBean("RecordsManagementSecurityService");
+        filePlanRoleService = (FilePlanRoleService)this.applicationContext.getBean("FilePlanRoleService");
+        filePlanPermissionService = (FilePlanPermissionService)this.applicationContext.getBean("FilePlanPermissionService");
         capabilityService = (CapabilityService)this.applicationContext.getBean("CapabilityService");
         vitalRecordService = (VitalRecordService)this.applicationContext.getBean("VitalRecordService");
         dataSetService = (DataSetService) applicationContext.getBean("DataSetService");
@@ -505,23 +508,23 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         
         rmUserName = GUID.generate();
         rmUserPerson = createPerson(rmUserName);
-        securityService.assignRoleToAuthority(filePlan, "User", rmUserName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, "User", rmUserName);
         
         powerUserName = GUID.generate();
         powerUserPerson = createPerson(powerUserName);
-        securityService.assignRoleToAuthority(filePlan, "PowerUser", powerUserName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, "PowerUser", powerUserName);
         
         securityOfficerName = GUID.generate();
         securityOfficerPerson = createPerson(securityOfficerName);
-        securityService.assignRoleToAuthority(filePlan, "SecurityOfficer", securityOfficerName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, "SecurityOfficer", securityOfficerName);
         
         recordsManagerName = GUID.generate();
         recordsManagerPerson = createPerson(recordsManagerName);
-        securityService.assignRoleToAuthority(filePlan, "RecordsManager", recordsManagerName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, "RecordsManager", recordsManagerName);
         
         rmAdminName = GUID.generate();
         rmAdminPerson = createPerson(rmAdminName);
-        securityService.assignRoleToAuthority(filePlan, "Administrator", rmAdminName);  
+        filePlanRoleService.assignRoleToAuthority(filePlan, "Administrator", rmAdminName);  
         
         testUsers = new String[]
         {
@@ -538,8 +541,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             // Give all the users file permission objects
             for (String user : testUsers)
             {
-                securityService.setPermission(filePlan, user, FILING);
-                securityService.setPermission(rmContainer, user, FILING);
+                filePlanPermissionService.setPermission(filePlan, user, FILING);
+                filePlanPermissionService.setPermission(rmContainer, user, FILING);
             } 
         }
     }

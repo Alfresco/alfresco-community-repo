@@ -15,15 +15,14 @@ import java.util.Map.Entry;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -67,17 +66,14 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /** Records management service */
     private RecordsManagementService recordsManagementService;
 
-    /** Records management action service */
-    private RecordsManagementActionService recordsManagementActionService;
-
     /** Permission service */
     private PermissionService permissionService;
 
     /** Authority service */
     private AuthorityService authorityService;
 
-    /** Records management security service */
-    private RecordsManagementSecurityService recordsManagementSecurityService;
+    /** File plan role service */
+    private FilePlanRoleService filePlanRoleService;
 
     /** Records management search behaviour */
     private RecordsManagementSearchBehaviour recordsManagementSearchBehaviour;
@@ -138,17 +134,6 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     }
 
     /**
-     * Set records management action service
-     * 
-     * @param recordsManagementActionService the records management action
-     *            service
-     */
-    public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
-    {
-        this.recordsManagementActionService = recordsManagementActionService;
-    }
-
-    /**
      * Set permission service
      * 
      * @param permissionService the permission service
@@ -169,14 +154,11 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     }
 
     /**
-     * Set records management security service
-     * 
-     * @param recordsManagementSecurityService the records management security
-     *            service
+     * @param filePlanRoleService   file plan role service
      */
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService recordsManagementSecurityService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.recordsManagementSecurityService = recordsManagementSecurityService;
+        this.filePlanRoleService = filePlanRoleService;
     }
 
     /**
@@ -392,7 +374,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                                 "All Roles", null);
 
                         // Put all the role groups in it
-                        Set<Role> roles = recordsManagementSecurityService.getRoles(rmRoot);
+                        Set<Role> roles = filePlanRoleService.getRoles(rmRoot);
                         for (Role role : roles)
                         {
                             logger.info("   - adding role group " + role.getRoleGroupName() + " to all roles group");

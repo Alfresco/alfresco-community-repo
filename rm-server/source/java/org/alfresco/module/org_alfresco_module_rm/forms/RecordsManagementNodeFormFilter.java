@@ -213,7 +213,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     
     protected void addTransientProperties(Form form, NodeRef nodeRef)
     {
-        if (rmService.isRecord(nodeRef) == true)
+        if (recordService.isRecord(nodeRef) == true)
         {
             addTransientPropertyField(form, TRANSIENT_DECLARED, DataTypeDefinition.BOOLEAN, recordService.isDeclared(nodeRef));
         }

@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -92,7 +92,7 @@ public class NotificationServiceHelperSystemTest extends BaseRMTestCase
                 person = personService.createPerson(props);
                 
                 // Find the authority for the given role        
-                Role role = securityService.getRole(filePlan, NOTIFICATION_ROLE);
+                Role role = filePlanRoleService.getRole(filePlan, NOTIFICATION_ROLE);
                 assertNotNull("Notification role could not be retrieved", role);
                 String roleGroup = role.getRoleGroupName();
                 assertNotNull("Notification role group can not be null.", roleGroup);

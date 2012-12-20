@@ -28,8 +28,8 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,12 +54,12 @@ public class RmRolesPost extends DeclarativeWebScript
     private static Log logger = LogFactory.getLog(RmRolesPost.class);
     
     private RecordsManagementService rmService;
-    private RecordsManagementSecurityService rmSecurityService;
+    private FilePlanRoleService filePlanRoleService;
     private CapabilityService capabilityService;
     
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService rmSecurityService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.rmSecurityService = rmSecurityService;
+        this.filePlanRoleService = filePlanRoleService;
     }
     
     public void setRecordsManagementService(RecordsManagementService rmService)
@@ -96,7 +96,7 @@ public class RmRolesPost extends DeclarativeWebScript
             List<NodeRef> roots = rmService.getFilePlans();
             NodeRef root = roots.get(0);
             
-            Role role = rmSecurityService.createRole(root, name, displayString, capabilites);            
+            Role role = filePlanRoleService.createRole(root, name, displayString, capabilites);            
             
             //Set<Role> roles = rmSecurityService.getRoles(root);
             model.put("role", role);

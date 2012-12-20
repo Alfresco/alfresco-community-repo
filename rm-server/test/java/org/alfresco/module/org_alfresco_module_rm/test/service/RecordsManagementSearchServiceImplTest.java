@@ -32,6 +32,7 @@ import org.alfresco.util.TestWithUserUtils;
  * 
  * @author Roy Wetherall
  */
+@SuppressWarnings("unused")
 public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
 {
     @Override
@@ -50,7 +51,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
     
     private NodeRef folderLevelRecordFolder;
     private NodeRef recordLevelRecordFolder;
-    
+        
     private NodeRef recordOne;
     private NodeRef recordTwo;
     private NodeRef recordThree;

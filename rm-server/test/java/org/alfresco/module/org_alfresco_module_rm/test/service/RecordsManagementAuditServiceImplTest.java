@@ -134,8 +134,8 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         // Give all the users file permission objects
         for (String user : testUsers)
         {
-            securityService.setPermission(filePlan, user, FILING);
-            securityService.setPermission(rmContainer, user, FILING);
+            filePlanPermissionService.setPermission(filePlan, user, FILING);
+            filePlanPermissionService.setPermission(rmContainer, user, FILING);
         }                
     }
     

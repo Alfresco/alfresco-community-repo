@@ -32,6 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventActio
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -44,7 +45,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
- * 
+ * Behaviour executed when a references record is actioned upon.
  * 
  * @author Roy Wetherall
  */
@@ -69,6 +70,9 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     
     /** Policy component */
     private PolicyComponent policyComponent;
+    
+    /** Record service */
+    private RecordService recordService;
 
     /** Action name */
     private String actionName;
@@ -100,19 +104,31 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
         this.recordsManagementActionService = recordsManagementActionService;
     }
     
+    /**
+     * @param recordsManagementAdminService record management admin service
+     */
     public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
     {
         this.recordsManagementAdminService = recordsManagementAdminService;
     }
     
+    /**
+     * @param nodeService   node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
     
     /**
-     * Set policy components
-     * 
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
+    
+    /**
      * @param policyComponent   policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -121,15 +137,16 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     }
     
     /**
-     * Set the reference
-     * 
-     * @param reference
+     * @param reference reference name
      */
     public void setReferenceName(String reference)
     {
         this.reference = QName.createQName(reference);
     }
     
+    /**
+     * @param actionName    action name
+     */
     public void setActionName(String actionName)
     {
         this.actionName = actionName;
@@ -157,6 +174,13 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
         return true;
     }
     
+    /**
+     * Before action exeuction behaviour.
+     * 
+     * @param nodeRef
+     * @param name
+     * @param parameters
+     */
     public void beforeActionExecution(final NodeRef nodeRef, final String name, final Map<String, Serializable> parameters)
     {
         AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()
@@ -193,7 +217,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     
     private void processRecordFolder(NodeRef recordFolder)
     {
-        if (recordsManagementService.isRecord(recordFolder) == true)
+        if (recordService.isRecord(recordFolder) == true)
         {
             processRecord(recordFolder);
         }

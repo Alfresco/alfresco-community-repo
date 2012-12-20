@@ -32,7 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -134,9 +134,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         // Give all the users file permission objects
         for (String user : testUsers)
         {
-            securityService.setPermission(rmFolder, user, RMPermissionModel.FILING);
-            securityService.setPermission(moveToFolder, user, RMPermissionModel.READ_RECORDS);
-            securityService.setPermission(moveToCategory, user, RMPermissionModel.READ_RECORDS);
+            filePlanPermissionService.setPermission(rmFolder, user, RMPermissionModel.FILING);
+            filePlanPermissionService.setPermission(moveToFolder, user, RMPermissionModel.READ_RECORDS);
+            filePlanPermissionService.setPermission(moveToCategory, user, RMPermissionModel.READ_RECORDS);
         }
     }
 
@@ -177,7 +177,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             {
                 AccessStatus accessStatus = capability.hasPermission(filePlanComponent);
 
-                Set<Role> roles = securityService.getRolesByUser(filePlan, userName);
+                Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, userName);
                 if (roles.isEmpty() == true)
                 {
                     assertEquals("User " + userName + " has no RM role so we expect access to be denied for capability " + capability.getName(),
@@ -339,7 +339,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             {
                 for (String user : testUsers)
                 {
-                    securityService.setPermission(moveToFolder, user, RMPermissionModel.FILING);
+                    filePlanPermissionService.setPermission(moveToFolder, user, RMPermissionModel.FILING);
                 }
                 return null;
             }
@@ -435,7 +435,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             {
                 for (String user : testUsers)
                 {
-                    securityService.setPermission(moveToCategory, user, RMPermissionModel.FILING);
+                    filePlanPermissionService.setPermission(moveToCategory, user, RMPermissionModel.FILING);
                 }
                 return null;
             }

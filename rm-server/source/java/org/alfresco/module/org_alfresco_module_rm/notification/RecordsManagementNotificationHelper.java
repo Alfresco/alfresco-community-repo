@@ -26,8 +26,8 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.Role;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.notification.EMailNotificationProvider;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -70,7 +70,7 @@ public class RecordsManagementNotificationHelper
     /** Services */
     private NotificationService notificationService;
     private RecordsManagementService recordsManagementService;
-    private RecordsManagementSecurityService securityService;
+    private FilePlanRoleService filePlanRoleService;
     private SearchService searchService;
     private NamespaceService namespaceService;
     private SiteService siteService;
@@ -102,11 +102,11 @@ public class RecordsManagementNotificationHelper
     }
     
     /**
-     * @param securityService   rm security service
+     * @param filePlanRoleService   file plan role service
      */
-    public void setSecurityService(RecordsManagementSecurityService securityService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.securityService = securityService;
+        this.filePlanRoleService = filePlanRoleService;
     }
     
     /**
@@ -325,7 +325,7 @@ public class RecordsManagementNotificationHelper
             public String doWork() throws Exception
             {
                 // Find the authority for the given role
-                Role role = securityService.getRole(root, notificationRole);
+                Role role = filePlanRoleService.getRole(root, notificationRole);
                 return role.getRoleGroupName();                
             }
         }, AuthenticationUtil.getSystemUserName());

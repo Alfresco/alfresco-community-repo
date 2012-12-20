@@ -23,15 +23,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * 
@@ -44,11 +44,11 @@ public class RmRoleDelete extends DeclarativeWebScript
     private static Log logger = LogFactory.getLog(RmRoleDelete.class);
     
     private RecordsManagementService rmService;
-    private RecordsManagementSecurityService rmSecurityService;
+    private FilePlanRoleService filePlanRoleService;
     
-    public void setRecordsManagementSecurityService(RecordsManagementSecurityService rmSecurityService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.rmSecurityService = rmSecurityService;
+        this.filePlanRoleService = filePlanRoleService;
     }
     
     public void setRecordsManagementService(RecordsManagementService rmService)
@@ -73,12 +73,12 @@ public class RmRoleDelete extends DeclarativeWebScript
         NodeRef root = roots.get(0);
      
         // Check that the role exists
-        if (rmSecurityService.existsRole(root, roleParam) == false)
+        if (filePlanRoleService.existsRole(root, roleParam) == false)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "The role " + roleParam + " does not exist on the records managment root " + root);
         }
         
-        rmSecurityService.deleteRole(root, roleParam);
+        filePlanRoleService.deleteRole(root, roleParam);
         
         return model;
     }

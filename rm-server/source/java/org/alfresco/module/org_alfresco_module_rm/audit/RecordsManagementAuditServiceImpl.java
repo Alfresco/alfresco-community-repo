@@ -100,14 +100,12 @@ public class RecordsManagementAuditServiceImpl
     private static final String MSG_DELETE_OBJECT = "rm.audit.delte-object";
     private static final String MSG_LOGIN_SUCCEEDED = "rm.audit.login-succeeded";
     private static final String MSG_LOGIN_FAILED = "rm.audit.login-failed";
-    private static final String MSG_FILED_RECORD = "rm.audit.filed-record";
     private static final String MSG_REVIEWED = "rm.audit.reviewed";
     private static final String MSG_CUT_OFF = "rm.audit.cut-off";
     private static final String MSG_REVERSED_CUT_OFF = "rm.audit.reversed-cut-off";
     private static final String MSG_DESTROYED_ITEM = "rm.audit.destroyed-item";
     private static final String MSG_OPENED_RECORD_FOLDER = "rm.audit.opened-record-folder";
     private static final String MSG_CLOSED_RECORD_FOLDER = "rm.audit.closed-record-folder";
-    private static final String MSG_SETUP_RECORD_FOLDER = "rm.audit.setup-recorder-folder";
     private static final String MSG_DECLARED_RECORD = "rm.audit.declared-record";
     private static final String MSG_UNDECLARED_RECORD = "rm.audit.undeclared-record";
     private static final String MSG_FROZE_ITEM = "rm.audit.froze-item";
@@ -920,8 +918,6 @@ public class RecordsManagementAuditServiceImpl
         Long fromTime = (params.getDateFrom() == null ? null : new Long(params.getDateFrom().getTime()));
         Long toTime = (params.getDateTo() == null ? null : new Long(params.getDateTo().getTime()));
         NodeRef nodeRef = params.getNodeRef();
-        String eventName = params.getEvent();
-        QName propertyQName = params.getProperty();
         int maxEntries = params.getMaxEntries();
         boolean forward = maxEntries > 0 ? false : true;        // Reverse order if the results are limited
         

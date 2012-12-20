@@ -67,7 +67,6 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet"
       parent="webscript">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
-      <property name="namespaceService" ref="NamespaceService" />
    </bean>
 
    <!-- REST impl for PUT Custom Reference Definitions -->
@@ -227,7 +226,7 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="importerService" ref="ImporterService" />
       <property name="recordsManagementService" ref="RecordsManagementService" />
-      <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+      <property name="filePlanRoleService" ref="FilePlanRoleService" />
    </bean>
 
    <!-- Base bean for transfer web scripts -->
@@ -270,14 +269,14 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolesGet"
       parent="webscript">
       <property name="recordsManagementService" ref="RecordsManagementService" />
-      <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+      <property name="filePlanRoleService" ref="FilePlanRoleService" />
    </bean>
 
    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmroles.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolesPost"
       parent="webscript">
       <property name="recordsManagementService" ref="RecordsManagementService" />
-      <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+      <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="capabilityService" ref="CapabilityService" />
    </bean>
 
@@ -285,14 +284,14 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRoleGet"
       parent="webscript">
       <property name="recordsManagementService" ref="RecordsManagementService" />
-      <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+      <property name="filePlanRoleService" ref="FilePlanRoleService" />
    </bean>
 
    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.put"
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolePut"
       parent="webscript">
       <property name="recordsManagementService" ref="RecordsManagementService" />
-      <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+      <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="capabilityService" ref="CapabilityService" />
    </bean>
 
@@ -300,7 +299,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRoleDelete"
       parent="webscript">
       <property name="recordsManagementService" ref="RecordsManagementService" />
-      <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+      <property name="filePlanRoleService" ref="FilePlanRoleService" />
    </bean>
 
    <!--  Capability API -->
@@ -386,7 +385,7 @@
       <property name="personService" ref="PersonService" />
       <property name="nodeService" ref="NodeService" />
       <property name="recordsManagementService" ref="RecordsManagementService" />
-      <property name="recordsManagementSecurityService" ref="RecordsManagementSecurityService" />
+      <property name="filePlanRoleService" ref="FilePlanRoleService" />
    </bean>
 
    <!-- REST impl for GET Bootstrap Test Data -->

@@ -187,7 +187,15 @@ public class CommonRMTestUtils implements RecordsManagementModel
             @Override
             public Void doWork() throws Exception
             {
-                actionService.executeRecordsManagementAction(recordFolder, "closeRecordFolder");            
+                modelSecurityService.setEnabled(false);
+                try
+                {
+                    actionService.executeRecordsManagementAction(recordFolder, "closeRecordFolder");
+                }
+                finally
+                {
+                    modelSecurityService.setEnabled(true);
+                }
                 return null;
             }
         }, AuthenticationUtil.getAdminUserName());

@@ -339,7 +339,10 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         // Test 404 for disposition lifecycle request on incorrect node
         String categoryUrl = recordCategory.toString().replace("://", "/");
         String requestUrl = MessageFormat.format(GET_LIFECYCLE_URL_FORMAT, categoryUrl);
-        Response rsp = sendRequest(new GetRequest(requestUrl), 404);
+        Response rsp = sendRequest(new GetRequest(requestUrl), 200);
+        
+        JSONObject notFound = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        assertEquals(true, notFound.getJSONObject("data").getBoolean("notFound"));
         
         NodeRef newRecordFolder = rmService.createRecordFolder(recordCategory, "recordFolder");
      
@@ -428,7 +431,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         JSONObject periodProperties = data.getJSONObject("periodProperties");
         assertEquals(SERVICE_URL_PREFIX + GET_LIST_URL + "/periodproperties", periodProperties.getString("url"));
         items = periodProperties.getJSONArray("items");
-        assertEquals(4, items.length());
+        assertEquals(5, items.length());
         assertTrue(items.length() > 0);
         item = items.getJSONObject(0);
         assertTrue(item.length() == 2);

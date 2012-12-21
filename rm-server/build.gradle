@@ -44,9 +44,7 @@ eclipse {
 
 task resetDatabase << {
 	
-  if(System.properties.getProperty('DB_PROPERTIES') != null) 	
-  {
-	  // Loading the properties in all possible locations
+      // Loading the properties in all possible locations
 	  ant.property(file: System.properties.getProperty('DB_PROPERTIES') )
 	  ant.property(file: System.properties.getProperty('user.home')+'/alfresco/extension/repository.properties' )
 	  ant.property(resource: 'alfresco/domain/transaction.properties', classpath: configurations.compile.asPath )
@@ -69,7 +67,6 @@ task resetDatabase << {
 			autocommit: 'true',
 			classpath: configurations.compile.asPath,
 			'drop database if exists ' + ant.getProperty("db.name") + '; create database ' + ant.getProperty("db.name") + ';')
-	}
 }
 
 test {

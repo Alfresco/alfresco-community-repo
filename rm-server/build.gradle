@@ -81,6 +81,7 @@ test {
   exclude '**/RmRestApiTest.class'
   exclude '**/RmRestApiTest.class'
   exclude '**/RoleRestApiTest.class'
+  exclude '**/CustomEMailMappingServiceImplTest.class'
 
   testLogging.showStandardStreams = true
 

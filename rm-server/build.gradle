@@ -77,6 +77,7 @@ test {
   
   // temporarily exclude out of date tests
   exclude '**/RMCaveatConfigServiceImplTest.class'
+  exclude '**/RMCaveatConfigScriptTest.class'
   exclude '**/RmRestApiTest.class'
   exclude '**/RmRestApiTest.class'
   exclude '**/RoleRestApiTest.class'

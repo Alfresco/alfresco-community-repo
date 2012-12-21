@@ -605,7 +605,7 @@
     <bean id="modelSecurityService"
           class="org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityServiceImpl"
           init-method="init">
-        <property name="enabled" value="false" />
+        <property name="enabled" value="true" />
     	<property name="policyComponent" ref="policyComponent" />
     	<property name="nodeService" ref="NodeService" />
     	<property name="namespaceService" ref="namespaceService" />

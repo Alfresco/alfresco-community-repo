@@ -16,6 +16,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -36,6 +37,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 	private NodeService nodeService;
 	private ContentService contentService;
 	private RecordsManagementActionService actionService;
+	private ModelSecurityService modelSecurityService;
 	
     /** test values */
     public static final String DEFAULT_DISPOSITION_AUTHORITY = "disposition authority";
@@ -51,6 +53,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 		nodeService = (NodeService)applicationContext.getBean("NodeService");
 		contentService = (ContentService)applicationContext.getBean("ContentService");
 		actionService = (RecordsManagementActionService)applicationContext.getBean("RecordsManagementActionService");
+		modelSecurityService = (ModelSecurityService)applicationContext.getBean("ModelSecurityService");
 	}
 	
     /**
@@ -151,16 +154,24 @@ public class CommonRMTestUtils implements RecordsManagementModel
             @Override
             public Void doWork() throws Exception
             {
-                // Declare record
-                nodeService.setProperty(record, RecordsManagementModel.PROP_PUBLICATION_DATE, new Date());
-                nodeService.setProperty(record, RecordsManagementModel.PROP_MEDIA_TYPE, "mediaTypeValue"); 
-                nodeService.setProperty(record, RecordsManagementModel.PROP_FORMAT, "formatValue"); 
-                nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_RECEIVED, new Date());
-                nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());
-                nodeService.setProperty(record, RecordsManagementModel.PROP_ORIGINATOR, "origValue");
-                nodeService.setProperty(record, RecordsManagementModel.PROP_ORIGINATING_ORGANIZATION, "origOrgValue");
-                nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");
-                actionService.executeRecordsManagementAction(record, "declareRecord");
+                modelSecurityService.setEnabled(false);
+                try
+                {
+                    // Declare record
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_PUBLICATION_DATE, new Date());
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_MEDIA_TYPE, "mediaTypeValue"); 
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_FORMAT, "formatValue"); 
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_RECEIVED, new Date());
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_ORIGINATOR, "origValue");
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_ORIGINATING_ORGANIZATION, "origOrgValue");
+                    nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");
+                    actionService.executeRecordsManagementAction(record, "declareRecord");
+                }
+                finally
+                {
+                    modelSecurityService.setEnabled(true);
+                }
                 
                 return null;
             }

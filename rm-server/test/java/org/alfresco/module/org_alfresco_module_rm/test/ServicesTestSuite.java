@@ -59,7 +59,6 @@ public class ServicesTestSuite extends TestSuite
         suite.addTestSuite(RecordsManagementAdminServiceImplTest.class);
         suite.addTestSuite(RecordsManagementAuditServiceImplTest.class);
         //suite.addTestSuite(RecordsManagementEventServiceImplTest.class);
-        //suite.addTestSuite(RecordsManagementSecurityServiceImplTest.class);
         suite.addTestSuite(RecordsManagementSearchServiceImplTest.class);
         suite.addTestSuite(VitalRecordServiceImplTest.class);
         suite.addTestSuite(DataSetServiceImplTest.class);

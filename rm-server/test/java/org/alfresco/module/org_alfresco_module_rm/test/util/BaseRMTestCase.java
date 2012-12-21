@@ -290,7 +290,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         initServices();
         
         // Setup test data
-        setupTestData();
+        setupTestData();               
         
         // Create multi hierarchy data
         if (isMultiHierarchyTest() == true)

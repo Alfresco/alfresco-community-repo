@@ -423,13 +423,12 @@
             id = #{id}
     </update>
     
-    <update id="update_ChildAssocsUniqueName" parameterType="ChildAssoc">
+    <update id="update_ChildAssocUniqueName" parameterType="ChildAssoc">
         update alf_child_assoc set
             child_node_name_crc = #{childNodeNameCrc},
             child_node_name = #{childNodeName}
         where
-            child_node_id = #{childNode.id} and
-            child_node_name_crc > 0
+            id = #{id}
     </update>
     
     <update id="update_ChildAssocsIndex" parameterType="ChildAssoc">

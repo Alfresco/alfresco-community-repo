@@ -139,7 +139,8 @@ public interface LockService
     * Removes the lock on a node; if there is no lock then nothing is done.
     * <p>
     * The user must have sufficient permissions to remove the lock (ie: be the 
-    * owner of the lock or have admin rights) otherwise an exception will be raised. 
+    * owner of the lock or have admin rights) and the node must not be checked
+    * out. Otherwise an exception will be raised. 
     * 
     * @param  nodeRef  a reference to a node
     * @throws UnableToReleaseLockException
@@ -147,6 +148,29 @@ public interface LockService
     */
    @Auditable(parameters = {"nodeRef"}) 
    public void unlock(NodeRef nodeRef)
+       throws UnableToReleaseLockException;
+   
+   /**
+    * Removes the lock on a node and optional on its children.  
+    * <p>
+    * The user must have sufficient permissions to remove the lock(s) (ie: be 
+    * the owner of the lock(s) or have admin rights) and the node(s) must not be
+    * checked out. Otherwise an exception will be raised.
+    * <p>
+    * If one of the child nodes is not locked then it will be ignored and 
+    * the process continue without error.  
+    * <p>
+    * If the lock on any one of the child nodes cannot be released then an 
+    * exception will be raised.
+    * 
+    * @param  nodeRef        a node reference
+    * @param  lockChildren   if true then all the children (and grandchildren, etc) 
+    *                        of the node will also be unlocked, false otherwise
+    * @throws UnableToReleaseLockException
+    *                  thrown if the lock could not be released
+    */
+   @Auditable(parameters = {"nodeRef", "lockChildren"}) 
+   public void unlock(NodeRef nodeRef, boolean lockChildren)
        throws UnableToReleaseLockException;
    
    /**
@@ -165,13 +189,13 @@ public interface LockService
     * @param  nodeRef        a node reference
     * @param  lockChildren   if true then all the children (and grandchildren, etc) 
     *                        of the node will also be unlocked, false otherwise
+    * @param allowCheckedOut is it permissable for a node to be a checked out node?
     * @throws UnableToReleaseLockException
     *                  thrown if the lock could not be released
     */
-   @Auditable(parameters = {"nodeRef", "lockChildren"}) 
-   public void unlock(NodeRef nodeRef, boolean lockChildren)
+   @Auditable(parameters = {"nodeRef", "lockChildren", "allowCheckedOut"}) 
+   public void unlock(NodeRef nodeRef, boolean lockChildren, boolean allowCheckedOut)
        throws UnableToReleaseLockException;
-   
    /**
     * Removes a lock on the nodes provided.
     * <p>

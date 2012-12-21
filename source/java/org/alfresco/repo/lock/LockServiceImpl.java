@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.lock.UnableToAquireLockException;
 import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
+import org.alfresco.service.cmr.lock.UnableToReleaseLockException.CAUSE;
 import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -297,18 +298,40 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef, String)
      */
+    @Override
     public void unlock(NodeRef nodeRef) throws UnableToReleaseLockException
     {
+        unlock(nodeRef, false, false);
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.lock.LockService#unlock(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public void unlock(NodeRef nodeRef, boolean lockChildren) throws UnableToReleaseLockException
+    {
+        unlock(nodeRef, lockChildren, false);
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef, String,
+     *      boolean, boolean)
+     */
+    @Override
+    public void unlock(NodeRef nodeRef, boolean unlockChildren, boolean allowCheckedOut)
+            throws UnableToReleaseLockException
+    {
+        // Unlock the parent
         nodeRef = tenantService.getName(nodeRef);
-        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+
+        // MNT-231: forbidden to unlock a checked out node
+        if (!allowCheckedOut && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
         {
-            // Nothing to unlock
+            throw new UnableToReleaseLockException(nodeRef, CAUSE.CHECKED_OUT);
         }
-        else
+        
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
-            // Check for lock aspect
-            checkForLockApsect(nodeRef);
-            
             addToIgnoreSet(nodeRef);
             try
             {
@@ -320,19 +343,8 @@ public class LockServiceImpl implements LockService,
                 removeFromIgnoreSet(nodeRef);
             }
         }
-    }
 
-    /**
-     * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef, String,
-     *      boolean)
-     */
-    public void unlock(NodeRef nodeRef, boolean unlockChildren)
-            throws UnableToReleaseLockException
-    {
-        // Unlock the parent
-        unlock(nodeRef);
-
-        if (unlockChildren == true)
+        if (unlockChildren)
         {
             // Get the children and unlock them
             Collection<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(nodeRef);

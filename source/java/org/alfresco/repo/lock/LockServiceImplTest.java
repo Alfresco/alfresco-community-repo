@@ -18,12 +18,15 @@
  */
 package org.alfresco.repo.lock;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
@@ -52,6 +55,7 @@ public class LockServiceImplTest extends BaseSpringTest
     private NodeService nodeService;
     private LockService lockService;
     private MutableAuthenticationService authenticationService;
+    private CheckOutCheckInService cociService;
     
     /**
      * Data used in tests
@@ -60,6 +64,7 @@ public class LockServiceImplTest extends BaseSpringTest
     private NodeRef childNode1;
     private NodeRef childNode2;    
     private NodeRef noAspectNode;
+    private NodeRef checkedOutNode;
     
     private static final String GOOD_USER_NAME = "goodUser";
     private static final String BAD_USER_NAME = "badUser";
@@ -76,6 +81,7 @@ public class LockServiceImplTest extends BaseSpringTest
         this.nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.lockService = (LockService)applicationContext.getBean("lockService");
         this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
+        this.cociService = (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
         
         // Set the authentication
         AuthenticationComponent authComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
@@ -130,6 +136,22 @@ public class LockServiceImplTest extends BaseSpringTest
                 ContentModel.TYPE_CONTAINER,
                 nodeProperties).getChildRef();
         assertNotNull(this.noAspectNode);
+        
+        // Create node with checkedOut
+        this.checkedOutNode = this.nodeService.createNode(
+                rootNodeRef, 
+                ContentModel.ASSOC_CHILDREN, 
+                QName.createQName("{}checkedOutNode"),
+                ContentModel.TYPE_CONTAINER,
+                nodeProperties).getChildRef();
+        assertNotNull(this.checkedOutNode);
+        
+        // Check out test file
+        NodeRef fileWorkingCopyNodeRef = cociService.checkout(checkedOutNode);
+        assertNotNull(fileWorkingCopyNodeRef);
+        assertTrue(nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_CHECKED_OUT));
+        assertTrue(nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_LOCKABLE));
+        
         
         // Create the  users
         TestWithUserUtils.createUser(GOOD_USER_NAME, PWD, rootNodeRef, this.nodeService, this.authenticationService);
@@ -512,4 +534,23 @@ public class LockServiceImplTest extends BaseSpringTest
           logger.debug("exception while trying to create a child of a read only lock", e);
       }      
     }
+    
+    /**
+     * Test that it is impossible to unlock a checked out node
+     */
+    public void testUnlockCheckedOut() throws Exception
+    {
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+
+        try
+        {
+            this.lockService.unlock(checkedOutNode);
+            fail("could unlock a checked out node");
+        }
+        catch (UnableToReleaseLockException e)
+        {
+            logger.debug("exception while trying to unlock a checked out node", e);
+        }
+    }
+
 }

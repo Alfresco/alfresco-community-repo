@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -101,6 +102,7 @@ import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.type.VersionType;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 
@@ -3332,7 +3334,9 @@ public class ContentDiskDriverTest extends TestCase
 
                 testContext.testCreatedDate = nodeService.getProperty(testContext.testNodeRef, ContentModel.PROP_CREATED);
 
-                nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, Collections
+                        .<QName, Serializable> singletonMap(ContentModel.PROP_VERSION_TYPE,
+                                org.alfresco.service.cmr.version.VersionType.MINOR));
 
                 return null;
             }
@@ -6405,6 +6409,210 @@ public class ContentDiskDriverTest extends TestCase
 
          logger.debug("end testGedit");
      } // testGedit
+     
+     
+     /**
+      * Windows7 Explorer update
+      * 0) Existing file mark.jpg 
+      * a) Create new file (~ark.tmp)  
+      * b) Existing file rename out of the way.   (mark.jpg~RF5bb356.TMP)
+      * c) New file rename into place. (~ark.tmp - mark.jpg)
+      * d) Old file opened attributes only
+      * e) set delete on close
+      * f) close
+      */
+      public void testWindows7Explorer() throws Exception
+      {  
+          logger.debug("testWindows7Explorer");
+          
+          final String FILE_NAME = "mark.jpg";
+          final String FILE_OLD_TEMP = "mark.jpg~RF5bb356.TMP";
+          final String FILE_NEW_TEMP = "~ark.tmp";
+          
+          class TestContext
+          {
+              NodeRef testNodeRef;
+              NetworkFile firstFileHandle;
+              NetworkFile secondFileHandle;
+          };
+          
+          final TestContext testContext = new TestContext();
+          
+          final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testWindows7Explorer";
+          
+          ServerConfiguration scfg = new ServerConfiguration("testServer");
+          TestServer testServer = new TestServer("testServer", scfg);
+          final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+          DiskSharedDevice share = getDiskSharedDevice();
+          final TreeConnection testConnection = testServer.getTreeConnection(share);
+          final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();        
+
+          /**
+           * Clean up just in case garbage is left from a previous run
+           */
+          RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+              @Override
+              public Void execute() throws Throwable
+              {
+                  driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                  return null;
+              }
+          };
+          
+          try
+          {
+              tran.doInTransaction(deleteGarbageFileCB);
+          }
+          catch (Exception e)
+          {
+              // expect to go here
+          }
+          
+          logger.debug("0) create new file");
+          RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+              @Override
+              public Void execute() throws Throwable
+              {
+                  /**
+                   * Create the test directory we are going to use 
+                   */
+                  FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                  FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                  driver.createDirectory(testSession, testConnection, createRootDirParams);
+                  driver.createDirectory(testSession, testConnection, createDirParams);
+                  
+                  /**
+                   * Create the file we are going to test
+                   */
+                  FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                  testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                  assertNotNull(testContext.firstFileHandle);
+                  
+                  ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTestMark.jpg");
+                  assertNotNull("unable to find test resource filesys/ContentDiskDriverTestMark.jpg", fileResource);
+                  writeResourceToNetworkFile(fileResource, testContext.firstFileHandle);
+                  driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                  NodeRef file1NodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                  testContext.testNodeRef = file1NodeRef;
+                  nodeService.addAspect(file1NodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+
+                  return null;
+              }
+          };
+          tran.doInTransaction(createFileCB, false, true);
+               
+          /**
+           * a) Save the new file
+           */
+          logger.debug("a) save new file");
+          RetryingTransactionCallback<Void> writeFileCB = new RetryingTransactionCallback<Void>() {
+
+              @Override
+              public Void execute() throws Throwable
+              {
+                  FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NEW_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                  testContext.secondFileHandle = driver.createFile(testSession, testConnection, createFileParams);    
+           
+                  ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTestMark2.jpg");
+                  assertNotNull("unable to find test resource filesys/ContentDiskDriverTestMark2.jpg", fileResource);
+                  writeResourceToNetworkFile(fileResource, testContext.secondFileHandle);
+                  driver.closeFile(testSession, testConnection, testContext.secondFileHandle);   
+                  
+                  return null;
+              }
+          };
+          tran.doInTransaction(writeFileCB, false, true);
+          
+          /**
+           * b) rename the old file
+           */
+          logger.debug("c) rename old file");
+          RetryingTransactionCallback<Void> renameOldFileCB = new RetryingTransactionCallback<Void>() {
+
+              @Override
+              public Void execute() throws Throwable
+              {
+                  driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + FILE_OLD_TEMP);
+                  return null;
+              }
+          };
+          tran.doInTransaction(renameOldFileCB, false, true);
+             
+          /**
+           * c) Move the new file into place, stuff should get shuffled
+           */
+          logger.debug("d) move new file into place");
+          RetryingTransactionCallback<Void> moveNewFileCB = new RetryingTransactionCallback<Void>() {
+
+              @Override
+              public Void execute() throws Throwable
+              {
+                  driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NEW_TEMP, TEST_DIR + "\\" + FILE_NAME); 
+                  return null;
+              }
+          };
+          
+          tran.doInTransaction(moveNewFileCB, false, true);
+          
+          /**
+           * d) Delete the old file
+           */
+          logger.debug("d) delete on close the old file");
+          RetryingTransactionCallback<Void> deleteOldFileCB = new RetryingTransactionCallback<Void>() {
+
+              @Override
+              public Void execute() throws Throwable
+              {
+                  FileOpenParams openFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_OLD_TEMP, 0, AccessMode.NTReadAttributesOnly, FileAttribute.NTNormal, 0);
+                  testContext.secondFileHandle = driver.openFile(testSession, testConnection, openFileParams);
+                  assertNotNull(testContext.secondFileHandle);
+                  
+                  FileInfo info = new FileInfo();
+                  info.setFileInformationFlags(FileInfo.SetDeleteOnClose);
+                  driver.setFileInformation(testSession, testConnection, TEST_DIR + "\\" + FILE_OLD_TEMP, info);
+                  testContext.secondFileHandle.setDeleteOnClose(true);
+                  
+                  driver.closeFile(testSession, testConnection, testContext.secondFileHandle);
+                  return null;
+              }
+          };
+          
+          tran.doInTransaction(deleteOldFileCB, false, true);
+          
+          logger.debug("e) validate results");
+          
+          /**
+           * Now validate everything is correct
+           */
+          RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+              @Override
+              public Void execute() throws Throwable
+              {
+                 NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                 assertTrue("file has lost versionable aspect", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                 assertEquals("node ref has changed", shuffledNodeRef, testContext.testNodeRef);
+                 
+                 
+                 Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+                 ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+                 assertNotNull("data is null", data);
+                 assertEquals("size is wrong", 10407, data.getSize());
+                 assertEquals("mimeType is wrong", "image/jpeg", data.getMimetype());
+                 
+                 // TODO - test metadata extraction
+                 //assertEquals(false, props.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "flash")));
+
+             
+                 return null;
+              }
+          };
+          
+          tran.doInTransaction(validateCB, true, true);
+      }  // Test Word 7 Explorer Update
+
 
     
     /**

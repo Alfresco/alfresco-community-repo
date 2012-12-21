@@ -547,8 +547,11 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         
         try
         {
-            // Release the lock
-            lockService.unlock(nodeRef);
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+            {
+                // Release the lock on the original node
+                lockService.unlock(nodeRef, false, true);
+            }
         }
         catch (UnableToReleaseLockException exception)
         {
@@ -688,8 +691,11 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         behaviourFilter.disableBehaviour(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY);
         try
         {
-            // Release the lock on the original node
-            lockService.unlock(nodeRef);
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+            {
+                // Release the lock on the original node
+                lockService.unlock(nodeRef, false, true);
+            }
             nodeService.removeAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT);
             
             // Delete the working copy

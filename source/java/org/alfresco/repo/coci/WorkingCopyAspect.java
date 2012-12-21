@@ -133,7 +133,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy
             policyBehaviourFilter.disableBehaviour(checkedOutNodeRef, ContentModel.ASPECT_AUDITABLE);
             try
             {
-                lockService.unlock(checkedOutNodeRef);
+                lockService.unlock(checkedOutNodeRef, false, true);
                 nodeService.removeAspect(checkedOutNodeRef, ContentModel.ASPECT_CHECKED_OUT);
             }
             finally

@@ -1411,21 +1411,24 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         final StoreEntity newParentStore = newParentNode.getStore();
         final Node childNode = getNodeNotNull(childNodeId, true);
         final StoreEntity childStore = childNode.getStore();
-        ChildAssocEntity primaryParentAssoc = getPrimaryParentAssocImpl(childNodeId);
+        final ChildAssocEntity primaryParentAssoc = getPrimaryParentAssocImpl(childNodeId);
         final Long oldParentAclId;
+        final Long oldParentNodeId;
         if (primaryParentAssoc == null)
         {
             oldParentAclId = null;
+            oldParentNodeId = null;
         }
         else
         {
             if (primaryParentAssoc.getParentNode() == null)
             {
                 oldParentAclId = null;
+                oldParentNodeId = null;
             }
             else
             {
-                Long oldParentNodeId = primaryParentAssoc.getParentNode().getId();
+                oldParentNodeId = primaryParentAssoc.getParentNode().getId();
                 oldParentAclId = getNodeNotNull(oldParentNodeId, true).getAclId();
             }
         }
@@ -1491,6 +1494,18 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                             assocQName,
                             childNodeNameToUse);
                     controlDAO.releaseSavepoint(savepoint);
+                    // Ensure we invalidate the name cache (the child version key might not have been 'bumped' by the last
+                    // 'touch')
+                    if (updated > 0 && primaryParentAssoc != null)
+                    {
+                        Pair<Long, QName> oldTypeQnamePair = qnameDAO.getQName(
+                                primaryParentAssoc.getTypeQNameId());
+                        if (oldTypeQnamePair != null)
+                        {
+                            childByNameCache.remove(new ChildByNameKey(oldParentNodeId, oldTypeQnamePair.getSecond(),
+                                    primaryParentAssoc.getChildNodeName()));
+                        }
+                    }
                     return updated;
                 }
                 catch (Throwable e)
@@ -1515,16 +1530,20 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         };
         childAssocRetryingHelper.doWithRetry(callback);
         
-        // Check for cyclic relationships
-        // TODO: This adds a lot of overhead when moving hierarchies.
-        //       While getPaths is faster, it would be better to avoid the parentAssocsCache
-        //       completely.
-        getPaths(newChildNode.getNodePair(), false);
-//        cycleCheck(newChildNodeId);
+        // Optimize for rename case
+        if (!EqualsHelper.nullSafeEquals(newParentNodeId, oldParentNodeId))
+        {
+            // Check for cyclic relationships
+            // TODO: This adds a lot of overhead when moving hierarchies.
+            //       While getPaths is faster, it would be better to avoid the parentAssocsCache
+            //       completely.
+            getPaths(newChildNode.getNodePair(), false);
+//            cycleCheck(newChildNodeId);
 
-        // Update ACLs for moved tree
-        Long newParentAclId = newParentNode.getAclId();
-        accessControlListDAO.updateInheritance(newChildNodeId, oldParentAclId, newParentAclId); 
+            // Update ACLs for moved tree
+            Long newParentAclId = newParentNode.getAclId();
+            accessControlListDAO.updateInheritance(newChildNodeId, oldParentAclId, newParentAclId);
+        }
         
         // Done
         Pair<Long, ChildAssociationRef> assocPair = getPrimaryParentAssoc(newChildNode.getId());
@@ -3115,12 +3134,37 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             public Integer execute() throws Throwable
             {
+                int total = 0;
                 Savepoint savepoint = controlDAO.createSavepoint("DuplicateChildNodeNameException");
                 try
                 {
-                    Integer count = updateChildAssocsUniqueName(childNodeId, childName);
+                    for (ChildAssocEntity parentAssoc : getParentAssocsCached(childNodeId).getParentAssocs().values())
+                    {
+                        // Subtlety: We only update those associations for which name uniqueness checking is enforced.
+                        // Such associations have a positive CRC
+                        if (parentAssoc.getChildNodeNameCrc() <= 0)
+                        {
+                            continue;
+                        }
+                        Pair<Long, QName> oldTypeQnamePair = qnameDAO.getQName(parentAssoc.getTypeQNameId());
+                        // Ensure we invalidate the name cache (the child version key might not be 'bumped' by the next
+                        // 'touch')
+                        if (oldTypeQnamePair != null)
+                        {
+                            childByNameCache.remove(new ChildByNameKey(parentAssoc.getParentNode().getId(),
+                                    oldTypeQnamePair.getSecond(), parentAssoc.getChildNodeName()));
+                        }
+                        int count = updateChildAssocUniqueName(parentAssoc.getId(), childName);
+                        if (count <= 0)
+                        {
+                            // Should not be attempting to delete a deleted node
+                            throw new ConcurrencyFailureException("Failed to update an existing parent association "
+                                    + parentAssoc.getId());
+                        }
+                        total += count;
+                    }
                     controlDAO.releaseSavepoint(savepoint);
-                    return count;
+                    return total;
                 }
                 catch (Throwable e)
                 {
@@ -4717,7 +4761,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             QName assocTypeQName,
             QName assocQName,
             int index);
-    protected abstract int updateChildAssocsUniqueName(Long childNodeId, String name);
+    protected abstract int updateChildAssocUniqueName(Long assocId, String name);
 //    protected abstract int deleteChildAssocsToAndFrom(Long nodeId);
     protected abstract ChildAssocEntity selectChildAssoc(Long assocId);
     protected abstract List<ChildAssocEntity> selectChildNodeIds(

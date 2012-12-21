@@ -224,9 +224,9 @@
                     <property name="deleteBackup"><value>true</value></property>
                 </bean> 
                 
-                <!--  Mac word 2011 on Mountain Lion -->
+                <!--  Mac word 2011 on Mountain Lion | Windows 7 Explorer -->
                 <bean id="word2011MountainLion" class="org.alfresco.filesys.repo.rules.ScenarioDoubleRenameShuffle">
-                    <property name="pattern"><value>^Word Work File L_.*\.tmp?</value></property>
+                    <property name="pattern"><value>^.*\.tmp</value></property>
                     <property name="timeout"><value>20000</value></property>
                     <property name="ranking"><value>MEDIUM</value></property>
                     <property name="deleteBackup"><value>false</value></property>

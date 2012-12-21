@@ -23,7 +23,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -178,7 +178,14 @@ public class UnlockMethod extends WebDAVMethod
                 String currentUser = getAuthenticationService().getCurrentUserName();
                 if (currentUser.equals(lockInfo.getOwner()))
                 {
-                    getDAVLockService().unlock(nodeRef);
+                    try
+                    {
+                        getDAVLockService().unlock(nodeRef);
+                    }
+                    catch (UnableToReleaseLockException e)
+                    {
+                        throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED, e);
+                    }
         
                     // Indicate that the unlock was successful
                     m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);            

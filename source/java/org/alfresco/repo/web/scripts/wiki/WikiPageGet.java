@@ -26,8 +26,6 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.query.PagingRequest;
-import org.alfresco.query.PagingResults;
 import org.alfresco.repo.wiki.WikiServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -54,6 +52,9 @@ public class WikiPageGet extends AbstractWikiWebScript
    protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
+      String strMinWikiData = req.getParameter("minWikiData");
+      boolean minWikiData = strMinWikiData != null ? Boolean.parseBoolean(strMinWikiData) : false;
+       
       final ResourceBundle rb = getResources();
       Map<String, Object> model = new HashMap<String, Object>();
       
@@ -88,6 +89,7 @@ public class WikiPageGet extends AbstractWikiWebScript
       // Identify all the internal page links, valid and not
       // TODO This may be a candidate for the service in future
       List<String> links = new ArrayList<String>();
+      List<String> pageTitles = new ArrayList<String>();
       if (page.getContents() != null)
       {
          Matcher m = LINK_PATTERN.matcher(page.getContents());
@@ -97,21 +99,15 @@ public class WikiPageGet extends AbstractWikiWebScript
             if (! links.contains(link))
             {
                links.add(link);
+               // build the list of available pages
+               WikiPageInfo wikiPage = wikiService.getWikiPage(site.getShortName(), link);
+               if (wikiPage != null)
+               {
+                   pageTitles.add(wikiPage.getTitle());
+               }
             }
          }
       }
-      
-      
-      // Get the list of pages, needed for link matching apparently
-      PagingRequest paging = new PagingRequest(MAX_QUERY_ENTRY_COUNT);
-      PagingResults<WikiPageInfo> pages = wikiService.listWikiPages(site.getShortName(), paging);
-      
-      List<String> pageTitles = new ArrayList<String>();
-      for (WikiPageInfo p : pages.getPage())
-      {
-         pageTitles.add(p.getTitle());
-      }
-      
       
       // All done
       model.put("page", page);
@@ -122,6 +118,7 @@ public class WikiPageGet extends AbstractWikiWebScript
       model.put("tags", page.getTags());
       model.put("siteId", site.getShortName());
       model.put("site", site);
+      model.put("minWikiData", minWikiData);
       
       // Double wrap
       Map<String, Object> result = new HashMap<String, Object>();

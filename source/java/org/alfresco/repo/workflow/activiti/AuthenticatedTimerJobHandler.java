@@ -23,6 +23,7 @@ import org.activiti.engine.impl.TaskQueryImpl;
 import org.activiti.engine.impl.interceptor.CommandContext;
 import org.activiti.engine.impl.jobexecutor.JobHandler;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.activiti.engine.impl.persistence.entity.JobEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
 import org.activiti.engine.task.Task;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -53,7 +54,7 @@ public class AuthenticatedTimerJobHandler implements JobHandler
     }
     
     @Override
-    public void execute(final String configuration, final ExecutionEntity execution,
+    public void execute(final JobEntity job, final String configuration, final ExecutionEntity execution,
                 final CommandContext commandContext) 
     {
         String userName = null;
@@ -88,7 +89,7 @@ public class AuthenticatedTimerJobHandler implements JobHandler
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
-                wrappedHandler.execute(configuration, execution, commandContext);
+                wrappedHandler.execute(job, configuration, execution, commandContext);
                 return null;
             }
         }, userName);

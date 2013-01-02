@@ -301,4 +301,10 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
 			ScopeImpl scopeElement, ActivityImpl nestedActivity) {
 		// Nothing to do here		
 	}
+
+    @Override
+    public void parseBoundaryMessageEventDefinition(Element element, boolean interrupting,
+                ActivityImpl messageActivity)
+    {
+    }
 }

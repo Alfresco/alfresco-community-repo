@@ -22,6 +22,7 @@ package org.alfresco.repo.workflow.activiti;
 import org.activiti.engine.impl.interceptor.CommandContext;
 import org.activiti.engine.impl.jobexecutor.JobHandler;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.activiti.engine.impl.persistence.entity.JobEntity;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -50,7 +51,7 @@ public class AuthenticatedAsyncJobHandler implements JobHandler
     }
     
     @Override
-    public void execute(final String configuration, final ExecutionEntity execution,
+    public void execute(final JobEntity job, final String configuration, final ExecutionEntity execution,
                 final CommandContext commandContext) 
     {
         // Get initiator
@@ -80,7 +81,7 @@ public class AuthenticatedAsyncJobHandler implements JobHandler
             @SuppressWarnings("synthetic-access")
             public Void doWork() throws Exception
             {
-                wrappedHandler.execute(configuration, execution, commandContext);
+                wrappedHandler.execute(job, configuration, execution, commandContext);
                 return null;
             }
         }, userName);

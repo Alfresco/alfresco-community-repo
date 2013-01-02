@@ -3441,4 +3441,15 @@
         </property>
     </bean>
     
+     <bean id="patch.db-V4.2-upgrade-to-activiti-5.11" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.2-upgrade-to-activiti-5.11</value></property>
+        <property name="description"><value>patch.upgradeToActiviti5-11.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6022</value></property>
+        <property name="targetSchema"><value>6023</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/activiti-upgrade-5-11.sql</value>
+        </property>
+    </bean>
+    
 </beans>

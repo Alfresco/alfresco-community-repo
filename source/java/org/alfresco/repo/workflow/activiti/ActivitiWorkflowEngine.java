@@ -664,10 +664,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private String getFormKey(TaskDefinition taskDefinition) 
     {
     	 TaskFormHandler handler = taskDefinition.getTaskFormHandler();
+    	 // We cast to DefaultTaskFormHandler since we do not configure our own
          if(handler != null && handler instanceof DefaultTaskFormHandler)
          {
-             // We cast to DefaultTaskFormHandler since we do not configure our own
-             return ((DefaultTaskFormHandler)handler).getFormKey();
+             // As of Activiti 5.11, form-key is an expression. For alfresco-usecases, we're the expression-text
+             // as is, as this will ALWAYS be a literal string, containing pointer to task-type.
+             return ((DefaultTaskFormHandler)handler).getFormKey().getExpressionText();
          }
          return null;
     }
@@ -1399,6 +1401,9 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         	taskService.setAssignee(localTaskId, currentUserName);
         	// Also update pojo used to set the outcome, this will read assignee as wel
         	task.setAssignee(currentUserName);
+        	
+        	// Re-fetch the task-entity since it's revision has been updated by the setAssignee() call
+        	task = taskService.createTaskQuery().taskId(localTaskId).singleResult();
         }
         
         setOutcome(task, transition);

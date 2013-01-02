@@ -36,7 +36,12 @@ public class DataSetBase implements DataSet
         String label = this.label;
         if (StringUtils.isBlank(label))
         {
-            label = I18NUtil.getMessage("dataset." + getId() + ".label");
+            String propertyKey = "dataset." + getId() + ".label";
+            label = I18NUtil.getMessage(propertyKey);
+            if (StringUtils.isBlank(label))
+            {
+                label = propertyKey;
+            }
         }
         return label;
     }

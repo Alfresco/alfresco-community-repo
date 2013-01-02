@@ -54,6 +54,9 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /** Spaces store */
     private static final StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
+    /** Charset name */
+    private static final String charsetName = "UTF-8";
+
     /** Importer service */
     private ImporterService importerService;
 
@@ -95,7 +98,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Set importer service
-     * 
+     *
      * @param importerService the importer service
      */
     public void setImporterService(ImporterService importerService)
@@ -105,7 +108,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Set search service
-     * 
+     *
      * @param searchService the search service
      */
     public void setSearchService(SearchService searchService)
@@ -115,7 +118,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Set node service
-     * 
+     *
      * @param nodeService the node service
      */
     public void setNodeService(NodeService nodeService)
@@ -125,7 +128,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Set records management service
-     * 
+     *
      * @param recordsManagementService the records management service
      */
     public void setRecordsManagementService(RecordsManagementService recordsManagementService)
@@ -135,7 +138,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Set permission service
-     * 
+     *
      * @param permissionService the permission service
      */
     public void setPermissionService(PermissionService permissionService)
@@ -145,7 +148,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Set authority service
-     * 
+     *
      * @param authorityService the authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
@@ -163,7 +166,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Set records management search behaviour
-     * 
+     *
      * @param recordsManagementSearchBehaviour the records management search
      *            behaviour
      */
@@ -174,7 +177,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Set disposition service
-     * 
+     *
      * @param dispositionService the disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
@@ -248,7 +251,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                     + "' import file could not be found!"); }
 
             // Import view
-            Reader viewReader = new InputStreamReader(is);
+            Reader viewReader = new InputStreamReader(is, charsetName);
             Location location = new Location(filePlan);
             importerService.importView(viewReader, location, null, null);
 
@@ -340,7 +343,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
     /**
      * Temp method to patch AMP'ed data
-     * 
+     *
      * @param searchService
      * @param nodeService
      * @param recordsManagementService
@@ -466,7 +469,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Helper method for setting the id of the imported data set into the file
      * plan's aspect
-     * 
+     *
      * @param dataSetId The id of the imported data set
      * @param filePlan The file plan into which the data set has been imported
      */

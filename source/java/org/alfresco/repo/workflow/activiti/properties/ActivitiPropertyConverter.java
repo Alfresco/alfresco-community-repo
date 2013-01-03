@@ -38,6 +38,7 @@ import org.activiti.engine.history.HistoricDetailQuery;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableUpdate;
+import org.activiti.engine.impl.persistence.entity.HistoricDetailVariableInstanceUpdateEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.pvm.ReadOnlyProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinition;
@@ -862,7 +863,7 @@ public class ActivitiPropertyConverter
         Map<String, Object> variables = new HashMap<String, Object>();
         for(HistoricDetail detail : details)
         {
-            HistoricVariableUpdate varUpdate = (HistoricVariableUpdate) detail;
+            HistoricDetailVariableInstanceUpdateEntity varUpdate = (HistoricDetailVariableInstanceUpdateEntity) detail;
             // First value for a single key is used
             if(!variables.containsKey(varUpdate.getVariableName()))
             {

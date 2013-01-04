@@ -89,6 +89,7 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
    protected static final String TAG_1 = "tag one";
    protected static final String TAG_2 = "tag two";
    protected static final String TAG_3 = "Tag Three";
+   protected static final String TAG_NONEXISTENT_NODEREF = "workspace://SpacesStore/cb725c1f-4f7a-4232-8870-6c95b65407e1";
    
     /** Services */
     private TaggingService taggingService;
@@ -330,7 +331,8 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
             Map<String, Serializable> rawMap = super.extractRaw(reader);
             
             // Add some test keywords to those actually extracted from the file including a nodeRef
-            List<String> keywords = new ArrayList<String>(Arrays.asList(new String[] { existingTagNodeRef, TAG_2, TAG_3 }));
+            List<String> keywords = new ArrayList<String>(Arrays.asList(
+                    new String[] { existingTagNodeRef, TAG_2, TAG_3, TAG_NONEXISTENT_NODEREF }));
             Serializable extractedKeywords = rawMap.get(Metadata.KEYWORDS);
             if (extractedKeywords != null && extractedKeywords instanceof String)
             {
@@ -376,6 +378,10 @@ public class ContentMetadataExtracterTagMappingTest extends TestCase
                 // Test manually added nodeRef keyword
                 assertTrue("tags should contain '" + TAG_1 + "'", 
                         taggingService.getTags(document).contains(TAG_1));
+                
+                // Test that there are no empty tags created by the non-existent nodeRef
+                assertEquals("tags should contain '" + TAG_1 + "'", 4,
+                        taggingService.getTags(document).size() );
                     
                 return null;
             }

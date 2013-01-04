@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -174,13 +175,25 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                         Serializable convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(
                                 propertyDef.getDataType(),
                                 (String) singleValue);
-                        String tagName = (String) nodeService.getProperty((NodeRef) convertedPropertyValue, ContentModel.PROP_NAME);
-                        if (logger.isTraceEnabled())
-                        {
-                            logger.trace("found tag '" + tagName + "' from tag nodeRef '" + (String) singleValue + "', " +
-                            		"adding to " + actionedUponNodeRef.toString());
+                        try {
+                            String tagName = (String) nodeService.getProperty((NodeRef) convertedPropertyValue, ContentModel.PROP_NAME);
+                            if (logger.isTraceEnabled())
+                            {
+                                logger.trace("found tag '" + tagName + "' from tag nodeRef '" + (String) singleValue + "', " +
+                                		"adding to " + actionedUponNodeRef.toString());
+                            }
+                            if (tagName != null && !tagName.equals(""))
+                            {
+                                tags.add(tagName);
+                            }
                         }
-                        tags.add(tagName);
+                        catch (InvalidNodeRefException e)
+                        {
+                            if (logger.isWarnEnabled())
+                            {
+                                logger.warn("tag nodeRef Invalid: " + e.getMessage());
+                            }
+                        }
                     }
                     else
                     {
@@ -190,7 +203,6 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                             logger.trace("adding string tag '" + (String) singleValue + "' to " + actionedUponNodeRef.toString());
                         }
                         tags.add((String) singleValue);
-                        
                     }
                 }
                 else if (singleValue instanceof NodeRef)

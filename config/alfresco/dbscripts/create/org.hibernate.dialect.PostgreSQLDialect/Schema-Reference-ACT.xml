@@ -136,7 +136,7 @@
           <autoincrement>false</autoincrement>
         </column>
         <column name="assignee_" order="10">
-          <type>varchar(255)</type>
+          <type>varchar(64)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -480,7 +480,7 @@
       </primarykey>
       <foreignkeys/>
       <indexes>
-        <index name="act_hi_procinst_proc_def_id__business_key__key" unique="true">
+        <index name="act_hi_procinst_proc_def_id__key" unique="true">
           <columnnames>
             <columnname>proc_def_id_</columnname>
             <columnname>business_key_</columnname>
@@ -860,7 +860,7 @@
           <autoincrement>false</autoincrement>
         </column>
       </columns>
-      <primarykey name="primary">
+      <primarykey name="act_re_model_pkey">
         <columnnames>
           <columnname order="1">id_</columnname>
         </columnnames>
@@ -883,17 +883,17 @@
         </foreignkey>
       </foreignkeys>
       <indexes>
-        <index name="act_fk_model_source" unique="false">
+        <index name="act_idx_model_source" unique="false">
           <columnnames>
             <columnname>editor_source_value_id_</columnname>
           </columnnames>
         </index>
-        <index name="act_fk_model_source_extra" unique="false">
+        <index name="act_idx_model_source_extra" unique="false">
           <columnnames>
             <columnname>editor_source_extra_value_id_</columnname>
           </columnnames>
         </index>
-        <index name="act_fk_model_deployment" unique="false">
+        <index name="act_idx_model_deployment" unique="false">
           <columnnames>
             <columnname>deployment_id_</columnname>
           </columnnames>
@@ -1150,7 +1150,7 @@
         </foreignkey>
       </foreignkeys>
       <indexes>
-        <index name="act_ru_execution_proc_def_id__business_key__key" unique="true">
+        <index name="act_ru_execution_proc_def_id__key" unique="true">
           <columnnames>
             <columnname>proc_def_id_</columnname>
             <columnname>business_key_</columnname>
@@ -1174,6 +1174,11 @@
         <index name="act_idx_exec_buskey" unique="false">
           <columnnames>
             <columnname>business_key_</columnname>
+          </columnnames>
+        </index>
+        <index name="act_idx_exe_procdef" unique="false">
+          <columnnames>
+            <columnname>proc_def_id_</columnname>
           </columnnames>
         </index>
       </indexes>
@@ -1658,7 +1663,7 @@
           <autoincrement>false</autoincrement>
         </column>
       </columns>
-      <primarykey name="primary">
+      <primarykey name="act_hi_varinst_pkey">
         <columnnames>
           <columnname order="1">id_</columnname>
         </columnnames>

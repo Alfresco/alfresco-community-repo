@@ -20,6 +20,7 @@ package org.alfresco.repo.web.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * Generates HTTP response for "Range" scoped HTTP requests for content.
@@ -64,9 +66,47 @@ public class HttpRangeProcessor
     }
 
     /**
-     * Process a range header - handles single and multiple range requests.
+     * Process a range header for a HttpServletResponse - handles single and multiple range requests.
+     * 
+     * @param res the HTTP servlet response
+     * @param reader the content reader
+     * @param range the byte range
+     * @param ref the content NodeRef
+     * @param property the content property
+     * @param mimetype the content mimetype
+     * @param userAgent the user agent string
+     * @return whether or not the range could be processed
+     * @throws IOException
      */
     public boolean processRange(HttpServletResponse res, ContentReader reader, String range,
+          NodeRef ref, QName property, String mimetype, String userAgent)
+       throws IOException
+    {
+       // test for multiple byte ranges present in header
+       if (range.indexOf(',') == -1)
+       {
+          return processSingleRange(res, reader, range, mimetype);
+       }
+       else
+       {
+          return processMultiRange(res, range, ref, property, mimetype, userAgent);
+       }
+    }
+    
+    /**
+     * Process a range header for a WebScriptResponse - handles single and multiple range requests.
+     * 
+     * @param res the webscript response
+     * @param reader the content reader
+     * @param range the byte range
+     * @param ref the content NodeRef
+     * @param property the content property
+     * @param mimetype the content mimetype
+     * @param userAgent the user agent string
+     * @return whether or not the range could be processed
+     * @throws IOException
+     */
+    public boolean processRange(WebScriptResponse res, ContentReader reader, String range,
           NodeRef ref, QName property, String mimetype, String userAgent)
        throws IOException
     {
@@ -91,9 +131,26 @@ public class HttpRangeProcessor
      * 
      * @return true if processed range, false otherwise
      */
-    private boolean processSingleRange(HttpServletResponse res, ContentReader reader, String range, String mimetype)
+    private boolean processSingleRange(Object res, ContentReader reader, String range, String mimetype)
        throws IOException
     {
+        // Handle either HttpServletResponse or WebScriptResponse
+        HttpServletResponse httpServletResponse = null;
+        WebScriptResponse webScriptResponse = null;
+        if (res instanceof HttpServletResponse)
+        {
+           httpServletResponse = (HttpServletResponse) res;
+        }
+        else if (res instanceof WebScriptResponse)
+        {
+           webScriptResponse = (WebScriptResponse) res;
+        }
+        if (httpServletResponse == null && webScriptResponse == null)
+        {
+            // Unknown response object type
+            return false;
+        }
+        
        // return the specific set of bytes as requested in the content-range header
        
        /* Examples of byte-content-range-spec values, assuming that the entity contains total of 1234 bytes:
@@ -117,18 +174,38 @@ public class HttpRangeProcessor
           if (getLogger().isDebugEnabled())
              getLogger().debug("Failed to parse range header - returning 416 status code: " + err.getMessage());
           
-          res.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-          res.setHeader(HEADER_CONTENT_RANGE, "\"*\"");
-          res.getOutputStream().close();
+          if (httpServletResponse != null)
+          {
+             httpServletResponse.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+             httpServletResponse.setHeader(HEADER_CONTENT_RANGE, "\"*\"");
+             httpServletResponse.getOutputStream().close();
+          }
+          else if (webScriptResponse != null)
+          {
+             webScriptResponse.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+             webScriptResponse.setHeader(HEADER_CONTENT_RANGE, "\"*\"");
+             webScriptResponse.getOutputStream().close();
+          }
           return true;
        }
        
        // set Partial Content status and range headers
-       res.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-       res.setContentType(mimetype);
-       String contentRange = "bytes " + Long.toString(r.start) + "-" + Long.toString(r.end) + "/" + Long.toString(reader.getSize());
-       res.setHeader(HEADER_CONTENT_RANGE, contentRange);
-       res.setHeader(HEADER_CONTENT_LENGTH, Long.toString((r.end - r.start) + 1L));
+       String contentRange = "bytes " + Long.toString(r.start) + 
+               "-" + Long.toString(r.end) + "/" + Long.toString(reader.getSize());
+       if (httpServletResponse != null)
+       {
+          httpServletResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+          httpServletResponse.setContentType(mimetype);
+          httpServletResponse.setHeader(HEADER_CONTENT_RANGE, contentRange);
+          httpServletResponse.setHeader(HEADER_CONTENT_LENGTH, Long.toString((r.end - r.start) + 1L));
+       }
+       else if (webScriptResponse != null)
+       {
+          webScriptResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+          webScriptResponse.setContentType(mimetype);
+          webScriptResponse.setHeader(HEADER_CONTENT_RANGE, contentRange);
+          webScriptResponse.setHeader(HEADER_CONTENT_LENGTH, Long.toString((r.end - r.start) + 1L));
+       }
        
        if (getLogger().isDebugEnabled())
           getLogger().debug("Processing: Content-Range: " + contentRange);
@@ -137,7 +214,15 @@ public class HttpRangeProcessor
        try
        {
           // output the binary data for the range
-          ServletOutputStream os = res.getOutputStream();
+          OutputStream os = null;
+          if (httpServletResponse != null)
+          {
+             os = httpServletResponse.getOutputStream();
+          }
+          else if (webScriptResponse != null)
+          {
+             os = webScriptResponse.getOutputStream();
+          }
           is = reader.getContentInputStream();
           
           streamRangeBytes(r, is, os, 0L);
@@ -172,10 +257,27 @@ public class HttpRangeProcessor
      * @return true if processed range, false otherwise
      */
     private boolean processMultiRange(
-          HttpServletResponse res, String range, NodeRef ref, QName property, String mimetype, String userAgent)
+          Object res, String range, NodeRef ref, QName property, String mimetype, String userAgent)
        throws IOException
     {
        final Log logger = getLogger();
+       
+       // Handle either HttpServletResponse or WebScriptResponse
+       HttpServletResponse httpServletResponse = null;
+       WebScriptResponse webScriptResponse = null;
+       if (res instanceof HttpServletResponse)
+       {
+          httpServletResponse = (HttpServletResponse) res;
+       }
+       else if (res instanceof WebScriptResponse)
+       {
+          webScriptResponse = (WebScriptResponse) res;
+       }
+       if (httpServletResponse == null && webScriptResponse == null)
+       {
+           // Unknown response object type
+           return false;
+       }
        
        // return the sets of bytes as requested in the content-range header
        // the response will be formatted as multipart/byteranges media type message
@@ -211,9 +313,18 @@ public class HttpRangeProcessor
              if (getLogger().isDebugEnabled())
                 getLogger().debug("Failed to parse range header - returning 416 status code: " + err.getMessage());
              
-             res.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-             res.setHeader(HEADER_CONTENT_RANGE, "\"*\"");
-             res.getOutputStream().close();
+             if (httpServletResponse != null)
+             {
+                httpServletResponse.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+                httpServletResponse.setHeader(HEADER_CONTENT_RANGE, "\"*\"");
+                httpServletResponse.getOutputStream().close();
+             }
+             else if (webScriptResponse != null)
+             {
+                webScriptResponse.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+                webScriptResponse.setHeader(HEADER_CONTENT_RANGE, "\"*\"");
+                webScriptResponse.getOutputStream().close();
+             }
              return true;
           }
        }
@@ -257,11 +368,21 @@ public class HttpRangeProcessor
           }
           
           // output headers as we have at least one range to process
-          res.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-          res.setHeader(HEADER_CONTENT_TYPE, MULTIPART_BYTERANGES_HEADER);
-          res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(length));
-          
-          ServletOutputStream os = res.getOutputStream();
+          OutputStream os = null;
+          if (httpServletResponse != null)
+          {
+             httpServletResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+             httpServletResponse.setHeader(HEADER_CONTENT_TYPE, MULTIPART_BYTERANGES_HEADER);
+             httpServletResponse.setHeader(HEADER_CONTENT_LENGTH, Long.toString(length));
+             os = httpServletResponse.getOutputStream();
+          }
+          else if (webScriptResponse != null)
+          {
+             webScriptResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+             webScriptResponse.setHeader(HEADER_CONTENT_TYPE, MULTIPART_BYTERANGES_HEADER);
+             webScriptResponse.setHeader(HEADER_CONTENT_LENGTH, Long.toString(length));
+             os =webScriptResponse.getOutputStream();
+          }
           
           InputStream is = null;
           try
@@ -274,7 +395,8 @@ public class HttpRangeProcessor
                 try
                 {
                    // output the header bytes for the range
-                   r.outputHeader(os);
+                   if (os instanceof ServletOutputStream)
+                       r.outputHeader((ServletOutputStream) os);
                    
                    // output the binary data for the range
                    // need a new reader for each new InputStream
@@ -284,7 +406,8 @@ public class HttpRangeProcessor
                    is = null;
                    
                    // section marker and flush stream
-                   os.println();
+                   if (os instanceof ServletOutputStream)
+                       ((ServletOutputStream) os).println();
                    os.flush();
                 }
                 catch (IOException err)
@@ -304,7 +427,8 @@ public class HttpRangeProcessor
           }
           
           // end marker
-          os.println(MULTIPART_BYTERANGES_BOUNDRY_END);
+          if (os instanceof ServletOutputStream)
+              ((ServletOutputStream) os).println(MULTIPART_BYTERANGES_BOUNDRY_END);
           os.close();
           processedRange = true;
        }
@@ -322,7 +446,7 @@ public class HttpRangeProcessor
      * 
      * @return current InputStream position - so the stream can be reused if required 
      */
-    private void streamRangeBytes(final Range r, final InputStream is, final ServletOutputStream os, long offset)
+    private void streamRangeBytes(final Range r, final InputStream is, final OutputStream os, long offset)
        throws IOException
     {
        final Log logger = getLogger();
@@ -495,7 +619,6 @@ public class HttpRangeProcessor
           return this.start > o.start ? 1 : -1;
        }
     }
-
 
     /**
      * @return the logger

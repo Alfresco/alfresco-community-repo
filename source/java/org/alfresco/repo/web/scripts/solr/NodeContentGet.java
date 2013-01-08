@@ -227,7 +227,7 @@ public class NodeContentGet extends StreamContent
             else
             {
                 res.setStatus(HttpStatus.SC_OK);
-                streamContentImpl(req, res, textReader, false, modified, String.valueOf(modified.getTime()), null);            
+                streamContentImpl(req, res, textReader, null, null, false, modified, String.valueOf(modified.getTime()), null);            
             }
         }
         finally

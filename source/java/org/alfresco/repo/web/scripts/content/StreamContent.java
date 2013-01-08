@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.repo.webdav.WebDAVHelper;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -75,6 +76,12 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
  	 * format definied by RFC 822, see http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3 
  	 */
  	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z", Locale.US);
+ 	
+    private static final String HEADER_CONTENT_RANGE  = "Content-Range";
+    private static final String HEADER_CONTENT_LENGTH = "Content-Length";
+    private static final String HEADER_ACCEPT_RANGES  = "Accept-Ranges";
+    private static final String HEADER_RANGE          = "Range";
+    private static final String HEADER_USER_AGENT     = "User-Agent";
     
     /** Services */
     protected PermissionService permissionService;
@@ -430,7 +437,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
         }
         
         // Stream the content
-        streamContentImpl(req, res, reader, attach, modified, modified == null ? null : String.valueOf(modified.getTime()), attachFileName, model);
+        streamContentImpl(req, res, reader, nodeRef, propertyQName, attach, modified, modified == null ? null : String.valueOf(modified.getTime()), attachFileName, model);
     }
 
     /**
@@ -668,7 +675,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
         long lastModified = modifiedTime == null ? file.lastModified() : modifiedTime;
         Date lastModifiedDate = new Date(lastModified);
         
-        streamContentImpl(req, res, reader, attach, lastModifiedDate, String.valueOf(lastModifiedDate.getTime()), attachFileName, model);
+        streamContentImpl(req, res, reader, null, null, attach, lastModifiedDate, String.valueOf(lastModifiedDate.getTime()), attachFileName, model);
     }
 
     /**
@@ -677,6 +684,8 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param req               The request
      * @param res               The response
      * @param reader            The reader
+     * @param nodeRef           The content nodeRef if applicable
+     * @param propertyQName     The content property if applicable
      * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @param modified          Modified date of content
      * @param eTag              ETag to use
@@ -686,12 +695,14 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
     protected void streamContentImpl(WebScriptRequest req, 
                                     WebScriptResponse res, 
                                     ContentReader reader, 
+                                    NodeRef nodeRef,
+                                    QName propertyQName,
                                     boolean attach,
                                     Date modified, 
                                     String eTag, 
                                     String attachFileName) throws IOException
     {
-        streamContentImpl(req, res, reader, attach, modified, eTag, attachFileName, null);
+        streamContentImpl(req, res, reader, nodeRef, propertyQName, attach, modified, eTag, attachFileName, null);
     }
     /**
      * Stream content implementation
@@ -699,6 +710,8 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
      * @param req               The request
      * @param res               The response
      * @param reader            The reader
+     * @param nodeRef           The content nodeRef if applicable
+     * @param propertyQName     The content property if applicable
      * @param attach            Indicates whether the content should be streamed as an attachment or not
      * @param modified          Modified date of content
      * @param eTag              ETag to use
@@ -708,6 +721,8 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
     protected void streamContentImpl(WebScriptRequest req, 
                                     WebScriptResponse res, 
                                     ContentReader reader, 
+                                    NodeRef nodeRef,
+                                    QName propertyQName,
                                     boolean attach,
                                     Date modified, 
                                     String eTag, 
@@ -730,20 +745,58 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
             }
         }
 
-        // set mimetype for the content and the character encoding + length for the stream
-        res.setContentType(mimetype);
-        res.setContentEncoding(reader.getEncoding());
-        res.setHeader("Content-Length", Long.toString(reader.getSize()));
-        
-        // set caching
-        setResponseCache(res, modified, eTag, model);
-        
-        // get the content and stream directly to the response output stream
-        // assuming the repository is capable of streaming in chunks, this should allow large files
-        // to be streamed directly to the browser response stream.
+        res.setHeader(HEADER_ACCEPT_RANGES, "bytes");
         try
         {
-            reader.getContent(res.getOutputStream());
+            boolean processedRange = false;
+            String range = req.getHeader(HEADER_CONTENT_RANGE);
+            if (range == null)
+            {
+               range = req.getHeader(HEADER_RANGE);
+            }
+            if (range != null)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Found content range header: " + range);
+               
+               // ensure the range header is starts with "bytes=" and process the range(s)
+               if (range.length() > 6)
+               {
+                  if (range.indexOf(',') != -1 && (nodeRef == null || propertyQName == null))
+                  {
+                       if (logger.isInfoEnabled())
+                           logger.info("Multi-range only supported for nodeRefs");
+                  }
+                  else {
+                      HttpRangeProcessor rangeProcessor = new HttpRangeProcessor(contentService);
+                      processedRange = rangeProcessor.processRange(
+                            res, reader, range.substring(6), nodeRef, propertyQName,
+                            mimetype, req.getHeader(HEADER_USER_AGENT));
+                  }
+               }
+            }
+            if (processedRange == false)
+            {
+               if (logger.isDebugEnabled())
+                  logger.debug("Sending complete file content...");
+               
+               // set mimetype for the content and the character encoding for the stream
+               res.setContentType(mimetype);
+               res.setContentEncoding(reader.getEncoding());
+               
+               // return the complete entity range
+               long size = reader.getSize();
+               res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size-1L) + "/" + Long.toString(size));
+               res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
+               
+               // set caching
+               setResponseCache(res, modified, eTag, model);
+               
+               // get the content and stream directly to the response output stream
+               // assuming the repository is capable of streaming in chunks, this should allow large files
+               // to be streamed directly to the browser response stream.
+               reader.getContent( res.getOutputStream() );
+            }
         }
         catch (SocketException e1)
         {

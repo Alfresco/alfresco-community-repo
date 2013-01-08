@@ -63,7 +63,9 @@ public class ContentInfo extends StreamContent
     }
 
     @Override
-    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, ContentReader reader, boolean attach, Date modified, String eTag, String attachFileName)
+    protected void streamContentImpl(WebScriptRequest req, WebScriptResponse res, 
+            ContentReader reader, NodeRef nodeRef, QName propertyQName, 
+            boolean attach, Date modified, String eTag, String attachFileName)
             throws IOException
     {
         setAttachment(res, attach, attachFileName);

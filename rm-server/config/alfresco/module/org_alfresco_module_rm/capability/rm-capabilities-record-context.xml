@@ -80,9 +80,9 @@
       </property>
    </bean>
 
-   <bean id="rmFileToRecordsCapability"
+   <bean id="rmLinkToRecordsCapability"
       parent="declarativeCapability">
-      <property name="name" value="FileToRecords"/>
+      <property name="name" value="LinkToRecords"/>
       <property name="private" value="true" />
       <property name="conditions">
          <map>

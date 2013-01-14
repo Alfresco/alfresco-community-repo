@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.exec.RuntimeExec;
@@ -144,7 +145,8 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
      * Transform the image content from the source file to the target file
      */
     @Override
-    protected void transformInternal(File sourceFile, File targetFile, TransformationOptions options) throws Exception
+    protected void transformInternal(File sourceFile, String sourceMimetype, 
+            File targetFile, String targetMimetype, TransformationOptions options) throws Exception
     {
         Map<String, String> properties = new HashMap<String, String>(5);
         // set properties
@@ -172,7 +174,8 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
             }
             properties.put(KEY_OPTIONS, commandOptions);
         }
-        properties.put(VAR_SOURCE, sourceFile.getAbsolutePath() + (options.getPageLimit() == 1 ? "[0]" : ""));
+        properties.put(VAR_SOURCE, sourceFile.getAbsolutePath() + 
+                getSourcePageRange(options, sourceMimetype, targetMimetype));
         properties.put(VAR_TARGET, targetFile.getAbsolutePath());
         
         // execute the statement
@@ -289,5 +292,43 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         }
         
         return builder.toString();
+    }
+    
+    /**
+     * Determines whether or not page range is required for the given source and target mimetypes.
+     * 
+     * @param sourceMimetype
+     * @param targetMimetype
+     * @return whether or not a page range must be specified for the transformer to read the target files
+     */
+    private boolean isSourcePageRangeRequired(String sourceMimetype, String targetMimetype)
+    {
+        // Need a page source if we're transforming from PDF or TIFF to an image other than TIFF
+        return ((sourceMimetype.equals(MimetypeMap.MIMETYPE_PDF) || 
+                sourceMimetype.equals(MimetypeMap.MIMETYPE_IMAGE_TIFF)) && 
+                ((!targetMimetype.equals(MimetypeMap.MIMETYPE_IMAGE_TIFF) 
+                && targetMimetype.contains(MIMETYPE_IMAGE_PREFIX)) ||
+                targetMimetype.equals(MimetypeMap.MIMETYPE_APPLICATION_PHOTOSHOP) ||
+                targetMimetype.equals(MimetypeMap.MIMETYPE_APPLICATION_EPS)));
+    }
+    
+    /**
+     * Gets the page range from the source to use in the command line.
+     * 
+     * @param options the transformation options
+     * @param sourceMimetype the source mimetype
+     * @param targetMimetype the target mimetype
+     * @return the source page range for the command line
+     */
+    private String getSourcePageRange(TransformationOptions options, String sourceMimetype, String targetMimetype)
+    {
+        if (options.getPageLimit() == 1 || isSourcePageRangeRequired(sourceMimetype, targetMimetype))
+        {
+            return "[0]";
+        }
+        else
+        {
+            return "";
+        }
     }
 }

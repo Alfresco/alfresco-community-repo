@@ -107,10 +107,13 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
                     ".png");
             
             // execute it
-            transformInternal(inputFile, outputFile, new TransformationOptions());
+            transformInternal(
+                    inputFile, MimetypeMap.MIMETYPE_IMAGE_GIF, 
+                    outputFile, MimetypeMap.MIMETYPE_IMAGE_PNG, 
+                    new TransformationOptions());
             
             // check that the file exists
-            if (!outputFile.exists())
+            if (!outputFile.exists() || outputFile.length() == 0)
             {
                 throw new Exception("Image conversion failed: \n" +
                         "   from: " + inputFile + "\n" +
@@ -246,10 +249,10 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         reader.getContent(sourceFile);
         
         // transform the source temp file to the target temp file
-        transformInternal(sourceFile, targetFile, options);
+        transformInternal(sourceFile, sourceMimetype, targetFile, targetMimetype, options);
         
         // check that the file was created
-        if (!targetFile.exists())
+        if (!targetFile.exists() || targetFile.length() == 0)
         {
             throw new ContentIOException("JMagick transformation failed to write output file");
         }
@@ -269,12 +272,16 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
      * Transform the image content from the source file to the target file
      * 
      * @param sourceFile the source of the transformation
+     * @param sourceMimetype the mimetype of the source of the transformation
      * @param targetFile the target of the transformation
+     * @param targetMimetype the mimetype of the target of the transformation
      * @param options the transformation options supported by ImageMagick
      * @throws Exception
      */
     protected abstract void transformInternal(
             File sourceFile,
+            String sourceMimetype,
             File targetFile,
+            String targetMimetype,
             TransformationOptions options) throws Exception;
 }

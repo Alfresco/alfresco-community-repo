@@ -18,14 +18,14 @@
  */
 package org.alfresco.repo.content.transform.magick;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ProxyContentTransformer;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.util.exec.RuntimeExec;
 
 /**
  * @see org.alfresco.repo.content.transform.magick.JMagickContentTransformer
@@ -34,7 +34,6 @@ import org.alfresco.util.exec.RuntimeExec;
  */
 public class ImageMagickContentTransformerTest extends AbstractContentTransformerTest
 {
-    private ImageMagickContentTransformerWorker worker;
     private ProxyContentTransformer transformer;
     
     @Override
@@ -42,19 +41,14 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
     {
         super.setUp();
         
-        RuntimeExec executer = new RuntimeExec();
-        executer.setCommand(new String[] {"imconvert.exe", "${source}", "${options}", "${target}"});
-        executer.setDefaultProperties(Collections.singletonMap("options", ""));
+        // Setup a mimetype service that will return a truncated set of mimetypes
+        MockMimetypeService testMimetypeService = new MockMimetypeService();
+        testMimetypeService.setConfigService(((MimetypeMap) mimetypeService).getConfigService());
+        testMimetypeService.setContentCharsetFinder(((MimetypeMap) mimetypeService).getContentCharsetFinder());
+        testMimetypeService.init();
+        this.mimetypeService = testMimetypeService;
         
-        this.worker = new ImageMagickContentTransformerWorker();
-        worker.setMimetypeService(mimetypeService);
-        worker.setExecuter(executer);
-        worker.afterPropertiesSet();
-        
-        transformer = new ProxyContentTransformer();
-        transformer.setMimetypeService(mimetypeService);
-        transformer.setTransformerDebug(transformerDebug);
-        transformer.setWorker(worker);
+        transformer = (ProxyContentTransformer) ctx.getBean("transformer.ImageMagick");
     }
     
     /**
@@ -67,7 +61,7 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
     
     public void testReliability() throws Exception
     {
-        if (!this.worker.isAvailable())
+        if (!this.transformer.getWorker().isAvailable())
         {
             return;
         }
@@ -77,5 +71,38 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         reliability = transformer.isTransformable(
                 MimetypeMap.MIMETYPE_IMAGE_GIF, -1, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
+    }
+    
+    /**
+     * Mock mimetype service which returns a limited set of mimetypes
+     * as {@link AbstractContentTransformerTest#testAllConversions()} will
+     * fail if delegates are not available on the test agent. 
+     * 
+     * @author rgauss
+     */
+    public class MockMimetypeService extends MimetypeMap
+    {
+        private List<String> testMimetypes;
+        
+        public void init()
+        {
+            super.init();
+            testMimetypes = new ArrayList<String>(10);
+            testMimetypes.add(MimetypeMap.MIMETYPE_IMAGE_GIF);
+            testMimetypes.add(MimetypeMap.MIMETYPE_IMAGE_JPEG);
+            testMimetypes.add(MimetypeMap.MIMETYPE_IMAGE_PNG);
+            testMimetypes.add(MimetypeMap.MIMETYPE_IMAGE_TIFF);
+            testMimetypes.add(MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR);
+            testMimetypes.add(MimetypeMap.MIMETYPE_APPLICATION_EPS);
+            testMimetypes.add(MimetypeMap.MIMETYPE_APPLICATION_PHOTOSHOP);
+            testMimetypes.add(MimetypeMap.MIMETYPE_PDF);
+        }
+
+        @Override
+        public List<String> getMimetypes()
+        {
+            return testMimetypes;
+        }
+        
     }
 }

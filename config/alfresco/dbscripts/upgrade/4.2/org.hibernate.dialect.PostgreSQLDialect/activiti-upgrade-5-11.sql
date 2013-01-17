@@ -104,7 +104,7 @@ alter table ACT_HI_DETAIL
 -- Update engine properties table
 --
 UPDATE ACT_GE_PROPERTY SET VALUE_ = '5.11' WHERE NAME_ = 'schema.version';
-UPDATE ACT_GE_PROPERTY SET VALUE_ = CONCAT(VALUE_,' upgrade(5.11)') WHERE NAME_ = 'schema.history';
+UPDATE ACT_GE_PROPERTY SET VALUE_ = VALUE_ || ' upgrade(5.11)' WHERE NAME_ = 'schema.history';
 
 --
 -- Record script finish

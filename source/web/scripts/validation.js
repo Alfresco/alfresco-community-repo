@@ -59,9 +59,13 @@ function validateNumberRange(control, min, max, message, showMessage)
  */
 function validateIsNumber(control, message, showMessage)
 {
-   var result = true;
-   
-   if (isNaN(control.value))
+   var result = true,
+      testValue = control.value;
+
+   // Be tolerant of numbers that contain decimal commas and/or use a dot/apostrophe/space as a thousand separator & ignore.
+   testValue = testValue.toString().replace(/[ '.,]/g, "");
+
+   if (isNaN(testValue))
    {
       informUser(control, message, showMessage);
       result = false;

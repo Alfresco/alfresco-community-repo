@@ -170,10 +170,43 @@ public class HiddenAspect
         }
     }
     
-    private void addHiddenAspect(NodeRef nodeRef, int visibilityMask)
+    /**
+     * Mark this node as hidden regardless of any name/pattern/matching rules.   Following this call the node 
+     * will be hidden.
+     * 
+     * If the node is already hidden will do nothing.
+     * 
+     * @param nodeRef
+
+     */
+    public void hideNodeExplicit(NodeRef nodeRef)
+    {
+        int mask = 0;
+        mask |= getClientVisibilityMask(Client.cifs, Visibility.HiddenAttribute);
+        mask |= getClientVisibilityMask(Client.webdav, Visibility.Visible);
+        mask |= getClientVisibilityMask(Client.nfs, Visibility.Visible);
+        mask |= getClientVisibilityMask(Client.ftp, Visibility.Visible);
+
+        addHiddenAspect(nodeRef, mask, true);
+    }
+    
+    /**
+     * Remove the explicit hiding of a node.  Following this call the node may or may not remain hidden based upon the other 
+     * properties of the node.
+     * 
+     * @param nodeRef
+     */
+    public void unhideExplicit(NodeRef nodeRef)
+    {
+        nodeService.setProperty(nodeRef, ContentModel.PROP_HIDDEN_FLAG, false);
+        checkHidden(nodeRef, true);
+    }
+    
+    private void addHiddenAspect(NodeRef nodeRef, int visibilityMask, boolean explicit)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_VISIBILITY_MASK, visibilityMask);
+        props.put(ContentModel.PROP_HIDDEN_FLAG, explicit);
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_HIDDEN, props);
 
         if (logger.isDebugEnabled())
@@ -257,7 +290,7 @@ public class HiddenAspect
         	NodeRef childNodeRef = file.getNodeRef();
             if(filter.cascadeHiddenAspect() && !hasHiddenAspect(childNodeRef))
             {
-                addHiddenAspect(childNodeRef, visibilityMask);
+                addHiddenAspect(childNodeRef, visibilityMask, false);
             }
             
             if(filter.cascadeIndexControlAspect() && !hasIndexControlAspect(childNodeRef))
@@ -344,6 +377,13 @@ public class HiddenAspect
         return ret;
     }
 
+    /**
+     * getClientVisibilityMap
+     * 
+     * @param client
+     * @param visibility
+     * @return the client visibilityMask
+     */
     public int getClientVisibilityMask(Client client, Visibility visibility)
     {
         return visibility.getMask() << getClientIndex(client)*2;
@@ -389,10 +429,16 @@ public class HiddenAspect
      */
     public void hideNode(NodeRef nodeRef)
     {
-        addHiddenAspect(nodeRef, 0);
+        addHiddenAspect(nodeRef, 0, false);
         addIndexControlAspect(nodeRef);
     }
     
+    /**
+     * Removes the hidden and index contol aspect.   Reverses the effect of calling hideNode(NodeRef nodeRef)
+     * 
+     * @param nodeRef the node to show
+     * @param cascade true to cascade to all descendents of this node
+     */
     public void showNode(NodeRef nodeRef, boolean cascade)
     {
         removeHiddenAspect(nodeRef);
@@ -411,13 +457,12 @@ public class HiddenAspect
      * Hides the node by applying the hidden and not indexed aspects. The node will be hidden from clients
      * according to the visibility mask.
      * 
-     * @param client
-     * @param fileInfo
-     * @return
+     * @param nodeRef the node to hide
+     * @param clientVisibilityMask
      */
     public void hideNode(NodeRef nodeRef, int clientVisibilityMask)
     {
-        addHiddenAspect(nodeRef, clientVisibilityMask);
+        addHiddenAspect(nodeRef, clientVisibilityMask, true);
         addIndexControlAspect(nodeRef);
     }
     
@@ -445,7 +490,10 @@ public class HiddenAspect
     }
     
     /**
-     * Checks whether the file should be hidden and applies the hidden and not indexed aspects if so.
+     * Checks whether the file should be hidden based upon whether its name maches a set of filters and applies the hidden 
+     * and not indexed aspects if so.
+     * <p>
+     * Can optionally remove the hidden and index control aspects if the name of a node no longer matches the filter.
      * 
      * @param fileInfo
      * @param both     if true, will check if the node should not be hidden and remove hidden and index control
@@ -467,9 +515,9 @@ public class HiddenAspect
      * Hides the node by applying the hidden and not indexed aspects. The node will be hidden from clients
      * according to the visibility mask.
      * 
-     * @param client
-     * @param fileInfo
-     * @return
+     * @see getClientVisibilityMask()
+     * @param fileInfo, file to make hidden
+     * @param visibilityMask
      */
     public void hideNode(FileInfoImpl fileInfo, int visibilityMask)
     {
@@ -478,16 +526,30 @@ public class HiddenAspect
     }
     
     /**
-     * Checks whether the file should be hidden and applies the hidden and not indexed aspects if so.
+     * Checks whether the file should be hidden based upon whether its name maches a set of filters and applies the hidden 
+     * and not indexed aspects if so.
+     * <p>
+     * Can optionally remove the hidden and index control aspects if the name of a node no longer matches the filter.
      * 
      * @param nodeRef
      * @param both     if true, will check both if the node should not be hidden and remove hidden and index control
      * 				   aspects if they are present, and if the node should be hidden and add hidden and index control
      * 				   aspects if they are not present.
-     * @return
+     * @return HiddenFileInfo
      */
     public HiddenFileInfo checkHidden(NodeRef nodeRef, boolean both)
-    {
+    {   
+        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+        {
+            Boolean isHiddenFlag = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_HIDDEN_FLAG);
+            if(isHiddenFlag != null && isHiddenFlag)
+            {
+                logger.debug("node has hidden flag set");
+                // node has hidden flag - we are not going to change anything.
+                return null;
+            }
+        }
+            
         HiddenFileInfo filter = findMatch(nodeRef);
         if(filter != null)
         {
@@ -496,7 +558,7 @@ public class HiddenAspect
             if(!hasHiddenAspect(nodeRef))
             {
                 // the file matches a pattern, apply the hidden and aspect control aspects
-                addHiddenAspect(nodeRef, visibilityMask);
+                addHiddenAspect(nodeRef, visibilityMask, false);
             }
                 
             if(!hasIndexControlAspect(nodeRef))

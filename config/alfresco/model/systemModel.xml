@@ -191,6 +191,11 @@
 	            <mandatory>false</mandatory>
 	            <default>0</default>
 	         </property>
+	         <!-- Is this file hidden regardless of file name patterns -->
+	         <property name="sys:hiddenFlag">
+               <type>d:boolean</type>
+               <mandatory>false</mandatory>
+            </property>
          </properties>
       </aspect>
       

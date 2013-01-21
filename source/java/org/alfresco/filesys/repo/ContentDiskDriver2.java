@@ -76,6 +76,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -146,6 +147,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     private NodeMonitorFactory m_nodeMonitorFactory;
     private ContentComparator contentComparator;
     private NodeArchiveService nodeArchiveService;
+    private HiddenAspect hiddenAspect;
 
     // TODO Should not be here - should be specific to a context.
 	private boolean isLockedFilesAsOffline;
@@ -172,6 +174,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         PropertyCheck.mandatory(this, "ioControlHandler", ioControlHandler);
         PropertyCheck.mandatory(this, "contentComparator", getContentComparator());
         PropertyCheck.mandatory(this, "nodeArchiveService", nodeArchiveService);
+        PropertyCheck.mandatory(this, "hiddenAspect", hiddenAspect);
     }
     
     /**
@@ -385,6 +388,14 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     public void setPolicyFilter(BehaviourFilter policyFilter)
     {
         this.policyBehaviourFilter = policyFilter;
+    }
+    
+    /**
+     * @param hiddenAspect
+     */
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
+        this.hiddenAspect = hiddenAspect;
     }
     
    // Configuration key names
@@ -1583,27 +1594,23 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 if(info.isHidden())
                 {
                     // yes is hidden
-                    if(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+                    if ( logger.isDebugEnabled())
                     {
-                        if ( logger.isDebugEnabled())
-                        {
-                            logger.debug("Set hidden aspect (not yet implemented)" + name);
-                        }
-                        // TODO Not yet implemented - and how to reset hidden bit?               
-                        // nodeService.addAspect(nodeRef, ContentModel.ASPECT_HIDDEN, null);
+                            logger.debug("Set hidden aspect" + name);
                     }
+                    hiddenAspect.hideNodeExplicit(nodeRef);
                 }
                 else
                 {
-                    // not hidden is hidden
+                    // not hidden 
                     if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
                     {
                         if ( logger.isDebugEnabled())
                         {
-                            logger.debug("Reset hidden aspect (not yet implemented)" + name);
+                            logger.debug("Reset hidden aspect" + name);
                         }
+                        hiddenAspect.unhideExplicit(nodeRef);
                     }
-                    // not hidden
                 }
             } // End of setting attributes
             

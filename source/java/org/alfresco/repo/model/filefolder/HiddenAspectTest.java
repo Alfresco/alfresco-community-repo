@@ -546,6 +546,64 @@ public class HiddenAspectTest
             interceptor.setEnabled(true);
         }
     }
+    
+    
+    @Test
+    public void testHideNodeExplicit() throws Exception
+    {        
+        FileFilterMode.setClient(Client.cifs);
+        try
+        {
+            // check temporary file
+            NodeRef parent = fileFolderService.create(topNodeRef, "New Folder", ContentModel.TYPE_FOLDER).getNodeRef();
+            NodeRef childA = fileFolderService.create(parent, "fileA", ContentModel.TYPE_CONTENT).getNodeRef();
+            NodeRef childB = fileFolderService.create(parent, "Thumbs.db", ContentModel.TYPE_CONTENT).getNodeRef();
+            hiddenAspect.hideNodeExplicit(childA);
+            
+            // Nodes A and B should be hidden, one by pattern, one explicit
+            assertTrue("node a should be hidden", nodeService.hasAspect(childA, ContentModel.ASPECT_HIDDEN));
+//            assertFalse("node b should be hidden", nodeService.hasAspect(childB, ContentModel.ASPECT_HIDDEN));
+            
+            {
+              List<FileInfo> children = fileFolderService.list(parent);
+              assertEquals(2, children.size());
+            }
+            
+            hiddenAspect.unhideExplicit(childA);
+            hiddenAspect.unhideExplicit(childB);
+            
+            // Node B should still be hidden,  A should not
+            assertFalse(nodeService.hasAspect(childA, ContentModel.ASPECT_HIDDEN));
+//            assertTrue(nodeService.hasAspect(childB, ContentModel.ASPECT_HIDDEN));
+            
+            
+            // call checkHidden to maks sure it does not make a mistake
+            hiddenAspect.checkHidden(childA, true);
+//            hiddenAspect.checkHidden(childB, true);
+            
+            {
+              List<FileInfo> children = fileFolderService.list(parent);
+              assertEquals(2, children.size());
+            }
+            
+            // Node B should still be hidden,  A should not
+            assertFalse(nodeService.hasAspect(childA, ContentModel.ASPECT_HIDDEN));
+//            assertTrue(nodeService.hasAspect(childB, ContentModel.ASPECT_HIDDEN));
+            
+            {
+              List<FileInfo> children = fileFolderService.list(parent);
+              assertEquals(2, children.size());
+            }
+            
+        }
+        finally
+        {
+            FileFilterMode.clearClient();
+        }
+
+    }
+    
+    
 
     private List<NodeRef> getHiddenNodes(final StoreRef storeRef)
     {

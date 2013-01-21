@@ -627,7 +627,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 setupCollaborationSiteTestDataImpl();
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+        }, AuthenticationUtil.getAdminUserName());
     }
     
     protected void setupCollaborationSiteTestDataImpl()

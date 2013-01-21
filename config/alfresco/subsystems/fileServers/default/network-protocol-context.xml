@@ -331,6 +331,7 @@
       <property name="ioControlHandler"><ref bean="contentIOHandler"/></property>
       <property name="contentComparator"><ref bean="contentComparator"/></property>
       <property name="nodeArchiveService" ><ref bean="nodeArchiveService"/></property>
+      <property name="hiddenAspect" ><ref bean="hiddenAspect"/></property>
 
    </bean>
 

@@ -21,9 +21,12 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
@@ -39,8 +42,10 @@ import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
+import org.alfresco.repo.action.ExtendedActionDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -117,12 +122,8 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
     /** Freeze Service */
     protected FreezeService freezeService;
     
-   // protected LinkedList<AbstractCapability> capabilities = new LinkedList<AbstractCapability>();;
-    
-    /** Default constructor */
-    public RMActionExecuterAbstractBase()
-    {
-    }
+    /** List of kinds for which this action is applicable */
+    protected Set<FilePlanComponentKind> applicableKinds = new HashSet<FilePlanComponentKind>();
     
     /**
      * Set the namespace service
@@ -250,14 +251,51 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         this.recordService = recordService;
     }
     
+    /**
+     * @param recordsManagementAdminService records management admin service
+     */
     public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
     {
         this.recordsManagementAdminService = recordsManagementAdminService;
     }
 
+    /**
+     * @return  records management admin service
+     */
     public RecordsManagementAdminService getRecordsManagementAdminService()
     {
         return recordsManagementAdminService;
+    }
+
+    /**
+     * @param applicableKinds   kinds that this action is applicable for
+     */
+    public void setApplicableKinds(String[] applicableKinds)
+    {
+        for(String kind : applicableKinds)
+        {
+            this.applicableKinds.add(FilePlanComponentKind.valueOf(kind));
+        }
+    }
+    
+    /**
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#createActionDefinition(java.lang.String)
+     */
+    @Override
+    protected ActionDefinition createActionDefinition(String name)
+    {
+        return new ExtendedActionDefinitionImpl(name);
+    }
+    
+    /**
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#getActionDefinition()
+     */
+    @Override
+    public ActionDefinition getActionDefinition()
+    {
+        ActionDefinition actionDefinition = super.getActionDefinition();        
+        ((ExtendedActionDefinitionImpl)this.actionDefinition).setApplicableKinds(applicableKinds);        
+        return actionDefinition;
     }
 
     /**
@@ -307,7 +345,7 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         return this.name;
     }
     
-    /*
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getLabel()
      */
     public String getLabel()
@@ -323,7 +361,7 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         return label;
     }
     
-    /*
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getDescription()
      */
     public String getDescription()
@@ -410,6 +448,12 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         return isExecutableImpl(filePlanComponent, parameters, false);
     }
     
+    /**
+     * @param filePlanComponent
+     * @param parameters
+     * @param throwException
+     * @return
+     */
     protected abstract boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException);
 
     /**

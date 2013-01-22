@@ -24,13 +24,64 @@
             <ref bean="testAction2"/>
         </property>
     </bean>
-    <bean id="testAction2" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction"/>
+    <bean id="testAction2" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction">
+    	<property name="publicAction" value="true"/>
+  	</bean>
     <bean id="testActionParams_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="testActionParams"/>
         </property>
     </bean>
     <bean id="testActionParams" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams" parent="rmAction"/>  
+    
+    <!--  Applicability tests -->
+
+	<bean id="recordOnlyAction_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+    	<property name="target">
+            <ref bean="recordOnlyAction"/>
+        </property>
+    </bean>    
+    <bean id="recordOnlyAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction">
+    	<property name="publicAction" value="true"/>
+    	<property name="applicableKinds">
+    		<list>
+    			<value>RECORD</value>
+    		</list>
+    	</property>
+  	</bean>
+	<bean id="recordandFolderOnlyAction_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+    	<property name="target">
+            <ref bean="recordandFolderOnlyAction"/>            
+        </property>
+    </bean>    
+    <bean id="recordandFolderOnlyAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction">
+    	<property name="publicAction" value="true"/>
+    	<property name="applicableKinds">
+    		<list>
+    			<value>RECORD</value>
+    			<value>RECORD_FOLDER</value>
+    		</list>
+    	</property>
+  	</bean>
+
+    <!--  Test DM action -->
+    <bean id="testDMAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestDmAction" parent="action-executer"/>
+    
+    <!--  RM delegate -->
+	<bean id="rmDelegateAction_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+    	<property name="target">
+            <ref bean="rmDelegateAction"/>            
+        </property>
+    </bean>    
+    <bean id="rmDelegateAction" class="org.alfresco.module.org_alfresco_module_rm.action.RMDelegateAction" parent="rmAction">
+    	<property name="publicAction" value="true"/>
+    	<property name="delegateAction" ref="testDMAction" />
+    	<property name="applicableKinds">
+    		<list>
+    			<value>RECORD</value>
+    		</list>
+    	</property>
+  	</bean>
     
     <!--  Make sure the job doesn't fire during the test -->
     <bean id="scheduledPublishUpdatesJobTrigger" class="org.alfresco.util.CronTriggerBean">

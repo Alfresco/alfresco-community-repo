@@ -18,10 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -34,9 +37,9 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -56,18 +59,18 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * Record service implementation
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RecordServiceImpl implements RecordService, 
+public class RecordServiceImpl implements RecordService,
                                           RecordsManagementModel,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           ApplicationContextAware
 {
     /** Application context */
     private ApplicationContext applicationContext;
-    
+
     /** Node service **/
     private NodeService nodeService;
 
@@ -82,23 +85,23 @@ public class RecordServiceImpl implements RecordService,
 
     /** Extended security service */
     private ExtendedSecurityService extendedSecurityService;
-    
+
     /** Records management service */
     private RecordsManagementService recordsManagementService;
-    
+
     /** Disposition service */
     private DispositionService dispositionService;
-    
+
     /** Policy component */
     private PolicyComponent policyComponent;
 
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;
-    
+
     /** Behaviours */
     private JavaBehaviour onCreateChildAssociation = new JavaBehaviour(
-                                                            this, 
-                                                            "onCreateChildAssociation", 
+                                                            this,
+                                                            "onCreateChildAssociation",
                                                             NotificationFrequency.FIRST_EVENT);
 
     @Override
@@ -106,7 +109,7 @@ public class RecordServiceImpl implements RecordService,
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * @param nodeService node service
      */
@@ -154,7 +157,7 @@ public class RecordServiceImpl implements RecordService,
     {
         this.recordsManagementService = recordsManagementService;
     }
-    
+
     /**
      * @param dispositionService    disposition service
      */
@@ -162,7 +165,7 @@ public class RecordServiceImpl implements RecordService,
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @param policyComponent   policy component
      */
@@ -170,22 +173,22 @@ public class RecordServiceImpl implements RecordService,
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Init method
      */
     public void init()
     {
         policyComponent.bindAssociationBehaviour(
-                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, 
-                TYPE_RECORD_FOLDER, 
+                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
+                TYPE_RECORD_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
                 onCreateChildAssociation);
     }
 
     /**
      * Behaviour executed when a new item is added to a record folder.
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
@@ -195,10 +198,10 @@ public class RecordServiceImpl implements RecordService,
         if (nodeService.exists(nodeRef) == true)
         {
             // create and file the content as a record
-            file(nodeRef);       
+            file(nodeRef);
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects()
      */
@@ -246,8 +249,8 @@ public class RecordServiceImpl implements RecordService,
 
         return nodeService.hasAspect(record, ASPECT_DECLARED_RECORD);
     }
-    
-   
+
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getUnfiledRootContainer(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -255,26 +258,26 @@ public class RecordServiceImpl implements RecordService,
     public NodeRef getUnfiledContainer(NodeRef filePlan)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
-        
+
         if (recordsManagementService.isFilePlan(filePlan) == false)
         {
             throw new AlfrescoRuntimeException("Unable to get the unfiled container, because passed node is not a file plan.");
         }
 
         NodeRef result = null;
-        
+
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_UNFILED_RECORDS,
                 RegexQNamePattern.MATCH_ALL);
-        if (assocs.size() > 1) 
-        { 
+        if (assocs.size() > 1)
+        {
             throw new AlfrescoRuntimeException(
-                "Unable to get the unfiled container, because the container cannot be indentified."); 
+                "Unable to get the unfiled container, because the container cannot be indentified.");
         }
         else if (assocs.size() == 1 )
-        {    
+        {
             result = assocs.get(0).getChildRef();
         }
-        
+
         return result;
     }
 
@@ -287,60 +290,65 @@ public class RecordServiceImpl implements RecordService,
     {
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("document", nodeRef);
-        
+
         if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == false)
-        {        
+        {
             // first we do a sanity check to ensure that the user has at least write permissions on the document
             if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
             {
-                throw new AccessDeniedException("Can not create record from document, because the user " + 
+                throw new AccessDeniedException("Can not create record from document, because the user " +
                                                 AuthenticationUtil.getFullyAuthenticatedUser() +
                                                 " does not have Write permissions on the doucment " +
                                                 nodeRef.toString());
             }
-            
+
             // do the work of creating the record as the system user
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() 
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
-    
+
                 @Override
                 public Void doWork() throws Exception
                 {
                     // get the new record container for the file plan
                     NodeRef newRecordContainer = getUnfiledContainer(filePlan);
-                    if (newRecordContainer == null) 
-                    { 
-                        throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found."); 
+                    if (newRecordContainer == null)
+                    {
+                        throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
                     }
-                                        
+
                     // get the documents readers
                     Long aclId = nodeService.getNodeAclId(nodeRef);
                     Set<String> readers = permissionService.getReaders(aclId);
-    
+
                     // get the documents primary parent assoc
                     ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
-    
+
                     // move the document into the file plan
                     nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-    
+
                     // maintain the original primary location
-                    nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
-    
+                    ChildAssociationRef child = nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
+
+                    // Add the information about the original location
+                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
+                    aspectProperties.put(PROP_ORIGINAL_LOCATION, (Serializable) child.getParentRef());
+                    nodeService.addAspect(nodeRef, ASPECT_ORIGINAL_LOCATION, aspectProperties);
+
                     // make the document a record
                     makeRecord(nodeRef);
-    
+
                     // set the readers
                     extendedSecurityService.setExtendedReaders(nodeRef, readers);
-                    
+
                     return null;
                 }
             });
         }
     }
-    
+
     /**
      * Creates a record from the given document
-     * 
+     *
      * @param document the document from which a record will be created
      */
     private void makeRecord(NodeRef document)
@@ -351,7 +359,7 @@ public class RecordServiceImpl implements RecordService,
                 .getParentRef());
         nodeService.setProperty(document, PROP_IDENTIFIER, recordId);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService#isFiled(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -359,38 +367,38 @@ public class RecordServiceImpl implements RecordService,
     public boolean isFiled(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         boolean result = false;
-        
+
         if (isRecord(nodeRef) == true)
         {
             ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(nodeRef);
             if (childAssocRef != null)
             {
                 NodeRef parent = childAssocRef.getParentRef();
-                if (parent != null && 
+                if (parent != null &&
                     recordsManagementService.isRecordFolder(parent) == true)
                 {
                     result = true;
                 }
             }
         }
-        
+
         return result;
-    }  
-    
+    }
+
     /**
      * Helper method to 'file' a new document that arrived in the file plan structure.
-     * 
+     *
      *  TODO atm we only 'file' content as a record .. may need to consider other types if we
      *       are to support the notion of composite records.
-     *  
-     * @param record node reference to record (or soon to be record!) 
+     *
+     * @param record node reference to record (or soon to be record!)
      */
     private void file(NodeRef record)
     {
         ParameterCheck.mandatory("item", record);
-        
+
         // we only support filling of content items
         // TODO composite record support needs to file containers too
         QName type = nodeService.getType(record);
@@ -403,19 +411,19 @@ public class RecordServiceImpl implements RecordService,
                 // make the item a record
                 makeRecord(record);
             }
-                
-            // set filed date        
+
+            // set filed date
             if (nodeService.getProperty(record, PROP_DATE_FILED) == null)
             {
                 Calendar fileCalendar = Calendar.getInstance();
                 nodeService.setProperty(record, PROP_DATE_FILED, fileCalendar.getTime());
             }
-        
+
             // initialise vital record details
             // TODO .. change this to add the aspect which will trigger the init behaviour
             VitalRecordServiceImpl vitalRecordService = (VitalRecordServiceImpl)applicationContext.getBean("vitalRecordService");
             vitalRecordService.initialiseVitalRecord(record);
-            
+
             // initialise disposition details
             if (nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE) == false)
             {

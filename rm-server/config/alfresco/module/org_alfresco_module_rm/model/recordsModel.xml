@@ -28,7 +28,7 @@
    </namespaces>
 
    <types>
-   
+
       <!--  Custom RM site type -->
       <type name="rma:rmsite">
          <title>RM Site</title>
@@ -54,9 +54,9 @@
       </type>
 
       <!-- Records management container types -->
-      
+
       <type name="rma:recordsManagementContainer">
-         
+
          <title>Records Management Container</title>
          <parent>cm:folder</parent>
          <archive>false</archive>
@@ -68,28 +68,28 @@
          </mandatory-aspects>
 
       </type>
-      
+
        <type name="rma:recordCategory">
-      
+
          <title>Record Category</title>
-         <parent>rma:recordsManagementContainer</parent>         
-         
-         <mandatory-aspects>         
+         <parent>rma:recordsManagementContainer</parent>
+
+         <mandatory-aspects>
             <aspect>rma:vitalRecordDefinition</aspect>
          </mandatory-aspects>
-         
+
       </type>
-      
-       <type name="rma:filePlan">      
-         
+
+       <type name="rma:filePlan">
+
          <title>File Plan</title>
-         <parent>rma:recordsManagementContainer</parent>                            
-         <mandatory-aspects>         
+         <parent>rma:recordsManagementContainer</parent>
+         <mandatory-aspects>
             <aspect>rma:recordsManagementRoot</aspect>
          </mandatory-aspects>
-                 
+
       </type>
-      
+
       <type name="rma:unfiledRecordContainer">
       	 <title>Unfiled Record Container</title>
          <parent>rma:recordsManagementContainer</parent>
@@ -254,7 +254,7 @@
             <aspect>cm:titled</aspect>
             <aspect>rma:recordComponentIdentifier</aspect>
             <aspect>rma:commonRecordDetails</aspect>
-            <aspect>rma:filePlanComponent</aspect>            
+            <aspect>rma:filePlanComponent</aspect>
         <!-- <aspect>rma:vitalRecordDefinition</aspect> -->
          </mandatory-aspects>
 
@@ -263,10 +263,10 @@
       <type name="rma:nonElectronicDocument">
 
          <title>Non-Electronic Document</title>
-         <parent>cm:content</parent>         
+         <parent>cm:content</parent>
          <archive>false</archive>
          <properties>
-         
+
             <property name="rma:physicalSize">
                <title>Document Physical Size</title>
                <type>d:int</type>
@@ -277,10 +277,10 @@
 		          <tokenised>false</tokenised>
 		       </index>
             </property>
-            
+
             <property name="rma:numberOfCopies">
                <title>Number Of Copies</title>
-               <type>d:int</type>               
+               <type>d:int</type>
                <mandatory>false</mandatory>
                <default>1</default>
                <index enabled="true">
@@ -289,7 +289,7 @@
 		          <tokenised>false</tokenised>
 		       </index>
             </property>
-            
+
             <property name="rma:storageLocation">
                <title>Storage Location</title>
                <type>d:text</type>
@@ -299,8 +299,8 @@
 		          <stored>false</stored>
 		          <tokenised>false</tokenised>
 		       </index>
-            </property>     
-                   
+            </property>
+
             <property name="rma:shelf">
                <title>Shelf</title>
                <type>d:text</type>
@@ -311,7 +311,7 @@
 		          <tokenised>false</tokenised>
 		       </index>
             </property>
-            
+
             <property name="rma:box">
                <title>Box</title>
                <type>d:text</type>
@@ -322,7 +322,7 @@
 		          <tokenised>false</tokenised>
 		       </index>
             </property>
-            
+
             <property name="rma:file">
                <title>File</title>
                <type>d:text</type>
@@ -333,7 +333,7 @@
 		          <tokenised>false</tokenised>
 		       </index>
             </property>
-            
+
          </properties>
          <mandatory-aspects>
             <aspect>rma:filePlanComponent</aspect>
@@ -535,7 +535,7 @@
                <mandatory>true</mandatory>
                <default>true</default>
             </property>
-            
+
             <property name="rma:transferPDFIndicator">
                <title>Transfer PDF Indicator</title>
                <description>Indicates that transfer includes PDF</description>
@@ -543,7 +543,7 @@
                <mandatory>true</mandatory>
                <default>false</default>
             </property>
-            
+
             <property name="rma:transferLocation">
                <title>Transfer PDF Indicator</title>
                <description>Transfer Location</description>
@@ -624,7 +624,7 @@
                     <many>true</many>
                 </target>
             </child-association>
-            
+
             <child-association name="rma:unfiledRecords">
                 <title>Unfiled Records</title>
                 <source>
@@ -820,7 +820,7 @@
          </mandatory-aspects>
 
       </aspect>
-      
+
       <!--  Marker aspect used to indicate an aspect is used for record meta-data -->
       <aspect name="rma:recordMetaData">
       </aspect>
@@ -842,16 +842,16 @@
         <mandatory-aspects>
             <aspect>rma:filePlanComponent</aspect>
         </mandatory-aspects>
-      </aspect>      
-      
+      </aspect>
+
       <!--  Extended readers for RM object -->
       <!--  @since 2.1 -->
-      <aspect name="rma:extendedReaders">      
+      <aspect name="rma:extendedReaders">
       	<properties>
       		<property name="rma:readers">
       			<type>d:any</type>
       		</property>
-      	</properties>      
+      	</properties>
       </aspect>
 
       <!-- State management aspects -->
@@ -947,10 +947,10 @@
             </property>
          </properties>
       </aspect>
-      
+
       <!--  Indicates that an object is being transferred -->
       <aspect name="rma:transferring">
-         <title>Transferring</title>	
+         <title>Transferring</title>
       </aspect>
 
       <!-- Transfered marker aspect -->
@@ -1030,12 +1030,12 @@
 
 
       <!-- Aspect to facilitate search -->
-      <aspect name="rma:recordSearch">      
-         <title>Record Search</title>               
-         <properties>                           
+      <aspect name="rma:recordSearch">
+         <title>Record Search</title>
+         <properties>
             <property name="rma:recordSearchHasDispositionSchedule">
                <type>d:boolean</type>
-            </property>               
+            </property>
             <property name="rma:recordSearchDispositionActionName">
                <type>d:text</type>
                <index enabled="true">
@@ -1111,21 +1111,21 @@
       <aspect name="rma:versionedRecord">
          <title>Versioned Record</title>
       </aspect>
-      
+
       <aspect name="rma:unpublishedUpdate">
       	<title>Unpublished Update</title>
-      	<properties>                      
+      	<properties>
             <property name="rma:unpublishedUpdate">
                <type>d:boolean</type>
                <mandatory>true</mandatory>
                <default>true</default>
-            </property>                        
+            </property>
             <property name="rma:updateTo">
                <type>d:text</type>
-            </property>                        
+            </property>
             <property name="rma:updatedProperties">
                <type>d:any</type>
-            </property>                      
+            </property>
             <property name="rma:publishInProgress">
                <type>d:boolean</type>
                <mandatory>true</mandatory>
@@ -1133,12 +1133,12 @@
             </property>
       	</properties>
       </aspect>
-            
-      <!--  Ghosted record marker -->      
+
+      <!--  Ghosted record marker -->
       <aspect name="rma:ghosted">
-         <title>Ghosted Record</title>         
+         <title>Ghosted Record</title>
          <archive>false</archive>
-      </aspect> 
+      </aspect>
 
       <!-- Aspect to hold the data for the loaded Data Set Ids -->
       <aspect name="rma:loadedDataSetId">
@@ -1148,6 +1148,16 @@
                <title>List of the loaded Data Set Ids</title>
                <type>d:text</type>
                <multiple>true</multiple>
+            </property>
+         </properties>
+      </aspect>
+
+      <!-- Aspect to hold the information about the original location of a record -->
+      <aspect name="rma:originalLocation">
+         <title>The original location of a record</title>
+         <properties>
+            <property name="rma:orgLocation">
+               <type>d:any</type>
             </property>
          </properties>
       </aspect>

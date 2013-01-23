@@ -56,38 +56,53 @@ public interface ExtendedSecurityService
     void setExtendedReaders(NodeRef nodeRef, Set<String> readers);
     
     /**
+     * Set the authorities that have extended reading permissions on the node.
+     * <p>
+     * Optionally applies the extended readers to the file plan hierarchy.
      * 
-     * @param nodeRef
-     * @param readers
-     * @param applyToParents
+     * @param nodeRef           node reference
+     * @param readers           extended readers 
+     * @param applyToParents    true if applied to file plan hierarchy, false otherwise
      */
     void setExtendedReaders(NodeRef nodeRef, Set<String> readers, boolean applyToParents);
     
     /**
+     * Removes the given authorities from the extended readers set for this node.
+     * <p>
+     * Applies to file plan hierarchy.
      * 
-     * @param nodeRef
-     * @param readers
+     * @param nodeRef   node reference
+     * @param readers   extended readers
      */
     void removeExtendedReaders(NodeRef nodeRef, Set<String> readers);
     
     /**
+     * Removes the given authorities from the extended readers set for this node.
+     * <p>
+     * Optionally applies the removal to the file plan hierarchy.
      * 
-     * @param nodeRef
-     * @param readers
-     * @param applyToParents
+     * @param nodeRef           node reference
+     * @param readers           extended readers
+     * @param applyToParents    true if applied to the file plan hierarchy, false otherwise
      */
     void removeExtendedReaders(NodeRef nodeRef, Set<String> readers, boolean applyToParents);
     
     /**
+     * Removes all extended readers from this node.
+     * <p>
+     * Applies removal to the file plan hierarchy.
      * 
-     * @param nodeRef
+     * @param nodeRef   node reference
      */
     void removeAllExtendedReaders(NodeRef nodeRef);
     
     /**
+     * Removes all extended readers from this node.
+     * <p>
+     * Optionally applies the removal to the file plan hierarchy.
      * 
-     * @param nodeRef
-     * @param applyToParents
+     * @param nodeRef           node reference
+     * @param applyToParents    true if applied to the file plan hierarchy, false otherwise
      */
     void removeAllExtendedReaders(NodeRef nodeRef, boolean applyToParents);
 

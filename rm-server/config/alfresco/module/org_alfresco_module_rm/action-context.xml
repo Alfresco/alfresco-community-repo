@@ -28,6 +28,7 @@
    <bean id="hide-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.HideRecordAction">
       <property name="permissionService" ref="PermissionService"/>
       <property name="nodeService" ref="NodeService" />
+      <property name="extendedSecurityService" ref="ExtendedSecurityService" />
    </bean>
 
 </beans>

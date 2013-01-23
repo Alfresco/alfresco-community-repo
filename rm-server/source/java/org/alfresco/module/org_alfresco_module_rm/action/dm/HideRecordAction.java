@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -57,6 +58,9 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
 
     /** Permission service */
     private PermissionService permissionService;
+    
+    /** Extended security service */
+    private ExtendedSecurityService extendedSecurityService;
 
     /**
      * @param nodeService node service
@@ -72,6 +76,14 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+    
+    /**
+     * @param extendedSecurityService   extended security service
+     */
+    public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
+    {
+        this.extendedSecurityService = extendedSecurityService;
     }
 
     /**
@@ -103,6 +115,7 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
         }
         else
         {
+            // remove the child association
             NodeRef originalLocation = (NodeRef) nodeService.getProperty(actionedUponNodeRef, PROP_ORIGINAL_LOCATION);
             List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(actionedUponNodeRef);
             for (ChildAssociationRef childAssociationRef : parentAssocs)
@@ -112,6 +125,9 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
                     nodeService.removeChildAssociation(childAssociationRef);
                 }
             }
+            
+            // remove the extended security from the node ... this prevents the users from continuing to see the record in searchs and other linked locations
+            extendedSecurityService.removeAllExtendedReaders(actionedUponNodeRef);
         }
     }
 
@@ -123,5 +139,4 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
     {
         // Intentionally empty
     }
-
 }

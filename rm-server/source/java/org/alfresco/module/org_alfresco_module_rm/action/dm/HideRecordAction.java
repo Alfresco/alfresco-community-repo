@@ -58,7 +58,7 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
 
     /** Permission service */
     private PermissionService permissionService;
-    
+
     /** Extended security service */
     private ExtendedSecurityService extendedSecurityService;
 
@@ -77,7 +77,7 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * @param extendedSecurityService   extended security service
      */
@@ -123,9 +123,10 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
                 if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originalLocation))
                 {
                     nodeService.removeChildAssociation(childAssociationRef);
+                    break;
                 }
             }
-            
+
             // remove the extended security from the node ... this prevents the users from continuing to see the record in searchs and other linked locations
             extendedSecurityService.removeAllExtendedReaders(actionedUponNodeRef);
         }

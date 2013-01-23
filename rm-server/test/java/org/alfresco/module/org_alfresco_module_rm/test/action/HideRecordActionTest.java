@@ -18,9 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.action;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
+import org.alfresco.module.org_alfresco_module_rm.action.dm.HideRecordAction;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Hide Record Action Unit Test
@@ -32,7 +38,6 @@ public class HideRecordActionTest extends BaseRMTestCase
 {
     /** Services */
     protected ActionService dmActionService;
-    protected PermissionService dmPermissionService;
 
     @Override
     protected void initServices()
@@ -40,7 +45,6 @@ public class HideRecordActionTest extends BaseRMTestCase
         super.initServices();
 
         dmActionService = (ActionService) applicationContext.getBean("ActionService");
-        dmPermissionService = (PermissionService) applicationContext.getBean("PermissionService");
     }
 
     @Override
@@ -61,14 +65,44 @@ public class HideRecordActionTest extends BaseRMTestCase
         {
             public Void run()
             {
-                // FIXME
+                // The user must have the appropriate rights
+                Role role = filePlanRoleService.getRole(filePlan, "RecordsManager");
+                authorityService.addAuthority(role.getRoleGroupName(), dmCollaborator);
+
                 return null;
             }
+        },
+        AuthenticationUtil.getAdminUserName());
 
-            public void test(Void result) throws Exception
+        doTestInTransaction(new Test<Void>()
+        {
+            public Void run()
             {
-                // FIXME
-            };
+                // Create a document so that the user has the write permissions for that document
+                NodeRef doc = fileFolderService.create(dmFolder, "testfile.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+
+                // Create a record from that document
+                Action createAction = dmActionService.createAction(CreateRecordAction.NAME);
+                dmActionService.executeAction(createAction, doc);
+
+                // Check if the document is a record now
+                assertTrue(recordService.isRecord(doc));
+
+                // The record should have the original location information
+                assertNotNull(nodeService.getProperty(doc, PROP_ORIGINAL_LOCATION));
+
+                // Check the parents. In this case the document should have two parents (doclib and fileplan)
+                assertTrue(nodeService.getParentAssocs(doc).size() == 2);
+
+                // Hide the document. The user has the write permissions so he should be able to hide it
+                Action hideAction = dmActionService.createAction(HideRecordAction.NAME);
+                dmActionService.executeAction(hideAction, doc);
+
+                // The document should be removed from the collaboration site
+                assertTrue(nodeService.getParentAssocs(doc).size() == 1);
+
+                return null;
+            }
         },
         dmCollaborator);
     }

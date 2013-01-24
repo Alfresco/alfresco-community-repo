@@ -38,7 +38,8 @@ Filters.IGNORED_TYPES =
    "rma:dispositionActionDefinition",
    "rma:dispositionAction",
    "rma:hold",
-   "rma:transfer"
+   "rma:transfer",
+   "rma:unfiledRecordContainer"
 ];
 
 /**

@@ -16,7 +16,8 @@ function getTreenode()
          {
             "{http://www.alfresco.org/model/forum/1.0}forum": true,
             "{http://www.alfresco.org/model/forum/1.0}topic": true,
-            "{http://www.alfresco.org/model/content/1.0}systemfolder": true
+            "{http://www.alfresco.org/model/content/1.0}systemfolder": true,
+            "{http://www.alfresco.org/model/recordsmanagement/1.0}unfiledRecordContainer":true
          },
          skipPermissionCheck = args["perms"] == "false",
          evalChildFolders = args["children"] !== "false",

@@ -32,6 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
@@ -130,6 +131,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected DataSetService dataSetService;
     protected FreezeService freezeService;
     protected RecordService recordService;
+    protected FilePlanService filePlanService;
     
     /** test data */
     protected StoreRef storeRef;
@@ -347,6 +349,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         dataSetService = (DataSetService) applicationContext.getBean("DataSetService");
         freezeService = (FreezeService) applicationContext.getBean("FreezeService");
         recordService = (RecordService) applicationContext.getBean("RecordService");
+        filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
     }
     
     /**
@@ -427,7 +430,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                     utils.declareRecord(recordDeclaredTwo);
                     
                     // unfiled container
-                    unfiledContainer = recordService.getUnfiledContainer(filePlan);
+                    unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
                     assertNotNull(unfiledContainer);
                 }
             }

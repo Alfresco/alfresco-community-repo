@@ -170,7 +170,6 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 	public static final QName ASPECT_RECORDS_MANAGEMENT_ROOT = QName.createQName(RM_URI, "recordsManagementRoot");
     public static final QName ASSOC_HOLDS = QName.createQName(RM_URI, "holds");
 	public static final QName ASSOC_TRANSFERS = QName.createQName(RM_URI, "transfers");
-	public static final QName ASSOC_UNFILED_RECORDS = QName.createQName(RM_URI, "unfiledRecords");
 
 	// Hold type
 	public static final QName TYPE_HOLD = QName.createQName(RM_URI, "hold");

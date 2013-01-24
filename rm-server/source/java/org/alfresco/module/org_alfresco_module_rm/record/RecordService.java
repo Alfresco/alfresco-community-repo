@@ -54,15 +54,6 @@ public interface RecordService
     * @return boolean  true if record is declared, false otherwise
     */
    boolean isDeclared(NodeRef nodeRef);  
-   
-   // TODO move to filePlan service
-   /**
-    * Gets the unfiled root container for the given file plan
-    * 
-    * @param filePlan   The filePlan for which the unfiled record container should be retrieved
-    * @return NodeRef   The nodeRef of the container object
-    */
-   public NodeRef getUnfiledContainer(NodeRef filePlan);
 
    /**
     * Creates a new unfiled record from an existing node.

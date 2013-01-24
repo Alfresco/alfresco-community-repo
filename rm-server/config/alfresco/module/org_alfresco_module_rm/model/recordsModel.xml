@@ -625,19 +625,6 @@
                 </target>
             </child-association>
 
-            <child-association name="rma:unfiledRecords">
-                <title>Unfiled Records</title>
-                <source>
-                    <mandatory>true</mandatory>
-                    <many>false</many>
-                </source>
-                <target>
-                    <class>rma:unfiledRecordContainer</class>
-                    <mandatory>true</mandatory>
-                    <many>true</many>
-                </target>
-            </child-association>
-
          </associations>
          <mandatory-aspects>
             <aspect>rma:filePlanComponent</aspect>

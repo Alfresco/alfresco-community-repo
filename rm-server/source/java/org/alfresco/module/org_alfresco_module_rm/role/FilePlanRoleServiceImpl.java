@@ -22,19 +22,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -49,7 +45,6 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -77,17 +72,14 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     /** Policy component */
     private PolicyComponent policyComponent;
     
-    /** Record service */
-    private RecordService recordService;
+    /** File plan service */
+    private FilePlanService filePlanService;
 
     /** Node service */
     private NodeService nodeService;
 
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
-
-    /** Unfiled record container name */
-    public static final String NAME_UNFILED_CONTAINER = "Unfiled Records";
 
     /** Logger */
     private static Log logger = LogFactory.getLog(FilePlanRoleServiceImpl.class);
@@ -133,11 +125,11 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
     
     /**
-     * @param recordService record service
+     * @param filePlanService   file plan service
      */
-    public void setRecordService(RecordService recordService)
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-        this.recordService = recordService;
+        this.filePlanService = filePlanService;
     }
     
     /**
@@ -187,46 +179,13 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
 
                     // Create the unfiled record container
-                    return createUnfiledContainer(rmRootNode, allRoles);
+                    return filePlanService.createUnfiledContainer(rmRootNode);
                 }
             }, AuthenticationUtil.getSystemUserName());
 
             // Bootstrap in the default set of roles for the newly created root node
             bootstrapDefaultRoles(rmRootNode, unfiledContainer);
         }
-    }
-
-    /**
-     * Creates unfiled container node and sets up permissions
-     *
-     * @param rmRootNode
-     * @param allRoles
-     */
-    private NodeRef createUnfiledContainer(NodeRef rmRootNode, String allRoles)
-    {
-        NodeRef container = recordService.getUnfiledContainer(rmRootNode);
-        
-        if (container == null)
-        {
-            // create the properties map
-            Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-            properties.put(ContentModel.PROP_NAME, NAME_UNFILED_CONTAINER);
-    
-            // create the unfiled container
-            container = nodeService.createNode(
-                            rmRootNode,
-                            ASSOC_UNFILED_RECORDS,
-                            QName.createQName(RM_URI, NAME_UNFILED_CONTAINER),
-                            TYPE_UNFILED_RECORD_CONTAINER,
-                            properties).getChildRef();
-    
-            // set inheritance to false
-            permissionService.setInheritParentPermissions(container, false);
-            permissionService.setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-            permissionService.setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-        }
-
-        return container;
     }
 
     /**

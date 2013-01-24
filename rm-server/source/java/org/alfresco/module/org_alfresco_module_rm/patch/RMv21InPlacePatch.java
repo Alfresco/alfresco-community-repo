@@ -18,25 +18,18 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch;
 
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -53,9 +46,6 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
     /** Logger */
     private static Log logger = LogFactory.getLog(RMv21InPlacePatch.class);  
     
-    /** Node service */
-    private NodeService nodeService;
-    
     /** Permission service */
     private PermissionService permissionService;
     
@@ -65,16 +55,8 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
     /** File plan permission service */
     private FilePlanPermissionService filePlanPermissionService;
     
-    /** File plan role service */
-    private FilePlanRoleService filePlanRoleService;
-    
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+    /** File plan service */
+    private FilePlanService filePlanService;
     
     /**
      * @param permissionService permission service
@@ -101,11 +83,11 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
     }
     
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanService   file plan service
      */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-        this.filePlanRoleService = filePlanRoleService;
+        this.filePlanService = filePlanService;
     }
     
     /**
@@ -138,7 +120,7 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
             permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
             
             // create unfiled container
-            createUnfiledContainer(filePlan);            
+            filePlanService.createUnfiledContainer(filePlan);            
         }
         
         if (logger.isDebugEnabled() == true)
@@ -147,34 +129,5 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
         }
     }   
     
-    /**
-     * TODO .. this should really be moved to a service call ... should be on the FilPlanService?
-     */
-    private NodeRef createUnfiledContainer(NodeRef filePlan)
-    {
-        String allRoles = filePlanRoleService.getAllRolesContainerGroup(filePlan);
-        
-        // create the properties map
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
-        properties.put(ContentModel.PROP_NAME, FilePlanRoleServiceImpl.NAME_UNFILED_CONTAINER);
-
-        // create the unfiled container
-        NodeRef container = nodeService.createNode(
-                        filePlan,
-                        ASSOC_UNFILED_RECORDS,
-                        QName.createQName(RM_URI, FilePlanRoleServiceImpl.NAME_UNFILED_CONTAINER),
-                        TYPE_UNFILED_RECORD_CONTAINER,
-                        properties).getChildRef();
-
-        // set inheritance to false
-        permissionService.setInheritParentPermissions(container, false);
-        permissionService.setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-        permissionService.setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-        
-        // TODO set the admin users to have filing permissions on the unfiled container!!!
-        // TODO we will need to be able to get a list of the admin roles from the service
-
-        return container;
-    }
     
 }

@@ -23,7 +23,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,14 +31,15 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -51,7 +51,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -91,6 +90,9 @@ public class RecordServiceImpl implements RecordService,
 
     /** Disposition service */
     private DispositionService dispositionService;
+    
+    /** File plan service */
+    private FilePlanService filePlanService;
 
     /** Policy component */
     private PolicyComponent policyComponent;
@@ -164,6 +166,14 @@ public class RecordServiceImpl implements RecordService,
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
+    }
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
 
     /**
@@ -250,37 +260,6 @@ public class RecordServiceImpl implements RecordService,
         return nodeService.hasAspect(record, ASPECT_DECLARED_RECORD);
     }
 
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getUnfiledRootContainer(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public NodeRef getUnfiledContainer(NodeRef filePlan)
-    {
-        ParameterCheck.mandatory("filePlan", filePlan);
-
-        if (recordsManagementService.isFilePlan(filePlan) == false)
-        {
-            throw new AlfrescoRuntimeException("Unable to get the unfiled container, because passed node is not a file plan.");
-        }
-
-        NodeRef result = null;
-
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ASSOC_UNFILED_RECORDS,
-                RegexQNamePattern.MATCH_ALL);
-        if (assocs.size() > 1)
-        {
-            throw new AlfrescoRuntimeException(
-                "Unable to get the unfiled container, because the container cannot be indentified.");
-        }
-        else if (assocs.size() == 1 )
-        {
-            result = assocs.get(0).getChildRef();
-        }
-
-        return result;
-    }
-
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef,
      *      org.alfresco.service.cmr.repository.NodeRef)
@@ -310,7 +289,7 @@ public class RecordServiceImpl implements RecordService,
                 public Void doWork() throws Exception
                 {
                     // get the new record container for the file plan
-                    NodeRef newRecordContainer = getUnfiledContainer(filePlan);
+                    NodeRef newRecordContainer = filePlanService.getUnfiledContainer(filePlan);
                     if (newRecordContainer == null)
                     {
                         throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");

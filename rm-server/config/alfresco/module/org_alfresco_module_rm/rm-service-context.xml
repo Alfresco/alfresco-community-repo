@@ -3,6 +3,31 @@
 
 <beans>
 
+	<!--  Helper beans -->
+	
+	<bean id="baseTransaction" abstract="true" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="baseSecurity" abstract="true" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+  	</bean>
+
     <!-- Records Management Service Registry -->
 
     <bean id="RecordsManagementServiceRegistry" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistryImpl" />
@@ -39,16 +64,7 @@
         </property>
     </bean>
 
-    <bean id="RecordsManagementService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
+    <bean id="RecordsManagementService_transaction" parent="baseTransaction"/>
 
     <bean id="RecordsManagementService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
@@ -412,6 +428,46 @@
             </value>
         </property>
     </bean>
+    
+    <!--  File Plan Service -->
+	
+	<bean id="filePlanService"
+          class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="recordsManagementService" ref="RecordsManagementService"/>
+    </bean>
+
+    <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService</value>
+        </property>
+        <property name="target">
+            <ref bean="filePlanService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FilePlanService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FilePlanService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="FilePlanService_transaction" parent="baseTransaction" />
+
+    <bean id="FilePlanService_security" parent="baseSecurity">        
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.existsUnfiledContainer=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getUnfiledContainer=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createUnfiledContainer=RM.Write.0
+    			org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.*=RM_DENY
+                ]]>
+            </value>
+        </property>
+    </bean>
 
 	<!--  File Plan Permission Service -->
 	
@@ -482,7 +538,7 @@
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>   
-        <property name="recordService" ref="RecordService" />     
+        <property name="filePlanService" ref="FilePlanService" />     
     </bean>
 
     <bean id="FilePlanRoleService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1040,6 +1096,7 @@
         <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="policyComponent" ref="policyComponent" />
         <property name="dispositionService" ref="DispositionService" />
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1087,7 +1144,6 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isFiled=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.getUnfiledContainer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>

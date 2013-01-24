@@ -8,6 +8,7 @@
     	  parent="baseJsonConversionComponent">
         <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="recordService" ref="RecordService"/>
+        <property name="filePlanService" ref="FilePlanService"/>
         <property name="capabilityService" ref="CapabilityService"/>
 	</bean>
 

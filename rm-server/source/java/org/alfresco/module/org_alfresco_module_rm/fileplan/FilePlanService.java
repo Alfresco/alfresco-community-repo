@@ -16,17 +16,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.recordfolder;
+package org.alfresco.module.org_alfresco_module_rm.fileplan;
+
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Record folder service interface
- * 
- * TODO move methods from RecordManagementService
+ * File plan service interface.
  * 
  * @author Roy Wetherall
  * @since 2.1
  */
-public interface RecordFolderService
+public interface FilePlanService
 {
+    boolean existsUnfiledContainer(NodeRef filePlan);
+    
+    NodeRef getUnfiledContainer(NodeRef filePlan);
+    
+    NodeRef createUnfiledContainer(NodeRef filePlan);
 
 }

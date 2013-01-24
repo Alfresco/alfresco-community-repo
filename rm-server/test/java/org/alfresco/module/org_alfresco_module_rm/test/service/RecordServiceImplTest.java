@@ -359,21 +359,4 @@ public class RecordServiceImplTest extends BaseRMTestCase
         assertEquals(recordExpected, 
                 dmPermissionService.hasPermission(dmDocument, permission));   
     }
-
-    /**
-     * @see RecordService#getUnfiledContainer(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public void testGetUnfiledContainer() throws Exception
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                assertNotNull(recordService.getUnfiledContainer(filePlan));
-
-                return null;
-            }
-        });
-    }
 }

@@ -29,6 +29,7 @@
       <property name="permissionService" ref="PermissionService"/>
       <property name="nodeService" ref="NodeService" />
       <property name="extendedSecurityService" ref="ExtendedSecurityService" />
+      <property name="publicAction" value="false"/>      
    </bean>
 
 </beans>

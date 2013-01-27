@@ -92,6 +92,19 @@
       <property name="targetCapability" ref="rmFileRecordsCapability" />
    </bean>
 
+   <bean id="rmFileToRecordsCapability"
+      parent="declarativeCapability">
+      <property name="name" value="FileToRecords"/>
+      <property name="private" value="true" />
+      <property name="permission" value="Filing"/>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.frozen" value="false"/>
+         </map>
+      </property>
+      <property name="targetCapability" ref="rmFileRecordsCapability" />
+   </bean>
+
    <bean id="rmDeclareRecordsCapability"
       parent="declarativeCapability">
       <property name="name" value="DeclareRecords"/>

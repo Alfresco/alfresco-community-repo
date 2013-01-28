@@ -42,6 +42,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MalformedNodeRefException;
@@ -1115,11 +1116,18 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             // Ask Tika to detect the document, and report back on if
             //  the current mime type is plausible
-            String typeErrorMessage = null;
+            String typeErrorMessage = "";
             String differentType = null;
             if(mimetypeService != null)
             {
-               differentType = mimetypeService.getMimetypeIfNotMatches(writer.getReader());
+               try
+               {
+                   differentType = mimetypeService.getMimetypeIfNotMatches(writer.getReader());
+               }
+               catch (ContentIOException cioe)
+               {
+                   // Embedding failed and writer is empty
+               }
             }
             else
             {
@@ -1144,7 +1152,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
             else
             {
-                logger.warn(
+                logger.error(
                         "Metadata embedding failed (turn on DEBUG for full error): \n" +
                         "   Extracter: " + this + "\n" +
                         "   Content:   " + writer + "\n" +

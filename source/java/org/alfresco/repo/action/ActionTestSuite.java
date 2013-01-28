@@ -26,6 +26,7 @@ import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluatorTest;
 import org.alfresco.repo.action.evaluator.HasAspectEvaluatorTest;
 import org.alfresco.repo.action.evaluator.IsSubTypeEvaluatorTest;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuterTest;
+import org.alfresco.repo.action.executer.ContentMetadataEmbedderTest;
 import org.alfresco.repo.action.executer.ContentMetadataExtracterTest;
 import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuterTest;
 import org.alfresco.repo.action.executer.SetPropertyValueActionExecuterTest;
@@ -66,6 +67,7 @@ public class ActionTestSuite extends TestSuite
         suite.addTestSuite(SetPropertyValueActionExecuterTest.class);
         suite.addTestSuite(AddFeaturesActionExecuterTest.class);
         suite.addTestSuite(ContentMetadataExtracterTest.class);
+        suite.addTestSuite(ContentMetadataEmbedderTest.class);
         suite.addTestSuite(SpecialiseTypeActionExecuterTest.class);
         suite.addTestSuite(RemoveFeaturesActionExecuterTest.class);
         suite.addTestSuite(ActionTrackingServiceImplTest.class);

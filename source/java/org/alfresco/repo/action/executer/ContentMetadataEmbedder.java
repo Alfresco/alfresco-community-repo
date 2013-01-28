@@ -140,7 +140,7 @@ public class ContentMetadataEmbedder extends ActionExecuterAbstractBase
             if (logger.isDebugEnabled())
             {
                 logger.debug(
-                        "Meetadata embedding failed: \n" +
+                        "Metadata embedding failed: \n" +
                         "   Extracter: " + this + "\n" +
                         "   Node:      " + actionedUponNodeRef + "\n" +
                         "   Content:   " + writer,

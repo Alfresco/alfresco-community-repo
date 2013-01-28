@@ -375,38 +375,23 @@ public abstract class TikaPoweredMetadataExtracter
         {
             return;
         }
-        OutputStream outputStream = null;
-        try
+        
+        Metadata metadataToEmbed = new Metadata();
+        for (String metadataKey : properties.keySet())
         {
-            Metadata metadataToEmbed = new Metadata();
-            for (String metadataKey : properties.keySet())
+            Serializable value = properties.get(metadataKey);
+            if (value == null)
             {
-                Serializable value = properties.get(metadataKey);
-                if (value == null)
-                {
-                    continue;
-                }
-                if (value instanceof Collection<?>)
-                {
-                    for (Object singleValue : (Collection<?>) value)
-                    {
-                        try
-                        {
-                            // Convert to a string value for Tika
-                            metadataToEmbed.add(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, singleValue));
-                        }
-                        catch (TypeConversionException e)
-                        {
-                            logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
-                        }
-                    }
-                }
-                else
+                continue;
+            }
+            if (value instanceof Collection<?>)
+            {
+                for (Object singleValue : (Collection<?>) value)
                 {
                     try
                     {
                         // Convert to a string value for Tika
-                        metadataToEmbed.add(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, value));
+                        metadataToEmbed.add(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, singleValue));
                     }
                     catch (TypeConversionException e)
                     {
@@ -414,22 +399,22 @@ public abstract class TikaPoweredMetadataExtracter
                     }
                 }
             }
-            InputStream inputStream = getInputStream(reader);
-            outputStream = writer.getContentOutputStream();
-            embedder.embed(metadataToEmbed, inputStream, outputStream, null);
-        }
-        catch (Exception e)
-        {
-            logger.error(e.getMessage(), e);
-        }
-        finally
-        {
-            if (outputStream != null)
+            else
             {
-                try { outputStream.close(); } catch (Throwable e) {}
+                try
+                {
+                    // Convert to a string value for Tika
+                    metadataToEmbed.add(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, value));
+                }
+                catch (TypeConversionException e)
+                {
+                    logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
+                }
             }
         }
-        
+        InputStream inputStream = getInputStream(reader);
+        OutputStream outputStream = writer.getContentOutputStream();
+        embedder.embed(metadataToEmbed, inputStream, outputStream, null);
     }
     
     /**

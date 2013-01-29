@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -184,6 +184,7 @@ public class PostLookup
                 }
                 
                 // execute in READ txn
+                
                 transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() 
                 {
                     public Object execute() throws Throwable
@@ -210,7 +211,7 @@ public class PostLookup
         }
         catch (SQLException e)
         {
-            logger.error("Exception during select of posts", e);
+            logger.error("Exception during select of posts: ", e);
             throw new JobExecutionException(e);
         }
         catch (Throwable e)
@@ -222,7 +223,7 @@ public class PostLookup
             }
             else
             {
-                logger.error("Exception during update of posts", e);
+                logger.error("Exception during update of posts: ", e);
             }
         }
         finally
@@ -348,11 +349,14 @@ public class PostLookup
                             String siteId = activityPost.getSiteNetwork();
                             if (siteId == null)
                             {
-                                String nodeRefStr = jo.getString(JSON_NODEREF);
-                                if (nodeRefStr != null)
+                                if (! jo.isNull(JSON_NODEREF))
                                 {
-                                    siteId = lookupSite(new NodeRef(nodeRefStr));
-                                    activityPost.setSiteNetwork(siteId);
+                                    String nodeRefStr = jo.getString(JSON_NODEREF);
+                                    if (nodeRefStr != null)
+                                    {
+                                        siteId = lookupSite(new NodeRef(nodeRefStr));
+                                        activityPost.setSiteNetwork(siteId);
+                                    }
                                 }
                             }
                         }
@@ -457,7 +461,7 @@ public class PostLookup
                                 jo.put(JSON_LASTNAME, firstLastName.getSecond());
                             }
                             
-                            Path path = nodeService.getPath(oldPost.getParentNodeRef());
+                            Path path = lookupPath(oldPost.getParentNodeRef());
                             if (path != null)
                             {
                                 String displayPath = PathUtil.getDisplayPath(path, true);
@@ -551,7 +555,7 @@ public class PostLookup
                     }
                     catch (SQLException e)
                     {
-                        logger.error("Exception during update of post", e);
+                        logger.error("Exception during update of post: ", e);
                         throw new JobExecutionException(e);
                     }
                     catch (Exception e)
@@ -573,6 +577,16 @@ public class PostLookup
         }
     }
     
+    private Path lookupPath(final NodeRef nodeRef)
+    {
+        Path path = null;
+        if ((nodeRef != null) && (nodeService.exists(nodeRef)))
+        {
+            path = nodeService.getPath(nodeRef);
+        }
+        return path;
+    }
+    
     private Pair<String, String> lookupPerson(final String postUserId) throws JSONException
     {
         Pair<String, String> result = null;
@@ -590,13 +604,26 @@ public class PostLookup
     
     private NodeRef lookupParentNodeRef(final NodeRef nodeRef) throws JSONException
     {
-        return nodeService.getPrimaryParent(nodeRef).getParentRef();
+        NodeRef parentNodeRef = null;
+        if (nodeService.exists(nodeRef))
+        {
+            parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        }
+        return parentNodeRef;
     }
     
     private String lookupSite(final NodeRef nodeRef) throws JSONException
     {
-        SiteInfo siteInfo = siteService.getSite(nodeRef);
-        return (siteInfo != null ? siteInfo.getShortName() : null);
+        String siteId = null;
+        if (nodeService.exists(nodeRef))
+        {
+            SiteInfo siteInfo = siteService.getSite(nodeRef);
+            if (siteInfo != null)
+            {
+                siteId = siteInfo.getShortName();
+            }
+        }
+        return siteId;
     }
     
     /**
@@ -658,10 +685,10 @@ public class PostLookup
             }
         }
         
-        if ((parentNodeRef != null) && (nodeService.exists(parentNodeRef)))
+        if (parentNodeRef != null)
         {
-            // parent node exists, lookup parent node path
-            path = nodeService.getPath(parentNodeRef);
+            // lookup parent node path (if node exists)
+            path = lookupPath(parentNodeRef);
         }
         
         if (path != null)

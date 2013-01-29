@@ -87,6 +87,7 @@
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.recordFiled" value="true"/>	  <!--  Can only link a filed record -->
          </map>
       </property>
       <property name="targetCapability" ref="rmFileRecordsCapability" />
@@ -95,14 +96,15 @@
    <bean id="rmFileToRecordsCapability"
       parent="declarativeCapability">
       <property name="name" value="FileToRecords"/>
-      <property name="private" value="true" />
-      <property name="permission" value="Filing"/>
+      <property name="private" value="true" />								<!-- This is an unasingable capability, we reference an assignable one in the target -->
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.filling" value="true"/>  		<!--  Checks if the user has the filling capability -->
+            <entry key="capabilityCondition.frozen" value="false"/>  		<!--  Checks that the node is not frozen -->
+            <entry key="capabilityCondition.recordFiled" value="false"/>	<!--  Checks that the node hasn't been filed -->
          </map>
       </property>
-      <property name="targetCapability" ref="rmFileRecordsCapability" />
+      <property name="targetCapability" ref="rmFileRecordsCapability" />  <!--  Checks that the user has the correct capability on the destination folder -->
    </bean>
 
    <bean id="rmDeclareRecordsCapability"
@@ -213,8 +215,9 @@
       <property name="kind" value="RECORD" />
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.frozen" value="false"/>
-            <!--  Do we care if it's cutoff or not? -->
+            <entry key="capabilityCondition.frozen" value="false"/>			
+            <entry key="capabilityCondition.recordFiled" value="true"/>		<!--  Can only move a filed record -->
+            <entry key="capabilityCondition.cutoff" value="false"/>          <!-- Can not move a record once it is cutoff -->	
          </map>
       </property>
       <property name="targetCapability" ref="rmFileRecordsCapability"/>

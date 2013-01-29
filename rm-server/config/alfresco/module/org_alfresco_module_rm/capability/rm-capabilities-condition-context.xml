@@ -65,6 +65,11 @@
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.VitalRecordOrFolderCapabilityCondition">
     </bean>
     
+    <bean id="capabilityCondition.recordFiled"
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.RecordFiledCapabilityCondition">
+    </bean>
+    
     <bean id="capabilityCondition.destroyMayBeScheduled" 
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.MayBeScheduledCapabilityCondition">

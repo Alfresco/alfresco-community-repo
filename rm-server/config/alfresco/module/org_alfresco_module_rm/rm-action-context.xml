@@ -11,9 +11,9 @@
             </list>
         </property>
     </bean>
-    
+
     <!-- Actions -->
-    
+
     <bean id="rmAction" parent="action-executer" abstract="true">
         <property name="namespaceService" ref="namespaceService"/>
         <property name="transactionService" ref="transactionService"/>
@@ -33,10 +33,10 @@
         <property name="freezeService" ref="freezeService"/>
         <property name="recordService" ref="recordService"/>
     </bean>
-    
-    <bean id="rmProxyAction" 
-          class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" 
-          init-method="registerAction" 
+
+    <bean id="rmProxyAction"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean"
+          init-method="registerAction"
           abstract="true">
         <property name="runtimeActionService" ref="actionService"/>
         <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
@@ -47,7 +47,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="actionSecurity" abstract="true">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -59,14 +59,14 @@
             <ref bean="afterInvocationManager"/>
         </property>
     </bean>
-    
+
     <bean id="actionProxy" abstract="true">
-        
+
     </bean>
 
     <!-- Cutoff action -->
-    
-    
+
+
     <bean id="cutoff_proxy" parent="rmProxyAction" >
         <property name="target">
             <ref bean="cutoff"/>
@@ -87,11 +87,11 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="cutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction" parent="rmAction"/>   
-    
-    <!-- UnCutoff action -->    
-    
+
+    <bean id="cutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction" parent="rmAction"/>
+
+    <!-- UnCutoff action -->
+
     <bean id="unCutoff_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="unCutoff"/>
@@ -112,11 +112,11 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="unCutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnCutoffAction" parent="rmAction" /> 
-    
+
+    <bean id="unCutoff" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnCutoffAction" parent="rmAction" />
+
     <!-- Destroy -->
-    
+
     <bean id="destroy_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="destroy"/>
@@ -147,11 +147,11 @@
         <property name="ghostingEnabled">
             <value>${rm.ghosting.enabled}</value>
         </property>
-    </bean>    
-    
+    </bean>
+
     <!-- retain -->
     <!-- No permissoin?? : allow -->
-    
+
     <bean id="retain_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="retain"/>
@@ -172,11 +172,11 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="retain" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RetainAction" parent="rmAction" depends-on="rmFileRecordsCapability"/>
-    
+
     <!-- open record folder -->
-    
+
     <bean id="openRecordFolder_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="openRecordFolder"/>
@@ -197,11 +197,11 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="openRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.OpenRecordFolderAction" parent="rmAction" />    
-    
+
+    <bean id="openRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.OpenRecordFolderAction" parent="rmAction" />
+
     <!-- close record folder -->
-    
+
     <bean id="closeRecordFolder_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="closeRecordFolder"/>
@@ -222,11 +222,11 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="closeRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CloseRecordFolderAction" parent="rmAction" />    
-    
+
+    <bean id="closeRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CloseRecordFolderAction" parent="rmAction" />
+
     <!-- reviewed -->
-    
+
     <bean id="reviewed_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="reviewed"/>
@@ -247,11 +247,11 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="reviewed" class="org.alfresco.module.org_alfresco_module_rm.vital.ReviewedAction" parent="rmAction" depends-on="rmCycleVitalRecordsCapability" />    
-    
+
+    <bean id="reviewed" class="org.alfresco.module.org_alfresco_module_rm.vital.ReviewedAction" parent="rmAction" depends-on="rmCycleVitalRecordsCapability" />
+
     <!-- declare record -->
-    
+
     <bean id="declareRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="declareRecord"/>
@@ -272,12 +272,12 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="declareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction" parent="rmAction">
-    </bean>    
-    
+    </bean>
+
     <!-- undeclare record -->
-    
+
     <bean id="undeclareRecord_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="undeclareRecord"/>
@@ -298,9 +298,9 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="undeclareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UndeclareRecordAction" parent="rmAction">
-    </bean>    
+    </bean>
 
     <!-- Freeze record -->
 
@@ -324,7 +324,7 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability" />
 
     <!-- Unfreeze record -->
@@ -349,9 +349,9 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction" />
-    
+
     <!-- Relinquish Hold Action-->
 
     <bean id="relinquishHold_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
@@ -364,9 +364,9 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="relinquishHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RelinquishHoldAction" parent="rmAction" />
-    
+
     <!-- Edit hold reason -->
 
     <bean id="editHoldReason_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
@@ -389,9 +389,9 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="editHoldReason" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditHoldReasonAction" parent="rmAction" />  
-    
+
+    <bean id="editHoldReason" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditHoldReasonAction" parent="rmAction" />
+
     <!-- Edit review as of date -->
 
     <bean id="editReviewAsOfDate_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
@@ -414,9 +414,9 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="editReviewAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditReviewAsOfDateAction" parent="rmAction" /> 
-    
+
+    <bean id="editReviewAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditReviewAsOfDateAction" parent="rmAction" />
+
     <!-- Edit disposition action as of date -->
 
     <bean id="editDispositionActionAsOfDate_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
@@ -439,12 +439,12 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="editDispositionActionAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditDispositionActionAsOfDateAction" parent="rmAction" /> 
-    
+
+    <bean id="editDispositionActionAsOfDate" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditDispositionActionAsOfDateAction" parent="rmAction" />
+
     <!-- broadcast vital record definition -->
     <!-- bound to policy: allow -->
-    
+
     <bean id="broadcastVitalRecordDefinition_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="broadcastVitalRecordDefinition"/>
@@ -465,13 +465,13 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="broadcastVitalRecordDefinition" class="org.alfresco.module.org_alfresco_module_rm.vital.BroadcastVitalRecordDefinitionAction"
                                             parent="rmAction" />
-    
+
     <!-- broadcast disposition action definition update -->
     <!-- bound to policy: allow -->
-    
+
     <bean id="broadcastDispositionActionDefinitionUpdate_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="broadcastDispositionActionDefinitionUpdate"/>
@@ -492,16 +492,16 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="broadcastDispositionActionDefinitionUpdate" 
+
+    <bean id="broadcastDispositionActionDefinitionUpdate"
     	  class="org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction"
           parent="rmAction" >
     	<property name="behaviourFilter" ref="policyBehaviourFilter"/>
     </bean>
-    
-    
+
+
     <!-- complete event -->
-    
+
     <bean id="completeEvent_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="completeEvent"/>
@@ -522,12 +522,12 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="completeEvent" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction" parent="rmAction">
-    </bean>    
-    
+    </bean>
+
     <!-- undo event -->
-    
+
     <bean id="undoEvent_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="undoEvent"/>
@@ -548,10 +548,10 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="undoEvent" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UndoEventAction" parent="rmAction">
-    </bean>   
-    
+    </bean>
+
     <!-- transfer -->
 
     <bean id="transfer_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
@@ -574,13 +574,13 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="transfer" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction">
         <property name="isAccession" value="false"/>
-    </bean>  
-    
+    </bean>
+
     <!-- Transfer complete -->
-    
+
     <bean id="transferComplete_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="transferComplete"/>
@@ -591,12 +591,12 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="transferComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction" >
-    </bean> 
-    
+    </bean>
+
     <!-- accession -->
-    
+
     <bean id="accession_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="accession"/>
@@ -617,13 +617,13 @@
             </value>
         </property>
     </bean>
-    
+
     <bean id="accession" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction">
         <property name="isAccession" value="true"/>
-    </bean> 
-        
+    </bean>
+
     <!-- Accession complete -->
-    
+
     <bean id="accessionComplete_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="accessionComplete"/>
@@ -634,22 +634,22 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="accessionComplete" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction" parent="rmAction">
-    </bean> 
-    
+    </bean>
+
     <!-- Split Email -->
     <bean id="splitEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction" parent="rmAction">
-    </bean>  
-    
+    </bean>
+
     <bean id="splitEmail_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="splitEmail"/>
         </property>
     </bean>
-    
-    <!--  Create disposition schedule --> 
-    
+
+    <!--  Create disposition schedule -->
+
     <bean id="createDispositionSchedule_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
         <property name="target">
             <ref bean="createDispositionSchedule"/>
@@ -670,10 +670,33 @@
             </value>
         </property>
     </bean>
-    
-    <bean id="createDispositionSchedule" 
-          class="org.alfresco.module.org_alfresco_module_rm.action.impl.CreateDispositionScheduleAction" 
+
+    <bean id="createDispositionSchedule"
+          class="org.alfresco.module.org_alfresco_module_rm.action.impl.CreateDispositionScheduleAction"
           parent="rmAction" />
-          
-    
-</beans>    
+
+    <!-- Reject record -->
+
+    <bean id="reject_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+        <property name="target">
+            <ref bean="reject"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="reject_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="reject_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor" parent="actionSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+                   org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+            </value>
+        </property>
+    </bean>
+
+    <bean id="reject" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RejectAction" parent="rmAction" />
+</beans>

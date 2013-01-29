@@ -1149,6 +1149,16 @@
          </properties>
       </aspect>
 
+      <!-- Aspect to hold the information about reject reason of a record -->
+      <aspect name="rma:rejectReasonRecord">
+         <title>The reject reason of a record</title>
+         <properties>
+            <property name="rma:rejectReason">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+
    </aspects>
 
 </model>

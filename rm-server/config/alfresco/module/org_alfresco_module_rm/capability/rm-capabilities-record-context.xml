@@ -238,4 +238,20 @@
       <property name="index" value="60" />
    </bean>
 
+   <bean id="rmRejectRecordsCapability"
+      parent="declarativeCapability">
+      <property name="name" value="RejectRecords"/>
+      <property name="private" value="true" />
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+            <entry key="capabilityCondition.declared" value="false"/>
+         </map>
+      </property>
+      <property name="targetCapability" ref="rmFileRecordsCapability" />
+   </bean>
+
 </beans>

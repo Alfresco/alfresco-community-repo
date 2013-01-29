@@ -234,4 +234,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Original location of a record
     public static final QName ASPECT_ORIGINAL_LOCATION = QName.createQName(RM_URI, "originalLocation");
     public static final QName PROP_ORIGINAL_LOCATION = QName.createQName(RM_URI, "orgLocation");
+
+    // Reject reason of a record
+    public static final QName ASPECT_REJECT_REASON_RECORD = QName.createQName(RM_URI, "rejectReasonRecord");
+    public static final QName PROP_REJECT_REASON = QName.createQName(RM_URI, "rejectReason");
 }

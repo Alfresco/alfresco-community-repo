@@ -26,7 +26,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Record Service Interface.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -34,14 +34,14 @@ public interface RecordService
 {
     /**
     * Gets a list of all the record meta-data aspects
-    * 
+    *
     * @return {@link Set}<{@link QName}>   list of record meta-data aspects
     */
    Set<QName> getRecordMetaDataAspects();
 
    /**
     * Checks whether if the given node reference is a record or not
-    * 
+    *
     * @param nodeRef    node reference to be checked
     * @return boolean   true if the node reference is a record, false otherwise
     */
@@ -49,36 +49,44 @@ public interface RecordService
 
    /**
     * Indicates whether the record is declared
-    * 
+    *
     * @param nodeRef   node reference of the record for which the check would be performed
     * @return boolean  true if record is declared, false otherwise
     */
-   boolean isDeclared(NodeRef nodeRef);  
+   boolean isDeclared(NodeRef nodeRef);
 
    /**
     * Creates a new unfiled record from an existing node.
     * <p>
     * Note that the node reference of the record will be the same as the origional
     * document.
-    * 
+    *
     * @param filePlan  The filePlan in which the record should be placed
     * @param nodeRef   The node from which the record will be created
     * @param isLinked  indicates if the newly created record is linked to it's original location or not.
     */
    void createRecord(NodeRef filePlan, NodeRef nodeRef, boolean isLinked);
-   
+
    /**
     * Links the newly created record to it's original location.
-    * 
+    *
     * @see #createRecord(NodeRef, NodeRef, boolean)
     */
    void createRecord(NodeRef filePlan, NodeRef nodeRef);
-   
+
    /**
     * Indicates whether the record is filed or not
-    * 
+    *
     * @param nodeRef    record
     * @return boolean   true if filed, false otherwise
     */
    boolean isFiled(NodeRef record);
+
+   /**
+    * Rejects a node with the provided reason
+    *
+    * @param nodeRef   node reference
+    * @param reason    reject reason
+    */
+   void rejectRecord(NodeRef nodeRef, String reason);
 }

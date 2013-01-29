@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,7 +91,7 @@ public class RecordServiceImpl implements RecordService,
 
     /** Disposition service */
     private DispositionService dispositionService;
-    
+
     /** File plan service */
     private FilePlanService filePlanService;
 
@@ -167,7 +168,7 @@ public class RecordServiceImpl implements RecordService,
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -268,7 +269,7 @@ public class RecordServiceImpl implements RecordService,
     {
         createRecord(filePlan, nodeRef, true);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
@@ -277,7 +278,7 @@ public class RecordServiceImpl implements RecordService,
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("isLinked", isLinked);
-        
+
         if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == false)
         {
             // first we do a sanity check to ensure that the user has at least write permissions on the document
@@ -322,10 +323,10 @@ public class RecordServiceImpl implements RecordService,
                     makeRecord(nodeRef);
 
                     if (isLinked == true)
-                    {   
+                    {
                         // maintain the original primary location
                         nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
-    
+
                         // set the readers
                         extendedSecurityService.setExtendedReaders(nodeRef, readers);
                     }
@@ -424,5 +425,55 @@ public class RecordServiceImpl implements RecordService,
                 }
             }
         }
+    }
+
+    @Override
+    public void rejectRecord(final NodeRef nodeRef, String reason)
+    {
+        ParameterCheck.mandatory("NodeRef", nodeRef);
+        ParameterCheck.mandatoryString("Reason", reason);
+
+        // do the work of rejecting the record as the system user
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // first remove the secondary link association
+                NodeRef originalLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_ORIGINAL_LOCATION);
+                List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+                for (ChildAssociationRef childAssociationRef : parentAssocs)
+                {
+                    if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originalLocation))
+                    {
+                        nodeService.removeChildAssociation(childAssociationRef);
+                        break;
+                    }
+                }
+
+                // remove the "record" and "file plan component" aspects
+                nodeService.removeAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD);
+                nodeService.removeAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT);
+
+                // remove "identifier" property
+                nodeService.removeProperty(nodeRef, PROP_IDENTIFIER);
+
+                // get the records primary parent association
+                ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
+
+                // save the reject reason
+                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
+                aspectProperties.put(PROP_REJECT_REASON, (Serializable) parentAssoc.getParentRef());
+                nodeService.addAspect(nodeRef, ASPECT_REJECT_REASON_RECORD, aspectProperties);
+
+                // move the record into the collaboration site
+                nodeService.moveNode(nodeRef, originalLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
+
+                // remove all extended readers
+                extendedSecurityService.removeAllExtendedReaders(nodeRef);
+
+                return null;
+            }
+        });
     }
 }

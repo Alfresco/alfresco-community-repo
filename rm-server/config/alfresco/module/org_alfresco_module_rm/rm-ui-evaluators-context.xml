@@ -675,4 +675,15 @@
       </property>
    </bean>
 
+   <bean id="jsonConversionComponent.reject"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="reject"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+         </set>
+      </property>
+      <property name="capability" value="RejectRecords" />
+   </bean>
+
 </beans>

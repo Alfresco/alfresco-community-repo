@@ -33,16 +33,15 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -56,7 +55,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @author Roy Wetherall
  */
-public class RecordsManagementServiceImpl implements RecordsManagementService,
+public class RecordsManagementServiceImpl extends ServiceBaseImpl
+                                          implements RecordsManagementService,
                                                      RecordsManagementModel,
                                                      RecordsManagementPolicies.OnCreateReference,
                                                      RecordsManagementPolicies.OnRemoveReference
@@ -85,12 +85,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
 
     /** Service registry */
     private RecordsManagementServiceRegistry serviceRegistry;
-    
-    /** Dictionary service */
-    private DictionaryService dictionaryService;
-    
-    /** Node service */
-    private NodeService nodeService;
     
     /** Node DAO */
     private NodeDAO nodeDAO;
@@ -124,16 +118,6 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
-    }
-
-    /**
-     * Set search service
-     * 
-     * @param nodeService   search service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     /**
@@ -421,24 +405,7 @@ public class RecordsManagementServiceImpl implements RecordsManagementService,
     public boolean isRecordsManagementContainer(NodeRef nodeRef)
     {
         return instanceOf(nodeRef, TYPE_RECORDS_MANAGEMENT_CONTAINER);
-    }
-    
-    /**
-     * Utility method to safely and quickly determine if a node is a type (or sub-type) of the one specified.
-     */
-    private boolean instanceOf(NodeRef nodeRef, QName ofClassName)
-    {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("ofClassName", ofClassName);
-        boolean result = false;
-        if (nodeService.exists(nodeRef) == true &&
-                (ofClassName.equals(nodeService.getType(nodeRef)) == true ||
-                 dictionaryService.isSubClass(nodeService.getType(nodeRef), ofClassName) == true))            
-        {
-            result = true;
-        }    
-        return result;
-    }
+    }   
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)

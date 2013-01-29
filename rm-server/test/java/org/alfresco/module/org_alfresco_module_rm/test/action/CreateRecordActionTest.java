@@ -68,6 +68,7 @@ public class CreateRecordActionTest extends BaseRMTestCase
                 assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 
                 Action action = dmActionService.createAction(CreateRecordAction.NAME);
+                action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
                 dmActionService.executeAction(action, dmDocument);
                 
                 return null;

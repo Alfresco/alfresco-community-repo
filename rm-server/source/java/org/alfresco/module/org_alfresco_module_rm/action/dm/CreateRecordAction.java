@@ -53,6 +53,7 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     
     /** Parameter names */
     public static final String PARAM_FILE_PLAN = "file-plan";
+    public static final String PARAM_HIDE_RECORD = "hide-record";
     
     /** Records management service */
     private RecordsManagementService recordsManagementService;
@@ -141,9 +142,12 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
                     throw new AlfrescoRuntimeException("Can not create record, because the provided file plan node reference is not a file plan.");
                 }
             }
-    
+            
+            // indicate whether the record should be hidden or not
+            boolean hideRecord = ((Boolean)action.getParameterValue(PARAM_HIDE_RECORD)).booleanValue();
+            
             // create record from existing document
-            recordService.createRecord(filePlan, actionedUponNodeRef);
+            recordService.createRecord(filePlan, actionedUponNodeRef, !hideRecord);
         }
     }
 
@@ -153,8 +157,9 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> params)
     {
-        // Optional parameter used to specify the file plan
-        params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
+        // NOTE:  commented out for now so that it doesn't appear in the UI ... enable later when multi-file plan support is added
+        //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
+        params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, true, getParamDisplayLabel(PARAM_HIDE_RECORD)));
     }
    
 }

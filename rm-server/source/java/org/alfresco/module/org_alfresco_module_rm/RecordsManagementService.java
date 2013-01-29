@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -87,7 +88,10 @@ public interface RecordsManagementService
      * 
      * @param nodeRef   node reference
      * @return boolean  true if node is a file plan node
+     * 
+     * @deprecated as of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)}
      */
+    @Deprecated
     boolean isFilePlan(NodeRef nodeRef);
     
     /**
@@ -122,7 +126,7 @@ public interface RecordsManagementService
      * @param nodeRef   node reference
      * @return boolean  true if a metadata stub, false otherwise
      * 
-     * @since 
+     * @since 2.0
      */
     boolean isMetadataStub(NodeRef nodeRef);
     
@@ -163,17 +167,6 @@ public interface RecordsManagementService
      * @return  List<NodeRef>    list of file plan nodes
      */
     List<NodeRef> getFilePlans();
-    
-//    /**
-//     * Specify the store which should be searched.
-//     * 
-//     * @see RecordsManagementService#getFilePlans()
-//     * 
-//     * @param  storeRef         store reference
-//     * @return List<NodeRef>    list of record management root nodes
-//     */
-//    @Deprecated
-//    List<NodeRef> getRecordsManagementRoots(StoreRef storeRef);
     
     // TODO NodeRef getFilePlanById(String id);
     

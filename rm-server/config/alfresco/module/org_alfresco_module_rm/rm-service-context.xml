@@ -27,6 +27,11 @@
             <ref bean="afterInvocationManager"/>
         </property>
   	</bean>
+  	
+  	<bean id="baseService" abstract="true">
+  	   <property name="nodeService" ref="NodeService"/>
+  	   <property name="dictionaryService" ref="DictionaryService"/>
+  	</bean>
 
     <!-- Records Management Service Registry -->
 
@@ -432,10 +437,9 @@
     <!--  File Plan Service -->
 	
 	<bean id="filePlanService"
+	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
         <property name="permissionService" ref="PermissionService"/>
-        <property name="nodeService" ref="NodeService"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
     </bean>
 
     <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">

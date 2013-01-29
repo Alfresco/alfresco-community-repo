@@ -57,9 +57,20 @@ public interface RecordService
 
    /**
     * Creates a new unfiled record from an existing node.
+    * <p>
+    * Note that the node reference of the record will be the same as the origional
+    * document.
     * 
     * @param filePlan  The filePlan in which the record should be placed
     * @param nodeRef   The node from which the record will be created
+    * @param isLinked  indicates if the newly created record is linked to it's original location or not.
+    */
+   void createRecord(NodeRef filePlan, NodeRef nodeRef, boolean isLinked);
+   
+   /**
+    * Links the newly created record to it's original location.
+    * 
+    * @see #createRecord(NodeRef, NodeRef, boolean)
     */
    void createRecord(NodeRef filePlan, NodeRef nodeRef);
    

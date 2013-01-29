@@ -211,6 +211,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
+                NodeRef originalLocation = nodeService.getPrimaryParent(dmDocument).getParentRef();
+                
                 assertFalse(recordService.isRecord(dmDocument));
                 assertFalse(extendedSecurityService.hasExtendedReaders(dmDocument));
                 
@@ -253,10 +255,106 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertTrue(recordService.isRecord(dmDocument));
                 assertTrue(extendedSecurityService.hasExtendedReaders(dmDocument));
                 assertFalse(recordService.isFiled(dmDocument));
+                
+                // show that the record has meta-data about it's original location
+                assertTrue(nodeService.hasAspect(dmDocument, ASPECT_ORIGINAL_LOCATION));
+                assertEquals(originalLocation, nodeService.getProperty(dmDocument, PROP_ORIGINAL_LOCATION));
+                assertFalse(originalLocation == nodeService.getPrimaryParent(dmDocument).getParentRef());
+                
+                // show that the record is linked to it's original location
+                assertEquals(2, nodeService.getParentAssocs(dmDocument).size());
 
                 return null;
             }
         }, dmCollaborator);
+    }
+    
+    public void testCreateRecordNoLink() throws Exception
+    {
+        // show that users without WRITE can not create a record from a document
+        doTestInTransaction(new FailureTest
+        (
+            "Can not create a record from a document if you do not have WRITE permissions.",
+            AccessDeniedException.class
+        )
+        {            
+            public void run() throws Exception
+            {
+                recordService.createRecord(filePlan, dmDocument, false);
+            }
+         }, dmConsumer);
+        
+        // create record from document
+        final NodeRef originalLocation = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run()
+            {
+                NodeRef originalLocation = nodeService.getPrimaryParent(dmDocument).getParentRef();
+                
+                assertFalse(recordService.isRecord(dmDocument));
+                assertFalse(extendedSecurityService.hasExtendedReaders(dmDocument));
+                
+                checkPermissions(READ_RECORDS, 
+                                 AccessStatus.DENIED,   // file plan 
+                                 AccessStatus.DENIED,   // unfiled container
+                                 AccessStatus.DENIED,   // record category
+                                 AccessStatus.DENIED,   // record folder
+                                 AccessStatus.DENIED);  // doc/record
+                
+                assertEquals(AccessStatus.DENIED, 
+                        dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
+                
+                checkPermissions(FILING, 
+                        AccessStatus.DENIED,   // file plan 
+                        AccessStatus.DENIED,   // unfiled container
+                        AccessStatus.DENIED,   // record category
+                        AccessStatus.DENIED,   // record folder
+                        AccessStatus.DENIED);  // doc/record
+
+                recordService.createRecord(filePlan, dmDocument, false);
+                
+                checkPermissions(READ_RECORDS, 
+                        AccessStatus.DENIED,   // file plan 
+                        AccessStatus.DENIED,   // unfiled container
+                        AccessStatus.DENIED,   // record category
+                        AccessStatus.DENIED,   // record folder
+                        AccessStatus.DENIED);  // doc/record  
+                
+                assertEquals(AccessStatus.DENIED, 
+                        dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
+                
+                checkPermissions(FILING, 
+                        AccessStatus.DENIED,   // file plan 
+                        AccessStatus.DENIED,   // unfiled container
+                        AccessStatus.DENIED,   // record category
+                        AccessStatus.DENIED,   // record folder
+                        AccessStatus.DENIED);  // doc/record  
+
+                return originalLocation;
+            }
+        }, dmCollaborator);      
+        
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {               
+                assertTrue(recordService.isRecord(dmDocument));
+                assertFalse(extendedSecurityService.hasExtendedReaders(dmDocument));
+                assertFalse(recordService.isFiled(dmDocument));
+                
+                // show that the record has meta-data about it's original location
+                assertTrue(nodeService.hasAspect(dmDocument, ASPECT_ORIGINAL_LOCATION));
+                assertEquals(originalLocation, nodeService.getProperty(dmDocument, PROP_ORIGINAL_LOCATION));
+                assertFalse(originalLocation == nodeService.getPrimaryParent(dmDocument).getParentRef());
+                
+                // show that the record is linked to it's original location
+                assertEquals(1, nodeService.getParentAssocs(dmDocument).size());
+
+                return null;
+            }
+        }, rmAdminName);
     }
     
     public void testFileNewContent() throws Exception

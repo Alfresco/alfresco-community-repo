@@ -20,6 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.fileplan;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import com.hazelcast.impl.Node;
+
 /**
  * File plan service interface.
  * 
@@ -28,10 +30,37 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface FilePlanService
 {
+    /**
+     * Indicates whether the given node is file plan node or not.
+     * 
+     * @param nodeRef   node reference
+     * @return boolean  true if node is a file plan node
+     */
+    boolean isFilePlan(NodeRef nodeRef);
+    
+    /**
+     * Indicates whether the unfiled container exists for a given file plan or not.
+     * 
+     * @param filePlan  file plan
+     * @return boolean  true if unfiled container exists, false otherwise
+     */
     boolean existsUnfiledContainer(NodeRef filePlan);
     
+    /**
+     * Gets the unfiled container for a given file plan.  Returns null if
+     * none.
+     * 
+     * @param filePlan          file plan
+     * @return {@link NodeRef}  unfiled container, null if none
+     */
     NodeRef getUnfiledContainer(NodeRef filePlan);
     
+    /**
+     * Creates, and returns, a unfiled container for a given file plan.
+     * 
+     * @param filePlan      file plan
+     * @return {@link Node} unfiled container
+     */
     NodeRef createUnfiledContainer(NodeRef filePlan);
 
 }

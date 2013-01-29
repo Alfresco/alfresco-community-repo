@@ -261,15 +261,23 @@ public class RecordServiceImpl implements RecordService,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void createRecord(final NodeRef filePlan, final NodeRef nodeRef)
+    public void createRecord(NodeRef filePlan, NodeRef nodeRef)
+    {
+        createRecord(filePlan, nodeRef, true);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    public void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final boolean isLinked)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
-        ParameterCheck.mandatory("document", nodeRef);
-
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("isLinked", isLinked);
+        
         if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) == false)
         {
             // first we do a sanity check to ensure that the user has at least write permissions on the document
@@ -305,19 +313,22 @@ public class RecordServiceImpl implements RecordService,
                     // move the document into the file plan
                     nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
 
-                    // maintain the original primary location
-                    ChildAssociationRef child = nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
-
                     // Add the information about the original location
                     Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
-                    aspectProperties.put(PROP_ORIGINAL_LOCATION, (Serializable) child.getParentRef());
+                    aspectProperties.put(PROP_ORIGINAL_LOCATION, (Serializable) parentAssoc.getParentRef());
                     nodeService.addAspect(nodeRef, ASPECT_ORIGINAL_LOCATION, aspectProperties);
 
                     // make the document a record
                     makeRecord(nodeRef);
 
-                    // set the readers
-                    extendedSecurityService.setExtendedReaders(nodeRef, readers);
+                    if (isLinked == true)
+                    {   
+                        // maintain the original primary location
+                        nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
+    
+                        // set the readers
+                        extendedSecurityService.setExtendedReaders(nodeRef, readers);
+                    }
 
                     return null;
                 }

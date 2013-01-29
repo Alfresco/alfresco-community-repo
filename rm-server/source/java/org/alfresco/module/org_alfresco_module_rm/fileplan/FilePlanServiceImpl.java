@@ -25,14 +25,13 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -46,7 +45,8 @@ import org.springframework.context.ApplicationContextAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class FilePlanServiceImpl implements FilePlanService, 
+public class FilePlanServiceImpl extends ServiceBaseImpl
+                                 implements FilePlanService, 
                                             RecordsManagementModel,
                                             ApplicationContextAware
 {
@@ -55,9 +55,7 @@ public class FilePlanServiceImpl implements FilePlanService,
     private static final QName QNAME_UNFILED_CONTAINER = QName.createQName(RM_URI, NAME_UNFILED_CONTAINER);
     
     /** Services */
-    private NodeService nodeService;
     private PermissionService permissionService;    
-    private RecordsManagementService recordsManagementService;
 
     /** Application context */
     private ApplicationContext applicationContext;
@@ -66,11 +64,6 @@ public class FilePlanServiceImpl implements FilePlanService,
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
-    }
-    
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
     
     /**
@@ -84,16 +77,25 @@ public class FilePlanServiceImpl implements FilePlanService,
         return (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");        
     }
     
+    /**
+     * @param permissionService permission service
+     */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
     
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isFilePlan(NodeRef nodeRef)
     {
-        this.recordsManagementService = recordsManagementService;
+        return instanceOf(nodeRef, TYPE_FILE_PLAN);
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#existsUnfiledContainer(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public boolean existsUnfiledContainer(NodeRef filePlan)
     {
@@ -107,7 +109,7 @@ public class FilePlanServiceImpl implements FilePlanService,
     public NodeRef getUnfiledContainer(NodeRef filePlan)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
-        if (recordsManagementService.isFilePlan(filePlan) == false)
+        if (isFilePlan(filePlan) == false)
         {
             throw new AlfrescoRuntimeException("Unable to get the unfiled container, because passed node is not a file plan.");
         }
@@ -134,7 +136,7 @@ public class FilePlanServiceImpl implements FilePlanService,
     public NodeRef createUnfiledContainer(NodeRef filePlan)
     {
         ParameterCheck.mandatory("filePlan", filePlan);
-        if (recordsManagementService.isFilePlan(filePlan) == false)
+        if (isFilePlan(filePlan) == false)
         {
             throw new AlfrescoRuntimeException("Unable to create unfiled container, because passed node is not a file plan.");
         }

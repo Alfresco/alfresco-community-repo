@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.SerializedTransformationOptionsAccessor;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -732,7 +733,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         return result;
     }
 
-    protected class RenderingContext
+    protected class RenderingContext implements SerializedTransformationOptionsAccessor
     {
         private final NodeRef sourceNode;
         private final RenditionDefinition definition;
@@ -792,31 +793,11 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             return this.definition;
         }
 
-        /**
-         * Gets the value for the named parameter from the . Checks the type of
-         * the parameter is correct and throws and Exception if it isn't.
-         * Returns <code>null</code> if the parameter value is <code>null</code>
-         * 
-         * @param paramName the name of the parameter being checked.
-         * @param clazz the expected {@link Class} of the parameter value.
-         * @return the parameter value or <code>null</code>.
-         */
         public <T> T getCheckedParam(String paramName, Class<T> clazz)
         {
             return AbstractRenderingEngine.getCheckedParam(paramName, clazz, definition);
         }
-
-        /**
-         * Gets the value for the named parameter. Checks the type of the
-         * parameter is the same as the type of <code>defaultValue</code> and
-         * throws a {@link RenditionServiceException} if it isn't. Returns
-         * <code>defaultValue</code> if the parameter value is <code>null</code>
-         * 
-         * @param <T>
-         * @param paramName
-         * @param defaultValue
-         * @return
-         */
+        
         public <T> T getParamWithDefault(String paramName, T defaultValue)
         {
             return AbstractRenderingEngine.getParamWithDefault(paramName, defaultValue, definition);

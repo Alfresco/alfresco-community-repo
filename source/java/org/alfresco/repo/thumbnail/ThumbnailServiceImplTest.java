@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
@@ -174,6 +175,39 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         checkRenditioned(pdfOrig, "doclib");
         checkRendition("doclib", thumbnail0);
         outputThumbnailTempContentLocation(thumbnail0, "jpg", "doclib test");
+    }
+    
+    public void testCreateRenditionThumbnailFromPdfPage2() throws Exception
+    {
+        ImageTransformationOptions options = new ImageTransformationOptions();
+        PagedSourceOptions pagedSourceOptions = new PagedSourceOptions();
+        pagedSourceOptions.setStartPageNumber(new Integer(2));
+        pagedSourceOptions.setEndPageNumber(new Integer(2));
+        options.addSourceOptions(pagedSourceOptions);
+        
+        ThumbnailDefinition thumbnailDefinition = new ThumbnailDefinition(MimetypeMap.MIMETYPE_PDF, options, "doclib_2");
+        thumbnailService.getThumbnailRegistry().addThumbnailDefinition(thumbnailDefinition);
+
+        checkTransformer();
+
+        NodeRef pdfOrig = createOriginalContent(this.folder, MimetypeMap.MIMETYPE_PDF);
+
+        NodeRef thumbnail0 = this.thumbnailService.createThumbnail(pdfOrig, ContentModel.PROP_CONTENT,
+                    MimetypeMap.MIMETYPE_IMAGE_JPEG, thumbnailDefinition.getTransformationOptions(), "doclib_2");
+        assertNotNull(thumbnail0);
+        checkRenditioned(pdfOrig, "doclib_2");
+        checkRendition("doclib_2", thumbnail0);
+        
+        // Check the length
+        File tempFile = TempFileProvider.createTempFile("thumbnailServiceImplTest", ".jpg");
+        ContentReader reader = this.contentService.getReader(thumbnail0, ContentModel.PROP_CONTENT);
+        
+        long size = reader.getSize();
+        System.out.println("size=" + size);
+        assertTrue("Page 2 should be blank and less than 4500 bytes", size < 4500);
+        
+        reader.getContent(tempFile);
+        System.out.println("doclib_2 test: " + tempFile.getPath());
     }
 
     public void testCreateThumbnailFromImage() throws Exception

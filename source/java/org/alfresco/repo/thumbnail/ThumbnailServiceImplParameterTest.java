@@ -45,6 +45,10 @@ import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.PagedSourceOptions;
+import org.alfresco.service.cmr.repository.PagedSourceOptions.PagedSourceOptionsSerializer;
+import org.alfresco.service.cmr.repository.TemporalSourceOptions;
+import org.alfresco.service.cmr.repository.TemporalSourceOptions.TemporalSourceOptionsSerializer;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -135,6 +139,9 @@ public class ThumbnailServiceImplParameterTest
         parametersUnderTest.put(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT, Boolean.TRUE);
         parametersUnderTest.put(AbstractRenderingEngine.PARAM_TARGET_CONTENT_PROPERTY, ContentModel.PROP_CONTENT);
         parametersUnderTest.put(RenditionService.PARAM_DESTINATION_NODE, dummyNodeRef2);
+        parametersUnderTest.put(PagedSourceOptionsSerializer.PARAM_SOURCE_START_PAGE, new Integer(2));
+        parametersUnderTest.put(PagedSourceOptionsSerializer.PARAM_SOURCE_END_PAGE, new Integer(2));
+        parametersUnderTest.put(TemporalSourceOptionsSerializer.PARAM_SOURCE_TIME_OFFSET, "00:00:00.5");
         
 
         ImageTransformationOptions imageTransOpts = new ImageTransformationOptions();
@@ -150,6 +157,15 @@ public class ThumbnailServiceImplParameterTest
         resizeOptions.setResizeToThumbnail((Boolean) parametersUnderTest.get(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL));
         resizeOptions.setAllowEnlargement((Boolean) parametersUnderTest.get(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT));
         imageTransOpts.setResizeOptions(resizeOptions);
+        
+        PagedSourceOptions pagedSourceOptions = new PagedSourceOptions();
+        pagedSourceOptions.setStartPageNumber((Integer) parametersUnderTest.get(PagedSourceOptionsSerializer.PARAM_SOURCE_START_PAGE));
+        pagedSourceOptions.setEndPageNumber((Integer) parametersUnderTest.get(PagedSourceOptionsSerializer.PARAM_SOURCE_END_PAGE));
+        imageTransOpts.addSourceOptions(pagedSourceOptions);
+        
+        TemporalSourceOptions temporalSourceOptions = new TemporalSourceOptions();
+        temporalSourceOptions.setOffset((String) parametersUnderTest.get(TemporalSourceOptionsSerializer.PARAM_SOURCE_TIME_OFFSET));
+        imageTransOpts.addSourceOptions(temporalSourceOptions);
         
         ThumbnailParentAssociationDetails assocDetails = new ThumbnailParentAssociationDetails(dummyNodeRef3,
                     ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,

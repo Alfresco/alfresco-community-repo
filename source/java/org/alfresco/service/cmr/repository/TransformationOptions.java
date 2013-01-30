@@ -18,11 +18,16 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Class containing values of options that are passed to content transformers.  These options 
@@ -37,6 +42,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class TransformationOptions implements Cloneable
 {
+    private static final Log logger = LogFactory.getLog(TransformationOptions.class);
+    
     /** Option map names to preserve backward compatibility */
     public static final String OPT_SOURCE_NODEREF = "contentReaderNodeRef";
     public static final String OPT_SOURCE_CONTENT_PROPERTY = "sourceContentProperty";
@@ -61,6 +68,9 @@ public class TransformationOptions implements Cloneable
     
     /** Time, KBytes and page limits */
     private TransformationOptionLimits limits = new TransformationOptionLimits();
+    
+    /** Source options based on its mimetype */
+    private Map<Class<? extends TransformationSourceOptions>, TransformationSourceOptions> sourceOptionsMap;
 
     /**
      * Default constructor
@@ -124,6 +134,7 @@ public class TransformationOptions implements Cloneable
     public void copyFrom(TransformationOptions otherOptions)
     {
         this.set(otherOptions.toMap());
+        this.setSourceOptionsList(otherOptions.getSourceOptionsList());
     }
     
     /**
@@ -419,7 +430,87 @@ public class TransformationOptions implements Cloneable
     {
         this.limits = limits; 
     }
-
+    
+    /**
+     * Gets the map of source options further describing how the source should
+     * be transformed based on its mimetype
+     * 
+     * @return the source mimetype to source options map
+     */
+    protected Map<Class<? extends TransformationSourceOptions>, TransformationSourceOptions> getSourceOptionsMap()
+    {
+        return sourceOptionsMap;
+    }
+    
+    /**
+     * Gets the immutable list of source options further describing how the source should
+     * be transformed based on its mimetype.
+     * Use {@link TransformationOptions#addSourceOptions(TransformationSourceOptions)}
+     * to add source options.
+     * 
+     * @return the source options list
+     */
+    public Collection<TransformationSourceOptions> getSourceOptionsList()
+    {
+        if (sourceOptionsMap == null)
+            return null;
+        return sourceOptionsMap.values();
+    }
+    
+    /**
+     * Sets the list of source options further describing how the source should
+     * be transformed based on its mimetype.
+     * 
+     * @param sourceOptionsList the source options list
+     */
+    public void setSourceOptionsList(Collection<TransformationSourceOptions> sourceOptionsList)
+    {
+        if (sourceOptionsList != null)
+        {
+            for (TransformationSourceOptions sourceOptions : sourceOptionsList)
+            {
+                addSourceOptions(sourceOptions);
+            }
+        }
+    }
+    
+    /**
+     * Adds the given sourceOptions to the sourceOptionsMap.
+     * <p>
+     * Note that if source options of the same class already exists a new
+     * merged source options object is added.
+     * 
+     * @param sourceOptions
+     */
+    public void addSourceOptions(TransformationSourceOptions sourceOptions)
+    {
+        if (sourceOptionsMap == null)
+        {
+            sourceOptionsMap = new HashMap<Class<? extends TransformationSourceOptions>, TransformationSourceOptions>(1);
+        }
+        TransformationSourceOptions newOptions = sourceOptions;
+        TransformationSourceOptions existingOptions = sourceOptionsMap.get(sourceOptions.getClass());
+        if (existingOptions != null)
+        {
+            newOptions = existingOptions.mergedOptions(sourceOptions);
+        }
+        sourceOptionsMap.put(sourceOptions.getClass(), newOptions);
+    }
+    
+    /**
+     * Gets the appropriate source options for the given mimetype if available.
+     * 
+     * @param sourceMimetype
+     * @return the source options for the mimetype
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends TransformationSourceOptions> T getSourceOptions(Class<T> clazz)
+    {
+        if (sourceOptionsMap == null)
+            return null;
+        return (T) sourceOptionsMap.get(clazz);
+    }
+    
     /**
      * Convert the transformation options into a map.
      * <p>

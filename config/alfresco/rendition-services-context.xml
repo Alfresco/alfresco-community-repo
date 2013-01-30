@@ -138,6 +138,12 @@
    <bean id="imageRenderingEngine"
       class="org.alfresco.repo.rendition.executer.ImageRenderingEngine"
       parent="baseRenderingAction">
+      <property name="sourceOptionsSerializers">
+        <list>
+            <bean class="org.alfresco.service.cmr.repository.PagedSourceOptions" factory-method="createSerializerInstance" />
+            <bean class="org.alfresco.service.cmr.repository.TemporalSourceOptions" factory-method="createSerializerInstance" />
+        </list>
+      </property>
    </bean>
 
    <bean id="freemarkerRenderingEngine"

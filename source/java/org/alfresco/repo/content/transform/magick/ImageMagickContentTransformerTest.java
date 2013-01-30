@@ -18,14 +18,23 @@
  */
 package org.alfresco.repo.content.transform.magick;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ProxyContentTransformer;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.TransformationSourceOptions;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * @see org.alfresco.repo.content.transform.magick.JMagickContentTransformer
@@ -71,6 +80,95 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         reliability = transformer.isTransformable(
                 MimetypeMap.MIMETYPE_IMAGE_GIF, -1, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
+    }
+    
+    protected void transform(String sourceMimetype, String targetMimetype, TransformationOptions options) throws IOException
+    {
+        String[] quickFiles = getQuickFilenames(sourceMimetype);
+        for (String quickFile : quickFiles)
+        {
+            String sourceExtension = quickFile.substring(quickFile.lastIndexOf('.')+1);
+            String targetExtension = mimetypeService.getExtension(targetMimetype);
+            
+            // is there a test file for this conversion?
+            File sourceFile = AbstractContentTransformerTest.loadNamedQuickTestFile(quickFile);
+            if (sourceFile == null)
+            {
+                continue;  // no test file available for that extension
+            }
+            ContentReader sourceReader = new FileContentReader(sourceFile);
+            
+            // make a writer for the target file
+            File targetFile = TempFileProvider.createTempFile(
+                    getClass().getSimpleName() + "_" + getName() + "_" + sourceExtension + "_",
+                    "." + targetExtension);
+            ContentWriter targetWriter = new FileContentWriter(targetFile);
+            
+            // do the transformation
+            sourceReader.setMimetype(sourceMimetype);
+            targetWriter.setMimetype(targetMimetype);
+            transformer.transform(sourceReader.getReader(), targetWriter, options);
+            ContentReader targetReader = targetWriter.getReader();
+            assertTrue(targetReader.getSize() > 0);
+        }
+    }
+    
+    public void testPageSourceOptions() throws Exception
+    {
+        // Test empty source options
+        ImageTransformationOptions options = new ImageTransformationOptions();
+        this.transform(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_IMAGE_PNG, options);
+        
+        // Test first page
+        options = new ImageTransformationOptions();
+        List<TransformationSourceOptions> sourceOptionsList = new ArrayList<TransformationSourceOptions>();
+        sourceOptionsList.add(PagedSourceOptions.getPage1Instance());
+        options.setSourceOptionsList(sourceOptionsList);
+        this.transform(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_IMAGE_PNG, options);
+        
+        // Test second page
+        options = new ImageTransformationOptions();
+        sourceOptionsList = new ArrayList<TransformationSourceOptions>();
+        PagedSourceOptions sourceOptions = new PagedSourceOptions();
+        sourceOptions.setStartPageNumber(2);
+        sourceOptions.setEndPageNumber(2);
+        sourceOptionsList.add(sourceOptions);
+        options.setSourceOptionsList(sourceOptionsList);
+        this.transform(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_IMAGE_PNG, options);
+        
+        // Test page range invalid for target type
+        options = new ImageTransformationOptions();
+        sourceOptionsList = new ArrayList<TransformationSourceOptions>();
+        sourceOptions = new PagedSourceOptions();
+        sourceOptions.setStartPageNumber(1);
+        sourceOptions.setEndPageNumber(2);
+        sourceOptionsList.add(sourceOptions);
+        options.setSourceOptionsList(sourceOptionsList);
+        try {
+            this.transform(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_IMAGE_PNG, options);
+            fail("An exception regarding an invalid page range should have been thrown");
+        }
+        catch (Exception e)
+        {
+            // failure expected
+        }
+        
+        // Test page out of range
+        options = new ImageTransformationOptions();
+        sourceOptionsList = new ArrayList<TransformationSourceOptions>();
+        sourceOptions = new PagedSourceOptions();
+        sourceOptions.setStartPageNumber(3);
+        sourceOptions.setEndPageNumber(3);
+        sourceOptionsList.add(sourceOptions);
+        options.setSourceOptionsList(sourceOptionsList);
+        try {
+            this.transform(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_IMAGE_PNG, options);
+            fail("An exception regarding an invalid page range should have been thrown");
+        }
+        catch (Exception e)
+        {
+            // failure expected
+        }
     }
     
     /**

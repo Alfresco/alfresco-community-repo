@@ -33,6 +33,7 @@ import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -185,6 +186,14 @@ public class ThumbnailRenditionConvertor
                 parameters.put(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT, allowEnlargement);
             }
         }
+        if (transformationOptions.getSourceOptionsList() != null)
+        {
+            for (TransformationSourceOptions sourceOptions : transformationOptions.getSourceOptionsList())
+            {
+                sourceOptions.getSerializer().serialize(sourceOptions, parameters);
+            }
+        }
+        
         // TODO Handle RuntimeExecutableTransformationOptions
         return parameters;
     }

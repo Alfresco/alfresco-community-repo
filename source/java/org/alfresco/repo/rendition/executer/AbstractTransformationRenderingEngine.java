@@ -32,6 +32,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.TransformationSourceOptions;
+import org.alfresco.service.cmr.repository.TransformationSourceOptions.TransformationSourceOptionsSerializer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -82,6 +84,18 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     private static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' source mime type and '%s' target mime type was not found. Operation can't be performed";
     private static final String NOT_TRANSFORMABLE_MESSAGE_PATTERN = "Content not transformable for '%s' source mime type and '%s' target mime type. Operation can't be performed";
     private static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
+    
+    private Collection<TransformationSourceOptionsSerializer> sourceOptionsSerializers;
+
+    public Collection<TransformationSourceOptionsSerializer> getSourceOptionsSerializers()
+    {
+        return sourceOptionsSerializers;
+    }
+
+    public void setSourceOptionsSerializers(Collection<TransformationSourceOptionsSerializer> sourceOptionsSerializers)
+    {
+        this.sourceOptionsSerializers = sourceOptionsSerializers;
+    }
 
     /*
      * (non-Javadoc)
@@ -183,6 +197,18 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         if (pageLimit != null)
         {
             options.setPageLimit(pageLimit);
+        }
+        
+        if (getSourceOptionsSerializers() != null)
+        {
+            for (TransformationSourceOptionsSerializer sourceSerializer : getSourceOptionsSerializers())
+            {
+                TransformationSourceOptions sourceOptions = sourceSerializer.deserialize(context);
+                if (sourceOptions != null)
+                {
+                    options.addSourceOptions(sourceOptions);
+                }
+            }
         }
 
         return options;

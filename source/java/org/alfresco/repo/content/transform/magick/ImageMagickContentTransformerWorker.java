@@ -25,6 +25,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
@@ -295,13 +296,13 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
     }
     
     /**
-     * Determines whether or not page range is required for the given source and target mimetypes.
+     * Determines whether or not a single page range is required for the given source and target mimetypes.
      * 
      * @param sourceMimetype
      * @param targetMimetype
      * @return whether or not a page range must be specified for the transformer to read the target files
      */
-    private boolean isSourcePageRangeRequired(String sourceMimetype, String targetMimetype)
+    private boolean isSingleSourcePageRangeRequired(String sourceMimetype, String targetMimetype)
     {
         // Need a page source if we're transforming from PDF or TIFF to an image other than TIFF
         return ((sourceMimetype.equals(MimetypeMap.MIMETYPE_PDF) || 
@@ -322,7 +323,43 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
      */
     private String getSourcePageRange(TransformationOptions options, String sourceMimetype, String targetMimetype)
     {
-        if (options.getPageLimit() == 1 || isSourcePageRangeRequired(sourceMimetype, targetMimetype))
+        // Check for PagedContentSourceOptions in the options
+        if (options instanceof ImageTransformationOptions)
+        {
+            ImageTransformationOptions imageOptions = (ImageTransformationOptions) options;
+            PagedSourceOptions pagedSourceOptions = imageOptions.getSourceOptions(PagedSourceOptions.class);
+            if (pagedSourceOptions != null)
+            {
+                if (pagedSourceOptions.getStartPageNumber() != null && 
+                        pagedSourceOptions.getEndPageNumber() != null)
+                {
+                    if (pagedSourceOptions.getStartPageNumber().equals(pagedSourceOptions.getEndPageNumber()))
+                    {
+                        return "[" + (pagedSourceOptions.getStartPageNumber() - 1) + "]";
+                    }
+                    else
+                    {
+                        if (isSingleSourcePageRangeRequired(sourceMimetype, targetMimetype))
+                        {
+                            throw new AlfrescoRuntimeException(
+                                    "A single page is required for targets of type " + targetMimetype);
+                        }
+                        return "[" + (pagedSourceOptions.getStartPageNumber() - 1) + 
+                                "-" + (pagedSourceOptions.getEndPageNumber() - 1) + "]";
+                    }
+                }
+                else
+                {
+                    // TODO specified start to end of doc and start of doc to specified end not yet supported
+                    // Just grab a single page specified by either start or end
+                    if (pagedSourceOptions.getStartPageNumber() != null)
+                        return "[" + (pagedSourceOptions.getStartPageNumber() - 1) + "]";
+                    if (pagedSourceOptions.getEndPageNumber() != null)
+                        return "[" + (pagedSourceOptions.getEndPageNumber() - 1) + "]";
+                }
+            }
+        }
+        if (options.getPageLimit() == 1 || isSingleSourcePageRangeRequired(sourceMimetype, targetMimetype))
         {
             return "[0]";
         }

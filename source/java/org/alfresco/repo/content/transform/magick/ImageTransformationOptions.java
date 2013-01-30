@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -142,5 +142,21 @@ public class ImageTransformationOptions extends TransformationOptions
     public void setAutoOrient(boolean autoOrient)
     {
         this.autoOrient = autoOrient;
+    }
+    
+    @Override
+    public void copyFrom(TransformationOptions origOptions) {
+        super.copyFrom(origOptions);
+        if (origOptions != null)
+        {
+            if (origOptions instanceof ImageTransformationOptions)
+            {
+                // Clone ImageTransformationOptions
+                this.setCommandOptions(((ImageTransformationOptions) origOptions).getCommandOptions());
+                this.setResizeOptions(((ImageTransformationOptions) origOptions).getResizeOptions());
+                this.setCropOptions(((ImageTransformationOptions) origOptions).getCropOptions());
+                this.setAutoOrient(((ImageTransformationOptions) origOptions).isAutoOrient());
+            }
+        }
     }
 }

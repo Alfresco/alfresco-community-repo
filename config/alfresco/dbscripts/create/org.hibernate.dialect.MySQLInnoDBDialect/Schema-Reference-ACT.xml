@@ -1342,7 +1342,7 @@
           <autoincrement>false</autoincrement>
         </column>
         <column name="ASSIGNEE_" order="10">
-          <type>varchar(64)</type>
+          <type>varchar(255)</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>

@@ -43,6 +43,9 @@ public class RejectAction extends RMActionExecuterAbstractBase
     /** Parameter names */
     public static final String PARAM_REASON = "reason";
 
+    /** Action name */
+    public static final String NAME = "reject";
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */

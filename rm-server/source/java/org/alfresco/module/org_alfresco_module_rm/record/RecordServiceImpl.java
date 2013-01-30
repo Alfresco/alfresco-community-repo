@@ -428,7 +428,7 @@ public class RecordServiceImpl implements RecordService,
     }
 
     @Override
-    public void rejectRecord(final NodeRef nodeRef, String reason)
+    public void rejectRecord(final NodeRef nodeRef, final String reason)
     {
         ParameterCheck.mandatory("NodeRef", nodeRef);
         ParameterCheck.mandatoryString("Reason", reason);
@@ -463,7 +463,7 @@ public class RecordServiceImpl implements RecordService,
 
                 // save the reject reason
                 Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
-                aspectProperties.put(PROP_REJECT_REASON, (Serializable) parentAssoc.getParentRef());
+                aspectProperties.put(PROP_REJECT_REASON, reason);
                 nodeService.addAspect(nodeRef, ASPECT_REJECT_REASON_RECORD, aspectProperties);
 
                 // move the record into the collaboration site

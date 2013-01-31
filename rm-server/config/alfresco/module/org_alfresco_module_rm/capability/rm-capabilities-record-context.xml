@@ -215,9 +215,9 @@
       <property name="kind" value="RECORD" />
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.frozen" value="false"/>			
+            <entry key="capabilityCondition.frozen" value="false"/>
             <entry key="capabilityCondition.recordFiled" value="true"/>		<!--  Can only move a filed record -->
-            <entry key="capabilityCondition.cutoff" value="false"/>          <!-- Can not move a record once it is cutoff -->	
+            <entry key="capabilityCondition.cutoff" value="false"/>          <!-- Can not move a record once it is cutoff -->
          </map>
       </property>
       <property name="targetCapability" ref="rmFileRecordsCapability"/>
@@ -249,9 +249,9 @@
             <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.closed" value="false"/>
             <entry key="capabilityCondition.declared" value="false"/>
+            <entry key="capabilityCondition.recordFiled" value="false"/>
          </map>
       </property>
-      <property name="targetCapability" ref="rmFileRecordsCapability" />
    </bean>
 
 </beans>

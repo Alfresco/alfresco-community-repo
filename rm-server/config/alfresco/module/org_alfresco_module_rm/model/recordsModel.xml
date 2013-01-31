@@ -1139,21 +1139,17 @@
          </properties>
       </aspect>
 
-      <!-- Aspect to hold the information about the original location of a record -->
-      <aspect name="rma:originalLocation">
-         <title>The original location of a record</title>
+      <!-- Aspect to hold the originating details of a record -->
+      <aspect name="rma:recordOriginatingDetails">
+         <title>The originating details of a record</title>
          <properties>
-            <property name="rma:orgLocation">
+            <property name="rma:recordOrginalLocation">
                <type>d:any</type>
             </property>
-         </properties>
-      </aspect>
-
-      <!-- Aspect to hold the information about reject reason of a record -->
-      <aspect name="rma:rejectReasonRecord">
-         <title>The reject reason of a record</title>
-         <properties>
-            <property name="rma:rejectReason">
+            <property name="rma:recordCreationDate">
+               <type>d:date</type>
+            </property>
+            <property name="rma:recordUserId">
                <type>d:text</type>
             </property>
          </properties>

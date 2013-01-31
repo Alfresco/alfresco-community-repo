@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.notification.EMailNotificationProvider;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -46,6 +48,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.notification.NotificationContext;
+import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -53,9 +57,11 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.mail.MailPreparationException;
 
 /**
  * Record service implementation
@@ -94,6 +100,9 @@ public class RecordServiceImpl implements RecordService,
 
     /** File plan service */
     private FilePlanService filePlanService;
+
+    /** Notification service */
+    private NotificationService notificationService;
 
     /** Policy component */
     private PolicyComponent policyComponent;
@@ -175,6 +184,14 @@ public class RecordServiceImpl implements RecordService,
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
+    }
+
+    /**
+     * @param notificationService notification service
+     */
+    public void setNotificationService(NotificationService notificationService)
+    {
+        this.notificationService = notificationService;
     }
 
     /**
@@ -290,6 +307,9 @@ public class RecordServiceImpl implements RecordService,
                                                 nodeRef.toString());
             }
 
+            // Save the id of the currently logged in user
+            final String userId = AuthenticationUtil.getRunAsUser();
+
             // do the work of creating the record as the system user
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
@@ -315,9 +335,11 @@ public class RecordServiceImpl implements RecordService,
                     nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
 
                     // Add the information about the original location
-                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
-                    aspectProperties.put(PROP_ORIGINAL_LOCATION, (Serializable) parentAssoc.getParentRef());
-                    nodeService.addAspect(nodeRef, ASPECT_ORIGINAL_LOCATION, aspectProperties);
+                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
+                    aspectProperties.put(PROP_RECORD_ORIGINAL_LOCATION, (Serializable) parentAssoc.getParentRef());
+                    aspectProperties.put(PROP_RECORD_USER_ID, userId);
+                    aspectProperties.put(PROP_RECORD_CREATION_DATE, new Date());
+                    nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
 
                     // make the document a record
                     makeRecord(nodeRef);
@@ -440,7 +462,7 @@ public class RecordServiceImpl implements RecordService,
             public Void doWork() throws Exception
             {
                 // first remove the secondary link association
-                NodeRef originalLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_ORIGINAL_LOCATION);
+                NodeRef originalLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINAL_LOCATION);
                 List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef childAssociationRef : parentAssocs)
                 {
@@ -461,16 +483,30 @@ public class RecordServiceImpl implements RecordService,
                 // get the records primary parent association
                 ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
 
-                // save the reject reason
-                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
-                aspectProperties.put(PROP_REJECT_REASON, reason);
-                nodeService.addAspect(nodeRef, ASPECT_REJECT_REASON_RECORD, aspectProperties);
-
                 // move the record into the collaboration site
                 nodeService.moveNode(nodeRef, originalLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
 
                 // remove all extended readers
                 extendedSecurityService.removeAllExtendedReaders(nodeRef);
+
+                // Send an email to the record creator
+                String recordCreator = (String) nodeService.getProperty(nodeRef, PROP_RECORD_USER_ID);
+                if (StringUtils.isNotBlank(recordCreator))
+                {
+                    NotificationContext context = new NotificationContext();
+
+                    context.addTo(recordCreator);
+                    // FIXME: Subject -> i18n
+                    context.setSubject("Record rejected");
+                    // FIXME: Use email template
+                    context.setBody(reason);
+
+                    notificationService.sendNotification(EMailNotificationProvider.NAME, context);
+                }
+                else
+                {
+                    throw new MailPreparationException("The id of the record creator cannot be found!");
+                }
 
                 return null;
             }

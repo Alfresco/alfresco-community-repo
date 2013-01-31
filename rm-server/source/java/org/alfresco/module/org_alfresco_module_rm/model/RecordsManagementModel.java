@@ -232,10 +232,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     public static final QName PROP_READERS = QName.createQName(RM_URI, "readers");
 
     // Original location of a record
-    public static final QName ASPECT_ORIGINAL_LOCATION = QName.createQName(RM_URI, "originalLocation");
-    public static final QName PROP_ORIGINAL_LOCATION = QName.createQName(RM_URI, "orgLocation");
-
-    // Reject reason of a record
-    public static final QName ASPECT_REJECT_REASON_RECORD = QName.createQName(RM_URI, "rejectReasonRecord");
-    public static final QName PROP_REJECT_REASON = QName.createQName(RM_URI, "rejectReason");
+    public static final QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName(RM_URI, "recordOriginatingDetails");
+    public static final QName PROP_RECORD_ORIGINAL_LOCATION = QName.createQName(RM_URI, "recordOrginalLocation");
+    public static final QName PROP_RECORD_CREATION_DATE = QName.createQName(RM_URI, "recordCreationDate");
+    public static final QName PROP_RECORD_USER_ID = QName.createQName(RM_URI, "recordUserId");
 }

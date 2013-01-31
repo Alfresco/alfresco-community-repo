@@ -89,7 +89,7 @@ public class HideRecordActionTest extends BaseRMTestCase
                 assertTrue(recordService.isRecord(doc));
 
                 // The record should have the original location information
-                assertNotNull(nodeService.getProperty(doc, PROP_ORIGINAL_LOCATION));
+                assertNotNull(nodeService.getProperty(doc, PROP_RECORD_ORIGINAL_LOCATION));
 
                 // Check the parents. In this case the document should have two parents (doclib and fileplan)
                 assertTrue(nodeService.getParentAssocs(doc).size() == 2);

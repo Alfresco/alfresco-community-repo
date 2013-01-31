@@ -4,7 +4,7 @@
 <beans>
 
 	<!--  Helper beans -->
-	
+
 	<bean id="baseTransaction" abstract="true" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
@@ -15,7 +15,7 @@
             </props>
         </property>
     </bean>
-    
+
     <bean id="baseSecurity" abstract="true" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -27,7 +27,7 @@
             <ref bean="afterInvocationManager"/>
         </property>
   	</bean>
-  	
+
   	<bean id="baseService" abstract="true">
   	   <property name="nodeService" ref="NodeService"/>
   	   <property name="dictionaryService" ref="DictionaryService"/>
@@ -433,9 +433,9 @@
             </value>
         </property>
     </bean>
-    
+
     <!--  File Plan Service -->
-	
+
 	<bean id="filePlanService"
 	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
@@ -460,7 +460,7 @@
 
     <bean id="FilePlanService_transaction" parent="baseTransaction" />
 
-    <bean id="FilePlanService_security" parent="baseSecurity">        
+    <bean id="FilePlanService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -474,7 +474,7 @@
     </bean>
 
 	<!--  File Plan Permission Service -->
-	
+
 	<bean id="filePlanPermissionService"
           class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImpl"
           init-method="init">
@@ -541,8 +541,8 @@
         <property name="authorityService" ref="AuthorityService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
-        <property name="policyComponent" ref="policyComponent"/>   
-        <property name="filePlanService" ref="FilePlanService" />     
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="FilePlanRoleService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -601,7 +601,7 @@
         </property>
     </bean>
 
-    
+
 
     <!--  Records Management Extended Security Service -->
 
@@ -1080,9 +1080,9 @@
             </value>
         </property>
     </bean>
-    
+
     <!--  Record Folder Service -->
-    
+
     <bean id="recordFolderService" class="org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl" init-method="init">
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent" />
@@ -1101,6 +1101,7 @@
         <property name="policyComponent" ref="policyComponent" />
         <property name="dispositionService" ref="DispositionService" />
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="notificationService" ref="NotificationService"/>
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -84,7 +84,6 @@ import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.SchemaComparator;
 import org.alfresco.util.schemacomp.XMLToSchema;
 import org.alfresco.util.schemacomp.model.Schema;
-import org.alfresco.util.schemadump.Main;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
@@ -135,8 +134,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String MSG_DATABASE_USED = "schema.update.msg.database_used";
     private static final String MSG_BYPASSING_SCHEMA_UPDATE = "schema.update.msg.bypassing";
     private static final String MSG_NORMALIZED_SCHEMA = "schema.update.msg.normalized_schema";
-    private static final String MSG_NORMALIZED_SCHEMA_PRE = "schema.update.msg.normalized_schema_pre";
-    private static final String MSG_NORMALIZED_SCHEMA_POST = "schema.update.msg.normalized_schema_post";
     private static final String MSG_NO_CHANGES = "schema.update.msg.no_changes";
     private static final String MSG_ALL_STATEMENTS = "schema.update.msg.all_statements";
     private static final String MSG_EXECUTING_GENERATED_SCRIPT = "schema.update.msg.executing_generated_script";
@@ -144,7 +141,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String MSG_EXECUTING_STATEMENT = "schema.update.msg.executing_statement";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
     private static final String WARN_DIALECT_UNSUPPORTED = "schema.update.warn.dialect_unsupported";
-    private static final String WARN_DIALECT_SUBSTITUTING = "schema.update.warn.dialect_substituting";
     private static final String WARN_DIALECT_HSQL = "schema.update.warn.dialect_hsql";
     private static final String WARN_DIALECT_DERBY = "schema.update.warn.dialect_derby";
     private static final String ERR_FORCED_STOP = "schema.update.err.forced_stop";
@@ -263,7 +259,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private Properties globalProperties;
     
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
-    private File xmlPreSchemaOutputFile34;                // This must be set if there are any executed statements
 
     public SchemaBootstrap()
     {
@@ -1008,7 +1003,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * 
      * @return The Resource, otherwise null
      */
-    private Resource getDialectResource(Class dialectClass, String resourceUrl)
+    private Resource getDialectResource(Class<?> dialectClass, String resourceUrl)
     {
         // replace the dialect placeholder
         String dialectResourceUrl = resolveDialectUrl(dialectClass, resourceUrl);
@@ -1017,7 +1012,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         if (!resource.exists())
         {
             // it wasn't found.  Get the superclass of the dialect and try again
-            Class superClass = dialectClass.getSuperclass();
+            Class<?> superClass = dialectClass.getSuperclass();
             if (Dialect.class.isAssignableFrom(superClass))
             {
                 // we still have a Dialect - try again
@@ -1048,12 +1043,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * <pre>
      *   classpath:alfresco/db/org.hibernate.dialect.MySQLInnoDBDialect/myfile.xml
      * </pre>
-     * 
-     * @param dialectClass
-     * @param resourceUrl
-     * @return
      */
-    private String resolveDialectUrl(Class dialectClass, String resourceUrl)
+    private String resolveDialectUrl(Class<?> dialectClass, String resourceUrl)
     {
         return resourceUrl.replaceAll(PLACEHOLDER_DIALECT, dialectClass.getName());
     }
@@ -1065,7 +1056,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * 
      * @return Returns an input stream onto the script, otherwise null
      */
-    private InputStream getScriptInputStream(Class dialectClazz, String scriptUrl) throws Exception
+    private InputStream getScriptInputStream(Class<?> dialectClazz, String scriptUrl) throws Exception
     {
         return getDialectResource(dialectClazz, scriptUrl).getInputStream();
     }
@@ -1090,14 +1081,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             // Validate the schema, pre-upgrade
             validateSchema("Alfresco-{0}-Validation-Pre-Upgrade-{1}-");
-            
-            // Dump the normalized, pre-upgrade Alfresco schema.  We keep the file for later reporting.
-            xmlPreSchemaOutputFile34 = dumpSchema34(
-                    this.dialect,
-                    TempFileProvider.createTempFile(
-                            "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
-                            "-Startup.xml").getPath(),
-                    "Failed to dump normalized, pre-upgrade schema to file.");
             
             dumpSchema("pre-upgrade");
 
@@ -1414,7 +1397,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     private void checkDialect(Dialect dialect)
     {
-        Class dialectClazz = dialect.getClass();
+        Class<?> dialectClazz = dialect.getClass();
         LogUtil.info(logger, MSG_DIALECT_USED, dialectClazz.getName());
         if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
         {
@@ -1600,37 +1583,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     // Validate the schema, post-upgrade
                     validateSchema("Alfresco-{0}-Validation-Post-Upgrade-{1}-");
                     
-                    // Dump the normalized, post-upgrade Alfresco schema.
-                    File xmlPostSchemaOutputFile34 = dumpSchema34(
-                            this.dialect,
-                            TempFileProvider.createTempFile(
-                                    "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
-                                    ".xml").getPath(),
-                            "Failed to dump normalized, post-upgrade schema to file.");
-                    
                     // 4.0+ schema dump
                     dumpSchema("post-upgrade");
-                    
-                    if (createdSchema)
-                    {
-                        // This is a new schema
-                        if (xmlPostSchemaOutputFile34 != null)
-                        {
-                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, xmlPostSchemaOutputFile34.getPath());
-                        }
-                    }
-                    else
-                    {
-                        // We upgraded, so have to report pre- and post- schema dumps
-                        if (xmlPreSchemaOutputFile34 != null)
-                        {
-                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_PRE, xmlPreSchemaOutputFile34.getPath());
-                        }
-                        if (xmlPostSchemaOutputFile34 != null)
-                        {
-                            LogUtil.info(logger, MSG_NORMALIZED_SCHEMA_POST, xmlPostSchemaOutputFile34.getPath());
-                        }
-                    }
                 }
             }
             else
@@ -1640,22 +1594,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             
             if (stopAfterSchemaBootstrap)
             {
-                // We have been forced to stop, so we do one last dump of the schema and throw an exception to
-                // escape further startup procedures
-                File xmlStopSchemaOutputFile = dumpSchema34(
-                        this.dialect,
-                        TempFileProvider.createTempFile(
-                                "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-",
-                                "-ForcedExit.xml").getPath(),
-                        "Failed to dump normalized, post-upgrade, forced-exit schema to file.");
-                
                 // 4.0+ schema dump
                 dumpSchema("forced-exit");
-                
-                if (xmlStopSchemaOutputFile != null)
-                {
-                    LogUtil.info(logger, MSG_NORMALIZED_SCHEMA, xmlStopSchemaOutputFile);
-                }
                 LogUtil.error(logger, ERR_FORCED_STOP);
                 throw new BootstrapStopException();
             }
@@ -1829,37 +1769,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         LogUtil.debug(logger, DEBUG_SCHEMA_COMP_TIME_TAKEN, durationMillis);
         
         return results.size();
-    }
-
-    /**
-     * Older schema dump tool. Left here for the moment but is essentially duplicated
-     * by the newer XML dumper which is used in automatic diff/validation of the schema
-     * against a known good reference.
-     * 
-     * @return                  Returns the file that was written to or <tt>null</tt> if it failed
-     */
-    private File dumpSchema34(Dialect dialect, String fileName, String err)
-    {
-        File xmlSchemaOutputFile = new File(fileName);
-        try
-        {
-            Main xmlSchemaOutputMain = new Main(dataSource, dialect);
-            xmlSchemaOutputMain.execute(xmlSchemaOutputFile);
-        }
-        catch (Throwable e)
-        {
-            xmlSchemaOutputFile = null;
-            // Don't fail the upgrade on this
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(err, e);
-            }
-            else
-            {
-                logger.error(err + "  Error: " + e.getMessage());
-            }
-        }
-        return xmlSchemaOutputFile;
     }
 
     /**

@@ -231,9 +231,15 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     public static final QName ASPECT_EXTENDED_READERS = QName.createQName(RM_URI, "extendedReaders");
     public static final QName PROP_READERS = QName.createQName(RM_URI, "readers");
 
-    // Original location of a record
+    // Originating details of a record
     public static final QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName(RM_URI, "recordOriginatingDetails");
-    public static final QName PROP_RECORD_ORIGINAL_LOCATION = QName.createQName(RM_URI, "recordOrginalLocation");
-    public static final QName PROP_RECORD_CREATION_DATE = QName.createQName(RM_URI, "recordCreationDate");
-    public static final QName PROP_RECORD_USER_ID = QName.createQName(RM_URI, "recordUserId");
+    public static final QName PROP_RECORD_ORIGINATING_USER_ID = QName.createQName(RM_URI, "recordOriginatingUserId");
+    public static final QName PROP_RECORD_ORIGINATING_CREATION_DATE = QName.createQName(RM_URI, "recordOriginatingCreationDate");
+    public static final QName PROP_RECORD_ORIGINATING_LOCATION = QName.createQName(RM_URI, "recordOriginatingLocation");
+
+    // Rejection details of a record
+    public static final QName ASPECT_RECORD_REJECTION_DETAILS = QName.createQName(RM_URI, "recordRejectionDetails");
+    public static final QName PROP_RECORD_REJECTION_USER_ID = QName.createQName(RM_URI, "recordRejectionUserId");
+    public static final QName PROP_RECORD_REJECTION_DATE = QName.createQName(RM_URI, "recordRejectionDate");
+    public static final QName PROP_RECORD_REJECTION_REASON = QName.createQName(RM_URI, "recordRejectionReason");
 }

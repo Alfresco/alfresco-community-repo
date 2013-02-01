@@ -116,11 +116,11 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
         else
         {
             // remove the child association
-            NodeRef originalLocation = (NodeRef) nodeService.getProperty(actionedUponNodeRef, PROP_RECORD_ORIGINAL_LOCATION);
+            NodeRef originatingLocation = (NodeRef) nodeService.getProperty(actionedUponNodeRef, PROP_RECORD_ORIGINATING_LOCATION);
             List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(actionedUponNodeRef);
             for (ChildAssociationRef childAssociationRef : parentAssocs)
             {
-                if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originalLocation))
+                if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originatingLocation))
                 {
                     nodeService.removeChildAssociation(childAssociationRef);
                     break;

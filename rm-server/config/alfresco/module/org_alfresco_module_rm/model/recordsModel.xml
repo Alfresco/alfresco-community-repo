@@ -1143,13 +1143,29 @@
       <aspect name="rma:recordOriginatingDetails">
          <title>The originating details of a record</title>
          <properties>
-            <property name="rma:recordOrginalLocation">
-               <type>d:any</type>
+            <property name="rma:recordOriginatingUserId">
+               <type>d:text</type>
             </property>
-            <property name="rma:recordCreationDate">
+            <property name="rma:recordOriginatingCreationDate">
                <type>d:date</type>
             </property>
-            <property name="rma:recordUserId">
+            <property name="rma:recordOriginatingLocation">
+               <type>d:any</type>
+            </property>
+         </properties>
+      </aspect>
+
+      <!-- Aspect to hold the details of a record rejection -->
+      <aspect name="rma:recordRejectionDetails">
+         <title>The rejection details of a record</title>
+         <properties>
+            <property name="rma:recordRejectionUserId">
+               <type>d:text</type>
+            </property>
+            <property name="rma:recordRejectionDate">
+               <type>d:date</type>
+            </property>
+            <property name="rma:recordRejectionReason">
                <type>d:text</type>
             </property>
          </properties>

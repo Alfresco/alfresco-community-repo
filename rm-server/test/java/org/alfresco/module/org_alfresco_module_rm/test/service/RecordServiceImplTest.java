@@ -258,7 +258,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
                 // show that the record has meta-data about it's original location
                 assertTrue(nodeService.hasAspect(dmDocument, ASPECT_RECORD_ORIGINATING_DETAILS));
-                assertEquals(originalLocation, nodeService.getProperty(dmDocument, PROP_RECORD_ORIGINAL_LOCATION));
+                assertEquals(originalLocation, nodeService.getProperty(dmDocument, PROP_RECORD_ORIGINATING_LOCATION));
                 assertFalse(originalLocation == nodeService.getPrimaryParent(dmDocument).getParentRef());
 
                 // show that the record is linked to it's original location
@@ -346,7 +346,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
                 // show that the record has meta-data about it's original location
                 assertTrue(nodeService.hasAspect(dmDocument, ASPECT_RECORD_ORIGINATING_DETAILS));
-                assertEquals(originalLocation, nodeService.getProperty(dmDocument, PROP_RECORD_ORIGINAL_LOCATION));
+                assertEquals(originalLocation, nodeService.getProperty(dmDocument, PROP_RECORD_ORIGINATING_LOCATION));
                 assertFalse(originalLocation == nodeService.getPrimaryParent(dmDocument).getParentRef());
 
                 // show that the record is linked to it's original location

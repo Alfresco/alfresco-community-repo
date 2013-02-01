@@ -330,11 +330,11 @@ public class RecordServiceImpl implements RecordService,
                     // move the document into the file plan
                     nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
 
-                    // Add the information about the original location
+                    // save the information about the originating details
                     Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
-                    aspectProperties.put(PROP_RECORD_ORIGINAL_LOCATION, (Serializable) parentAssoc.getParentRef());
-                    aspectProperties.put(PROP_RECORD_USER_ID, userId);
-                    aspectProperties.put(PROP_RECORD_CREATION_DATE, new Date());
+                    aspectProperties.put(PROP_RECORD_ORIGINATING_LOCATION, (Serializable) parentAssoc.getParentRef());
+                    aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, userId);
+                    aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
                     nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
 
                     // make the document a record
@@ -461,11 +461,11 @@ public class RecordServiceImpl implements RecordService,
             public Void doWork() throws Exception
             {
                 // first remove the secondary link association
-                NodeRef originalLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINAL_LOCATION);
+                NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
                 List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef childAssociationRef : parentAssocs)
                 {
-                    if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originalLocation))
+                    if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originatingLocation))
                     {
                         nodeService.removeChildAssociation(childAssociationRef);
                         break;
@@ -483,13 +483,20 @@ public class RecordServiceImpl implements RecordService,
                 ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
 
                 // move the record into the collaboration site
-                nodeService.moveNode(nodeRef, originalLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
+                nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
 
                 // remove all extended readers
                 extendedSecurityService.removeAllExtendedReaders(nodeRef);
 
-                // Send an email to the record creator
-                notificationHelper.recordRejectedEmailNotification(nodeRef, reason, userId);
+                // save the information about the rejection details
+                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
+                aspectProperties.put(PROP_RECORD_REJECTION_USER_ID, userId);
+                aspectProperties.put(PROP_RECORD_REJECTION_DATE, new Date());
+                aspectProperties.put(PROP_RECORD_REJECTION_REASON, reason);
+                nodeService.addAspect(nodeRef, ASPECT_RECORD_REJECTION_DETAILS, aspectProperties);
+
+                // send an email to the record creator
+                notificationHelper.recordRejectedEmailNotification(nodeRef);
 
                 return null;
             }

@@ -308,49 +308,77 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
      * Sends record rejected email notification.
      *
      * @param record    rejected record
-     * @param reason    reason for rejection
-     * @param userId    the user id who rejected the record
      */
-    public void recordRejectedEmailNotification(NodeRef record, String reason, String userId)
+    public void recordRejectedEmailNotification(NodeRef record)
     {
         ParameterCheck.mandatory("record", record);
-        ParameterCheck.mandatoryString("reason", reason);
-        ParameterCheck.mandatoryString("userId", userId);
 
-        String recordCreator = (String) nodeService.getProperty(record, PROP_RECORD_USER_ID);
-        if (StringUtils.isNotBlank(recordCreator) == true)
+        if (canSendRejectEmail(record) == true)
         {
-            SiteInfo site = siteService.getSite(record);
-            if (site == null)
-            {
-                throw new AlfrescoRuntimeException("Could not find the site which should contain the node '" + record.toString() + "'.");
-            }
+            String site = siteService.getSite(record).getShortName();
+            String recordCreator = (String) nodeService.getProperty(record, PROP_RECORD_ORIGINATING_USER_ID);
+            String rejectReason = (String) nodeService.getProperty(record, PROP_RECORD_REJECTION_REASON);
+            String rejectedPerson = (String) nodeService.getProperty(record, PROP_RECORD_REJECTION_USER_ID);
+            Date rejectDate = (Date) nodeService.getProperty(record, PROP_RECORD_REJECTION_DATE);
+
+            Map<String, Serializable> args = new HashMap<String, Serializable>(6);
+            args.put("record", record);
+            args.put("site", site);
+            args.put("recordCreator", recordCreator);
+            args.put("rejectReason", rejectReason);
+            args.put("rejectedPerson", rejectedPerson);
+            args.put("rejectDate", rejectDate);
 
             NotificationContext notificationContext = new NotificationContext();
 
             notificationContext.addTo(recordCreator);
             notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORD_REJECTED));
             notificationContext.setBodyTemplate(getRejectedTemplate());
-
-            Map<String, Serializable> args = new HashMap<String, Serializable>(6);
-            args.put("site", site.getShortName());
-            args.put("record", record);
-            args.put("userName", recordCreator);
-            args.put("rejectReason", reason);
-            args.put("rejectDate", new Date());
-            args.put("rejectedPerson", userId);
-
             notificationContext.setTemplateArgs(args);
 
             notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
         }
-        else
+    }
+
+    /**
+     * Helper method to check if the mandatory properties are set
+     *
+     * @param record    rejected record
+     */
+    private boolean canSendRejectEmail(NodeRef record)
+    {
+        boolean result = true;
+
+        String msg1 = "Unable to send record rejected email notification, because ";
+        String msg2 = " could not be found!";
+
+        if (siteService.getSite(record) == null)
         {
-            if (logger.isWarnEnabled() == true)
-            {
-                logger.warn("Unable to send record rejected email notification, because notification user was empty.");
-            }
+            result = false;
+            logger.warn(msg1 + "the site which should contain the node '" + record.toString() + "'" + msg2);
         }
+        if (StringUtils.isBlank((String) nodeService.getProperty(record, PROP_RECORD_ORIGINATING_USER_ID)) == true)
+        {
+            result = false;
+            logger.warn(msg1 + "the user, who created the record" + msg2);
+        }
+        if (StringUtils.isBlank((String) nodeService.getProperty(record, PROP_RECORD_REJECTION_REASON)) == true)
+        {
+            result = false;
+            logger.warn(msg1 + "the reason for rejection" + msg2);
+        }
+        if (StringUtils.isBlank((String) nodeService.getProperty(record, PROP_RECORD_REJECTION_USER_ID)) == true)
+        {
+            result = false;
+            logger.warn(msg1 + "the user, who rejected the record" + msg2);
+        }
+        if (((Date) nodeService.getProperty(record, PROP_RECORD_REJECTION_DATE)) == null)
+        {
+            result = false;
+            logger.warn(msg1 + "the date, when the record was rejected" + msg2);
+        }
+
+        return result;
     }
 
     /**

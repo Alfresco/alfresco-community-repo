@@ -75,7 +75,7 @@ public class RejectActionTest extends BaseRMTestCase
                 assertTrue(recordService.isRecord(dmDocument));
 
                 // The record should have the original location information
-                assertNotNull(nodeService.getProperty(dmDocument, PROP_RECORD_ORIGINAL_LOCATION));
+                assertNotNull(nodeService.getProperty(dmDocument, PROP_RECORD_ORIGINATING_LOCATION));
 
                 // Check the parents. In this case the document should have two parents (doclib and fileplan)
                 assertTrue(nodeService.getParentAssocs(dmDocument).size() == 2);

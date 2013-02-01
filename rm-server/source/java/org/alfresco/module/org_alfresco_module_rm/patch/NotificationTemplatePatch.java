@@ -44,36 +44,37 @@ import org.springframework.beans.factory.BeanNameAware;
 /**
  * @author Roy Wetherall
  */
-public class NotificationTemplatePatch extends AbstractModuleComponent 
+public class NotificationTemplatePatch extends AbstractModuleComponent
                                        implements BeanNameAware
 {
     /** Last patch update property */
     private static final QName PROP_LAST_PATCH_UPDATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lastPatchUpdate");
-    
+
     private static final String PATH_DUE_FOR_REVIEW = "alfresco/module/org_alfresco_module_rm/bootstrap/content/notify-records-due-for-review-email.ftl";
     private static final String PATH_SUPERSEDED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-superseded-email.ftl";
-    
+    private static final String PATH_REJECTED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-rejected-email.ftl";
+
     /** Logger */
     private static Log logger = LogFactory.getLog(NotificationTemplatePatch.class);
-    
+
     /** Records management notification helper */
     private RecordsManagementNotificationHelper notificationHelper;
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Content service */
     private ContentService contentService;
-    
+
     /** Version service */
     private VersionService versionService;
-    
+
     /** Audit service */
     private AuditService auditService;
-    
+
     /** Bean name */
     private String name;
-    
+
     /**
      * @param notificationHelper    notification helper
      */
@@ -81,7 +82,7 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
     {
         this.notificationHelper = notificationHelper;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -89,7 +90,7 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param contentService content service
      */
@@ -97,7 +98,7 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * @param versionService    version service
      */
@@ -105,7 +106,7 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
     {
         this.versionService = versionService;
     }
-    
+
     /**
      * @param auditService  audit service
      */
@@ -113,7 +114,7 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
     {
         this.auditService = auditService;
     }
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#setBeanName(java.lang.String)
      */
@@ -122,7 +123,7 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
     {
         this.name = name;
     }
-    
+
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -133,17 +134,20 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
         {
             logger.debug("RM Module NotificationTemplatePatch ...");
         }
-        
+
         NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
         updateTemplate(supersededTemplate, PATH_SUPERSEDED);
-        
+
         NodeRef dueForReviewTemplate = notificationHelper.getDueForReviewTemplate();
         updateTemplate(dueForReviewTemplate, PATH_DUE_FOR_REVIEW);
+
+        NodeRef rejectedTemplate = notificationHelper.getRejectedTemplate();
+        updateTemplate(rejectedTemplate, PATH_REJECTED);
     }
-    
+
     /**
      * Attempt to update the template with the updated version
-     * 
+     *
      * @param template
      * @param updatedTemplate
      */
@@ -159,7 +163,7 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
         else
         {
             System.out.println(nodeService.getProperty(template, ContentModel.PROP_DESCRIPTION));
-            
+
             // Check to see if this template has already been updated
             String lastPatchUpdate = (String)nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
             if (lastPatchUpdate == null || name.equals(lastPatchUpdate) == false)
@@ -168,24 +172,24 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
                 {
                     logger.debug("Applying update to template. (template=" + template.toString() + ", templateUpdate=" + templateUpdate + ")");
                 }
-                     
+
                 // Make sure the template is versionable
                 if (nodeService.hasAspect(template, ContentModel.ASPECT_VERSIONABLE) == false)
                 {
                     nodeService.addAspect(template, ContentModel.ASPECT_VERSIONABLE, null);
-                    
+
                     // Create version (before template is updated)
                     Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(2);
-                    versionProperties.put(Version.PROP_DESCRIPTION, "Initial version");                    
+                    versionProperties.put(Version.PROP_DESCRIPTION, "Initial version");
                     versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                     versionService.createVersion(template, versionProperties);
-                }               
-                
+                }
+
                 // Update the content of the template
                 InputStream is = getClass().getClassLoader().getResourceAsStream(templateUpdate);
                 ContentWriter writer = contentService.getWriter(template, ContentModel.PROP_CONTENT, true);
                 writer.putContent(is);
-                                
+
                 boolean enabled = auditService.isAuditEnabled();
                 auditService.setAuditEnabled(false);
                 try
@@ -206,5 +210,5 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
                 }
             }
         }
-    }    
+    }
 }

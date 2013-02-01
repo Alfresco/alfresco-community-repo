@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.notification;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.notification.EMailNotificationProvider;
@@ -46,6 +48,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -53,17 +56,18 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * Helper bean containing methods useful when sending records
  * management notifications via the {@link NotificationService}
- * 
+ *
  * @author Roy Wetherall
  */
-public class RecordsManagementNotificationHelper
+public class RecordsManagementNotificationHelper implements RecordsManagementModel
 {
     private static Log logger = LogFactory.getLog(RecordsManagementNotificationHelper.class);
-    
+
     /** I18n */
     private static final String MSG_SUBJECT_RECORDS_DUE_FOR_REVIEW = "notification.dueforreview.subject";
     private static final String MSG_SUBJECT_RECORD_SUPERCEDED = "notification.superseded.subject";
-    
+    private static final String MSG_SUBJECT_RECORD_REJECTED = "notification.rejected.subject";
+
     /** Defaults */
     private static final String DEFAULT_SITE = "rm";
 
@@ -77,14 +81,15 @@ public class RecordsManagementNotificationHelper
     private AuthorityService authorityService;
     private TenantAdminService tenantAdminService;
     private NodeService nodeService;
-    
+
     /** Notification role */
     private String notificationRole;
-    
+
     /** EMail notification templates */
     private NodeRef supersededTemplate = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "record_superseded_template");
     private NodeRef dueForReviewTemplate;
-    
+    private NodeRef rejectedTemplate = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "record_rejected_template");
+
     /**
      * @param notificationService   notification service
      */
@@ -92,7 +97,7 @@ public class RecordsManagementNotificationHelper
     {
         this.notificationService = notificationService;
     }
-    
+
     /**
      * @param recordsManagementService  rm service
      */
@@ -100,7 +105,7 @@ public class RecordsManagementNotificationHelper
     {
         this.recordsManagementService = recordsManagementService;
     }
-    
+
     /**
      * @param filePlanRoleService   file plan role service
      */
@@ -108,7 +113,7 @@ public class RecordsManagementNotificationHelper
     {
         this.filePlanRoleService = filePlanRoleService;
     }
-    
+
     /**
      * @param notificationRole  rm notification role
      */
@@ -116,7 +121,7 @@ public class RecordsManagementNotificationHelper
     {
         this.notificationRole = notificationRole;
     }
-    
+
     /**
      * @param searchService search service
      */
@@ -124,7 +129,7 @@ public class RecordsManagementNotificationHelper
     {
         this.searchService = searchService;
     }
-    
+
     /**
      * @param namespaceService  namespace service
      */
@@ -132,7 +137,7 @@ public class RecordsManagementNotificationHelper
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param siteService   site service
      */
@@ -140,7 +145,7 @@ public class RecordsManagementNotificationHelper
     {
         this.siteService = siteService;
     }
-    
+
     /**
      * @param authorityService  authority service
      */
@@ -148,7 +153,7 @@ public class RecordsManagementNotificationHelper
     {
         this.authorityService = authorityService;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -156,7 +161,7 @@ public class RecordsManagementNotificationHelper
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param tenantAdminService    tenant admin service
      */
@@ -164,7 +169,7 @@ public class RecordsManagementNotificationHelper
     {
         this.tenantAdminService = tenantAdminService;
     }
-    
+
     /**
      * @return  superseded email template
      */
@@ -172,7 +177,15 @@ public class RecordsManagementNotificationHelper
     {
         return supersededTemplate;
     }
-    
+
+    /**
+     * @return  rejected email template
+     */
+    public NodeRef getRejectedTemplate()
+    {
+        return rejectedTemplate;
+    }
+
     /**
      * @return  due for review email template
      */
@@ -180,11 +193,11 @@ public class RecordsManagementNotificationHelper
     {
         if (dueForReviewTemplate == null)
         {
-            List<NodeRef> nodeRefs = 
+            List<NodeRef> nodeRefs =
                 searchService.selectNodes(
-                        getRootNode(), 
-                        "app:company_home/app:dictionary/cm:records_management/cm:records_management_email_templates/cm:notify-records-due-for-review-email.ftl", null, 
-                        namespaceService, 
+                        getRootNode(),
+                        "app:company_home/app:dictionary/cm:records_management/cm:records_management_email_templates/cm:notify-records-due-for-review-email.ftl", null,
+                        namespaceService,
                         false);
             if (nodeRefs.size() == 1)
             {
@@ -193,10 +206,10 @@ public class RecordsManagementNotificationHelper
         }
         return dueForReviewTemplate;
     }
-    
+
     /**
      * Helper method to get root node in a tenant safe way.
-     * 
+     *
      * @return  NodeRef root node of spaces store
      */
     private NodeRef getRootNode()
@@ -205,15 +218,15 @@ public class RecordsManagementNotificationHelper
         return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
         {
             public NodeRef doWork() throws Exception
-            {                
+            {
                 return nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
             }
         }, tenantDomain);
     }
-    
+
     /**
      * Sends records due for review email notification.
-     * 
+     *
      * @param records   records due for review
      */
     public void recordsDueForReviewEmailNotification(final List<NodeRef> records)
@@ -222,23 +235,23 @@ public class RecordsManagementNotificationHelper
         if (records.isEmpty() == false)
         {
             NodeRef root = getRMRoot(records.get(0));
-            String groupName = getGroupName(root); 
-            
+            String groupName = getGroupName(root);
+
             if (doesGroupContainUsers(groupName) == true)
-            {            
+            {
                 NotificationContext notificationContext = new NotificationContext();
                 notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORDS_DUE_FOR_REVIEW));
                 notificationContext.setAsyncNotification(false);
                 notificationContext.setIgnoreNotificationFailure(true);
-                
+
                 notificationContext.setBodyTemplate(getDueForReviewTemplate());
                 Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-                args.put("records", (Serializable)records); 
+                args.put("records", (Serializable)records);
                 args.put("site", getSiteName(root));
                 notificationContext.setTemplateArgs(args);
-                           
-                notificationContext.addTo(groupName);        
-                
+
+                notificationContext.addTo(groupName);
+
                 notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
             }
             else
@@ -247,39 +260,39 @@ public class RecordsManagementNotificationHelper
                 {
                     logger.warn("Unable to send record due for review email notification, because notification group was empty.");
                 }
-                
+
                 throw new AlfrescoRuntimeException("Unable to send record due for review email notification, because notification group was empty.");
             }
         }
-    }    
-    
+    }
+
     /**
      * Sends record superseded email notification.
-     * 
+     *
      * @param record    superseded record
      */
     public void recordSupersededEmailNotification(final NodeRef record)
     {
-        ParameterCheck.mandatory("record", record);  
-        
+        ParameterCheck.mandatory("record", record);
+
         NodeRef root = getRMRoot(record);
         String groupName = getGroupName(root);
-        
+
         if (doesGroupContainUsers(groupName) == true)
-        { 
+        {
             NotificationContext notificationContext = new NotificationContext();
             notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORD_SUPERCEDED));
             notificationContext.setAsyncNotification(false);
             notificationContext.setIgnoreNotificationFailure(true);
-            
+
             notificationContext.setBodyTemplate(supersededTemplate);
             Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-            args.put("record", record);  
+            args.put("record", record);
             args.put("site", getSiteName(root));
             notificationContext.setTemplateArgs(args);
-            
-            notificationContext.addTo(groupName);        
-            
+
+            notificationContext.addTo(groupName);
+
             notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
         }
         else
@@ -290,10 +303,59 @@ public class RecordsManagementNotificationHelper
             }
         }
     }
-    
+
+    /**
+     * Sends record rejected email notification.
+     *
+     * @param record    rejected record
+     * @param reason    reason for rejection
+     * @param userId    the user id who rejected the record
+     */
+    public void recordRejectedEmailNotification(NodeRef record, String reason, String userId)
+    {
+        ParameterCheck.mandatory("record", record);
+        ParameterCheck.mandatoryString("reason", reason);
+        ParameterCheck.mandatoryString("userId", userId);
+
+        String recordCreator = (String) nodeService.getProperty(record, PROP_RECORD_USER_ID);
+        if (StringUtils.isNotBlank(recordCreator) == true)
+        {
+            SiteInfo site = siteService.getSite(record);
+            if (site == null)
+            {
+                throw new AlfrescoRuntimeException("Could not find the site which should contain the node '" + record.toString() + "'.");
+            }
+
+            NotificationContext notificationContext = new NotificationContext();
+
+            notificationContext.addTo(recordCreator);
+            notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORD_REJECTED));
+            notificationContext.setBodyTemplate(getRejectedTemplate());
+
+            Map<String, Serializable> args = new HashMap<String, Serializable>(6);
+            args.put("site", site.getShortName());
+            args.put("record", record);
+            args.put("userName", recordCreator);
+            args.put("rejectReason", reason);
+            args.put("rejectDate", new Date());
+            args.put("rejectedPerson", userId);
+
+            notificationContext.setTemplateArgs(args);
+
+            notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
+        }
+        else
+        {
+            if (logger.isWarnEnabled() == true)
+            {
+                logger.warn("Unable to send record rejected email notification, because notification user was empty.");
+            }
+        }
+    }
+
     /**
      * Gets the rm root given a context node.
-     * 
+     *
      * @param context   context node reference
      * @return {@link NodeRef}  rm root node reference
      */
@@ -305,15 +367,15 @@ public class RecordsManagementNotificationHelper
             public NodeRef doWork() throws Exception
             {
                 return recordsManagementService.getFilePlan(context);
-                
+
             }
         }, AuthenticationUtil.getSystemUserName());
-        
+
     }
-    
+
     /**
      * Gets the group name for the notification role.
-     * 
+     *
      * @param root  rm root node
      * @return String   notification role's group name
      */
@@ -326,11 +388,11 @@ public class RecordsManagementNotificationHelper
             {
                 // Find the authority for the given role
                 Role role = filePlanRoleService.getRole(root, notificationRole);
-                return role.getRoleGroupName();                
+                return role.getRoleGroupName();
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     private boolean doesGroupContainUsers(final String groupName)
     {
         return AuthenticationUtil.runAs(new RunAsWork<Boolean>()
@@ -343,10 +405,10 @@ public class RecordsManagementNotificationHelper
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Get the site name, default if none/undetermined.
-     * 
+     *
      * @param root  rm root
      * @return String   site name
      */
@@ -358,16 +420,16 @@ public class RecordsManagementNotificationHelper
             public String doWork() throws Exception
             {
                 String result = DEFAULT_SITE;
-                
+
                 SiteInfo siteInfo = siteService.getSite(root);
                 if (siteInfo != null)
                 {
                     result = siteInfo.getShortName();
                 }
-                
+
                 return result;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
+
     }
 }

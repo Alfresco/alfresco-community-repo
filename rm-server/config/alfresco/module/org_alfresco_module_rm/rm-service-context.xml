@@ -1101,7 +1101,7 @@
         <property name="policyComponent" ref="policyComponent" />
         <property name="dispositionService" ref="DispositionService" />
         <property name="filePlanService" ref="FilePlanService" />
-        <property name="notificationService" ref="NotificationService"/>
+        <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

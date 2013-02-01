@@ -36,20 +36,18 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.notification.EMailNotificationProvider;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.notification.NotificationContext;
-import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -57,11 +55,9 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.mail.MailPreparationException;
 
 /**
  * Record service implementation
@@ -101,8 +97,8 @@ public class RecordServiceImpl implements RecordService,
     /** File plan service */
     private FilePlanService filePlanService;
 
-    /** Notification service */
-    private NotificationService notificationService;
+    /** Records management notification helper */
+    private RecordsManagementNotificationHelper notificationHelper;
 
     /** Policy component */
     private PolicyComponent policyComponent;
@@ -187,11 +183,11 @@ public class RecordServiceImpl implements RecordService,
     }
 
     /**
-     * @param notificationService notification service
+     * @param notificationHelper notification helper
      */
-    public void setNotificationService(NotificationService notificationService)
+    public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
     {
-        this.notificationService = notificationService;
+        this.notificationHelper = notificationHelper;
     }
 
     /**
@@ -455,6 +451,9 @@ public class RecordServiceImpl implements RecordService,
         ParameterCheck.mandatory("NodeRef", nodeRef);
         ParameterCheck.mandatoryString("Reason", reason);
 
+        // Save the id of the currently logged in user
+        final String userId = AuthenticationUtil.getRunAsUser();
+
         // do the work of rejecting the record as the system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
@@ -490,23 +489,7 @@ public class RecordServiceImpl implements RecordService,
                 extendedSecurityService.removeAllExtendedReaders(nodeRef);
 
                 // Send an email to the record creator
-                String recordCreator = (String) nodeService.getProperty(nodeRef, PROP_RECORD_USER_ID);
-                if (StringUtils.isNotBlank(recordCreator))
-                {
-                    NotificationContext context = new NotificationContext();
-
-                    context.addTo(recordCreator);
-                    // FIXME: Subject -> i18n
-                    context.setSubject("Record rejected");
-                    // FIXME: Use email template
-                    context.setBody(reason);
-
-                    notificationService.sendNotification(EMailNotificationProvider.NAME, context);
-                }
-                else
-                {
-                    throw new MailPreparationException("The id of the record creator cannot be found!");
-                }
+                notificationHelper.recordRejectedEmailNotification(nodeRef, reason, userId);
 
                 return null;
             }

@@ -83,7 +83,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Records Management Audit Service Implementation.
- * 
+ *
  * @author Gavin Cornwell
  * @since 3.2
  */
@@ -129,16 +129,17 @@ public class RecordsManagementAuditServiceImpl
     private static final String MSG_AUDIT_REPORT = "rm.audit.audit-report";
     private static final String MSG_CREATE_DISPOSITION_SCHEDULE = "rm.audit.create-disposition-schedule";
     private static final String MSG_UNFREEZE = "rm.audit.unfreeze";
-    
+    private static final String MSG_REJECT_RECORD = "rm.audit.reject-record";
+
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
 
     private static final String KEY_RM_AUDIT_NODE_RECORDS = "RMAUditNodeRecords";
-    
+
     protected static final String AUDIT_TRAIL_FILE_PREFIX = "audit_";
     protected static final String AUDIT_TRAIL_JSON_FILE_SUFFIX = ".json";
     protected static final String AUDIT_TRAIL_HTML_FILE_SUFFIX = ".html";
-    
+
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
     private TransactionService transactionService;
@@ -148,16 +149,16 @@ public class RecordsManagementAuditServiceImpl
     private AuditService auditService;
     private RecordsManagementService rmService;
     private RecordsManagementActionService rmActionService;
-    
+
     private boolean shutdown = false;
-    
+
     private RMAuditTxnListener txnListener;
     private Map<String, AuditEvent> auditEvents;
-    
+
     public RecordsManagementAuditServiceImpl()
     {
     }
-    
+
     /**
      * Set the component used to bind to behaviour callbacks
      */
@@ -187,15 +188,15 @@ public class RecordsManagementAuditServiceImpl
      */
     public void setNodeService(NodeService nodeService)
     {
-        this.nodeService = nodeService; 
+        this.nodeService = nodeService;
     }
-    
+
     /**
      * Sets the ContentService instance
      */
     public void setContentService(ContentService contentService)
     {
-        this.contentService = contentService; 
+        this.contentService = contentService;
     }
 
     /**
@@ -213,7 +214,7 @@ public class RecordsManagementAuditServiceImpl
     {
         this.auditService = auditService;
     }
-    
+
     /**
      * Set the  RecordsManagementService
      */
@@ -229,7 +230,7 @@ public class RecordsManagementAuditServiceImpl
     {
         this.rmActionService = rmActionService;
     }
-    
+
     /**
      * Checks that all necessary properties have been set.
      */
@@ -244,83 +245,85 @@ public class RecordsManagementAuditServiceImpl
         PropertyCheck.mandatory(this, "rmService", rmService);
         PropertyCheck.mandatory(this, "rmActionService", rmActionService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
-        
+
         // setup the audit events map
         initAuditEvents();
     }
-    
+
     protected void initAuditEvents()
     {
         // TODO: make this map configurable and localisable.
         this.auditEvents = new HashMap<String, AuditEvent>(32);
-        
-        this.auditEvents.put(RM_AUDIT_EVENT_UPDATE_RM_OBJECT, 
+
+        this.auditEvents.put(RM_AUDIT_EVENT_UPDATE_RM_OBJECT,
                     new AuditEvent(RM_AUDIT_EVENT_UPDATE_RM_OBJECT, MSG_UPDATED_METADATA));
         this.auditEvents.put(RM_AUDIT_EVENT_CREATE_RM_OBJECT,
                     new AuditEvent(RM_AUDIT_EVENT_CREATE_RM_OBJECT, MSG_CREATED_OBJECT));
-        this.auditEvents.put(RM_AUDIT_EVENT_DELETE_RM_OBJECT, 
+        this.auditEvents.put(RM_AUDIT_EVENT_DELETE_RM_OBJECT,
                     new AuditEvent(RM_AUDIT_EVENT_DELETE_RM_OBJECT, MSG_DELETE_OBJECT));
         this.auditEvents.put(RM_AUDIT_EVENT_LOGIN_SUCCESS,
                     new AuditEvent(RM_AUDIT_EVENT_LOGIN_SUCCESS, MSG_LOGIN_SUCCEEDED));
         this.auditEvents.put(RM_AUDIT_EVENT_LOGIN_FAILURE,
                 new AuditEvent(RM_AUDIT_EVENT_LOGIN_FAILURE, MSG_LOGIN_FAILED));
-        
-        this.auditEvents.put("reviewed", 
+
+        this.auditEvents.put("reviewed",
                     new AuditEvent("reviewed", MSG_REVIEWED));
-        this.auditEvents.put("cutoff", 
+        this.auditEvents.put("cutoff",
                     new AuditEvent("cutoff", MSG_CUT_OFF));
-        this.auditEvents.put("unCutoff", 
+        this.auditEvents.put("unCutoff",
                     new AuditEvent("unCutoff", MSG_REVERSED_CUT_OFF));
-        this.auditEvents.put("destroy", 
+        this.auditEvents.put("destroy",
                     new AuditEvent("destroy", MSG_DESTROYED_ITEM));
-        this.auditEvents.put("openRecordFolder", 
+        this.auditEvents.put("openRecordFolder",
                     new AuditEvent("openRecordFolder", MSG_OPENED_RECORD_FOLDER));
-        this.auditEvents.put("closeRecordFolder", 
+        this.auditEvents.put("closeRecordFolder",
                     new AuditEvent("closeRecordFolder", MSG_CLOSED_RECORD_FOLDER));
-        this.auditEvents.put("declareRecord", 
+        this.auditEvents.put("declareRecord",
                     new AuditEvent("declareRecord", MSG_DECLARED_RECORD));
-        this.auditEvents.put("undeclareRecord", 
+        this.auditEvents.put("undeclareRecord",
                     new AuditEvent("undeclareRecord", MSG_UNDECLARED_RECORD));
-        this.auditEvents.put("freeze", 
+        this.auditEvents.put("freeze",
                     new AuditEvent("freeze", MSG_FROZE_ITEM));
-        this.auditEvents.put("relinquishHold", 
+        this.auditEvents.put("relinquishHold",
                     new AuditEvent("relinquishHold", MSG_RELINQUISED_HOLD));
-        this.auditEvents.put("editHoldReason", 
+        this.auditEvents.put("editHoldReason",
                     new AuditEvent("editHoldReason", MSG_UPDATED_HOLD_REASON));
-        this.auditEvents.put("editReviewAsOfDate", 
+        this.auditEvents.put("editReviewAsOfDate",
                     new AuditEvent("editReviewAsOfDate", MSG_UPDATED_REVIEW_AS_OF_DATE));
-        this.auditEvents.put("editDispositionActionAsOfDate", 
+        this.auditEvents.put("editDispositionActionAsOfDate",
                     new AuditEvent("editDispositionActionAsOfDate", MSG_UPDATED_DISPOSITION_AS_OF_DATE));
-        this.auditEvents.put("broadcastVitalRecordDefinition", 
+        this.auditEvents.put("broadcastVitalRecordDefinition",
                     new AuditEvent("broadcastVitalRecordDefinition", MSG_UPDATED_VITAL_RECORD_DEFINITION));
-        this.auditEvents.put("broadcastDispositionActionDefinitionUpdate", 
+        this.auditEvents.put("broadcastDispositionActionDefinitionUpdate",
                     new AuditEvent("broadcastDispositionActionDefinitionUpdate", MSG_UPDATED_DISPOSITOIN_ACTION_DEFINITION));
-        this.auditEvents.put("completeEvent", 
+        this.auditEvents.put("completeEvent",
                     new AuditEvent("completeEvent", MSG_COMPELTED_EVENT));
-        this.auditEvents.put("undoEvent", 
+        this.auditEvents.put("undoEvent",
                     new AuditEvent("undoEvent", MSG_REVERSED_COMPLETE_EVENT));
-        this.auditEvents.put("transfer", 
+        this.auditEvents.put("transfer",
                     new AuditEvent("transfer", MSG_TRANSFERRED_ITEM));
-        this.auditEvents.put("transferComplete", 
+        this.auditEvents.put("transferComplete",
                     new AuditEvent("transferComplete", MSG_COMPLETED_TRANSFER));
-        this.auditEvents.put("accession", 
+        this.auditEvents.put("accession",
                     new AuditEvent("accession", MSG_ACCESSION));
-        this.auditEvents.put("accessionComplete", 
+        this.auditEvents.put("accessionComplete",
                     new AuditEvent("accessionComplete", MSG_COMPLETED_ACCESSION));
-        this.auditEvents.put("applyScannedRecord", 
+        this.auditEvents.put("applyScannedRecord",
                     new AuditEvent("applyScannedRecord", MSG_SCANNED_RECORD));
-        this.auditEvents.put("applyPdfRecord", 
+        this.auditEvents.put("applyPdfRecord",
                     new AuditEvent("applyPdfRecord", MSG_PDF_RECORD));
-        this.auditEvents.put("applyDigitalPhotographRecord", 
+        this.auditEvents.put("applyDigitalPhotographRecord",
                     new AuditEvent("applyDigitalPhotographRecord", MSG_PHOTO_RECORD));
-        this.auditEvents.put("applyWebRecord", 
+        this.auditEvents.put("applyWebRecord",
                     new AuditEvent("applyWebRecord", MSG_WEB_RECORD));
-        this.auditEvents.put("createDispositionSchedule", 
+        this.auditEvents.put("createDispositionSchedule",
                     new AuditEvent("createDispositionSchedule", MSG_CREATE_DISPOSITION_SCHEDULE));
-        this.auditEvents.put("unfreeze", 
+        this.auditEvents.put("unfreeze",
                     new AuditEvent("unfreeze", MSG_UNFREEZE));
+        this.auditEvents.put("reject",
+                new AuditEvent("reject", MSG_REJECT_RECORD));
     }
-    
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -330,15 +333,15 @@ public class RecordsManagementAuditServiceImpl
         policyComponent.bindClassBehaviour(
                 OnUpdatePropertiesPolicy.QNAME,
                 RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID,
-                new JavaBehaviour(this, "onUpdateProperties"));   
+                new JavaBehaviour(this, "onUpdateProperties"));
         policyComponent.bindClassBehaviour(
                 OnCreateNodePolicy.QNAME,
                 RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID,
-                new JavaBehaviour(this, "onCreateNode"));   
+                new JavaBehaviour(this, "onCreateNode"));
         policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
                 RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID,
-                new JavaBehaviour(this, "beforeDeleteNode"));     
+                new JavaBehaviour(this, "beforeDeleteNode"));
     }
 
     @Override
@@ -356,7 +359,7 @@ public class RecordsManagementAuditServiceImpl
                 RecordsManagementAuditService.RM_AUDIT_APPLICATION_NAME,
                 RecordsManagementAuditService.RM_AUDIT_PATH_ROOT);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -380,7 +383,7 @@ public class RecordsManagementAuditServiceImpl
         if (logger.isInfoEnabled())
             logger.info("Stopped Records Management auditing");
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -390,7 +393,7 @@ public class RecordsManagementAuditServiceImpl
         if (logger.isInfoEnabled())
             logger.debug("Records Management audit log has been cleared");
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -399,7 +402,7 @@ public class RecordsManagementAuditServiceImpl
         // TODO: return proper date, for now it's today's date
         return new Date();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -408,10 +411,10 @@ public class RecordsManagementAuditServiceImpl
         // TODO: return proper date, for now it's today's date
         return new Date();
     }
-    
+
     /**
      * A class to carry audit information through the transaction.
-     * 
+     *
      * @author Derek Hulley
      * @since 3.2
      */
@@ -420,7 +423,7 @@ public class RecordsManagementAuditServiceImpl
         private String eventName;
         private Map<QName, Serializable> nodePropertiesBefore;
         private Map<QName, Serializable> nodePropertiesAfter;
-        
+
         private RMAuditNode()
         {
         }
@@ -455,7 +458,7 @@ public class RecordsManagementAuditServiceImpl
             this.nodePropertiesAfter = nodePropertiesAfter;
         }
     }
-    
+
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         auditRMEvent(nodeRef, RM_AUDIT_EVENT_UPDATE_RM_OBJECT, before, after);
@@ -465,7 +468,7 @@ public class RecordsManagementAuditServiceImpl
     {
         auditRMEvent(nodeRef, RM_AUDIT_EVENT_DELETE_RM_OBJECT, null, null);
     }
-    
+
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         auditRMEvent(childAssocRef.getChildRef(), RM_AUDIT_EVENT_CREATE_RM_OBJECT, null, null);
@@ -482,10 +485,10 @@ public class RecordsManagementAuditServiceImpl
     {
         auditRMEvent(nodeRef, action.getName(), null, null);
     }
-    
+
     /**
      * Audit an event for a node
-     * 
+     *
      * @param nodeRef               the node to which the event applies
      * @param eventName             the name of the event
      * @param nodePropertiesBefore  properties before the event (optional)
@@ -558,14 +561,14 @@ public class RecordsManagementAuditServiceImpl
      * modified nodes and generates the audit information.
      * <p/>
      * This class is not static so that the instances will have access to the action's implementation.
-     * 
+     *
      * @author Derek Hulley
      * @since 3.2
      */
     private class RMAuditTxnListener extends TransactionListenerAdapter
     {
         private final Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
-        
+
         /*
          * Equality and hashcode generation are left unimplemented; we expect to only have a single
          * instance of this class per action.
@@ -578,7 +581,7 @@ public class RecordsManagementAuditServiceImpl
         public void afterCommit()
         {
             final Map<NodeRef, RMAuditNode> auditedNodes = TransactionalResourceHelper.getMap(KEY_RM_AUDIT_NODE_RECORDS);
-            
+
             // Start a *new* read-write transaction to audit in
             RetryingTransactionCallback<Void> auditCallback = new RetryingTransactionCallback<Void>()
             {
@@ -593,7 +596,7 @@ public class RecordsManagementAuditServiceImpl
 
         /**
          * Do the actual auditing, assuming the presence of a viable transaction
-         * 
+         *
          * @param auditedNodes              details of the nodes that were modified
          */
         private void auditInTxn(Map<NodeRef, RMAuditNode> auditedNodes) throws Throwable
@@ -603,15 +606,15 @@ public class RecordsManagementAuditServiceImpl
             for (Map.Entry<NodeRef, RMAuditNode> entry : auditedNodes.entrySet())
             {
                 NodeRef nodeRef = entry.getKey();
-                
+
                 // If the node is gone, then do nothing
                 if (!nodeService.exists(nodeRef))
                 {
                     continue;
                 }
-                
+
                 RMAuditNode auditedNode = entry.getValue();
-                
+
                 Map<String, Serializable> auditMap = new HashMap<String, Serializable>(13);
                 // Action description
                 String eventName = auditedNode.getEventName();
@@ -676,18 +679,18 @@ public class RecordsManagementAuditServiceImpl
             }
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public File getAuditTrailFile(RecordsManagementAuditQueryParameters params, ReportFormat format)
     {
         ParameterCheck.mandatory("params", params);
-        
+
         Writer fileWriter = null;
         try
         {
-            File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX, 
+            File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX,
                 format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
             fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(auditTrailFile),"UTF8"));
             // Get the results, dumping to file
@@ -708,14 +711,14 @@ public class RecordsManagementAuditServiceImpl
             }
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public List<RecordsManagementAuditEntry> getAuditTrail(RecordsManagementAuditQueryParameters params)
     {
         ParameterCheck.mandatory("params", params);
-        
+
         List<RecordsManagementAuditEntry> entries = new ArrayList<RecordsManagementAuditEntry>(50);
         try
         {
@@ -729,10 +732,10 @@ public class RecordsManagementAuditServiceImpl
             throw new AlfrescoRuntimeException(MSG_TRAIL_FILE_FAIL, e);
         }
     }
-    
+
     /**
      * Get the audit trail, optionally dumping the results the the given writer dumping to a list.
-     * 
+     *
      * @param params                the search parameters
      * @param results               the list to which individual results will be dumped
      * @param writer                Writer to write the audit trail
@@ -747,13 +750,13 @@ public class RecordsManagementAuditServiceImpl
     {
         if (logger.isDebugEnabled())
             logger.debug("Retrieving audit trail in '" + reportFormat + "' format using parameters: " + params);
-        
+
         // define the callback
         AuditQueryCallback callback = new AuditQueryCallback()
         {
             private boolean firstEntry = true;
 
-            
+
             public boolean valuesRequired()
             {
                 return true;
@@ -767,7 +770,7 @@ public class RecordsManagementAuditServiceImpl
                 logger.warn(errorMsg, error);
                 return true;
             }
-            
+
             @SuppressWarnings("unchecked")
             public boolean handleAuditEntry(
                     Long entryId,
@@ -781,7 +784,7 @@ public class RecordsManagementAuditServiceImpl
                 {
                     return false;
                 }
-                
+
                 Date timestamp = new Date(time);
                 String eventName = null;
                 String fullName = null;
@@ -793,7 +796,7 @@ public class RecordsManagementAuditServiceImpl
                 String namePath = null;
                 Map<QName, Serializable> beforeProperties = null;
                 Map<QName, Serializable> afterProperties = null;
-                
+
                 if (values.containsKey(RecordsManagementAuditService.RM_AUDIT_DATA_EVENT_NAME))
                 {
                     // This data is /RM/event/...
@@ -809,7 +812,7 @@ public class RecordsManagementAuditServiceImpl
                             RecordsManagementAuditService.RM_AUDIT_DATA_NODE_CHANGES_BEFORE);
                     afterProperties = (Map<QName, Serializable>) values.get(
                             RecordsManagementAuditService.RM_AUDIT_DATA_NODE_CHANGES_AFTER);
-                    
+
                     // Convert some of the values to recognizable forms
                     nodeType = null;
                     if (nodeTypeQname != null)
@@ -842,7 +845,7 @@ public class RecordsManagementAuditServiceImpl
                     // Skip it
                     return true;
                 }
-                
+
                 // TODO: Refactor this to use the builder pattern
                 RecordsManagementAuditEntry entry = new RecordsManagementAuditEntry(
                         timestamp,
@@ -857,24 +860,24 @@ public class RecordsManagementAuditServiceImpl
                         namePath,
                         beforeProperties,
                         afterProperties);
-                
+
                 // write out the entry to the file in requested format
                 writeEntryToFile(entry);
-                
+
                 if (results != null)
                 {
                     results.add(entry);
                 }
-                
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("   " + entry);
                 }
-                
+
                 // Keep going
                 return true;
             }
-            
+
             private void writeEntryToFile(RecordsManagementAuditEntry entry)
             {
                 if (writer == null)
@@ -898,13 +901,13 @@ public class RecordsManagementAuditServiceImpl
                     {
                         firstEntry = false;
                     }
-                    
+
                     // write the entry to the file
                     if (reportFormat == ReportFormat.JSON)
                     {
                         writer.write("\n\t\t");
                     }
-                    
+
                     writeAuditTrailEntry(writer, entry, reportFormat);
                 }
                 catch (IOException ioe)
@@ -913,17 +916,17 @@ public class RecordsManagementAuditServiceImpl
                 }
             }
         };
-        
+
         String user = params.getUser();
         Long fromTime = (params.getDateFrom() == null ? null : new Long(params.getDateFrom().getTime()));
         Long toTime = (params.getDateTo() == null ? null : new Long(params.getDateTo().getTime()));
         NodeRef nodeRef = params.getNodeRef();
         int maxEntries = params.getMaxEntries();
         boolean forward = maxEntries > 0 ? false : true;        // Reverse order if the results are limited
-        
+
         // start the audit trail report
         writeAuditTrailHeader(writer, params, reportFormat);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("RM Audit: Issuing query: " + params);
@@ -942,50 +945,50 @@ public class RecordsManagementAuditServiceImpl
         }
         // Get audit entries
         auditService.auditQuery(callback, auditQueryParams, maxEntries);
-        
+
         // finish off the audit trail report
         writeAuditTrailFooter(writer, reportFormat);
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    public NodeRef fileAuditTrailAsRecord(RecordsManagementAuditQueryParameters params, 
+    public NodeRef fileAuditTrailAsRecord(RecordsManagementAuditQueryParameters params,
                 NodeRef destination, ReportFormat format)
     {
         ParameterCheck.mandatory("params", params);
         ParameterCheck.mandatory("destination", destination);
-        
+
         // NOTE: the underlying RM services will check all the remaining pre-conditions
-        
+
         NodeRef record = null;
-        
+
         // get the audit trail for the provided parameters
         File auditTrail = this.getAuditTrailFile(params, format);
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Filing audit trail in file " + auditTrail.getAbsolutePath() + 
+            logger.debug("Filing audit trail in file " + auditTrail.getAbsolutePath() +
                         " as a record in record folder: " + destination);
         }
-        
+
         try
         {
             Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
             properties.put(ContentModel.PROP_NAME, auditTrail.getName());
-            
+
             // file the audit log as an undeclared record
-            record = this.nodeService.createNode(destination, 
-                        ContentModel.ASSOC_CONTAINS, 
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, 
-                                    QName.createValidLocalName(auditTrail.getName())), 
+            record = this.nodeService.createNode(destination,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                                    QName.createValidLocalName(auditTrail.getName())),
                         ContentModel.TYPE_CONTENT, properties).getChildRef();
 
             // Set the content
             ContentWriter writer = this.contentService.getWriter(record, ContentModel.PROP_CONTENT, true);
             writer.setMimetype(format == ReportFormat.HTML ? MimetypeMap.MIMETYPE_HTML : MimetypeMap.MIMETYPE_JSON);
             writer.setEncoding("UTF-8");
-            writer.putContent(auditTrail);            
+            writer.putContent(auditTrail);
         }
         finally
         {
@@ -997,11 +1000,11 @@ public class RecordsManagementAuditServiceImpl
             {
                 auditTrail.delete();
             }
-        } 
-        
+        }
+
         return record;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1011,24 +1014,24 @@ public class RecordsManagementAuditServiceImpl
         listAuditEvents.addAll(this.auditEvents.values());
         return listAuditEvents;
     }
-    
+
     /**
      * Writes the start of the audit trail stream to the given writer
-     * 
+     *
      * @param writer The writer to write to
      * @params params The parameters being used
      * @param reportFormat The format to write the header in
      * @throws IOException
      */
-    private void writeAuditTrailHeader(Writer writer, 
-                RecordsManagementAuditQueryParameters params, 
+    private void writeAuditTrailHeader(Writer writer,
+                RecordsManagementAuditQueryParameters params,
                 ReportFormat reportFormat) throws IOException
     {
         if (writer == null)
         {
             return;
         }
-        
+
         if (reportFormat == ReportFormat.HTML)
         {
             // write header as HTML
@@ -1053,35 +1056,35 @@ public class RecordsManagementAuditServiceImpl
             writer.write(I18NUtil.getMessage(MSG_AUDIT_REPORT));
             writer.write("</h2>\n");
             writer.write("<div class=\"audit-info\">\n");
-            
+
             writer.write("<span class=\"label\">From:</span>");
             writer.write("<span class=\"value\">");
             Date from = params.getDateFrom();
             writer.write(from == null ? "&lt;Not Set&gt;" : StringEscapeUtils.escapeHtml(from.toString()));
             writer.write("</span>");
-            
+
             writer.write("<span class=\"label\">To:</span>");
             writer.write("<span class=\"value\">");
             Date to = params.getDateTo();
             writer.write(to == null ? "&lt;Not Set&gt;" : StringEscapeUtils.escapeHtml(to.toString()));
             writer.write("</span>");
-            
+
             writer.write("<span class=\"label\">Property:</span>");
             writer.write("<span class=\"value\">");
             QName prop = params.getProperty();
             writer.write(prop == null ? "All" : StringEscapeUtils.escapeHtml(getPropertyLabel(prop)));
             writer.write("</span>");
-            
+
             writer.write("<span class=\"label\">User:</span>");
             writer.write("<span class=\"value\">");
             writer.write(params.getUser() == null ? "All" : StringEscapeUtils.escapeHtml(params.getUser()));
             writer.write("</span>");
-            
+
             writer.write("<span class=\"label\">Event:</span>");
             writer.write("<span class=\"value\">");
             writer.write(params.getEvent() == null ? "All" : StringEscapeUtils.escapeHtml(getAuditEventLabel(params.getEvent())));
             writer.write("</span>\n");
-            
+
             writer.write("</div>\n");
         }
         else
@@ -1097,10 +1100,10 @@ public class RecordsManagementAuditServiceImpl
             writer.write(",\n\t\t\"entries\":[");
         }
     }
-    
+
     /**
      * Writes an audit trail entry to the given writer
-     * 
+     *
      * @param writer The writer to write to
      * @param entry The entry to write
      * @param reportFormat The format to write the header in
@@ -1113,7 +1116,7 @@ public class RecordsManagementAuditServiceImpl
         {
             return;
         }
-        
+
         if (reportFormat == ReportFormat.HTML)
         {
             writer.write("<div class=\"audit-entry\">\n");
@@ -1124,8 +1127,8 @@ public class RecordsManagementAuditServiceImpl
             writer.write("</span>");
             writer.write("<span class=\"label\">User:</span>");
             writer.write("<span class=\"value\">");
-            writer.write(entry.getFullName() != null ? 
-                            StringEscapeUtils.escapeHtml(entry.getFullName()) : 
+            writer.write(entry.getFullName() != null ?
+                            StringEscapeUtils.escapeHtml(entry.getFullName()) :
                             StringEscapeUtils.escapeHtml(entry.getUserName()));
             writer.write("</span>");
             if (entry.getUserRole() != null && entry.getUserRole().length() > 0)
@@ -1168,19 +1171,19 @@ public class RecordsManagementAuditServiceImpl
                 {
                     displayPath = "/File Plan" + path.substring(idx);
                 }
-                
+
                 writer.write("<span class=\"label\">Location:</span>");
                 writer.write("<span class=\"value\">");
                 writer.write(StringEscapeUtils.escapeHtml(displayPath));
                 writer.write("</span>");
             }
             writer.write("</div>\n");
-            
+
             if (entry.getChangedProperties() != null)
             {
                 writer.write("<table class=\"changed-values-table\" cellspacing=\"0\">");
                 writer.write("<tr><th>Property</th><th>Previous Value</th><th>New Value</th></tr>");
-                
+
                 // create an entry for each property that changed
                 for (QName valueName : entry.getChangedProperties().keySet())
                 {
@@ -1188,17 +1191,17 @@ public class RecordsManagementAuditServiceImpl
                     writer.write("<tr><td>");
                     writer.write(getPropertyLabel(valueName));
                     writer.write("</td><td>");
-                    Serializable oldValue = values.getFirst(); 
+                    Serializable oldValue = values.getFirst();
                     writer.write(oldValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(oldValue.toString()));
                     writer.write("</td><td>");
                     Serializable newValue = values.getSecond();
                     writer.write(newValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(newValue.toString()));
                     writer.write("</td></tr>");
                 }
-                
+
                 writer.write("</table>\n");
             }
-            
+
             writer.write("</div>");
         }
         else
@@ -1206,7 +1209,7 @@ public class RecordsManagementAuditServiceImpl
             try
             {
                 JSONObject json = new JSONObject();
-                
+
                 json.put("timestamp", entry.getTimestampString());
                 json.put("userName", entry.getUserName());
                 json.put("userRole", entry.getUserRole() == null ? "": entry.getUserRole());
@@ -1217,27 +1220,27 @@ public class RecordsManagementAuditServiceImpl
                 json.put("event", entry.getEvent() == null ? "": getAuditEventLabel(entry.getEvent()));
                 json.put("identifier", entry.getIdentifier() == null ? "": entry.getIdentifier());
                 json.put("path", entry.getPath() == null ? "": entry.getPath());
-            
+
                 JSONArray changedValues = new JSONArray();
-                
+
                 if (entry.getChangedProperties() != null)
                 {
                     // create an entry for each property that changed
                     for (QName valueName : entry.getChangedProperties().keySet())
                     {
                         Pair<Serializable, Serializable> values = entry.getChangedProperties().get(valueName);
-                        
+
                         JSONObject changedValue = new JSONObject();
                         changedValue.put("name", getPropertyLabel(valueName));
                         changedValue.put("previous", values.getFirst() == null ? "" : values.getFirst().toString());
                         changedValue.put("new", values.getSecond() == null ? "" : values.getSecond().toString());
-                        
+
                         changedValues.put(changedValue);
                     }
                 }
-                
+
                 json.put("changedValues", changedValues);
-                
+
                 writer.write(json.toString());
             }
             catch (JSONException je)
@@ -1246,10 +1249,10 @@ public class RecordsManagementAuditServiceImpl
             }
         }
     }
-    
+
     /**
      * Writes the end of the audit trail stream to the given writer
-     * 
+     *
      * @param writer The writer to write to
      * @param reportFormat The format to write the footer in
      * @throws IOException
@@ -1260,7 +1263,7 @@ public class RecordsManagementAuditServiceImpl
         {
             return;
         }
-        
+
         if (reportFormat == ReportFormat.HTML)
         {
             // write footer as HTML
@@ -1272,10 +1275,10 @@ public class RecordsManagementAuditServiceImpl
             writer.write("\n\t\t]\n\t}\n}");
         }
     }
-    
+
     /**
      * Returns the display label for a property QName
-     * 
+     *
      * @param property The property to get label for
      * @param ddService DictionaryService instance
      * @param namespaceService NamespaceService instance
@@ -1284,37 +1287,37 @@ public class RecordsManagementAuditServiceImpl
     private String getPropertyLabel(QName property)
     {
         String label = null;
-        
+
         PropertyDefinition propDef = this.dictionaryService.getProperty(property);
         if (propDef != null)
         {
             label = propDef.getTitle();
         }
-        
+
         if (label == null)
         {
             label = property.getLocalName();
         }
-        
+
         return label;
     }
-    
+
     /**
      * Returns the display label for the given audit event key
-     * 
+     *
      * @param eventKey The audit event key
      * @return The display label or null if the key does not exist
      */
     private String getAuditEventLabel(String eventKey)
     {
         String label = eventKey;
-        
+
         AuditEvent event = this.auditEvents.get(eventKey);
         if (event != null)
         {
             label = event.getLabel();
         }
-        
+
         return label;
     }
 }

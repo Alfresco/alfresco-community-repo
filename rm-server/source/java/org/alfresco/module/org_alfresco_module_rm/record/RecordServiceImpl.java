@@ -445,6 +445,54 @@ public class RecordServiceImpl implements RecordService,
         }
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#hideRecord(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void hideRecord(final NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("NodeRef", nodeRef);
+
+        // first we do a sanity check to ensure that the user has at least write permissions on the record
+        if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
+        {
+            throw new AccessDeniedException(
+                    "Cannot hide record, because the user '"
+                            + AuthenticationUtil.getRunAsUser()
+                            + "' does not have write permissions on the record '"
+                            + nodeRef.toString() + "'.");
+        }
+
+        // do the work of hiding the record as the system user
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // remove the child association
+                NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
+                List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+                for (ChildAssociationRef childAssociationRef : parentAssocs)
+                {
+                    if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originatingLocation))
+                    {
+                        nodeService.removeChildAssociation(childAssociationRef);
+                        break;
+                    }
+                }
+
+                // remove the extended security from the node
+                // this prevents the users from continuing to see the record in searchs and other linked locations
+                extendedSecurityService.removeAllExtendedReaders(nodeRef);
+
+                return null;
+            }
+        });
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#rejectRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
     @Override
     public void rejectRecord(final NodeRef nodeRef, final String reason)
     {

@@ -20,19 +20,13 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -56,11 +50,8 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
     /** Node service */
     private NodeService nodeService;
 
-    /** Permission service */
-    private PermissionService permissionService;
-
-    /** Extended security service */
-    private ExtendedSecurityService extendedSecurityService;
+    /** Record service */
+    private RecordService recordService;
 
     /**
      * @param nodeService node service
@@ -71,19 +62,11 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
     }
 
     /**
-     * @param permissionService permission service
+     * @param recordService record service
      */
-    public void setPermissionService(PermissionService permissionService)
+    public void setRecordService(RecordService recordService)
     {
-        this.permissionService = permissionService;
-    }
-
-    /**
-     * @param extendedSecurityService   extended security service
-     */
-    public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
-    {
-        this.extendedSecurityService = extendedSecurityService;
+        this.recordService = recordService;
     }
 
     /**
@@ -94,41 +77,16 @@ public class HideRecordAction extends ActionExecuterAbstractBase implements Reco
     {
         if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == false)
         {
-            // We cannot hide a document which is not a record
+            // we cannot hide a document which is not a record
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug("Cannot hide the document, because '" + actionedUponNodeRef.toString() + "' is not a record.");
             }
         }
-        else if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
-        {
-            // We do a sanity check to ensure that the user has at least write permissions on the record
-            throw new AccessDeniedException("Cannot hide record, because the user '" + AuthenticationUtil.getFullyAuthenticatedUser() + "' does not have write permissions on the record '" + actionedUponNodeRef.toString() + "'.");
-        }
-        else if (nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_HIDDEN) == true)
-        {
-            // We cannot hide records which are already hidden
-            if (logger.isDebugEnabled() == true)
-            {
-                logger.debug("Cannot hide record, because '" + actionedUponNodeRef.toString() + "' is already hidden.");
-            }
-        }
         else
         {
-            // remove the child association
-            NodeRef originatingLocation = (NodeRef) nodeService.getProperty(actionedUponNodeRef, PROP_RECORD_ORIGINATING_LOCATION);
-            List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(actionedUponNodeRef);
-            for (ChildAssociationRef childAssociationRef : parentAssocs)
-            {
-                if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originatingLocation))
-                {
-                    nodeService.removeChildAssociation(childAssociationRef);
-                    break;
-                }
-            }
-
-            // remove the extended security from the node ... this prevents the users from continuing to see the record in searchs and other linked locations
-            extendedSecurityService.removeAllExtendedReaders(actionedUponNodeRef);
+            // hide the record from the collaboration site
+            recordService.hideRecord(actionedUponNodeRef);
         }
     }
 

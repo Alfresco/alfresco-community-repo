@@ -58,7 +58,7 @@ public interface RecordService
    /**
     * Creates a new unfiled record from an existing node.
     * <p>
-    * Note that the node reference of the record will be the same as the origional
+    * Note that the node reference of the record will be the same as the original
     * document.
     *
     * @param filePlan  The filePlan in which the record should be placed
@@ -83,10 +83,17 @@ public interface RecordService
    boolean isFiled(NodeRef record);
 
    /**
-    * Rejects a node with the provided reason
+    * Hides a record within a collaboration site
     *
-    * @param nodeRef   node reference
-    * @param reason    reject reason
+    * @param nodeRef   The record which should be hidden
+    */
+   void hideRecord(NodeRef nodeRef);
+
+   /**
+    * Rejects a record with the provided reason
+    *
+    * @param nodeRef   The record which will be rejected
+    * @param reason    The reason for rejection
     */
    void rejectRecord(NodeRef nodeRef, String reason);
 }

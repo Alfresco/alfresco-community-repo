@@ -40,7 +40,7 @@ import org.alfresco.service.namespace.QName;
  * Records Service Implementation Test
  *
  * @author Roy Wetherall
- * @author Tuna Askoy
+ * @author Tuna Aksoy
  * @since 2.1
  */
 public class RecordServiceImplTest extends BaseRMTestCase

@@ -54,12 +54,12 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Freeze Service Implementation
- * 
+ *
  * @author Roy Wetherall
- * @author Tuna Askoy
+ * @author Tuna Aksoy
  * @since 2.1
  */
-public class FreezeServiceImpl implements FreezeService, 
+public class FreezeServiceImpl implements FreezeService,
                                           RecordsManagementModel,
                                           NodeServicePolicies.BeforeDeleteNodePolicy
 {
@@ -168,7 +168,7 @@ public class FreezeServiceImpl implements FreezeService,
     /**
      * Checks the children for frozen nodes. Throws security error if any are
      * found.
-     * 
+     *
      * @param assocs
      */
     private void checkChildren(List<ChildAssociationRef> assocs)
@@ -568,7 +568,7 @@ public class FreezeServiceImpl implements FreezeService,
 
     /**
      * Creates a hold using the given nodeRef and reason
-     * 
+     *
      * @param nodeRef the nodeRef which will be frozen
      * @param reason the reason why the record will be frozen
      * @return NodeRef of the created hold
@@ -610,7 +610,7 @@ public class FreezeServiceImpl implements FreezeService,
      * Removes a freeze from a node. The unfrozen node is automatically removed
      * from the hold(s) it is in. If the hold is subsequently empty, the hold is
      * automatically deleted.
-     * 
+     *
      * @param nodeRef node reference
      */
     private void removeFreeze(NodeRef nodeRef)
@@ -673,7 +673,7 @@ public class FreezeServiceImpl implements FreezeService,
 
     /**
      * Removes a freeze from a node from the given hold
-     * 
+     *
      * @param nodeRef node reference
      * @param hold hold
      */

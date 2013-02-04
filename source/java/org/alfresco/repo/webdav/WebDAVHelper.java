@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -464,12 +464,11 @@ public class WebDAVHelper
      * 
      * @param rootNodeRef       the acting webdav root
      * @param path              the path to search for
-     * @param servletPath       the base servlet path, which may be null or empty
      * @return                  Return the file info for the path
      * @throws FileNotFoundException
      *                          if the path doesn't refer to a valid node
      */
-    public final FileInfo getNodeForPath(NodeRef rootNodeRef, String path, String servletPath) throws FileNotFoundException
+    public final FileInfo getNodeForPath(NodeRef rootNodeRef, String path) throws FileNotFoundException
     {
         if (rootNodeRef == null)
         {
@@ -482,21 +481,9 @@ public class WebDAVHelper
         
         FileFolderService fileFolderService = getFileFolderService();
         // Check for the root path
-        if ( path.length() == 0 || path.equals(PathSeperator) || EqualsHelper.nullSafeEquals(path, servletPath))
+        if ( path.length() == 0 || path.equals(PathSeperator))
         {
             return fileFolderService.getFileInfo(rootNodeRef);
-        }
-        
-        // Remove the servlet path from the path, assuming it hasn't already been done
-        if (servletPath != null && servletPath.length() > 0)
-        {
-            // Need to ensure we don't strip /alfresco from a site of /alfresco_name/
-            String comparePath = servletPath + "/";
-            if (path.startsWith(comparePath))
-            {
-               // Strip the servlet path from the relative path
-               path = path.substring(servletPath.length());
-            }
         }
         
         // split the paths up
@@ -511,13 +498,12 @@ public class WebDAVHelper
             logger.debug("Fetched node for path: \n" +
                     "   root: " + rootNodeRef + "\n" +
                     "   path: " + path + "\n" +
-                    "   servlet path: " + servletPath + "\n" +
                     "   result: " + fileInfo);
         }
         return fileInfo;
     }
     
-    public final FileInfo getParentNodeForPath(NodeRef rootNodeRef, String path, String servletPath) throws FileNotFoundException
+    public final FileInfo getParentNodeForPath(NodeRef rootNodeRef, String path) throws FileNotFoundException
     {
         if (rootNodeRef == null)
         {
@@ -529,7 +515,7 @@ public class WebDAVHelper
         }
         // shorten the path
         String[] paths = splitPath(path);
-        return getNodeForPath(rootNodeRef, paths[0], servletPath);
+        return getNodeForPath(rootNodeRef, paths[0]);
     }
     
     /**
@@ -796,7 +782,7 @@ public class WebDAVHelper
         String siteId;
         try
         {
-            FileInfo fileInfo = getNodeForPath(method.getRootNodeRef(), method.getPath(), method.getServletPath());
+            FileInfo fileInfo = getNodeForPath(method.getRootNodeRef(), method.getPath());
             SiteInfo siteInfo = siteService.getSite(fileInfo.getNodeRef());
             if (siteInfo != null)
             {

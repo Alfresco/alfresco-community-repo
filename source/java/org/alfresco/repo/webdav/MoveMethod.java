@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -63,7 +63,6 @@ public class MoveMethod extends HierarchicalMethod
     protected final void executeImpl() throws WebDAVServerException, Exception
     {
         NodeRef rootNodeRef = getRootNodeRef();
-        String servletPath = getServletPath();
         // Debug
         if (logger.isDebugEnabled())
         {
@@ -75,14 +74,14 @@ public class MoveMethod extends HierarchicalMethod
         FileInfo sourceInfo = null;
         try
         {
-            sourceInfo = getDAVHelper().getNodeForPath(rootNodeRef, sourcePath, servletPath);
+            sourceInfo = getDAVHelper().getNodeForPath(rootNodeRef, sourcePath);
         }
         catch (FileNotFoundException e)
         {
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
         }
 
-        FileInfo sourceParentInfo = getDAVHelper().getParentNodeForPath(rootNodeRef, sourcePath, servletPath);
+        FileInfo sourceParentInfo = getDAVHelper().getParentNodeForPath(rootNodeRef, sourcePath);
 
         // the destination parent must exist
         String destPath = getDestinationPath();
@@ -93,7 +92,7 @@ public class MoveMethod extends HierarchicalMethod
             {
                 destPath = destPath.substring(0, destPath.length() - 1);
             }
-            destParentInfo = getDAVHelper().getParentNodeForPath(rootNodeRef, destPath, servletPath);
+            destParentInfo = getDAVHelper().getParentNodeForPath(rootNodeRef, destPath);
         }
         catch (FileNotFoundException e)
         {
@@ -109,7 +108,7 @@ public class MoveMethod extends HierarchicalMethod
         boolean destExists = false;
         try
         {
-            destInfo = getDAVHelper().getNodeForPath(rootNodeRef, destPath, servletPath);
+            destInfo = getDAVHelper().getNodeForPath(rootNodeRef, destPath);
             if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()))
             {
                 // ALF-7079 fix, if destInfo is a hidden shuffle target then pretend it's not there

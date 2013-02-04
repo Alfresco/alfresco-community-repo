@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -121,7 +121,7 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
             // As this content will be deleted, we need to extract some info before it's no longer available.
             String siteId = getSiteId();
             NodeRef deletedNodeRef = fileInfo.getNodeRef();
-            FileInfo parentFile = getDAVHelper().getParentNodeForPath(getRootNodeRef(), path, getServletPath());
+            FileInfo parentFile = getDAVHelper().getParentNodeForPath(getRootNodeRef(), path);
             // Delete it
             fileFolderService.delete(deletedNodeRef);
             // Don't post activity data for hidden files, resource forks etc.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -81,7 +81,7 @@ public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
         // see if it exists
         try
         {
-            getDAVHelper().getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
+            getDAVHelper().getNodeForPath(getRootNodeRef(), getPath());
             // already exists
             throw new WebDAVServerException(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         }
@@ -109,7 +109,7 @@ public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
             parentPath = parentPath.substring(0, lastPos + 1);
             try
             {
-                FileInfo parentFileInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), parentPath, m_request.getServletPath());
+                FileInfo parentFileInfo = getDAVHelper().getNodeForPath(getRootNodeRef(), parentPath);
                 parentNodeRef = parentFileInfo.getNodeRef();
             }
             catch (FileNotFoundException e)

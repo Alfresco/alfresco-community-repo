@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -163,12 +163,11 @@ public class GetMethod extends WebDAVMethod
         FileFolderService fileFolderService = getFileFolderService();
         NodeRef rootNodeRef = getRootNodeRef();
         String path = getPath();
-        String servletPath = getServletPath();
 
         FileInfo nodeInfo = null;
         try
         {
-            nodeInfo = getDAVHelper().getNodeForPath(rootNodeRef, path, servletPath);
+            nodeInfo = getDAVHelper().getNodeForPath(rootNodeRef, path);
         }
         catch (FileNotFoundException e)
         {

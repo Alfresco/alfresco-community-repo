@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1432,17 +1432,15 @@ public abstract class WebDAVMethod
      * 
      * @param rootNodeRef the acting webdav root
      * @param path the path to search for
-     * @param servletPath the base servlet path, which may be null or empty
      * @return Return the file info for the path
      * @throws FileNotFoundException if the path doesn't refer to a valid node
      */
-    protected FileInfo getNodeForPath(NodeRef rootNodeRef, String path, String servletPath) throws FileNotFoundException
+    protected FileInfo getNodeForPath(NodeRef rootNodeRef, String path) throws FileNotFoundException
     {
-        return getDAVHelper().getNodeForPath(rootNodeRef, path, servletPath);
+        return getDAVHelper().getNodeForPath(rootNodeRef, path);
     }
 
-    /**
-     * Returns a URL that could be used to access the given path.
+    /**     * Returns a URL that could be used to access the given path.
      * 
      * @param request HttpServletRequest
      * @param path the path to search for

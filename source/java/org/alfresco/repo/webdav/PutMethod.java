@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -111,7 +111,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                         FileInfo contentNodeInfo = null;
                         try
                         {
-                            contentNodeInfo = getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
+                            contentNodeInfo = getNodeForPath(getRootNodeRef(), getPath());
                             checkNode(contentNodeInfo);
                             final NodeRef nodeRef = contentNodeInfo.getNodeRef();
                             if (getNodeService().hasAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_WEBDAV_NO_CONTENT))
@@ -157,7 +157,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         LockInfo nodeLockInfo = null;
         try
         {
-            contentNodeInfo = getNodeForPath(getRootNodeRef(), getPath(), getServletPath());
+            contentNodeInfo = getNodeForPath(getRootNodeRef(), getPath());
             // make sure that we are not trying to use a folder
             if (contentNodeInfo.isFolder())
             {
@@ -180,7 +180,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             String[] paths = getDAVHelper().splitPath(getPath());
             try
             {
-                FileInfo parentNodeInfo = getNodeForPath(getRootNodeRef(), paths[0], getServletPath());
+                FileInfo parentNodeInfo = getNodeForPath(getRootNodeRef(), paths[0]);
                 // create file
                 contentNodeInfo = fileFolderService.create(parentNodeInfo.getNodeRef(), paths[1], ContentModel.TYPE_CONTENT);
                 created = true;
@@ -390,7 +390,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         FileInfo contentNodeInfo = null;
         try
         {
-            contentNodeInfo = getNodeForPath(getRootNodeRef(), path, getServletPath());
+            contentNodeInfo = getNodeForPath(getRootNodeRef(), path);
             NodeRef nodeRef = contentNodeInfo.getNodeRef();
             // Don't post activity data for hidden files, resource forks etc.
             if (!getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))

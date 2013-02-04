@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -62,7 +62,7 @@ public class PropPatchMethod extends PropFindMethod
         try
         {
             // Check that the path exists
-            pathNodeInfo = getNodeForPath(getRootNodeRef(), m_strPath, m_request.getServletPath());
+            pathNodeInfo = getNodeForPath(getRootNodeRef(), m_strPath);
         }
         catch (FileNotFoundException e)
         {

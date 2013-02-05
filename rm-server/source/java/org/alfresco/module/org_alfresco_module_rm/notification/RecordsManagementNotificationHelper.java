@@ -330,7 +330,8 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             args.put("rejectDate", rejectDate);
 
             NotificationContext notificationContext = new NotificationContext();
-
+            notificationContext.setAsyncNotification(true);
+            notificationContext.setIgnoreNotificationFailure(true);
             notificationContext.addTo(recordCreator);
             notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORD_REJECTED));
             notificationContext.setBodyTemplate(getRejectedTemplate());

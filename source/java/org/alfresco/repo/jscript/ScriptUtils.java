@@ -37,7 +37,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
  * 
  * @author Kevin Roast
  */
-public final class ScriptUtils extends BaseScopableProcessorExtension
+public class ScriptUtils extends BaseScopableProcessorExtension
 {
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
 

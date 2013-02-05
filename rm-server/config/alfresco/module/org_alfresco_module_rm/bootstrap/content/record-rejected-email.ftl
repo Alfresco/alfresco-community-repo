@@ -44,9 +44,9 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>Hello ${args.recordCreator},</p>
+                                             <p>Hello <b><i>${args.recordCreator}</i></b>,</p>
 
-                                             <p>${args.rejectedPerson} has rejected the following record with this reason:</p>
+                                             <p><b><i>${args.rejectedPerson}</i></b> has rejected the following record with this reason:</p>
 
                                              <p>${args.rejectReason}</p>
 

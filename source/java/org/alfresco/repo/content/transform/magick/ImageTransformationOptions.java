@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 
 /**
  * Image transformation options
@@ -32,7 +33,6 @@ public class ImageTransformationOptions extends TransformationOptions
 {
     public static final String OPT_COMMAND_OPTIONS = "commandOptions";
     public static final String OPT_IMAGE_RESIZE_OPTIONS = "imageResizeOptions";
-    public static final String OPT_IMAGE_CROP_OPTIONS = "imageCropOptions";
     public static final String OPT_IMAGE_AUTO_ORIENTATION = "imageAutoOrient";
     
     /** Command string options, provided for backward compatibility */
@@ -40,9 +40,6 @@ public class ImageTransformationOptions extends TransformationOptions
     
     /** Image resize options */
     private ImageResizeOptions resizeOptions;
-    
-    /** Image crop options */
-    private ImageCropOptions cropOptions;
     
     private boolean autoOrient = true;
     /**
@@ -90,8 +87,22 @@ public class ImageTransformationOptions extends TransformationOptions
     {
         StringBuilder builder = new StringBuilder();
         builder.append("ImageTransformationOptions [commandOptions=").append(this.commandOptions)
-                    .append(", resizeOptions=").append(this.resizeOptions).append(", cropOptions=")
-                    .append(this.cropOptions).append(", autoOrient=").append(this.autoOrient).append("]");
+                    .append(", resizeOptions=").append(this.resizeOptions)
+                    .append(", autoOrient=").append(this.autoOrient).append("]");
+        if (getSourceOptionsList() != null)
+        {
+            builder.append(", sourceOptions={ ");
+            int i = 0;
+            for (TransformationSourceOptions sourceOptions : getSourceOptionsList())
+            {
+                builder.append((i != 0) ? " , ": "");
+                builder.append(sourceOptions.getClass().getSimpleName())
+                    .append(sourceOptions.toString());
+                i++;
+            }
+            builder.append("} ");
+        }
+        builder.append("]");
         return builder.toString();
     }
     
@@ -105,26 +116,8 @@ public class ImageTransformationOptions extends TransformationOptions
         Map<String, Object> props = new HashMap<String, Object>(baseProps);
         props.put(OPT_COMMAND_OPTIONS, commandOptions);
         props.put(OPT_IMAGE_RESIZE_OPTIONS, resizeOptions);
-        props.put(OPT_IMAGE_CROP_OPTIONS, cropOptions);
         props.put(OPT_IMAGE_AUTO_ORIENTATION, autoOrient);
         return props;
-    }
-
-    
-    /**
-     * @param cropOptions the cropOptions to set
-     */
-    public void setCropOptions(ImageCropOptions cropOptions)
-    {
-        this.cropOptions = cropOptions;
-    }
-    
-    /**
-     * @return the cropOptions
-     */
-    public ImageCropOptions getCropOptions()
-    {
-        return this.cropOptions;
     }
 
     /**
@@ -154,7 +147,6 @@ public class ImageTransformationOptions extends TransformationOptions
                 // Clone ImageTransformationOptions
                 this.setCommandOptions(((ImageTransformationOptions) origOptions).getCommandOptions());
                 this.setResizeOptions(((ImageTransformationOptions) origOptions).getResizeOptions());
-                this.setCropOptions(((ImageTransformationOptions) origOptions).getCropOptions());
                 this.setAutoOrient(((ImageTransformationOptions) origOptions).isAutoOrient());
             }
         }

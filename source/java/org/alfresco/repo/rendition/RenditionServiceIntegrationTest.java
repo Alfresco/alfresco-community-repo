@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.CropSourceOptions.CropSourceOptionsSerializer;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptLocation;
@@ -652,8 +653,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         final int imageNewXSize = 36;
         final int imageNewYSize = 47;
         final Map<String, Serializable> parameterValues = new HashMap<String, Serializable>();
-        parameterValues.put(ImageRenderingEngine.PARAM_CROP_WIDTH, imageNewXSize);
-        parameterValues.put(ImageRenderingEngine.PARAM_CROP_HEIGHT, imageNewYSize);
+        parameterValues.put(CropSourceOptionsSerializer.PARAM_CROP_WIDTH, imageNewXSize);
+        parameterValues.put(CropSourceOptionsSerializer.PARAM_CROP_HEIGHT, imageNewYSize);
 
         ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
         final NodeRef newRenditionNode = performImageRendition(parameterValues,nodeWithImageContent);
@@ -707,9 +708,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
         // Create a rendition of the same image, this time cropping by 50/25%
         parameterValues.clear();
-        parameterValues.put(ImageRenderingEngine.PARAM_CROP_WIDTH, 50); // 256 picels
-        parameterValues.put(ImageRenderingEngine.PARAM_CROP_HEIGHT, 25); // 128 pixels
-        parameterValues.put(ImageRenderingEngine.PARAM_IS_PERCENT_CROP, true);
+        parameterValues.put(CropSourceOptionsSerializer.PARAM_CROP_WIDTH, 50); // 256 picels
+        parameterValues.put(CropSourceOptionsSerializer.PARAM_CROP_HEIGHT, 25); // 128 pixels
+        parameterValues.put(CropSourceOptionsSerializer.PARAM_IS_PERCENT_CROP, true);
 
         final NodeRef secondRenditionNode = performImageRendition(parameterValues,nodeWithImageContent);
 

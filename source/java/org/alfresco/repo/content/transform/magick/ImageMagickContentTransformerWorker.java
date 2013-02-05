@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.CropSourceOptions;
 import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.exec.RuntimeExec;
@@ -154,7 +155,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         if (options instanceof ImageTransformationOptions)
         {
             ImageTransformationOptions imageOptions = (ImageTransformationOptions)options;
-            ImageCropOptions cropOptions = imageOptions.getCropOptions();
+            CropSourceOptions cropOptions = imageOptions.getSourceOptions(CropSourceOptions.class);
             ImageResizeOptions resizeOptions = imageOptions.getResizeOptions();
             String commandOptions = imageOptions.getCommandOptions();
             if (commandOptions == null)
@@ -199,7 +200,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
      * @param imageResizeOptions    image resize options
      * @return String               the imagemagick command options
      */
-    private String getImageCropCommandOptions(ImageCropOptions cropOptions)
+    private String getImageCropCommandOptions(CropSourceOptions cropOptions)
     {
         StringBuilder builder = new StringBuilder(32);
         String gravity = cropOptions.getGravity();

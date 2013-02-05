@@ -44,6 +44,7 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
     /** The duration of the target video after the transformation */
     private String duration;
     
+    @Override
     public boolean isApplicableForMimetype(String sourceMimetype)
     {
         return ((sourceMimetype != null && 

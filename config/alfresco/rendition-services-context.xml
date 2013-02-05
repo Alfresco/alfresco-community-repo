@@ -142,6 +142,7 @@
         <list>
             <bean class="org.alfresco.service.cmr.repository.PagedSourceOptions" factory-method="createSerializerInstance" />
             <bean class="org.alfresco.service.cmr.repository.TemporalSourceOptions" factory-method="createSerializerInstance" />
+            <bean class="org.alfresco.service.cmr.repository.CropSourceOptions" factory-method="createSerializerInstance" />
         </list>
       </property>
    </bean>

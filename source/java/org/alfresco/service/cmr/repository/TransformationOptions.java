@@ -18,16 +18,12 @@
  */
 package org.alfresco.service.cmr.repository;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Class containing values of options that are passed to content transformers.  These options 
@@ -42,8 +38,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TransformationOptions implements Cloneable
 {
-    private static final Log logger = LogFactory.getLog(TransformationOptions.class);
-    
     /** Option map names to preserve backward compatibility */
     public static final String OPT_SOURCE_NODEREF = "contentReaderNodeRef";
     public static final String OPT_SOURCE_CONTENT_PROPERTY = "sourceContentProperty";

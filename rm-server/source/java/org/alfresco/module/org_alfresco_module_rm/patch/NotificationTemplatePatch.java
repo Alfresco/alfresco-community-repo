@@ -52,7 +52,6 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
 
     private static final String PATH_DUE_FOR_REVIEW = "alfresco/module/org_alfresco_module_rm/bootstrap/content/notify-records-due-for-review-email.ftl";
     private static final String PATH_SUPERSEDED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-superseded-email.ftl";
-    private static final String PATH_REJECTED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-rejected-email.ftl";
 
     /** Logger */
     private static Log logger = LogFactory.getLog(NotificationTemplatePatch.class);
@@ -140,9 +139,6 @@ public class NotificationTemplatePatch extends AbstractModuleComponent
 
         NodeRef dueForReviewTemplate = notificationHelper.getDueForReviewTemplate();
         updateTemplate(dueForReviewTemplate, PATH_DUE_FOR_REVIEW);
-
-        NodeRef rejectedTemplate = notificationHelper.getRejectedTemplate();
-        updateTemplate(rejectedTemplate, PATH_REJECTED);
     }
 
     /**

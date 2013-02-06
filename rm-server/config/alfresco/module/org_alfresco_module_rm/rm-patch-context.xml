@@ -2,23 +2,41 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-	
-   <bean id="org_alfresco_module_rm_notificationTemplatePatch" 
+
+   <bean id="org_alfresco_module_rm_notificationTemplatePatch"
          parent="module.baseComponent"
          class="org.alfresco.module.org_alfresco_module_rm.patch.NotificationTemplatePatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
        <property name="name" value="org_alfresco_module_rm_notificationTemplatePatch"/>
        <property name="description" value="Patches new versions of the notification templates."/>
        <property name="sinceVersion" value="2.0"/>
-       <property name="appliesFromVersion" value="2.0"/>	
+       <property name="appliesFromVersion" value="2.0"/>
        <property name="nodeService" ref="NodeService"/>
        <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
        <property name="contentService" ref="ContentService"/>
        <property name="versionService" ref="VersionService"/>
        <property name="auditService" ref="AuditService"/>
    </bean>
-   
-   <bean id="org_alfresco_module_rm_RMv2ModelPatch" 
+
+   <bean id="org_alfresco_module_rm_notificationTemplatePatch_v21"
+         parent="module.baseComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.NotificationTemplatePatch_v21">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_notificationTemplatePatch_v21"/>
+       <property name="description" value="Patches new versions of the notification templates."/>
+       <property name="sinceVersion" value="2.1"/>
+       <property name="appliesFromVersion" value="2.1"/>
+       <property name="dependsOn">
+          <list>
+             <ref bean="org_alfresco_module_rm_bootstrapData" />
+          </list>
+       </property>
+       <property name="nodeService" ref="NodeService"/>
+       <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
+       <property name="contentService" ref="ContentService"/>
+   </bean>
+
+   <bean id="org_alfresco_module_rm_RMv2ModelPatch"
          parent="module.baseComponent"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2ModelPatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>
@@ -31,8 +49,8 @@
        <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
        <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
-   
-   <bean id="org_alfresco_module_rm_RMv21InPlacePatch" 
+
+   <bean id="org_alfresco_module_rm_RMv21InPlacePatch"
          parent="module.baseComponent"
          class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21InPlacePatch">
        <property name="moduleId" value="org_alfresco_module_rm"/>

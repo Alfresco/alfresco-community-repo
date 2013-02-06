@@ -753,6 +753,9 @@
                 
                 <!-- QuickShare (aka PublicView) -->
                 <value>alfresco/model/quickShareModel.xml</value>
+                
+                <!-- Share UI model -->
+                <value>alfresco/model/shareUiModel.xml</value>
             </list>
         </property>
         <property name="labels">

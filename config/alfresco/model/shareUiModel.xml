@@ -1,0 +1,89 @@
+<model name="surf:uimodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Surf Specific Types</description>
+   <author>Alfresco</author>
+   <published>2012-11-07</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/surf/1.0" prefix="surf"/>
+   </namespaces>
+   
+   <types>
+      <!-- A Surf AMD page is simply content that defines a page. -->
+      <type name="surf:amdpage">
+         <title>Surf AMD Page</title>
+         <parent>cm:content</parent>
+      </type>
+      
+   </types>
+   
+   <aspects>
+     
+     <!-- This is the root aspect that can be applied to a JavaScript resource. It
+          defines the Module ID (or mid) which is used by Share to load the resource
+          from the repository as well as a label which Share can use when presenting
+          it as an option. -->
+     <aspect name="surf:jsresource">
+       <title>JavaScript Resource</title>
+       <properties>
+         <property name="surf:mid">
+           <title>mid</title>
+           <type>d:text</type>
+           <protected>false</protected>
+           <mandatory enforced="false">true</mandatory>
+           <multiple>false</multiple>
+           <index enabled="true">
+             <tokenised>false</tokenised>
+           </index>
+         </property>
+         <property name="surf:label">
+           <title>Label</title>
+           <type>d:text</type>
+           <protected>false</protected>
+           <mandatory enforced="false">true</mandatory>
+           <multiple>false</multiple>
+           <index enabled="true">
+             <tokenised>false</tokenised>
+           </index>
+         </property>
+       </properties>
+     </aspect>
+    
+     <!-- A Service represents a JavaScript resource that is not represented by any DOM
+          nodes on the page. Its can be added to a page to subscribe to and publish events
+          that widgets and other services use. -->
+     <aspect name="surf:service">
+       <title>Service</title>
+       <parent>surf:jsresource</parent>
+     </aspect>
+     
+     <!-- A Widget represents a JavaScript resource that generates some DOM nodes on the page.
+          Its primary purpose is to provide the User Interface on a page and it should delegate
+          "real" work to services which it should communicate to via the publication/subscription
+          model. -->
+     <aspect name="surf:widget">
+        <title>Widget</title>
+        <parent>surf:jsresource</parent>
+        <properties>
+          <property name="surf:widgetType">
+            <title>Widget Type</title>
+            <type>d:text</type>
+            <protected>false</protected>
+            <mandatory enforced="false">true</mandatory>
+            <multiple>false</multiple>
+            <index enabled="true">
+              <tokenised>false</tokenised>
+            </index>
+          </property>
+      </properties>
+    </aspect>
+  </aspects>
+   
+</model>

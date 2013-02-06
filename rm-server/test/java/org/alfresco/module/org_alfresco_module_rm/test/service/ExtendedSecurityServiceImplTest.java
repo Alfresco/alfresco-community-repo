@@ -67,16 +67,16 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         moveRecordFolder = rmService.createRecordFolder(moveRecordCategory, "moveRecordFolder");
     }
     
-    public void testExtendedReaders()
+    public void testExtendedSecurity()
     {
         doTestInTransaction(new Test<Void>()
         {
             public Void run()
             {
-                assertFalse(extendedSecurityService.hasExtendedReaders(filePlan));
-                assertFalse(extendedSecurityService.hasExtendedReaders(rmContainer));
-                assertFalse(extendedSecurityService.hasExtendedReaders(rmFolder));
-                assertFalse(extendedSecurityService.hasExtendedReaders(record));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(filePlan));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(rmContainer));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(rmFolder));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(record));
                 
                 assertNull(extendedSecurityService.getExtendedReaders(record));
                 
@@ -84,7 +84,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 extendedReaders.add("monkey");
                 extendedReaders.add("elephant");
                 
-                extendedSecurityService.setExtendedReaders(record, extendedReaders);
+                extendedSecurityService.addExtendedSecurity(record, extendedReaders, null);
                 
                 Map<String, Integer> testMap = new HashMap<String, Integer>(2);
                 testMap.put("monkey", Integer.valueOf(1));
@@ -99,7 +99,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 extendedReadersToo.add("monkey");
                 extendedReadersToo.add("snake");
                 
-                extendedSecurityService.setExtendedReaders(recordToo, extendedReadersToo);
+                extendedSecurityService.addExtendedSecurity(recordToo, extendedReadersToo, null);
                 
                 Map<String, Integer> testMapToo = new HashMap<String, Integer>(2);
                 testMapToo.put("monkey", Integer.valueOf(1));
@@ -121,7 +121,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 removeMap1.add("elephant");
                 removeMap1.add("monkey");
                 
-                extendedSecurityService.removeExtendedReaders(rmFolder, removeMap1, false);
+                extendedSecurityService.removeExtendedSecurity(rmFolder, removeMap1, null, false);
                 
                 Map<String, Integer> testMapFour = new HashMap<String, Integer>(2);
                 testMapFour.put("monkey", Integer.valueOf(1));
@@ -137,7 +137,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 Set<String> removeMap2 = new HashSet<String>(1);
                 removeMap2.add("snake");
                 
-                extendedSecurityService.removeExtendedReaders(recordToo, removeMap2, true);
+                extendedSecurityService.removeExtendedSecurity(recordToo, removeMap2, null, true);
                 
                 testMapThree.remove("snake");
                 testMapFour.remove("snake");
@@ -164,12 +164,12 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 testMap.put("monkey", Integer.valueOf(1));
                 testMap.put("elephant", Integer.valueOf(1));                
                 
-                assertFalse(extendedSecurityService.hasExtendedReaders(filePlan));
-                assertFalse(extendedSecurityService.hasExtendedReaders(rmContainer));
-                assertFalse(extendedSecurityService.hasExtendedReaders(rmFolder));
-                assertFalse(extendedSecurityService.hasExtendedReaders(record));
-                assertFalse(extendedSecurityService.hasExtendedReaders(moveRecordCategory));
-                assertFalse(extendedSecurityService.hasExtendedReaders(moveRecordFolder));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(filePlan));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(rmContainer));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(rmFolder));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(record));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(moveRecordCategory));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(moveRecordFolder));
                 
                 assertNull(extendedSecurityService.getExtendedReaders(record));
                 
@@ -177,14 +177,14 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 extendedReaders.add("monkey");
                 extendedReaders.add("elephant");
                 
-                extendedSecurityService.setExtendedReaders(record, extendedReaders);
+                extendedSecurityService.addExtendedSecurity(record, extendedReaders, null);
                 
                 checkExtendedReaders(filePlan, testMap);
                 checkExtendedReaders(rmContainer, testMap);
                 checkExtendedReaders(rmFolder, testMap);
                 checkExtendedReaders(record, testMap);
-                assertFalse(extendedSecurityService.hasExtendedReaders(moveRecordCategory));
-                assertFalse(extendedSecurityService.hasExtendedReaders(moveRecordFolder));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(moveRecordCategory));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(moveRecordFolder));
                 
                 fileFolderService.move(record, moveRecordFolder, "movedRecord");
                 
@@ -195,8 +195,8 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
             public void test(Void result) throws Exception
             {
                 checkExtendedReaders(filePlan, testMap);
-                assertFalse(extendedSecurityService.hasExtendedReaders(rmContainer));
-                assertFalse(extendedSecurityService.hasExtendedReaders(rmFolder));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(rmContainer));
+              //  assertEquals(0, extendedSecurityService.getExtendedReaders(rmFolder).size());
                 checkExtendedReaders(moveRecordCategory, testMap);
                 checkExtendedReaders(moveRecordFolder, testMap);
                 checkExtendedReaders(record, testMap);
@@ -208,7 +208,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
     @SuppressWarnings("unchecked")
     private void checkExtendedReaders(NodeRef nodeRef, Map<String, Integer> testMap)
     {
-        assertTrue(extendedSecurityService.hasExtendedReaders(nodeRef));
+        assertTrue(extendedSecurityService.hasExtendedSecurity(nodeRef));
         
         Map<String, Integer> readersMap = (Map<String,Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
         assertNotNull(readersMap);

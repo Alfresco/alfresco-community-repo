@@ -30,13 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface ExtendedSecurityService
 {
-    /**
-     * Indicates whether the node has any extended readers set or not.
-     * 
-     * @param nodeRef   node reference
-     * @return boolean  true if the node has extended readers set, false otherwise
-     */
-    boolean hasExtendedReaders(NodeRef nodeRef);
+    boolean hasExtendedSecurity(NodeRef nodeRef);
     
     /**
      * Gets the set authorities that are extended readers for the given node.
@@ -47,63 +41,22 @@ public interface ExtendedSecurityService
     Set<String> getExtendedReaders(NodeRef nodeRef);
     
     /**
-     * Set the authorities that are extended readers on the node.  Applies extended readers to
-     * file plan parent hierarchy.
      * 
-     * @param nodeRef   node reference
-     * @param readers   extended readers
+     * @param nodeRef
+     * @return
      */
-    void setExtendedReaders(NodeRef nodeRef, Set<String> readers);
+    Set<String> getExtendedWriters(NodeRef nodeRef);
+
+    void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers);
     
-    /**
-     * Set the authorities that have extended reading permissions on the node.
-     * <p>
-     * Optionally applies the extended readers to the file plan hierarchy.
-     * 
-     * @param nodeRef           node reference
-     * @param readers           extended readers 
-     * @param applyToParents    true if applied to file plan hierarchy, false otherwise
-     */
-    void setExtendedReaders(NodeRef nodeRef, Set<String> readers, boolean applyToParents);
+    void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents);
     
-    /**
-     * Removes the given authorities from the extended readers set for this node.
-     * <p>
-     * Applies to file plan hierarchy.
-     * 
-     * @param nodeRef   node reference
-     * @param readers   extended readers
-     */
-    void removeExtendedReaders(NodeRef nodeRef, Set<String> readers);
+    void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers);
     
-    /**
-     * Removes the given authorities from the extended readers set for this node.
-     * <p>
-     * Optionally applies the removal to the file plan hierarchy.
-     * 
-     * @param nodeRef           node reference
-     * @param readers           extended readers
-     * @param applyToParents    true if applied to the file plan hierarchy, false otherwise
-     */
-    void removeExtendedReaders(NodeRef nodeRef, Set<String> readers, boolean applyToParents);
+    void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents);
     
-    /**
-     * Removes all extended readers from this node.
-     * <p>
-     * Applies removal to the file plan hierarchy.
-     * 
-     * @param nodeRef   node reference
-     */
-    void removeAllExtendedReaders(NodeRef nodeRef);
+    void removeAllExtendedSecurity(NodeRef nodeRef);
     
-    /**
-     * Removes all extended readers from this node.
-     * <p>
-     * Optionally applies the removal to the file plan hierarchy.
-     * 
-     * @param nodeRef           node reference
-     * @param applyToParents    true if applied to the file plan hierarchy, false otherwise
-     */
-    void removeAllExtendedReaders(NodeRef nodeRef, boolean applyToParents);
+    void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents);
 
 }

@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,12 +47,14 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -83,7 +86,7 @@ public class RecordServiceImpl implements RecordService,
     private DictionaryService dictionaryService;
 
     /** Permission service */
-    private PermissionService permissionService;
+    private ExtendedPermissionService permissionService;
 
     /** Extended security service */
     private ExtendedSecurityService extendedSecurityService;
@@ -102,6 +105,9 @@ public class RecordServiceImpl implements RecordService,
 
     /** Policy component */
     private PolicyComponent policyComponent;
+    
+    /** Ownable service */
+    private OwnableService ownableService;
 
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;
@@ -145,7 +151,7 @@ public class RecordServiceImpl implements RecordService,
     /**
      * @param permissionService permission service
      */
-    public void setPermissionService(PermissionService permissionService)
+    public void setPermissionService(ExtendedPermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
@@ -198,6 +204,14 @@ public class RecordServiceImpl implements RecordService,
         this.policyComponent = policyComponent;
     }
 
+    /**
+     * @param ownableService    ownable service
+     */
+    public void setOwnableService(OwnableService ownableService)
+    {
+        this.ownableService = ownableService;
+    }
+    
     /**
      * Init method
      */
@@ -323,6 +337,13 @@ public class RecordServiceImpl implements RecordService,
                     // get the documents readers
                     Long aclId = nodeService.getNodeAclId(nodeRef);
                     Set<String> readers = permissionService.getReaders(aclId);
+                    Set<String> writers = permissionService.getWriters(aclId);    
+                                        
+                    // add the current owner to the list of extended writers                    
+                    String owner = ownableService.getOwner(nodeRef);
+                    
+                    // remove the owner
+                    ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
 
                     // get the documents primary parent assoc
                     ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
@@ -345,8 +366,9 @@ public class RecordServiceImpl implements RecordService,
                         // maintain the original primary location
                         nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
 
-                        // set the readers
-                        extendedSecurityService.setExtendedReaders(nodeRef, readers);
+                        // set the extended security
+                        extendedSecurityService.addExtendedSecurity(nodeRef, readers, writers);
+                        extendedSecurityService.addExtendedSecurity(nodeRef, null, Collections.singleton(owner));
                     }
 
                     return null;
@@ -417,7 +439,7 @@ public class RecordServiceImpl implements RecordService,
             // check whether this item is already an item or not
             if (isRecord(record) == false)
             {
-                // make the item a record
+                // make the item a recor
                 makeRecord(record);
             }
 
@@ -483,7 +505,7 @@ public class RecordServiceImpl implements RecordService,
 
                 // remove the extended security from the node
                 // this prevents the users from continuing to see the record in searchs and other linked locations
-                extendedSecurityService.removeAllExtendedReaders(nodeRef);
+                extendedSecurityService.removeAllExtendedSecurity(nodeRef);
 
                 return null;
             }
@@ -534,7 +556,7 @@ public class RecordServiceImpl implements RecordService,
                 nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
 
                 // remove all extended readers
-                extendedSecurityService.removeAllExtendedReaders(nodeRef);
+                extendedSecurityService.removeAllExtendedSecurity(nodeRef);
 
                 // save the information about the rejection details
                 Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);

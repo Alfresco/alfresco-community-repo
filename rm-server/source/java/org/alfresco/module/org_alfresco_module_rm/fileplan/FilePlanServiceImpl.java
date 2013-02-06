@@ -29,6 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -159,6 +160,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         permissionService.setInheritParentPermissions(container, false);
         permissionService.setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
         permissionService.setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+        permissionService.setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
         
         // TODO set the admin users to have filing permissions on the unfiled container!!!
         // TODO we will need to be able to get a list of the admin roles from the service

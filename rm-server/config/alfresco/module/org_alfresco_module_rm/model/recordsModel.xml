@@ -831,11 +831,14 @@
         </mandatory-aspects>
       </aspect>
 
-      <!--  Extended readers for RM object -->
+      <!--  Extended security for RM object -->
       <!--  @since 2.1 -->
-      <aspect name="rma:extendedReaders">
+      <aspect name="rma:extendedSecurity">
       	<properties>
       		<property name="rma:readers">
+      			<type>d:any</type>
+      		</property>
+      		<property name="rma:writers">
       			<type>d:any</type>
       		</property>
       	</properties>

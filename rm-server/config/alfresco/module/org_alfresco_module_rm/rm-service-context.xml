@@ -607,10 +607,11 @@
 
     <bean id="extendedSecurityService"
           class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl"
-          init-method="init">
+          init-method="init"
+          parent="baseService">
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="nodeService" ref="nodeService"/>
         <property name="recordService" ref="recordService"/>
+        <property name="nodeService" ref="nodeService"/>
         <property name="recordsManagementService" ref="recordsManagementService"/>
     </bean>
 
@@ -630,27 +631,9 @@
         </property>
     </bean>
 
-    <bean id="ExtendedSecurityService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-        <property name="transactionManager">
-            <ref bean="transactionManager"/>
-        </property>
-        <property name="transactionAttributes">
-            <props>
-                <prop key="*">${server.transaction.mode.default}</prop>
-            </props>
-        </property>
-    </bean>
+    <bean id="ExtendedSecurityService_transaction" parent="baseTransaction"/>
 
-    <bean id="ExtendedSecurityService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="ExtendedSecurityService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -1095,12 +1078,13 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
-        <property name="permissionService" ref="PermissionService"/>
+        <property name="permissionService" ref="ExtendedPermissionService"/>
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />
         <property name="recordsManagementService" ref="RecordsManagementService" />
         <property name="policyComponent" ref="policyComponent" />
         <property name="dispositionService" ref="DispositionService" />
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="ownableService" ref="OwnableService" />
         <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
     </bean>
 

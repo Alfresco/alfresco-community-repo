@@ -143,8 +143,13 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
                 }
             }
             
-            // indicate whether the record should be hidden or not
-            boolean hideRecord = ((Boolean)action.getParameterValue(PARAM_HIDE_RECORD)).booleanValue();
+            // indicate whether the record should be hidden or not (default not)
+            boolean hideRecord = false;
+            Boolean hideRecordValue = ((Boolean)action.getParameterValue(PARAM_HIDE_RECORD));
+            if (hideRecordValue != null)
+            {
+                hideRecord = hideRecordValue.booleanValue();
+            }
             
             // create record from existing document
             recordService.createRecord(filePlan, actionedUponNodeRef, !hideRecord);
@@ -159,7 +164,7 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     {
         // NOTE:  commented out for now so that it doesn't appear in the UI ... enable later when multi-file plan support is added
         //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
-        params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, true, getParamDisplayLabel(PARAM_HIDE_RECORD)));
+        params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_HIDE_RECORD)));
     }
    
 }

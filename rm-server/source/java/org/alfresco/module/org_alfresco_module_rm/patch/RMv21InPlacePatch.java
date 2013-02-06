@@ -26,6 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -117,7 +118,11 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
             
             // set permissions
             filePlanPermissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
+            filePlanPermissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING);
+            
+            // set capabilities
             permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
+            permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.EDIT_RECORD_METADATA, true);
             
             // create unfiled container
             filePlanService.createUnfiledContainer(filePlan);            

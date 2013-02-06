@@ -28,6 +28,7 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -36,7 +37,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 
@@ -46,15 +46,13 @@ import org.alfresco.util.ParameterCheck;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
+public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
+                                         implements ExtendedSecurityService,
                                                     RecordsManagementModel,
                                                     NodeServicePolicies.OnMoveNodePolicy
 {
     /** Policy component */
     private PolicyComponent policyComponent;
-    
-    /** Node service */
-    private NodeService nodeService;
     
     /** Records management service */
     private RecordsManagementService recordsManagementService;
@@ -87,37 +85,22 @@ public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
     }
     
     /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-    
-    /**
      * Init method
      */
     public void init()
     {
         policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnMoveNodePolicy.QNAME, 
-                ASPECT_EXTENDED_READERS, 
+                ASPECT_EXTENDED_SECURITY, 
                 new JavaBehaviour(this, "onMoveNode", NotificationFrequency.TRANSACTION_COMMIT));
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#hasExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#hasExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
      */
-    @Override
-    public boolean hasExtendedReaders(NodeRef nodeRef)
+    public boolean hasExtendedSecurity(NodeRef nodeRef)
     {
-        boolean result = false;
-        Set<String> extendedReaders = getExtendedReaders(nodeRef);
-        if (extendedReaders != null && extendedReaders.size() != 0)
-        {
-            result = true;
-        }
-        return result;
+        return nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY);
     }
     
     /**
@@ -137,60 +120,71 @@ public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
         
         return result;
     }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#setExtendedReaders(org.alfresco.service.cmr.repository.NodeRef, java.util.Set)
-     */
-    @Override
-    public void setExtendedReaders(NodeRef nodeRef, Set<String> readers)
-    {
-        setExtendedReaders(nodeRef, readers, true);
-    }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#setExtendedReaders(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, boolean)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#getExtendedWriters(org.alfresco.service.cmr.repository.NodeRef)
      */
     @SuppressWarnings("unchecked")
     @Override
-    public void setExtendedReaders(NodeRef nodeRef, java.util.Set<String> readers, boolean applyToParents)
-    {        
+    public Set<String> getExtendedWriters(NodeRef nodeRef)
+    {
+        Set<String> result = null;
+        
+        Map<String, Integer> map = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
+        if (map != null)
+        {
+            result = map.keySet();
+        }
+        
+        return result;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
+     */
+    @Override
+    public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
+    {
+        addExtendedSecurity(nodeRef, readers, writers, true);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
+    {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("readers", readers);
         ParameterCheck.mandatory("applyToParents", applyToParents);
         
-        if (nodeRef != null && readers.isEmpty() == false)
+        if (nodeRef != null)
         {
             // add the aspect if missing
-            if (nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_READERS) == false)
+            if (nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY) == false)
             {
-                nodeService.addAspect(nodeRef, ASPECT_EXTENDED_READERS, null);
+                nodeService.addAspect(nodeRef, ASPECT_EXTENDED_SECURITY, null);
             }
             
-            // get reader map
-            Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
-            if (readersMap == null)
+            // update the readers map
+            if (readers != null && readers.size() != 0)
             {
-                // create reader map
-                readersMap = new HashMap<String, Integer>(7);
+                // get reader map
+                Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
+                
+                // set the readers property (this will in turn apply the aspect if required)
+                nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)addToMap(readersMap, readers));
             }
             
-            for (String reader : readers)
+            // update the writers map
+            if (writers != null && writers.size() != 0)
             {
-                if (readersMap.containsKey(reader) == true)
-                {
-                    // increment reference count
-                    Integer count = readersMap.get(reader);
-                    readersMap.put(reader, Integer.valueOf(count.intValue()+1));
-                }
-                else
-                {
-                    // add reader with initial count
-                    readersMap.put(reader, Integer.valueOf(1));
-                }
+                // get writer map
+                Map<String, Integer> writersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
+                
+                // set the writers property (this will in turn apply the aspect if required)
+                nodeService.setProperty(nodeRef, PROP_WRITERS, (Serializable)addToMap(writersMap, writers));
             }
-            
-            // set the readers property (this will in turn apply the aspect if required)
-            nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)readersMap);
             
             // apply the readers to any renditions of the content
             if (recordService.isRecord(nodeRef) == true)
@@ -199,41 +193,69 @@ public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
                 for (ChildAssociationRef assoc : assocs)
                 {
                     NodeRef child = assoc.getChildRef();
-                    setExtendedReaders(child, readers, false);
+                    addExtendedSecurity(child, readers, writers, false);
                 }
             }
             
             if (applyToParents == true)
-            {            
+            {   
                 // apply the extended readers up the file plan primary hierarchy
                 NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
                 if (parent != null &&
                     recordsManagementService.isFilePlanComponent(parent) == true)
                 {
-                    setExtendedReaders(parent, readers);
+                    addExtendedSecurity(parent, readers, null);
+                    addExtendedSecurity(parent, writers, null);
                 }
             }
         }
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeExtendedReaders(org.alfresco.service.cmr.repository.NodeRef, java.util.Set)
+     * 
+     * @param map
+     * @param keys
+     * @return
      */
-    @Override
-    public void removeExtendedReaders(NodeRef nodeRef, Set<String> readers)
+    private Map<String, Integer> addToMap(Map<String, Integer> map, Set<String> keys)
     {
-        removeExtendedReaders(nodeRef, readers, true);        
+        if (map == null)
+        {
+            // create map
+            map = new HashMap<String, Integer>(7);
+        }
+        
+        for (String key : keys)
+        {
+            if (map.containsKey(key) == true)
+            {
+                // increment reference count
+                Integer count = map.get(key);
+                map.put(key, Integer.valueOf(count.intValue()+1));
+            }
+            else
+            {
+                // add key with initial count
+                map.put(key, Integer.valueOf(1));
+            }
+        }
+        
+        return map;
     }
     
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeExtendedReaders(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, boolean)
-     */
+
     @Override
-    public void removeExtendedReaders(NodeRef nodeRef, Set<String> readers, boolean applyToParents)
+    public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
-        if (hasExtendedReaders(nodeRef) == true)
+        removeExtendedSecurity(nodeRef, readers, writers, true);        
+    }
+    
+    @Override
+    public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String>writers, boolean applyToParents)
+    {
+        if (hasExtendedSecurity(nodeRef) == true)
         {
-            removeExtendedReadersImpl(nodeRef, readers);
+            removeExtendedSecurityImpl(nodeRef, readers, writers);
             
             // remove the readers from any renditions of the content
             if (recordService.isRecord(nodeRef) == true)
@@ -242,7 +264,7 @@ public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
                 for (ChildAssociationRef assoc : assocs)
                 {
                     NodeRef child = assoc.getChildRef();
-                    removeExtendedReadersImpl(child, readers);
+                    removeExtendedSecurityImpl(child, readers, writers);
                 }
             }
             
@@ -253,80 +275,83 @@ public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
                 if (parent != null &&
                     recordsManagementService.isFilePlanComponent(parent) == true)
                 {
-                    removeExtendedReaders(parent, readers, applyToParents);
+                    removeExtendedSecurity(parent, readers, null, applyToParents);
+                    removeExtendedSecurity(parent, writers, null, applyToParents);
                 }                
             }
         }
     }
     
     /**
-     * Removes a set of readers from a node reference.
+     * Removes a set of readers and writers from a node reference.
      * <p>
-     * Removes the aspect and resets the property to null if all readers are removed.
+     * Removes the aspect and resets the property to null if all readers and writers are removed.
      * 
      * @param nodeRef   node reference
      * @param readers   {@link Set} of readers
+     * @param writers   {@link Set} of writers
      */
     @SuppressWarnings("unchecked")
-    private void removeExtendedReadersImpl(NodeRef nodeRef, Set<String> readers)
+    private void removeExtendedSecurityImpl(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
         Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
+        nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)removeFromMap(readersMap, readers));
         
-        // remove the readers
-        for (String reader : readers)
+        Map<String, Integer> writersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
+        nodeService.setProperty(nodeRef, PROP_WRITERS, (Serializable)removeFromMap(writersMap, writers));
+        
+        if (readersMap == null && writersMap == null)
         {
-            Integer readerCount = readersMap.get(reader);
-            if (readerCount != null)
+            // remove the aspect
+            nodeService.removeAspect(nodeRef, ASPECT_EXTENDED_SECURITY);
+        }        
+    }
+    
+    private Map<String, Integer> removeFromMap(Map<String, Integer> map, Set<String> keys)
+    {
+        if (map != null && keys != null && keys.size() != 0)
+        {
+            // remove the keys
+            for (String key : keys)
             {
-                if (readerCount == 1)
+                Integer count = map.get(key);
+                if (count != null)
                 {
-                    // remove entry all together if the reference count is now 0
-                    readersMap.remove(reader);
-                }
-                else
-                {
-                    // decrement the reference count by 1
-                    readersMap.put(reader, Integer.valueOf(readerCount.intValue()-1));
+                    if (count == 1)
+                    {
+                        // remove entry all together if the reference count is now 0
+                        map.remove(key);
+                    }
+                    else
+                    {
+                        // decrement the reference count by 1
+                        map.put(key, Integer.valueOf(count.intValue()-1));
+                    }
                 }
             }
         }
         
         // reset the map to null if now empty
-        if (readersMap.isEmpty() == true)
+        if (map != null && map.isEmpty() == true)
         {
-            readersMap = null;
+            map = null;
         }
         
-        // set the property and remove the aspect if appropriate
-        nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)readersMap);
-        if (readersMap == null)
-        {
-            nodeService.removeAspect(nodeRef, ASPECT_EXTENDED_READERS);
-        }
+        return map;
     }
     
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#removeAllExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
-     */
     @Override
-    public void removeAllExtendedReaders(NodeRef nodeRef)
+    public void removeAllExtendedSecurity(NodeRef nodeRef)
     {
-        removeAllExtendedReaders(nodeRef, true);
+        removeAllExtendedSecurity(nodeRef, true);
     }
     
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeAllExtendedReaders(org.alfresco.service.cmr.repository.NodeRef, boolean)
-     */
     @Override
-    public void removeAllExtendedReaders(NodeRef nodeRef, boolean applyToParents)
+    public void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents)
     {
-        if (hasExtendedReaders(nodeRef) == true)
+        if (hasExtendedSecurity(nodeRef) == true)
         {
-            Set<String> readers = getExtendedReaders(nodeRef);
-            if (readers != null && readers.isEmpty() == false)
-            {
-                removeExtendedReaders(nodeRef, readers);
-            }
+            removeExtendedSecurity(nodeRef, getExtendedReaders(nodeRef), getExtendedWriters(nodeRef));            
         }        
     }
 
@@ -346,11 +371,10 @@ public class ExtendedSecurityServiceImpl implements ExtendedSecurityService,
                 NodeRef oldParent = origAssoc.getParentRef();
                 
                 Set<String> readers = getExtendedReaders(record);
-                if (readers != null && readers.size() != 0)
-                {
-                    setExtendedReaders(newParent, readers);
-                    removeExtendedReaders(oldParent, readers);
-                }
+                Set<String> writers = getExtendedWriters(record);
+                
+                addExtendedSecurity(newParent, readers, writers);
+                removeExtendedSecurity(oldParent, readers, writers);
                 
                 return null;
             }

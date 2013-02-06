@@ -23,15 +23,15 @@ import java.util.Set;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Extended readers dynamic authority implementation.
+ * Extended writers dynamic authority implementation.
  * 
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicAuthority
+public class ExtendedWriterDynamicAuthority extends ExtendedSecurityBaseDynamicAuthority
 {
-    /** Extended reader role */
-    public static final String EXTENDED_READER = "ROLE_EXTENDED_READER";
+    /** Extended writer role */
+    public static final String EXTENDED_WRITER = "ROLE_EXTENDED_WRITER";
     
     /**
      * @see org.alfresco.repo.security.permissions.DynamicAuthority#getAuthority()
@@ -39,7 +39,7 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     @Override
     public String getAuthority()
     {
-        return EXTENDED_READER;
+        return EXTENDED_WRITER;
     }
 
     /**
@@ -47,6 +47,6 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
      */
     protected Set<String> getAuthorites(NodeRef nodeRef) 
     {
-        return getExtendedSecurityService().getExtendedReaders(nodeRef);
+        return getExtendedSecurityService().getExtendedWriters(nodeRef);
     }    
 }

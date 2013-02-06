@@ -171,14 +171,15 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
         final NodeRef catNodeRef = childAssocRef.getParentRef();
         if (nodeService.exists(catNodeRef) == true)
         {
-         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
                     Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
                     for (AccessPermission perm : perms)
                     {
-                        if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false)
+                        if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
+                            ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
                         {
                             AccessStatus accessStatus = perm.getAccessStatus();
                             boolean allow = false;
@@ -217,6 +218,7 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
 
                     // set extended reader permissions
                     permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+                    permissionService.setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
 
                     return null;
                 }

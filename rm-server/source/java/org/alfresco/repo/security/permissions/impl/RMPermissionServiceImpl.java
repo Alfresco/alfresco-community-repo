@@ -18,14 +18,18 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.PropertyCheck;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Extends the core permission service implementation allowing the consideration of the read records
@@ -36,7 +40,31 @@ import org.alfresco.service.cmr.security.PermissionService;
  * @author Roy Wetherall
  */
 public class RMPermissionServiceImpl extends PermissionServiceImpl
+                                     implements ExtendedPermissionService
 {
+    protected SimpleCache<Serializable, Set<String>> writersCache;
+    
+    @Override
+    public void setAnyDenyDenies(boolean anyDenyDenies)
+    {
+        super.setAnyDenyDenies(anyDenyDenies);
+        writersCache.clear();
+    }
+    
+    /**
+     * @param writersCache the writersCache to set
+     */
+    public void setWritersCache(SimpleCache<Serializable, Set<String>> writersCache)
+    {
+        this.writersCache = writersCache;
+    }
+    
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        super.onBootstrap(event);        
+        PropertyCheck.mandatory(this, "writersCache", writersCache);
+    }
     
     /**
      * Builds the set of authorities who can read the given ACL.  No caching is done here.
@@ -103,5 +131,44 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         }
 
         return denied;
+    }    
+    
+    /**
+     * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#getWriters(java.lang.Long)
+     */
+    public Set<String> getWriters(Long aclId)
+    {
+        AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
+        if (acl == null)
+        {
+            return Collections.emptySet();
+        }
+
+        Set<String> aclWriters = writersCache.get((Serializable)acl.getProperties());
+        if (aclWriters != null)
+        {
+            return aclWriters;
+        }
+        
+        HashSet<String> assigned = new HashSet<String>();
+        HashSet<String> readers = new HashSet<String>();
+
+        for (AccessControlEntry ace : acl.getEntries())
+        {
+            assigned.add(ace.getAuthority());
+        }
+
+        for (String authority : assigned)
+        {
+            UnconditionalAclTest test = new UnconditionalAclTest(getPermissionReference(PermissionService.WRITE));
+            if (test.evaluate(authority, aclId))
+            {
+                readers.add(authority);
+            }
+        }
+
+        aclWriters = Collections.unmodifiableSet(readers);
+        writersCache.put((Serializable)acl.getProperties(), aclWriters);
+        return aclWriters;
     }
 }

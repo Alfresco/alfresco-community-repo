@@ -94,17 +94,6 @@ public abstract class AbstractCapability extends RMSecurityCommon
     }
 
     /**
-     * Registers an action
-     *
-     * @param action
-     */
-//    public void registerAction(RecordsManagementAction action)
-//    {
-//        this.actions.add(action);
-//        this.actionNames.add(action.getName());
-//    }
-
-    /**
      * @param name  capability name
      */
     public void setName(String name)
@@ -206,37 +195,6 @@ public abstract class AbstractCapability extends RMSecurityCommon
     }
 
     /**
-     *
-     * @param nodeRef
-     * @return
-     */
-//    public int checkActionConditionsIfPresent(NodeRef nodeRef)
-//    {
-//        String prefix = "checkActionConditionsIfPresent" + getName();
-//        int result = getTransactionCache(prefix, nodeRef);
-//        if (result != NOSET_VALUE)
-//        {
-//            return result;
-//        }
-//
-//        if (actions.size() > 0)
-//        {
-//            for (RecordsManagementAction action : actions)
-//            {
-//                if (action.isExecutable(nodeRef, null))
-//                {
-//                    return setTransactionCache(prefix, nodeRef, AccessDecisionVoter.ACCESS_GRANTED);
-//                }
-//            }
-//            return setTransactionCache(prefix, nodeRef, AccessDecisionVoter.ACCESS_DENIED);
-//        }
-//        else
-//        {
-//            return setTransactionCache(prefix, nodeRef, AccessDecisionVoter.ACCESS_GRANTED);
-//        }
-//    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#hasPermission(org.alfresco.service.cmr.repository.NodeRef)
      */
     public AccessStatus hasPermission(NodeRef nodeRef)
@@ -265,10 +223,6 @@ public abstract class AbstractCapability extends RMSecurityCommon
         {
             result = AccessDecisionVoter.ACCESS_DENIED;
         }
-//        else if (checkActionConditionsIfPresent(nodeRef) == AccessDecisionVoter.ACCESS_DENIED)
-//        {
-//            result = AccessDecisionVoter.ACCESS_DENIED;
-//        }
         else
         {
             result = hasPermissionImpl(nodeRef);
@@ -295,22 +249,6 @@ public abstract class AbstractCapability extends RMSecurityCommon
     {
         return AccessDecisionVoter.ACCESS_ABSTAIN;
     }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#getActionNames()
-     */
-//    public List<String> getActionNames()
-//    {
-//        return actionNames;
-//    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#getActions()
-     */
-//    public List<RecordsManagementAction> getActions()
-//   {
-//      return actions;
-//   }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#getGroup()

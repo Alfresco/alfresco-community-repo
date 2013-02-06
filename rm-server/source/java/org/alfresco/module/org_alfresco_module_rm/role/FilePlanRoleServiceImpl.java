@@ -32,6 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -176,8 +177,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     permissionService.setInheritParentPermissions(rmRootNode, false);
                     permissionService.setPermission(rmRootNode, allRoles, RMPermissionModel.READ_RECORDS, true);
                     permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
+                    permissionService.setPermission(rmRootNode, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
 
+                    // set the capabilities
+                    permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
+                    permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.EDIT_RECORD_METADATA, true);
+                    
                     // Create the unfiled record container
                     return filePlanService.createUnfiledContainer(rmRootNode);
                 }

@@ -239,9 +239,10 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                     ExtendedSecurityService extendedSecurityService = serviceRegistry.getExtendedSecurityService();            
                     NodeRef parent = childAssocRef.getParentRef();            
                     Set<String> readers = extendedSecurityService.getExtendedReaders(parent);
+                    Set<String> writers = extendedSecurityService.getExtendedWriters(parent);
                     if (readers != null && readers.size() != 0)
                     {
-                        extendedSecurityService.setExtendedReaders(thumbnail, readers, false);
+                        extendedSecurityService.addExtendedSecurity(thumbnail, readers, writers, false);
                     }
                 }
                 

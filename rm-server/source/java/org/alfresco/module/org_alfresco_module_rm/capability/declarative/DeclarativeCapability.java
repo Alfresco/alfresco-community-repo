@@ -169,7 +169,7 @@ public class DeclarativeCapability extends AbstractCapability
         
         for (String permission : permissions)
         {
-            if (permissionService.hasPermission(filePlan, permission) != AccessStatus.ALLOWED)
+             if (permissionService.hasPermission(filePlan, permission) != AccessStatus.ALLOWED)
             {
                 result = false;
                 break;

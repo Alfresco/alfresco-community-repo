@@ -3,7 +3,67 @@
 
 <beans>
 
+   <bean id="ExtendedPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.security.permissions.impl.ExtendedPermissionService</value>
+        </property>
+        <property name="target">
+            <ref bean="permissionServiceImpl"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="PermissionService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref bean="ExtendedPermissionService_security"/>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="ExtendedPermissionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.service.cmr.security.PermissionService.getOwnerAuthority=ACL_ALLOW
+                org.alfresco.service.cmr.security.PermissionService.getAllAuthorities=ACL_ALLOW
+                org.alfresco.service.cmr.security.PermissionService.getAllPermission=ACL_ALLOW
+                org.alfresco.service.cmr.security.PermissionService.getPermissions=ACL_NODE.0.sys:base.ReadPermissions
+                org.alfresco.service.cmr.security.PermissionService.getAllSetPermissions=ACL_NODE.0.sys:base.ReadPermissions
+                org.alfresco.service.cmr.security.PermissionService.getSettablePermissions=ACL_ALLOW
+                org.alfresco.service.cmr.security.PermissionService.hasPermission=ACL_ALLOW
+                org.alfresco.service.cmr.security.PermissionService.getReaders=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.repo.security.permissions.impl.ExtendedPermissionService.getWriters=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.PermissionService.deletePermissions=ACL_NODE.0.sys:base.ChangePermissions
+                org.alfresco.service.cmr.security.PermissionService.deletePermission=ACL_NODE.0.sys:base.ChangePermissions
+                org.alfresco.service.cmr.security.PermissionService.setPermission=ACL_NODE.0.sys:base.ChangePermissions
+                org.alfresco.service.cmr.security.PermissionService.setInheritParentPermissions=ACL_NODE.0.sys:base.ChangePermissions
+                org.alfresco.service.cmr.security.PermissionService.getInheritParentPermissions=ACL_ALLOW
+                org.alfresco.service.cmr.security.PermissionService.clearPermission=ACL_NODE.0.sys:base.ChangePermissions
+                org.alfresco.service.cmr.security.PermissionService.*=ACL_DENY
+            </value>
+        </property>
+    </bean>
+    
+    <bean name="writersSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+      <property name="maxItems" value="${cache.writersSharedCache.maxItems}"/>
+    </bean>
+    
+    <bean name="writersCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="writersSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.writersTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="10000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+   </bean>
+
    <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.RMPermissionServiceImpl" init-method="init">
+      <property name="writersCache" ref="writersCache"/>
       <property name="nodeService">
          <ref bean="mtAwareNodeService" />
       </property>
@@ -48,11 +108,14 @@
             <ref bean="ownerDynamicAuthority" />
             <ref bean="lockOwnerDynamicAuthority" />
             <ref bean="extendedReaderDynamicAuthority" />
+            <ref bean="extendedWriterDynamicAuthority" />
          </list>
       </property>
    </bean>
 
    <bean id="extendedReaderDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority" />
+   
+   <bean id="extendedWriterDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority" />
    
    <!-- Action Service -->
    <bean id="actionService" class="org.alfresco.repo.action.ExtendedActionServiceImpl" init-method="init">

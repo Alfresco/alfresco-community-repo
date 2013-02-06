@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -32,7 +33,9 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
@@ -214,7 +217,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 NodeRef originalLocation = nodeService.getPrimaryParent(dmDocument).getParentRef();
 
                 assertFalse(recordService.isRecord(dmDocument));
-                assertFalse(extendedSecurityService.hasExtendedReaders(dmDocument));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
 
                 checkPermissions(READ_RECORDS,
                                  AccessStatus.DENIED,   // file plan
@@ -250,10 +253,10 @@ public class RecordServiceImplTest extends BaseRMTestCase
                         AccessStatus.DENIED,   // unfiled container
                         AccessStatus.DENIED,   // record category
                         AccessStatus.DENIED,   // record folder
-                        AccessStatus.DENIED);  // doc/record
+                        AccessStatus.ALLOWED);  // doc/record
 
                 assertTrue(recordService.isRecord(dmDocument));
-                assertTrue(extendedSecurityService.hasExtendedReaders(dmDocument));
+                assertTrue(extendedSecurityService.hasExtendedSecurity(dmDocument));
                 assertFalse(recordService.isFiled(dmDocument));
 
                 // show that the record has meta-data about it's original location
@@ -263,6 +266,20 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
                 // show that the record is linked to it's original location
                 assertEquals(2, nodeService.getParentAssocs(dmDocument).size());
+                
+                // ****
+                // Capability Tests
+                // ****
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_RECORD_METADATA));
+                
+                
+                Capability editRecordMetadata = capabilityService.getCapability("EditRecordMetadata");
+                assertEquals(AccessStatus.ALLOWED, editRecordMetadata.hasPermission(dmDocument));
+                
+                Capability updateProperties = capabilityService.getCapability("UpdateProperties");
+                assertEquals(AccessStatus.ALLOWED, updateProperties.hasPermission(dmDocument));
 
                 return null;
             }
@@ -293,7 +310,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 NodeRef originalLocation = nodeService.getPrimaryParent(dmDocument).getParentRef();
 
                 assertFalse(recordService.isRecord(dmDocument));
-                assertFalse(extendedSecurityService.hasExtendedReaders(dmDocument));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
 
                 checkPermissions(READ_RECORDS,
                                  AccessStatus.DENIED,   // file plan
@@ -341,7 +358,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
             public Void run()
             {
                 assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(extendedSecurityService.hasExtendedReaders(dmDocument));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
                 assertFalse(recordService.isFiled(dmDocument));
 
                 // show that the record has meta-data about it's original location
@@ -385,7 +402,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
         });
     }
 
-    public void testFileUnfiledrecord() throws Exception
+    public void xtestFileUnfiledrecord() throws Exception
     {
         doTestInTransaction(new Test<NodeRef>()
         {

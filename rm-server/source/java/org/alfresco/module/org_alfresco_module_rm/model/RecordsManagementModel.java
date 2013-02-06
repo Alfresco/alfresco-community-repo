@@ -227,9 +227,10 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     public static final QName ASPECT_LOADED_DATA_SET_ID = QName.createQName(RM_URI, "loadedDataSetId");
     public static final QName PROP_LOADED_DATA_SET_IDS = QName.createQName(RM_URI, "loadedDataSetIds");
 
-    // Extended readers aspect
-    public static final QName ASPECT_EXTENDED_READERS = QName.createQName(RM_URI, "extendedReaders");
+    // Extended security aspect
+    public static final QName ASPECT_EXTENDED_SECURITY = QName.createQName(RM_URI, "extendedSecurity");
     public static final QName PROP_READERS = QName.createQName(RM_URI, "readers");
+    public static final QName PROP_WRITERS = QName.createQName(RM_URI, "writers");
 
     // Originating details of a record
     public static final QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName(RM_URI, "recordOriginatingDetails");

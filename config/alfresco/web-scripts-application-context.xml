@@ -512,6 +512,17 @@
       <property name="hiddenAspect" ref="hiddenAspect" />
    </bean>
    
+   <!--  Remote Store service - Share resources -->
+   <bean id="webscript.org.alfresco.repository.store.remoteshareresource.get" class="org.alfresco.repo.web.scripts.bean.ShareResourceStore" parent="webscript">
+      <property name="repositoryHelper" ref="repositoryHelper"/>
+      <property name="nodeService" ref="NodeService" />
+      <property name="unprotectedNodeService" ref="nodeService" />
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="contentService" ref="ContentService"/>
+      <property name="siteService" ref="SiteService" />
+      <property name="hiddenAspect" ref="hiddenAspect" />
+   </bean>
    
    <!--  Authenticated Web Framework AVM Store service -->
    <bean id="webscript.org.alfresco.webframework.avmstore.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">

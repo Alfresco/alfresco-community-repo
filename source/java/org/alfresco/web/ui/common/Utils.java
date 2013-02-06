@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -98,6 +98,9 @@ public final class Utils extends StringUtils
    
    private static final Log logger = LogFactory.getLog(Utils.class);
    
+   /** RegEx to split a String on the first space. */
+   public static final String ON_FIRST_SPACE = " +";
+
    static
    {
        tagWhiteList.add("STRIKE");
@@ -1132,7 +1135,52 @@ public final class Utils extends StringUtils
       filter.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, term));
       filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, term));
       filter.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, term));
+      
+      // In order to support queries for "Alan Smithee", we'll parse these tokens
+      // and add them in to the query.
+      Pair<String, String> tokenisedName = tokeniseName(term);
+      if (tokenisedName != null)
+      {
+          filter.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, tokenisedName.getFirst()));
+          filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, tokenisedName.getSecond()));
+      }
+
       return filter;
+   }
+   
+   /**
+    * This method will tokenise a name string in order to extract first name, last name - if possible.
+    * The split is simple - it's made on the first whitespace within the trimmed nameFilter String. So
+    * <p/>
+    * "Luke Skywalker" becomes ["Luke", "Skywalker"].
+    * <p/>
+    * "Jar Jar Binks" becomes ["Jar", "Jar Binks"].
+    * <p/>
+    * "C-3PO" becomes null.
+    * 
+    * @param nameFilter
+    * @return A Pair<firstName, lastName> if the String is valid, else <tt>null</tt>.
+    */
+   private static Pair<String, String> tokeniseName(String nameFilter)
+   {
+       Pair<String, String> result = null;
+       
+       if (nameFilter != null)
+       {
+           final String trimmedNameFilter = nameFilter.trim();
+           
+           // We can only have a first name and a last name if we have at least 3 characters e.g. "A B".
+           if (trimmedNameFilter.length() > 3)
+           {
+               final String[] tokens = trimmedNameFilter.split(ON_FIRST_SPACE, 2);
+               if (tokens.length == 2)
+               {
+                   result = new Pair<String, String>(tokens[0], tokens[1]);
+               }
+           }
+       }
+       
+       return result;
    }
    
    /**

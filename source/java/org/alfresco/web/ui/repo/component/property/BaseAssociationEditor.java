@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1032,15 +1032,9 @@ public abstract class BaseAssociationEditor extends UIInput
          }
          else if(type.equals(ContentModel.TYPE_PERSON.toString()))
          {
-            // If the association's target is the person type search on the 
-            // firstName and lastName properties instead of the name property
-            List<Pair<QName,String>> filter = new ArrayList<Pair<QName,String>>();
-            if (contains != null && contains.length() > 0)
-            {
-               String search = contains.trim();
-               filter.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, search));
-               filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, search));
-            }
+            List<Pair<QName,String>> filter = (contains != null && contains.trim().length() > 0)
+               ? Utils.generatePersonFilter(contains.trim())
+               : null;
             
             // Always sort by last name, then first name
             List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName,Boolean>>();

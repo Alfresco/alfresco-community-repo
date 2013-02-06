@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -124,9 +124,7 @@ public class DeleteUserDialog extends BaseDialogBean
 
             // define the query to find people by their first or last name
             String search = ISO9075.encode(this.searchCriteria);
-            List<Pair<QName,String>> filter = new ArrayList<Pair<QName,String>>();
-            filter.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, search));
-            filter.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, search));
+            List<Pair<QName,String>> filter = Utils.generatePersonFilter(search);
             
             if (logger.isDebugEnabled())
             {

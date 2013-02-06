@@ -1,12 +1,11 @@
 <html>
 <head>
-   <title>Upload success</title>
+   <title>Upload Success</title>
 </head>
 <body>
-<#if (args.successCallback?exists)>
+<#if (args.success!"")?matches("^[\\w\\d\\._]+$")>
    <script type="text/javascript">
-      ${args.successCallback}.call(${args.successScope},
-      {
+      ${args.success}({
          nodeRef: "${document.nodeRef}",
          fileName: "${document.name}"
       });

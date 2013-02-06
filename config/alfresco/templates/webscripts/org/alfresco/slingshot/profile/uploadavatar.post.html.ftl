@@ -1,12 +1,11 @@
 <html>
 <head>
-   <title>Upload success</title>
+   <title>Upload Avatar Success</title>
 </head>
 <body>
-<#if (args.successCallback?exists)>
+<#if (args.success!"")?matches("^[\\w\\d\\._]+$")>
    <script type="text/javascript">
-      ${args.successCallback}.call(${args.successScope},
-      {
+      ${args.success}({
          nodeRef: "${image.nodeRef}",
          fileName: "${image.name}"
       });

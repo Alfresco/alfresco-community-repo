@@ -8,6 +8,7 @@ function main ()
 	var shortNameFilter = args["shortNameFilter"];
 	var zone = args["zone"];
    var sortBy = args["sortBy"];
+   var sortAsc = args["dir"] != "desc";
    var paging = utils.createPaging(args);
 	
 	if (shortNameFilter == null)
@@ -20,8 +21,8 @@ function main ()
       sortBy = "displayName";
    }
 	
-	// Get the groups
-	model.groups = groups.getGroupsInZone(shortNameFilter, zone, paging, sortBy);
+   // Get the groups
+   model.groups = groups.getGroupsInZone(shortNameFilter, zone, paging, sortBy, sortAsc);
    model.paging = paging;
 }
 

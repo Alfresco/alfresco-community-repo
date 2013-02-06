@@ -6,6 +6,13 @@
 
 function main()
 {
+   // Check that post is submitted as application/json
+   if (headers["Content-Type"].indexOf("application/json") != 0)
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "Request must be submitted as application/json");
+      return;
+   }
+
    var urlElements = url.extension.split("/");
    var shortName = urlElements[0];
    var fullAuthorityName = urlElements[2];

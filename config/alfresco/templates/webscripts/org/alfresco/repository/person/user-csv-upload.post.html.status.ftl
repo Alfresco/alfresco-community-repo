@@ -4,9 +4,9 @@
 </head>
 <body>
 <#if status.code == 200>
-    <#if (args.successCallback?exists)>
+   <#if (args.success!"")?matches("^[\\w\\d\\._]+$")>
        <script type="text/javascript">
-          ${args.successCallback}.call(${args.successScope}, {
+          ${args.success}({
              status: {
                 "code" : ${status.code},
                 "name" : "${status.codeName}",
@@ -17,9 +17,9 @@
        </script>
     </#if>
 <#else>
-    <#if (args.failureCallback?exists)>
+   <#if (args.failure!"")?matches("^[\\w\\d\\._]+$")>
        <script type="text/javascript">
-          ${args.failureCallback}.call(${args.failureScope}, {
+          ${args.failure}({
              status: {
                 "code" : ${status.code},
                 "name" : "${status.codeName}",

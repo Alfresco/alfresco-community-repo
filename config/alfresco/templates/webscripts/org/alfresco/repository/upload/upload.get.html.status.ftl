@@ -3,9 +3,9 @@
    <title>Upload failure</title>
 </head>
 <body>
-<#if (args.failureCallback?exists)>
+<#if (args.failure!"")?matches("^[\\w\\d\\._]+$")>
    <script type="text/javascript">
-      ${args.failureCallback}.call(${args.failureScope}, {});
+      ${args.failure}({});
    </script>
 </#if>
 </body>

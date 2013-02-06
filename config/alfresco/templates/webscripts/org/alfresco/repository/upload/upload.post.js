@@ -233,6 +233,16 @@ function main()
          updateNode.properties.content.guessEncoding();
          // check it in again, with supplied version history note
          updateNode = updateNode.checkin(description, majorVersion);
+         if (aspects.length != 0)
+         {
+            for (i = 0; i < aspects.length; i++)
+            {
+               if (!updateNode.hasAspect(aspects[i]))
+               {
+                  updateNode.addAspect(aspects[i]);
+               }
+            }
+         }
 
          // Extract the metadata
          // (The overwrite policy controls which if any parts of
@@ -321,10 +331,14 @@ function main()
          /**
           * Create a new file.
           */
-         var newFile = destNode.createFile(filename);
+         var newFile;
          if (contentType !== null)
          {
-            newFile.specializeType(contentType);
+        	newFile = destNode.createFile(filename, contentType);
+         }
+         else
+         {
+        	 newFile = destNode.createFile(filename);
          }
          // Use a the appropriate write() method so that the mimetype already guessed from the original filename is
          // maintained - as upload may have been via Flash - which always sends binary mimetype and would overwrite it.

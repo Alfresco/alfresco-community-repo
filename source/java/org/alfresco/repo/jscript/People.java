@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,7 +18,11 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.io.Serializable;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +41,7 @@ import org.alfresco.repo.tenant.TenantDomainMismatchException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -58,6 +63,7 @@ import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -509,6 +515,26 @@ public final class People extends BaseScopableProcessorExtension implements Init
      */
     public Scriptable getPeople(String filter, int maxResults)
     {
+        return getPeople(filter, maxResults, null, true);
+    }
+    
+    /**
+     * Get the collection of people stored in the repository.
+     * An optional filter query may be provided by which to filter the people collection.
+     * Space separate the query terms i.e. "john bob" will find all users who's first or
+     * second names contain the strings "john" or "bob".
+     * Method supports sorting by specifying sortBy and sortAsc params.
+     * 
+     * @param filter filter query string by which to filter the collection of people.
+     *          If <pre>null</pre> then all people stored in the repository are returned
+     * @param maxResults maximum results to return or all if <= 0
+     * @param sortBy field for sorting
+     * @param sortAsc sort ascending or not
+     * 
+     * @return people collection as a JavaScript array
+     */
+    public Scriptable getPeople(String filter, int maxResults, String sortBy, boolean sortAsc)
+    {
         boolean useCQ = false;
         if (filter != null)
         {
@@ -529,7 +555,7 @@ public final class People extends BaseScopableProcessorExtension implements Init
         
         if ((filter == null || filter.length() == 0) || useCQ)
         {
-            people = getPeopleImplDB(filter, maxResults);
+            people = getPeopleImplDB(filter, maxResults, sortBy, sortAsc);
         }
         else
         {
@@ -546,14 +572,14 @@ public final class People extends BaseScopableProcessorExtension implements Init
                 
                 try
                 {
-                    people = getPeopleImplSearch(term, t, propIndex, maxResults);
+                    people = getPeopleImplSearch(term, t, propIndex, maxResults, sortBy, sortAsc);
                 }
                 catch (Throwable err)
                 {
                     if (useCQ)
                     {
                         // search unavailable and/or parser exception - try CQ instead
-                        people = getPeopleImplDB(term, maxResults);
+                        people = getPeopleImplDB(term, maxResults, sortBy, sortAsc);
                     }
                 }
             }
@@ -568,10 +594,11 @@ public final class People extends BaseScopableProcessorExtension implements Init
     }
     
     // canned query
-    private Object[] getPeopleImplDB(String term, int maxResults)
+    private Object[] getPeopleImplDB(String term, int maxResults, final String sortBy, boolean sortAsc)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-        Object[] people = null;
+        
+        List<NodeRef> peopleRefs = new ArrayList<NodeRef>();
         
         // simple non-FTS filter: firstname or lastname or username starting with term (ignoring case)
         
@@ -585,24 +612,27 @@ public final class People extends BaseScopableProcessorExtension implements Init
         
         PagingRequest pagingRequest = new PagingRequest(maxResults, null);
         List<PersonInfo> persons = personService.getPeople(term, filterProps, sortProps, pagingRequest).getPage();
-        people = new Object[persons.size()];
-        for (int i=0; i<people.length; i++)
+        for (int i=0; i<persons.size(); i++)
         {
-            people[i] = persons.get(i).getNodeRef();
+            peopleRefs.add(persons.get(i).getNodeRef());
         }
+        
+        Object[] people = getSortedPeopleObjects(peopleRefs, sortBy, sortAsc);
         
         if (start != null)
         {
             logger.debug("getPeople: cq - "+people.length+" items (in "+(System.currentTimeMillis()-start)+" msecs)");
         }
-        
+       
         return people;
     }
     
     // search query
-    private Object[] getPeopleImplSearch(String term, StringTokenizer t, int propIndex, int maxResults) throws Throwable
+    private Object[] getPeopleImplSearch(String term, StringTokenizer t, int propIndex, int maxResults, final String sortBy, boolean sortAsc) throws Throwable
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+        
+        List<NodeRef> peopleRefs = new ArrayList<NodeRef>();
         Object[] people = null;
         
         SearchParameters params = new SearchParameters();
@@ -712,7 +742,7 @@ public final class People extends BaseScopableProcessorExtension implements Init
        try
        {
            results = services.getSearchService().query(params);
-           people = results.getNodeRefs().toArray();
+           people = getSortedPeopleObjects(results.getNodeRefs(), sortBy, sortAsc);
            
            if (start != null)
            {
@@ -739,6 +769,75 @@ public final class People extends BaseScopableProcessorExtension implements Init
        return people;
     }
     
+    private Object[] getSortedPeopleObjects(List<NodeRef> peopleRefs, final String sortBy, boolean sortAsc)
+    {
+        final Collator col = Collator.getInstance(I18NUtil.getLocale());
+        final NodeService nodeService = services.getNodeService();
+        final int orderMultiplicator = sortAsc ? 1 : -1;
+        Collections.sort(peopleRefs, new Comparator<NodeRef>()
+        {
+            @Override
+            public int compare(NodeRef n1, NodeRef n2)
+            {
+                String p1 = getProperty(n1);
+                String p2 = getProperty(n2);
+
+                return col.compare(p1, p2) * orderMultiplicator;
+            }
+
+            public String getProperty(NodeRef nodeRef)
+            {
+                Serializable result;
+
+                if ("fullName".equalsIgnoreCase(sortBy))
+                {
+                    String firstName = nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME).toString();
+                    String lastName = nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME).toString();
+                    String fullName = firstName;
+                    if (lastName != null && lastName.length() > 0)
+                    {
+                        fullName = fullName + " " + lastName;
+                    }
+
+                    result = fullName;
+                }
+                else if ("jobtitle".equalsIgnoreCase(sortBy))
+                {
+                    result = nodeService.getProperty(nodeRef, ContentModel.PROP_JOBTITLE);
+                }
+                else if ("email".equalsIgnoreCase(sortBy))
+                {
+                    result = nodeService.getProperty(nodeRef, ContentModel.PROP_EMAIL);
+                }
+                else if ("usage".equalsIgnoreCase(sortBy))
+                {
+                    result = nodeService.getProperty(nodeRef, ContentModel.PROP_SIZE_CURRENT);
+                }
+                else if ("quota".equalsIgnoreCase(sortBy))
+                {
+                    result = nodeService.getProperty(nodeRef, ContentModel.PROP_SIZE_QUOTA);
+                }
+                else
+                {
+                    // Default
+                    result = nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+                }
+
+                if (result == null)
+                {
+                    result = "";
+                }
+
+                return result.toString();
+            }
+
+        });        
+        
+        Object[] people = new Object[peopleRefs.size()];
+        peopleRefs.toArray(people);
+        
+        return people;
+    }    
     /**
      * Gets the Person given the username
      * 

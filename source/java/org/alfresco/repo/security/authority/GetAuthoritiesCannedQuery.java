@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -190,7 +190,7 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
             
             if (s2 == null)
             {
-                s2 = auth1.getAuthorityName();
+                s2 = auth2.getAuthorityName();
             }
             
             if (s1 == null)

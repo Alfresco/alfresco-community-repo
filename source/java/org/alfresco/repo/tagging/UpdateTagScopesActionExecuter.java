@@ -244,7 +244,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
                                           }
                                           
                                           // Does any work remain?
-                                          if(updates.size() == 0)
+                                          if(entryIds.size() == 0)
                                           {
                                              updatesRemain.setValue(0);
                                              return null;

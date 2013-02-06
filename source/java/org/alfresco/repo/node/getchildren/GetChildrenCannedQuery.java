@@ -61,6 +61,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * GetChidren canned query
@@ -362,7 +363,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         public PropComparatorAsc(List<Pair<QName, SortOrder>> sortProps)
         {
             this.sortProps = sortProps;
-            this.collator = Collator.getInstance(); // note: currently default locale
+            this.collator = Collator.getInstance(I18NUtil.getContentLocale()); 
         }
         
         public int compare(FilterSortNode n1, FilterSortNode n2)

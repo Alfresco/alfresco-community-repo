@@ -147,37 +147,23 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
             tmpS.delete();
             tmpD.delete();
             
+            // Note - since HTML Parser 2.0 META tags specifying the
+            // document encoding will ONLY be respected if the original
+            // content type was set to ISO-8859-1.
+            //
+            // This means there is now only one test which we can perform
+            // to ensure that this now-limited overriding of the encoding
+            // takes effect.
             
-            // Nothing on the content, meta set to ISO 8865-1
+            // Content set to ISO 8859-1, meta set to UTF-8
             tmpS = File.createTempFile("test", ".html");
             content = new FileContentWriter(tmpS);
             content.setMimetype(MimetypeMap.MIMETYPE_HTML);
             String str = partA+
-                         "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\">" +
-                         partB+partC;
-            content.putContent(new ByteArrayInputStream(str.getBytes("ISO-8859-1")));
-            
-            tmpD = File.createTempFile("test", ".txt");
-            dest = new FileContentWriter(tmpD);
-            dest.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-            
-            transformer.transform(content.getReader(), dest);
-            assertEquals(
-                    TITLE + "\n" + TEXT_P1 + "\n" + TEXT_P2 + "\n" + TEXT_P3 + "\n", 
-                    dest.getReader().getContentString()
-            );
-            tmpS.delete();
-            tmpD.delete();
-            
-            
-            // Nothing on the content, meta set to UTF-8
-            tmpS = File.createTempFile("test", ".html");
-            content = new FileContentWriter(tmpS);
-            content.setMimetype(MimetypeMap.MIMETYPE_HTML);
-            str = partA+
                          "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">" +
                          partB+partC;
             content.putContent(new ByteArrayInputStream(str.getBytes("UTF-8")));
+            content.setEncoding("ISO-8859-1");
             
             tmpD = File.createTempFile("test", ".txt");
             dest = new FileContentWriter(tmpD);

@@ -386,7 +386,27 @@ public class Site implements Serializable
     {
         return this.siteService.getMembersRoleInfo(getShortName(), authorityName);
     }
-    
+
+    /**
+     * Indicates whether a user belongs to a group with access rights to the site or not
+     * 
+     * @param authorityName  user name
+     * @return boolean  true if the user belongs to a group with access rights, false otherwise
+     */
+    public boolean isMemberOfGroup(String authorityName)
+    {
+        boolean isMemberOfGroup = false;
+        if (this.siteService.listSites(authorityName).contains(this.siteInfo))
+        {
+            SiteMemberInfo membersRoleInfo = getMembersRoleInfo(authorityName);
+            if (membersRoleInfo != null)
+            {
+                isMemberOfGroup = membersRoleInfo.isMemberOfGroup();
+            }
+        }
+        return isMemberOfGroup;
+    }
+
     /**
      * Indicates whether a user is a member of the site.
      * 

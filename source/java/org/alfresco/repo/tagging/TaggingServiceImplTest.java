@@ -2037,4 +2037,88 @@ public class TaggingServiceImplTest extends TestCase
           return returnVal;
        }
     }
+    
+    /**
+     * Test for https://https://issues.alfresco.com/jira/browse/ALF-17260.
+     * 
+     * When the audit queue for the tagging service contains more than 100 entries which aren't update,
+     * {@link UpdateTagScopesActionExecuter} was failing to update the tag scope of containers correctly.
+     * 
+     * @throws Exception
+     */
+    public void testALF_17260() throws Exception 
+    {
+        // Add tag scope to our container
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+
+            @Override
+            public Void execute() throws Throwable
+            {                   
+                // Add some tag scopes
+                taggingService.addTagScope(folder);
+                return null;
+            }
+        });
+
+        // Generate ~1800 audit entries, none of which are updates, as determined by UpdateTagScopesActionExecuter
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                 Map<String, Object> model = new HashMap<String, Object>(0);
+                 model.put("folder", folder);
+                 
+                 ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/tagging/script/test_alf_17260.js");
+                 scriptService.executeScript(location, model);
+                 
+                 // Let the script run
+                 return null;
+            }
+        });
+        
+        // The tag scope of our container should be empty at this stage.
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // re get the tag scopes
+                TagScope ts1 = taggingService.findTagScope(folder);
+                
+                // Check that the tag scopes got populated
+                assertEquals("Wrong tags on sub folder: " + ts1.getTags(), 0, ts1.getTags().size());
+                return null;
+            }
+        });
+
+        // Add some tags which should update the tag scope.
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                taggingService.addTag(subDocument, TAG_1); // folder+subfolder
+                return null;
+            }
+        });
+
+        // Prior to fixing ALF-17260, the tag scope of our container wasn't being updated correctly. These
+        // assertions were failing.
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                // re get the tag scopes
+                TagScope ts1 = taggingService.findTagScope(folder);
+                
+                // Check that the tag scopes got populated
+                assertEquals("Wrong tags on folder: " + ts1.getTags(), 1, ts1.getTags().size());
+                assertEquals("Wrong tag name", TAG_1, ts1.getTags().get(0).getName());
+                assertEquals("Wrong number of documents", 1, ts1.getTags().get(0).getCount());
+                return null;
+            }
+        });
+    }
 }

@@ -1,6 +1,7 @@
 package org.alfresco.repo.activities.feed;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -335,6 +336,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 			{
 	        	private int skip = 0;
 	        	private int maxItems = batchSize;
+                        private boolean hasMore = true;
 
 				@Override
 				public int getTotalEstimatedWorkSize()
@@ -345,8 +347,13 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 				@Override
 				public Collection<PersonInfo> getNextWork()
 				{
+                                    if (!hasMore)
+                                    {
+                                        return Collections.emptyList();
+                                    }
 				    PagingResults<PersonInfo> people = personService.getPeople(null, true, null, new PagingRequest(skip, maxItems));
 				    skip += maxItems;
+                                    hasMore = people.hasMoreItems();
 				    return people.getPage();
 				}
 			};

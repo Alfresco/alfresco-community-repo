@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -539,6 +539,9 @@ public class ScriptGroup implements Authority, Serializable
         childAuthorityNames = null;
     }
 	
+    /**
+     * @deprecated
+     */
     public static ScriptGroup[] makeScriptGroups(Collection<String> authorities,
                 ScriptPagingDetails paging, ServiceRegistry serviceRegistry,
                 Scriptable scope)
@@ -546,11 +549,20 @@ public class ScriptGroup implements Authority, Serializable
         return makeScriptGroups(authorities, paging, null, serviceRegistry, scope);
     }
     
+    /**
+     * @deprecated
+     */
     public static ScriptGroup[] makeScriptGroups(Collection<String> authorities,
             ScriptPagingDetails paging, String sortBy, ServiceRegistry serviceRegistry, 
             Scriptable scope)
     {
+        return makeScriptGroups(authorities, paging, sortBy, true, serviceRegistry, scope);
+    }
         
+    public static ScriptGroup[] makeScriptGroups(Collection<String> authorities,
+            ScriptPagingDetails paging, final String sortBy, boolean sortAsc, ServiceRegistry serviceRegistry,
+            Scriptable scope)
+    {
         final ArrayList<String> authList = new ArrayList<String>(authorities);
         final Map<String,ScriptGroup> scriptGroupCache = new HashMap<String, ScriptGroup>();
         
@@ -562,7 +574,7 @@ public class ScriptGroup implements Authority, Serializable
             {
                 scriptGroupCache.put(authority, new ScriptGroup(authority, serviceRegistry, scope));
             }
-            final AuthorityComparator c2 = new AuthorityComparator(sortBy);
+            final AuthorityComparator c2 = new AuthorityComparator(sortBy, sortAsc);
             Collections.sort(authList, new Comparator<String>() {
                 @Override
                 public int compare(String g1, String g2)
@@ -607,17 +619,30 @@ public class ScriptGroup implements Authority, Serializable
     }
     
     /**
+     * @deprecated
+     * @since 4.0
+     */
+    public static ScriptGroup[] makeScriptGroups(PagingResults<String> pagedGroups, ScriptPagingDetails paging,
+                ServiceRegistry serviceRegistry, Scriptable scope)
+    {
+        return makeScriptGroups(pagedGroups, paging, null, true, serviceRegistry, scope);
+    }
+    
+    /**
      * Returns an array of ScriptGroup objects representing the given paged results.
      * 
      * @param groups The paged results
      * @param paging Object representing the paging details
+     * @param sortBy field for sorting
+     * @param sortAsc sort ascending or not
      * @param serviceRegistry
      * @param scope
      * @return Array of ScriptGroup objects
      * 
-     * @since 4.0
+     * @since 4.1.4
      */
-    public static ScriptGroup[] makeScriptGroups(PagingResults<String> pagedGroups, ScriptPagingDetails paging, 
+    public static ScriptGroup[] makeScriptGroups(PagingResults<String> pagedGroups, ScriptPagingDetails paging,
+                String sortBy, boolean sortAsc,
                 ServiceRegistry serviceRegistry, Scriptable scope)
     {
         // set the total on the paging object
@@ -625,11 +650,15 @@ public class ScriptGroup implements Authority, Serializable
         
         // retrive the page of results and create a ScriptGroup for each one
         List<String> groupNames = pagedGroups.getPage();
-        ScriptGroup[] groups = new ScriptGroup[groupNames.size()];
-        for (int i=0; i<groups.length; i++)
+        AuthorityComparator authComp = new AuthorityComparator(sortBy, sortAsc);
+        List<ScriptGroup> groupList= new ArrayList<ScriptGroup>();
+        for (int i=0; i<groupNames.size(); i++)
         {
-            groups[i] = new ScriptGroup(groupNames.get(i), serviceRegistry, scope);
+            groupList.add(new ScriptGroup(groupNames.get(i), serviceRegistry, scope));
         }
+        Collections.sort(groupList, authComp);
+        ScriptGroup[] groups = new ScriptGroup[groupNames.size()];
+        groupList.toArray(groups);
         
         return groups;
     }
@@ -637,15 +666,16 @@ public class ScriptGroup implements Authority, Serializable
     /**
      * Returns an array of ScriptGroup objects representing the given paged results.
      * 
-     * @param groups The paged results
+     * @param groups sorted paged results (the page of results get sorted again taking I18n into account)
      * @param paging Object representing the paging details
      * @param serviceRegistry
      * @param scope
      * @return Array of ScriptGroup objects
      * 
-     * @since 4.1.3
+     * @since 4.1.4
      */
-    public static ScriptGroup[] makeScriptGroupsInfo(PagingResults<AuthorityInfo> pagedGroups, ScriptPagingDetails paging, 
+    public static ScriptGroup[] makeScriptGroupsInfo(PagingResults<AuthorityInfo> pagedGroups, ScriptPagingDetails paging,
+                String sortBy, boolean sortAsc,
                 ServiceRegistry serviceRegistry, Scriptable scope)
     {
         // set the total on the paging object
@@ -653,12 +683,17 @@ public class ScriptGroup implements Authority, Serializable
         
         // retrive the page of results and create a ScriptGroup for each one
         List<AuthorityInfo> groupInfo = pagedGroups.getPage();
-        ScriptGroup[] groups = new ScriptGroup[groupInfo.size()];
-        for (int i=0; i<groups.length; i++)
+        AuthorityComparator authComp = new AuthorityComparator(sortBy, sortAsc);
+        List<ScriptGroup> groupList= new ArrayList<ScriptGroup>();
+        
+        for (int i=0; i<groupInfo.size(); i++)
         {
             AuthorityInfo authorityInfo = groupInfo.get(i);
-            groups[i] = new ScriptGroup(authorityInfo.getAuthorityName(), authorityInfo.getAuthorityDisplayName(), serviceRegistry, scope);
+            groupList.add(new ScriptGroup(authorityInfo.getAuthorityName(), authorityInfo.getAuthorityDisplayName(), serviceRegistry, scope));
         }
+        Collections.sort(groupList, authComp);
+        ScriptGroup[] groups = new ScriptGroup[groupInfo.size()];
+        groupList.toArray(groups);
         
         return groups;
     }

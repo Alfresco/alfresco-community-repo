@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,7 +43,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ScriptPagingDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Script object representing the authority service.
@@ -268,6 +267,15 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
     }
     
     /**
+     * @deprecated
+     * @since 4.0
+     */
+    public ScriptGroup[] getGroupsInZone(String filter, String zone, ScriptPagingDetails paging, String sortBy)
+    {
+        return getGroupsInZone(filter, zone, paging, sortBy, true);
+    }
+    
+    /**
      * Retrieves groups matching the given filter from the given zone.
      * 
      * NOTE: If the filter is null, an empty string or * all groups found will be returned.
@@ -277,10 +285,11 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      * @param paging Paging details
      * @param sortBy Field to sort by, can be <code>shortName</code>, <code>displayName</code> or
      *        <code>authorityName</code>, the default is displayName
+     * @param sortAsc sort ascending or not
      * @return Array of matching groups
-     * @since 4.0
+     * @since 4.1.4
      */
-    public ScriptGroup[] getGroupsInZone(String filter, String zone, ScriptPagingDetails paging, String sortBy)
+    public ScriptGroup[] getGroupsInZone(String filter, String zone, ScriptPagingDetails paging, String sortBy, boolean sortAsc)
     {
         if (sortBy == null)
         {
@@ -306,10 +315,10 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
             paging.setRequestTotalCountMax(10000);
 
             // get the paged results (NOTE: we can only sort by display name currently)
-            PagingResults<AuthorityInfo> groups = authorityService.getAuthoritiesInfo(AuthorityType.GROUP, zone, filter, sortBy, true, paging);
+            PagingResults<AuthorityInfo> groups = authorityService.getAuthoritiesInfo(AuthorityType.GROUP, zone, filter, sortBy, sortAsc, paging);
             
             // create ScriptGroup array from paged results
-            scriptGroups = makeScriptGroupsInfo(groups, paging, serviceRegistry, this.getScope());
+            scriptGroups = makeScriptGroupsInfo(groups, paging, sortBy, sortAsc, serviceRegistry, this.getScope());
         }
         catch (UnknownAuthorityException e)
         {

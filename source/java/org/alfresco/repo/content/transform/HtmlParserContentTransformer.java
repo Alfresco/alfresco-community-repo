@@ -33,12 +33,25 @@ import org.htmlparser.beans.StringBean;
 import org.htmlparser.util.ParserException;
 
 /**
- * @see http://htmlparser.sourceforge.net/
- * @see org.htmlparser.beans.StringBean
+ * Content transformer which wraps the HTML Parser library for 
+ * parsing HTML content.
  * 
- * Tika Note - could be convered to use the Tika HTML parser,
+ * <p>
+ * Since HTML Parser was updated from v1.6 to v2.1, META tags
+ * defining an encoding for the content via http-equiv=Content-Type
+ * will ONLY be respected if the encoding of the content item
+ * itself is set to ISO-8859-1.
+ * </p>
+ * 
+ * <p>
+ * Tika Note - could be converted to use the Tika HTML parser,
  *  but we'd potentially need a custom text handler to replicate
  *  the current settings around links and non-breaking spaces.
+ * </p>
+ * 
+ * @see http://htmlparser.sourceforge.net/
+ * @see org.htmlparser.beans.StringBean
+ * @see http://sourceforge.net/tracker/?func=detail&aid=1644504&group_id=24399&atid=381401
  * 
  * @author Derek Hulley
  */
@@ -72,7 +85,8 @@ public class HtmlParserContentTransformer extends AbstractContentTransformer2
         File htmlFile = TempFileProvider.createTempFile("HtmlParserContentTransformer_", ".html");
         reader.getContent(htmlFile);
         
-        // Fetch the encoding of the HTML, if it's set in Alfresco
+        // Fetch the encoding of the HTML, as set in the ContentReader
+        // This will default to 'UTF-8' if not specifically set
         String encoding = reader.getEncoding();
         
         // Create the extractor

@@ -475,16 +475,6 @@ public class RecordServiceImpl implements RecordService,
     {
         ParameterCheck.mandatory("NodeRef", nodeRef);
 
-        // first we do a sanity check to ensure that the user has at least write permissions on the record
-        if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
-        {
-            throw new AccessDeniedException(
-                    "Cannot hide record, because the user '"
-                            + AuthenticationUtil.getRunAsUser()
-                            + "' does not have write permissions on the record '"
-                            + nodeRef.toString() + "'.");
-        }
-
         // do the work of hiding the record as the system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {

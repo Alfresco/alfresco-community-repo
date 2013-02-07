@@ -274,6 +274,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_RECORD_METADATA));
                 
+                Capability filling = capabilityService.getCapability("FileRecords");
+                assertEquals(AccessStatus.ALLOWED, filling.hasPermission(dmDocument));
                 
                 Capability editRecordMetadata = capabilityService.getCapability("EditRecordMetadata");
                 assertEquals(AccessStatus.ALLOWED, editRecordMetadata.hasPermission(dmDocument));
@@ -284,6 +286,43 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, dmCollaborator);
+        
+        // check the consumer's permissions are correct for the newly created document
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                checkPermissions(READ_RECORDS,
+                        AccessStatus.ALLOWED,   // file plan
+                        AccessStatus.ALLOWED,   // unfiled container
+                        AccessStatus.DENIED,   // record category
+                        AccessStatus.DENIED,   // record folder
+                        AccessStatus.ALLOWED);  // doc/record
+
+                checkPermissions(FILING,
+                        AccessStatus.DENIED,   // file plan
+                        AccessStatus.DENIED,   // unfiled container
+                        AccessStatus.DENIED,   // record category
+                        AccessStatus.DENIED,   // record folder
+                        AccessStatus.DENIED);  // doc/record
+                
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_RECORD_METADATA));
+                
+                Capability filling = capabilityService.getCapability("FileRecords");
+                assertEquals(AccessStatus.DENIED, filling.hasPermission(dmDocument));
+                
+                Capability editRecordMetadata = capabilityService.getCapability("EditRecordMetadata");
+                assertEquals(AccessStatus.DENIED, editRecordMetadata.hasPermission(dmDocument));
+                
+                Capability updateProperties = capabilityService.getCapability("UpdateProperties");
+                assertEquals(AccessStatus.DENIED, updateProperties.hasPermission(dmDocument));
+
+            
+                return null;
+            }
+        }, dmConsumer);
     }
 
     public void testCreateRecordNoLink() throws Exception

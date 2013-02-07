@@ -685,5 +685,16 @@
       </property>
       <property name="capability" value="RejectRecords" />
    </bean>
+   
+   <bean id="jsonConversionComponent.hide"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="hide"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+         </set>
+      </property>
+      <property name="capability" value="FileRecords" />
+   </bean>
 
 </beans>

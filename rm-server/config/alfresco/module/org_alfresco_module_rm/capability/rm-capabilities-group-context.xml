@@ -101,6 +101,7 @@
             <ref bean="rmMoveRecordCategoryCapability"/>
             <ref bean="rmMoveRecordFolderCapability"/>
             <ref bean="rmMoveRecordsCapability"/>
+            <ref bean="rmFileToRecordsCapability"/>
          </list>
       </property>
    </bean>

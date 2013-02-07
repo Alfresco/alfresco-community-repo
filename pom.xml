@@ -370,7 +370,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.18-alfresco-patched</version>
+            <version>2.3.18-alfresco-patched-2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
@@ -524,6 +524,11 @@
             <groupId>org.openoffice</groupId>
             <artifactId>jut</artifactId>
             <version>1.0-alfresco</version>
+        </dependency>
+        <dependency>
+            <groupId>org.htmlparser</groupId>
+            <artifactId>htmlparser</artifactId>
+            <version>2.1</version>
         </dependency>
         <!-- Apache POI -->
         <dependency>

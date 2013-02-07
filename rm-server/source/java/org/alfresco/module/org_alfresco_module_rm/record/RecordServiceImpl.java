@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -105,7 +106,7 @@ public class RecordServiceImpl implements RecordService,
 
     /** Policy component */
     private PolicyComponent policyComponent;
-    
+
     /** Ownable service */
     private OwnableService ownableService;
 
@@ -211,7 +212,7 @@ public class RecordServiceImpl implements RecordService,
     {
         this.ownableService = ownableService;
     }
-    
+
     /**
      * Init method
      */
@@ -337,11 +338,11 @@ public class RecordServiceImpl implements RecordService,
                     // get the documents readers
                     Long aclId = nodeService.getNodeAclId(nodeRef);
                     Set<String> readers = permissionService.getReaders(aclId);
-                    Set<String> writers = permissionService.getWriters(aclId);    
-                                        
-                    // add the current owner to the list of extended writers                    
+                    Set<String> writers = permissionService.getWriters(aclId);
+
+                    // add the current owner to the list of extended writers
                     String owner = ownableService.getOwner(nodeRef);
-                    
+
                     // remove the owner
                     ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
 
@@ -554,6 +555,14 @@ public class RecordServiceImpl implements RecordService,
                 aspectProperties.put(PROP_RECORD_REJECTION_DATE, new Date());
                 aspectProperties.put(PROP_RECORD_REJECTION_REASON, reason);
                 nodeService.addAspect(nodeRef, ASPECT_RECORD_REJECTION_DETAILS, aspectProperties);
+
+                // Restore the owner of the document
+                String documentOwner = (String) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_USER_ID);
+                if (StringUtils.isBlank(documentOwner))
+                {
+                    throw new AlfrescoRuntimeException("Unable to find the creator of document.");
+                }
+                ownableService.setOwner(nodeRef, documentOwner);
 
                 // send an email to the record creator
                 notificationHelper.recordRejectedEmailNotification(nodeRef);

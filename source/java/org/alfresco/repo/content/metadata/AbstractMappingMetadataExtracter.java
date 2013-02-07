@@ -1534,10 +1534,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * The default implementation looks for the default mapping file in the location
      * given by the class name and <i>.properties</i>.  If the extracter's class is
      * <b>x.y.z.MyExtracter</b> then the default properties will be picked up at
-     * <b>classpath:/x/y/z/MyExtracter.properties</b>.
+     * <b>classpath:/alfresco/metadata/MyExtracter.properties</b>.
+     * The previous location of <b>classpath:/x/y/z/MyExtracter.properties</b> is
+     * still supported but may be removed in a future release.
      * Inner classes are supported, but the '$' in the class name is replaced with '-', so
      * default properties for <b>x.y.z.MyStuff$MyExtracter</b> will be located using
-     * <b>x.y.z.MyStuff-MyExtracter.properties</b>.
+     * <b>classpath:/alfresco/metadata/MyStuff-MyExtracter.properties</b>.
      * <p>
      * The default mapping implementation should include thorough Javadocs so that the
      * system administrators can accurately determine how to best enhance or override the
@@ -1560,15 +1562,42 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      */
     protected Map<String, Set<QName>> getDefaultMapping()
     {
-        String className = this.getClass().getName();
-        // Replace $
-        className = className.replace('$', '-');
-        // Replace .
-        className = className.replace('.', '/');
-        // Append .properties
-        String propertiesUrl = className + ".properties";
-        // Attempt to load the properties
-        return readMappingProperties(propertiesUrl);
+        AlfrescoRuntimeException metadataLocationReadException = null;
+        try
+        {
+            // Can't use getSimpleName here because we lose inner class $ processing
+            String className = this.getClass().getName();
+            String shortClassName = className.split("\\.")[className.split("\\.").length - 1];
+            // Replace $
+            shortClassName = shortClassName.replace('$', '-');
+            // Append .properties
+            String metadataPropertiesUrl = "alfresco/metadata/" + shortClassName + ".properties";
+            // Attempt to load the properties
+            return readMappingProperties(metadataPropertiesUrl);
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // We'll save this to throw at someone later
+            metadataLocationReadException = e;
+        }
+        // Try package location
+        try
+        {
+            String canonicalClassName = this.getClass().getName();
+            // Replace $
+            canonicalClassName = canonicalClassName.replace('$', '-');
+            // Replace .
+            canonicalClassName = canonicalClassName.replace('.', '/');
+            // Append .properties
+            String packagePropertiesUrl = canonicalClassName + ".properties";
+            // Attempt to load the properties
+            return readMappingProperties(packagePropertiesUrl);
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // Not found in either location, but we want to throw the error for the new metadata location
+            throw metadataLocationReadException;
+        }
     }
 
     /**

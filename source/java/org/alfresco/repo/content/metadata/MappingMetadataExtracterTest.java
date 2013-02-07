@@ -28,6 +28,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy;
@@ -66,6 +67,42 @@ public class MappingMetadataExtracterTest extends TestCase
         assertNotNull(reader);
         assertNotNull(extracter);
         assertTrue("Extracter not initialized.", extracter.initCheck);
+    }
+    
+    /** Test the new alfresco/metadata properties location */
+    public void testSetUpPropertiesLocationMetadata()
+    {
+        DummyPropertiesInMetadataLocationMappingMetadataExtracter metadataLocationExtracter = 
+                new DummyPropertiesInMetadataLocationMappingMetadataExtracter();
+        metadataLocationExtracter.register();
+        assertNotNull("Extracter not initialized.", metadataLocationExtracter.getMapping());
+        assertNotNull("Mapping not found", 
+                metadataLocationExtracter.getMapping().get(DummyMappingMetadataExtracter.PROP_A));
+    }
+    
+    /** Test that the old package-based properties location still works */
+    public void testSetUpPropertiesLocationPackage()
+    {
+        DummyPropertiesInPackageLocationMappingMetadataExtracter packageLocationExtracter = 
+                new DummyPropertiesInPackageLocationMappingMetadataExtracter();
+        packageLocationExtracter.register();
+        assertNotNull("Extracter not initialized.", packageLocationExtracter.getMapping());
+        assertNotNull("Mapping not found", 
+                packageLocationExtracter.getMapping().get(DummyMappingMetadataExtracter.PROP_A));
+    }
+    
+    /** Test that an extract with missing location throws the correct error */
+    public void testSetUpPropertiesMissing()
+    {
+        DummyPropertiesMissingMappingMetadataExtracter propertiesMissingExtracter = 
+                new DummyPropertiesMissingMappingMetadataExtracter();
+        try
+        {
+            propertiesMissingExtracter.register();
+        } catch (AlfrescoRuntimeException e)
+        {
+            assertTrue(e.getMessage().contains("alfresco/metadata/"));
+        }
     }
     
     public void testDefaultExtract() throws Exception
@@ -274,6 +311,33 @@ public class MappingMetadataExtracterTest extends TestCase
             ret.put(PROP_D, VALUE_D);
             ret.put(PROP_IMG, VALUE_IMG);
             return ret;
+        }
+    }
+    
+    public static class DummyPropertiesInPackageLocationMappingMetadataExtracter extends AbstractMappingMetadataExtracter
+    {
+        @Override
+        protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
+        {
+            return null;
+        }
+    }
+    
+    public static class DummyPropertiesInMetadataLocationMappingMetadataExtracter extends AbstractMappingMetadataExtracter
+    {
+        @Override
+        protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
+        {
+            return null;
+        }
+    }
+    
+    public static class DummyPropertiesMissingMappingMetadataExtracter extends AbstractMappingMetadataExtracter
+    {
+        @Override
+        protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
+        {
+            return null;
         }
     }
     

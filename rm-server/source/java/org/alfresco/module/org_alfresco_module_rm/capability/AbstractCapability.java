@@ -63,12 +63,6 @@ public abstract class AbstractCapability extends RMSecurityCommon
     /** Indicates whether this is a private capability or not */
     protected boolean isPrivate = false;
 
-    /** List of actions */
-//    protected List<RecordsManagementAction> actions = new ArrayList<RecordsManagementAction>(1);
-
-    /** Action names */
-//    protected List<String> actionNames = new ArrayList<String>(1);
-
     /**
      * @param voter     RM entry voter
      */
@@ -128,6 +122,11 @@ public abstract class AbstractCapability extends RMSecurityCommon
         if (StringUtils.isBlank(title))
         {
             title = I18NUtil.getMessage("capability." + getName() + ".title");
+            if (StringUtils.isBlank(title) == true)
+            {
+                title = getName();
+            }
+                    
         }
         return title;
     }

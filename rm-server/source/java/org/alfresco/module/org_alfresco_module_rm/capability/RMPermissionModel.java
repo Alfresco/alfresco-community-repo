@@ -39,18 +39,18 @@ public interface RMPermissionModel
     // Roles
 
     public static final String ROLE_NAME_USER = "User";
-    public static final String ROLE_USER = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_USER).toString();
+    //public static final String ROLE_USER = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_USER).toString();
 
     public static final String ROLE_NAME_POWER_USER = "PowerUser";
-    public static final String ROLE_POWER_USER = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_POWER_USER).toString();
+   // public static final String ROLE_POWER_USER = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_POWER_USER).toString();
 
     public static final String ROLE_NAME_SECURITY_OFFICER = "SecurityOfficer";
-    public static final String ROLE_SECURITY_OFFICER = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_SECURITY_OFFICER)
-            .toString();
+   // public static final String ROLE_SECURITY_OFFICER = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_SECURITY_OFFICER)
+    //        .toString();
 
     public static final String ROLE_NAME_RECORDS_MANAGER = "RecordsManager";
-    public static final String ROLE_RECORDS_MANAGER = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_RECORDS_MANAGER)
-            .toString();
+  //  public static final String ROLE_RECORDS_MANAGER = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_RECORDS_MANAGER)
+   //         .toString();
 
     public static final String ROLE_NAME_ADMINISTRATOR = "Administrator";
     public static final String ROLE_ADMINISTRATOR = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_ADMINISTRATOR).toString();

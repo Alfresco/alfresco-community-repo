@@ -10,6 +10,23 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="30" />
    </bean>
+   
+   <bean id="rmCreateRecordsCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CreateRecords"/>
+      <property name="group"><ref bean="recordsGroup"/></property>
+      <property name="index" value="35" />
+      <property name="permission" value="CreateRecords"/>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+            <entry key="capabilityCondition.declared" value="false"/>
+         </map>
+      </property>
+   </bean>
 
    <bean id="rmUndeclareRecordsCapability"
       parent="declarativeCapability">
@@ -54,27 +71,12 @@
       <property name="index" value="20" />
    </bean>
 
-   <bean id="rmFileCapability"
-      parent="declarativeCapability">
-      <property name="name" value="File"/>
-      <property name="private" value="true"/>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.filling" value="true"/>
-            <entry key="capabilityCondition.frozen" value="false"/>
-            <entry key="capabilityCondition.cutoff" value="false"/>
-            <entry key="capabilityCondition.closed" value="false"/>
-            <entry key="capabilityCondition.declared" value="false"/>
-         </map>
-      </property>
-   </bean>
-
    <bean id="rmFileRecordsCapability"
       parent="compositeCapability">
       <property name="name" value="FileRecords" />
       <property name="capabilities">
          <list>
-            <ref bean="rmFileCapability"/>
+            <ref bean="rmCreateRecordsCapability"/>
             <ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
          </list>
       </property>
@@ -250,6 +252,21 @@
             <entry key="capabilityCondition.closed" value="false"/>
             <entry key="capabilityCondition.declared" value="false"/>
             <entry key="capabilityCondition.recordFiled" value="false"/>
+         </map>
+      </property>
+   </bean>
+   
+   <bean id="rmHideRecordsCapability" 
+      parent="declarativeCapability">
+      <property name="name" value="HideRecords"/>	  
+      <property name="private" value="true" />
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+            <entry key="capabilityCondition.declared" value="false"/>
          </map>
       </property>
    </bean>

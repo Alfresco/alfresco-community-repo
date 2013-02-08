@@ -17,6 +17,7 @@
       [
          "DeclareRecords",
          "ViewRecords",
+          "CreateRecords",
          "CreateModifyDestroyFolders",
          "EditRecordMetadata",
          "EditNonRecordMetadata",
@@ -36,6 +37,7 @@
       [
           "DeclareRecords",
           "ViewRecords",
+          "CreateRecords",
           "CreateModifyDestroyFolders",
           "EditRecordMetadata",
           "EditNonRecordMetadata",
@@ -58,7 +60,8 @@
       "capabilities" :
       [
           "DeclareRecords",
-          "ViewRecords",
+          "ViewRecords",          
+          "CreateRecords",
           "CreateModifyDestroyFolders",
           "EditRecordMetadata",
           "EditNonRecordMetadata",
@@ -125,6 +128,7 @@
       [
           "DeclareRecords",
           "ViewRecords",
+          "CreateRecords",
           "CreateModifyDestroyFolders",
           "EditRecordMetadata",
           "EditNonRecordMetadata",

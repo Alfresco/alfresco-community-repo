@@ -694,7 +694,7 @@
             <value>RECORD</value>
          </set>
       </property>
-      <property name="capability" value="FileRecords" />
+      <property name="capability" value="HideRecords" />
    </bean>
 
 </beans>

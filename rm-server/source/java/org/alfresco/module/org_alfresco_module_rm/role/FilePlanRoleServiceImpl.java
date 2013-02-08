@@ -591,6 +591,9 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 String allRoleGroup = authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode));
                 authorityService.addAuthority(allRoleGroup, roleGroup);
 
+                // TODO .. we should be creating a permission set containing all the capabilities and then assigning that
+                //         single permission group to the file plan .. would be tidier
+                
                 // Assign the various capabilities to the group on the root records management node
                 if (capabilities != null)
                 {

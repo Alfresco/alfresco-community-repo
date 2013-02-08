@@ -33,9 +33,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
@@ -275,7 +273,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_RECORD_METADATA));
                 
                 Capability filling = capabilityService.getCapability("FileRecords");
-                assertEquals(AccessStatus.ALLOWED, filling.hasPermission(dmDocument));
+                assertEquals(AccessStatus.DENIED, filling.hasPermission(dmDocument));
                 
                 Capability editRecordMetadata = capabilityService.getCapability("EditRecordMetadata");
                 assertEquals(AccessStatus.ALLOWED, editRecordMetadata.hasPermission(dmDocument));

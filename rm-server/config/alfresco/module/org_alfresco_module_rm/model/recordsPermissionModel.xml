@@ -13,102 +13,6 @@
     </namespaces>
     
     <permissionSet expose="selected" type="rma:filePlanComponent">
-        <permissionGroup name="User" allowFullControl="false" expose="true">
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeclareRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ViewRecords"/>
-        </permissionGroup>
-        
-        <permissionGroup name="PowerUser" allowFullControl="false" expose="true">
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeclareRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ViewRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditRecordMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditNonRecordMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AddModifyEventDates"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CloseFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeclareRecordsInClosedFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ReOpenFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CycleVitalRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="PlanningReviewCycles"/>
-        </permissionGroup>
-        
-        <permissionGroup name="SecurityOfficer" allowFullControl="false" expose="true">
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeclareRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ViewRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditRecordMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditNonRecordMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AddModifyEventDates"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CloseFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeclareRecordsInClosedFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ReOpenFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CycleVitalRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="PlanningReviewCycles"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UpdateClassificationDates"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyClassificationGuides"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UpgradeDowngradeAndDeclassifyRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UpdateExemptionCategories"/>
-        </permissionGroup>
-        
-        <permissionGroup name="RecordsManager" allowFullControl="false" expose="true">
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeclareRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ViewRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditRecordMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditNonRecordMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AddModifyEventDates"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CloseFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeclareRecordsInClosedFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ReOpenFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CycleVitalRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="PlanningReviewCycles"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UpdateTriggerDates"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyEvents"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ManageAccessRights"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="MoveRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ChangeOrDeleteReferences"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeleteLinks"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditDeclaredRecordMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ManuallyChangeDispositionDates"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ApproveRecordsScheduledForCutoff"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyRecordsInCutoffFolders"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ExtendRetentionPeriodOrFreeze"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="Unfreeze"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ViewUpdateReasonsForFreeze"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DestroyRecordsScheduledForDestruction"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DestroyRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UpdateVitalRecordCycleInformation"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UndeclareRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeclareAuditAsRecord"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeleteAudit"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyTimeframes"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AuthorizeNominatedTransfers"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditSelectionLists"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AuthorizeAllTransfers"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyFileplanMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateAndAssociateSelectionLists"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AttachRulesToMetadataProperties"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyFileplanTypes"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyRecordTypes"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="MakeOptionalParametersMandatory"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="MapEmailMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeleteRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="TriggerAnEvent"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyRoles"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyUsersAndGroups"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="PasswordControl"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EnableDisableAuditByTypes"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="SelectAuditMetadata"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DisplayRightsReport"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AccessAudit"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ExportAudit"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyReferenceTypes"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UpdateClassificationDates"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateModifyDestroyClassificationGuides"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UpgradeDowngradeAndDeclassifyRecords"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UpdateExemptionCategories"/>
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="MapClassificationGuideMetadata"/>
-        </permissionGroup>
         
         <!-- An RM administrator does not have admin rights to the full DM repo -->
         <!-- On no account should allowFullControl="true" be set here -->
@@ -174,7 +78,9 @@
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="MapClassificationGuideMetadata"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ManageAccessControls"/>
             <!-- Administrator has filing rights to all records - no other role does -->
-            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="Filing"/>
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="Filing"/>            
+            <!--  Since V2.1 -->
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CreateRecords"/>
         </permissionGroup>
         
         <permissionGroup name="Filing" allowFullControl="false" expose="true">
@@ -244,6 +150,12 @@
         <permissionGroup name="UpdateExemptionCategories" expose="false" allowFullControl="false"/>
         <permissionGroup name="MapClassificationGuideMetadata" expose="false" allowFullControl="false"/>
         <permissionGroup name="ManageAccessControls" expose="false" allowFullControl="false"/>
+        
+        <!--  Added since V2.1 -->
+        
+        <permissionGroup name="CreateRecords" expose="false" allowFullControl="false"/>
+        
+        <!--  End -->
         
         <permission name="_ReadRecords" expose="false">
             <grantedToGroup permissionGroup="ReadRecords"/>
@@ -483,6 +395,12 @@
         
         <permission name="_ManageAccessControls" expose="false">
             <grantedToGroup permissionGroup="ManageAccessControls"/>
+        </permission>
+        
+        <!--  Added since V2.1 -->
+        
+        <permission name="_CreateRecords" expose="false">
+            <grantedToGroup permissionGroup="CreateRecords"/>
         </permission>
         
     </permissionSet>

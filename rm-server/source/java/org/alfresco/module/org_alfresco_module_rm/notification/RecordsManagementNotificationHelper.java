@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -309,7 +310,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
      *
      * @param record    rejected record
      */
-    public void recordRejectedEmailNotification(NodeRef record)
+    public void recordRejectedEmailNotification(NodeRef record, String recordId)
     {
         ParameterCheck.mandatory("record", record);
 
@@ -320,14 +321,17 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             String rejectReason = (String) nodeService.getProperty(record, PROP_RECORD_REJECTION_REASON);
             String rejectedPerson = (String) nodeService.getProperty(record, PROP_RECORD_REJECTION_USER_ID);
             Date rejectDate = (Date) nodeService.getProperty(record, PROP_RECORD_REJECTION_DATE);
+            String recordName = (String) nodeService.getProperty(record, ContentModel.PROP_NAME);
 
-            Map<String, Serializable> args = new HashMap<String, Serializable>(6);
+            Map<String, Serializable> args = new HashMap<String, Serializable>(8);
             args.put("record", record);
             args.put("site", site);
             args.put("recordCreator", recordCreator);
             args.put("rejectReason", rejectReason);
             args.put("rejectedPerson", rejectedPerson);
             args.put("rejectDate", rejectDate);
+            args.put("recordId", recordId);
+            args.put("recordName", recordName);
 
             NotificationContext notificationContext = new NotificationContext();
             notificationContext.setAsyncNotification(true);

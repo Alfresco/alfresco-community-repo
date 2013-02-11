@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,9 +40,9 @@ import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagement
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -368,8 +367,11 @@ public class RecordServiceImpl implements RecordService,
                         nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
 
                         // set the extended security
-                        extendedSecurityService.addExtendedSecurity(nodeRef, readers, writers);
-                        extendedSecurityService.addExtendedSecurity(nodeRef, null, Collections.singleton(owner));
+                        Set<String> combinedWriters = new HashSet<String>(writers);
+                        combinedWriters.add(owner);
+                        combinedWriters.add(AuthenticationUtil.getFullyAuthenticatedUser());
+                        
+                        extendedSecurityService.addExtendedSecurity(nodeRef, readers, combinedWriters);
                     }
 
                     return null;
@@ -521,6 +523,9 @@ public class RecordServiceImpl implements RecordService,
             @Override
             public Void doWork() throws Exception
             {
+                // take note of the record id
+                String recordId = (String)nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
+                
                 // first remove the secondary link association
                 NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
                 List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
@@ -565,7 +570,7 @@ public class RecordServiceImpl implements RecordService,
                 ownableService.setOwner(nodeRef, documentOwner);
 
                 // send an email to the record creator
-                notificationHelper.recordRejectedEmailNotification(nodeRef);
+                notificationHelper.recordRejectedEmailNotification(nodeRef, recordId);
 
                 return null;
             }

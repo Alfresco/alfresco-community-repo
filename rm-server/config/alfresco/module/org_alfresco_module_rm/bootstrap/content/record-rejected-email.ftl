@@ -61,7 +61,7 @@
                                                             <td>
                                                                <table cellpadding="2" cellspacing="0" border="0">
                                                                   <tr>
-                                                                     <td><b>${args.record.properties["rma:identifier"]!} ${args.record.name}</b></td>
+                                                                     <td><b>${args.recordId} ${args.recordName}</b></td>
                                                                   </tr>
                                                                   <tr>
                                                                      <td>Click on this link to view the record:</td>

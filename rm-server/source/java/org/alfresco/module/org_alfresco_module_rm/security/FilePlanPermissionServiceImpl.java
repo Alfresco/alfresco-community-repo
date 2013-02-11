@@ -24,6 +24,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -59,6 +60,9 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
 
     /** Node service */
     private NodeService nodeService;
+    
+    /** File plan service */
+    private FilePlanService filePlanService;
 
     /** Logger */
     private static Log logger = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
@@ -109,6 +113,14 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
     {
         this.recordsManagementService = recordsManagementService;
     }
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
 
     /**
      * @param childAssocRef
@@ -127,7 +139,7 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
                 public Object doWork()
                 {
                     boolean fillingOnly = false;
-                    if (recordsManagementService.isFilePlan(parentNodeRef) == true)
+                    if (filePlanService.isFilePlan(parentNodeRef) == true)
                     {
                         fillingOnly = true;
                     }
@@ -239,7 +251,7 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
         {
             public Boolean doWork() throws Exception
             {
-                if (recordsManagementService.isFilePlan(nodeRef) == true)
+                if (filePlanService.isFilePlan(nodeRef) == true)
                 {
                    setPermissionDown(nodeRef, authority, permission);
                 }
@@ -276,7 +288,7 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
     {
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
         if (parent != null &&
-            recordsManagementService.isFilePlan(parent) == false)
+            filePlanService.isFilePlan(parent) == false)
         {
             setPermissionImpl(parent, authority, RMPermissionModel.READ_RECORDS);
             setReadPermissionUp(parent, authority);

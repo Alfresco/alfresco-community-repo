@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.test.capabilities;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,8 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.PermissionReference;
-import org.alfresco.repo.security.permissions.impl.model.PermissionModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -47,16 +44,12 @@ public class CapabilitiesTest extends BaseRMTestCase implements
         RMPermissionModel, RecordsManagementModel
 {
     private NodeRef record;
-    
-    private PermissionModel permissionModel;
     private PermissionService permissionService;
 
     @Override
     protected void initServices()
     {
         super.initServices();
-
-        permissionModel = (PermissionModel) applicationContext.getBean("permissionsModelDAO");
         permissionService = (PermissionService) applicationContext.getBean("PermissionService");
     }
 

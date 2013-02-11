@@ -92,9 +92,9 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
             @Override
             public NodeRef run()
             {
-                assertTrue("This is a records management root", rmService.isFilePlan(filePlan));
-                assertFalse("This should not be a records management root", rmService.isFilePlan(rmContainer));
-                assertFalse("This should not be a records management root", rmService.isFilePlan(rmFolder));
+                assertTrue("This is a records management root", filePlanService.isFilePlan(filePlan));
+                assertFalse("This should not be a records management root", filePlanService.isFilePlan(rmContainer));
+                assertFalse("This should not be a records management root", filePlanService.isFilePlan(rmFolder));
                 
                 return null;
             }

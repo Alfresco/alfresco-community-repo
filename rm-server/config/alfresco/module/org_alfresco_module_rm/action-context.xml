@@ -17,6 +17,7 @@
       <property name="recordsManagementService" ref="RecordsManagementService"/>
       <property name="recordService" ref="RecordService" />
       <property name="nodeService" ref="NodeService" />
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="applicableTypes">
          <list>
             <value>{http://www.alfresco.org/model/content/1.0}content</value>

@@ -23,6 +23,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -64,6 +65,9 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     /** Node service */
     private NodeService nodeService;
     
+    /** File plan service */
+    private FilePlanService filePlanService;
+    
     /**
      * @param recordsManagementService  records management service
      */
@@ -86,6 +90,14 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
     
     /**
@@ -133,7 +145,7 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
             else
             {
                 // verify that the provided file plan is actually a file plan
-                if (recordsManagementService.isFilePlan(filePlan) == false)
+                if (filePlanService.isFilePlan(filePlan) == false)
                 {
                     if (logger.isDebugEnabled() == true)
                     {

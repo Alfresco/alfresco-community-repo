@@ -482,6 +482,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">

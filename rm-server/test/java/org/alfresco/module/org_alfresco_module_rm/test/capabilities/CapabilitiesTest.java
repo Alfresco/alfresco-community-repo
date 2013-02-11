@@ -104,7 +104,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                                         .getSystemUserName());
 
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(filePlan);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -223,7 +223,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                                 .setFullyAuthenticatedUser(AuthenticationUtil
                                         .getAdminUserName());
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(filePlan);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -344,7 +344,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         AuthenticationUtil
                                 .setFullyAuthenticatedUser(rmAdminName);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(filePlan);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -471,7 +471,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         AuthenticationUtil
                                 .setFullyAuthenticatedUser(recordsManagerName);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(filePlan);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -594,7 +594,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         AuthenticationUtil
                                 .setFullyAuthenticatedUser(securityOfficerName);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(filePlan);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -712,7 +712,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         AuthenticationUtil
                                 .setFullyAuthenticatedUser(powerUserName);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(filePlan);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -830,7 +830,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         AuthenticationUtil
                                 .setFullyAuthenticatedUser(rmUserName);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(filePlan);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -949,7 +949,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                                 .setFullyAuthenticatedUser(AuthenticationUtil.SYSTEM_USER_NAME);
 
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(rmContainer);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -1071,7 +1071,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                                 .setFullyAuthenticatedUser(AuthenticationUtil
                                         .getAdminUserName());
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(rmContainer);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -1192,7 +1192,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         AuthenticationUtil
                                 .setFullyAuthenticatedUser(rmAdminName);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(rmContainer);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -1315,7 +1315,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         // permissionService.setPermission(recordCategory_1,
                         // rm_records_manager, FILING, true);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(rmContainer);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -1439,7 +1439,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         // securityOfficerName, FILING, true);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(rmContainer);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -1560,7 +1560,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         // powerUserName, FILING, true);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(rmContainer);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -1681,7 +1681,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         // rmUserName, FILING, true);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(rmContainer);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -1801,7 +1801,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
 
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(rmFolder);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
@@ -1930,7 +1930,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                                         .getAdminUserName());
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(rmFolder);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
@@ -2053,7 +2053,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                                 .setFullyAuthenticatedUser(rmAdminName);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(rmFolder);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
@@ -2174,7 +2174,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         AuthenticationUtil.setFullyAuthenticatedUser(recordsManagerName);
                         //setFilingOnRecordFolder(rmFolder, recordsManagerName);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(rmFolder);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
@@ -2295,7 +2295,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         AuthenticationUtil.setFullyAuthenticatedUser(securityOfficerName);
                         //setFilingOnRecordFolder(rmFolder, securityOfficerName);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(rmFolder);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
@@ -2413,7 +2413,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         AuthenticationUtil.setFullyAuthenticatedUser(powerUserName);
                         //setFilingOnRecordFolder(rmFolder, powerUserName);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(rmFolder);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.ALLOWED);
@@ -2533,7 +2533,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         //setFilingOnRecordFolder(rmFolder, rmUserName);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(rmFolder);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -2650,7 +2650,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                     {
                         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.SYSTEM_USER_NAME);
                         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(record);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -2774,7 +2774,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                                         .getAdminUserName());
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(record);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -2897,7 +2897,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                                 .setFullyAuthenticatedUser(rmAdminName);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(record);
-                        assertEquals(59, access.size());
+                         
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -3021,7 +3021,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                       //  setFilingOnRecord(record, recordsManagerName);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(record);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.ALLOWED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -3145,7 +3145,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                    //     setFilingOnRecord(record, securityOfficerName);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(record);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -3267,7 +3267,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                  //       setFilingOnRecord(record, powerUserName);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(record);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);
@@ -3388,7 +3388,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         // setFilingOnRecord(record, rmUserName);
                         Map<Capability, AccessStatus> access = capabilityService
                                 .getCapabilitiesAccessState(record);
-                        assertEquals(59, access.size()); // 58 + File
+                          // 58 + File
                         check(access, ACCESS_AUDIT, AccessStatus.DENIED);
                         check(access, ADD_MODIFY_EVENT_DATES,
                                 AccessStatus.DENIED);

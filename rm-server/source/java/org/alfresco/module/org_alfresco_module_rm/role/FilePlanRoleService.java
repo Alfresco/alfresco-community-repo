@@ -31,6 +31,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface FilePlanRoleService
 {
+    /** Default role names */
+    public static final String ROLE_USER                = "User";
+    public static final String ROLE_POWER_USER          = "PowerUser";
+    public static final String ROLE_SECURITY_OFFICER    = "SecurityOfficer";
+    public static final String ROLE_RECORDS_MANAGER     = "RecordsManager";
+    public static final String ROLE_ADMIN               = "Administrator";
+    
     /**
      * Returns the name of the container group for all roles of a specified file
      * plan.

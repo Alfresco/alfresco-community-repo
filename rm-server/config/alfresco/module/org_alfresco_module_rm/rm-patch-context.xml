@@ -63,5 +63,18 @@
        <property name="filePlanPermissionService" ref="FilePlanPermissionService"/>
        <property name="filePlanService" ref="FilePlanService"/>
    </bean>
+   
+   <bean id="org_alfresco_module_rm_RMv21CapabilityPatch"
+         parent="module.baseComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21CapabilityPatch">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_RMv21CapabilityPatch"/>
+       <property name="description" value="Patches the existing RM data for the RM v2.1 updated capabilities."/>
+       <property name="sinceVersion" value="2.1"/>
+       <property name="appliesFromVersion" value="2.1"/>
+       <property name="recordsManagementService" ref="RecordsManagementService"/>
+       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+       <property name="capabilityService" ref="CapabilityService"/>
+   </bean>
 
 </beans>

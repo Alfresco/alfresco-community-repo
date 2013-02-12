@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -74,6 +75,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
     private static final String ARG_IMPORT = "import";
     
     private static final String XML_IMPORT = "alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml";
+    private static final String charsetName = "UTF-8";
     
     private static final StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     
@@ -189,7 +191,15 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
             {
                 throw new AlfrescoRuntimeException("The DODExampleFilePlan.xml import file could not be found");
             }
-            Reader viewReader = new InputStreamReader(is);
+            Reader viewReader = null;
+            try
+            {
+               viewReader = new InputStreamReader(is, charsetName);
+            }
+            catch (UnsupportedEncodingException error)
+            {
+               throw new AlfrescoRuntimeException("The Character Encoding '" + charsetName + "' is not supported.");
+            }
             Location location = new Location(filePlan);
             importerService.importView(viewReader, location, null, null);
         }

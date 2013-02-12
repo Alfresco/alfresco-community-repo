@@ -464,6 +464,7 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlan=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.existsUnfiledContainer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getUnfiledContainer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createUnfiledContainer=RM.Write.0

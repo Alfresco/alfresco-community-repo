@@ -23,6 +23,7 @@ import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditSe
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -137,6 +138,15 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     public ExtendedSecurityService getExtendedSecurityService()
     {
         return (ExtendedSecurityService) getService(EXTENDED_SECURITY_SERVICE);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanService()
+     */
+    @Override
+    public FilePlanService getFilePlanService()
+    {
+        return (FilePlanService) getService(FILE_PLAN_SERVICE);
     }
 
     /**

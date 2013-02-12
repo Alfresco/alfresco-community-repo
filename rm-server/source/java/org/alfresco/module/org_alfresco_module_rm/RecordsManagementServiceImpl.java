@@ -30,6 +30,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
@@ -393,10 +394,13 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)
+     * 
+     * @deprecated As of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)}
      */
+    @Deprecated
     public boolean isFilePlan(NodeRef nodeRef)
     {
-        return instanceOf(nodeRef, TYPE_FILE_PLAN);
+        return serviceRegistry.getFilePlanService().isFilePlan(nodeRef);
     }
     
     /**

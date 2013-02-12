@@ -256,9 +256,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
 
     /** Specific declarative capability tests */
 
-    public void testFileCapability()
+    public void testCreateRecordCapability()
     {
-        final Capability capability = capabilityService.getCapability("File");
+        final Capability capability = capabilityService.getCapability("CreateRecords");
         assertNotNull(capability);
 
         doTestInTransaction(new Test<Void>()
@@ -285,8 +285,8 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             public Void run()
             {
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(rmContainer));
-                assertEquals(AccessStatus.ALLOWED, capability.hasPermission(rmFolder));
-                assertEquals(AccessStatus.ALLOWED, capability.hasPermission(record));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(rmFolder));
+                assertEquals(AccessStatus.DENIED, capability.hasPermission(record));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(declaredRecord));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(frozenRecordFolder));
                 assertEquals(AccessStatus.DENIED, capability.hasPermission(recordFolderContainsFrozen));

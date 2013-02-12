@@ -76,7 +76,7 @@ public class SchemaCompTestingUtils
         return new Table(null, name, columns, primaryKey, foreignKeys, indexes);
     }
     
-    public static Collection<Column> columns(String... colDefs)
+    public static Collection<Column> columns(boolean compareColOrder, String... colDefs)
     {
         assertTrue("Tables must have columns", colDefs.length > 0);
         Column[] columns = new Column[colDefs.length];
@@ -86,8 +86,14 @@ public class SchemaCompTestingUtils
             String[] parts = colDefs[i].split(" ");
             columns[i] = new Column(null, parts[0], parts[1], false);
             columns[i].setOrder(i+1);
+            columns[i].setCompareOrder(compareColOrder);
         }
         return Arrays.asList(columns);
+    }
+    
+    public static Collection<Column> columns(String... colDefs)
+    {
+        return columns(true, colDefs);
     }
     
     public static PrimaryKey pk(String name, String... columnNames)

@@ -57,4 +57,5 @@ public abstract class XML
     public static final String ATTR_CLASS = "class";
     public static final String ATTR_DB_PREFIX = "dbprefix";
     public static final String ATTR_VERSION = "version";
+    public static final String ATTR_TABLE_COLUMN_ORDER = "tablecolumnorder";
 }

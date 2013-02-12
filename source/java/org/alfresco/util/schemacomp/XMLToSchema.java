@@ -212,7 +212,10 @@ public class XMLToSchema extends DefaultHandler
             String name = atts.getValue(XML.ATTR_NAME);
             String dbPrefix = atts.getValue(XML.ATTR_DB_PREFIX);
             int version = Integer.parseInt(atts.getValue(XML.ATTR_VERSION));
-            schema = new Schema(name, dbPrefix, version);
+            String attrTableColumnOrder = atts.getValue(XML.ATTR_TABLE_COLUMN_ORDER);
+            // Should column order be checked for tables?
+            boolean compareTableColOrder = attrTableColumnOrder != null ? Boolean.parseBoolean(attrTableColumnOrder) : true;
+            schema = new Schema(name, dbPrefix, version, compareTableColOrder);
             stack.push(schema);
         }
         else if (qName.equals(XML.EL_TABLE))
@@ -227,6 +230,7 @@ public class XMLToSchema extends DefaultHandler
                 int order = Integer.parseInt(atts.getValue(XML.ATTR_ORDER));
                 column.setOrder(order);
             }
+            column.setCompareOrder(schema.isCheckTableColumnOrder());
             stack.push(column);
         }
         else if (qName.equals(XML.EL_COLUMN_NAME))

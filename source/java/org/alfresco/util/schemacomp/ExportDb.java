@@ -201,7 +201,7 @@ public class ExportDb
 
         String schemaName = getSchemaName(dbmd);
 
-        schema = new Schema(schemaName, namePrefix, schemaVersion);
+        schema = new Schema(schemaName, namePrefix, schemaVersion, true);
         String[] prefixFilters = namePrefixFilters(dbmd);
         
         for (String filter : prefixFilters)

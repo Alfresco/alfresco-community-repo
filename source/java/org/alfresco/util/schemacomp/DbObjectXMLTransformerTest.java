@@ -182,7 +182,7 @@ public class DbObjectXMLTransformerTest
     }
     
     @Test
-    public void transformSchema() throws IOException
+    public void transformSchemaNoColumnOrderCheck() throws IOException
     {
         Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
         PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1)); 
@@ -192,7 +192,7 @@ public class DbObjectXMLTransformerTest
         Table tableOne = new Table(null, "table_one", columns, pk, fks, indexes);
         Table tableTwo = new Table(null, "table_two", columns, pk, fks, indexes);
         
-        Schema schema = new Schema("my_schema", "alf_", 132);
+        Schema schema = new Schema("my_schema", "alf_", 132, false);
         schema.add(tableOne);
         schema.add(tableTwo);
         schema.add(new Sequence(null, "sequence_one"));
@@ -209,7 +209,46 @@ public class DbObjectXMLTransformerTest
                      "xmlns=\"http://www.alfresco.org/repo/db-schema\" " + 
                      "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " + 
                      "xsi:schemaLocation=\"http://www.alfresco.org/repo/db-schema db-schema.xsd\" " + 
-                     "name=\"my_schema\" dbprefix=\"alf_\" version=\"132\">", reader.readLine());
+                     "name=\"my_schema\" dbprefix=\"alf_\" version=\"132\" tablecolumnorder=\"false\">", reader.readLine());
+        assertEquals("  <objects>", reader.readLine());
+        skipUntilEnd("       {table}", reader);
+        skipUntilEnd("       {table}", reader);
+        skipUntilEnd("       {sequence}", reader, true);
+        skipUntilEnd("       {sequence}", reader, true);
+        skipUntilEnd("       {sequence}", reader, true);
+        assertEquals("  </objects>", reader.readLine());
+        assertEquals("</schema>", reader.readLine());
+    }
+    
+    @Test
+    public void transformSchemaWithColumnOrderCheck() throws IOException
+    {
+        Collection<Column> columns = columns("one VARCHAR2(100)", "two NUMBER(10)");
+        PrimaryKey pk = new PrimaryKey(null, "pk_for_my_table", Arrays.asList("id"), Arrays.asList(1)); 
+        Collection<ForeignKey> fks = fkeys(fk("fk_one", "lc", "tt", "tc"), fk("fk_two", "lc", "tt", "tc"));
+        Collection<Index> indexes = indexes("index_one col1 col2", "index_two col3 col4");
+        
+        Table tableOne = new Table(null, "table_one", columns, pk, fks, indexes);
+        Table tableTwo = new Table(null, "table_two", columns, pk, fks, indexes);
+        
+        Schema schema = new Schema("my_schema", "alf_", 132, true);
+        schema.add(tableOne);
+        schema.add(tableTwo);
+        schema.add(new Sequence(null, "sequence_one"));
+        schema.add(new Sequence(null, "sequence_two"));
+        schema.add(new Sequence(null, "sequence_three"));
+        schema.setValidators(new ArrayList<DbValidator>());
+        
+        transformer.output(schema);
+        
+        BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
+        dumpOutput();
+        assertHasPreamble(reader);
+        assertEquals("<schema " +
+                    "xmlns=\"http://www.alfresco.org/repo/db-schema\" " + 
+                    "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " + 
+                    "xsi:schemaLocation=\"http://www.alfresco.org/repo/db-schema db-schema.xsd\" " + 
+                    "name=\"my_schema\" dbprefix=\"alf_\" version=\"132\" tablecolumnorder=\"true\">", reader.readLine());
         assertEquals("  <objects>", reader.readLine());
         skipUntilEnd("       {table}", reader);
         skipUntilEnd("       {table}", reader);

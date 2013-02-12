@@ -57,8 +57,8 @@ public class SchemaComparatorTest
     @Before
     public void setup()
     {
-        reference = new Schema("schema", "alf_", 590);
-        target = new Schema("schema", "alf_", 590);
+        reference = new Schema("schema", "alf_", 590, true);
+        target = new Schema("schema", "alf_", 590, true);
         dialect = new MySQL5InnoDBDialect();
     }
     
@@ -138,8 +138,8 @@ public class SchemaComparatorTest
     @Test
     public void pkOrderingComparedCorrectly()
     {
-        reference = new Schema("schema", "alf_", 590);
-        target = new Schema("schema", "alf_", 590);
+        reference = new Schema("schema", "alf_", 590, true);
+        target = new Schema("schema", "alf_", 590, true);
         
         // Reference schema's database objects.
         reference.add(new Table(
@@ -196,8 +196,8 @@ public class SchemaComparatorTest
     @Test
     public void indexColumnOrderingComparedCorrectly()
     {
-        reference = new Schema("schema", "alf_", 590);
-        target = new Schema("schema", "alf_", 590);
+        reference = new Schema("schema", "alf_", 590, true);
+        target = new Schema("schema", "alf_", 590, true);
         
         // Reference schema's database objects.
         reference.add(new Table(
@@ -248,5 +248,101 @@ public class SchemaComparatorTest
         assertEquals("id", diff.getRight().getPropertyValue());
         
         assertFalse("There should be no more differences", it.hasNext());
+    }
+    
+    @Test
+    public void columnOrderingComparedCorrectlyWhenEnabled()
+    {
+        reference = new Schema("schema", "alf_", 590, true);
+        target = new Schema("schema", "alf_", 590, true);
+        
+        // Reference schema's database objects.
+        reference.add(new Table(
+                    reference,
+                    "table_name",
+                    columns("id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
+                    new PrimaryKey(null, "my_pk_name", Arrays.asList("id", "nodeRef"), Arrays.asList(1, 2)),
+                    fkeys(),
+                    indexes()));
+        
+        // Target schema's database objects - note different column order
+        target.add(new Table(
+                    target,
+                    "table_name",
+                    columns("id NUMBER(10)", "name VARCHAR2(150)", "nodeRef VARCHAR2(200)"), 
+                    new PrimaryKey(null, "my_pk_name", Arrays.asList("id", "nodeRef"), Arrays.asList(1, 2)),
+                    fkeys(),
+                    indexes()));
+        
+        
+        
+        
+        comparator = new SchemaComparator(reference, target, dialect);
+        comparator.validateAndCompare();
+        
+        // See stdout for diagnostics dump...
+        dumpDiffs(comparator.getComparisonResults(), false);
+        dumpValidation(comparator.getComparisonResults());
+        
+        Results results = comparator.getComparisonResults();
+        Iterator<Result> it = results.iterator();
+        
+        
+        Difference diff = (Difference) it.next();
+        assertEquals(Where.IN_BOTH_BUT_DIFFERENCE, diff.getWhere());
+        assertEquals("schema.table_name.nodeRef.order", diff.getLeft().getPath());
+        assertEquals("order", diff.getLeft().getPropertyName());
+        assertEquals(2, diff.getLeft().getPropertyValue());
+        assertEquals("schema.table_name.nodeRef.order", diff.getRight().getPath());
+        assertEquals("order", diff.getRight().getPropertyName());
+        assertEquals(3, diff.getRight().getPropertyValue());
+        
+        diff = (Difference) it.next();
+        assertEquals(Where.IN_BOTH_BUT_DIFFERENCE, diff.getWhere());
+        assertEquals("schema.table_name.name.order", diff.getLeft().getPath());
+        assertEquals("order", diff.getLeft().getPropertyName());
+        assertEquals(3, diff.getLeft().getPropertyValue());
+        assertEquals("schema.table_name.name.order", diff.getRight().getPath());
+        assertEquals("order", diff.getRight().getPropertyName());
+        assertEquals(2, diff.getRight().getPropertyValue());
+        
+        assertFalse("There should be no more differences", it.hasNext());
+    }
+    
+    @Test
+    public void columnOrderingIgnoredWhenDisabled()
+    {
+        reference = new Schema("schema", "alf_", 590, false);
+        target = new Schema("schema", "alf_", 590, false);
+        
+        // Reference schema's database objects.
+        reference.add(new Table(
+                    reference,
+                    "table_name",
+                    columns(false, "id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
+                    new PrimaryKey(null, "my_pk_name", Arrays.asList("id", "nodeRef"), Arrays.asList(1, 2)),
+                    fkeys(),
+                    indexes()));
+        
+        // Target schema's database objects - note different column order
+        target.add(new Table(
+                    target,
+                    "table_name",
+                    columns(false, "id NUMBER(10)", "name VARCHAR2(150)", "nodeRef VARCHAR2(200)"), 
+                    new PrimaryKey(null, "my_pk_name", Arrays.asList("id", "nodeRef"), Arrays.asList(1, 2)),
+                    fkeys(),
+                    indexes()));
+        
+        comparator = new SchemaComparator(reference, target, dialect);
+        comparator.validateAndCompare();
+        
+        // See stdout for diagnostics dump...
+        dumpDiffs(comparator.getComparisonResults(), false);
+        dumpValidation(comparator.getComparisonResults());
+        
+        Results results = comparator.getComparisonResults();
+        
+        // There are no logical differences
+        assertEquals(0, results.size());
     }
 }

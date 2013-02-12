@@ -33,7 +33,7 @@ public class Column extends AbstractDbObject
     private boolean nullable;
     private boolean autoIncrement;
     private int order;
-    
+    private boolean compareOrder = true;
     
     public Column(String name)
     {
@@ -122,12 +122,32 @@ public class Column extends AbstractDbObject
     }
 
 
+    /**
+     * @return the compareOrder
+     */
+    public boolean isCompareOrder()
+    {
+        return this.compareOrder;
+    }
+
+    /**
+     * @param compareOrder the compareOrder to set
+     */
+    public void setCompareOrder(boolean compareOrder)
+    {
+        this.compareOrder = compareOrder;
+    }
+
+
+    
+
     @Override
     public int hashCode()
     {
         final int prime = 31;
         int result = super.hashCode();
         result = prime * result + (this.autoIncrement ? 1231 : 1237);
+        result = prime * result + (this.compareOrder ? 1231 : 1237);
         result = prime * result + (this.nullable ? 1231 : 1237);
         result = prime * result + this.order;
         result = prime * result + ((this.type == null) ? 0 : this.type.hashCode());
@@ -142,6 +162,7 @@ public class Column extends AbstractDbObject
         if (getClass() != obj.getClass()) return false;
         Column other = (Column) obj;
         if (this.autoIncrement != other.autoIncrement) return false;
+        if (this.compareOrder != other.compareOrder) return false;
         if (this.nullable != other.nullable) return false;
         if (this.order != other.order) return false;
         if (this.type == null)
@@ -167,8 +188,11 @@ public class Column extends AbstractDbObject
         DbProperty thatAutoIncProp = new DbProperty(thatColumn, "autoIncrement");
         
         comparisonUtils.compareSimple(thisTypeProp, thatTypeProp, ctx);
-        comparisonUtils.compareSimple(thisNullableProp, thatNullableProp, ctx);        
-        comparisonUtils.compareSimple(thisOrderProp, thatOrderProp, ctx);        
+        comparisonUtils.compareSimple(thisNullableProp, thatNullableProp, ctx);
+        if (compareOrder)
+        {
+            comparisonUtils.compareSimple(thisOrderProp, thatOrderProp, ctx);
+        }
         comparisonUtils.compareSimple(thisAutoIncProp, thatAutoIncProp, ctx);        
     }
 

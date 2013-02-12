@@ -142,6 +142,7 @@ public class DbObjectXMLTransformer
             Schema schema = (Schema) dbObject;
             attribs.addAttribute("", "", XML.ATTR_DB_PREFIX, "CDATA", schema.getDbPrefix());
             attribs.addAttribute("", "", XML.ATTR_VERSION, "CDATA", Integer.toString(schema.getVersion()));
+            attribs.addAttribute("", "", XML.ATTR_TABLE_COLUMN_ORDER, "CDATA", Boolean.toString(schema.isCheckTableColumnOrder()));
         }
         else if (dbObject instanceof Index)
         {

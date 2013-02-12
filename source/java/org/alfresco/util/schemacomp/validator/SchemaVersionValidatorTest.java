@@ -107,6 +107,6 @@ public class SchemaVersionValidatorTest
     
     private DbObject schemaWithVersion(int version)
     {
-        return new Schema("", "", version);
+        return new Schema("", "", version, true);
     }
 }

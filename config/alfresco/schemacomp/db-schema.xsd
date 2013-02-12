@@ -24,6 +24,7 @@
                 </xs:sequence>
                 <xs:attribute name="dbprefix" type="xs:token"/>
                 <xs:attribute name="version" type="xs:int"/>
+                <xs:attribute name="tablecolumnorder" type="xs:boolean" use="required"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

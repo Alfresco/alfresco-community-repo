@@ -40,6 +40,7 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     protected final List<DbObject> objects = new ArrayList<DbObject>();
     protected final String dbPrefix;
     protected final int version;
+    protected final boolean checkTableColumnOrder;
     
     /**
      * Construct a schema with the given name and no database prefix.
@@ -48,7 +49,7 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
      */
     public Schema(String name)
     {
-        this(name, "", 0);
+        this(name, "", 0, true);
     }
     
     /**
@@ -61,12 +62,13 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
      * @param name
      * @param dbPrefix
      */
-    public Schema(String name, String dbPrefix, int schemaVersion)
+    public Schema(String name, String dbPrefix, int schemaVersion, boolean checkTableColumnOrder)
     {
         super(null, name);
         ParameterCheck.mandatory("dbPrefix", dbPrefix);
         this.dbPrefix = dbPrefix;
         this.version = schemaVersion;
+        this.checkTableColumnOrder = checkTableColumnOrder;
         
         addDefaultValidators();
     }
@@ -127,6 +129,14 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     public int getVersion()
     {
         return this.version;
+    }
+
+    /**
+     * @return the checkTableColumnOrder
+     */
+    public boolean isCheckTableColumnOrder()
+    {
+        return this.checkTableColumnOrder;
     }
 
     @Override

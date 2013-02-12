@@ -2,7 +2,14 @@
 <!--
       Test data used by the XMLToSchemaTest junit test class. 
   -->
-<schema name="alfresco" dbprefix="myprefix_" version="325">
+<schema
+    xmlns="http://www.alfresco.org/repo/db-schema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/db-schema db-schema.xsd"
+    name="alfresco"
+    dbprefix="myprefix_"
+    version="325"
+    tablecolumnorder="true">
   <objects>
     <table name="node">
       <columns>

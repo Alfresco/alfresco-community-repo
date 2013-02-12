@@ -18,9 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.service.cmr.action.Action;
@@ -46,16 +44,6 @@ public class RMDelegateAction extends RMActionExecuterAbstractBase
     public void setDelegateAction(ActionExecuter delegateActionExecuter)
     {
         this.delegateActionExecuter = delegateActionExecuter;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-     */
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        // always return true as we can't determine anything useful from the delegate action
-        return true;
     }
 
     /**

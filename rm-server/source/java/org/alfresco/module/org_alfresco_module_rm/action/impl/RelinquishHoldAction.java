@@ -18,9 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
@@ -52,28 +49,4 @@ public class RelinquishHoldAction extends RMActionExecuterAbstractBase
          throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_HOLD_TYPE, TYPE_HOLD.toString(), actionedUponNodeRef.toString()));
       }
    }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-    */
-   @Override
-   protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-   {
-      if (freezeService.isHold(filePlanComponent) == true)
-      {
-         return true;
-      }
-      else
-      {
-         if (throwException)
-         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_HOLD_TYPE, TYPE_HOLD.toString(), filePlanComponent.toString()));
-         }
-         else
-         {
-            return false;
-         }
-      }
-   }
-
 }

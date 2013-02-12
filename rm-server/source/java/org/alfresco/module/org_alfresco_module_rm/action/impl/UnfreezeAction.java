@@ -18,9 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -40,14 +37,4 @@ public class UnfreezeAction extends RMActionExecuterAbstractBase
    {
       freezeService.unFreeze(actionedUponNodeRef);
    }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-    */
-   @Override
-   protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-   {
-      return freezeService.isFrozen(filePlanComponent);
-   }
-
 }

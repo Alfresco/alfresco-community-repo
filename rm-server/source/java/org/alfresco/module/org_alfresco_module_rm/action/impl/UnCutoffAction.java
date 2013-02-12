@@ -18,9 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
@@ -85,44 +83,5 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
                 }
             }
         }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-     */
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        boolean result = true;
-        
-        if (nodeService.hasAspect(filePlanComponent, ASPECT_DISPOSITION_LIFECYCLE) == true &&
-            nodeService.hasAspect(filePlanComponent, ASPECT_CUT_OFF) == true)
-        {
-            // Get the last disposition action
-            DispositionAction da = dispositionService.getLastCompletedDispostionAction(filePlanComponent);
-            
-            // Check that the last disposition action was a cutoff
-            if (da == null || da.getName().equals("cutoff") == false)
-            {
-                if (throwException == true)
-                {
-                    // Can not undo cut off since cut off was not the last thing done
-                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDO_NOT_LAST));
-                }
-                result = false;
-            }
-        }
-        else
-        {
-            if (throwException == true)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDO_NOT_LAST));
-            }
-            result = false;
-        }
-        
-        return result;
-    }
-
-    
+    }    
 }

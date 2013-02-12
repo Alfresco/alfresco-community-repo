@@ -392,7 +392,7 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
      */
     public RecordsManagementActionResult execute(NodeRef filePlanComponent, Map<String, Serializable> parameters)
     {
-        isExecutableImpl(filePlanComponent, parameters, true);
+        //isExecutableImpl(filePlanComponent, parameters, true);
         
         // Create the action
         Action action = this.actionService.createAction(name);
@@ -440,21 +440,21 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
         // No parameters
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#isExecutable(org.alfresco.service.cmr.repository.NodeRef, java.util.Map)
-     */
-    public boolean isExecutable(NodeRef filePlanComponent, Map<String, Serializable> parameters)
-    {
-        return isExecutableImpl(filePlanComponent, parameters, false);
-    }
-    
-    /**
-     * @param filePlanComponent
-     * @param parameters
-     * @param throwException
-     * @return
-     */
-    protected abstract boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException);
+//    /**
+//     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#isExecutable(org.alfresco.service.cmr.repository.NodeRef, java.util.Map)
+//     */
+//    public boolean isExecutable(NodeRef filePlanComponent, Map<String, Serializable> parameters)
+//    {
+//        return isExecutableImpl(filePlanComponent, parameters, false);
+//    }
+//    
+//    /**
+//     * @param filePlanComponent
+//     * @param parameters
+//     * @param throwException
+//     * @return
+//     */
+//    protected abstract boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException);
 
     /**
      * By default, rmActions do not provide an implicit target nodeRef.

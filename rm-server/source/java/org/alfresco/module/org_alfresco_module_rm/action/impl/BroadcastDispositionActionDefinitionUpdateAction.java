@@ -321,16 +321,9 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         }
     }
     
-    
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         // Intentionally empty
-    }
-
-    @Override
-    public boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        return true;
     }
 }

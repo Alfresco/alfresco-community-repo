@@ -18,9 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -45,13 +42,5 @@ public class TestAction extends RMActionExecuterAbstractBase
     public boolean isDispositionAction()
     {
         return true;
-    }
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-       return true;
-    }
-    
-    
+    }    
 }

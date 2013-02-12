@@ -169,37 +169,6 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EMAIL_NOT_RECORD, actionedUponNodeRef.toString()));
         }
     }
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        if (recordService.isRecord(filePlanComponent) == true)
-        {
-            if (recordService.isDeclared(filePlanComponent))
-            {
-                if (throwException)
-                {
-                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EMAIL_DECLARED, filePlanComponent.toString()));
-                }     
-                else
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            if (throwException)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EMAIL_NOT_RECORD, filePlanComponent.toString()));
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return true;
-    }
     
     /**
      * Create attachment from Mime Message Part

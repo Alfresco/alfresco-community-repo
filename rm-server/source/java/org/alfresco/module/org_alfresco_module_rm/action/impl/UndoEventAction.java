@@ -84,7 +84,7 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
     }
     
     /**
-     * Get the event from the dispostion action
+     * Get the event from the disposition action
      * 
      * @param da
      * @param eventName
@@ -153,47 +153,5 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
         // TODO add parameter definitions ....
         // eventName
 
-    }
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        String eventName = null;
-        if(parameters != null)
-        {
-            eventName = (String)parameters.get(PARAM_EVENT_NAME);
-        }
-        if (this.nodeService.hasAspect(filePlanComponent, ASPECT_DISPOSITION_LIFECYCLE) == true)
-        {
-            // Get the next disposition action
-            DispositionAction da = this.dispositionService.getNextDispositionAction(filePlanComponent);
-            if (da != null)
-            {
-                // Get the disposition event
-                if(parameters != null)
-                {
-                    EventCompletionDetails event = getEvent(da, eventName);
-                    if (event != null)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if(throwException)
-                        {
-                            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EVENT_NOT_DONE, eventName));
-                        }
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    
-    
+    }    
 }

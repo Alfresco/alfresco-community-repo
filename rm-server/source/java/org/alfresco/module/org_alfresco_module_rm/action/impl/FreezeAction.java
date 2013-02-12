@@ -18,14 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Freeze Action
@@ -34,9 +29,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class FreezeAction extends RMActionExecuterAbstractBase
 {
-   private static final String MSG_FREEZE_NO_REASON = "rm.action.freeze-no-reason";
-   private static final String MSG_FREEZE_ONLY_RECORDS_FOLDERS = "rm.action.freeze-only-records-folders";
-
    /** Parameter names */
    public static final String PARAM_REASON = "reason";
 
@@ -48,45 +40,4 @@ public class FreezeAction extends RMActionExecuterAbstractBase
    {
       freezeService.freeze((String) action.getParameterValue(PARAM_REASON), actionedUponNodeRef);
    }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-    */
-   @Override
-   protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-   {
-      if (this.recordService.isRecord(filePlanComponent) == true ||
-          this.recordsManagementService.isRecordFolder(filePlanComponent) == true)
-      {
-         // Get the property values
-         if(parameters != null)
-         {
-            String reason = (String)parameters.get(PARAM_REASON);
-            if (reason == null || reason.length() == 0)
-            {
-               if(throwException)
-               {
-                  throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_FREEZE_NO_REASON));
-               }
-               else
-               {
-                  return false;
-               }
-            }
-         }
-         return true;
-      }
-      else
-      {
-         if(throwException)
-         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_FREEZE_ONLY_RECORDS_FOLDERS));
-         }
-         else
-         {
-            return false;
-         }
-      }
-   }
-
 }

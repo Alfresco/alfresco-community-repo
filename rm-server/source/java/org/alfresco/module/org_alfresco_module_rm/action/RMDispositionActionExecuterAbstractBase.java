@@ -18,10 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -89,7 +87,8 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
         DispositionSchedule di = checkDispositionActionExecutionValidity(actionedUponNodeRef, nextDispositionActionNodeRef, true);
 
         // Check the eligibility of the action
-        if (checkEligibility == false || this.dispositionService.isNextDispositionActionEligible(actionedUponNodeRef) == true)
+        if (checkEligibility == false || 
+            dispositionService.isNextDispositionActionEligible(actionedUponNodeRef) == true)
         {
             if (di.isRecordLevelDisposition() == true)
             {
@@ -151,7 +150,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                 }
                 else
                 {
-                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EXPECTED_RECORD_LEVEL, getName(), actionedUponNodeRef.toString()));
+                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_RECORD_FOLDER, getName(), actionedUponNodeRef.toString()));
                 }
 
             }
@@ -268,123 +267,5 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
             result = assocs.get(0).getChildRef();
         }
         return result;
-    }
-
-//    @Override
-//    public Set<QName> getProtectedProperties()
-//    {
-//        HashSet<QName> qnames = new HashSet<QName>();
-//        qnames.add(PROP_DISPOSITION_ACTION_STARTED_AT);
-//        qnames.add(PROP_DISPOSITION_ACTION_STARTED_BY);
-//        qnames.add(PROP_DISPOSITION_ACTION_COMPLETED_AT);
-//        qnames.add(PROP_DISPOSITION_ACTION_COMPLETED_BY);
-//        return qnames;
-//    }
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        // Check the validity of the action (is it the next action, are we dealing with the correct type of object for
-        // the disposition level?
-    	//
-        NodeRef nextDispositionActionNodeRef = getNextDispostionAction(filePlanComponent);
-        
-        DispositionSchedule di = checkDispositionActionExecutionValidity(filePlanComponent, nextDispositionActionNodeRef, throwException);
-
-        if(di == null)
-        {
-            if (throwException)
-            {
-                throw new AlfrescoRuntimeException("Null disposition");
-            }
-            else
-            {
-                return false;
-            }
-        }
-        
-        // Check the eligibility of the action
-        if (checkEligibility == false || this.dispositionService.isNextDispositionActionEligible(filePlanComponent) == true)
-        {
-            if (di.isRecordLevelDisposition() == true)
-            {
-                // Check that we do indeed have a record
-                if (recordService.isRecord(filePlanComponent) == true)
-                {
-                    // Can only execute disposition action on record if declared
-                    if (recordService.isDeclared(filePlanComponent) == true)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if (throwException)
-                        {
-                            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_NOT_DECLARED, getName(), filePlanComponent.toString()));
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    if (throwException)
-                    {
-                        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EXPECTED_RECORD_LEVEL, getName(), filePlanComponent.toString()));
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            }
-            else
-            {
-                if (this.recordsManagementService.isRecordFolder(filePlanComponent) == true)
-                {
-                    if (this.recordsManagementService.isRecordFolderDeclared(filePlanComponent) == true)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if (throwException)
-                        {
-                            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_ALL_RECORDS_DECLARED, getName(), filePlanComponent.toString()));
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    if (throwException)
-                    {
-                        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_RECORD_FOLDER, getName(), filePlanComponent.toString()));
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-
-            }
-
-        }
-        else
-        {
-            if (throwException)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_ELIGIBLE, getName(), filePlanComponent.toString()));
-            }
-            else
-            {
-                return false;
-            }
-        }
     }
 }

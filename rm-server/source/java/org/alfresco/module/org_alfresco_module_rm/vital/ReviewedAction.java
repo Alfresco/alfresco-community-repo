@@ -18,14 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.vital;
 
-import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -91,20 +87,4 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
             //TODO And record previous review date, time, user
         }
 	}
-
-	/**
-	 * 
-	 * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-	 */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-	{
-		// Intentionally empty
-	}
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        return true;
-    }
 }

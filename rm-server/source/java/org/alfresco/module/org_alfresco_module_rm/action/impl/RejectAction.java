@@ -18,15 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Reject action for an unfiled record
@@ -36,10 +30,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RejectAction extends RMActionExecuterAbstractBase
 {
-    /** Message properties */
-    private static final String MSG_REJECT_NO_REASON = "rm.action.reject-no-reason";
-    private static final String MSG_REJECT_ONLY_UNFILED_RECORDS = "rm.action.reject-only-unfiled-records";
-
     /** Parameter names */
     public static final String PARAM_REASON = "reason";
 
@@ -53,43 +43,5 @@ public class RejectAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         recordService.rejectRecord(actionedUponNodeRef, (String) action.getParameterValue(PARAM_REASON));
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-     */
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent,
-            Map<String, Serializable> parameters, boolean throwException)
-    {
-        if (recordService.isRecord(filePlanComponent) == true && recordService.isFiled(filePlanComponent) == false)
-        {
-            if (parameters != null && StringUtils.isNotBlank((String) parameters.get(PARAM_REASON)))
-            {
-                return true;
-            }
-            else
-            {
-                if (throwException)
-                {
-                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_REJECT_NO_REASON));
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            if (throwException)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_REJECT_ONLY_UNFILED_RECORDS));
-            }
-            else
-            {
-                return false;
-            }
-        }
     }
 }

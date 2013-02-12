@@ -174,37 +174,4 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
       }
       missingProperties.add(propDef.getName().toString());
    }
-
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-    */
-   @Override
-   protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-   {
-      if (recordService.isRecord(filePlanComponent) == true)
-      {
-         if (recordService.isDeclared(filePlanComponent) == false)
-         {
-            // Aspect not already defined - check mandatory properties then add
-            List<String> missingProperties = new ArrayList<String>(10);
-            if (mandatoryPropertiesSet(filePlanComponent, missingProperties) == true)
-            {
-               return true;
-            }
-         }
-         return false;
-      }
-      else
-      {
-         if (throwException)
-         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, filePlanComponent.toString()));
-         }
-         else
-         {
-            return false;
-         }
-      }
-   }
-
 }

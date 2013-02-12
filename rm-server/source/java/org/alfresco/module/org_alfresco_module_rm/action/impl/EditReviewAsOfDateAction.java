@@ -18,15 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,34 +66,9 @@ public class EditReviewAsOfDateAction extends RMActionExecuterAbstractBase
 	        this.nodeService.setProperty(actionedUponNodeRef, PROP_REVIEW_AS_OF, reviewAsOf);
 	         
 	    }
+	    else
+	    {
+	        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_REVIEW_DETAILS_ONLY));	       
+	    }
 	}
-
-	/**
-	 * 
-	 * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-	 */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-	{
-		// Intentionally empty
-	}
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        boolean result = false;
-        if (recordService.isRecord(filePlanComponent) == true &&
-            nodeService.hasAspect(filePlanComponent, ASPECT_VITAL_RECORD) == true)
-        {
-            result = true;
-        }
-        else
-        {
-            if (throwException == true)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_REVIEW_DETAILS_ONLY));
-            }
-        }
-        return result;
-    }	
 }

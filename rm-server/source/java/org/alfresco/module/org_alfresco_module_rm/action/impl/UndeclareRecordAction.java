@@ -18,9 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
@@ -55,31 +52,5 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORDS_ONLY_UNDECLARED));
         }
-    }
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        if (recordService.isRecord(filePlanComponent) == true)
-        {
-            if (recordService.isDeclared(filePlanComponent) == true)
-            {
-               return true;
-            }
-            return false;
-        }
-        else
-        {
-            if(throwException)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORDS_ONLY_UNDECLARED));
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-    
-    
+    } 
 }

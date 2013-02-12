@@ -51,7 +51,7 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
     public static final String KEY_TRANSFER_NODEREF = "transferNodeRef";
     
     /** I18N */
-    public static final String MSG_NODE_ALREADY_TRANSFER = "rm.action.node-already-transfer";
+    private static final String MSG_NODE_ALREADY_TRANSFER = "rm.action.node-already-transfer";
     
     /** Indicates whether the transfer is an accession or not */
     private boolean isAccession = false;
@@ -139,6 +139,19 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
             // Bind the hold node reference to the transaction
             AlfrescoTransactionSupport.bindResource(KEY_TRANSFER_NODEREF, transferNodeRef);
         }
+        else
+        {
+            // ensure this node has not already in the process of being transferred 
+            List<ChildAssociationRef> transferredAlready = nodeService.getChildAssocs(transferNodeRef, ASSOC_TRANSFERRED, ASSOC_TRANSFERRED);
+            for(ChildAssociationRef car : transferredAlready)
+            {
+                if(car.getChildRef().equals(dispositionLifeCycleNodeRef) == true)
+                {
+                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NODE_ALREADY_TRANSFER, dispositionLifeCycleNodeRef.toString()));
+                    
+                }
+            }
+        }
         
         // Link the record to the trasnfer object
         this.nodeService.addChild(transferNodeRef, 
@@ -181,39 +194,5 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
                nodeService.setProperty(transferNodeRef, PROP_TRANSFER_PDF_INDICATOR, true);
            }           
        }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-     */
-    @Override    
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-      
-        if(!super.isExecutableImpl(filePlanComponent, parameters, throwException))
-        {
-            // super will throw ...
-            return false;
-        }
-        NodeRef transferNodeRef = (NodeRef)AlfrescoTransactionSupport.getResource(KEY_TRANSFER_NODEREF);            
-        if (transferNodeRef != null)
-        {
-            List<ChildAssociationRef> transferredAlready = nodeService.getChildAssocs(transferNodeRef, ASSOC_TRANSFERRED, ASSOC_TRANSFERRED);
-            for(ChildAssociationRef car : transferredAlready)
-            {
-                if(car.getChildRef().equals(filePlanComponent))
-                {
-                    if (throwException)
-                    {
-                        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NODE_ALREADY_TRANSFER, filePlanComponent.toString()));
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
     }
 }

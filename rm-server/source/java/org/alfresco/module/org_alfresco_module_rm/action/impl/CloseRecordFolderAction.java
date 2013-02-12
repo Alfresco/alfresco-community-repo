@@ -18,14 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -58,36 +53,6 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
         else
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, actionedUponNodeRef.toString()));
-        }
-    }
-
-    /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-     */
-    @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        if (this.recordsManagementService.isRecordFolder(filePlanComponent))
-        {
-            return true;
-        }
-        else
-        {
-            if (throwException)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, filePlanComponent.toString()));
-            }
-            else
-            {
-                return false;
-            }
         }
     }
 }

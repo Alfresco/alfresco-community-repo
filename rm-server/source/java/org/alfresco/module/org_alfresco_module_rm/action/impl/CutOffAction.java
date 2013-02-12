@@ -24,12 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Cut off disposition action
@@ -38,8 +36,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class CutOffAction extends RMDispositionActionExecuterAbstractBase
 {
-    private static final String MSG_ERR = "rm.action.close-record-folder-not-folder";
-    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#executeRecordFolderLevelDisposition(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -89,33 +85,4 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
             this.nodeService.addAspect(nodeRef, ASPECT_CUT_OFF, cutOffProps);
         }
     }
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        if(!super.isExecutableImpl(filePlanComponent, parameters, throwException))
-        {
-            return false;
-        }
-        
-        // duplicates code from close .. it should get the closed action somehow?
-        if (recordsManagementService.isRecordFolder(filePlanComponent) 
-            || recordService.isRecord(filePlanComponent))
-        {
-            return true;
-        }
-        else
-        {
-            if (throwException)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERR, filePlanComponent.toString()));
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-    
-    
  }

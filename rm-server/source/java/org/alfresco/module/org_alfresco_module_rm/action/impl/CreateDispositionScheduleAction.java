@@ -18,9 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
@@ -45,29 +42,14 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        // Create the disposition schedule
-        dispositionService.createDispositionSchedule(actionedUponNodeRef, null);
-    }  
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-     */
-    @Override
-    public boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        boolean result = true;
-        if (recordsManagementService.isRecordCategory(filePlanComponent) == false)
+        if (recordsManagementService.isRecordCategory(actionedUponNodeRef) == true)
         {
-            if (throwException == true)
-            {
-                throw new AlfrescoRuntimeException("The disposition schedule could not be created, because the actioned upon node was not a record category.");
-            }
-            else
-            {
-                result = false;
-            }
+            // Create the disposition schedule
+            dispositionService.createDispositionSchedule(actionedUponNodeRef, null);
         }
-        
-        return result;
-    }
+        else
+        {
+            throw new AlfrescoRuntimeException("The disposition schedule could not be created, because the actioned upon node was not a record category.");
+        }
+    }  
 }

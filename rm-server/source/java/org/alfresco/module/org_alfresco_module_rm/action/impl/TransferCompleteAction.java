@@ -18,10 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
@@ -44,25 +42,6 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
 {
     /** I18N */
     private static final String MSG_NODE_NOT_TRANSFER = "rm.action.node-not-transfer";
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef,
-     *      java.util.Map, boolean)
-     */
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        QName className = this.nodeService.getType(filePlanComponent);
-        if (this.dictionaryService.isSubClass(className, TYPE_TRANSFER) == true)
-        {
-            return true;
-        }
-        else
-        {
-            List<ChildAssociationRef> assocs = this.nodeService.getParentAssocs(filePlanComponent, ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
-            return assocs.size() > 0;
-        }
-    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,

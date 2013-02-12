@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -114,19 +113,10 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                             ChildAssociationRef parent = nodeService.getPrimaryParent(currentNode);
                             if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
                             {
-                                // Check that the action is executable
-                                RecordsManagementAction rmAction = recordsManagementActionService.getDispositionAction(dispAction);
-                                if (rmAction.isExecutable(parent.getParentRef(), null) == true)
+                                recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction);
+                                if (logger.isDebugEnabled())
                                 {
-                                    recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction);
-                                    if (logger.isDebugEnabled())
-                                    {
-                                        logger.debug("Processed action: " + dispAction + "on" + parent);
-                                    }
-                                }
-                                else
-                                {
-                                    logger.debug("The disposition action " + dispAction + " is not executable.");
+                                    logger.debug("Processed action: " + dispAction + "on" + parent);
                                 }
                             }
                             return null;

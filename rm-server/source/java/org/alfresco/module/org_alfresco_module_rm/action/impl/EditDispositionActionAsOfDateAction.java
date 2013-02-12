@@ -18,16 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,35 +70,9 @@ public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstrac
                 nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_AS_OF, asOfDate);
             }
         }
-    }
-
-    /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-     */
-    @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-        // Intentionally empty
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#isExecutableImpl(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, boolean)
-     */
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        boolean result = false;
-        if (this.nodeService.hasAspect(filePlanComponent, ASPECT_DISPOSITION_LIFECYCLE) == true)
-        {
-            result = true;
-        }
         else
         {
-            if (throwException == true)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_DISP_ASOF_LIFECYCLE_APPLIED));
-            }
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_DISP_ASOF_LIFECYCLE_APPLIED));
         }
-        return result;
     }
 }

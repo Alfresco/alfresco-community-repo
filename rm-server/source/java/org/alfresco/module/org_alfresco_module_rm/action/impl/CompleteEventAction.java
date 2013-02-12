@@ -28,7 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstrac
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -108,80 +107,4 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
         }
         return result;
     }
-
-    /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-     */
-    @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-        // TODO add parameter definitions ....
-        // eventId, executeBy, executedAt
-
-    }
-
-//    @Override
-//    public Set<QName> getProtectedProperties()
-//    {
-//        HashSet<QName> qnames = new HashSet<QName>();
-//        qnames.add(PROP_EVENT_EXECUTION_COMPLETE);
-//        qnames.add(PROP_EVENT_EXECUTION_COMPLETED_AT);
-//        qnames.add(PROP_EVENT_EXECUTION_COMPLETED_BY);
-//        return qnames;
-//    }
-
-    
-    
-   // @Override
-   // public Set<QName> getProtectedAspects()
-   // {
-   //     HashSet<QName> qnames = new HashSet<QName>();
-   //     qnames.add(ASPECT_DISPOSITION_LIFECYCLE);
-   //     return qnames;
-   // }
-
-    @Override
-    protected boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        String eventName = null;
-        if(parameters != null)
-        {
-            eventName = (String) parameters.get(PARAM_EVENT_NAME);
-        }
-
-        if (this.nodeService.hasAspect(filePlanComponent, ASPECT_DISPOSITION_LIFECYCLE))
-        {
-            // Get the next disposition action
-            DispositionAction da = this.dispositionService.getNextDispositionAction(filePlanComponent);
-            if (da != null)
-            {
-                // Get the disposition event
-                if(parameters != null)
-                {
-                    EventCompletionDetails event = getEvent(da, eventName);
-                    if (event != null)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if (throwException)
-                        {
-                            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EVENT_NO_DISP_LC, eventName));
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 }

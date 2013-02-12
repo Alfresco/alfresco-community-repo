@@ -76,23 +76,7 @@ public interface RecordsManagementAction
      * @param parameters            action parameters
      * @return
      */
-    public boolean isExecutable(NodeRef filePlanComponent, Map<String, Serializable> parameters);
-    
-    
-    /**
-     * Get a set of properties that should only be updated via this or other action.
-     * These properties will be rejected by updates via the generic public services, such as the NodeService.
-     * 
-     * @return the set of protected properties
-     */
-    //public Set<QName> getProtectedProperties();
-    
-    /**
-     * Get a set of aspects that should be updated via this or other actions.
-     * The aspect can not be added via public services, such as the NodeService.
-     * @return
-     */
-    //public Set<QName> getProtectedAspects();
+   // public boolean isExecutable(NodeRef filePlanComponent, Map<String, Serializable> parameters);
 
     /**
      * Some admin-related rmActions execute against a target nodeRef which is not provided

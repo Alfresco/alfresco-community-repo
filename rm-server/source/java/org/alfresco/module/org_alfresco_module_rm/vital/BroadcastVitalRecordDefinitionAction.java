@@ -27,7 +27,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
@@ -55,14 +54,10 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
     }
 
     /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+     * Propagates the changes to the children of the node specified.
+     * 
+     * @param actionedUponNodeRef   actioned upon node reference
      */
-    @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-        // Intentionally empty
-    }
-
     private void propagateChangeToChildrenOf(NodeRef actionedUponNodeRef)
     {
         Map<QName, Serializable> parentProps = nodeService.getProperties(actionedUponNodeRef);
@@ -105,11 +100,5 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
                 this.propagateChangeToChildrenOf(nextChild);
             }
         }
-    }
-
-    @Override
-    public boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-        return true;
     }
 }

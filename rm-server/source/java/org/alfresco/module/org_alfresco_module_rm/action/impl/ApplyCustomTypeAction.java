@@ -69,9 +69,16 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
             logger.debug("Executing action [" + action.getActionDefinitionName() + "] on " + actionedUponNodeRef);
         }
         
-        // Apply the appropriate aspect and set the properties.
-        Map<QName, Serializable> aspectProps = getPropertyValues(action);
-        this.nodeService.addAspect(actionedUponNodeRef, customTypeAspect, aspectProps);
+        if (recordService.isRecord(actionedUponNodeRef) == true)
+        {
+            // Apply the appropriate aspect and set the properties.
+            Map<QName, Serializable> aspectProps = getPropertyValues(action);
+            this.nodeService.addAspect(actionedUponNodeRef, customTypeAspect, aspectProps);
+        }
+        else if (logger.isWarnEnabled() == true)
+        {
+            logger.warn(I18NUtil.getMessage(MSG_ACTIONED_UPON_NOT_RECORD, this.getClass().getSimpleName(), actionedUponNodeRef.toString()));
+        }
     }
 
     /**
@@ -107,27 +114,6 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
         }
     
         return result;
-    }
-
-    @Override
-    public boolean isExecutableImpl(NodeRef filePlanComponent, Map<String, Serializable> parameters, boolean throwException)
-    {
-
-        if (recordService.isRecord(filePlanComponent))
-        {
-            return true;
-        }
-        else
-        {
-            if (throwException)
-            {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ACTIONED_UPON_NOT_RECORD, this.getClass().getSimpleName(), filePlanComponent.toString()));
-            }
-            else
-            {
-                return false;
-            }
-        }
     }
 
     @Override

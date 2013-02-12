@@ -1641,20 +1641,46 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      */
     protected Map<QName, Set<String>> getDefaultEmbedMapping()
     {
-        String className = this.getClass().getName();
-        // Replace $
-        className = className.replace('$', '-');
-        // Replace .
-        className = className.replace('.', '/');
-        // Append .properties
-        String propertiesUrl = className + ".embed.properties";
-        // Attempt to load the properties
-        Map<QName, Set<String>> embedMapping = readEmbedMappingProperties(propertiesUrl);
+        Map<QName, Set<String>> embedMapping = null;
+        String metadataPropertiesUrl = null;
+        try
+        {
+            // Can't use getSimpleName here because we lose inner class $ processing
+            String className = this.getClass().getName();
+            String shortClassName = className.split("\\.")[className.split("\\.").length - 1];
+            // Replace $
+            shortClassName = shortClassName.replace('$', '-');
+            // Append .properties
+            metadataPropertiesUrl = "alfresco/metadata/" + shortClassName + ".embed.properties";
+            // Attempt to load the properties
+            embedMapping = readEmbedMappingProperties(metadataPropertiesUrl);
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // No embed mapping found at default location
+        }
+        // Try package location
+        try
+        {
+            String canonicalClassName = this.getClass().getName();
+            // Replace $
+            canonicalClassName = canonicalClassName.replace('$', '-');
+            // Replace .
+            canonicalClassName = canonicalClassName.replace('.', '/');
+            // Append .properties
+            String packagePropertiesUrl = canonicalClassName + ".embed.properties";
+            // Attempt to load the properties
+            embedMapping = readEmbedMappingProperties(packagePropertiesUrl);
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // No embed mapping found at legacy location
+        }
         if (embedMapping == null)
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("No explicit embed mapping properties found at: " + propertiesUrl + ", assuming reverse of extract mapping");
+                logger.debug("No explicit embed mapping properties found at: " + metadataPropertiesUrl + ", assuming reverse of extract mapping");
             }
             Map<String, Set<QName>> extractMapping = this.mapping;
             if (extractMapping == null || extractMapping.size() == 0)

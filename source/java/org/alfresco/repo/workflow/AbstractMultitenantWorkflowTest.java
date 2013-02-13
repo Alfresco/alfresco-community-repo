@@ -77,7 +77,7 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
     private WorkflowTestHelper wfTestHelper;
     
     @Test
-    public void testDeployWorkflow() throws Exception
+    public void xtestDeployWorkflow() throws Exception
     {
         // Run as User1 so tenant domain 1
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
@@ -131,7 +131,7 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
         assertEquals(definition.getId(), definitionByName.getId());
     }
     
-    public void testQueryTasks() throws Exception
+    public void xtestQueryTasks() throws Exception
     {
         WorkflowTaskQuery query = new WorkflowTaskQuery();
         

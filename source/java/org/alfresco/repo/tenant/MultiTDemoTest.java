@@ -1102,7 +1102,7 @@ public class MultiTDemoTest extends TestCase
     }
     
     // TODO pending THOR-201 / CLOUD-1349 fix
-    public void test16DeleteArchiveAndRestoreContent()
+    public void xtest16DeleteArchiveAndRestoreContent()
     {
         logger.info("test delete/archive & restore content");
         

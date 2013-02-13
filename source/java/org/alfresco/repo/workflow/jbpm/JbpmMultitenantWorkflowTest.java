@@ -56,4 +56,9 @@ public class JbpmMultitenantWorkflowTest extends AbstractMultitenantWorkflowTest
     {
         return "jbpm$wf:adhoc";
     }
+    
+    public void testSetup() throws Exception
+    {
+        // dummy test
+    }
 }

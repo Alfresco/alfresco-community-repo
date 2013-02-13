@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,6 +23,8 @@ import java.util.Set;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
 {
@@ -70,7 +72,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             throw ae;
         }
         ticketComponent.clearCurrentTicket();
-        getCurrentTicket();       
+        getCurrentTicket();
     }
     
     public String getCurrentUserName() throws AuthenticationException
@@ -125,6 +127,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     public String getCurrentTicket() throws AuthenticationException
     {
         String userName = getCurrentUserName();
+        
         // So that preAuthenticationCheck can constrain the creation of new tickets, we first ask for the current ticket
         // without auto-creation
         String ticket = ticketComponent.getCurrentTicket(userName, false);
@@ -140,6 +143,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     public String getNewTicket()
     {
         String userName = getCurrentUserName();
+        
         try
         {
             preAuthenticationCheck(userName);

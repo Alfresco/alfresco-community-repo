@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,10 +18,13 @@
  */
 package org.alfresco.repo.transaction;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.util.GUID;
 
 /**
@@ -45,7 +48,8 @@ public class TransactionAwareSingleton<T> extends TransactionListenerAdapter
     private final String txnKey;
     private final ReadLock singletonReadLock;
     private final WriteLock singletonWriteLock;
-    private Object singletonValue;
+    
+    private Map<String, Object> tenantSingletonValue = new HashMap<String, Object>(1); // tenant-aware
     
     public TransactionAwareSingleton()
     {
@@ -61,7 +65,7 @@ public class TransactionAwareSingleton<T> extends TransactionListenerAdapter
         singletonWriteLock.lock();
         try
         {
-            singletonValue = value;
+            tenantSingletonValue.put(TenantUtil.getCurrentDomain(), value);
         }
         finally
         {
@@ -75,7 +79,7 @@ public class TransactionAwareSingleton<T> extends TransactionListenerAdapter
         singletonReadLock.lock();
         try
         {
-            return singletonValue;
+            return tenantSingletonValue.get(TenantUtil.getCurrentDomain());
         }
         finally
         {

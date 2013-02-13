@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -73,7 +73,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -419,23 +418,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public NodeRef getPerson(final String userName, final boolean autoCreateHomeFolderAndMissingPersonIfAllowed)
     {
-        // MT share - for activity service system callback
-        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
-        {
-            final String tenantDomain = tenantService.getUserDomain(userName);
-
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-            {
-                public NodeRef doWork() throws Exception
-                {
-                    return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed);
-                }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
-        }
-        else
-        {
-            return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed);
-        }
+        return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed);
     }
 
     private NodeRef getPersonImpl(String userName, boolean autoCreateHomeFolderAndMissingPersonIfAllowed)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,14 +32,18 @@ import net.sf.acegisecurity.providers.dao.User;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
+import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -456,20 +460,20 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         AuthenticationException ae = null;
 
-        String userName;
+        String userNameIn;
 
-        CurrentUserCallback(String userName)
+        CurrentUserCallback(String userNameIn)
         {
-            this.userName = userName;
+            this.userNameIn = userNameIn;
         }
     }
 
     class CheckCurrentUserCallback extends CurrentUserCallback
     {
 
-        CheckCurrentUserCallback(String userName)
+        CheckCurrentUserCallback(String userNameIn)
         {
-            super(userName);
+            super(userNameIn);
         }
 
         public Authentication execute() throws Throwable
@@ -477,6 +481,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             try
             {
                 // We must set full authentication before calling runAs in order to retain tickets
+                Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
+                final String userName = userTenant.getFirst();
+                final String tenantDomain = userTenant.getSecond();
+                
                 Authentication authentication = setCurrentUserImpl(userName);
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
                 {
@@ -495,7 +503,9 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                         }
                         return null;
                     }
-                }, getSystemUserName(getUserDomain(userName)));
+                }, tenantDomain);
+                
+                TenantContextHolder.setTenantDomain(tenantDomain);
                 return authentication;
             }
             catch (AuthenticationException ae)
@@ -508,16 +518,20 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     
     class FixCurrentUserCallback extends CurrentUserCallback
     {
-        FixCurrentUserCallback(String userName)
+        FixCurrentUserCallback(String userNameIn)
         {
-            super(userName);
+            super(userNameIn);
         }
 
         public Authentication execute() throws Throwable
         {
             try
             {
-                return setCurrentUserImpl(AuthenticationUtil.runAs(new RunAsWork<String>()
+                Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
+                final String userName = userTenant.getFirst();
+                final String tenantDomain = userTenant.getSecond();
+                
+                Authentication authentication = setCurrentUserImpl(TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>()
                 {
                     public String doWork() throws Exception
                     {
@@ -543,7 +557,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                         // checks
                         return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
                     }
-                }, getSystemUserName(getUserDomain(userName))));
+                }, tenantDomain));
+                
+                TenantContextHolder.setTenantDomain(tenantDomain);
+                return authentication;
             }
             catch (AuthenticationException ae)
             {

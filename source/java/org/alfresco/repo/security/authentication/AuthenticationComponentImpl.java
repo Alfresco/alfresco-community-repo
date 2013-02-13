@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,7 +32,9 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.util.Pair;
 
 public class AuthenticationComponentImpl extends AbstractAuthenticationComponent implements NLTMAuthenticator
 {
@@ -69,10 +71,14 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
      * Authenticate
      */
     @Override
-    protected void authenticateImpl(final String userName, final char[] password) throws AuthenticationException
+    protected void authenticateImpl(final String userNameIn, final char[] password) throws AuthenticationException
     {
         try
         {
+            Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
+            final String userName = userTenant.getFirst();
+            final String tenantDomain = userTenant.getSecond();
+            
             String normalized = getTransactionService().getRetryingTransactionHelper().doInTransaction(
                     new RetryingTransactionCallback<String>()
                     {
@@ -90,7 +96,8 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
                                 }
                             }, getSystemUserName(getUserDomain(userName)));
                         }
-                    }, true); 
+                    }, true);
+            
             if (normalized == null)
             {
                 setCurrentUser(userName, UserNameValidationMode.CHECK_AND_FIX);
@@ -99,6 +106,8 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
             {
                 setCurrentUser(normalized, UserNameValidationMode.NONE);                
             }
+            
+            TenantContextHolder.setTenantDomain(tenantDomain);
         }
         catch (net.sf.acegisecurity.AuthenticationException ae)
         {

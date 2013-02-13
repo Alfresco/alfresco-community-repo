@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -40,8 +40,8 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -186,6 +186,8 @@ public class MultiTDemoTest extends TestCase
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         siteService = (SiteService) ctx.getBean("SiteService");
         
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
+        
         createTenants();
     }
     
@@ -225,7 +227,7 @@ public class MultiTDemoTest extends TestCase
     private void deleteTestAuthoritiesForTenant(final String[] uniqueGroupNames, final String tenantName)
     {
         // Check deletion for tenant1
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -246,7 +248,7 @@ public class MultiTDemoTest extends TestCase
     private void createTestAuthoritiesForTenant(final String[] uniqueGroupNames, final String tenantName)
     {
         // Create groups for tenant
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -269,7 +271,7 @@ public class MultiTDemoTest extends TestCase
     private void checkTestAuthoritiesPresence(final String[] uniqueGroupNames, final String tenantName, final boolean shouldPresent)
     {
         // Check that created permissions are not visible to tenant 2
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -459,7 +461,7 @@ public class MultiTDemoTest extends TestCase
     private void createTenant(final String tenantDomain)
     {
         // create tenants (if not already created)
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -483,7 +485,7 @@ public class MultiTDemoTest extends TestCase
             public Object execute() throws Throwable
             {
                 // delete tenant (if it exists)
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
@@ -512,7 +514,7 @@ public class MultiTDemoTest extends TestCase
         createTenant(tenantDomain1);
         
         String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -558,7 +560,7 @@ public class MultiTDemoTest extends TestCase
             {
                 String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
                 
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
@@ -579,7 +581,7 @@ public class MultiTDemoTest extends TestCase
             {
                 String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
                 
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
@@ -700,7 +702,7 @@ public class MultiTDemoTest extends TestCase
         
         assertTrue(tenants.size() > 0);
         
-        final int rootGrpsOrigCnt = AuthenticationUtil.runAs(new RunAsWork<Integer>()
+        final int rootGrpsOrigCnt = TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Integer>()
         {
             public Integer doWork() throws Exception
             {
@@ -713,7 +715,7 @@ public class MultiTDemoTest extends TestCase
         {
             final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -742,7 +744,7 @@ public class MultiTDemoTest extends TestCase
         {
             final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -780,7 +782,7 @@ public class MultiTDemoTest extends TestCase
         logger.info("Create demo categories");
         
         // super admin
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -795,7 +797,7 @@ public class MultiTDemoTest extends TestCase
         {
             String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -903,7 +905,7 @@ public class MultiTDemoTest extends TestCase
                 {
                     final String tenantUserName = tenantService.getDomainUser(baseUserName, tenantDomain);
                     
-                    AuthenticationUtil.runAs(new RunAsWork<Object>()
+                    TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
                     {
                         public Object doWork() throws Exception
                         {
@@ -946,7 +948,7 @@ public class MultiTDemoTest extends TestCase
                 {
                     final String tenantUserName = tenantService.getDomainUser(baseUserName, tenantDomain);
                     
-                    AuthenticationUtil.runAs(new RunAsWork<Object>()
+                    TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
                     {
                         public Object doWork() throws Exception
                         {
@@ -974,7 +976,7 @@ public class MultiTDemoTest extends TestCase
         logger.info("Get tenant stores");
         
         // system
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -989,7 +991,7 @@ public class MultiTDemoTest extends TestCase
         }, AuthenticationUtil.getSystemUserName());
         
         // super admin
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -1002,7 +1004,7 @@ public class MultiTDemoTest extends TestCase
         {
             String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -1023,7 +1025,7 @@ public class MultiTDemoTest extends TestCase
         {
             String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -1056,7 +1058,7 @@ public class MultiTDemoTest extends TestCase
         {
             final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -1099,6 +1101,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
+    // TODO pending THOR-201 / CLOUD-1349 fix
     public void test16DeleteArchiveAndRestoreContent()
     {
         logger.info("test delete/archive & restore content");
@@ -1107,7 +1110,7 @@ public class MultiTDemoTest extends TestCase
         {
             final String tenantUserName = tenantService.getDomainUser(TEST_USER1, tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -1140,7 +1143,7 @@ public class MultiTDemoTest extends TestCase
         {
             final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -1192,7 +1195,7 @@ public class MultiTDemoTest extends TestCase
         {    
             final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -1220,7 +1223,7 @@ public class MultiTDemoTest extends TestCase
         {
             final String tenantUserName = tenantService.getDomainUser(TEST_USER1, tenantDomain);
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -1253,7 +1256,8 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void test21_ALF_12732()
+    // TODO pending CLOUD-1350 fix
+    public void xtest21_ALF_12732()
     {
         final String tenantDomain1 = TEST_RUN+".one.alf12732";
         
@@ -1265,7 +1269,7 @@ public class MultiTDemoTest extends TestCase
         {
             AuthenticationUtil.setFullyAuthenticatedUser(tenantAdminName); // note: since SiteServiceImpl.setupSitePermissions currently uses getCurrentUserName (rather than runAs)
             
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
             {
                 public Object doWork() throws Exception
                 {
@@ -1302,7 +1306,7 @@ public class MultiTDemoTest extends TestCase
         createTenant(tenantDomain2);
         
         String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain1);
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -1315,7 +1319,7 @@ public class MultiTDemoTest extends TestCase
         }, tenantAdminName);
         
         tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain2);
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {

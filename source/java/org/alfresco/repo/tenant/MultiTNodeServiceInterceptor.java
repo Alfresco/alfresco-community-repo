@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,10 +46,9 @@ import org.springframework.aop.support.DelegatingIntroductionInterceptor;
  * Interceptor to translate Node 
  * 
  * @since 3.0 
- * @author Derek Hulley
- * @author janv
+ * @author Derek Hulley, janv
  */
-public class MultiTNodeServiceInterceptor extends DelegatingIntroductionInterceptor//implements NodeService
+public class MultiTNodeServiceInterceptor extends DelegatingIntroductionInterceptor //implements NodeService
 {
     private static final long serialVersionUID = -5462852271914961462L;
 
@@ -99,8 +98,8 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
     @SuppressWarnings("unchecked")
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
-        // See if we can shortcut (for super 'System' only)
-        if (AuthenticationUtil.getSystemUserName().equals(AuthenticationUtil.getRunAsUser()) || !AuthenticationUtil.isMtEnabled())
+        // See if we can shortcut
+        if (!AuthenticationUtil.isMtEnabled())
         {
             return invocation.proceed();
         }
@@ -251,7 +250,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
         // done
         return ret;
     }
-
+    
     /**
      * Convert outbound collection to spoofed (ie. without tenant prefix) values.
      */

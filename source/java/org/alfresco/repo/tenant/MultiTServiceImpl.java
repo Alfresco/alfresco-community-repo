@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -529,24 +529,28 @@ public class MultiTServiceImpl implements TenantService
     /* (non-Javadoc)
      * @see org.alfresco.repo.tenant.TenantService#isTenantUser()
      */
+    // TODO review usages (re: cloud external user => more than one domain)
     public boolean isTenantUser()
     {
-        return isTenantUser(AuthenticationUtil.getRunAsUser());
+        //return isTenantUser(AuthenticationUtil.getRunAsUser());
+        return (! getCurrentUserDomain().equals(TenantService.DEFAULT_DOMAIN));
     }
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.tenant.TenantService#isTenantUser(java.lang.String)
      */
+    // TODO review usages (re: cloud external user => more than one domain)
     public boolean isTenantUser(String username)
-    {    
+    {
         // can be null (e.g. for System user / during app ctx init)
-        if (username != null) {
+        if (username != null) 
+        {
             int idx = username.lastIndexOf(SEPARATOR);
             if ((idx > 0) && (idx < (username.length()-1)))
             {
                return true;
             }
-        }        
+        }
         return false;
     }
     
@@ -687,8 +691,13 @@ public class MultiTServiceImpl implements TenantService
     
     protected void checkTenantEnabled(String tenantDomain)
     {
+        Tenant tenant = getTenant(tenantDomain);
+        if (tenant == null)
+        {
+            throw new AlfrescoRuntimeException("Tenant does not exist: " + tenantDomain);
+        }
         // note: System user can access disabled tenants
-        if (!AuthenticationUtil.isRunAsUserTheSystemUser() && !(getTenant(tenantDomain).isEnabled()))
+        if (!AuthenticationUtil.isRunAsUserTheSystemUser() && (! tenant.isEnabled()))
         {
             throw new TenantDisabledException(tenantDomain);
         }

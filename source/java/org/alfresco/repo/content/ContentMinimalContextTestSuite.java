@@ -52,6 +52,7 @@ import org.alfresco.repo.content.transform.TextMiningContentTransformerTest;
 import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
 import org.alfresco.repo.content.transform.TikaAutoContentTransformerTest;
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest;
+import org.alfresco.service.cmr.repository.TemporalSourceOptionsTest;
 import org.alfresco.service.cmr.repository.TransformationOptionLimitsTest;
 import org.alfresco.service.cmr.repository.TransformationOptionPairTest;
 import org.alfresco.util.ApplicationContextHelper;
@@ -94,6 +95,9 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTest(new JUnit4TestAdapter(AbstractContentTransformerLimitsTest.class));
        suite.addTest(new JUnit4TestAdapter(TransformationOptionLimitsTest.class));
        suite.addTest(new JUnit4TestAdapter(TransformationOptionPairTest.class));
+       
+       // Source options
+       suite.addTest(new JUnit4TestAdapter(TemporalSourceOptionsTest.class));
        
        // Metadata tests
        suite.addTestSuite( DWGMetadataExtracterTest.class );

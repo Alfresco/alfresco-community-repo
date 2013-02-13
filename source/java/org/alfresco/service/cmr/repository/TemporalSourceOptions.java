@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.repository;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.AbstractTransformationSourceOptions;
 
 /**
@@ -37,6 +38,9 @@ import org.alfresco.service.cmr.repository.AbstractTransformationSourceOptions;
  */
 public class TemporalSourceOptions extends AbstractTransformationSourceOptions
 {
+
+    /** Validation regex for hh:mm:ss[.xxx], ignoring leap seconds and allowing up to 99 hours */
+    private static final String VALID_TIME_STRING_REGEX = "\\d{2}:[0-5][0-9]:[0-5][0-9](\\.\\d{1,3})?";
 
     /** The offset time code from which to start the transformation */
     private String offset;
@@ -72,6 +76,7 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
      */
     public void setOffset(String offset)
     {
+        TemporalSourceOptions.validateTimeString(offset);
         this.offset = offset;
     }
 
@@ -94,7 +99,21 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
      */
     public void setDuration(String duration)
     {
+        TemporalSourceOptions.validateTimeString(duration);
         this.duration = duration;
+    }
+    
+    /**
+     * Validates that the given value is of the form hh:mm:ss[.xxx]
+     * 
+     * @param value
+     */
+    public static void validateTimeString(String value)
+    {
+        if (value != null && !value.matches(VALID_TIME_STRING_REGEX))
+        {
+            throw new AlfrescoRuntimeException("'" + value + "' is not a valid time specification of the form hh:mm:ss[.xxx]");
+        }
     }
 
     @Override

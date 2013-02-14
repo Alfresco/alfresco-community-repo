@@ -428,11 +428,11 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                     // declare a record
                     utils.declareRecord(recordDeclaredOne);
                     utils.declareRecord(recordDeclaredTwo);
-                    
-                    // unfiled container
-                    unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
-                    assertNotNull(unfiledContainer);
                 }
+
+                // unfiled container
+                unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
+                assertNotNull(unfiledContainer);
             }
         }, 
         AuthenticationUtil.getAdminUserName());    	
@@ -546,6 +546,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             {
                 filePlanPermissionService.setPermission(filePlan, user, FILING);
                 filePlanPermissionService.setPermission(rmContainer, user, FILING);
+                filePlanPermissionService.setPermission(unfiledContainer, user, FILING);
             } 
         }
     }

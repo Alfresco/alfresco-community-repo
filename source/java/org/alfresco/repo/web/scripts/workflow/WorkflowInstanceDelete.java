@@ -111,22 +111,29 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
                         "The workflow instance to delete/cancel with id " + instanceId + " doesn't exist: ");
         }
         
-        NodeRef initiator = wi.getInitiator();
-        if (initiator != null)
-        {
-            // determine if the current user is the initiator of the workflow
-            String currentUserName = authenticationService.getCurrentUserName();
-
-           // get the username of the initiator
-           String userName = (String)nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
-           
-           // if the current user started the workflow allow the cancel action
-           if (currentUserName.equals(userName))
-           {
-              canEnd = true;
-           }
-        }
+        String currentUserName = authenticationService.getCurrentUserName();
         
+        // ALF-17405: Admin can always delete/cancel workflows, regardless of the initiator
+        if(authorityService.isAdminAuthority(currentUserName))
+        {
+            canEnd = true;
+        }
+        else
+        {
+            NodeRef initiator = wi.getInitiator();
+            // determine if the current user is the initiator of the workflow
+            if (initiator != null)
+            {
+                // get the username of the initiator
+                String userName = (String)nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
+                
+                // if the current user started the workflow allow the cancel action
+                if (currentUserName.equals(userName))
+                {
+                    canEnd = true;
+                }
+            }
+        }
         return canEnd;
     }
 }

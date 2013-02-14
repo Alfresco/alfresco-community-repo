@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.person.TestGroupManager;
 import org.alfresco.repo.security.person.TestPersonManager;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
@@ -1124,7 +1125,45 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
 
         assertTrue(afterCancelResult.length() == 0);
     }
+    
+    public void testWorkflowInstanceDeleteAsAdministrator() throws Exception
+    {
+        //Start workflow as USER1 
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+        params.put(WorkflowModel.PROP_CONTEXT, packageRef);
 
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+        WorkflowTask startTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
+        startTask = workflowService.endTask(startTask.getId(), null);
+
+        WorkflowInstance adhocInstance = startTask.getPath().getInstance();
+        
+        // Run next request as admin
+        String admin = authenticationComponent.getDefaultAdministratorUserNames().iterator().next();
+        AuthenticationUtil.setFullyAuthenticatedUser(admin);
+        
+        sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocInstance.getId()), Status.STATUS_OK);
+
+        WorkflowInstance instance = workflowService.getWorkflowById(adhocInstance.getId());
+        if (instance != null)
+        {
+            assertFalse("The deleted workflow is still active!", instance.isActive());
+        }
+        
+        List<WorkflowInstance> instances = workflowService.getActiveWorkflows(adhocInstance.getDefinition().getId());
+        for (WorkflowInstance activeInstance : instances)
+        {
+            assertFalse(adhocInstance.getId().equals(activeInstance.getId()));
+        }
+    }
+    
     public void testWorkflowInstanceDelete() throws Exception
     {
         //Start workflow as USER1 and assign task to USER2.

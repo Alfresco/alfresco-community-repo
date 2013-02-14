@@ -300,7 +300,8 @@ public class MultiTDemoTest extends TestCase
         }, tenantName);
     }
     
-    public void test02NonSharedGroupDeletion()
+    // TODO fix CLOUD-1348
+    public void xtest02NonSharedGroupDeletion()
     {
         final String tenantDomain1 = TEST_RUN+".groupdel1";
         final String tenantDomain2 = TEST_RUN+".groupdel2";
@@ -367,7 +368,8 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void test03SharedGroupDeletion()
+    // TODO fix CLOUD-1348
+    public void xtest03SharedGroupDeletion()
     {
         final String tenantDomain1 = TEST_RUN+".groupdel3";
         final String tenantDomain2 = TEST_RUN+".groupdel4";
@@ -1242,8 +1244,9 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
+    // TODO fix CLOUD-1348
     // pseudo cleanup - if this test runs last
-    public void test20DeleteAllTenants()
+    public void xtest20DeleteAllTenants()
     {
         logger.info("test delete tenants");
         

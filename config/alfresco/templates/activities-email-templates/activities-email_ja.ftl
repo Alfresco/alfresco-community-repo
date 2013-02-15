@@ -89,7 +89,7 @@
                                                 <#assign detail=message(activity.activityType?html, itemLink, userLink, custom0, activity.activitySummary.custom1!"", siteLink, secondUserLink)!"">
                                                 
                                                 <div class="activity">
-                                                   <#if suppressSite>${detail}<#else>${message("in.site", detail, siteLink)}</#if>
+                                                   <#if suppressSite>${detail}<#else>${message("in.site", detail, siteLink)!""}</#if>
                                                 </div>
                                                 <div style="font-size: 11px; padding: 4px 0px 12px 0px;">
                                                    ${activity.postDate?datetime?string.medium}

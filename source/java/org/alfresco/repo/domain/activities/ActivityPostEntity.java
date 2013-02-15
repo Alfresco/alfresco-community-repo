@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.activities;
 
 import java.util.Date;
 
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
   
 /**
@@ -41,7 +42,7 @@ public class ActivityPostEntity
     private Date lastModified; // for debug
     
     // derived
-    private String tenantDomain;
+    private String tenantDomain = TenantService.DEFAULT_DOMAIN;
     private NodeRef parentNodeRef;
     
     // for selector

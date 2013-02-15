@@ -13,6 +13,13 @@
       on from the web browser. You do not have to use LDAP authentication to synchronise groups and users from an LDAP
       store if it supports other authentication routes, like Active Directory.
    -->
+   
+   <bean id="monitor" class="org.alfresco.repo.security.authentication.ldap.Monitor" >
+      <property name="LDAPAuthenticationComponent">
+           <ref bean="authenticationComponent" />
+      </property>
+   </bean>
+   
 
    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ldap.LDAPAuthenticationComponentImpl"
       parent="authenticationComponentBase">

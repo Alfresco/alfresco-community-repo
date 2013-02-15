@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.module;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.module.ModuleComponent;
 
@@ -46,6 +47,13 @@ public interface ModuleService
      * @return  module details of the currently installed modules.
      */
     List<ModuleDetails> getAllModules();
+    
+    /**
+     * Gets a list of the modules missing from the system.
+     * 
+     * @return  module details of the modules missing from the system.
+     */
+    List<ModuleDetails> getMissingModules();
     
     /**
      * Register a component of a module for execution.

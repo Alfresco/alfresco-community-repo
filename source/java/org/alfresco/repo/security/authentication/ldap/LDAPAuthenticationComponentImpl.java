@@ -23,6 +23,7 @@ import javax.naming.directory.InitialDirContext;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationDiagnostic;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.sync.ldap.LDAPNameResolver;
 import org.springframework.beans.factory.InitializingBean;
@@ -109,17 +110,35 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
      */
     protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
-        // If we aren't using a fixed name format, do a search to resolve the user DN
-        String userDN = userNameFormat == null ? ldapNameResolver.resolveDistinguishedName(userName) : String.format(
-                userNameFormat, new Object[]
-                {
-                    escapeUserName(userName, escapeCommasInBind)
-                });
+        // Distinguished name of user.
+        String userDN;
+        
+        AuthenticationDiagnostic diagnostic = new AuthenticationDiagnostic();
+        
+        if(userNameFormat == null)
+        {
+            // If we aren't using a fixed name format, do a search to resolve the user DN
+            userDN = ldapNameResolver.resolveDistinguishedName(userName, diagnostic);
+            
+            Object[] params = {userName, userDN};
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_LOOKEDUP_USER, true, params);
+        }
+        else
+        {
+            // we are using a fixed name format, 
+            userDN = String.format(
+                    userNameFormat, new Object[]
+                    {
+                        escapeUserName(userName, escapeCommasInBind)
+                    });
+            Object[] params = {userName, userDN, userNameFormat};
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_FORMAT_USER, true, params);
+        }
 
         InitialDirContext ctx = null;
         try
         {
-            ctx = ldapInitialContextFactory.getInitialDirContext(userDN, new String(password));
+            ctx = ldapInitialContextFactory.getInitialDirContext(userDN, new String(password), diagnostic);
 
             // Authentication has been successful.
             // Set the current user, they are now authenticated.

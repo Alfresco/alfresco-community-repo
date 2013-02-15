@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.naming.AuthenticationNotSupportedException;
+import javax.naming.CommunicationException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -40,6 +41,7 @@ import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
 
+import org.alfresco.repo.security.authentication.AuthenticationDiagnostic;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
@@ -84,19 +86,38 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     public InitialDirContext getDefaultIntialDirContext() throws AuthenticationException
     {
-        return getDefaultIntialDirContext(0);
+        return getDefaultIntialDirContext(0, new AuthenticationDiagnostic());
+    }
+    
+    public InitialDirContext getDefaultIntialDirContext(int pageSize) throws AuthenticationException
+    {
+        return getDefaultIntialDirContext(pageSize, new AuthenticationDiagnostic());
+    }
+    
+    @Override
+    public InitialDirContext getDefaultIntialDirContext(
+            AuthenticationDiagnostic diagnostic) throws AuthenticationException
+    {
+        return getDefaultIntialDirContext(0, diagnostic);
     }
 
-    public InitialDirContext getDefaultIntialDirContext(int pageSize) throws AuthenticationException
+    public InitialDirContext getDefaultIntialDirContext(int pageSize, AuthenticationDiagnostic diagnostic) throws AuthenticationException
     {
         Hashtable<String, String> env = new Hashtable<String, String>(defaultEnvironment.size());
         env.putAll(defaultEnvironment);
-        return buildInitialDirContext(env, pageSize);
+        return buildInitialDirContext(env, pageSize, diagnostic);
     }
 
-    private InitialDirContext buildInitialDirContext(Hashtable<String, String> env, int pageSize)
+    private InitialDirContext buildInitialDirContext(Hashtable<String, String> env, int pageSize, AuthenticationDiagnostic diagnostic)
             throws AuthenticationException
     {
+        String securityPrincipal = env.get(Context.SECURITY_PRINCIPAL);
+        String providerURL = env.get(Context.PROVIDER_URL);
+
+        if(diagnostic == null)
+        {
+            diagnostic = new AuthenticationDiagnostic();
+        }
         try
         {
             // If a page size has been requested, use LDAP v3 paging
@@ -111,20 +132,71 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             }
             else
             {
-                return new InitialDirContext(env);
+                InitialDirContext ret = new InitialDirContext(env);
+                Object[] args = {providerURL, securityPrincipal};
+                diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_CONNECTED, true, args);
+                return ret;
             }
         }
         catch (javax.naming.AuthenticationException ax)
         {
-            throw new AuthenticationException("LDAP authentication failed.", ax);
+            Object[] args1 = {securityPrincipal};
+            Object[] args = {providerURL, securityPrincipal};
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_CONNECTED, true, args);
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_AUTHENTICATION, false, args1);
+            
+            // wrong user/password - if we get this far the connection is O.K
+            Object[] args2 = {securityPrincipal, ax.getLocalizedMessage()};
+            throw new AuthenticationException("authentication.err.authentication", diagnostic, args2, ax);
+        }
+        catch (CommunicationException ce)
+        {
+            Object[] args1 = {providerURL};
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_CONNECTING, false, args1);
+
+            StringBuffer message = new StringBuffer();
+            
+            message.append(ce.getClass().getName() + ", " + ce.getMessage());
+            
+            Throwable cause = ce.getCause();
+            while (cause != null)
+            {
+                message.append(", ");
+                message.append(cause.getClass().getName() + ", " + cause.getMessage());
+                cause = cause.getCause();
+            }
+            
+            // failed to connect
+            Object[] args = {providerURL, message.toString()};
+            throw new AuthenticationException("authentication.err.communication", diagnostic, args, cause);
         }
         catch (NamingException nx)
         {
-            throw new AuthenticationException("Unable to connect to LDAP Server; check LDAP configuration", nx);
+            Object[] args = {providerURL};
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_CONNECTING, false, args);
+            
+            StringBuffer message = new StringBuffer();
+            
+            message.append(nx.getClass().getName() + ", " + nx.getMessage());
+            
+            Throwable cause = nx.getCause();
+            while (cause != null)
+            {
+                message.append(", ");
+                message.append(cause.getClass().getName() + ", " + cause.getMessage());
+                cause = cause.getCause();
+            }
+           
+            // failed to connect
+            Object[] args1 = {providerURL, message.toString()};
+            throw new AuthenticationException("authentication.err.connection", diagnostic, args1, nx);
         }
         catch (IOException e)
         {
-            throw new AuthenticationException("Unable to encode LDAP v3 request controls; check LDAP configuration", e);
+            Object[] args = {providerURL, securityPrincipal};
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_CONNECTED, true, args);
+            
+            throw new AuthenticationException("Unable to encode LDAP v3 request controls", e);
         }
     }
 
@@ -171,36 +243,58 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         }
         return false;
     }
-
-    public InitialDirContext getInitialDirContext(String principal, String credentials) throws AuthenticationException
+    
+    @Override
+    public InitialDirContext getInitialDirContext(String principal,
+            String credentials)
+            throws AuthenticationException
     {
+        return getInitialDirContext(principal, credentials, null);
+    }
+
+    public InitialDirContext getInitialDirContext(String principal, String credentials, AuthenticationDiagnostic diagnostic) throws AuthenticationException
+    {
+        if(diagnostic == null)
+        {
+            diagnostic = new AuthenticationDiagnostic();
+        }
+        
         if (principal == null)
         {
-            throw new AuthenticationException("Null user name provided.");
+            // failed before we tried to do anything
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION, false, null);
+            throw new AuthenticationException("Null user name provided.", diagnostic);
         }
 
         if (principal.length() == 0)
         {
-            throw new AuthenticationException("Empty user name provided.");
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION, false, null);
+            throw new AuthenticationException("Empty user name provided.", diagnostic);
         }
 
         if (credentials == null)
         {
-            throw new AuthenticationException("No credentials provided.");
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION, false, null);
+            throw new AuthenticationException("No credentials provided.", diagnostic);
         }
 
         if (credentials.length() == 0)
         {
-            throw new AuthenticationException("Empty credentials provided.");
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION, false, null);
+            throw new AuthenticationException("Empty credentials provided.", diagnostic);
         }
+        
+        diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION, true, null);
 
         Hashtable<String, String> env = new Hashtable<String, String>(authenticatedEnvironment.size());
         env.putAll(authenticatedEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, principal);
         env.put(Context.SECURITY_CREDENTIALS, credentials);
 
-        return buildInitialDirContext(env, 0);
+        return buildInitialDirContext(env, 0, diagnostic);
     }
+    
+
 
     public static void main(String[] args)
     {
@@ -291,6 +385,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     public void afterPropertiesSet() throws Exception
     {
+        logger.debug("after Properties Set");
         // Check Anonymous bind
 
         Hashtable<String, String> env = new Hashtable<String, String>(authenticatedEnvironment.size());
@@ -417,4 +512,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             }
         }
     }
+
+
+
+
 }

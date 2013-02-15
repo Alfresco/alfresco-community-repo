@@ -92,4 +92,25 @@ public class SubsystemChainingAuthenticationComponent extends AbstractChainingAu
         }
         return result;
     }
+
+    @Override
+    protected AuthenticationComponent getAuthenticationComponent(String instanceId)
+    {
+        ApplicationContext context = this.applicationContextManager.getApplicationContext(instanceId);
+        if(context != null)
+        {
+            try
+            {
+                AuthenticationComponent authenticationComponent = (AuthenticationComponent) context
+                    .getBean(sourceBeanName);
+                return authenticationComponent;
+            }
+            catch (NoSuchBeanDefinitionException e)
+            {
+                return null;
+            }
+        }
+     
+        return null;
+    }
 }

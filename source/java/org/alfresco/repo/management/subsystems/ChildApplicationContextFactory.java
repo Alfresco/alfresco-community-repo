@@ -383,6 +383,26 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             super.destroy(permanent);            
         }
     }
+    
+    
+    /**
+     * Gets the application context.   Will not start a subsystem.
+     * 
+     * @return the application context or null
+     */
+    public ApplicationContext getReadOnlyApplicationContext()
+    {
+        this.lock.readLock().lock();
+        try
+        {
+            return ((ApplicationContextState) getState(false)).getApplicationContext();
+        }
+        finally
+        {
+            this.lock.readLock().unlock();
+        }  
+        
+    }
 
     /*
      * (non-Javadoc)
@@ -768,6 +788,16 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                     }
                 }
             }
+        }
+        
+        /**
+         * Gets the application context.   Will not start a subsystem.
+         * 
+         * @return the application context or null
+         */
+        public ApplicationContext getReadOnlyApplicationContext()
+        {
+            return this.applicationContext;
         }
 
         /**

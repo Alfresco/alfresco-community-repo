@@ -56,6 +56,7 @@ import javax.naming.ldap.LdapName;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.security.authentication.AuthenticationDiagnostic;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.ldap.LDAPInitialDirContextFactory;
 import org.alfresco.repo.security.sync.NodeDescription;
@@ -920,8 +921,12 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      * (non-Javadoc)
      * @see org.alfresco.repo.security.sync.ldap.LDAPNameResolver#resolveDistinguishedName(java.lang.String)
      */
-    public String resolveDistinguishedName(String userId) throws AuthenticationException
+    public String resolveDistinguishedName(String userId, AuthenticationDiagnostic diagnostic) throws AuthenticationException
     {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("resolveDistinguishedName userId:" + userId);
+        }
         SearchControls userSearchCtls = new SearchControls();
         userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
@@ -930,14 +935,19 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         {
             this.userIdAttributeName
         });
+        
+        String query = this.userSearchBase + "(&" + this.personQuery
+        + "(" + this.userIdAttributeName + "= userId))"; 
+ 
 
         InitialDirContext ctx = null;
         try
         {
-            ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext();
+            ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext(diagnostic);
 
             // Execute the user query with an additional condition that ensures only the user with the required ID is
-            // returned. Force RFC 2254 escaping of the user ID in the filter to avoid any manipulation
+            // returned. Force RFC 2254 escaping of the user ID in the filter to avoid any manipulation            
+            
             NamingEnumeration<SearchResult> searchResults = ctx.search(this.userSearchBase, "(&" + this.personQuery
                     + "(" + this.userIdAttributeName + "={0}))", new Object[]
             {
@@ -948,11 +958,22 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             {
                 return searchResults.next().getNameInNamespace();
             }
-            throw new AuthenticationException("Failed to resolve user: " + userId);
+            
+            Object[] args = {userId, query};
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_LOOKUP_USER, false, args);
+            
+            throw new AuthenticationException("authentication.err.connection.ldap.user.notfound", args, diagnostic);
         }
         catch (NamingException e)
         {
-            throw new AlfrescoRuntimeException("Failed to resolve user ID: " + userId, e);
+            // Connection is good here - AuthenticationException would be thrown by ldapInitialContextFactory
+            
+            Object[] args1 = {userId, query};
+            diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_SEARCH, false, args1);
+            
+            // failed to search
+            Object[] args = {e.getLocalizedMessage()};
+            throw new AuthenticationException("authentication.err.connection.ldap.search", diagnostic, args, e);
         }
         finally
         {
@@ -964,6 +985,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 }
                 catch (NamingException e)
                 {
+                    logger.debug("error when closing ldap context", e);
                 }
             }
         }

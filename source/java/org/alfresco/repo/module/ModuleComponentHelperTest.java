@@ -247,6 +247,24 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public List<ModuleDetails> getMissingModules()
+        {
+            // Create some module details
+            List<ModuleDetails> details = new ArrayList<ModuleDetails>(3);
+            for (int i = 0; i < 3; i++)
+            {
+                ModuleDetails moduleDetails = new ModuleDetailsImpl(
+                        MODULE_IDS[i],
+                        currentVersion,
+                        "Module-" + i,
+                        "Description-" + i);
+                details.add(moduleDetails);
+            }
+            // Done
+            return details; 
+        }
     }
     
     /** Keep track of the execution count */

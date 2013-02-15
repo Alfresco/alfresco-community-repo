@@ -43,7 +43,7 @@ public interface ChildApplicationContextManager
      * 
      * @param id
      *            the identifier of the application context to retrieve
-     * @return the application context with the given identifier
+     * @return the application context with the given identifier or null if it does not exist
      */
     public ApplicationContext getApplicationContext(String id);
 }

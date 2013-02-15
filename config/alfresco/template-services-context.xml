@@ -174,4 +174,10 @@
         </property>
     </bean>
     
+    <bean id="urlDecodeMethodExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.URLDecodeMethod">
+        <property name="extensionName">
+            <value>urldecode</value>
+        </property>
+    </bean>
+    
 </beans>

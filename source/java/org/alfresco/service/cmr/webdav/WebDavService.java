@@ -37,4 +37,10 @@ public interface WebDavService
      * @return true if activity generation is enabled.
      */
     public boolean activitiesEnabled();
+    
+    /**
+     * Is the web dav service enabled?
+     * @return true, is enabled
+     */
+    public boolean getEnabled();
 }

@@ -27,8 +27,8 @@ import net.sf.acegisecurity.Authentication;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 
 /**
- * A chaining authentication component is required for all the beans that qire up an authentication component and not an
- * authentication service. It supports chaining in much the same way and wires up components in the same way asthe
+ * A chaining authentication component is required for all the beans that wire up an authentication component and not an
+ * authentication service. It supports chaining in much the same way and wires up components in the same way as the
  * chaining authentication service wires up services.
  * 
  * @author andyh
@@ -305,5 +305,12 @@ public class ChainingAuthenticationComponentImpl extends AbstractChainingAuthent
             }
             return services;
         }
+    }
+
+    @Override
+    protected AuthenticationComponent getAuthenticationComponent(String name)
+    {
+        // not implemented
+        return null;
     }
 }

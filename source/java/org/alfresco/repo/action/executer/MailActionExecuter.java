@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -87,7 +88,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public static final String PARAM_TEMPLATE_MODEL = "template_model";
     public static final String PARAM_IGNORE_SEND_FAILURE = "ignore_send_failure";
     public static final String PARAM_SEND_AFTER_COMMIT = "send_after_commit";
-       
+   
     /**
      * From address
      */
@@ -96,7 +97,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     /**
      * The java mail sender
      */
-    private JavaMailSender javaMailSender;
+    private JavaMailSender mailService;
     
     /**
      * The Template service
@@ -169,7 +170,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     public void setMailService(JavaMailSender javaMailSender) 
     {
-        this.javaMailSender = javaMailSender;
+        this.mailService = javaMailSender;
     }
     
     /**
@@ -261,11 +262,57 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.sendTestMessage = sendTestMessage;
     }
+    
+    /**
+     * Send a test message
+     * 
+     * @return true, message sent 
+     * @throws AlfrescoRuntimeException 
+     */
+    public boolean sendTestMessage() 
+    {
+        Map<String, Serializable> params = new HashMap<String, Serializable>();
+        params.put(PARAM_TO, testMessageTo);
+        params.put(PARAM_SUBJECT, testMessageSubject);
+        params.put(PARAM_TEXT, testMessageText);
+        
+        Action ruleAction = serviceRegistry.getActionService().createAction(NAME, params);
+        
+        MimeMessageHelper message = prepareEmail(ruleAction, null);
+        try
+        {
+            mailService.send(message.getMimeMessage());
+            onSend();
+        }
+        catch (MailException me)
+        {
+            onFail();
+            StringBuffer txt = new StringBuffer();
+            
+            txt.append(me.getClass().getName() + ", " + me.getMessage());
+            
+            Throwable cause = me.getCause();
+            while (cause != null)
+            {
+                txt.append(", ");
+                txt.append(cause.getClass().getName() + ", " + cause.getMessage());
+                cause = cause.getCause();
+            }
+            
+            Object[] args = {testMessageTo, txt.toString()};
+            throw new AlfrescoRuntimeException("email.outbound.err.send.failed", args, me);
+        }
+        
+        return true;
+    }
 
     
     @Override
     public void init()
     {
+        numberSuccessfulSends.set(0);
+        numberFailedSends.set(0);
+        
         super.init();
         if (sendTestMessage)
         {
@@ -323,7 +370,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         {
                         	if (finalMessage != null)
                             {
-                                   sendEmail(ruleAction, actionedUponNodeRef, finalMessage);
+                                   sendEmail(ruleAction,  finalMessage);
                             }
                             return null;
                         }
@@ -335,7 +382,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         {
             if (validNodeRefIfPresent(actionedUponNodeRef))
             {
-                sendEmail(ruleAction, actionedUponNodeRef, finalMessage);
+                sendEmail(ruleAction, finalMessage);
             }
         }
     }
@@ -363,7 +410,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return sendAfterCommit == null ? false : sendAfterCommit.booleanValue();
     }
     
-    public MimeMessageHelper prepareEmail(final Action ruleAction, final NodeRef actionedUponNodeRef)
+    public MimeMessageHelper prepareEmail(final Action ruleAction , final NodeRef actionedUponNodeRef)
     {
         // Create the mime mail message.
         // Hack: using an array here to get around the fact that inner classes aren't closures.
@@ -604,7 +651,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 
             }
         };
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage(); 
+        MimeMessage mimeMessage = mailService.createMimeMessage(); 
         try
         {
             mailPreparer.prepare(mimeMessage);
@@ -620,7 +667,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return messageRef[0];
     }
     
-    private void sendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef, MimeMessageHelper preparedMessage)
+    private void sendEmail(final Action ruleAction, MimeMessageHelper preparedMessage)
     {
         try
         {
@@ -629,7 +676,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             {
                 if (!testMode)
                 {
-                    javaMailSender.send(preparedMessage.getMimeMessage());
+                    mailService.send(preparedMessage.getMimeMessage());
+                    onSend();
                 }
                 else
                 {
@@ -639,6 +687,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
         catch (MailException e)
         {
+            onFail();
             String to = (String)ruleAction.getParameterValue(PARAM_TO);
             if (to == null)
             {
@@ -656,7 +705,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             Boolean ignoreError = (Boolean)ruleAction.getParameterValue(PARAM_IGNORE_SEND_FAILURE);
             if (ignoreError == null || ignoreError.booleanValue() == false)
             {
-                throw new AlfrescoRuntimeException("Failed to send email to:" + to, e);
+                Object[] args = {to, e.toString()};
+                throw new AlfrescoRuntimeException("email.outbound.err.send.failed", args, e);
             }   
         }
     }
@@ -814,5 +864,27 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             return sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":"
                     + sysAdminParams.getAlfrescoPort();
         }
+    }
+    
+    static AtomicInteger numberSuccessfulSends = new AtomicInteger(0);
+    static AtomicInteger numberFailedSends = new AtomicInteger(0);
+    protected void onSend()
+    {
+        numberSuccessfulSends.getAndIncrement();
+    }
+    
+    protected void onFail()
+    {
+        numberFailedSends.getAndIncrement();
+    }
+    
+    public int getNumberSuccessfulSends()
+    {
+        return numberSuccessfulSends.get();
+    }
+        
+    public int getNumberFailedSends()
+    {   
+        return numberFailedSends.get();
     }
 }

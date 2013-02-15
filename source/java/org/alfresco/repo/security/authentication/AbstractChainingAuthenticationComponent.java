@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.alfresco.repo.management.subsystems.ActivateableBean;
+
 import net.sf.acegisecurity.Authentication;
 
 /**
@@ -40,6 +42,13 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
     {
         super();
     }
+    
+    /**
+     * Get the authentication component with the specified name
+     * @param name
+     * @return the authentication component or null if it does not exist
+     */
+    protected abstract AuthenticationComponent getAuthenticationComponent(String name);
 
     /**
      * Gets the authentication components across which methods will chain.
@@ -55,6 +64,8 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
      *            the user name
      * @param password
      *            the password
+     *            
+     * @throws AuthenticationException           
      */
     @Override
     protected void authenticateImpl(String userName, char[] password)
@@ -72,6 +83,44 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
             }
         }
         throw new AuthenticationException("Failed to authenticate");
+    }
+    
+    /**
+     * Test authenticate with a specific authenticator and user name and password.
+     * 
+     * @param authenticatorName
+     *            the name of the authenticator to use
+     * @param userName
+     *            the user name
+     * @param password
+     *            the password
+     * @throws AuthenticationException including diagnostic information about the failure          
+     */
+    public void testAuthenticate(String authenticatorName, String userName, char[] password)
+    {
+        
+        AuthenticationComponent authenticationComponent = getAuthenticationComponent(authenticatorName);
+        if(authenticationComponent != null)
+        {
+            if (authenticationComponent instanceof ActivateableBean)
+            {
+                if(!((ActivateableBean) authenticationComponent).isActive())
+                {
+                    AuthenticationDiagnostic diagnostic = new AuthenticationDiagnostic();
+                    Object[] args = {authenticatorName};
+                    diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION_AUTHENTICATOR_NOT_ACTIVE, false, args);
+                    throw new AuthenticationException("authentication.err.validation.authenticator.notactive", args , diagnostic);
+                }
+            }
+            
+            authenticationComponent.authenticate(userName, password);
+            return;
+        }
+
+        AuthenticationDiagnostic diagnostic = new AuthenticationDiagnostic();
+        Object[] args = {authenticatorName};
+        diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION_AUTHENTICATOR_NOT_FOUND, false, args);
+        throw new AuthenticationException("authentication.err.validation.authenticator.notfound", args , diagnostic);
     }
 
     /**

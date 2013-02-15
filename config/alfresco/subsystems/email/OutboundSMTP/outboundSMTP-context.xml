@@ -89,4 +89,10 @@
             <value>${mail.testmessage.text}</value>
         </property>
 	</bean>
+	
+	<bean id="monitor" class="org.alfresco.repo.action.executer.MailActionExecuterMonitor" >
+        <property name="mailActionExecuter">
+            <ref bean="mail"></ref>
+        </property>
+    </bean>
 </beans>

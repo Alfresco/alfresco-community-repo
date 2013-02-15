@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.security.sync.ldap;
 
+import org.alfresco.repo.security.authentication.AuthenticationDiagnostic;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 
 /**
@@ -37,5 +38,5 @@ public interface LDAPNameResolver
      * @throws AuthenticationException
      *             if the user ID cannot be resolved
      */
-    public String resolveDistinguishedName(String userId) throws AuthenticationException;
+    public String resolveDistinguishedName(String userId, AuthenticationDiagnostic diagnostic) throws AuthenticationException;
 }

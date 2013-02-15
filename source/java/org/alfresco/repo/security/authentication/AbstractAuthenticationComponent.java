@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
@@ -160,9 +161,11 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             try
             {
                 authenticateImpl(userName, password);
+                onAuthenticate();
             }
             catch (RuntimeException e)
             {
+                onFail();
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Failed to authenticate user \"" + userName + '"', e);
@@ -660,5 +663,27 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     public Authentication setUserDetails(UserDetails ud)
     {
         return authenticationContext.setUserDetails(ud);
+    }
+    
+    AtomicInteger numberSuccessfulAuthentications = new AtomicInteger(0);
+    AtomicInteger numberFailedAuthentications = new AtomicInteger(0);
+    protected void onAuthenticate()
+    {
+        numberSuccessfulAuthentications.getAndIncrement();
+    }
+    
+    protected void onFail()
+    {
+        numberFailedAuthentications.getAndIncrement();
+    }
+    
+    public int getNumberSuccessfulAuthentications()
+    {
+        return numberSuccessfulAuthentications.get();
+    }
+        
+    public int getNumberFailedAuthentications()
+    {   
+        return numberFailedAuthentications.get();
     }
 }

@@ -346,6 +346,36 @@ public class ModuleComponentHelper
             throw AlfrescoRuntimeException.create(ERR_ORPHANED_COMPONENTS, missedComponents.size());
         }
     }
+
+    /**
+     * Gets a list of all registered modules.
+     * 
+     * @return A Collection of module IDs
+     */
+    Collection<String> getRegistryModuleIDs()
+    {
+        // Get the IDs of all modules from the registry
+        RegistryKey moduleKeyAllIds = new RegistryKey(
+                ModuleComponentHelper.URI_MODULES_1_0,
+                REGISTRY_PATH_MODULES, null);
+        
+        return registryService.getChildElements(moduleKeyAllIds);
+    }
+    
+    /**
+     * Returns the version number of a module from the Registry.
+     * 
+     * @param moduleId
+     * @return
+     */
+    VersionNumber getVersion(String moduleId)
+    {
+        RegistryKey moduleKeyCurrentVersion = new RegistryKey(
+                ModuleComponentHelper.URI_MODULES_1_0,
+                REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION);
+        VersionNumber versionCurrent = (VersionNumber) registryService.getProperty(moduleKeyCurrentVersion);
+        return versionCurrent;
+    }
     
     /**
      * Checks to see if there are any modules registered as installed that aren't in the
@@ -356,10 +386,7 @@ public class ModuleComponentHelper
     private void checkForMissingModules()
     {
         // Get the IDs of all modules from the registry
-        RegistryKey moduleKeyAllIds = new RegistryKey(
-                ModuleComponentHelper.URI_MODULES_1_0,
-                REGISTRY_PATH_MODULES, null);
-        Collection<String> moduleIds = registryService.getChildElements(moduleKeyAllIds);
+        Collection<String> moduleIds = getRegistryModuleIDs();
         
         // Check that each module is present in the distribution
         for (String moduleId : moduleIds)
@@ -375,10 +402,8 @@ public class ModuleComponentHelper
             else
             {
                 // Get the specifics of the missing module
-                RegistryKey moduleKeyCurrentVersion = new RegistryKey(
-                        ModuleComponentHelper.URI_MODULES_1_0,
-                        REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION);
-                VersionNumber versionCurrent = (VersionNumber) registryService.getProperty(moduleKeyCurrentVersion);
+                
+                VersionNumber versionCurrent = getVersion(moduleId);
                 // The module is missing, so warn
                 loggerService.warn(I18NUtil.getMessage(MSG_MISSING, moduleId, versionCurrent));
             }

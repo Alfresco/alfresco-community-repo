@@ -456,6 +456,7 @@
                 <value>alfresco.messages.subscription-service</value>
                 <value>alfresco.messages.replication</value>
                 <value>alfresco.messages.categories</value>
+                <value>alfresco.messages.authentication</value>
             </list>
         </property>
     </bean>

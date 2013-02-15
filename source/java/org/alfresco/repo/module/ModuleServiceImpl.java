@@ -27,14 +27,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.admin.registry.RegistryKey;
 import org.alfresco.repo.admin.registry.RegistryService;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -43,6 +46,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * This component controls the execution of
@@ -159,6 +163,35 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
         // Make a copy to avoid modification of cached data by clients (and to satisfy API)
         List<ModuleDetails> result = new ArrayList<ModuleDetails>(moduleDetails);
         // Done
+        return result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public List<ModuleDetails> getMissingModules()
+    {
+        cacheModuleDetails();
+        
+        // Get the IDs of all modules from the registry
+        Collection<String> moduleIds = moduleComponentHelper.getRegistryModuleIDs();
+        
+        List<ModuleDetails> result = new ArrayList<ModuleDetails>();
+        
+        //Check for missing modules
+        for (String moduleId : moduleIds)
+        {
+            ModuleDetails moduleDetails = getModule(moduleId);
+            if (moduleDetails == null)
+            {
+                // Get the specifics of the missing module and add them to the list.
+                VersionNumber currentVersion = moduleComponentHelper.getVersion(moduleId);
+                
+                ModuleDetails newModuleDetails = new ModuleDetailsImpl(moduleId, currentVersion, "", "");
+                
+                result.add(newModuleDetails);
+            }
+        }
         return result;
     }
 

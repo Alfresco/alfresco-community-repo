@@ -40,6 +40,7 @@ public class AppleIWorksContentTransformerTest extends AbstractContentTransforme
         
         // Ugly cast just to set the MimetypeService
         ((ContentTransformerHelper)transformer).setMimetypeService(mimetypeService);
+        ((ContentTransformerHelper)transformer).setTransformerConfig(transformerConfig);
     }
     
     @Override

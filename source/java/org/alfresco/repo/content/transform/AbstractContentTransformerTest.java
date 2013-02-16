@@ -70,6 +70,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
     protected ServiceRegistry serviceRegistry;
     protected MimetypeService mimetypeService;
     protected TransformerDebug transformerDebug;
+    protected TransformerConfig transformerConfig;
 
     /**
      * Fetches a transformer to test for a given transformation.  The transformer
@@ -97,6 +98,8 @@ public abstract class AbstractContentTransformerTest extends TestCase
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         mimetypeService = serviceRegistry.getMimetypeService();
         transformerDebug = (TransformerDebug) ctx.getBean("transformerDebug");
+        transformerConfig = (TransformerConfig) ctx.getBean("transformerConfig");
+
         // perform a little cleaning up
         long now = System.currentTimeMillis();
         TempFileProvider.TempFileCleanerJob.removeFiles(now);

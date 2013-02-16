@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+   <bean id="transformerConfig" class="org.alfresco.repo.content.transform.TransformerConfigImpl"
+      init-method="initialise">
+      <property name="mimetypeService">
+         <ref bean="mimetypeService"/>
+      </property>
+   </bean>
+
+   <!-- Selects the transformer to be used -->
+   <bean id="transformerSelector" class="org.alfresco.repo.content.transform.TransformerSelectorImpl" >
+      <property name="transformerConfig">
+         <ref bean="transformerConfig" />
+      </property>
+      <property name="contentTransformerRegistry">
+         <ref bean="contentTransformerRegistry" />
+      </property>
+   </bean>
+
+</beans>

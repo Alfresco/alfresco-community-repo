@@ -57,6 +57,7 @@ public class FailoverContentTransformerTest extends AbstractContentTransformerTe
         transformer = (FailoverContentTransformer) failoverAppContext.getBean("transformer.failover.Test-FailThenSucceed");
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
     
     /**

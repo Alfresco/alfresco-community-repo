@@ -50,6 +50,7 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
         transformer = new ProxyContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
         transformer.setWorker(this.worker);
     }
     

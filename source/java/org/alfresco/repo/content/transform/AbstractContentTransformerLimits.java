@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,14 +18,22 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_MAX_PAGES;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_MAX_SOURCE_SIZE_K_BYTES;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_PAGE_LIMIT;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_READ_LIMIT_K_BYTES;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_READ_LIMIT_TIME_MS;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_TIMEOUT_MS;
+
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Provides transformation limits for {@link org.alfresco.repo.content.transform.ContentTransformer}
@@ -38,25 +46,13 @@ import org.springframework.beans.factory.BeanNameAware;
  * 
  * @author Alan Davis
  */
-public abstract class AbstractContentTransformerLimits extends ContentTransformerHelper implements ContentTransformer, BeanNameAware
+public abstract class AbstractContentTransformerLimits extends ContentTransformerHelper implements ContentTransformer
 {
-    /** Transformer wide Time, KBytes and page limits */
-    private TransformationOptionLimits limits = new TransformationOptionLimits();
-
-    /**
-     * Time, KBytes and page limits by source and target mimetype combination.
-     * The first map's key is the source mimetype. The second map's key is the
-     * target mimetype and the value are the limits. */
-    private Map<String, Map<String, TransformationOptionLimits>> mimetypeLimits;
-    
     /** Indicates if 'page' limits are supported. */
     private boolean pageLimitsSupported;
     
     /** For debug **/
     protected TransformerDebug transformerDebug;
-
-    /** The bean name. Used in debug only. */
-    private String beanName;
 
     /**
      * Indicates if 'page' limits are supported.
@@ -172,21 +168,17 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     protected long getTimeoutMs()
     {
-        return limits.getTimeoutMs();
+        return getLimits().getTimeoutMs();
     }
 
     /**
-     * Sets a timeout (ms) on the InputStream after which an IOExecption is thrown
-     * to terminate very slow transformations or to terminate (kill) a subprocess.
-     * @param timeoutMs in milliseconds. If less than or equal to zero (the default)
-     *                  there is no timeout.
-     *                  If greater than zero the {@code readLimitTimeMs} must not be set.
+     * @deprecated transformation limits are now set with global properties rather than spring configuration.
      */
     public void setTimeoutMs(long timeoutMs)
     {
-        limits.setTimeoutMs(timeoutMs);
+        deprecatedSetter(OPT_TIMEOUT_MS+'='+timeoutMs);
     }
-
+    
     /**
      * Gets the limit in terms of the amount of data read (by time) to limit transformations where
      * only the start of the content is needed. After this limit is reached the InputStream reports
@@ -195,19 +187,15 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     protected long getReadLimitTimeMs()
     {
-        return limits.getReadLimitTimeMs();
+        return getLimits().getReadLimitTimeMs();
     }
 
     /**
-     * Sets a limit in terms of the amount of data read (by time) to limit transformations where
-     * only the start of the content is needed. After this limit is reached the InputStream reports
-     * end of file.
-     * @param readLimitBytes if less than or equal to zero (the default) there is no limit.
-     *                       If greater than zero the {@code timeoutMs} must not be set.
+     * @deprecated transformation limits are now set with global properties rather than spring configuration.
      */
     public void setReadLimitTimeMs(long readLimitTimeMs)
     {
-        limits.setReadLimitTimeMs(readLimitTimeMs);
+        deprecatedSetter(OPT_READ_LIMIT_TIME_MS+'='+readLimitTimeMs);
     }
 
     /**
@@ -218,19 +206,15 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     protected long getMaxSourceSizeKBytes()
     {
-        return limits.getMaxSourceSizeKBytes();
+        return getLimits().getMaxSourceSizeKBytes();
     }
 
     /**
-     * Sets a maximum source content size, to skip transformations where
-     * the source is just too large to expect it to perform. If the source is larger
-     * the transformer indicates it is not available.
-     * @param maxSourceSizeKBytes if less than or equal to zero (the default) there is no limit.
-     *                       If greater than zero the {@code readLimitKBytes} must not be set.
+     * @deprecated transformation limits are now set with global properties rather than spring configuration.
      */
     public void setMaxSourceSizeKBytes(long maxSourceSizeKBytes)
     {
-        limits.setMaxSourceSizeKBytes(maxSourceSizeKBytes);
+        deprecatedSetter(OPT_MAX_SOURCE_SIZE_K_BYTES+'='+maxSourceSizeKBytes);
     }
 
     /**
@@ -241,19 +225,15 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     protected long getReadLimitKBytes()
     {
-        return limits.getReadLimitKBytes();
+        return getLimits().getReadLimitKBytes();
     }
 
     /**
-     * Sets a limit in terms of the about of data read to limit transformations where
-     * only the start of the content is needed. After this limit is reached the InputStream reports
-     * end of file.
-     * @param readLimitKBytes if less than or equal to zero (the default) there is no limit.
-     *                       If greater than zero the {@code maxSourceSizeKBytes} must not be set.
+     * @deprecated transformation limits are now set with global properties rather than spring configuration.
      */
     public void setReadLimitKBytes(long readLimitKBytes)
     {
-        limits.setReadLimitKBytes(readLimitKBytes);
+        deprecatedSetter(OPT_READ_LIMIT_K_BYTES+'='+readLimitKBytes);
     }
 
     /**
@@ -262,18 +242,15 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     protected int getMaxPages()
     {
-        return limits.getMaxPages();
+        return getLimits().getMaxPages();
     }
 
     /**
-     * Set the number of pages read from the source before an exception is thrown.
-     * 
-     * @param maxPages the number of pages to be read from the source. If less than or equal to zero
-     *        (the default) no limit is applied.
+     * @deprecated transformation limits are now set with global properties rather than spring configuration.
      */
     public void setMaxPages(int maxPages)
     {
-        limits.setMaxPages(maxPages);
+        deprecatedSetter(OPT_MAX_PAGES+'='+maxPages);
     }
 
     /**
@@ -282,18 +259,15 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     protected int getPageLimit()
     {
-        return limits.getPageLimit();
+        return getLimits().getPageLimit();
     }
 
     /**
-     * Set the number of pages read from the source before returning EOF.
-     * 
-     * @param pageLimit the number of pages to be read from the source. If less 
-     *        than or equal to zero (the default) no limit is applied.
+     * @deprecated transformation limits are now set with global properties rather than spring configuration.
      */
     public void setPageLimit(int pageLimit)
     {
-        limits.setPageLimit(pageLimit);
+        deprecatedSetter(OPT_PAGE_LIMIT+'='+pageLimit);
     }
 
     /**
@@ -301,33 +275,57 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
      */
     protected TransformationOptionLimits getLimits()
     {
-        return limits; 
+        return transformerConfig.getLimits(this, null, null);
     }
-
+    
     /**
-     * Sets max and limit values for time, size and pages in a single operation. 
+     * @deprecated transformation limits are now set with global properties rather than spring configuration.
      */
     public void setLimits(TransformationOptionLimits limits)
     {
-        this.limits = limits; 
+        deprecatedLimitsSetter("", limits);
     }
 
     /**
-     * Gets the max and limit values for time, size and pages per source and target mimetype
-     * combination.
-     */
-    protected Map<String, Map<String, TransformationOptionLimits>> getMimetypeLimits()
-    {
-        return mimetypeLimits;
-    }
-
-    /**
-     * Sets the max and limit values for time, size and pages per source and target mimetype
-     * combination.
+     * @deprecated transformation limits are now set with global properties rather than spring configuration.
      */
     public void setMimetypeLimits(Map<String, Map<String, TransformationOptionLimits>> mimetypeLimits)
     {
-        this.mimetypeLimits = mimetypeLimits;
+        for (Entry<String, Map<String, TransformationOptionLimits>> source: mimetypeLimits.entrySet())
+        {
+            String sourceExt = getExtensionOrAny(source.getKey());
+            for (Entry<String, TransformationOptionLimits> target: source.getValue().entrySet())
+            {
+                String targetExt = getExtensionOrAny(target.getKey());
+                TransformationOptionLimits limits = target.getValue();
+                String mimetypeSuffix = TransformerConfig.MIMETYPES_SEPARATOR.substring(1)+sourceExt+'.'+targetExt;
+
+                deprecatedLimitsSetter(mimetypeSuffix, limits);
+            }
+        }
+    }
+
+    private void deprecatedLimitsSetter(String mimetypeSuffix, TransformationOptionLimits limits)
+    {
+        if (limits.supported())
+        {
+            // Ignore limit pairs that are not specified
+            for (String limit: new String[] {
+                    limits.getTimePair().toString(OPT_TIMEOUT_MS, OPT_READ_LIMIT_TIME_MS),
+                    limits.getKBytesPair().toString(OPT_MAX_SOURCE_SIZE_K_BYTES, OPT_READ_LIMIT_K_BYTES),
+                    limits.getPagesPair().toString(OPT_MAX_PAGES, OPT_PAGE_LIMIT)
+                })
+            {
+                if (limit != null)
+                {
+                    deprecatedSetter(mimetypeSuffix+'.'+limit);
+                }
+            }
+        }
+        else
+        {
+            deprecatedSetter(mimetypeSuffix+TransformerConfig.SUPPORTED+"=false");
+        }
     }
 
     /**
@@ -339,7 +337,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
             TransformationOptions options)
     {
         return (reader == null || writer == null)
-            ? limits.combine(options.getLimits())
+            ? getLimits().combine(options.getLimits())
             : getLimits(reader.getMimetype(), writer.getMimetype(), options);
     }
 
@@ -351,63 +349,8 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     protected TransformationOptionLimits getLimits(String sourceMimetype, String targetMimetype,
             TransformationOptions options)
     {
-        // Get the limits for the source and target mimetypes
-        TransformationOptionLimits mimetypeLimits = null;
-        if (this.mimetypeLimits != null)
-        {
-            boolean anySource = false;
-            Map<String, TransformationOptionLimits> targetLimits =
-                this.mimetypeLimits.get(sourceMimetype);
-            if (targetLimits == null)
-            {
-                targetLimits = this.mimetypeLimits.get("*");
-                anySource = true;
-            }
-            if (targetLimits != null)
-            {
-                mimetypeLimits = targetLimits.get(targetMimetype);
-                if (mimetypeLimits == null)
-                {
-                    mimetypeLimits = targetLimits.get("*");
-                    
-                    // Allow for the case where have specific source and target mimetype limits
-                    // and general source limits (avoid having to repeat the general values in
-                    // each specific source definition)
-                    if (mimetypeLimits == null && !anySource)
-                    {
-                        targetLimits = this.mimetypeLimits.get("*");
-                        if (targetLimits != null)
-                        {
-                            mimetypeLimits = targetLimits.get(targetMimetype);
-                            if (mimetypeLimits == null)
-                            {
-                                mimetypeLimits = targetLimits.get("*");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    
-        TransformationOptionLimits combined = (mimetypeLimits == null) ? limits : limits.combine(mimetypeLimits);
-        return (options == null) ? combined : combined.combine(options.getLimits());
-    }
-
-    /**
-     * Sets the Spring bean name - only for use in debug.
-     */
-    @Override
-    public void setBeanName(String beanName)
-    {
-        this.beanName = beanName;
-    }
-
-    /**
-     * Returns the Spring bean name - only for use in debug.
-     */
-    public String getBeanName()
-    {
-        return beanName;
+        TransformationOptionLimits limits = transformerConfig.getLimits(this, sourceMimetype, targetMimetype);
+        return (options == null) ? limits : limits.combine(options.getLimits());
     }
 
     /**

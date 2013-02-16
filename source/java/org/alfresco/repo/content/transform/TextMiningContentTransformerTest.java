@@ -46,6 +46,7 @@ public class TextMiningContentTransformerTest extends AbstractContentTransformer
         transformer = new TextMiningContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
     
     /**

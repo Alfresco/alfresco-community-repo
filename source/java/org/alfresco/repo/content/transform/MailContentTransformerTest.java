@@ -45,6 +45,7 @@ public class MailContentTransformerTest extends AbstractContentTransformerTest
         transformer = new MailContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
     
     /**

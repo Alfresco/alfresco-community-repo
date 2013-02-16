@@ -37,7 +37,7 @@ import org.apache.commons.logging.LogFactory;
  * &ltbean id="mimetypeLimits.OpenOffice" class="org.alfresco.service.cmr.repository.TransformationOptionLimitsMap"&gt;
  *    &ltconstructor-arg&gt;
  *       &ltvalue&gt;
- *          *   txt TransformationOptionLimits ${content.transformer.OpenOffice.mimeTypeLimits.txt.pdf.maxSourceSizeKBytes} ;
+ *          *   txt maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.txt.pdf.maxSourceSizeKBytes} ;
  *          doc pdf maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.doc.pdf.maxSourceSizeKBytes}
  *       &lt/value&gt;
  *    &lt/constructor-arg&gt;

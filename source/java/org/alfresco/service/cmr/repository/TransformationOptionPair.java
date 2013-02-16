@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -104,12 +104,35 @@ public class TransformationOptionPair
         return minSet(getMax(), getLimit());
     }
 
+    /**
+     * Indicates if the limit allows a transformation to take place at all.
+     * If 0, it would not be possible.
+     * @return true if a transformation is possible.
+     */
+    public boolean supported()
+    {
+        return getValue() != 0;
+    }
+    
     public Action getAction()
     {
         return
             (getMax() >= 0) ? Action.THROW_EXCEPTION :
             (getLimit() >= 0) ? Action.RETURN_EOF
                         : null;
+    }
+    
+    public String toString(String max, String limit)
+    {
+        if (getMax() >= 0)
+        {
+            return max+'='+getValue();
+        }
+        if (getLimit() >= 0)
+        {
+            return limit+'='+getValue();
+        }
+        return null;
     }
     
     /**

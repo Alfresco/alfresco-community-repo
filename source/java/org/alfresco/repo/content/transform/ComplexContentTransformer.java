@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -267,7 +267,7 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
                     transformer = transformerIterator.next();
                     if (transformer != null)
                     {
-                        if (transformer.isTransformableMimetype(sourceMimetype, targetMimetype, options))
+                        if (transformer.isTransformable(sourceMimetype, -1, targetMimetype, options))
                         {
                             return false;
                         }
@@ -306,7 +306,7 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
             }
             else
             {
-                if (transformer.isTransformableMimetype(currentSourceMimetype, currentTargetMimetype, options) == false)
+                if (transformer.isTransformable(currentSourceMimetype, -1, currentTargetMimetype, options) == false)
                 {
                     result = false;
                     break;

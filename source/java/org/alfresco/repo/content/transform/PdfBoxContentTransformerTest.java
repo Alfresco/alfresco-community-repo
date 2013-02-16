@@ -38,6 +38,7 @@ public class PdfBoxContentTransformerTest extends AbstractContentTransformerTest
         transformer = new PdfBoxContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
     
     /**

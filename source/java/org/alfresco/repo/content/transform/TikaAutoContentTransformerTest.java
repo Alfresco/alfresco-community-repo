@@ -43,6 +43,7 @@ public class TikaAutoContentTransformerTest extends TikaPoweredContentTransforme
         transformer = new TikaAutoContentTransformer( config );
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
     
     /**

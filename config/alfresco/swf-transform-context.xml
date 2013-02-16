@@ -23,7 +23,6 @@
       <property name="worker">
          <ref bean="transformer.worker.Pdf2swf"/>
       </property>
-      <property name="maxSourceSizeKBytes"><value>${content.transformer.Pdf2swf.maxSourceSizeKBytes}</value></property>
    </bean>
    
    <bean id="transformer.complex.OpenOffice.Pdf2swf"
@@ -40,50 +39,8 @@
             <value>application/pdf</value>
          </list>
       </property>
-      <property name="mimetypeLimits">
-         <ref bean="transformer.complex.OpenOffice.Pdf2swf.mimetypeLimits"/>
-      </property>
    </bean>
  
-   <!-- Note: there are maxSourceSizeKBytes limits on transformer.OpenOffice transforming to pdf
-        which may cause this transformer not to be selected because it is too slow. -->
-   <!-- The following further restricts this as some types convert to PDF quickly but are large
-        so convert to swf slowly.  -->
-   <bean id="transformer.complex.OpenOffice.Pdf2swf.mimetypeLimits" class="org.alfresco.service.cmr.repository.TransformationOptionLimitsMap">
-      <constructor-arg>
-         <value>
-            txt  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.txt.swf.maxSourceSizeKBytes}  ;
-            doc  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.doc.swf.maxSourceSizeKBytes}  ;
-            docx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.docx.swf.maxSourceSizeKBytes} ;
-            docm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.docm.swf.maxSourceSizeKBytes} ;
-            dotx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.dotx.swf.maxSourceSizeKBytes} ;
-            dotm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.dotm.swf.maxSourceSizeKBytes} ;
-            ppt  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.ppt.swf.maxSourceSizeKBytes}  ;
-            pptx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.pptx.swf.maxSourceSizeKBytes} ;
-            pptm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.pptm.swf.maxSourceSizeKBytes} ;
-            ppsx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.ppsx.swf.maxSourceSizeKBytes} ;
-            ppsm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.ppsm.swf.maxSourceSizeKBytes} ;
-            potx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.potx.swf.maxSourceSizeKBytes} ;
-            potm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.potm.swf.maxSourceSizeKBytes} ;
-            ppam swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.ppam.swf.maxSourceSizeKBytes} ;
-            sldx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.sldx.swf.maxSourceSizeKBytes} ;
-            sldm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.sldm.swf.maxSourceSizeKBytes} ;
-            vsd  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.vsd.swf.maxSourceSizeKBytes}  ;
-            xls  swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xls.swf.maxSourceSizeKBytes}  ;
-            xlsx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xlsx.swf.maxSourceSizeKBytes} ;
-            xltx swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xltx.swf.maxSourceSizeKBytes} ;
-            xlsm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xlsm.swf.maxSourceSizeKBytes} ;
-            xltm swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xltm.swf.maxSourceSizeKBytes} ;
-            xlam swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xlam.swf.maxSourceSizeKBytes} ;
-            xlsb swf  maxSourceSizeKBytes ${content.transformer.OpenOffice.Pdf2swf.mimeTypeLimits.xlsb.swf.maxSourceSizeKBytes}
-         </value>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="mimetypeService" />
-      </constructor-arg>
-   </bean>
- 
-   
    <bean id="transformer.complex.iWorks.Pdf2swf"
         class="org.alfresco.repo.content.transform.ComplexContentTransformer"
         parent="baseComplexContentTransformer" >
@@ -114,23 +71,6 @@
             <value>application/pdf</value>
          </list>
       </property>
-      <property name="supportedTransformations">
-         <list>
-            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
-                <property name="sourceMimetype"><value>text/txt</value></property>
-                <property name="targetMimetype"><value>application/x-shockwave-flash</value></property>
-            </bean>
-            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
-                <property name="sourceMimetype"><value>text/csv</value></property>
-                <property name="targetMimetype"><value>application/x-shockwave-flash</value></property>
-            </bean>
-            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
-                <property name="sourceMimetype"><value>text/xml</value></property>
-                <property name="targetMimetype"><value>application/x-shockwave-flash</value></property>
-            </bean>
-         </list>
-      </property>
-      <property name="maxSourceSizeKBytes"><value>${content.transformer.complex.Text.Pdf2swf.maxSourceSizeKBytes}</value></property>
    </bean>
 
    <!-- This transformer allows for the webpreviewing of zip archive files. -->
@@ -164,7 +104,7 @@
       <property name="transformers"> 
          <list> 
             <ref bean="transformer.OutlookMsg" /> 
-            <ref bean="transformer.PdfBox.TextToPdf" /> 
+            <null />
             <ref bean="transformer.Pdf2swf" /> 
          </list> 
       </property> 
@@ -188,14 +128,6 @@
       <property name="intermediateMimetypes">
          <list>
             <value>application/pdf</value>
-         </list>
-      </property>
-      <property name="supportedTransformations">
-         <list>
-            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
-                <property name="sourceMimetype"><value>image/tiff</value></property>
-                <property name="targetMimetype"><value>application/x-shockwave-flash</value></property>
-            </bean>
          </list>
       </property>
    </bean>

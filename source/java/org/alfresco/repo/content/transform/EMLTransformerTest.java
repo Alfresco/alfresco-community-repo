@@ -50,6 +50,7 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
         transformer = new EMLTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
 
     @Override

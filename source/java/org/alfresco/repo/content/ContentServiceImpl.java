@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -803,7 +803,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         // check the file name
         if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) &&
             MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) &&
-            "debugTransformers.txt".equals(transformerDebug.getFileName(transformOptions, true, 0)))
+            transformerDebug.getFileName(transformOptions, true, 0).contains("debugTransformers.txt"))
         {
             Map<String, Set<String>> explicitTransforms = debugExplicitTransforms();
             debugActiveTransformersByTransformer(explicitTransforms);

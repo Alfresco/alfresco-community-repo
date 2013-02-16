@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,7 @@ package org.alfresco.repo.management.subsystems;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -96,6 +97,41 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /** Lock for concurrent access. */
     protected ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
+    /**
+     * Used in conjunction with {@link #localSetProperties} to control setting of
+     * properties from either a JMX client or by code in the local Alfresco
+     * node calling {@link AbstractPropertyBackedBean#setProperties(Map)} or
+     * {@link AbstractPropertyBackedBean#setProperty(String, String)}.
+     * Is <code>true</code> when there is a nested call to either of these
+     * methods. This is the case when there is an MBean AND one of these method was
+     * NOT originally called from that MBean (it is a local code).
+     */
+    private ThreadLocal<Boolean> nestedCall = new ThreadLocal<Boolean>()
+    {
+        @Override
+        protected Boolean initialValue()
+        {
+            return false;
+        }
+    };
+
+   /**
+    * Used in conjunction with {@link #nestedCall} to control setting of
+    * properties from either a JMX client or by code in the local Alfresco
+    * node calling {@link AbstractPropertyBackedBean#setProperties(Map)} or
+    * {@link AbstractPropertyBackedBean#setProperty(String, String)}.
+    * Is set to <code>true</code> when there is a nested call back from
+    * a JMX bean.
+    */
+    private ThreadLocal<Boolean> localSetProperties = new ThreadLocal<Boolean>()
+    {
+        @Override
+        protected Boolean initialValue()
+        {
+            return false;
+        }
+    };
+    
     /** The logger. */
     private static Log logger = LogFactory.getLog(AbstractPropertyBackedBean.class);
 
@@ -554,74 +590,249 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
     }
 
+    private void setPropertyInternal(String name, String value)
+    {
+        // Bring down the bean. The caller may have already broadcast this across the cluster
+        stop(false);
+        doInit();
+        this.state.setProperty(name, value);
+    }
+
+    private void setPropertiesInternal(Map<String, String> properties)
+    {
+        // Bring down the bean. The caller may have already broadcast this across the cluster
+        stop(false);
+        doInit();
+
+        Map<String, String> previousValues = new HashMap<String, String>(properties.size() * 2);
+        try
+        {
+            // Set each of the properties and back up their previous values just in case
+            for (Map.Entry<String, String> entry : properties.entrySet())
+            {
+                String property = entry.getKey();
+                String previousValue = this.state.getProperty(property);
+                this.state.setProperty(property, entry.getValue());
+                previousValues.put(property, previousValue);
+            }
+
+            // Attempt to start locally
+            start(false, true);
+
+            // We still haven't broadcast the start - a persist is required first so this will be done by the caller
+        }
+        catch (Exception e)
+        {
+            // Oh dear - something went wrong. So restore previous state before rethrowing
+            for (Map.Entry<String, String> entry : previousValues.entrySet())
+            {
+                this.state.setProperty(entry.getKey(), entry.getValue());
+            }
+            
+            // Bring the bean back up across the cluster
+            start(true, false);
+            if (e instanceof RuntimeException)
+            {
+                throw (RuntimeException) e;
+            }
+            throw new IllegalStateException(e);
+        }
+    }
+   
     /**
      * {@inheritDoc}
+     * 
+     * <p> When called from code within the local node the values are saved to the
+     * database in the Enterprise edition and will be visible in a JMX client.<p>
+     *
+     * @param name
+     * @param value
      */
     public void setProperty(String name, String value)
     {
-        this.lock.writeLock().lock();
-        try
+        if (logger.isDebugEnabled())
         {
-            // Bring down the bean. The caller may have already broadcast this across the cluster
-            stop(false);
-            doInit();
-            this.state.setProperty(name, value);
+            logger.debug("setProperty("+name+','+value+")");
         }
-        finally
+        if (!nestedCall.get())
         {
-            this.lock.writeLock().unlock();
-        }
-    }
-
-    public void setProperties(Map<String, String> properties)
-    {
-        this.lock.writeLock().lock();
-        try
-        {
-            // Bring down the bean. The caller may have already broadcast this across the cluster
-            stop(false);
-            doInit();
-
-            Map<String, String> previousValues = new HashMap<String, String>(properties.size() * 2);
+            nestedCall.set(true);
+            this.lock.writeLock().lock();
             try
             {
-                // Set each of the properties and back up their previous values just in case
-                for (Map.Entry<String, String> entry : properties.entrySet())
+                boolean mBeanInfoChange = !getPropertyNames().contains(name);
+
+                // When setting properties locally AND there is an MBean, the following broadcast
+                // results in a call to the MBean's setAttributes method, which in turn results
+                // in a nested call back. The call back sets the values in this bean and
+                // localSetProperties will be set to true. The MBean persists the changes and the
+                // broadcast method returns. If there is no MBean (community edition) OR when
+                // initiated from the MBean (say setting a value via JConsole), nothing happens
+                // as a result of the broadcast.
+                logger.debug("setProperty() broadcastSetProperties");
+                this.registry.broadcastSetProperty(this, name, value);
+
+                if (localSetProperties.get())
                 {
-                    String property = entry.getKey();
-                    String previousValue = this.state.getProperty(property);
-                    this.state.setProperty(property, entry.getValue());
-                    previousValues.put(property, previousValue);
+                    if (mBeanInfoChange)
+                    {
+                        // Re register the bean so new properties are visible in JConsole which does
+                        // not check MBeanInfo for changes otherwise.
+                        logger.debug("setProperty() destroy");
+                        destroy(false);
+
+                        // Attempt to start locally
+                        start(false, true);
+                    }
                 }
-
-                // Attempt to start locally
-                start(false, true);
-
-                // We still haven't broadcast the start - a persist is required first so this will be done by the caller
+                else
+                {
+                    logger.debug("setProperty() setPropertyInternal");
+                    setPropertyInternal(name, value);
+                }
             }
-            catch (Exception e)
+            finally
             {
-                // Oh dear - something went wrong. So restore previous state before rethrowing
-                for (Map.Entry<String, String> entry : previousValues.entrySet())
+                localSetProperties.set(false);
+                nestedCall.set(false);
+                this.lock.writeLock().unlock();
+            }
+        }
+        else
+        {
+            // A nested call indicates there is a MBean and that this method was
+            // NOT originally called from that MBean.
+            localSetProperties.set(true);
+
+            logger.debug("setProperty() callback setPropertyInternal");
+            setPropertyInternal(name, value);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * <p> When called from code within the local node the values are saved to the
+     * database in the Enterprise edition and will be visible in a JMX client.<p>
+     *
+     * @param properties to be saved.
+     */
+    public void setProperties(Map<String, String> properties)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("setProperties("+properties+")");
+        }
+        if (!nestedCall.get())
+        {
+            nestedCall.set(true);
+            
+            boolean hadWriteLock = this.lock.isWriteLockedByCurrentThread();
+            if (!hadWriteLock)
+            {
+                this.lock.writeLock().lock();
+            }
+            try
+            {
+                boolean mBeanInfoChange = !getPropertyNames().containsAll(properties.keySet());
+
+                // When setting properties locally AND there is an MBean, the following broadcast
+                // results in a call to the MBean's setAttributes method, which in turn results
+                // in a nested call back. The call back sets the values in this bean and
+                // localSetProperties will be set to true. The MBean persists the changes and the
+                // broadcast method returns. If there is no MBean (community edition) OR when
+                // initiated from the MBean (say setting a value via JConsole), nothing happens
+                // as a result of the broadcast.
+                logger.debug("setProperties() broadcastSetProperties");
+                this.registry.broadcastSetProperties(this, properties);
+
+                if (localSetProperties.get())
                 {
-                    this.state.setProperty(entry.getKey(), entry.getValue());
+                    if (mBeanInfoChange)
+                    {
+                        // Re register the bean so new properties are visible in JConsole which does
+                        // not check MBeanInfo for changes otherwise.
+                        logger.debug("setProperties() destroy");
+                        destroy(false);
+
+                        // Attempt to start locally
+                        start(true, false);
+                    }
                 }
-                
-                // Bring the bean back up across the cluster
-                start(true, false);
-                if (e instanceof RuntimeException)
+                else
                 {
-                    throw (RuntimeException) e;
+                    logger.debug("setProperties() setPropertiesInternal");
+                    setPropertiesInternal(properties);
                 }
-                throw new IllegalStateException(e);
+            }
+            finally
+            {
+                localSetProperties.set(false);
+                nestedCall.set(false);
+                if (!hadWriteLock)
+                {
+                    this.lock.writeLock().unlock();
+                }
+            }
+        }
+        else
+        {
+            // A nested call indicates there is a MBean and that this method was
+            // NOT originally called from that MBean.
+            localSetProperties.set(true);
+
+            logger.debug("setProperties() callback setPropertiesInternal");
+            setPropertiesInternal(properties);
+        }
+    }
+    
+    /**
+     * Removes a property added by code within the local node.
+     *
+     * @param propertyNames to be removed.
+     */
+    public void removeProperty(String name)
+    {
+        removeProperties(Collections.singleton(name));
+    }
+    
+    /**
+     * Removes properties added by code within the local node.
+     *
+     * @param propertyNames to be removed.
+     */
+    public void removeProperties(Collection<String> propertyNames)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("removeProperties("+propertyNames+")");
+        }
+        this.lock.writeLock().lock();
+        try
+        {
+            Set<String> originalPropertyNames = state.getPropertyNames();
+            Map<String, String> propertiesToKeep = new HashMap<String, String>(originalPropertyNames.size()*2);
+            for (String name: originalPropertyNames)
+            {
+                if (!propertyNames.contains(name))
+                {
+                    propertiesToKeep.put(name, state.getProperty(name));
+                }
+            }
+            
+            // Check just in case there is nothing to do.
+            if (propertiesToKeep.size() != originalPropertyNames.size())
+            {
+                destroy(true);
+                setProperties(propertiesToKeep);
             }
         }
         finally
         {
             this.lock.writeLock().unlock();
         }
-       
     }
+
     /**
      * {@inheritDoc}
      */

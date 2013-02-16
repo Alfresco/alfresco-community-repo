@@ -78,29 +78,39 @@ public interface ContentTransformer extends ContentWorker
     public long getMaxSourceSizeKBytes(String sourceMimetype, String targetMimetype, TransformationOptions options);
 
     /**
-     * Indicates whether given the provided transformation parmaters this transformer can prvide an explict
+     * @deprecated Use transformer priority and unsupported transformer properties.
+     *  
+     * Indicates whether given the provided transformation parameters this transformer can provide an explicit
      * transformation.
      * 
-     * An explict transformation indicates that the transformation happens directly and not as a result of 
-     * another transformation process.  Explict transformation always take presidence over normal transformations.
+     * An explicit transformation indicates that the transformation happens directly and not as a result of 
+     * another transformation process.  Explicit transformation always take presidency over normal transformations.
      * 
      * @param sourceMimetype    the source mimetype
      * @param targetMimetype    the target mimetype
      * @param options           the transformation options
-     * @return boolean          true if it is an explicit transformation, flase otherwise         
+     * @return boolean          true if it is an explicit transformation, false otherwise         
      */
     public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype, TransformationOptions options);
     
     /**
+     * @deprecated use mimetype specific version.
+     */
+    public long getTransformationTime();
+    
+    /**
      * Provides an estimate, usually a worst case guess, of how long a transformation
-     * will take.
+     * will take. Null mimetype values provide the overall value for the transformer.
      * <p>
      * This method is used to determine, up front, which of a set of
      * equally reliant transformers will be used for a specific transformation.
      * 
+     * @param sourceMimetype    the source mimetype
+     * @param targetMimetype    the target mimetype
+     *
      * @return Returns the approximate number of milliseconds per transformation
      */
-    public long getTransformationTime();
+    public long getTransformationTime(String sourceMimetype, String targetMimetype);
     
     /**
      * @see #transform(ContentReader, ContentWriter, TransformationOptions)
@@ -157,4 +167,9 @@ public interface ContentTransformer extends ContentWorker
      */
     public void transform(ContentReader reader, ContentWriter contentWriter, TransformationOptions options) 
         throws ContentIOException;
+    
+    /**
+     * Returns transformer's name used in configuration.
+     */
+    public String getName();
 }

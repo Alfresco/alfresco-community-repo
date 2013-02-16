@@ -16,29 +16,42 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.content.transform;
+package org.alfresco.repo.management.subsystems;
 
-import java.util.List;
 
-import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
- * Selects a transformer from a supplied list of transformers that appear
- * able to handle a given transformation.
+ * An event emitted before a {@link PropertyBackedBean} updates a property.
  * 
  * @author Alan Davis
  */
-public interface TransformerSelector
+public class PropertyBackedBeanSetPropertyEvent extends PropertyBackedBeanEvent
 {
+    private static final long serialVersionUID = 7421919310357212865L;
+    
+    private String name;
+    private String value;
+
     /**
-     * Returns a sorted list of transformers that identifies the order in which transformers
-     * should be tried.
-     * @param sourceMimetype
-     * @param sourceSize
-     * @param targetMimetype
-     * @param options transformation options
-     * @return a sorted list of transformers, with the best one first.
+     * The Constructor.
+     * 
+     * @param source
+     *            the source of the event
      */
-    List<ContentTransformer> selectTransformers(String sourceMimetype, long sourceSize,
-            String targetMimetype, TransformationOptions options);
+    public PropertyBackedBeanSetPropertyEvent(PropertyBackedBean source, String name, String value)
+    {
+        super(source);
+        this.name = name;
+        this.value = value;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
 }

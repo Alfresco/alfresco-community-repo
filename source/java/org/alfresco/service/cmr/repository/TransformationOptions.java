@@ -517,7 +517,7 @@ public class TransformationOptions implements Cloneable
      *   <li>{@link #OPT_INCLUDE_EMBEDDED}</li>
      *   <li>{@link TransformationOptionLimits#OPT_TIMEOUT_MS}</li>
      *   <li>{@link TransformationOptionLimits#OPT_READ_LIMIT_TIME_MS}</li>
-     *   <li>{@link TransformationOptionLimits#OPT_MAX_SOURCE_SIZE_K_BYTES = "maxSourceSizeKBytes";
+     *   <li>{@link TransformationOptionLimits#OPT_MAX_SOURCE_SIZE_K_BYTES</li>
      *   <li>{@link TransformationOptionLimits#OPT_READ_LIMIT_K_BYTES}</li>
      *   <li>{@link TransformationOptionLimits#OPT_MAX_PAGES}</li>
      *   <li>{@link TransformationOptionLimits#OPT_PAGE_LIMIT}</li>

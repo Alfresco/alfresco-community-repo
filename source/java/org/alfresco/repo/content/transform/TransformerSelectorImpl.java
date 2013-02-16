@@ -28,94 +28,127 @@ import java.util.Map;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
- * Implementation of a transformer selector that matches the code that was in place
- * before a selector was introduced. It is expected that this code will be replaced.
+ * Default transformer selector implementation, which sorts by priority and then
+ * by average transform time. The transform time is only used once a threshold
+ * (number of transforms) has been reached. This average is maintained for each
+ * source target mimetype pair.<p>
+ * 
+ * Prior to the introduction of this class the transformation time was only kept
+ * for each transformer. There was no threshold and there was a concept of
+ * 'Explicit' transformers, which would cause all other transformers to be discarded.
+ * It is still possible to disable transformers by giving adding unsupported mappings
+ * as has been done for transformers that would not have been used in the past as
+ * there existed one or more 'explicit' transformers (a concept not used by this
+ * TransformerSelector). By default a transformer has a priority of {@code 10}.
+ * Old 'Explicit' transformers have been given a priority of {@code 5}.
  * 
  * @author Alan Davis
  */
 public class TransformerSelectorImpl implements TransformerSelector
 {
+    private TransformerConfig transformerConfig;
+    private ContentTransformerRegistry contentTransformerRegistry;
+
+    public void setTransformerConfig(TransformerConfig transformerConfig)
+    {
+        this.transformerConfig = transformerConfig;
+    }
+
+    public void setContentTransformerRegistry(ContentTransformerRegistry contentTransformerRegistry)
+    {
+        this.contentTransformerRegistry = contentTransformerRegistry;
+    }
 
     @Override
-    public List<ContentTransformer> selectTransformers(List<ContentTransformer> transformers,
-            String sourceMimetype, long sourceSize, String targetMimetype,
-            TransformationOptions options)
+    public List<ContentTransformer> selectTransformers(String sourceMimetype, long sourceSize,
+            String targetMimetype, TransformationOptions options)
     {
-        transformers = findTransformers(transformers, sourceMimetype, sourceSize, targetMimetype, options);
-        transformers = discardNonExplicitTransformers(transformers, sourceMimetype, sourceSize, targetMimetype, options);
-        transformers = sortTransformers(transformers, sourceMimetype, sourceSize, targetMimetype, options);
-        return transformers;
+        // TODO cache results for reuse. This was a heavy operation in the past and still is.
+        
+        List<ContentTransformer> transformers = contentTransformerRegistry.getTransformers();
+        List<TransformerSortData> possibleTransformers = findTransformers(transformers, sourceMimetype, sourceSize, targetMimetype, options);
+        return sortTransformers(possibleTransformers);
     }
 
     /**
-     * Reduces the list of transformers down to only those capable of doing the transformation.
+     * Returns the list of possible transformers for the transformation.
      */
-    private List<ContentTransformer> findTransformers(List<ContentTransformer> allTransformers, String sourceMimetype,
+    private List<TransformerSortData> findTransformers(List<ContentTransformer> allTransformers, String sourceMimetype,
             long sourceSize, String targetMimetype, TransformationOptions options)
     {
-        List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(2);
-        
+        List<TransformerSortData> transformers = new ArrayList<TransformerSortData>(8);
         for (ContentTransformer transformer : allTransformers)
         {
-            if (transformer.isTransformable(sourceMimetype, sourceSize, targetMimetype, options) == true)
+            int priority = transformerConfig.getPriority(transformer, sourceMimetype, targetMimetype);
+            if (priority > 0 &&
+                transformer.isTransformable(sourceMimetype, sourceSize, targetMimetype, options) == true)
+                
             {
-                transformers.add(transformer);
+                transformers.add(new TransformerSortData(transformer, sourceMimetype, targetMimetype, priority));
             }
         }
         return transformers;
     }
     
     /**
-     * Discards non explicit transformers if there are any explicit ones.
+     * Returns a sorted list of transformers by priority and then average time (ignored if the threshold
+     * has not been reached).
      */
-    private List<ContentTransformer> discardNonExplicitTransformers(List<ContentTransformer> allTransformers, String sourceMimetype,
-            long sourceSize, String targetMimetype, TransformationOptions options)
+    private List<ContentTransformer> sortTransformers(List<TransformerSortData> possibleTransformers)
     {
-        List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(2);
-        boolean foundExplicit = false;
+        Collections.sort(possibleTransformers);
         
-        for (ContentTransformer transformer : allTransformers)
+        List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(possibleTransformers.size());
+        for (TransformerSortData possibleTransformer: possibleTransformers)
         {
-            if (transformer.isExplicitTransformation(sourceMimetype, targetMimetype, options) == true)
-            {
-                if (foundExplicit == false)
-                {
-                    transformers.clear();
-                    foundExplicit = true;
-                }
-                transformers.add(transformer);
-            }
-            else
-            {
-                if (foundExplicit == false)
-                {
-                    transformers.add(transformer);
-                }
-            }
+            transformers.add(possibleTransformer.transformer);
         }
         return transformers;
     }
-
-    // sort by performance (quicker is "better")
-    private List<ContentTransformer> sortTransformers(List<ContentTransformer> transformers,
-            String sourceMimetype, long sourceSize, String targetMimetype,
-            TransformationOptions options)
+    
+    private class TransformerSortData implements Comparable<TransformerSortData>
     {
-        final Map<ContentTransformer,Long> activeTransformers = new HashMap<ContentTransformer, Long>();
-        for (ContentTransformer transformer : transformers)
+        private final ContentTransformer transformer;
+        private final int priority;
+        private long averageTime = -1;
+        
+        TransformerSortData(ContentTransformer transformer, String sourceMimetype, String targetMimetype, int priority)
         {
-            long transformationTime = transformer.getTransformationTime();
-            activeTransformers.put(transformer, transformationTime);
+            this.transformer = transformer;
+            this.priority = priority;
+            
+            TransformerStatistics stats = transformerConfig.getStatistics(transformer, sourceMimetype, targetMimetype);
+            long threashold = transformerConfig.getThresholdCount(transformer, sourceMimetype, targetMimetype);
+            averageTime = (stats.getCount() < threashold) ? 0 : stats.getAverageTime();
         }
-         
-        List<ContentTransformer> sorted = new ArrayList<ContentTransformer>(activeTransformers.keySet());
-        Collections.sort(sorted, new Comparator<ContentTransformer>() {
-            @Override
-            public int compare(ContentTransformer a, ContentTransformer b)
+
+        @Override
+        public int hashCode()
+        {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + (int) (averageTime ^ (averageTime >>> 32));
+            result = prime * result + priority;
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            return transformer == ((TransformerSortData) obj).transformer;
+        }
+
+        @Override
+        public int compareTo(TransformerSortData that)
+        {
+            int relativePriority = priority - that.priority;
+            if (relativePriority != 0)
             {
-                return activeTransformers.get(a).compareTo(activeTransformers.get(b));
+                return relativePriority;
             }
-        });
-        return sorted;
+            
+            long relativeTime = averageTime - that.averageTime;
+            return relativeTime > 0L ? 1 : relativeTime < 0L ? -1 : 0;
+        }
     }
 }

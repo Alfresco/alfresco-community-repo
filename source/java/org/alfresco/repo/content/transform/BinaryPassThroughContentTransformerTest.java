@@ -38,6 +38,7 @@ public class BinaryPassThroughContentTransformerTest extends AbstractContentTran
         transformer = new BinaryPassThroughContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
     
     /**

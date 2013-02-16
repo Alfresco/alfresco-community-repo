@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -169,19 +169,7 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
      */
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        if (!available)
-        {
-            return false;
-        }
-        
-        if (isExplicitTransformation(sourceMimetype, targetMimetype, options))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return available;
     }
     
     /**

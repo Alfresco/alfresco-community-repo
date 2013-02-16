@@ -57,7 +57,7 @@ public class ContentTransformerRegistry
     public ContentTransformerRegistry(TransformerSelector transformerSelector)
     {
         this.transformerSelector = transformerSelector;
-        this.transformers = new ArrayList<ContentTransformer>(10);
+        this.transformers = new ArrayList<ContentTransformer>(70);
     }
     
     /**
@@ -114,7 +114,7 @@ public class ContentTransformerRegistry
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         // Get the list of transformers
-        List<ContentTransformer> transformers = transformerSelector.selectTransformers(this.transformers, sourceMimetype, sourceSize, targetMimetype, options);
+        List<ContentTransformer> transformers = transformerSelector.selectTransformers(sourceMimetype, sourceSize, targetMimetype, options);
         if (logger.isDebugEnabled())
         {
             logger.debug("Searched for transformer: \n" +

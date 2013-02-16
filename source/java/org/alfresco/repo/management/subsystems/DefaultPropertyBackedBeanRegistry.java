@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,7 @@ package org.alfresco.repo.management.subsystems;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.domain.schema.SchemaAvailableEvent;
 import org.springframework.context.ApplicationEvent;
@@ -96,6 +97,30 @@ public class DefaultPropertyBackedBeanRegistry implements PropertyBackedBeanRegi
     public void broadcastStop(PropertyBackedBean bean)
     {
         broadcastEvent(new PropertyBackedBeanStoppedEvent(bean));
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastSetProperty(org.alfresco.repo.management
+     * .subsystems.PropertyBackedBean, String, String)
+     */
+    @Override
+    public void broadcastSetProperty(PropertyBackedBean bean, String name, String value)
+    {
+        broadcastEvent(new PropertyBackedBeanSetPropertyEvent(bean, name, value));
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.repo.management.subsystems.PropertyBackedBeanRegistry#broadcastSetProperties(org.alfresco.repo.management
+     * .subsystems.PropertyBackedBean, Map<String, String>)
+     */
+    @Override
+    public void broadcastSetProperties(PropertyBackedBean bean, Map<String, String> properties)
+    {
+        broadcastEvent(new PropertyBackedBeanSetPropertiesEvent(bean, properties));
     }
 
     /**

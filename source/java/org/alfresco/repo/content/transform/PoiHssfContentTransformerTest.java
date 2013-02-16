@@ -46,6 +46,7 @@ public class PoiHssfContentTransformerTest extends TikaPoweredContentTransformer
         transformer = new PoiHssfContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
     
     @Override

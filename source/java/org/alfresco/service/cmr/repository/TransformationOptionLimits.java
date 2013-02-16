@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -148,6 +148,18 @@ public class TransformationOptionLimits
     public void setPageLimit(int pageLimit)
     {
         pages.setLimit(pageLimit, PAGES_MESSAGE);
+    }
+    
+    // --------------- Enabled ---------------
+    
+    /**
+     * Indicates if the limits allow a transformation to take place at all.
+     * If any of the limits are 0, it would not be possible.
+     * @return true if a transformation is possible.
+     */
+    public boolean supported()
+    {
+        return time.supported() && kbytes.supported() && pages.supported();
     }
     
     // --------------- Map ---------------

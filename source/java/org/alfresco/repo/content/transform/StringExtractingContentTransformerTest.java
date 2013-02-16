@@ -68,6 +68,7 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
         transformer = new StringExtractingContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
         targetWriter = new FileContentWriter(getTempFile());
         targetWriter.setMimetype("text/plain");
         targetWriter.setEncoding("UTF-8");

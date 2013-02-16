@@ -19,7 +19,6 @@
 package org.alfresco.repo.content.transform;
 
 import java.util.Map;
-import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -46,13 +45,20 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     private static final Log logger = LogFactory.getLog(AbstractContentTransformer2.class);
     
     private ContentTransformerRegistry registry;
-    private Properties properties;
-    private double averageTime;
-    private long count = 0L;
-    
+
+    private ThreadLocal<Integer> depth = new ThreadLocal<Integer>()
+    {
+        @Override
+        protected Integer initialValue()
+        {
+            return 0;
+        }
+    };
+
     /**
      * All transformers start with an average transformation time of 0.0 ms,
-     * unless there is an Alfresco global property {@code <beanName>.initialTime}.
+     * unless there is an Alfresco global property {@code <beanName>.time}.
+     * May also be set for given combinations of source and target mimetypes.
      */
     protected AbstractContentTransformer2()
     {
@@ -68,70 +74,12 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
         this.registry = registry;
     }    
 
-    /**
-     * The Alfresco global properties.
-     */
-    public void setProperties(Properties properties)
-    {
-        this.properties = properties;
-    }
-    
-    /**
-     * Sets the averageTime and count (if global properties were used to set the averageTime).
-     * Both default to 0. The property names use the transformer bean name with a ".time"
-     * or ".count" suffix. Spring bean configuration is not being used as we don't wish to
-     * break existing transformers that know nothing about these properties. 
-     */
-    private void setAverageTimeFromAlfrescoGlobalProperties()
-    {
-        String beanName = getBeanName();
-        averageTime = Long.valueOf(getPositiveLongProperty(beanName+".time", 0L));
-        if (averageTime > 0.0)
-        {
-            // This normally is a large number so that it does not change much if used.
-            count = Long.valueOf(getPositiveLongProperty(beanName+".count", 10000));
-        }
-    }
-    
-    /**
-     * Returns a positive long value from an optional Alfresco global property.
-     * Invalid values are ignored but a log message is issued.
-     * @param name of the property
-     * @param defaultValue if the property does not exist or is negative
-     * @return the value
-     */
-    private long getPositiveLongProperty(String name, long defaultValue)
-    {
-        long value = defaultValue;
-        if (properties != null)
-        {
-            String property = properties.getProperty(name);
-            if (property != null)
-            {
-                try
-                {
-                    value = Long.valueOf(property);
-                    if (value < 0)
-                    {
-                        value = defaultValue;
-                        throw new NumberFormatException();
-                    }
-                }
-                catch (NumberFormatException e)
-                {
-                    logger.warn("Alfresco global property "+name+" is must be a positive Java long value. Using "+defaultValue);
-                }
-            }
-        }
-        return value;
-    }
-
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
         sb.append(this.getClass().getSimpleName())
-          .append("[ average=").append((long)averageTime).append("ms")
+          .append("[ average=").append(transformerConfig.getStatistics(this, null, null).getAverageTime()).append("ms")
           .append("]");
         return sb.toString();
     }
@@ -140,10 +88,12 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
      * Registers this instance with the {@link #setRegistry(ContentTransformerRegistry) registry}
      * if it is present.
      * 
-     * THIS IS A CUSTOME SPRING INIT METHOD
+     * THIS IS A CUSTOM SPRING INIT METHOD
      */
     public void register()
     {
+        super.register();
+        
         if (registry == null)
         {
             logger.warn("Property 'registry' has not been set.  Ignoring auto-registration: \n" +
@@ -151,8 +101,6 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
             return;
         }
 
-        setAverageTimeFromAlfrescoGlobalProperties();
-        
         // register this instance for the fallback case
         registry.addTransformer(this);
     }
@@ -211,115 +159,127 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     public final void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
         throws ContentIOException
     {
-        // begin timing
-        long before = System.currentTimeMillis();
-        
-        // check options map
-        if (options == null)
-        {
-            options = new TransformationOptions();
-        }
-        
         try
         {
-            if (transformerDebug.isEnabled())
+            depth.set(depth.get()+1);
+            
+            // begin timing
+            long before = System.currentTimeMillis();
+            
+            String sourceMimetype = reader.getMimetype();
+            String targetMimetype = writer.getMimetype();
+
+            // check options map
+            if (options == null)
             {
-                transformerDebug.pushTransform(this, reader.getContentUrl(), reader.getMimetype(),
-                        writer.getMimetype(), reader.getSize(), options);
+                options = new TransformationOptions();
             }
             
-            // Check the transformability
-            checkTransformable(reader, writer, options);
-            
-            // Pass on any limits to the reader
-            setReaderLimits(reader, writer, options);
+            try
+            {
+                if (transformerDebug.isEnabled())
+                {
+                    transformerDebug.pushTransform(this, reader.getContentUrl(), sourceMimetype,
+                            targetMimetype, reader.getSize(), options);
+                }
+                
+                // Check the transformability
+                checkTransformable(reader, writer, options);
+                
+                // Pass on any limits to the reader
+                setReaderLimits(reader, writer, options);
 
-            // Transform
-            transformInternal(reader, writer, options);
-        }
-        catch (ContentServiceTransientException cste)
-        {
-            // A transient failure has occurred within the content transformer.
-            // This should not be interpreted as a failure and therefore we should not
-            // update the transformer's average time.
+                // Transform
+                transformInternal(reader, writer, options);
+            }
+            catch (ContentServiceTransientException cste)
+            {
+                // A transient failure has occurred within the content transformer.
+                // This should not be interpreted as a failure and therefore we should not
+                // update the transformer's average time.
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Transformation has been transiently declined: \n" +
+                            "   reader: " + reader + "\n" +
+                            "   writer: " + writer + "\n" +
+                            "   options: " + options + "\n" +
+                            "   transformer: " + this);
+                }
+                // the finally block below will still perform tidyup. Otherwise we're done.
+                // We rethrow the exception
+                throw cste;
+            }
+            catch (Throwable e)
+            {
+                // Make sure that this transformation gets set back i.t.o. time taken.
+                // This will ensure that transformers that compete for the same transformation
+                // will be prejudiced against transformers that tend to fail
+                recordError(sourceMimetype, targetMimetype);
+                
+                // Ask Tika to detect the document, and report back on if
+                //  the current mime type is plausible
+                String differentType = getMimetypeService().getMimetypeIfNotMatches(reader.getReader());
+        
+                // Report the error
+                if(differentType == null)
+                {
+                transformerDebug.debug("          Failed", e);
+                    throw new ContentIOException("Content conversion failed: \n" +
+                           "   reader: " + reader + "\n" +
+                           "   writer: " + writer + "\n" +
+                           "   options: " + options.toString(false) + "\n" +
+                           "   limits: " + getLimits(reader, writer, options),
+                           e);
+                }
+                else
+                {
+               transformerDebug.debug("          Failed: Mime type was '"+differentType+"'", e);
+                   throw new ContentIOException("Content conversion failed: \n" +
+                         "   reader: " + reader + "\n" +
+                         "   writer: " + writer + "\n" +
+                         "   options: " + options.toString(false) + "\n" +
+                         "   limits: " + getLimits(reader, writer, options) + "\n" +
+                         "   claimed mime type: " + reader.getMimetype() + "\n" +
+                         "   detected mime type: " + differentType,
+                         e);
+                }
+            }
+            finally
+            {
+                transformerDebug.popTransform();
+                
+                // check that the reader and writer are both closed
+                if (reader.isChannelOpen())
+                {
+                    logger.error("Content reader not closed by transformer: \n" +
+                            "   reader: " + reader + "\n" +
+                            "   transformer: " + this);
+                }
+                if (writer.isChannelOpen())
+                {
+                    logger.error("Content writer not closed by transformer: \n" +
+                            "   writer: " + writer + "\n" +
+                            "   transformer: " + this);
+                }
+            }
+            
+            // record time
+            long after = System.currentTimeMillis();
+            recordTime(sourceMimetype, targetMimetype, after - before);
+            
+            // done
             if (logger.isDebugEnabled())
             {
-                logger.debug("Transformation has been transiently declined: \n" +
+                logger.debug("Completed transformation: \n" +
                         "   reader: " + reader + "\n" +
                         "   writer: " + writer + "\n" +
                         "   options: " + options + "\n" +
                         "   transformer: " + this);
             }
-            // the finally block below will still perform tidyup. Otherwise we're done.
-            // We rethrow the exception
-            throw cste;
-        }
-        catch (Throwable e)
-        {
-            // Make sure that this transformation gets set back i.t.o. time taken.
-            // This will ensure that transformers that compete for the same transformation
-            // will be prejudiced against transformers that tend to fail
-            recordTime(60 * 1000);   // 1 minute, i.e. rubbish
-            
-            // Ask Tika to detect the document, and report back on if
-            //  the current mime type is plausible
-            String differentType = getMimetypeService().getMimetypeIfNotMatches(reader.getReader());
-    
-            // Report the error
-            if(differentType == null)
-            {
-                transformerDebug.debug("          Failed", e);
-                throw new ContentIOException("Content conversion failed: \n" +
-                       "   reader: " + reader + "\n" +
-                       "   writer: " + writer + "\n" +
-                       "   options: " + options.toString(false) + "\n" +
-                       "   limits: " + getLimits(reader, writer, options),
-                       e);
-            }
-            else
-            {
-               transformerDebug.debug("          Failed: Mime type was '"+differentType+"'", e);
-               throw new ContentIOException("Content conversion failed: \n" +
-                     "   reader: " + reader + "\n" +
-                     "   writer: " + writer + "\n" +
-                     "   options: " + options.toString(false) + "\n" +
-                     "   limits: " + getLimits(reader, writer, options) + "\n" +
-                     "   claimed mime type: " + reader.getMimetype() + "\n" +
-                     "   detected mime type: " + differentType,
-                     e);
-            }
         }
         finally
         {
-            transformerDebug.popTransform();
-            
-            // check that the reader and writer are both closed
-            if (reader.isChannelOpen())
-            {
-                logger.error("Content reader not closed by transformer: \n" +
-                        "   reader: " + reader + "\n" +
-                        "   transformer: " + this);
-            }
-            if (writer.isChannelOpen())
-            {
-                logger.error("Content writer not closed by transformer: \n" +
-                        "   writer: " + writer + "\n" +
-                        "   transformer: " + this);
-            }
-        }
-        
-        // record time
-        long after = System.currentTimeMillis();
-        recordTime(after - before);
-        
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Completed transformation: \n" +
-                    "   reader: " + reader + "\n" +
-                    "   writer: " + writer + "\n" +
-                    "   options: " + options + "\n" +
-                    "   transformer: " + this);
+            depth.set(depth.get()+1);
         }
     }
 
@@ -336,7 +296,23 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
      */
     public synchronized long getTransformationTime()
     {
-        return (long) averageTime;
+        return transformerConfig.getStatistics(this, null, null).getAverageTime();
+    }
+
+    /**
+     * @return Returns the calculated running average of the current transformations
+     */
+    public synchronized long getTransformationTime(String sourceMimetype, String targetMimetype)
+    {
+        return transformerConfig.getStatistics(this, sourceMimetype, targetMimetype).getAverageTime();
+    }
+
+    /**
+     * @deprecated use method with mimetypes.
+     */
+    protected final synchronized void recordTime(long transformationTime)
+    {
+        recordTime(TransformerConfig.ANY, TransformerConfig.ANY, transformationTime);
     }
 
     /**
@@ -348,20 +324,33 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
      * This method is thread-safe.  The time spent in this method is negligible
      * so the impact will be minor.
      * 
+     * @param sourceMimetype
+     * @param targetMimetype
      * @param transformationTime the time it took to perform the transformation.
      *      The value may be 0.
      */
-    protected final synchronized void recordTime(long transformationTime)
+    protected final synchronized void recordTime(String sourceMimetype, String targetMimetype,
+            long transformationTime)
     {
-        if (count == Long.MAX_VALUE)
+        transformerConfig.getStatistics(this, sourceMimetype, targetMimetype).recordTime(transformationTime);
+        if (depth.get() == 1)
         {
-            // we have reached the max count - reduce it by half
-            // the average fluctuation won't be extreme
-            count /= 2L;
+            transformerConfig.getStatistics(null, sourceMimetype, targetMimetype).recordTime(transformationTime);
         }
-        // adjust the average
-        count++;
-        double diffTime = ((double) transformationTime) - averageTime;
-        averageTime += diffTime / (double) count;
+    }
+    
+    /**
+     * Records an error and updates the average time as if the transformation took a
+     * long time, so that it is less likely to be called again.
+     * @param sourceMimetype
+     * @param targetMimetype
+     */
+    protected final synchronized void recordError(String sourceMimetype, String targetMimetype)
+    {
+        transformerConfig.getStatistics(this, sourceMimetype, targetMimetype).recordError();
+        if (depth.get() == 1)
+        {
+            transformerConfig.getStatistics(null, sourceMimetype, targetMimetype).recordError();
+        }
     }
 }

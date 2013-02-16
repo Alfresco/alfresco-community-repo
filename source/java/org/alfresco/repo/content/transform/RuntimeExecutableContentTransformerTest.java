@@ -74,10 +74,12 @@ public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCas
         worker.afterPropertiesSet();
         
         TransformerDebug transformerDebug = (TransformerDebug) ctx.getBean("transformerDebug");
+        TransformerConfig transformerConfig = (TransformerConfig) ctx.getBean("transformerConfig");
 
         ProxyContentTransformer transformer = new ProxyContentTransformer();
         transformer.setMimetypeService(serviceRegistry.getMimetypeService());
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
         transformer.setWorker(worker);
         this.transformer = transformer;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -17,6 +17,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.management.subsystems;
+
+import java.util.Map;
 
 import org.springframework.context.ApplicationListener;
 
@@ -75,4 +77,26 @@ public interface PropertyBackedBeanRegistry
      *            the bean
      */
     public void broadcastStop(PropertyBackedBean bean);
+    
+    /**
+     * Signals that a {@link PropertyBackedBean} has been asked to
+     * update a property.
+     * 
+     * @param bean
+     *            the bean
+     * @param name
+     *            the name
+     * @param value
+     *            the value
+     */
+    public void broadcastSetProperty(PropertyBackedBean bean, String name, String value);
+    
+    /**
+     * Signals that a {@link PropertyBackedBean} has been asked to
+     * update properties.
+     * 
+     * @param bean
+     *            the bean
+     */
+    public void broadcastSetProperties(PropertyBackedBean bean, Map<String, String> properties);
 }

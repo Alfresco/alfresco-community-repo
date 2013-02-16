@@ -40,25 +40,8 @@
             </property>
          </bean>
       </property>
-      <property name="explicitTransformations">
-         <list>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-               <property name="sourceMimetype">
-                  <value>application/pdf</value>
-               </property>
-               <property name="targetMimetype">
-                  <value>application/x-shockwave-flash</value>
-               </property>
-            </bean>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
-               <property name="sourceMimetype">
-                  <value>application/illustrator</value>
-               </property>
-               <property name="targetMimetype">
-                  <value>application/x-shockwave-flash</value>
-               </property>
-            </bean>
-         </list>
+      <property name="transformerConfig">
+         <ref bean="transformerConfig" />
       </property>
    </bean>
 

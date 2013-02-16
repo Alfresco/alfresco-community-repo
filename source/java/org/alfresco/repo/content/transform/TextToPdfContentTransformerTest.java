@@ -50,9 +50,11 @@ public class TextToPdfContentTransformerTest extends AbstractContentTransformerT
         transformer = new TextToPdfContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
         transformer.setStandardFont("Times-Roman");
         transformer.setFontSize(20);
         transformer.setPageLimit(-1);
+        transformer.register();
     }
     
     /**
@@ -120,7 +122,9 @@ public class TextToPdfContentTransformerTest extends AbstractContentTransformerT
 
     private void transformTextAndCheckPageLength(int pageLimit) throws IOException
     {
+        transformer.setBeanName("transformer.test"+System.currentTimeMillis()%100000);
         transformer.setPageLimit(pageLimit);
+        transformer.register();
         
         int pageLength = 32;
         int lines = (pageLength+10) * ((pageLimit > 0) ? pageLimit : 1);

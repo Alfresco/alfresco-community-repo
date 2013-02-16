@@ -42,6 +42,7 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
         transformer = new HtmlParserContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
     
     protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)

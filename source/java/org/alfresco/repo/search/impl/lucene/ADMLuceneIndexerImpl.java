@@ -1430,16 +1430,17 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                         // We have a reader, so use it
                         boolean readerReady = true;
                         // transform if necessary (it is not a UTF-8 text document)
-                        if (!EqualsHelper.nullSafeEquals(reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN) || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
+                        String sourceMimetype = reader.getMimetype();
+                        if (!EqualsHelper.nullSafeEquals(sourceMimetype, MimetypeMap.MIMETYPE_TEXT_PLAIN) || !EqualsHelper.nullSafeEquals(reader.getEncoding(), "UTF-8"))
                         {
                             try
                             {
                                 // get the transformer
                                 TransformationOptions options = new TransformationOptions();
                                 options.setSourceNodeRef(nodeRef);
-                                transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
+                                transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
                                 long sourceSize = reader.getSize();
-                                List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
+                                List<ContentTransformer> transformers = contentService.getActiveTransformers(sourceMimetype, sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
                                 transformerDebug.availableTransformers(transformers, sourceSize, "ADMLuceneIndexer");
 
                                 if (transformers.isEmpty())
@@ -1458,7 +1459,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                                     doc.add(new Field(attributeName, NOT_INDEXED_NO_TRANSFORMATION, Field.Store.NO, Field.Index.TOKENIZED, Field.TermVector.NO));
                                 }
                                 // is this transformer good enough?
-                                else if (indexAtomicPropertiesOnly && transformers.get(0).getTransformationTime() > maxAtomicTransformationTime)
+                                else if (indexAtomicPropertiesOnly && transformers.get(0).getTransformationTime(sourceMimetype, MimetypeMap.MIMETYPE_TEXT_PLAIN) > maxAtomicTransformationTime)
                                 {
                                     // only indexing atomic properties
                                     // indexing will take too long, so push it to the background

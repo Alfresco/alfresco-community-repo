@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  */
 @Deprecated
-public abstract class AbstractContentTransformer implements ContentTransformer
+public abstract class AbstractContentTransformer implements ContentTransformer, BeanNameAware
 {
     private static final Log logger = LogFactory.getLog(AbstractContentTransformer.class);
     
@@ -58,6 +59,9 @@ public abstract class AbstractContentTransformer implements ContentTransformer
     private double averageTime = 0.0;
     private long count = 0L;
     
+    /** The bean name. */
+    private String beanName;
+
     /**
      * All transformers start with an average transformation time of 0.0ms.
      */
@@ -408,6 +412,11 @@ public abstract class AbstractContentTransformer implements ContentTransformer
         return (long) averageTime;
     }
 
+    public long getTransformationTime(String sourceMimetype, String targetMimetype)
+    {
+        return (long) averageTime;
+    }
+
     /**
      * Records and updates the average transformation time for this transformer.
      * <p>
@@ -432,5 +441,30 @@ public abstract class AbstractContentTransformer implements ContentTransformer
         count++;
         double diffTime = ((double) transformationTime) - averageTime;
         averageTime += diffTime / (double) count;
+    }
+    
+    /**
+     * Sets the Spring bean name.
+     */
+    @Override
+    public void setBeanName(String beanName)
+    {
+        this.beanName = beanName;
+    }
+
+    /**
+     * Returns the Spring bean name.
+     */
+    public String getBeanName()
+    {
+        return beanName;
+    }
+    
+    /**
+     * Returns transformer name. Uses the Spring bean name, but if null uses the class name.
+     */
+    public String getName()
+    {
+        return (beanName == null) ? getClass().getSimpleName() : beanName;
     }
 }

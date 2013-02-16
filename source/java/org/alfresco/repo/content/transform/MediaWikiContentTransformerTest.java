@@ -70,6 +70,7 @@ public class MediaWikiContentTransformerTest extends AbstractContentTransformerT
         transformer = new MediaWikiContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
     }
     
     protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)

@@ -52,6 +52,12 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     private ContentReader reader;
     private ContentWriter writer;
     
+    private DummyTransformer ad20;
+    private DummyTransformer ad30;
+    private DummyTransformer ad10;
+    private DummyTransformer ad25a;
+    private DummyTransformer ad25b;
+    
     @Override
     public void setUp() throws Exception
     {
@@ -70,19 +76,23 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
             bytes[i] = (byte)i;
         }
         // create the dummyRegistry
-        dummyRegistry = new ContentTransformerRegistry(new TransformerSelectorImpl());
+        TransformerSelectorImpl transformerSelector = new TransformerSelectorImpl();
+        transformerSelector.setTransformerConfig(transformerConfig);
+        transformerSelector.setContentTransformerRegistry(dummyRegistry);
+        dummyRegistry = new ContentTransformerRegistry(transformerSelector);
+        transformerSelector.setContentTransformerRegistry(dummyRegistry);
         // create some dummy transformers for reliability tests
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, B, 10L);
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, B, 10L);
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, C, 10L);
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, C, 10L);
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, B, C, 10L);
+        new DummyTransformer(mimetypeService, "transformer.testAB10a", transformerDebug, transformerConfig, dummyRegistry, A, B, 10L);
+        new DummyTransformer(mimetypeService, "transformer.testAB10b", transformerDebug, transformerConfig, dummyRegistry, A, B, 10L);
+        new DummyTransformer(mimetypeService, "transformer.testAC10a", transformerDebug, transformerConfig, dummyRegistry, A, C, 10L);
+        new DummyTransformer(mimetypeService, "transformer.testAC10b", transformerDebug, transformerConfig, dummyRegistry, A, C, 10L);
+        new DummyTransformer(mimetypeService, "transformer.testBC10",  transformerDebug, transformerConfig, dummyRegistry, B, C, 10L);
         // create some dummy transformers for speed tests
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, D, 20L);
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, D, 30L);
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, D, 10L);  // the fast one
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, D, 25L);
-        new DummyTransformer(mimetypeService, transformerDebug, dummyRegistry, A, D, 25L);
+        ad20 = new DummyTransformer(mimetypeService, "transformer.testAD20",  transformerDebug, transformerConfig, dummyRegistry, A, D, 20L);
+        ad30 = new DummyTransformer(mimetypeService, "transformer.testAD30",  transformerDebug, transformerConfig, dummyRegistry, A, D, 30L);
+        ad10 = new DummyTransformer(mimetypeService, "transformer.testAD10",  transformerDebug, transformerConfig, dummyRegistry, A, D, 10L);  // the fast one
+        ad25a = new DummyTransformer(mimetypeService, "transformer.testAD25a", transformerDebug, transformerConfig, dummyRegistry, A, D, 25L);
+        ad25b = new DummyTransformer(mimetypeService, "transformer.testAD25b", transformerDebug, transformerConfig, dummyRegistry, A, D, 25L);
     }
 
     /**
@@ -131,20 +141,45 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
      */
     public void testPerformanceRetrieval() throws Exception
     {
+        // Until the threshold (3) is reached by each transformer with the same priority it will
+        // be tried that many times in the order defined. 20, 30, 10, 25, 25
+        for (int i=1; i<=3; i++)
+        {
+            long expectedTime = i == 1 ? 0L : 20L;
+            ContentTransformer transformer1 = dummyRegistry.getTransformer(A, -1, D, OPTIONS);
+            assertEquals(i+" incorrect transformation time", expectedTime, transformer1.getTransformationTime(A, D));
+            ad20.transformInternal(null, null, null);
+        }
+        for (int i=1; i<=3; i++)
+        {
+            long expectedTime = i == 1 ? 0L : 30L;
+            ContentTransformer transformer1 = dummyRegistry.getTransformer(A, -1, D, OPTIONS);
+            assertEquals(i+" incorrect transformation time", expectedTime, transformer1.getTransformationTime(A, D));
+            ad30.transformInternal(null, null, null);
+        }
+        for (int i=1; i<=3; i++)
+        {
+            ad10.transformInternal(null, null, null);
+            ad25a.transformInternal(null, null, null);
+            ad25b.transformInternal(null, null, null);
+        }
+        
+        // Now the average times are set up, it should find the fastest one
+        
         // A -> D expect 1.0, 10ms
         ContentTransformer transformer1 = dummyRegistry.getTransformer(A, -1, D, OPTIONS);
         assertTrue("Incorrect reliability", transformer1.isTransformable(A, -1, D, OPTIONS));
         assertFalse("Incorrect reliability", transformer1.isTransformable(D, -1, A, OPTIONS));
-        assertEquals("Incorrect transformation time", 10L, transformer1.getTransformationTime());
+        assertEquals("Incorrect transformation time", 10L, transformer1.getTransformationTime(A, D));
         
         // A -> D has 10, 20, 25, 25, 30
         List<ContentTransformer> activeTransformers = dummyRegistry.getActiveTransformers(A, -1, D, OPTIONS);
         assertEquals("Not all found", 5, activeTransformers.size());
-        assertEquals("Incorrect order", 10L, activeTransformers.get(0).getTransformationTime());
-        assertEquals("Incorrect order", 20L, activeTransformers.get(1).getTransformationTime());
-        assertEquals("Incorrect order", 25L, activeTransformers.get(2).getTransformationTime());
-        assertEquals("Incorrect order", 25L, activeTransformers.get(3).getTransformationTime());
-        assertEquals("Incorrect order", 30L, activeTransformers.get(4).getTransformationTime());
+        assertEquals("Incorrect order", 10L, activeTransformers.get(0).getTransformationTime(A, D));
+        assertEquals("Incorrect order", 20L, activeTransformers.get(1).getTransformationTime(A, D));
+        assertEquals("Incorrect order", 25L, activeTransformers.get(2).getTransformationTime(A, D));
+        assertEquals("Incorrect order", 25L, activeTransformers.get(3).getTransformationTime(A, D));
+        assertEquals("Incorrect order", 30L, activeTransformers.get(4).getTransformationTime(A, D));
         
         // Disable two of them, and re-test
         ((DummyTransformer)activeTransformers.get(2)).disable();
@@ -152,9 +187,9 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
 
         activeTransformers = dummyRegistry.getActiveTransformers(A, -1, D, OPTIONS);
         assertEquals("Not all found", 3, activeTransformers.size());
-        assertEquals("Incorrect order", 10L, activeTransformers.get(0).getTransformationTime());
-        assertEquals("Incorrect order", 20L, activeTransformers.get(1).getTransformationTime());
-        assertEquals("Incorrect order", 25L, activeTransformers.get(2).getTransformationTime());
+        assertEquals("Incorrect order", 10L, activeTransformers.get(0).getTransformationTime(A, D));
+        assertEquals("Incorrect order", 20L, activeTransformers.get(1).getTransformationTime(A, D));
+        assertEquals("Incorrect order", 25L, activeTransformers.get(2).getTransformationTime(A, D));
     }
     
     public void testScoredRetrieval() throws Exception
@@ -180,9 +215,9 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     {
         AbstractContentTransformer2 dummyTransformer = new DummyTransformer(
                 mimetypeService,
-                transformerDebug,
-                dummyRegistry, MimetypeMap.MIMETYPE_FLASH,
-                MimetypeMap.MIMETYPE_EXCEL, 12345);
+                "transformer.testExplicit",
+                transformerDebug, transformerConfig,
+                dummyRegistry, MimetypeMap.MIMETYPE_FLASH, MimetypeMap.MIMETYPE_EXCEL, 12345);
         // set an explicit transformation
         ExplictTransformationDetails key =
             new ExplictTransformationDetails(
@@ -212,23 +247,21 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         
         public DummyTransformer(
                 MimetypeService mimetypeService,
-                TransformerDebug transformerDebug,
-                ContentTransformerRegistry registry, String sourceMimetype,
-                String targetMimetype, long transformationTime)
+                String name,
+                TransformerDebug transformerDebug, TransformerConfig transformerConfig,
+                ContentTransformerRegistry registry, String sourceMimetype, String targetMimetype, long transformationTime)
         {
             super.setMimetypeService(mimetypeService);
             super.setTransformerDebug(transformerDebug);
+            super.setTransformerConfig(transformerConfig);
             super.setRegistry(registry);
             this.sourceMimetype = sourceMimetype;
             this.targetMimetype = targetMimetype;
             this.transformationTime = transformationTime;
+            setBeanName(name+'.'+System.currentTimeMillis()%100000);
+
             // register
             register();
-        }
-        
-        protected void enable()
-        {
-            disable = false;
         }
         
         protected void disable()
@@ -262,16 +295,16 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
                 TransformationOptions options) throws Exception
         {
             // just update the transformation time
-            super.recordTime(transformationTime);
+            super.recordTime(sourceMimetype, targetMimetype, transformationTime);
         }
 
-        /**
-         * @return Returns the fixed dummy average transformation time
-         */
-        public synchronized long getTransformationTime()
-        {
-            return transformationTime;
-        }
+//        /**
+//         * @return Returns the fixed dummy average transformation time
+//         */
+//        public synchronized long getTransformationTime(String sourceMimetype, String targetMimetype)
+//        {
+//            return transformationTime;
+//        }
     }
 
     @Override

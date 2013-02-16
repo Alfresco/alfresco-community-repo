@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -118,6 +118,7 @@ public class TransformerDebug
         private final long start;
 
         private Call callType;
+        private Frame parent;
         private int childId;
         private Set<UnavailableTransformer> unavailableTransformers;
         private String failureReason;
@@ -127,7 +128,8 @@ public class TransformerDebug
         private Frame(Frame parent, String transformerName, String fromUrl, String sourceMimetype, String targetMimetype,
                 long sourceSize, TransformationOptions options, Call pushCall, boolean origDebugOutput)
         {
-            this.id = parent == null ? -1 : ++parent.childId;
+            this.id = -1;
+            this.parent = parent;
             this.fromUrl = fromUrl;
             this.transformerName = transformerName;
             this.sourceMimetype = sourceMimetype;
@@ -143,8 +145,8 @@ public class TransformerDebug
         {
             if (id == -1)
             {
-                id = uniqueId.getAndIncrement();
-            }
+                id = parent == null ? uniqueId.getAndIncrement() : ++parent.childId;
+            } 
             return id;
         }
         
@@ -223,14 +225,16 @@ public class TransformerDebug
     
     private final NodeService nodeService;
     private final MimetypeService mimetypeService;
+    private final TransformerConfig transformerConfig;
     
     /**
      * Constructor
      */
-    public TransformerDebug(NodeService nodeService, MimetypeService mimetypeService)
+    public TransformerDebug(NodeService nodeService, MimetypeService mimetypeService, TransformerConfig transformerConfig)
     {
         this.nodeService = nodeService;
         this.mimetypeService = mimetypeService;
+        this.transformerConfig = transformerConfig;
     }
 
     /**
@@ -373,8 +377,10 @@ public class TransformerDebug
                 long maxSourceSizeKBytes = trans.getMaxSourceSizeKBytes(frame.sourceMimetype, frame.targetMimetype, frame.options);
                 String size = maxSourceSizeKBytes > 0 ? "< "+fileSize(maxSourceSizeKBytes*1024) : "";
                 int padSize = 10 - size.length();
-                log((c == 'a' ? "**" : "  ") + (c++) + ") " + name + spaces(padName) + 
-                    size + spaces(padSize) + ms(trans.getTransformationTime()));
+                String priority = Integer.toString(transformerConfig.getPriority(trans, frame.sourceMimetype, frame.targetMimetype));
+                priority = spaces(2-priority.length())+priority;
+                log((c == 'a' ? "**" : "  ") + (c++) + ") " + priority + ' ' + name + spaces(padName) + 
+                    size + spaces(padSize) + ms(trans.getTransformationTime(frame.sourceMimetype, frame.targetMimetype)));
             }
             if (frame.unavailableTransformers != null)
             {
@@ -382,7 +388,7 @@ public class TransformerDebug
                 {
                     int pad = longestNameLength - unavailable.name.length();
                     String reason = "> "+fileSize(unavailable.maxSourceSizeKBytes*1024);
-                    log("--" + (c++) + ") " + unavailable.name + spaces(pad+1) + reason, unavailable.debug);
+                    log("--" + (c++) + ")    " + unavailable.name + spaces(pad+1) + reason, unavailable.debug);
                 }
             }
         }
@@ -390,7 +396,7 @@ public class TransformerDebug
 
     public void inactiveTransformer(ContentTransformer transformer)
     {
-        log(getName(transformer)+' '+ms(transformer.getTransformationTime())+" INACTIVE");
+        log(getName(transformer)+' '+ms(transformer.getTransformationTime(null, null))+" INACTIVE");
     }
 
     public void activeTransformer(int mimetypePairCount, ContentTransformer transformer, String sourceMimetype,
@@ -398,7 +404,7 @@ public class TransformerDebug
     {
         if (firstMimetypePair)
         {
-            log(getName(transformer)+' '+ms(transformer.getTransformationTime()));
+            log(getName(transformer)+' '+ms(transformer.getTransformationTime(sourceMimetype, targetMimetype)));
         }
         String i = Integer.toString(mimetypePairCount);
         log(spaces(5-i.length())+mimetypePairCount+") "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype)+
@@ -416,7 +422,7 @@ public class TransformerDebug
                 : spaces(10);
         char c = (char)('a'+transformerCount);
         log(mimetypes+
-                "  "+c+") "+getName(transformer)+' '+ms(transformer.getTransformationTime())+
+                "  "+c+") "+getName(transformer)+' '+ms(transformer.getTransformationTime(sourceMimetype, targetMimetype))+
                 ' '+fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
                 (maxSourceSizeKBytes == 0 || (explicit != null && !explicit) ? " disabled" : "")+ 
                 (explicit == null ? "" : explicit ? " EXPLICIT" : " not explicit"));
@@ -593,8 +599,8 @@ public class TransformerDebug
                 (fileName == null ? "" : fileName) +
                 (sourceSize >= 0 ? ' '+fileSize(sourceSize) : "") +
                 (transformerName == null ? "" : ' '+transformerName) +
-                (failureReason == null ? "" : ' '+failureReason) +
-                ' '+ms;
+                ' '+ms +
+                (failureReason == null ? "" : '\n'+failureReason.trim());
         info.log(message,  debug);
     }
 

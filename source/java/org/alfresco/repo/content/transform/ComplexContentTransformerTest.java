@@ -63,6 +63,7 @@ public class ComplexContentTransformerTest extends AbstractContentTransformerTes
         transformer = new ComplexContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerConfig(transformerConfig);
         // set the transformer list
         List<ContentTransformer> transformers = new ArrayList<ContentTransformer>(2);
         transformers.add(unoTransformer);

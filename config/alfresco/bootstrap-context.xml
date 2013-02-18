@@ -437,6 +437,9 @@
     <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />
     
     <bean id="Transformers" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="saveSetProperty">
+            <value>true</value>
+        </property>
     </bean>
     
     <!--  Start third party transformer Subsystem. -->

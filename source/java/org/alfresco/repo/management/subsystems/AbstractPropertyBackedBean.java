@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -55,6 +55,10 @@ import org.springframework.util.PropertyPlaceholderHelper;
 public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, ApplicationContextAware,
         ApplicationListener<ApplicationEvent>, InitializingBean, DisposableBean, BeanNameAware
 {
+    /**
+     *  When true, calls to setProperties / setProperty are persisted to the MBean if it exists.
+     */
+    private boolean saveSetProperty = false;
 
     /** The default final part of an ID. */
     protected static final String DEFAULT_INSTANCE_NAME = "default";
@@ -270,6 +274,14 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
             start(true, false);
         }
         return this.state;
+    }
+    
+    /**
+     *  When set to true, calls to setProperties / setProperty are persisted to the MBean if it exists.
+     */
+    public void setSaveSetProperty(boolean saveSetProperty)
+    {
+        this.saveSetProperty = saveSetProperty;
     }
 
     /**
@@ -669,8 +681,11 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                 // broadcast method returns. If there is no MBean (community edition) OR when
                 // initiated from the MBean (say setting a value via JConsole), nothing happens
                 // as a result of the broadcast.
-                logger.debug("setProperty() broadcastSetProperties");
-                this.registry.broadcastSetProperty(this, name, value);
+                if (saveSetProperty)
+                {
+                    logger.debug("setProperty() broadcastSetProperties");
+                    this.registry.broadcastSetProperty(this, name, value);
+                }
 
                 if (localSetProperties.get())
                 {
@@ -743,8 +758,11 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                 // broadcast method returns. If there is no MBean (community edition) OR when
                 // initiated from the MBean (say setting a value via JConsole), nothing happens
                 // as a result of the broadcast.
-                logger.debug("setProperties() broadcastSetProperties");
-                this.registry.broadcastSetProperties(this, properties);
+                if (saveSetProperty)
+                {
+                    logger.debug("setProperties() broadcastSetProperties");
+                    this.registry.broadcastSetProperties(this, properties);
+                }
 
                 if (localSetProperties.get())
                 {

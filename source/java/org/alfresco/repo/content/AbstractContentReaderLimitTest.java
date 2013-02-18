@@ -62,7 +62,7 @@ public class AbstractContentReaderLimitTest
     // with or without a delay. Used to make sure different runs
     // don't result in failing tests but at the same time that
     // they will if there is a real problem.
-    private static final int MARGIN_OF_ERROR_PERCENTAGE_SLOW = 50;
+    private static final int MARGIN_OF_ERROR_PERCENTAGE_SLOW = 100;
     private static final int MARGIN_OF_ERROR_PERCENTAGE_FAST = 900;
     
     private DummyAbstractContentReader reader;

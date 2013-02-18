@@ -76,5 +76,20 @@
        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
        <property name="capabilityService" ref="CapabilityService"/>
    </bean>
+   
+   <bean id="org_alfresco_module_rm_RMv2RMAdminUserPatch"
+         parent="module.baseComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.RMv2RMAdminUserPatch">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_RMv2RMAdminUserPatch"/>
+       <property name="description" value="Adds the global RM admin user to all existing file plans."/>
+       <property name="sinceVersion" value="2.1"/>
+       <property name="appliesFromVersion" value="2.1"/>
+       <property name="recordsManagementService" ref="RecordsManagementService"/>
+       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+       <property name="authenticationService" ref="AuthenticationService" />
+       <property name="personService" ref="PersonService" />
+       <property name="password" value="${rm.rmadmin.pwd}" />
+   </bean>
 
 </beans>

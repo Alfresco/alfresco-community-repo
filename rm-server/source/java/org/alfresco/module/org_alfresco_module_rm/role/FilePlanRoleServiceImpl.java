@@ -332,6 +332,9 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                             // Add the creating user to the administration group
                             String user = AuthenticationUtil.getFullyAuthenticatedUser();
                             authorityService.addAuthority(role.getRoleGroupName(), user);
+                            
+                            // add the dynamic admin authority
+                            authorityService.addAuthority(role.getRoleGroupName(), FilePlanRoleService.RM_ADMIN_USER);
                         }
                     }
                 }
@@ -619,6 +622,11 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         {
             public Role doWork() throws Exception
             {
+                if (existsRole(rmRootNode, role) == false)
+                {
+                    throw new AlfrescoRuntimeException("Unable to update role " + role + ", because it does not exist.");
+                }
+                
                 String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, rmRootNode));
 
                 // Reset the role display name
@@ -646,6 +654,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      */
     public void deleteRole(final NodeRef rmRootNode, final String role)
     {
+        // ensure that we are not trying to delete the admin role
+        if (ROLE_ADMIN.equals(role) == true)
+        { 
+            throw new AlfrescoRuntimeException("Can not delete the records management administration role.");
+        }
+        
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Boolean doWork() throws Exception

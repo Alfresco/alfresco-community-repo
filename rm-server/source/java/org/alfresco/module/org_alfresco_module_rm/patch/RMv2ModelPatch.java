@@ -43,7 +43,7 @@ public class RMv2ModelPatch extends AbstractModuleComponent
                             implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(NotificationTemplatePatch.class);  
+    private static Log logger = LogFactory.getLog(RMv2ModelPatch.class);  
     
     private static long BATCH_SIZE = 100000L;
     

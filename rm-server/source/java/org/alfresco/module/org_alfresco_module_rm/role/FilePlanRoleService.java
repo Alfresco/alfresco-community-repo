@@ -31,6 +31,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface FilePlanRoleService
 {
+    /** Default rm admin user */
+    public static final String RM_ADMIN_USER            = "rmadmin";
+    
     /** Default role names */
     public static final String ROLE_USER                = "User";
     public static final String ROLE_POWER_USER          = "PowerUser";

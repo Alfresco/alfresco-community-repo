@@ -662,6 +662,22 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     }
     
     /**
+     * Override to ensure the tests are run as the 'rmadmin' user by default.
+     */
+    
+    @Override
+    protected <A> A doTestInTransaction(Test<A> test)
+    {
+        return super.doTestInTransaction(test, FilePlanRoleService.RM_ADMIN_USER);
+    }
+    
+    @Override
+    protected void doTestInTransaction(FailureTest test)
+    {
+        super.doTestInTransaction(test, FilePlanRoleService.RM_ADMIN_USER);
+    }
+    
+    /**
      * Helper class to try and simplify {@link Void} tests.
      * 
      * @author Roy Wetherall

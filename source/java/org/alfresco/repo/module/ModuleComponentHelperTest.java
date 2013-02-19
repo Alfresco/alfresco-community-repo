@@ -258,8 +258,8 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
                 ModuleDetails moduleDetails = new ModuleDetailsImpl(
                         MODULE_IDS[i],
                         currentVersion,
-                        "Module-" + i,
-                        "Description-" + i);
+                        "",
+                        "");
                 details.add(moduleDetails);
             }
             // Done

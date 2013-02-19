@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.AbstractTransformationSourceOptions;
 
 /**
@@ -52,8 +53,8 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
     public boolean isApplicableForMimetype(String sourceMimetype)
     {
         return ((sourceMimetype != null && 
-                sourceMimetype.startsWith(MIMETYPE_VIDEO_PREFIX) || 
-                sourceMimetype.startsWith(MIMETYPE_AUDIO_PREFIX)) ||
+                sourceMimetype.startsWith(MimetypeMap.PREFIX_VIDEO) || 
+                sourceMimetype.startsWith(MimetypeMap.PREFIX_AUDIO)) ||
                 super.isApplicableForMimetype(sourceMimetype));
     }
     

@@ -22,6 +22,8 @@ package org.alfresco.service.cmr.repository;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.repo.content.MimetypeMap;
+
 /**
  * DTO used to store options for ImageMagick cropping.
  * 
@@ -40,7 +42,7 @@ public class CropSourceOptions extends AbstractTransformationSourceOptions
     public boolean isApplicableForMimetype(String sourceMimetype)
     {
         return ((sourceMimetype != null && 
-                sourceMimetype.startsWith(MIMETYPE_IMAGE_PREFIX)) ||
+                sourceMimetype.startsWith(MimetypeMap.PREFIX_IMAGE)) ||
                 super.isApplicableForMimetype(sourceMimetype));
     }
 

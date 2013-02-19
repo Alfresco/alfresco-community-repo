@@ -30,9 +30,6 @@ import java.util.Map;
  */
 public abstract class AbstractTransformationSourceOptions implements TransformationSourceOptions, Cloneable
 {
-    protected static final String MIMETYPE_VIDEO_PREFIX = "video/";
-    protected static final String MIMETYPE_AUDIO_PREFIX = "audio/";
-    protected static final String MIMETYPE_IMAGE_PREFIX = "image/";
 
     /** The list of applicable mimetypes */
     private List<String> applicabledMimetypes;

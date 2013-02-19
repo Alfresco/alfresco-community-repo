@@ -250,7 +250,7 @@ public class ModuleManagementToolTest extends TestCase
     {
         manager.setVerbose(true);
         
-        String warLocation = getFileLocation(".war", "module/test.war");
+        String warLocation = getFileLocation(".war", "module/alfresco-4.2.c.war");
         String ampLocation = getFileLocation(".amp", "module/test_v4.amp");
 
         try
@@ -263,8 +263,18 @@ public class ModuleManagementToolTest extends TestCase
         {
         	assertTrue(e.getMessage().contains("The amp will overwrite an existing file"));
         }
-        this.manager.installModule(ampLocation, warLocation, false, true, false); //install it again
-        this.manager.installModule(ampLocation, warLocation, false, true, false); //install it again, just to be sure
+        
+        String ampv2Location = getFileLocation(".amp", "module/test_v2.amp");
+        warLocation = getFileLocation(".war", "module/alfresco-4.2.c.war");  //Get a new war file
+        this.manager.installModule(ampLocation, warLocation, false, true, false); //install v1
+        this.manager.installModule(ampv2Location, warLocation, false, true, false); //install v2
+        
+        //install another amp that replaces the same files
+        ampLocation = getFileLocation(".amp", "module/test_v4.amp");
+        warLocation = getFileLocation(".war", "module/alfresco-4.2.c.war");  //Get a new war file
+        String amp5Location = getFileLocation(".amp", "module/test_v7.amp");  //new amp that overides existing files
+        this.manager.installModule(ampLocation, warLocation, false, true, false);
+        this.manager.installModule(amp5Location, warLocation, false, true, false);
     }
     
     public void testInstallFromDir()

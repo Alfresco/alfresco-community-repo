@@ -583,6 +583,14 @@ public class ModuleManagementTool implements LogOutput
                             backupLocation = BACKUP_DIR + "/" + generateGuid() + ".bin";
                             if (preview == false)
                             {
+                                //Create the directory if it doesn't exist.
+                                TFile backupLocationDirectory = new TFile(warFileLocation+ BACKUP_DIR);
+                                if (!backupLocationDirectory.exists())
+                                {
+                                    backupLocationDirectory.mkdir();
+                                }
+                                
+                                //Backup the file
                                 TFile backupFile = new TFile(warFileLocation + backupLocation);
                                 destinationChild.cp_rp(backupFile);
                             }

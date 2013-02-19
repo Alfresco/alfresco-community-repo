@@ -184,7 +184,8 @@
           "UpgradeDowngradeAndDeclassifyRecords",
           "UpdateExemptionCategories",
           "MapClassificationGuideMetadata",
-          "ManageAccessControls"
+          "ManageAccessControls",
+          "ManageRules"
       ]
    }
 ]

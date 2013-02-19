@@ -340,5 +340,8 @@
 
    <!-- Group capabilities -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-group-context.xml"/>
+   
+   <!-- Rule capabilities -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-rule-context.xml"/>
 
 </beans>

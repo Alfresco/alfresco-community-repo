@@ -345,8 +345,11 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                             String user = AuthenticationUtil.getFullyAuthenticatedUser();
                             authorityService.addAuthority(role.getRoleGroupName(), user);
                             
-                            // add the dynamic admin authority
-                            authorityService.addAuthority(role.getRoleGroupName(), filePlanAuthenticationService.getRmAdminUserName());
+                            if (filePlanAuthenticationService.getRmAdminUserName().equals(user) == false)
+                            {
+                                // add the dynamic admin authority
+                                authorityService.addAuthority(role.getRoleGroupName(), filePlanAuthenticationService.getRmAdminUserName());
+                            }
                         }
                     }
                 }

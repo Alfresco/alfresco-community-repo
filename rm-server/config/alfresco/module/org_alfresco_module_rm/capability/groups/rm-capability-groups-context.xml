@@ -10,6 +10,12 @@
       <property name="capabilityService" ref="CapabilityService"/>
     </bean>
 
+   <bean id="recordsGroup"
+      parent="groupBase">
+      <property name="id" value="records"/>
+      <property name="index" value="5"/>
+   </bean>
+
    <bean id="auditGroup"
       parent="groupBase">
       <property name="id" value="audit"/>
@@ -64,12 +70,6 @@
       <property name="index" value="90"/>
    </bean>
 
-   <bean id="recordsGroup"
-      parent="groupBase">
-      <property name="id" value="records"/>
-      <property name="index" value="100"/>
-   </bean>
-
    <bean id="referencesAndLinksGroup"
       parent="groupBase">
       <property name="id" value="referencesAndLinks"/>
@@ -86,6 +86,12 @@
       parent="groupBase">
       <property name="id" value="vitalRecords"/>
       <property name="index" value="130"/>
+   </bean>
+   
+   <bean id="rulesGroup"
+      parent="groupBase">
+      <property name="id" value="rules"/>
+      <property name="index" value="140"/>
    </bean>
 
 </beans>

@@ -112,6 +112,9 @@ public class RMv21CapabilityPatch extends AbstractModuleComponent
                           FilePlanRoleService.ROLE_POWER_USER, 
                           FilePlanRoleService.ROLE_RECORDS_MANAGER,
                           FilePlanRoleService.ROLE_SECURITY_OFFICER);
+            addCapability(filePlan,
+                          "ManageRules",
+                          FilePlanRoleService.ROLE_ADMIN);
             
         }
         
@@ -139,11 +142,23 @@ public class RMv21CapabilityPatch extends AbstractModuleComponent
         for (String roleName : roles)
         {
             Role role = filePlanRoleService.getRole(filePlan, roleName);
+            
             if (role != null)
             {
+                // get the roles current capabilities
                 Set<Capability> capabilities = role.getCapabilities();
-                capabilities.add(capability);
-                filePlanRoleService.updateRole(filePlan, role.getName(), role.getDisplayLabel(), capabilities);
+                
+                // only update if the capability is missing
+                if (capabilities.contains(capability) == false)
+                {                
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("  ... adding capability " + capabilityName + " to role " + role.getName());
+                    }
+                    
+                    capabilities.add(capability);
+                    filePlanRoleService.updateRole(filePlan, role.getName(), role.getDisplayLabel(), capabilities);
+                }
             }            
         }
     }

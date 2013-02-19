@@ -33,6 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -78,6 +79,9 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** Node service */
     private NodeService nodeService;
+    
+    /** File plan authentication service */
+    private FilePlanAuthenticationService filePlanAuthenticationService;
 
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
@@ -131,6 +135,14 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
+    }
+    
+    /**
+     * @param filePlanAuthenticationService file plan authentication service
+     */
+    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
+    {
+        this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
     
     /**
@@ -334,7 +346,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                             authorityService.addAuthority(role.getRoleGroupName(), user);
                             
                             // add the dynamic admin authority
-                            authorityService.addAuthority(role.getRoleGroupName(), FilePlanRoleService.RM_ADMIN_USER);
+                            authorityService.addAuthority(role.getRoleGroupName(), filePlanAuthenticationService.getRmAdminUserName());
                         }
                     }
                 }

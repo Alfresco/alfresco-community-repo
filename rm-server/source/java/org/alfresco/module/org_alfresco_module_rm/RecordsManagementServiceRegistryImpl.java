@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
@@ -165,5 +166,14 @@ public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegis
     public FilePlanPermissionService getFilePlanPermissionService()
     {
         return (FilePlanPermissionService) getService(FILE_PLAN_PERMISSION_SERVICE);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanAuthenticationService()
+     */
+    @Override
+    public FilePlanAuthenticationService getFilePlanAuthenticationService()
+    {
+        return (FilePlanAuthenticationService) getService(FILE_PLAN_AUTHENTICATION_SERVICE);
     }
 }

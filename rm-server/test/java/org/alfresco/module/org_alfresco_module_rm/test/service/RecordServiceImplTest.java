@@ -29,6 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -491,7 +492,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
                 assertNotNull(nodeService.getProperty(record, PROP_DATE_FILED));
             }
-        });
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     private void checkPermissions(String permission, AccessStatus filePlanExpected,

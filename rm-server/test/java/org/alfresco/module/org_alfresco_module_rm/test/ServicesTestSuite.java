@@ -25,6 +25,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.service.CapabilityService
 import org.alfresco.module.org_alfresco_module_rm.test.service.DataSetServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.DispositionServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedSecurityServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.FilePlanRoleServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FreezeServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.ModelSecurityServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordServiceImplTest;
@@ -65,6 +66,7 @@ public class ServicesTestSuite extends TestSuite
         suite.addTestSuite(FreezeServiceImplTest.class);
         suite.addTestSuite(RecordServiceImplTest.class);
         suite.addTestSuite(CapabilityServiceImplTest.class);
+        suite.addTestSuite(FilePlanRoleServiceImplTest.class);
         return suite;
     }
 }

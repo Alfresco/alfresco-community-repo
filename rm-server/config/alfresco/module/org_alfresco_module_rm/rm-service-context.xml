@@ -84,8 +84,8 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isFilePlanComponent=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlanComponentKind=ACL_NODE.0.sys:base.ReadProperties, RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isFilePlanComponent=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlanComponentKind=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlanComponentKindFromType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordsManagementContainer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isFilePlan=RM.Read.0
@@ -545,6 +545,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
     </bean>
 
     <bean id="FilePlanRoleService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1137,6 +1138,41 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.hideRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
+                ]]>
+            </value>
+        </property>
+    </bean>
+    
+    <!--  File Plan Authentication Service -->
+    
+    <bean id="filePlanAuthenticationService"
+          class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl">
+     	<property name="rmAdminUserName" value="${bootstrap.rmadmin.name}" />
+    </bean>
+
+    <bean id="FilePlanAuthenticationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService</value>
+        </property>
+        <property name="target">
+            <ref bean="filePlanAuthenticationService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FilePlanAuthenticationService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FilePlanAuthenticationService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="FilePlanAuthenticationService_transaction" parent="baseTransaction"/>
+
+    <bean id="FilePlanAuthenticationService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
+    			org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService.*=RM_ALLOW
                 ]]>
             </value>
         </property>

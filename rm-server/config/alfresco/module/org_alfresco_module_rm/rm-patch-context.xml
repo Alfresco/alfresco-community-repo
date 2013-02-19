@@ -89,7 +89,8 @@
        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
        <property name="authenticationService" ref="AuthenticationService" />
        <property name="personService" ref="PersonService" />
-       <property name="password" value="${rm.rmadmin.pwd}" />
+       <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
+       <property name="password" value="${bootstrap.rmadmin.pwd}" />
    </bean>
 
 </beans>

@@ -26,6 +26,8 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -45,7 +47,7 @@ public class RMv2RMAdminUserPatch extends AbstractModuleComponent implements Bea
     /** Logger */
     private static Log logger = LogFactory.getLog(RMv2RMAdminUserPatch.class);
 
-    private String password = "rmadmin";
+    private String password = FilePlanAuthenticationServiceImpl.DEFAULT_RM_ADMIN_PWD;
     
     private MutableAuthenticationService authenticationService;
     
@@ -54,6 +56,8 @@ public class RMv2RMAdminUserPatch extends AbstractModuleComponent implements Bea
     private RecordsManagementService recordsManagementService;
     
     private FilePlanRoleService filePlanRoleService;
+    
+    private FilePlanAuthenticationService filePlanAuthenticationService;
     
     public void setPassword(String password)
     {
@@ -80,6 +84,11 @@ public class RMv2RMAdminUserPatch extends AbstractModuleComponent implements Bea
         this.filePlanRoleService = filePlanRoleService;
     }
     
+    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
+    {
+        this.filePlanAuthenticationService = filePlanAuthenticationService;
+    }
+    
     /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
@@ -91,16 +100,17 @@ public class RMv2RMAdminUserPatch extends AbstractModuleComponent implements Bea
             logger.debug("RM Module RMv2RMAdminUserPatch ...");
         }                
         
-        if (authenticationService.authenticationExists(FilePlanRoleService.RM_ADMIN_USER) == false)
+        String user = filePlanAuthenticationService.getRmAdminUserName();
+        if (authenticationService.authenticationExists(user) == false)
         {
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug("   ... creating RM Admin user");
             }
             
-            authenticationService.createAuthentication(FilePlanRoleService.RM_ADMIN_USER, password.toCharArray());
+            authenticationService.createAuthentication(user, password.toCharArray());
             Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-            properties.put(ContentModel.PROP_USERNAME, FilePlanRoleService.RM_ADMIN_USER);
+            properties.put(ContentModel.PROP_USERNAME, user);
             personService.createPerson(properties);
             
             if (logger.isDebugEnabled() == true)
@@ -111,7 +121,7 @@ public class RMv2RMAdminUserPatch extends AbstractModuleComponent implements Bea
             List<NodeRef> filePlans = recordsManagementService.getFilePlans();
             for (NodeRef filePlan : filePlans)
             {
-                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, FilePlanRoleService.RM_ADMIN_USER);
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, user);
             }
             
             if (logger.isDebugEnabled() == true)

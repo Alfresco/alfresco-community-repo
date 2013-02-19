@@ -39,6 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -132,6 +133,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected FreezeService freezeService;
     protected RecordService recordService;
     protected FilePlanService filePlanService;
+    protected FilePlanAuthenticationService filePlanAuthenticationService;
     
     /** test data */
     protected StoreRef storeRef;
@@ -350,6 +352,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         freezeService = (FreezeService) applicationContext.getBean("FreezeService");
         recordService = (RecordService) applicationContext.getBean("RecordService");
         filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
+        filePlanAuthenticationService = (FilePlanAuthenticationService) applicationContext.getBean("FilePlanAuthenticationService");
     }
     
     /**
@@ -668,13 +671,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     @Override
     protected <A> A doTestInTransaction(Test<A> test)
     {
-        return super.doTestInTransaction(test, FilePlanRoleService.RM_ADMIN_USER);
+        return super.doTestInTransaction(test, filePlanAuthenticationService.getRmAdminUserName());
     }
     
     @Override
     protected void doTestInTransaction(FailureTest test)
     {
-        super.doTestInTransaction(test, FilePlanRoleService.RM_ADMIN_USER);
+        super.doTestInTransaction(test, filePlanAuthenticationService.getRmAdminUserName());
     }
     
     /**

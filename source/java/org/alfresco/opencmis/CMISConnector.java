@@ -2888,7 +2888,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         ri.setName(currentDescriptor.getName());
         ri.setDescription(currentDescriptor.getName());
         ri.setVendorName("Alfresco");
-        ri.setProductName("Alfresco Repository (" + currentDescriptor.getEdition() + ")");
+        ri.setProductName("Alfresco " + descriptorService.getServerDescriptor().getEdition());
         ri.setProductVersion(currentDescriptor.getVersion());
         ri.setRootFolder(getRootNodeRef().toString());
         ri.setCmisVersionSupported("1.0");

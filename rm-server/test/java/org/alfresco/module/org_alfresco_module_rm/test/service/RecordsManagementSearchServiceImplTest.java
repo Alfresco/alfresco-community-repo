@@ -23,6 +23,7 @@ import java.util.List;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.util.TestWithUserUtils;
@@ -89,7 +90,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 
                 return null;
             }
-        });
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**
@@ -117,14 +118,12 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 
                 return null;
             }
-        });
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     @Override
     protected void tearDown() throws Exception
     {
-        super.tearDown();
-        
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -136,7 +135,9 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 
                 return null;
             }
-        });
+        }, AuthenticationUtil.getSystemUserName());
+        
+        super.tearDown();
     }
     
     public void testSearch()
@@ -156,7 +157,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 
                 return null;
             }
-        });
+        }, AuthenticationUtil.getSystemUserName());
         
         // Property search
         

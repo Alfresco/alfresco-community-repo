@@ -101,6 +101,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     /** Common test utils */
     protected CommonRMTestUtils utils;
     
+    /** RM Admin user name */
+    protected String rmAdminUserName;
+    
     /** Services */
     protected NodeService nodeService;
     protected ContentService contentService;
@@ -292,6 +295,20 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         
         // Initialise the service beans
         initServices();
+        
+        // grab the rmadmin user name
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                // As system user
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                rmAdminUserName = filePlanAuthenticationService.getRmAdminUserName();
+                
+                return null;
+            }
+        });
         
         // Setup test data
         setupTestData();               
@@ -671,13 +688,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     @Override
     protected <A> A doTestInTransaction(Test<A> test)
     {
-        return super.doTestInTransaction(test, filePlanAuthenticationService.getRmAdminUserName());
+        return super.doTestInTransaction(test, rmAdminUserName);
     }
     
     @Override
     protected void doTestInTransaction(FailureTest test)
     {
-        super.doTestInTransaction(test, filePlanAuthenticationService.getRmAdminUserName());
+        super.doTestInTransaction(test, rmAdminUserName);
     }
     
     /**

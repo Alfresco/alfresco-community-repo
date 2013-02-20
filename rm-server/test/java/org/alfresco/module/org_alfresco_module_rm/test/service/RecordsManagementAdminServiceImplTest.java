@@ -524,7 +524,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                 
                 return null;
             }
-        });       
+        }, AuthenticationUtil.getSystemUserName());       
     }
     
   

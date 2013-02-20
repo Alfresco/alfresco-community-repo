@@ -108,13 +108,15 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
             @Override
             public Void run() throws Exception
             {
+                int initialSize = capabilityService.getGroups().size();
+                
                 GroupImpl testGroup = new GroupImpl();
                 testGroup.setId("testGroup");
                 testGroup.setIndex(140);
                 testGroup.setTitle("Test group");
                 capabilityService.addGroup(testGroup);
 
-                assertTrue(capabilityService.getGroups().size() == 14);
+                assertEquals(initialSize+1, capabilityService.getGroups().size());
 
                 Group group = capabilityService.getGroup("testGroup");
                 assertNotNull(group);
@@ -133,36 +135,10 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
             {
                 Group testGroup = capabilityService.getGroup("testGroup");
                 assertNotNull(testGroup);
+                int initialSize = capabilityService.getGroups().size();
 
                 capabilityService.removeGroup(testGroup);
-                assertTrue(capabilityService.getGroups().size() == 13);
-
-                return null;
-            }
-        });
-
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                List<Group> groups = capabilityService.getGroups();
-                assertNotNull(groups);
-
-                int size = groups.size();
-                assertTrue(size == 13);
-
-                Group auditGroup = groups.get(0);
-                assertNotNull(auditGroup);
-                assertTrue(auditGroup.getIndex() == 10);
-                assertTrue(auditGroup.getId().equalsIgnoreCase("audit"));
-                assertTrue(auditGroup.getTitle().equalsIgnoreCase("Audit"));
-
-                Group vitalRecords = groups.get(size - 1);
-                assertNotNull(vitalRecords);
-                assertTrue(vitalRecords.getIndex() == 130);
-                assertTrue(vitalRecords.getId().equalsIgnoreCase("vitalRecords"));
-                assertTrue(vitalRecords.getTitle().equalsIgnoreCase("Vital Records"));
+                assertEquals(initialSize-1, capabilityService.getGroups().size());
 
                 return null;
             }
@@ -186,7 +162,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
                 assertNotNull(auditCapabilities);
 
                 int vitalRecordCapabilitiesSize = auditCapabilities.size();
-                assertTrue(vitalRecordCapabilitiesSize == 6);
+                assertEquals(4, vitalRecordCapabilitiesSize);
 
                 for (int i = 1; i == vitalRecordCapabilitiesSize; i++)
                 {
@@ -202,7 +178,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
                 assertNotNull(vitalRecordCapabilities);
 
                 vitalRecordCapabilitiesSize = vitalRecordCapabilities.size();
-                assertEquals(3, vitalRecordCapabilitiesSize);
+                assertEquals(1, vitalRecordCapabilitiesSize);
 
                 return null;
             }

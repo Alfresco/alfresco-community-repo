@@ -157,4 +157,29 @@
         </property>
     </bean>
     
+    <!--  Rule Service -->
+    
+    <bean id="ruleService" class="org.alfresco.repo.rule.ExtendedRuleServiceImpl" init-method="init">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="runtimeNodeService" ref="nodeService"/>
+        <property name="copyService" ref="copyService"/>
+        <property name="actionService" ref="ActionService"/>
+        <property name="runtimeActionService" ref="actionService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="permissionService" ref="permissionService"/>
+	    <property name="nodeRulesCache" ref="nodeRulesCache"/>
+        <property name="rulesDisabled">
+            <value>false</value>
+        </property>
+    
+    	<!--  Since RM 2.1 -->
+    	<property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
+    	<property name="recordsManagementService" ref="RecordsManagementService" />
+    	<property name="runAsRmAdmin">
+    		<value>${rm.rule.runasrmadmin}</value>
+    	</property>    
+        
+   </bean>
+    
 </beans>    

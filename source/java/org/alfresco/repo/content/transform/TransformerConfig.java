@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -68,6 +68,12 @@ public interface TransformerConfig
     /**
      * The separator between the transformer name and two mimetype extensions in a property name.
      */
+    static final String EXTENSIONS_SEPARATOR = ".extensions.";
+    
+    /**
+     * The separator between the transformer name and wildcarded mimetypes rather than extensions in a property name.
+     * Effectively equivalent to multiple properties using the {@link #EXTENSIONS_SEPARATOR}.
+     */
     static final String MIMETYPES_SEPARATOR = ".mimetypes.";
     
     /**
@@ -105,6 +111,16 @@ public interface TransformerConfig
     static final String INITIAL_COUNT = ".count";
     
     /**
+     * Suffixes for limits.
+     */
+    static final String MAX_SOURCE_SIZE_K_BYTES = '.'+TransformationOptionLimits.OPT_MAX_SOURCE_SIZE_K_BYTES;
+    static final String TIMEOUT_MS = '.'+TransformationOptionLimits.OPT_TIMEOUT_MS;
+    static final String MAX_PAGES = '.'+TransformationOptionLimits.OPT_MAX_PAGES;
+    static final String READ_LIMIT_K_BYTES = '.'+TransformationOptionLimits.OPT_READ_LIMIT_K_BYTES;
+    static final String READ_LIMIT_TIME_MS = '.'+TransformationOptionLimits.OPT_READ_LIMIT_TIME_MS;
+    static final String PAGE_LIMIT = '.'+TransformationOptionLimits.OPT_PAGE_LIMIT;
+
+    /**
      * To support the historical concept of EXPLICIT transformers, all such transformers
      * are given a {@link PRIORITY_EXPLICIT} (5). By default transformers have a default of 10.
      * A value of 5 allows better transformers to be added later.
@@ -112,15 +128,20 @@ public interface TransformerConfig
     public int PRIORITY_EXPLICIT = 5;
     
     /**
+     * By default transformers have a default of 10.
+     */
+    public int PRIORITY_DEFAULT = 10;
+    
+    /**
      * Suffixes to property names used to define transformation limits 
      */
     static final Collection<String> LIMIT_SUFFIXES = Arrays.asList(new String [] {
-            '.'+TransformationOptionLimits.OPT_MAX_SOURCE_SIZE_K_BYTES,
-            '.'+TransformationOptionLimits.OPT_TIMEOUT_MS,
-            '.'+TransformationOptionLimits.OPT_MAX_PAGES,
-            '.'+TransformationOptionLimits.OPT_READ_LIMIT_K_BYTES,
-            '.'+TransformationOptionLimits.OPT_READ_LIMIT_TIME_MS,
-            '.'+TransformationOptionLimits.OPT_PAGE_LIMIT
+            MAX_SOURCE_SIZE_K_BYTES,
+            TIMEOUT_MS,
+            MAX_PAGES,
+            READ_LIMIT_K_BYTES,
+            READ_LIMIT_TIME_MS,
+            PAGE_LIMIT
     });
 
     /**

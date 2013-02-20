@@ -377,8 +377,7 @@ public class TransformerDebug
                 long maxSourceSizeKBytes = trans.getMaxSourceSizeKBytes(frame.sourceMimetype, frame.targetMimetype, frame.options);
                 String size = maxSourceSizeKBytes > 0 ? "< "+fileSize(maxSourceSizeKBytes*1024) : "";
                 int padSize = 10 - size.length();
-                String priority = Integer.toString(transformerConfig.getPriority(trans, frame.sourceMimetype, frame.targetMimetype));
-                priority = spaces(2-priority.length())+priority;
+                String priority = gePriority(trans, frame.sourceMimetype, frame.targetMimetype);
                 log((c == 'a' ? "**" : "  ") + (c++) + ") " + priority + ' ' + name + spaces(padName) + 
                     size + spaces(padSize) + ms(trans.getTransformationTime(frame.sourceMimetype, frame.targetMimetype)));
             }
@@ -394,38 +393,46 @@ public class TransformerDebug
         }
     }
 
+    private String gePriority(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
+    {
+        String priority = '[' + Integer.toString(transformerConfig.getPriority(transformer, sourceMimetype, targetMimetype)) + ']';
+        priority = spaces(4-priority.length())+priority;
+        return priority;
+    }
+
     public void inactiveTransformer(ContentTransformer transformer)
     {
         log(getName(transformer)+' '+ms(transformer.getTransformationTime(null, null))+" INACTIVE");
     }
 
     public void activeTransformer(int mimetypePairCount, ContentTransformer transformer, String sourceMimetype,
-            String targetMimetype, long maxSourceSizeKBytes, Boolean explicit, boolean firstMimetypePair)
+            String targetMimetype, long maxSourceSizeKBytes, boolean firstMimetypePair)
     {
         if (firstMimetypePair)
         {
             log(getName(transformer)+' '+ms(transformer.getTransformationTime(sourceMimetype, targetMimetype)));
         }
         String i = Integer.toString(mimetypePairCount);
+        String priority = gePriority(transformer, sourceMimetype, targetMimetype);
         log(spaces(5-i.length())+mimetypePairCount+") "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype)+
+                priority +
                 ' '+fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
-                (maxSourceSizeKBytes == 0 || (explicit != null && !explicit) ? " disabled" : "")+ 
-                (explicit == null ? "" : explicit ? " EXPLICIT" : " not explicit"));
+                (maxSourceSizeKBytes == 0 ? " disabled" : ""));
     }
     
     public void activeTransformer(String sourceMimetype, String targetMimetype, 
             int transformerCount, ContentTransformer transformer, long maxSourceSizeKBytes,
-            Boolean explicit, boolean firstTransformer)
+            boolean firstTransformer)
     {
         String mimetypes = firstTransformer
                 ? getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype)
                 : spaces(10);
         char c = (char)('a'+transformerCount);
+        String priority = gePriority(transformer, sourceMimetype, targetMimetype);
         log(mimetypes+
-                "  "+c+") "+getName(transformer)+' '+ms(transformer.getTransformationTime(sourceMimetype, targetMimetype))+
+                "  "+c+") " + priority + ' ' + getName(transformer)+' '+ms(transformer.getTransformationTime(sourceMimetype, targetMimetype))+
                 ' '+fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
-                (maxSourceSizeKBytes == 0 || (explicit != null && !explicit) ? " disabled" : "")+ 
-                (explicit == null ? "" : explicit ? " EXPLICIT" : " not explicit"));
+                (maxSourceSizeKBytes == 0 ? " disabled" : ""));
     }
     
     private int getLongestTransformerNameLength(List<ContentTransformer> transformers,

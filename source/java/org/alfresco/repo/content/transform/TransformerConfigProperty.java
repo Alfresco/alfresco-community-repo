@@ -19,18 +19,15 @@
 package org.alfresco.repo.content.transform;
 
 import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
-import static org.alfresco.repo.content.transform.TransformerConfig.CONTENT;
 import static org.alfresco.repo.content.transform.TransformerConfig.DEFAULT_TRANSFORMER;
-import static org.alfresco.repo.content.transform.TransformerConfig.MIMETYPES_SEPARATOR;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.util.Triple;
 
 /**
  * Provides access to single transformer configuration property depending on the
@@ -43,76 +40,43 @@ public class TransformerConfigProperty  extends TransformerPropertyNameExtractor
     private Map<String, DoubleMap<String, String, String>> values;
 
     public TransformerConfigProperty(ChildApplicationContextFactory subsystem,
-            MimetypeService mimetypeService, String propertySuffix)
+            MimetypeService mimetypeService, String propertySuffix, String defaultValue)
     {
-        setValues(subsystem, mimetypeService, propertySuffix);
+        setValues(subsystem, mimetypeService, propertySuffix, defaultValue);
     }
 
     /**
      * Sets the transformer values created from system properties.  
      */
-    private void setValues(ChildApplicationContextFactory subsystem, MimetypeService mimetypeService, String propertySuffix)
+    private void setValues(ChildApplicationContextFactory subsystem, MimetypeService mimetypeService,
+            String suffix, String defaultValue)
     {
         values = new HashMap<String, DoubleMap<String, String, String>>();
 
         // Gets all the transformer, source and target combinations in properties that define
         // this value.
-        Set<Triple<String, String, String>> transformerNamesAndMimetypes =
-                getTransformerNamesAndExt(MIMETYPES_SEPARATOR, Collections.singletonList(propertySuffix), true, subsystem, mimetypeService);
+        Collection<TransformerSourceTargetValue> transformerNamesAndMimetypes =
+                getTransformerSourceTargetValues(Collections.singletonList(suffix), true, subsystem, mimetypeService);
 
-        // Add the system wide default just in case it is not included, as we always need this one
-        transformerNamesAndMimetypes.add(new Triple<String,String,String>(DEFAULT_TRANSFORMER, ANY, ANY));
+        // Add the system wide default if it does not exist, as we always need this one
+        TransformerSourceTargetValue transformerSourceTargetValue = 
+                new TransformerSourceTargetValue(DEFAULT_TRANSFORMER, ANY, ANY, defaultValue, suffix, mimetypeService);
+        if (transformerNamesAndMimetypes.contains(transformerSourceTargetValue.key()))
+        {
+            transformerNamesAndMimetypes.add(transformerSourceTargetValue);
+        }
         
         // Populate the transformer values
-        for (Triple<String, String, String> triple: transformerNamesAndMimetypes)
+        for (TransformerSourceTargetValue property: transformerNamesAndMimetypes)
         {
-            String transformerName = triple.getFirst();
-            String sourceExt = triple.getSecond();
-            String targetExt = triple.getThird();
-            String sourceMimetype = ANY.equals(sourceExt) ? ANY : mimetypeService.getMimetype(sourceExt);
-            String targetMimetype = ANY.equals(targetExt) ? ANY : mimetypeService.getMimetype(targetExt);
-
-            String value = newTransformerValue(transformerName, sourceExt, targetExt, subsystem, propertySuffix);
-            
-            DoubleMap<String, String, String> mimetypeLimits = this.values.get(transformerName);
+            DoubleMap<String, String, String> mimetypeLimits = this.values.get(property.transformerName);
             if (mimetypeLimits == null)
             {
                 mimetypeLimits = new DoubleMap<String, String, String>(ANY, ANY);
-                this.values.put(transformerName, mimetypeLimits);
+                this.values.put(property.transformerName, mimetypeLimits);
             }
-            mimetypeLimits.put(sourceMimetype, targetMimetype, value);
+            mimetypeLimits.put(property.sourceMimetype, property.targetMimetype, property.value);
         }
-    }
-    
-    /**
-     * Returns a String object using property values.
-     * @param transformerName
-     * @param sourceExt is null for overall transformer options rather than for a specific mimetype pair
-     * @param targetExt is null for overall transformer options rather than for a specific mimetype pair
-     * @return a String object or null if not created
-     */
-    private String newTransformerValue(String transformerName, String sourceExt, String targetExt,
-            ChildApplicationContextFactory subsystem, String propertySuffix)
-    {
-        String value = getValueFromProperties(transformerName, sourceExt, targetExt, subsystem, propertySuffix);
-        
-        // The overall values can be defined in another way 
-        if (value == null && ANY.equals(sourceExt) && ANY.equals(targetExt))
-        {
-            value = getValueFromProperties(transformerName, null, null, subsystem, propertySuffix);
-        }
-
-        return value;
-    }
-
-    private String getValueFromProperties(String transformerName, String sourceExt, String targetExt,
-            ChildApplicationContextFactory subsystem, String propertySuffix)
-    {
-        String propertyName = CONTENT+transformerName+
-                (sourceExt == null ? "" : MIMETYPES_SEPARATOR+sourceExt+'.'+targetExt)+
-                propertySuffix;
-         String value = subsystem.getProperty(propertyName);
-         return value;
     }
     
     private String getString(ContentTransformer transformer, String sourceMimetype,

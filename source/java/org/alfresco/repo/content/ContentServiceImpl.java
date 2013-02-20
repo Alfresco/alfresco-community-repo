@@ -805,16 +805,15 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype) &&
             transformerDebug.getFileName(transformOptions, true, 0).contains("debugTransformers.txt"))
         {
-            Map<String, Set<String>> explicitTransforms = debugExplicitTransforms();
-            debugActiveTransformersByTransformer(explicitTransforms);
-            debugActiveTransformersByMimetypes(explicitTransforms);
+            debugActiveTransformersByTransformer();
+            debugActiveTransformersByMimetypes();
         }
     }
     
     /**
      * Creates TransformerDebug that lists all the supported mimetype transformation for each transformer.
      */
-    private void debugActiveTransformersByTransformer(Map<String, Set<String>> explicitTransforms)
+    private void debugActiveTransformersByTransformer()
     {
         try
         {
@@ -837,20 +836,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                             {
                                 long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
                                         sourceMimetype, targetMimetype, options);
-                                
-                                // Is this an explicit transform, ignored because there are explicit transforms
-                                // or does not have explicit transforms.
-                                Boolean explicit = transformer.isExplicitTransformation(sourceMimetype,
-                                        targetMimetype, options);
-                                if (!explicit)
-                                {
-                                    Set<String> targetMimetypes = explicitTransforms.get(sourceMimetype);
-                                    explicit = (targetMimetypes == null || !targetMimetypes.contains(targetMimetype))
-                                        ? null
-                                        : Boolean.FALSE;
-                                }
                                 transformerDebug.activeTransformer(++mimetypePairCount, transformer,
-                                        sourceMimetype, targetMimetype, maxSourceSizeKBytes, explicit, first);
+                                        sourceMimetype, targetMimetype, maxSourceSizeKBytes, first);
                                 first = false;
                             }
                         }
@@ -875,7 +862,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     /**
      * Creates TransformerDebug that lists all available transformers for each mimetype combination.
      */
-    private void debugActiveTransformersByMimetypes(Map<String, Set<String>> explicitTransforms)
+    private void debugActiveTransformersByMimetypes()
     {
         try
         {
@@ -897,21 +884,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                             {
                                 long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
                                         sourceMimetype, targetMimetype, options);
-                                
-                                // Is this an explicit transform, ignored because there are explicit transforms
-                                // or does not have explicit transforms.
-                                Boolean explicit = transformer.isExplicitTransformation(sourceMimetype,
-                                        targetMimetype, options);
-                                if (!explicit)
-                                {
-                                    Set<String> targetMimetypes = explicitTransforms.get(sourceMimetype);
-                                    explicit = (targetMimetypes == null || !targetMimetypes.contains(targetMimetype))
-                                        ? null
-                                        : Boolean.FALSE;
-                                }
-                                transformerDebug.activeTransformer(sourceMimetype, targetMimetype,
-                                        transformerCount, transformer, maxSourceSizeKBytes, explicit,
-                                        transformerCount++ == 0);
+                               transformerDebug.activeTransformer(sourceMimetype, targetMimetype,
+                                        transformerCount, transformer, maxSourceSizeKBytes, transformerCount++ == 0);
                             }
                         }
                     }
@@ -926,43 +900,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         {
             transformerDebug.popMisc();
         }
-    }
-
-    /**
-     * Returns the explicit mimetype transformations. Key is the source mimetype
-     * and the value is a set of target mimetypes that are explicit.
-     */
-    private Map<String, Set<String>> debugExplicitTransforms()
-    {
-        Map<String, Set<String>> explicitTransforms = new HashMap<String, Set<String>>();
-
-        TransformationOptions options = new TransformationOptions();
-        for (String sourceMimetype : mimetypeService.getMimetypes())
-        {
-            for (String targetMimetype : mimetypeService.getMimetypes())
-            {
-                for (ContentTransformer transformer : transformerRegistry.getTransformers())
-                {
-                    if (transformer.isTransformable(sourceMimetype, -1, targetMimetype, options))
-                    {
-                        if (transformer.isExplicitTransformation(sourceMimetype, targetMimetype,
-                                options))
-                        {
-                            Set<String> targetMimetypes = explicitTransforms.get(sourceMimetype);
-                            if (targetMimetypes == null)
-                            {
-                                targetMimetypes = new HashSet<String>();
-                                explicitTransforms.put(sourceMimetype, targetMimetypes);
-                            }
-                            targetMimetypes.add(targetMimetype);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        
-        return explicitTransforms;
     }
     
     /**

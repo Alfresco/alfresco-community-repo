@@ -22,8 +22,9 @@ import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
 import static org.alfresco.repo.content.transform.TransformerConfig.CONTENT;
 import static org.alfresco.repo.content.transform.TransformerConfig.DEFAULT_TRANSFORMER;
 import static org.alfresco.repo.content.transform.TransformerConfig.LIMIT_SUFFIXES;
-import static org.alfresco.repo.content.transform.TransformerConfig.MIMETYPES_SEPARATOR;
+import static org.alfresco.repo.content.transform.TransformerConfig.EXTENSIONS_SEPARATOR;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -59,91 +60,73 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         limits = new HashMap<String, DoubleMap<String, String, TransformationOptionLimits>>();
 
         // Gets all the transformer, source and target combinations in properties that define limits.
-        Set<Triple<String, String, String>> transformerNamesAndExt =
-                getTransformerNamesAndExt(MIMETYPES_SEPARATOR, LIMIT_SUFFIXES, true, subsystem, mimetypeService);
+        Collection<TransformerSourceTargetValue> transformerNamesAndExt =
+                getTransformerSourceTargetValues(LIMIT_SUFFIXES, true, subsystem, mimetypeService);
 
         // Add the system wide default just in case it is not included, as we always need this one
-        transformerNamesAndExt.add(new Triple<String,String,String>(DEFAULT_TRANSFORMER, ANY, ANY));
+        TransformationOptionLimits options = getOrCreateTransformerOptionLimits(DEFAULT_TRANSFORMER, ANY, ANY);
         
         // Populate the transformer limits
-        for (Triple<String, String, String> triple: transformerNamesAndExt)
+        for (TransformerSourceTargetValue property: transformerNamesAndExt)
         {
-            String transformerName = triple.getFirst();
-            String sourceExt = triple.getSecond();
-            String targetExt = triple.getThird();
-            String sourceMimetype = ANY.equals(sourceExt) ? ANY : mimetypeService.getMimetype(sourceExt);
-            String targetMimetype = ANY.equals(targetExt) ? ANY : mimetypeService.getMimetype(targetExt);
-
-            TransformationOptionLimits limits = newTransformationOptionLimits(transformerName, sourceExt, targetExt, subsystem);
-            
-            DoubleMap<String, String, TransformationOptionLimits> mimetypeLimits =
-                    this.limits.get(transformerName);
-            if (mimetypeLimits == null)
-            {
-                mimetypeLimits = new DoubleMap<String, String, TransformationOptionLimits>(ANY, ANY);
-                this.limits.put(transformerName, mimetypeLimits);
-            }
-            mimetypeLimits.put(sourceMimetype, targetMimetype, limits);
+            options = getOrCreateTransformerOptionLimits(property.transformerName,
+                    property.sourceMimetype, property.targetMimetype);
+            setTransformationOptionsFromProperties(options, property.transformerName, property.sourceExt, property.targetExt,
+                    property.value, property.suffix);
         }
+    }
+
+    /**
+     * Returns the TransformationOptionLimits for the transformer and mimetype combination,
+     * creating and adding one if not already included.
+     */
+    private TransformationOptionLimits getOrCreateTransformerOptionLimits(String transformerName,
+            String sourceMimetype, String targetMimetype)
+    {
+        DoubleMap<String, String, TransformationOptionLimits> mimetypeLimits;
+        mimetypeLimits = limits.get(transformerName);
+        if (mimetypeLimits == null)
+        {
+            mimetypeLimits = new DoubleMap<String, String, TransformationOptionLimits>(ANY, ANY);
+            limits.put(transformerName, mimetypeLimits);
+        }
+        
+        TransformationOptionLimits options = mimetypeLimits.get(sourceMimetype, targetMimetype);
+        if (options == null)
+        {
+            options = new TransformationOptionLimits();
+            mimetypeLimits.put(sourceMimetype, targetMimetype, options);
+        }
+        return options;
     }
     
-    /**
-     * Returns a TransformationOptionLimits object using property values.
-     * @param transformerName
-     * @param sourceExt is null for overall transformer options rather than for a specific mimetype pair
-     * @param targetExt is null for overall transformer options rather than for a specific mimetype pair
-     * @return a TransformationOptionLimits object or null if not created
-     */
-    private TransformationOptionLimits newTransformationOptionLimits(String transformerName,
-            String sourceExt, String targetExt, ChildApplicationContextFactory subsystem)
+    private void setTransformationOptionsFromProperties(TransformationOptionLimits options,
+            String transformerName, String sourceExt, String targetExt, String value, String suffix)
     {
-        TransformationOptionLimits limits = new TransformationOptionLimits();
-        
-        // The overall values can be defined in two ways 
-        if (ANY.equals(sourceExt) && ANY.equals(targetExt))
+        long l = Long.parseLong(value);
+        if (suffix == TransformerConfig.MAX_SOURCE_SIZE_K_BYTES)
         {
-            setTransformationOptionsFromProperties(limits, transformerName, null, null, subsystem);
+            options.setMaxSourceSizeKBytes(l);
         }
-        setTransformationOptionsFromProperties(limits, transformerName, sourceExt, targetExt, subsystem);
-
-        return limits;
-    }
-
-    private void setTransformationOptionsFromProperties(TransformationOptionLimits limits,
-            String transformerName, String sourceExt, String targetExt, ChildApplicationContextFactory subsystem)
-    {
-        String propertyNameRoot = CONTENT+transformerName+
-                (sourceExt == null ? "" : MIMETYPES_SEPARATOR+sourceExt+'.'+targetExt);
-        int i = 0;
-        for (String suffix: LIMIT_SUFFIXES)
+        else if (suffix == TransformerConfig.TIMEOUT_MS)
         {
-            String value = subsystem.getProperty(propertyNameRoot+suffix);
-            if (value != null)
-            {
-                long l = Long.parseLong(value);
-                switch (i)
-                {
-                case 0:
-                    limits.setMaxSourceSizeKBytes(l);
-                    break;
-                case 1:
-                    limits.setTimeoutMs(l);
-                    break;
-                case 2:
-                    limits.setMaxPages((int)l);
-                    break;
-                case 3:
-                    limits.setReadLimitKBytes(l);
-                    break;
-                case 4:
-                    limits.setReadLimitTimeMs(l);
-                    break;
-                case 5:
-                    limits.setPageLimit((int)l);
-                    break;
-                }
-            }
-            i++;
+            options.setTimeoutMs(l);
+        }
+        else if (suffix == TransformerConfig.MAX_PAGES)
+        {
+            options.setMaxPages((int)l);
+        }
+        else if (suffix == TransformerConfig.READ_LIMIT_K_BYTES)
+        {
+            options.setReadLimitKBytes(l);
+        }
+        else if (suffix == TransformerConfig.READ_LIMIT_TIME_MS)
+        {
+            options.setReadLimitTimeMs(l);
+        }
+        else // if (suffix == TransformerConfig.PAGE_LIMIT)
+        {
+            options.setPageLimit((int)l);
         }
     }
     

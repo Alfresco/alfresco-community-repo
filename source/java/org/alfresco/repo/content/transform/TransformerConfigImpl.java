@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,9 +34,6 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  */
 public class TransformerConfigImpl extends AbstractLifecycleBean implements TransformerConfig
 {
-    /** The logger. */
-    private static Log logger = LogFactory.getLog(TransformerConfigImpl.class);
-    
     private MimetypeService mimetypeService;
 
     // Holds statistics about each transformer, sourceMimeType and targetMimetype combination.
@@ -88,11 +85,11 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         statistics= new TransformerConfigStatistics(this, mimetypeService);
         limits = new TransformerConfigLimits(getSubsystem(), mimetypeService);
         supported = new TransformerConfigSupported(getSubsystem(), mimetypeService);
-        priorities = new TransformerConfigProperty(getSubsystem(), mimetypeService, PRIORITY);
-        thresholdCounts = new TransformerConfigProperty(getSubsystem(), mimetypeService, THRESHOLD_COUNT);
-        errorTimes = new TransformerConfigProperty(getSubsystem(), mimetypeService, ERROR_TIME);
-        initialAverageTimes = new TransformerConfigProperty(getSubsystem(), mimetypeService, INITIAL_TIME);
-        initialCounts = new TransformerConfigProperty(getSubsystem(), mimetypeService, INITIAL_COUNT);
+        priorities = new TransformerConfigProperty(getSubsystem(), mimetypeService, PRIORITY, Integer.toString(PRIORITY_DEFAULT));
+        thresholdCounts = new TransformerConfigProperty(getSubsystem(), mimetypeService, THRESHOLD_COUNT, "3");
+        errorTimes = new TransformerConfigProperty(getSubsystem(), mimetypeService, ERROR_TIME, "120000");
+        initialAverageTimes = new TransformerConfigProperty(getSubsystem(), mimetypeService, INITIAL_TIME, "0");
+        initialCounts = new TransformerConfigProperty(getSubsystem(), mimetypeService, INITIAL_COUNT, "100000");
     }
     
     /**

@@ -67,8 +67,7 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         {
             options = getOrCreateTransformerOptionLimits(property.transformerName,
                     property.sourceMimetype, property.targetMimetype);
-            setTransformationOptionsFromProperties(options, property.transformerName, property.sourceExt, property.targetExt,
-                    property.value, property.suffix);
+            setTransformationOptionsFromProperties(options, property.value, property.suffix);
         }
     }
 
@@ -87,7 +86,7 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
             limits.put(transformerName, mimetypeLimits);
         }
         
-        TransformationOptionLimits options = mimetypeLimits.get(sourceMimetype, targetMimetype);
+        TransformationOptionLimits options = mimetypeLimits.getNoWildcards(sourceMimetype, targetMimetype);
         if (options == null)
         {
             options = new TransformationOptionLimits();
@@ -97,7 +96,7 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
     }
     
     private void setTransformationOptionsFromProperties(TransformationOptionLimits options,
-            String transformerName, String sourceExt, String targetExt, String value, String suffix)
+            String value, String suffix)
     {
         long l = Long.parseLong(value);
         if (suffix == TransformerConfig.MAX_SOURCE_SIZE_K_BYTES)

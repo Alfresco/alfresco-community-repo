@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -103,6 +103,22 @@ public class DoubleMap<K1, K2, V>
                     }
                 }
             }
+        }
+        
+        return value;
+    }
+    
+    /**
+     * Returns a value for the given keys without using wildcards.
+     */
+    public V getNoWildcards(K1 key1, K2 key2)
+    {
+        V value = null;
+        
+        Map<K2, V> map = mapMap.get(key1);
+        if (map != null)
+        {
+            value = map.get(key2);
         }
         
         return value;

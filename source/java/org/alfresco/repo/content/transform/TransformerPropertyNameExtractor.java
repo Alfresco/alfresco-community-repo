@@ -222,6 +222,14 @@ class TransformerSourceTargetValue
     {
         return new Triple<String, String, String>(transformerName, sourceExt, targetExt);
     }
+    
+    public String toString()
+    {
+        return transformerName+'.'+(sourceExt.equals(ANY) && targetExt.equals(ANY)
+                ? ""
+                : TransformerConfig.EXTENSIONS+'.'+sourceExt+'.'+targetExt+'.')+
+                suffix+'='+value;
+    }
 
     @Override
     public int hashCode()

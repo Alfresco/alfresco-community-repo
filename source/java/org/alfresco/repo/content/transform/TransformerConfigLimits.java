@@ -19,20 +19,16 @@
 package org.alfresco.repo.content.transform;
 
 import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
-import static org.alfresco.repo.content.transform.TransformerConfig.CONTENT;
 import static org.alfresco.repo.content.transform.TransformerConfig.DEFAULT_TRANSFORMER;
 import static org.alfresco.repo.content.transform.TransformerConfig.LIMIT_SUFFIXES;
-import static org.alfresco.repo.content.transform.TransformerConfig.EXTENSIONS_SEPARATOR;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
-import org.alfresco.util.Triple;
 
 /**
  * Provides access to transformer limits defined via properties.

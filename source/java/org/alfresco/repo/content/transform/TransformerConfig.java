@@ -68,13 +68,13 @@ public interface TransformerConfig
     /**
      * The separator between the transformer name and two mimetype extensions in a property name.
      */
-    static final String EXTENSIONS_SEPARATOR = ".extensions.";
+    static final String EXTENSIONS = ".extensions.";
     
     /**
      * The separator between the transformer name and wildcarded mimetypes rather than extensions in a property name.
-     * Effectively equivalent to multiple properties using the {@link #EXTENSIONS_SEPARATOR}.
+     * Effectively equivalent to multiple properties using the {@link #EXTENSIONS}.
      */
-    static final String MIMETYPES_SEPARATOR = ".mimetypes.";
+    static final String MIMETYPES = ".mimetypes.";
     
     /**
      * The suffix to property names for supported and unsupported combinations.

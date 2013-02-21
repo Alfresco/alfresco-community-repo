@@ -41,11 +41,9 @@ import org.alfresco.util.Triple;
  */
 public abstract class TransformerPropertyNameExtractor
 {
-    private static String[] SEPARATORS = new String[] {TransformerConfig.EXTENSIONS_SEPARATOR , TransformerConfig.MIMETYPES_SEPARATOR};
-    private static Pattern EXTENSIONS_SEPARATOR = Pattern.compile("[^].]\\.");
+    private static String[] SEPARATORS = new String[] {TransformerConfig.EXTENSIONS , TransformerConfig.MIMETYPES};
+    private static Pattern EXTENSIONS_SEPARATOR = Pattern.compile("[^]\\\\]\\.");
     private static String[] NO_EXT_MATCH = new String[0];
-    private static final String IS_MIMETYPE_SUBTYPE_WILDCARD_REGEX = 
-            "(application|audio|image|message|model|multipart|text|video)/.*\\" + ANY + ".*";
 
     /**
      * Returns a set of transformer name, source extension, target extension and value
@@ -89,21 +87,21 @@ public abstract class TransformerPropertyNameExtractor
                                 if (ext.length == 2)
                                 {
                                     name = name.substring(0,  i);
-                                    if (separator == TransformerConfig.EXTENSIONS_SEPARATOR)
+                                    if (separator == TransformerConfig.EXTENSIONS)
                                     {
                                         addTransformerSourceTargetValue(TransformerSourceTargetValues,
                                                 false, name, ext[0], ext[1], value, suffix, mimetypeService);
                                     }
-                                    else // if (separator == TransformerConfig.MIMETYPES_SEPARATOR)
+                                    else if (separator == TransformerConfig.MIMETYPES)
                                     {
-                                        List<String> sourceMimetypes = getMatchingMimetypes(ext[0], mimetypeService);
-                                        List<String> targetMimetypes = getMatchingMimetypes(ext[1], mimetypeService);
-                                        for (String sourceMimetype : sourceMimetypes)
+                                        List<String> sourceExtensions = getMatchingExtensions(ext[0], mimetypeService);
+                                        List<String> targetExtensions = getMatchingExtensions(ext[1], mimetypeService);
+                                        for (String sourceExt : sourceExtensions)
                                         {
-                                            for (String targetMimetype : targetMimetypes)
+                                            for (String targetExt : targetExtensions)
                                             {
                                                 addTransformerSourceTargetValue(TransformerSourceTargetValues,
-                                                        true, name, sourceMimetype, targetMimetype, value,
+                                                        true, name, sourceExt, targetExt, value,
                                                         suffix, mimetypeService);
                                             }
                                         }
@@ -162,8 +160,8 @@ public abstract class TransformerPropertyNameExtractor
         {
             int i = matcher.start();
             ext = new String[2];
-            ext[0] = extensions.substring(0, i);
-            ext[1] = extensions.substring(0, i);
+            ext[0] = extensions.substring(0, i+1).replaceAll("\\\\\\.", ".");
+            ext[1] = extensions.substring(i+2).replaceAll("\\\\\\.", ".");
         }
         return ext;
     }
@@ -178,48 +176,23 @@ public abstract class TransformerPropertyNameExtractor
      * If the given mimetype string has no wildcards a list with only the given
      * mimetype's extension is returned.
      * 
-     * @param configMimetype
+     * @param mimetypeWildcardRegex
      * @param mimetypeService
      * @return the list of extensions of mimetypes which match
      */
-    private List<String> getMatchingMimetypes(
-            String configMimetype, MimetypeService mimetypeService)
+    private List<String> getMatchingExtensions(
+            String mimetypeWildcardRegex, MimetypeService mimetypeService)
     {
-        if (configMimetype == null)
-        {
-            return null;
-        }
         List<String> matchingMimetypes = new ArrayList<String>(1);
-        if (isMimetypeSubtypeWildcard(configMimetype))
+        for (String mimetype : mimetypeService.getMimetypes())
         {
-            String mimetypeWildcardRegex = configMimetype.replaceAll("\\" + ANY, ".*");
-            for (String mimetype : mimetypeService.getMimetypes())
+            if (mimetype.matches(mimetypeWildcardRegex))
             {
-                if (mimetype.matches(mimetypeWildcardRegex))
-                {
-                    String ext = mimetypeService.getExtension(mimetype);
-                    matchingMimetypes.add(ext);
-                }
+                String ext = mimetypeService.getExtension(mimetype);
+                matchingMimetypes.add(ext);
             }
         }
-        else
-        {
-            String ext = mimetypeService.getExtension(configMimetype);
-            matchingMimetypes.add(ext);
-        }
         return matchingMimetypes;
-    }
-    
-    /**
-     * Determines if the given string is a mime type expression containing a wildcard
-     * in the subtype.
-     * 
-     * @param mimetype
-     * @return whether or not the mime type contains a wildcard subtype
-     */
-    private boolean isMimetypeSubtypeWildcard(String mimetype)
-    {
-        return (mimetype != null && mimetype.matches(IS_MIMETYPE_SUBTYPE_WILDCARD_REGEX));
     }
 }
 

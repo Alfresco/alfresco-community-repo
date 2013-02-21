@@ -237,7 +237,7 @@ public class ContentTransformerHelper implements BeanNameAware
                 String targetMimetype = transformation.getTargetMimetype();
                 String sourceExt = getExtensionOrAny(sourceMimetype);
                 String targetExt = getExtensionOrAny(targetMimetype);
-                deprecatedSetter(TransformerConfig.EXTENSIONS_SEPARATOR.substring(1)+sourceExt+'.'+targetExt+
+                deprecatedSetter(TransformerConfig.EXTENSIONS.substring(1)+sourceExt+'.'+targetExt+
                         (value == null // same as: transformation instanceof ExplictTransformationDetails
                         ? TransformerConfig.PRIORITY+"="+TransformerConfig.PRIORITY_EXPLICIT
                         : TransformerConfig.SUPPORTED+"="+value));

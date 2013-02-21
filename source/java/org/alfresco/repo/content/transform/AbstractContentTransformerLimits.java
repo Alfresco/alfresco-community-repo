@@ -298,7 +298,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
             {
                 String targetExt = getExtensionOrAny(target.getKey());
                 TransformationOptionLimits limits = target.getValue();
-                String mimetypeSuffix = TransformerConfig.EXTENSIONS_SEPARATOR.substring(1)+sourceExt+'.'+targetExt;
+                String mimetypeSuffix = TransformerConfig.EXTENSIONS.substring(1)+sourceExt+'.'+targetExt;
 
                 deprecatedLimitsSetter(mimetypeSuffix, limits);
             }

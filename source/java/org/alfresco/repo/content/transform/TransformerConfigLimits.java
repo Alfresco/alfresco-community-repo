@@ -56,14 +56,14 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         limits = new HashMap<String, DoubleMap<String, String, TransformationOptionLimits>>();
 
         // Gets all the transformer, source and target combinations in properties that define limits.
-        Collection<TransformerSourceTargetValue> transformerNamesAndExt =
+        Collection<TransformerSourceTargetSuffixValue> properties =
                 getTransformerSourceTargetValues(LIMIT_SUFFIXES, true, subsystem, mimetypeService);
 
         // Add the system wide default just in case it is not included, as we always need this one
         TransformationOptionLimits options = getOrCreateTransformerOptionLimits(DEFAULT_TRANSFORMER, ANY, ANY);
         
         // Populate the transformer limits
-        for (TransformerSourceTargetValue property: transformerNamesAndExt)
+        for (TransformerSourceTargetSuffixValue property: properties)
         {
             options = getOrCreateTransformerOptionLimits(property.transformerName,
                     property.sourceMimetype, property.targetMimetype);

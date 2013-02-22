@@ -24,6 +24,7 @@ import static org.alfresco.repo.content.transform.TransformerConfig.PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,11 +59,11 @@ public abstract class TransformerPropertyNameExtractor
      * @param subsystem that provides the properties
      * @param mimetypeService
      */
-    protected Collection<TransformerSourceTargetValue> getTransformerSourceTargetValues(Collection<String> suffixes,
+    protected Collection<TransformerSourceTargetSuffixValue> getTransformerSourceTargetValues(Collection<String> suffixes,
             boolean includeSummary, ChildApplicationContextFactory subsystem, MimetypeService mimetypeService)
     {
-        Map<Triple<String, String, String>, TransformerSourceTargetValue> TransformerSourceTargetValues =
-                new HashMap<Triple<String, String, String>, TransformerSourceTargetValue>();
+        Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> transformerSourceTargetSuffixValues =
+                new HashMap<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue>();
         
         for (String propertyName: subsystem.getPropertyNames())
         {
@@ -87,35 +88,31 @@ public abstract class TransformerPropertyNameExtractor
                                 if (ext.length == 2)
                                 {
                                     name = name.substring(0,  i);
-                                    if (separator == TransformerConfig.EXTENSIONS)
+                                    List<String> sourceExtensions = (separator == TransformerConfig.EXTENSIONS)
+                                            ? getMatchingExtensionsFromExtensions(ext[0], mimetypeService)
+                                            : getMatchingExtensionsFromMimetypes( ext[0], mimetypeService);
+                                    List<String> targetExtensions = (separator == TransformerConfig.EXTENSIONS)
+                                            ? getMatchingExtensionsFromExtensions(ext[1], mimetypeService)
+                                            : getMatchingExtensionsFromMimetypes( ext[1], mimetypeService);
+                                    for (String sourceExt : sourceExtensions)
                                     {
-                                        addTransformerSourceTargetValue(TransformerSourceTargetValues,
-                                                false, name, ext[0], ext[1], value, suffix, mimetypeService);
-                                    }
-                                    else if (separator == TransformerConfig.MIMETYPES)
-                                    {
-                                        List<String> sourceExtensions = getMatchingExtensions(ext[0], mimetypeService);
-                                        List<String> targetExtensions = getMatchingExtensions(ext[1], mimetypeService);
-                                        for (String sourceExt : sourceExtensions)
+                                        for (String targetExt : targetExtensions)
                                         {
-                                            for (String targetExt : targetExtensions)
-                                            {
-                                                addTransformerSourceTargetValue(TransformerSourceTargetValues,
-                                                        true, name, sourceExt, targetExt, value,
-                                                        suffix, mimetypeService);
-                                            }
+                                            addTransformerSourceTargetValue(transformerSourceTargetSuffixValues,
+                                                    (separator == TransformerConfig.MIMETYPES),
+                                                    name, sourceExt, targetExt, suffix,
+                                                    value, mimetypeService);
                                         }
                                     }
                                     break suffixesLoop;
                                 }
                             }
-                            
                         }
                         
                         if (!separatorMatch && includeSummary)
                         {
-                            addTransformerSourceTargetValue(TransformerSourceTargetValues, false, name, ANY, ANY,
-                                    value, suffix, mimetypeService);
+                            addTransformerSourceTargetValue(transformerSourceTargetSuffixValues, false, name, ANY, ANY,
+                                    suffix, value, mimetypeService);
                             break suffixesLoop;
                         }
                     }
@@ -123,27 +120,27 @@ public abstract class TransformerPropertyNameExtractor
             }
         }
         
-        return TransformerSourceTargetValues.values();
+        return transformerSourceTargetSuffixValues.values();
     }
 
     /**
-     * Optionally adds a new TransformerSourceTargetValue. If the supplied value is not constructed from
-     * from a property that uses a regular expression against a mimetype, a new value is always added and
-     * will replace any existing value. If not, the value is only added if there is not a current value.
-     * In other words properties that include extensions win out over those that use mimetypes.
+     * Optionally adds a new TransformerSourceTargetValue. If the supplied value is constructed from
+     * from a mimetypes property a new value is always added and will replace any existing value. If 
+     * from an extensions property the value is only added if there is not a current value.
+     * In other words properties that include mimetypes win out over those that use extensions.
      */
     private void addTransformerSourceTargetValue(
-            Map<Triple<String, String, String>, TransformerSourceTargetValue> transformerSourceTargetValues,
-            boolean mimetypeProperty, String name, String sourceExt, String targetExt, String value,
-            String suffix, MimetypeService mimetypeService)
+            Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> transformerSourceTargetSuffixValues,
+            boolean mimetypeProperty, String name, String sourceExt, String targetExt, String suffix,
+            String value, MimetypeService mimetypeService)
     {
-        TransformerSourceTargetValue transformerSourceTargetValue =
-                new TransformerSourceTargetValue(name, sourceExt, targetExt, value, suffix, mimetypeService);
-        Triple<String, String, String> key = transformerSourceTargetValue.key();
+        TransformerSourceTargetSuffixValue transformerSourceTargetSuffixValue =
+                new TransformerSourceTargetSuffixValue(name, sourceExt, targetExt, suffix, value, mimetypeService);
+        TransformerSourceTargetSuffixKey key = transformerSourceTargetSuffixValue.key();
 
-        if (!mimetypeProperty || !transformerSourceTargetValues.containsKey(key))
+        if (mimetypeProperty || !transformerSourceTargetSuffixValues.containsKey(key))
         {
-            transformerSourceTargetValues.put(key, transformerSourceTargetValue);
+            transformerSourceTargetSuffixValues.put(key, transformerSourceTargetSuffixValue);
         }
     }
 
@@ -152,7 +149,7 @@ public abstract class TransformerPropertyNameExtractor
      * that is not escaped (preceded by a back slash '\').
      * This is to allow regular expressions to be used for mimetypes.
      */
-    private String[] splitExt(String extensions)
+    static String[] splitExt(String extensions)
     {
         String[] ext = NO_EXT_MATCH;
         Matcher matcher = EXTENSIONS_SEPARATOR.matcher(extensions);
@@ -165,28 +162,39 @@ public abstract class TransformerPropertyNameExtractor
         }
         return ext;
     }
+    
+    /**
+     * Returns a regex Pattern for the supplied expression where '*' represents zero
+     * or more characters.
+     */
+    static Pattern pattern(String expression)
+    {
+        // Turn the pattern into a regular expression where any special regex
+        // characters have no meaning and then get any * values to represent
+        // zero or more chars.
+        String regex = Pattern.quote(expression).replaceAll("\\*", "\\\\E.*\\\\Q");
+        return Pattern.compile(regex);
+    }
 
     /**
-     * Gets the extensions of the mimetypes which match the given <code>configMimetype</code> from the given
-     * <code>mimetypeService</code>.
-     * <p>
-     * If the given mimetype string contains one or more wildcards (*) in the subtype, the string
-     * is converted to a regular expression and the extensions of the mimetypes which match are returned.
-     * <p>
-     * If the given mimetype string has no wildcards a list with only the given
-     * mimetype's extension is returned.
-     * 
-     * @param mimetypeWildcardRegex
+     * Gets the extensions of the mimetypes that match the given expression.
+     * However if the expression is "*", only the ANY ("*") extension is returned.
+     * @param expression which may contain '*' to represent zero or more characters.
      * @param mimetypeService
-     * @return the list of extensions of mimetypes which match
+     * @return the list of extensions of mimetypes that match
      */
-    private List<String> getMatchingExtensions(
-            String mimetypeWildcardRegex, MimetypeService mimetypeService)
+    private List<String> getMatchingExtensionsFromMimetypes(
+            String expression, MimetypeService mimetypeService)
     {
+        if (ANY.equals(expression))
+        {
+            return Collections.singletonList(ANY);
+        }
+        Pattern pattern = pattern(expression);
         List<String> matchingMimetypes = new ArrayList<String>(1);
         for (String mimetype : mimetypeService.getMimetypes())
         {
-            if (mimetype.matches(mimetypeWildcardRegex))
+            if (pattern.matcher(mimetype).matches())
             {
                 String ext = mimetypeService.getExtension(mimetype);
                 matchingMimetypes.add(ext);
@@ -194,40 +202,139 @@ public abstract class TransformerPropertyNameExtractor
         }
         return matchingMimetypes;
     }
+    
+    /**
+     * Gets the extensions that match the given expression. Only the main extension
+     * of each mimetype is checked.
+     * However if the expression is "*", only the ANY ("*") extension is returned.
+     * @param expression which may contain '*' to represent zero or more characters.
+     * @param mimetypeService
+     * @return the list of extensions that match
+     */
+    private List<String> getMatchingExtensionsFromExtensions(
+            String expression, MimetypeService mimetypeService)
+    {
+        if (ANY.equals(expression))
+        {
+            return Collections.singletonList(ANY);
+        }
+        Pattern pattern = pattern(expression);
+        List<String> matchingMimetypes = new ArrayList<String>(1);
+        for (String mimetype : mimetypeService.getMimetypes())
+        {
+            String ext = mimetypeService.getExtension(mimetype);
+            if (pattern.matcher(ext).matches())
+            {
+                matchingMimetypes.add(ext);
+            }
+        }
+        return matchingMimetypes;
+    }
 }
 
-class TransformerSourceTargetValue
+class TransformerSourceTargetSuffixKey
 {
     final String transformerName;
     final String sourceExt;
     final String targetExt;
-    final String value;
     final String suffix;
-    final String sourceMimetype;
-    final String targetMimetype;
-    
-    public TransformerSourceTargetValue(String transformerName, String sourceExt,
-            String targetExt, String value, String suffix, MimetypeService mimetypeService)
+
+    public TransformerSourceTargetSuffixKey(String transformerName, String sourceExt, String targetExt, String suffix)
     {
         this.transformerName = transformerName;
         this.sourceExt = sourceExt;
         this.targetExt = targetExt;
-        this.value = value;
         this.suffix = suffix;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((sourceExt == null) ? 0 : sourceExt.hashCode());
+        result = prime * result + ((suffix == null) ? 0 : suffix.hashCode());
+        result = prime * result + ((targetExt == null) ? 0 : targetExt.hashCode());
+        result = prime * result + ((transformerName == null) ? 0 : transformerName.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        TransformerSourceTargetSuffixKey other = (TransformerSourceTargetSuffixKey) obj;
+        if (sourceExt == null)
+        {
+            if (other.sourceExt != null)
+                return false;
+        }
+        else if (!sourceExt.equals(other.sourceExt))
+            return false;
+        if (suffix == null)
+        {
+            if (other.suffix != null)
+                return false;
+        }
+        else if (!suffix.equals(other.suffix))
+            return false;
+        if (targetExt == null)
+        {
+            if (other.targetExt != null)
+                return false;
+        }
+        else if (!targetExt.equals(other.targetExt))
+            return false;
+        if (transformerName == null)
+        {
+            if (other.transformerName != null)
+                return false;
+        }
+        else if (!transformerName.equals(other.transformerName))
+            return false;
+        return true;
+    }
+}
+
+class TransformerSourceTargetSuffixValue
+{
+    final String transformerName;
+    final String sourceExt;
+    final String targetExt;
+    final String suffix;
+    final String value;
+
+    final String sourceMimetype;
+    final String targetMimetype;
+    
+    public TransformerSourceTargetSuffixValue(String transformerName, String sourceExt,
+            String targetExt, String suffix, String value, MimetypeService mimetypeService)
+    {
+        this.transformerName = transformerName;
+        this.sourceExt = sourceExt;
+        this.targetExt = targetExt;
+        this.suffix = suffix;
+        this.value = value;
+
         this.sourceMimetype = ANY.equals(sourceExt) ? ANY : mimetypeService.getMimetype(sourceExt);
         this.targetMimetype = ANY.equals(targetExt) ? ANY : mimetypeService.getMimetype(targetExt);
     }
     
-    public Triple<String, String, String> key()
+    public TransformerSourceTargetSuffixKey key()
     {
-        return new Triple<String, String, String>(transformerName, sourceExt, targetExt);
+        return new TransformerSourceTargetSuffixKey(transformerName, sourceExt, targetExt, suffix);
     }
     
     public String toString()
     {
-        return transformerName+'.'+(sourceExt.equals(ANY) && targetExt.equals(ANY)
+        return transformerName+(sourceExt.equals(ANY) && targetExt.equals(ANY)
                 ? ""
-                : TransformerConfig.EXTENSIONS+'.'+sourceExt+'.'+targetExt+'.')+
+                : TransformerConfig.EXTENSIONS+sourceExt+'.'+targetExt)+
                 suffix+'='+value;
     }
 
@@ -237,6 +344,7 @@ class TransformerSourceTargetValue
         final int prime = 31;
         int result = 1;
         result = prime * result + ((sourceExt == null) ? 0 : sourceExt.hashCode());
+        result = prime * result + ((suffix == null) ? 0 : suffix.hashCode());
         result = prime * result + ((targetExt == null) ? 0 : targetExt.hashCode());
         result = prime * result + ((transformerName == null) ? 0 : transformerName.hashCode());
         result = prime * result + ((value == null) ? 0 : value.hashCode());
@@ -252,13 +360,20 @@ class TransformerSourceTargetValue
             return false;
         if (getClass() != obj.getClass())
             return false;
-        TransformerSourceTargetValue other = (TransformerSourceTargetValue) obj;
+        TransformerSourceTargetSuffixValue other = (TransformerSourceTargetSuffixValue) obj;
         if (sourceExt == null)
         {
             if (other.sourceExt != null)
                 return false;
         }
         else if (!sourceExt.equals(other.sourceExt))
+            return false;
+        if (suffix == null)
+        {
+            if (other.suffix != null)
+                return false;
+        }
+        else if (!suffix.equals(other.suffix))
             return false;
         if (targetExt == null)
         {

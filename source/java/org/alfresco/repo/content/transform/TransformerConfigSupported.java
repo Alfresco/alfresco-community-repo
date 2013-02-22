@@ -56,12 +56,12 @@ public class TransformerConfigSupported extends TransformerPropertyNameExtractor
         supported = new HashMap<String, SupportedAndUnsupportedTransformations>();
 
         // Gets all the supported and unsupported transformer, source and target combinations
-        Collection<TransformerSourceTargetValue> transformerNamesAndMimetypes =
+        Collection<TransformerSourceTargetSuffixValue> properties =
                 getTransformerSourceTargetValues(Collections.singletonList(SUPPORTED),
                 false, subsystem, mimetypeService);
         
         // Populate the transformer values
-        for (TransformerSourceTargetValue property: transformerNamesAndMimetypes)
+        for (TransformerSourceTargetSuffixValue property: properties)
         {
             SupportedAndUnsupportedTransformations supportedBytransformer = this.supported.get(property.transformerName);
             if (supportedBytransformer == null)

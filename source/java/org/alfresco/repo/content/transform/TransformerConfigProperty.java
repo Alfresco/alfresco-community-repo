@@ -55,19 +55,19 @@ public class TransformerConfigProperty  extends TransformerPropertyNameExtractor
 
         // Gets all the transformer, source and target combinations in properties that define
         // this value.
-        Collection<TransformerSourceTargetValue> transformerNamesAndMimetypes =
+        Collection<TransformerSourceTargetSuffixValue> properties =
                 getTransformerSourceTargetValues(Collections.singletonList(suffix), true, subsystem, mimetypeService);
 
         // Add the system wide default if it does not exist, as we always need this one
-        TransformerSourceTargetValue transformerSourceTargetValue = 
-                new TransformerSourceTargetValue(DEFAULT_TRANSFORMER, ANY, ANY, defaultValue, suffix, mimetypeService);
-        if (transformerNamesAndMimetypes.contains(transformerSourceTargetValue.key()))
+        TransformerSourceTargetSuffixValue transformerSourceTargetValue = 
+                new TransformerSourceTargetSuffixValue(DEFAULT_TRANSFORMER, ANY, ANY, suffix, defaultValue, mimetypeService);
+        if (properties.contains(transformerSourceTargetValue.key()))
         {
-            transformerNamesAndMimetypes.add(transformerSourceTargetValue);
+            properties.add(transformerSourceTargetValue);
         }
         
         // Populate the transformer values
-        for (TransformerSourceTargetValue property: transformerNamesAndMimetypes)
+        for (TransformerSourceTargetSuffixValue property: properties)
         {
             DoubleMap<String, String, String> mimetypeLimits = this.values.get(property.transformerName);
             if (mimetypeLimits == null)

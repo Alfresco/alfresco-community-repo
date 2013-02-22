@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -55,6 +56,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xmlbeans.impl.xb.xsdschema.All;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
@@ -97,10 +100,13 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
-abstract public class AbstractMappingMetadataExtracter implements MetadataExtracter, MetadataEmbedder, BeanNameAware
+abstract public class AbstractMappingMetadataExtracter implements MetadataExtracter, MetadataEmbedder, BeanNameAware, ApplicationContextAware
 {
     public static final String NAMESPACE_PROPERTY_PREFIX = "namespace.prefix.";
     private static final String ERR_TYPE_CONVERSION = "metadata.extraction.err.type_conversion";
+    public static final String PROPERTY_PREFIX_METADATA = "metadata.";
+    public static final String PROPERTY_COMPONENT_EXTRACT = ".extract.";
+    public static final String PROPERTY_COMPONENT_EMBED = ".extract.";
     
     protected static Log logger = LogFactory.getLog(AbstractMappingMetadataExtracter.class);
     
@@ -120,6 +126,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private boolean inheritDefaultEmbedMapping;
     private boolean enableStringTagging;
     private String beanName;
+    private ApplicationContext applicationContext;
     private Properties properties;
 
     /**
@@ -390,6 +397,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         return beanName;
     }
     
+    public void setApplicationContext(ApplicationContext applicationContext)
+    {
+        this.applicationContext = applicationContext;
+    }
+    
     /**
      * The Alfresco global properties.
      */
@@ -602,15 +614,91 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
     
     /**
+     * A utility method to convert global properties to the Map form for the given
+     * propertyComponent.
+     * <p>
+     * Mappings can be specified using the same method defined for
+     * normal mapping properties files but with a prefix of
+     * <code>metadata.extracter</code>, the extracter bean name, and the propertyComponent.
+     * For example:
+     * 
+     *     metadata.extracter.TikaAuto.extract.namespace.prefix.my=http://DummyMappingMetadataExtracter
+     *     metadata.extracter.TikaAuto.extract.namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
+     *     metadata.extracter.TikaAuto.extract.dc\:description=cm:description, my:customDescription
+     * 
+     */
+    private Map<Object, Object> getRelevantGlobalProperties(String propertyComponent)
+    {
+        if (applicationContext == null)
+        {
+            logger.info("ApplicationContext not set");
+            return null;
+        }
+        Properties globalProperties = (Properties) applicationContext.getBean("global-properties");
+        if (globalProperties == null)
+        {
+            logger.info("Could not get global-properties");
+            return null;
+        }
+        Map<Object, Object> relevantGlobalPropertiesMap = 
+                new HashMap<Object, Object>();
+        String propertyPrefix = PROPERTY_PREFIX_METADATA + beanName + propertyComponent;
+        for (Entry<Object, Object> globalEntry : globalProperties.entrySet())
+        {
+            if (((String) globalEntry.getKey()).startsWith(propertyPrefix))
+            {
+                relevantGlobalPropertiesMap.put(
+                        ((String) globalEntry.getKey()).replace(propertyPrefix, ""),
+                        globalEntry.getValue());
+            }
+        }
+        return relevantGlobalPropertiesMap;
+    }
+    
+    /**
+     * A utility method to convert global properties to the Map form for the given
+     * propertyComponent.
+     * <p>
+     * Mappings can be specified using the same method defined for
+     * normal mapping properties files but with a prefix of
+     * <code>metadata.extracter</code>, the extracter bean name, and the extract component.
+     * For example:
+     * 
+     *     metadata.extracter.TikaAuto.extract.namespace.prefix.my=http://DummyMappingMetadataExtracter
+     *     metadata.extracter.TikaAuto.extract.namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
+     *     metadata.extracter.TikaAuto.extract.dc\:description=cm:description, my:customDescription
+     * 
+     */
+    protected Map<String, Set<QName>> readGlobalExtractMappingProperties()
+    {
+        Map<Object, Object> relevantGlobalPropertiesMap = getRelevantGlobalProperties(PROPERTY_COMPONENT_EXTRACT);
+        if (relevantGlobalPropertiesMap == null)
+        {
+            return null;
+        }
+        return readMappingProperties(relevantGlobalPropertiesMap.entrySet());
+    }
+    
+    /**
      * A utility method to convert mapping properties to the Map form.
      * 
      * @see #setMappingProperties(Properties)
      */
     protected Map<String, Set<QName>> readMappingProperties(Properties mappingProperties)
     {
+        return readMappingProperties(mappingProperties.entrySet());
+    }
+    
+    /**
+     * A utility method to convert mapping properties entries to the Map form.
+     * 
+     * @see #setMappingProperties(Properties)
+     */
+    private Map<String, Set<QName>> readMappingProperties(Set<Entry<Object, Object>> mappingPropertiesEntries)
+    {
         Map<String, String> namespacesByPrefix = new HashMap<String, String>(5);
         // Get the namespaces
-        for (Map.Entry<Object, Object> entry : mappingProperties.entrySet())
+        for (Map.Entry<Object, Object> entry : mappingPropertiesEntries)
         {
             String propertyName = (String) entry.getKey();
             if (propertyName.startsWith(NAMESPACE_PROPERTY_PREFIX))
@@ -622,7 +710,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         // Create the mapping
         Map<String, Set<QName>> convertedMapping = new HashMap<String, Set<QName>>(17);
-        for (Map.Entry<Object, Object> entry : mappingProperties.entrySet())
+        for (Map.Entry<Object, Object> entry : mappingPropertiesEntries)
         {
             String documentProperty = (String) entry.getKey();
             String qnamesStr = (String) entry.getValue();
@@ -723,6 +811,32 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
         }
     }
+    
+    /**
+     * A utility method to convert global mapping properties to the Map form.
+     * <p>
+     * Different from readGlobalExtractMappingProperties in that keys are the Alfresco QNames
+     * and values are file metadata properties.
+     * <p>
+     * Mappings can be specified using the same method defined for
+     * normal embed mapping properties files but with a prefix of
+     * <code>metadata.extracter</code>, the extracter bean name, and the embed component.
+     * For example:
+     * 
+     *     metadata.extracter.TikaAuto.embed.namespace.prefix.cm=http://www.alfresco.org/model/content/1.0
+     *     metadata.extracter.TikaAuto.embed.cm\:description=description
+     *
+     * @see #setMappingProperties(Properties)
+     */
+    protected Map<QName, Set<String>> readGlobalEmbedMappingProperties()
+    {
+        Map<Object, Object> relevantGlobalPropertiesMap = getRelevantGlobalProperties(PROPERTY_COMPONENT_EMBED);
+        if (relevantGlobalPropertiesMap == null)
+        {
+            return null;
+        }
+        return readEmbedMappingProperties(relevantGlobalPropertiesMap.entrySet());
+    }
 
     /**
      * A utility method to convert mapping properties to the Map form.
@@ -734,9 +848,22 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      */
     protected Map<QName, Set<String>> readEmbedMappingProperties(Properties mappingProperties)
     {
+        return readEmbedMappingProperties(mappingProperties.entrySet());
+    }
+    
+    /**
+     * A utility method to convert mapping properties entries to the Map form.
+     * <p>
+     * Different from readMappingProperties in that keys are the Alfresco QNames
+     * and values are file metadata properties.
+     *
+     * @see #setMappingProperties(Properties)
+     */
+    private Map<QName, Set<String>> readEmbedMappingProperties(Set<Entry<Object, Object>> mappingPropertiesEntries)
+    {
         Map<String, String> namespacesByPrefix = new HashMap<String, String>(5);
         // Get the namespaces
-        for (Map.Entry<Object, Object> entry : mappingProperties.entrySet())
+        for (Map.Entry<Object, Object> entry : mappingPropertiesEntries)
         {
             String propertyName = (String) entry.getKey();
             if (propertyName.startsWith(NAMESPACE_PROPERTY_PREFIX))
@@ -748,7 +875,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         // Create the mapping
         Map<QName, Set<String>> convertedMapping = new HashMap<QName, Set<String>>(17);
-        for (Map.Entry<Object, Object> entry : mappingProperties.entrySet())
+        for (Map.Entry<Object, Object> entry : mappingPropertiesEntries)
         {
             String modelProperty = (String) entry.getKey();
             String metadataKeysString = (String) entry.getValue();
@@ -855,6 +982,16 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
         }
         
+        // Override with any extract mappings specified in global properties
+        Map<String, Set<QName>> globalExtractMapping = readGlobalExtractMappingProperties();
+        if (globalExtractMapping != null && globalExtractMapping.size() > 0)
+        {
+            for (String documentKey : globalExtractMapping.keySet())
+            {
+                mapping.put(documentKey, globalExtractMapping.get(documentKey));
+            }
+        }
+        
         // The configured mappings are empty, but there were default mappings
         if (mapping.size() == 0 && defaultMapping.size() > 0)
         {
@@ -884,6 +1021,16 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 }
                 Set<String> defaultMetadataKeys = defaultEmbedMapping.get(modelProperty);
                 metadataKeys.addAll(defaultMetadataKeys);
+            }
+        }
+        
+        // Override with any embed mappings specified in global properties
+        Map<QName, Set<String>> globalEmbedMapping = readGlobalEmbedMappingProperties();
+        if (globalEmbedMapping != null && globalEmbedMapping.size() > 0)
+        {
+            for (QName modelProperty : globalEmbedMapping.keySet())
+            {
+                embedMapping.put(modelProperty, globalEmbedMapping.get(modelProperty));
             }
         }
 

@@ -29,6 +29,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.ContentMinimalContextTestSuite;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy;
@@ -36,6 +37,7 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter
@@ -129,6 +131,30 @@ public class MappingMetadataExtracterTest extends TestCase
         assertEquals(2, destination.size());
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A1));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A2));
+    }
+    
+    public void testPropertyMappingGlobalOverride() throws Exception
+    {
+        String propertyPrefix = AbstractMappingMetadataExtracter.PROPERTY_PREFIX_METADATA + 
+                DummyMappingMetadataExtracter.EXTRACTER_NAME + 
+                AbstractMappingMetadataExtracter.PROPERTY_COMPONENT_EXTRACT;
+                
+        ApplicationContext ctx = ContentMinimalContextTestSuite.getContext();
+        Properties globalProperties = (Properties) ctx.getBean("global-properties");
+        globalProperties.setProperty(
+                propertyPrefix + "namespace.prefix.my",
+                DummyMappingMetadataExtracter.NAMESPACE_MY);
+        globalProperties.setProperty(
+                propertyPrefix + DummyMappingMetadataExtracter.PROP_A,
+                " my:a1, my:a2, my:c ");
+        
+        extracter.setApplicationContext(ctx);
+        
+        extracter.register();
+        // Only mapped 'a'
+        destination.clear();
+        extracter.extract(reader, destination);
+        assertEquals(DummyMappingMetadataExtracter.VALUE_A, destination.get(DummyMappingMetadataExtracter.QNAME_C));
     }
     
     public void testPropertyMappingMerge() throws Exception
@@ -254,6 +280,7 @@ public class MappingMetadataExtracterTest extends TestCase
         public static final String VALUE_D = "DDD";
         public static final String VALUE_IMG = "IMAGE";
         
+        public static final String EXTRACTER_NAME = "extracter.Dummy";
         public static final String NAMESPACE_MY = "http://DummyMappingMetadataExtracter";
         public static final QName QNAME_A1 = QName.createQName(NAMESPACE_MY, "a1");
         public static final QName QNAME_A2 = QName.createQName(NAMESPACE_MY, "a2");
@@ -278,6 +305,7 @@ public class MappingMetadataExtracterTest extends TestCase
         {
             super(MIMETYPES);
             initCheck = false;
+            setBeanName(EXTRACTER_NAME);
         }
         
         @Override

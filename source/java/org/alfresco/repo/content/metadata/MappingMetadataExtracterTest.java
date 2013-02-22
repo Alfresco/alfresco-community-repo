@@ -168,10 +168,24 @@ public class MappingMetadataExtracterTest extends TestCase
         // Added a3
         destination.clear();
         extracter.extract(reader, destination);
-        assertEquals(5, destination.size());
-        assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A1));
-        assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A2));
+        assertEquals(3, destination.size());
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_A3));
+        assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_B));
+        assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_IMG));
+    }
+    
+    public void testPropertyMappingDisable() throws Exception
+    {
+        Properties props = new Properties();
+        props.put("namespace.prefix.my", DummyMappingMetadataExtracter.NAMESPACE_MY);
+        props.put(DummyMappingMetadataExtracter.PROP_A, "");
+        extracter.setMappingProperties(props);
+        extracter.setInheritDefaultMapping(true);
+        extracter.register();
+        // Added a3
+        destination.clear();
+        extracter.extract(reader, destination);
+        assertEquals(2, destination.size());
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_B));
         assertTrue(destination.containsKey(DummyMappingMetadataExtracter.QNAME_IMG));
     }

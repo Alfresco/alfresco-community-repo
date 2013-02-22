@@ -373,6 +373,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * Set if the property mappings augment or override the mapping generically provided by the
      * extracter implementation.  The default is <tt>false</tt>, i.e. any mapping set completely
      * replaces the {@link #getDefaultMapping() default mappings}.
+     * <p>
+     * Note that even when set to <tt>true</tt> an individual property mapping entry replaces the
+     * entry provided by the extracter implementation.
      * 
      * @param inheritDefaultMapping <tt>true</tt> to add the configured mapping
      *                              to the list of default mappings.
@@ -426,6 +429,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * Set if the embed property mappings augment or override the mapping generically provided by the
      * extracter implementation.  The default is <tt>false</tt>, i.e. any mapping set completely
      * replaces the {@link #getDefaultEmbedMapping() default mappings}.
+     * <p>
+     * Note that even when set to <tt>true</tt> an individual property mapping entry replaces the
+     * entry provided by the extracter implementation.
      *
      * @param inheritDefaultEmbedMapping <tt>true</tt> to add the configured embed mapping
      *                              to the list of default embed mappings.
@@ -976,9 +982,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 {
                     systemQNames = new HashSet<QName>(3);
                     mapping.put(documentKey, systemQNames);
+                    Set<QName> defaultQNames = defaultMapping.get(documentKey);
+                    systemQNames.addAll(defaultQNames);
                 }
-                Set<QName> defaultQNames = defaultMapping.get(documentKey);
-                systemQNames.addAll(defaultQNames);
             }
         }
         
@@ -1018,9 +1024,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 {
                     metadataKeys = new HashSet<String>(3);
                     embedMapping.put(modelProperty, metadataKeys);
+                    Set<String> defaultMetadataKeys = defaultEmbedMapping.get(modelProperty);
+                    metadataKeys.addAll(defaultMetadataKeys);
                 }
-                Set<String> defaultMetadataKeys = defaultEmbedMapping.get(modelProperty);
-                metadataKeys.addAll(defaultMetadataKeys);
             }
         }
         

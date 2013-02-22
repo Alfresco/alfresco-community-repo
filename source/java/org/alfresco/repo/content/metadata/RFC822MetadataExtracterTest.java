@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
@@ -28,6 +29,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
@@ -118,6 +120,13 @@ public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
     public void testEmailExtraction() throws Exception
     {
         testExtractFromMimetype(MimetypeMap.MIMETYPE_RFC822);
+    }
+    
+    public void testSpanishEmailExtraction() throws Exception
+    {
+        File spanishEml = AbstractContentTransformerTest.loadNamedQuickTestFile("quick.spanish.eml");
+        Map<QName, Serializable> properties = extractFromFile(spanishEml, MimetypeMap.MIMETYPE_RFC822);
+        testCommonMetadata(MimetypeMap.MIMETYPE_RFC822, properties);
     }
 
     /**

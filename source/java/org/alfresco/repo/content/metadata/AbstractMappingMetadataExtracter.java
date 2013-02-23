@@ -106,7 +106,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private static final String ERR_TYPE_CONVERSION = "metadata.extraction.err.type_conversion";
     public static final String PROPERTY_PREFIX_METADATA = "metadata.";
     public static final String PROPERTY_COMPONENT_EXTRACT = ".extract.";
-    public static final String PROPERTY_COMPONENT_EMBED = ".extract.";
+    public static final String PROPERTY_COMPONENT_EMBED = ".embed.";
     
     protected static Log logger = LogFactory.getLog(AbstractMappingMetadataExtracter.class);
     

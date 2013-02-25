@@ -39,7 +39,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -96,6 +99,8 @@ public class MultiTDemoTest extends TestCase
             );
     
     private NodeService nodeService;
+    private NodeArchiveService nodeArchiveService;
+    private NamespaceService namespaceService;
     private MutableAuthenticationService authenticationService;
     private PersonService personService;
     private SiteService siteService;
@@ -167,6 +172,8 @@ public class MultiTDemoTest extends TestCase
         super.setUp();
         
         nodeService = (NodeService) ctx.getBean("NodeService");
+        nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
+        namespaceService = (NamespaceService) ctx.getBean("NamespaceService");
         authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         tenantService = (TenantService) ctx.getBean("tenantService");
@@ -183,6 +190,7 @@ public class MultiTDemoTest extends TestCase
         usageService = (UsageService) ctx.getBean("usageService");
         transactionService = (TransactionService) ctx.getBean("TransactionService");
         fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
+        ownableService = (OwnableService) ctx.getBean("OwnableService");
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         siteService = (SiteService) ctx.getBean("SiteService");
         
@@ -1103,10 +1111,47 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    // TODO pending THOR-201 / CLOUD-1349 fix
-    public void xtest16DeleteArchiveAndRestoreContent()
+    public void test16DeleteArchiveAndRestoreContent()
     {
         logger.info("test delete/archive & restore content");
+        
+        // note: CLOUD-1349 - ownership is based on fully authenticated user (else restoreNode fails for non-Admin user)
+        AuthenticationUtil.clearCurrentSecurityContext();
+        
+        final String superAdmin = AuthenticationUtil.getAdminUserName();
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                // super tenant - admin user
+                deleteArchiveAndRestoreContent(superAdmin, TenantService.DEFAULT_DOMAIN);
+                return null;
+            }
+            
+        }, superAdmin);
+        
+        final String superAnoUser = "superAnoUser";
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                createUser(superAnoUser, TenantService.DEFAULT_DOMAIN, superAnoUser);
+                return null;
+            }
+        }, superAdmin);
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                // super tenant - ano user
+                deleteArchiveAndRestoreContent(superAnoUser, TenantService.DEFAULT_DOMAIN);
+                
+                return null;
+            }
+        }, superAnoUser);
         
         for (final String tenantDomain : tenants)
         {
@@ -1116,23 +1161,45 @@ public class MultiTDemoTest extends TestCase
             {
                 public Object doWork() throws Exception
                 {
-                    NodeRef homeSpaceRef = getHomeSpaceFolderNode(tenantUserName);
-                    NodeRef contentRef = addContent(homeSpaceRef, tenantUserName+" tqbfjotld.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")", MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                    
-                    NodeRef storeArchiveNode = nodeService.getStoreArchiveNode(contentRef.getStoreRef());
-                    
-                    nodeService.deleteNode(contentRef);
-                    
-                    // deduce archived nodeRef
-                    StoreRef archiveStoreRef = storeArchiveNode.getStoreRef();
-                    NodeRef archivedContentRef = new NodeRef(archiveStoreRef, contentRef.getId());
-                    
-                    nodeService.restoreNode(archivedContentRef, null, null, null);
+                    deleteArchiveAndRestoreContent(tenantUserName, tenantDomain);
                     
                     return null;
                 }
             }, tenantUserName);
         }
+    }
+    
+    private void deleteArchiveAndRestoreContent(String userName, String tenantDomain)
+    {
+        NodeRef homeSpaceRef = getHomeSpaceFolderNode(userName);
+        NodeRef contentRef = addContent(homeSpaceRef, userName+" "+System.currentTimeMillis()+" tqbfjotld.txt", "The quick brown fox jumps over the lazy dog (tenant " + tenantDomain + ")", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        
+        assertEquals(userName, ownableService.getOwner(contentRef));
+        permissionService.hasPermission(contentRef, PermissionService.DELETE_NODE);
+        
+        NodeRef storeArchiveNode = nodeService.getStoreArchiveNode(contentRef.getStoreRef());
+        
+        nodeService.deleteNode(contentRef);
+        
+        // deduce archived nodeRef
+        StoreRef archiveStoreRef = storeArchiveNode.getStoreRef();
+        NodeRef archivedContentRef = new NodeRef(archiveStoreRef, contentRef.getId());
+        
+        assertEquals(userName, ownableService.getOwner(archivedContentRef));
+        permissionService.hasPermission(archivedContentRef, PermissionService.DELETE_NODE);
+        
+        //nodeService.restoreNode(archivedContentRef, null, null, null);
+        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(archivedContentRef);
+        assertNotNull(report);
+        
+        NodeRef restoredNodeRef = report.getRestoredNodeRef();
+        assertNotNull(restoredNodeRef);
+        
+        archivedContentRef = new NodeRef(archiveStoreRef, restoredNodeRef.getId());
+        
+        nodeService.deleteNode(restoredNodeRef);
+        
+        nodeArchiveService.purgeArchivedNode(archivedContentRef);
     }
     
     public void test17CustomModels()

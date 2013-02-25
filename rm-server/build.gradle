@@ -67,6 +67,11 @@ task resetDatabase << {
 			autocommit: 'true',
 			classpath: configurations.compile.asPath,
 			'drop database if exists ' + ant.getProperty("db.name") + '; create database ' + ant.getProperty("db.name") + ';')
+
+      if (ant.getProperties().containsKey("dir.root")) {
+          println "Deleting content store in " + ant.getProperty("dir.root")
+          ant.delete(includeEmptyDirs: 'true', dir: ant.getProperty("dir.root"))
+      }
 }
 
 test {

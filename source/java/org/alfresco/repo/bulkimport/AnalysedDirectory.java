@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,8 @@ public class AnalysedDirectory
     public AnalysedDirectory(File[] files)
     {
         originalListing = Arrays.asList(files);
+        // Sort the files/directories so that the *.metadata.properties.xml found later, see ALF-17965 for details.
+        Collections.sort(originalListing);
         importableItems = new HashMap<File, ImportableItem>();
         importableDirectories = new ArrayList<ImportableItem>();    	
     }

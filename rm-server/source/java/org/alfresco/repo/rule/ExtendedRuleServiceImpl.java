@@ -22,7 +22,7 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 
@@ -60,15 +60,16 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     {
         if (isFilePlanComponentRule(rule) == true && runAsRmAdmin == true)
         {     
-            filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
+            String user = AuthenticationUtil.getFullyAuthenticatedUser();
+            try
             {
-                @Override
-                public Void doWork() throws Exception
-                {
-                    ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-                    return null;
-                }
-            });
+                AuthenticationUtil.setFullyAuthenticatedUser(filePlanAuthenticationService.getRmAdminUserName());
+                ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+            }
+            finally
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(user);
+            }
         }
         else
         {

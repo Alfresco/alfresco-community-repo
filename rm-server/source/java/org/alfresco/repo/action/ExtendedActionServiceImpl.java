@@ -96,4 +96,13 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl
         
         return result;
     }
+    
+    /**
+     * @see org.alfresco.repo.action.ActionServiceImpl#postCommit()
+     */
+    @Override
+    public void postCommit()
+    {
+        super.postCommit();
+    }
 }

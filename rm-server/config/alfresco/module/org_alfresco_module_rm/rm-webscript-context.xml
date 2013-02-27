@@ -504,18 +504,32 @@
    </bean>
 
    <!-- Abstract parent bean for the RM and DM action definition beans -->
-   <bean id="abstractActionDefinitionsGet" parent="abstractRuleWebScript" abstract="true" />
+   <bean id="abstractActionDefinitionsGet"
+      parent="abstractRuleWebScript"
+      abstract="true" />
 
    <!-- REST impl for GET Action Defitions for RM -->
    <bean id="webscript.org.alfresco.repository.rule.rm-actiondefinitions.get"
       class="org.alfresco.repo.web.scripts.rule.RmActionDefinitionsGet"
-      parent="abstractActionDefinitionsGet">
-   </bean>
+      parent="abstractActionDefinitionsGet" />
 
    <!-- REST impl for GET Action Defitions for DM -->
    <bean id="webscript.org.alfresco.repository.rule.dm-actiondefinitions.get"
       class="org.alfresco.repo.web.scripts.rule.DmActionDefinitionsGet"
-      parent="abstractActionDefinitionsGet">
+      parent="abstractActionDefinitionsGet" />
+
+   <!-- REST impl for GET Class Definitions for RM/DM -->
+   <bean id="webscript.org.alfresco.repository.dictionary.rm-classes.get"
+      class="org.alfresco.repo.web.scripts.dictionary.RmClassesGet"
+      parent="webscript.dictionary">
+      <property name="siteService" ref="SiteService" />
+   </bean>
+
+   <!-- REST impl for GET Property Definitions for RM/DM -->
+   <bean id="webscript.org.alfresco.repository.dictionary.rm-properties.get"
+      class="org.alfresco.repo.web.scripts.dictionary.RmPropertiesGet"
+      parent="webscript.dictionary">
+      <property name="siteService" ref="SiteService" />
    </bean>
 
 </beans>

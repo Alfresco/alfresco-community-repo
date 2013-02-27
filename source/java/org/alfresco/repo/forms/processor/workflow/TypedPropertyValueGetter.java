@@ -80,7 +80,7 @@ public class TypedPropertyValueGetter
             {
                 return null;
             }
-            if(isDateProperty(propDef) && !ISO8601DateFormat.isTimeComponentDefined((String) value))
+            if(isDateProperty(propDef) && !ISO8601DateFormat.isTimeComponentDefined(valStr))
             {
                 // Special handling for day-only date storage (ALF-10243)
                 return ISO8601DateFormat.parseDayOnly(valStr, TimeZone.getDefault());

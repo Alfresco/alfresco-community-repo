@@ -45,6 +45,7 @@
         <property name="renditionService" ref="renditionService" />
         <property name="thumbnailRegistry" ref="thumbnailRegistry" />
         <property name="policyComponent" ref="policyComponent" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
     </bean>
     
     <!-- This bean is responsible for the conversion of thumbnail definitions to

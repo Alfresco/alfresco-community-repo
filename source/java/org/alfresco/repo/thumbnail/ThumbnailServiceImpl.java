@@ -34,6 +34,7 @@ import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
@@ -86,13 +87,25 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     /** Rendition service */
     private RenditionService renditionService;
     
+    /** Behaviour filter */
+    private BehaviourFilter behaviourFilter;
+    
     /**
      * The policy component.
      * @since 3.5.0
      */
     private PolicyComponent policyComponent;
 
-    
+    /**
+     * Set the behaviour filter.
+     * 
+     * @param behaviourFilter
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
     /**
      * Set the rendition service.
      * 
@@ -184,14 +197,26 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     
     public void onCreateNode(ChildAssociationRef childAssoc)
     {
-        // When a thumbnail succeeds, we must delete any existing thumbnail failure nodes.
-        String thumbnailName = (String) nodeService.getProperty(childAssoc.getChildRef(), ContentModel.PROP_NAME);
+        NodeRef thumbnailNodeRef = childAssoc.getChildRef();
+        NodeRef sourceNodeRef = childAssoc.getParentRef();
         
-        // Update the parent node with the thumbnail update...
-        addThumbnailModificationData(childAssoc.getChildRef(), thumbnailName);
+        // When a thumbnail succeeds, we must delete any existing thumbnail failure nodes.
+        String thumbnailName = (String) nodeService.getProperty(thumbnailNodeRef, ContentModel.PROP_NAME);
+        
+        try
+        {
+           behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+           
+           // Update the parent node with the thumbnail update...
+           addThumbnailModificationData(thumbnailNodeRef, thumbnailName);
+        }
+        finally
+        {
+           behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
         
         // In fact there should only be zero or one such failedThumbnails
-        Map<String, FailedThumbnailInfo> failures = getFailedThumbnails(childAssoc.getParentRef());
+        Map<String, FailedThumbnailInfo> failures = getFailedThumbnails(sourceNodeRef);
         FailedThumbnailInfo existingFailedThumbnail = failures.get(thumbnailName);
         
         if (existingFailedThumbnail != null)

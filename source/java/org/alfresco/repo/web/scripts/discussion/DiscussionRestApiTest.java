@@ -50,6 +50,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
@@ -1203,6 +1204,37 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
       assertEquals(1, result.getJSONArray("items").length());
       assertEquals("NodeTitle1", result.getJSONArray("items").getJSONObject(0).getString("title"));
       assertEquals(1, result.getJSONArray("items").getJSONObject(0).getInt("replyCount"));
+    }
+    
+    /**
+     * https://issues.alfresco.com/jira/browse/ALF-17443 reports that site contributors are unable
+     * to edit replies that they have made.
+     */
+    public void testContributorCanEditReply() throws Exception
+    {
+        authenticationComponent.setCurrentUser(USER_ONE);
+        JSONObject post = createSitePost("Can contributors edit replies?", "The title says it all", Status.STATUS_OK);
+        NodeRef postNodeRef = new NodeRef(post.getString("nodeRef"));
+
+        authenticationComponent.setCurrentUser(USER_TWO);
+        JSONObject reply = createReply(postNodeRef, "", "Let's see.", Status.STATUS_OK);
+        NodeRef replyNodeRef = new NodeRef(reply.getString("nodeRef"));
+        updateComment(replyNodeRef, "", "Yes I can", Status.STATUS_OK);
+        
+        authenticationComponent.setCurrentUser(USER_ONE);
+
+        post = getPost(postNodeRef, Status.STATUS_OK);
+        assertEquals("Can contributors edit replies?", post.getString("title"));
+        assertEquals("The title says it all", post.getString("content"));
+        assertEquals(1, post.getInt("replyCount"));
+        
+        JSONObject replies = getReplies(postNodeRef, Status.STATUS_OK);
+        JSONArray items = replies.getJSONArray("items");
+        assertEquals(1, items.length());
+        
+        reply = items.getJSONObject(0);
+        assertEquals("Yes I can", reply.getString("content"));
+
     }
     
 }

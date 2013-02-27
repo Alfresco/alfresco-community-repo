@@ -128,7 +128,9 @@ import org.springframework.extensions.webscripts.json.JSONUtils;
             // Treat it as text
             return new PropertyValue(true, serializeToJSONString(value));
         }
-        else if (propertyDef.isMultiValued())
+        DataTypeDefinition dataType = propertyDef.getDataType();
+        QName dataTypeName = dataType.getName();
+        if (propertyDef.isMultiValued())
         {
             if(!(value instanceof Collection))
             {
@@ -140,7 +142,28 @@ import org.springframework.extensions.webscripts.json.JSONUtils;
             JSONArray body = new JSONArray();
             for(Serializable o : c)
             {
-                body.put(serializeToJSONString(o));
+                if(dataTypeName.equals(DataTypeDefinition.MLTEXT))
+                {
+                    MLText source = (MLText)o;
+                    JSONArray array = new JSONArray();
+                    for(Locale locale : source.getLocales())
+                    {
+                        JSONObject json = new JSONObject();
+                        json.put("locale", DefaultTypeConverter.INSTANCE.convert(String.class, locale));
+                        json.put("value", source.getValue(locale));
+                        array.put(json);
+                    }
+                    body.put(array);
+                }
+                else if(dataTypeName.equals(DataTypeDefinition.CONTENT))
+                {
+                    throw new RuntimeException("Multi-valued content properties are not supported");
+                }
+                else
+                {
+                    body.put(serializeToJSONString(o));
+                }
+                
             }
             
             return new PropertyValue(false, body.toString());
@@ -148,8 +171,6 @@ import org.springframework.extensions.webscripts.json.JSONUtils;
         else
         {
             boolean encodeString = true;
-            DataTypeDefinition dataType = propertyDef.getDataType();
-            QName dataTypeName = dataType.getName();
             if(dataTypeName.equals(DataTypeDefinition.MLTEXT))
             {
                 encodeString = false;

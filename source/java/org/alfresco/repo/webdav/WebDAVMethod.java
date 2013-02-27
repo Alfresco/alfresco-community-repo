@@ -996,37 +996,6 @@ public abstract class WebDAVMethod
         return ns.toString();
     }
 
-    protected void setHidden(NodeRef nodeRef, boolean isHidden)
-    {
-        int mask = 0;
-        boolean allVisible = true;
-        Visibility webDavVisibility = isHidden ? Visibility.NotVisible : Visibility.Visible;
-        HiddenAspect hiddenAspect = m_davHelper.getHiddenAspect();
-        for (Client client : hiddenAspect.getClients())
-        {
-            Visibility clientVisibility = client == FileFilterMode.getClient() ? webDavVisibility : hiddenAspect
-                    .getVisibility(client, nodeRef);
-            if (clientVisibility != Visibility.Visible)
-            {
-                allVisible = false;
-            }
-            mask |= hiddenAspect.getClientVisibilityMask(client, clientVisibility);
-        }
-        if (allVisible)
-        {
-            getNodeService().removeAspect(nodeRef, ContentModel.ASPECT_HIDDEN);
-        }
-        else
-        {
-            hiddenAspect.hideNode(nodeRef, mask);
-        }
-    }
-
-    protected boolean isHidden(NodeRef nodeRef)
-    {
-        return m_davHelper.getHiddenAspect().getVisibility(FileFilterMode.getClient(), nodeRef) != Visibility.Visible;
-    }
-
     /**
      * Checks if write operation can be performed on node.
      * 

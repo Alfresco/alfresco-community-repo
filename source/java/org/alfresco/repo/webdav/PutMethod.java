@@ -168,9 +168,9 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             
             // 'Unhide' nodes hidden by us and behave as though we created them
             NodeRef contentNodeRef = contentNodeInfo.getNodeRef();
-            if (isHidden(contentNodeRef) && !getDAVHelper().isRenameShuffle(getPath()))
+            if (fileFolderService.isHidden(contentNodeRef) && !getDAVHelper().isRenameShuffle(getPath()))
             {
-                setHidden(contentNodeRef, false);
+                fileFolderService.setHidden(contentNodeRef, false);
                 created = true;
             }
         }
@@ -239,7 +239,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                 disabledVersioning = true;
             }
             // ALF-16756: To avoid firing inbound rules too early (while a node is still locked) apply the no content aspect
-            if (nodeLockInfo != null && nodeLockInfo.isExclusive() && !ContentData.hasContent(contentData))
+            if (nodeLockInfo != null && nodeLockInfo.isExclusive() && !(ContentData.hasContent(contentData) && contentData.getSize() > 0))
             {
                 getNodeService().addAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_NO_CONTENT, null);
             }

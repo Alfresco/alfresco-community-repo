@@ -32,8 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
-import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery.OrderBy;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.util.ModelUtil;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -67,6 +68,12 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
 
         // authority is not included into filters list as it will be taken into account before filtering
         String authority = getAuthority(req);
+        
+        if (authority == null)
+        {
+            // ALF-11036 fix, if authority argument is omitted the tasks for the current user should be returned.
+            authority = authenticationService.getCurrentUserName();
+        }
         
         // state is also not included into filters list, for the same reason
         WorkflowTaskState state = getState(req);
@@ -120,8 +127,8 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             // no workflow instance id is present so get all tasks
             if (authority != null)
             {
-                List<WorkflowTask> tasks = workflowService.getAssignedTasks(authority, state);
-                List<WorkflowTask> pooledTasks = workflowService.getPooledTasks(authority);
+                List<WorkflowTask> tasks = workflowService.getAssignedTasks(authority, state, true);
+                List<WorkflowTask> pooledTasks = workflowService.getPooledTasks(authority, true);
                 if (pooledTasksOnly != null)
                 {
                     if (pooledTasksOnly.booleanValue())
@@ -159,18 +166,40 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
             }
         }
         
-        // filter results
+        int maxItems = getIntParameter(req, PARAM_MAX_ITEMS, DEFAULT_MAX_ITEMS);
+        int skipCount = getIntParameter(req, PARAM_SKIP_COUNT, DEFAULT_SKIP_COUNT);
+        int totalCount = 0;
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-        for (WorkflowTask task : allTasks)
+        
+        // Filter results
+        WorkflowTask task = null;
+        for(int i=0; i<allTasks.size(); i++)
         {
-            if (matches(task, filters))
+        	task = allTasks.get(i);
+        	if (matches(task, filters))
             {
-                results.add(modelBuilder.buildSimple(task, properties));
+        		// Total-count needs to be based on matching tasks only, so we can't just use allTasks.size() for this
+            	totalCount++;
+            	if(i >= skipCount && (maxItems < 0 || maxItems > results.size()))
+            	{
+            		// Only build the actual detail if it's in the range of items we need. This will
+            		// drastically improve performance over paging after building the model
+            		results.add(modelBuilder.buildSimple(task, properties));
+            	}
             }
         }
-
+        
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("taskInstances", results);
+        
+        if (maxItems != DEFAULT_MAX_ITEMS || skipCount != DEFAULT_SKIP_COUNT)
+        {
+            // maxItems or skipCount parameter was provided so we need to include paging into response
+            model.put("paging", ModelUtil.buildPaging(totalCount, maxItems == DEFAULT_MAX_ITEMS ? totalCount : maxItems, skipCount));
+        }
+        
         // create and return results, paginated if necessary
-        return createResultModel(req, "taskInstances", results);
+        return model;
     }
 
     /**

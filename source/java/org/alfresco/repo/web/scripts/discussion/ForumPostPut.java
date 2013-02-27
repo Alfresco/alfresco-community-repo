@@ -89,15 +89,17 @@ public class ForumPostPut extends AbstractDiscussionWebScript
    private void doUpdatePost(PostInfo post, TopicInfo topic, WebScriptRequest req, 
          JSONObject json)
    {
+       boolean updateTopic = false;
       // Fetch the details from the JSON
-      
-      // Update the titles on the post and it's topic
+
+       // Update the titles on the post and it's topic
       if (json.containsKey("title"))
       {
          String title = (String)json.get("title");
          post.setTitle(title);
          if (title.length() > 0)
          {
+            updateTopic = true;
             topic.setTitle(title);
          }
       }
@@ -118,10 +120,14 @@ public class ForumPostPut extends AbstractDiscussionWebScript
          {
             topic.getTags().addAll(tags);
          }
+         updateTopic = true;
       }
       
       // Save the topic and the post
-      discussionService.updateTopic(topic);
+      if (updateTopic == true) 
+      {
+          discussionService.updateTopic(topic);
+      }
       discussionService.updatePost(post);
    }
 }

@@ -36,8 +36,10 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
+import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.QName;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
@@ -197,7 +199,7 @@ public class PropFindMethod extends WebDAVMethod
         
         // A node hidden during a 'shuffle' operation - send a 404 error back to the client, as some Mac clients need
         // this
-        if (isHidden(pathNodeInfo.getNodeRef()))
+        if (getFileFolderService().isHidden(pathNodeInfo.getNodeRef()))
         {
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);            
         }
@@ -429,6 +431,7 @@ public class PropFindMethod extends WebDAVMethod
     {
         // Get the properties for the node
         Map<QName, Serializable> props = nodeInfo.getProperties();
+        Map<QName, String> deadProperties = null;
 
         // Output the start of the properties element
         Attributes nullAttr = getDAVHelper().getNullAttributes();
@@ -608,15 +611,23 @@ public class PropFindMethod extends WebDAVMethod
             else
             {
                 // Look in the custom properties
-                
-                // TODO: Custom properties lookup
-                // String qualifiedName = propNamespaceUri + WebDAV.NAMESPACE_SEPARATOR + propName;
-                
+
+//                String qualifiedName = propNamespaceUri + WebDAV.NAMESPACE_SEPARATOR + propName;
+
                 String value = (String) nodeInfo.getProperties().get(property.createQName());
                 if (value == null)
                 {
-                propertiesNotFound.add(property);
-            }
+                    if (deadProperties == null)
+                    {
+                        deadProperties = loadDeadProperties(nodeInfo.getNodeRef());
+                    }
+                    value = deadProperties.get(property.createQName());
+                }
+
+                if (value == null)
+                {
+                    propertiesNotFound.add(property);
+                }
                 else
                 {
                     if (property.hasNamespaceName())
@@ -943,6 +954,72 @@ public class PropFindMethod extends WebDAVMethod
         {
             throw new AlfrescoRuntimeException("XML write error", ex);
         }
+    }
+    
+    /**
+     * Loads all dead properties persisted on the node
+     * 
+     * @param nodeRef
+     * @return the map of all dead properties
+     */
+    @SuppressWarnings("unchecked")
+    protected Map<QName, String> loadDeadProperties(NodeRef nodeRef)
+    {
+        Map<QName, String> result;
+        
+        List<String> deadProperties = (List<String>)getNodeService().getProperty(nodeRef, ContentModel.PROP_DEAD_PROPERTIES);
+        
+        if (deadProperties != null)
+        {
+            result = new HashMap<QName, String>(deadProperties.size() * 2);
+
+            for (String deadProperty : deadProperties)
+            {
+                int last = deadProperty.length() - 1;
+                int pos = deadProperty.indexOf(QName.NAMESPACE_END);
+                if (pos == -1 || pos == last)
+                {
+                    continue;
+                }
+                pos = deadProperty.indexOf(':', pos + 1);
+                if (pos == -1 || pos == last)
+                {
+                    continue;
+                }
+                try
+                {
+                    result.put(QName.createQName(deadProperty.substring(0, pos)), deadProperty.substring(pos + 1));
+                }
+                catch (InvalidQNameException e)
+                {
+                    // Skip and continue
+                }
+            }
+        }
+        else
+        {
+            result = new HashMap<QName, String>(7);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Persists dead properties for specified resource
+     * 
+     * @param nodeRef specified resource
+     * @param deadProperties the properties to persist
+     */
+    protected void persistDeadProperties(NodeRef nodeRef, Map<QName, String> deadProperties)
+    {
+        List<String> listToPersist = new ArrayList<String>(deadProperties.size());
+
+        for (Map.Entry<QName, String> entry: deadProperties.entrySet())
+        {
+            listToPersist.add(entry.getKey().toString() + ':' + entry.getValue());
+        }
+
+        getNodeService().setProperty(nodeRef, ContentModel.PROP_DEAD_PROPERTIES, (Serializable)listToPersist);
     }
     
     /**

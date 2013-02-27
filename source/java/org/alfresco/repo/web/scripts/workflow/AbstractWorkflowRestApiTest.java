@@ -307,13 +307,14 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         // Retrieve tasks using the workflow instance
         String baseUrl = MessageFormat.format(URL_WORKFLOW_TASKS, workflowId);
 
-        // Check returns the completed start task and the current task.
+        // Check returns the completed start task.
         String adhocTaskId = task.getId();
-        checkTasksMatch(baseUrl, startTaskId, adhocTaskId);
+        checkTasksMatch(baseUrl, startTaskId);
 
         String completedUrl = baseUrl + "?state=" + WorkflowTaskState.COMPLETED;
         checkTasksMatch(completedUrl, startTaskId);
 
+        personManager.setUser(USER2);
         String inProgressUrl = baseUrl + "?state=" + WorkflowTaskState.IN_PROGRESS;
         checkTasksMatch(inProgressUrl, adhocTaskId);
 

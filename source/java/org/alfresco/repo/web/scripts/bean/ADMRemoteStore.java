@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,7 +26,9 @@ import java.io.Writer;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -47,6 +49,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -119,6 +122,7 @@ public class ADMRemoteStore extends BaseRemoteStore
     protected SiteService siteService;
     protected ContentService contentService;
     protected HiddenAspect hiddenAspect;
+    private BehaviourFilter behaviourFilter;
     
     /**
      * Date format pattern used to parse HTTP date headers in RFC 1123 format.
@@ -179,7 +183,12 @@ public class ADMRemoteStore extends BaseRemoteStore
     {
         this.hiddenAspect = hiddenAspect;
     }
-
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+    
     /**
      * Gets the last modified timestamp for the document.
      * <p>
@@ -459,17 +468,30 @@ public class ADMRemoteStore extends BaseRemoteStore
                     {
                         throw new IllegalStateException("Unable to aquire parent folder reference for path: " + path);
                     }
-                    FileInfo fileInfo = fileFolderService.create(
-                            parentFolder.getNodeRef(), encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
-                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
-                    aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
-                    unprotNodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
-                    ContentWriter writer = contentService.getWriter(
-                            fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-                    writer.guessMimetype(fileInfo.getName());
-                    writer.putContent(content);
-                    if (logger.isDebugEnabled())
-                        logger.debug("createDocument: " + fileInfo.toString());
+                    
+                    // ALF-17729 / ALF-17796 - disable auditable on parent folder
+                    NodeRef parentFolderRef = parentFolder.getNodeRef();
+                    behaviourFilter.disableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
+                    
+                    try
+                    {
+                        FileInfo fileInfo = fileFolderService.create(
+                                parentFolderRef, encpath.substring(off + 1), ContentModel.TYPE_CONTENT);
+                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1, 1.0f);
+                        aspectProperties.put(ContentModel.PROP_IS_INDEXED, false);
+                        unprotNodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
+                        ContentWriter writer = contentService.getWriter(
+                                fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                        writer.guessMimetype(fileInfo.getName());
+                        writer.putContent(content);
+                        if (logger.isDebugEnabled())
+                            logger.debug("createDocument: " + fileInfo.toString());
+                    }
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
+                    }
+                    
                     return null;
                 }
             }, runAsUser);
@@ -532,7 +554,20 @@ public class ADMRemoteStore extends BaseRemoteStore
         {
             final NodeRef fileRef = fileInfo.getNodeRef();
             this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TEMPORARY, null);
-            this.nodeService.deleteNode(fileRef);
+            
+            // ALF-17729
+            NodeRef parentFolderRef = unprotNodeService.getPrimaryParent(fileRef).getParentRef();
+            behaviourFilter.disableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
+            
+            try
+            {
+                this.nodeService.deleteNode(fileRef);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
+            }
+            
             if (logger.isDebugEnabled())
                 logger.debug("deleteDocument: " + fileInfo.toString());
         }
@@ -736,11 +771,14 @@ public class ADMRemoteStore extends BaseRemoteStore
                     if (create)
                     {
                         // ensure folders exist down to the specified parent
+                        // ALF-17729 / ALF-17796 - disable auditable on parent folders
                         result = FileFolderUtil.makeFolders(
                                 this.fileFolderService,
                                 surfConfigRef,
                                 isFolder ? pathElements : pathElements.subList(0, pathElements.size() - 1),
-                                ContentModel.TYPE_FOLDER);
+                                ContentModel.TYPE_FOLDER,
+                                behaviourFilter,
+                                new HashSet<QName>(Arrays.asList(new QName[]{ContentModel.ASPECT_AUDITABLE})));
                     }
                     else
                     {

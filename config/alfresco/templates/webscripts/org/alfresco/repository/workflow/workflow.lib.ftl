@@ -4,7 +4,7 @@
       {
          "id": "${task.id}",
          "url": "${task.url}",
-         "name": "${task.name}",
+         "name": "${task.name!""}",
          "title": "${task.title!""}",
          "description": "${task.description!""}",
          "state": "${task.state}",

@@ -42,7 +42,7 @@ function main() {
 	if(json.has("isTemplate"))
 	{
 		var isTemplate = json.get("isTemplate");
-		webproject.setDescription(isTemplate);
+		webproject.setTemplate(isTemplate);
 	}
 	
 	// update the web project

@@ -192,10 +192,10 @@ public class WorkflowModelBuilder
         model.put(TASK_PATH, getUrl(task.getPath()));
         model.put(TASK_OUTCOME, getOutcome(task));
         model.put(TASK_IS_POOLED, isPooled(task.getProperties()));
-        model.put(TASK_IS_EDITABLE, this.workflowService.isTaskEditable(task, currentUser));
-        model.put(TASK_IS_REASSIGNABLE, this.workflowService.isTaskReassignable(task, currentUser));
-        model.put(TASK_IS_CLAIMABLE, this.workflowService.isTaskClaimable(task, currentUser));
-        model.put(TASK_IS_RELEASABLE, this.workflowService.isTaskReleasable(task, currentUser));
+        model.put(TASK_IS_EDITABLE, this.workflowService.isTaskEditable(task, currentUser, false));
+        model.put(TASK_IS_REASSIGNABLE, this.workflowService.isTaskReassignable(task, currentUser, false));
+        model.put(TASK_IS_CLAIMABLE, this.workflowService.isTaskClaimable(task, currentUser, false));
+        model.put(TASK_IS_RELEASABLE, this.workflowService.isTaskReleasable(task, currentUser, false));
         
         Serializable owner = task.getProperties().get(ContentModel.PROP_OWNER);
         model.put(TASK_OWNER, getPersonModel(owner));

@@ -112,7 +112,7 @@ public class MoveMethod extends HierarchicalMethod
             if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()))
             {
                 // ALF-7079 fix, if destInfo is a hidden shuffle target then pretend it's not there
-                destExists = !isHidden(destInfo.getNodeRef());
+                destExists = !getFileFolderService().isHidden(destInfo.getNodeRef());
                 if (!hasOverWrite() && destExists)
                 {
                     if (logger.isDebugEnabled())
@@ -201,14 +201,14 @@ public class MoveMethod extends HierarchicalMethod
         if (destFileInfo != null)
         {
             copyContentOnly(sourceNodeRef, destFileInfo, fileFolderService);
-            setHidden(destFileInfo.getNodeRef(), false);
+            fileFolderService.setHidden(destFileInfo.getNodeRef(), false);
             if (isMove)
             {
                 if (getDAVHelper().isRenameShuffle(destPath) && !getDAVHelper().isRenameShuffle(sourcePath))
                 {
                     // if temporary or backup file already exists
                     // don't delete source that is node with version history
-                    setHidden(sourceNodeRef, true);
+                    fileFolderService.setHidden(sourceNodeRef, true);
                     // As per the WebDAV spec, we make sure the node is unlocked once moved
                     getDAVHelper().getLockService().unlock(sourceNodeRef);
                 }
@@ -229,7 +229,7 @@ public class MoveMethod extends HierarchicalMethod
         {
             destFileInfo = fileFolderService.create(destParentNodeRef, name, ContentModel.TYPE_CONTENT);
             copyContentOnly(sourceNodeRef, destFileInfo, fileFolderService);
-            setHidden(sourceNodeRef, true);
+            fileFolderService.setHidden(sourceNodeRef, true);
 
             // As per the WebDAV spec, we make sure the node is unlocked once moved
             getDAVHelper().getLockService().unlock(sourceNodeRef);

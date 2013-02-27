@@ -174,6 +174,20 @@ public class WikiPageListGet extends AbstractWikiWebScript
       wiki.put("pages", items); // Old style
       wiki.put("container", container);
       
+      if (userFiltering)
+      {
+         // We need to get all the wiki pages for "My Pages" filter otherwise 
+         // the links for renamed wiki pages won't be rendered correctly, 
+         // which were created by other users
+         pages = wikiService.listWikiPages(site.getShortName(), paging);
+         List<String> pageTitles = new ArrayList<String>(pages.getPage().size());
+         for (WikiPageInfo page : pages.getPage())
+         {
+            pageTitles.add(page.getTitle());
+         }
+         wiki.put("pageTitles", pageTitles);
+      }
+      
       Map<String, Object> model = new HashMap<String, Object>();
       model.put("data", data); // New style
       model.put("wiki", wiki);

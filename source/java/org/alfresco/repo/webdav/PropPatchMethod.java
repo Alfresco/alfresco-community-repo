@@ -19,12 +19,15 @@
 package org.alfresco.repo.webdav;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.namespace.QName;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Document;
@@ -194,11 +197,7 @@ public class PropPatchMethod extends PropFindMethod
                                             break;
                                         case Node.ELEMENT_NODE:
                                             int action = currentNode.getNodeName().endsWith(WebDAV.XML_SET) ? PropertyAction.SET : PropertyAction.REMOVE;
-                                            WebDAVProperty prop = createProperty(propNode);
-                                            if (prop != null)
-                                            {
-                                               m_propertyActions.add(new PropertyAction(action, prop));
-                                            }
+                                            m_propertyActions.add(new PropertyAction(action, createProperty(propNode)));
                                             break;
                                     }
                                 }
@@ -258,6 +257,7 @@ public class PropPatchMethod extends PropFindMethod
             }
         }
 
+        Map<QName, String> deadProperties = null;
         for (PropertyAction propertyAction : m_propertyActions)
         {
             int statusCode;
@@ -266,13 +266,37 @@ public class PropPatchMethod extends PropFindMethod
 
             if (failedProperty == null)
             {
+                PropertyDefinition propDef = getDAVHelper().getDictionaryService().getProperty(property.createQName());
+                
+                boolean deadProperty = propDef == null || (!propDef.getContainerClass().isAspect() && !getDAVHelper().getDictionaryService().isSubClass(getNodeService().getType(nodeInfo.getNodeRef()), 
+                        propDef.getContainerClass().getName()));
+                
+                if (deadProperty && deadProperties == null)
+                {
+                    deadProperties = loadDeadProperties(nodeInfo.getNodeRef());
+                }
+
                 if (PropertyAction.SET == propertyAction.getAction())
                 {
-                    getNodeService().setProperty(nodeInfo.getNodeRef(), property.createQName(), property.getValue());
+                    if (deadProperty)
+                    {
+                        deadProperties.put(property.createQName(), property.getValue());
+                    }
+                    else
+                    {
+                        getNodeService().setProperty(nodeInfo.getNodeRef(), property.createQName(), property.getValue());
+                    }
                 }
                 else if (PropertyAction.REMOVE == propertyAction.getAction())
                 {
-                    getNodeService().removeProperty(nodeInfo.getNodeRef(), property.createQName());
+                    if (deadProperty)
+                    {
+                        deadProperties.remove(property.createQName());
+                    }
+                    else
+                    {
+                        getNodeService().removeProperty(nodeInfo.getNodeRef(), property.createQName());
+                    }
                 }
                 else
                 {
@@ -293,6 +317,11 @@ public class PropPatchMethod extends PropFindMethod
             }
 
             propertyAction.setResult(statusCode, statusCodeDescription);
+        }
+
+        if (deadProperties != null)
+        {
+            persistDeadProperties(nodeInfo.getNodeRef(), deadProperties);
         }
     }
     

@@ -47,8 +47,8 @@
 		"username": "${item.node.properties.creator}"
 	},
 	</#if>
-	"createdOn": "${xmldate(item.createdDate)}",
-	"modifiedOn": "${xmldate(item.modifiedDate)}",
+	"createdOn": "${formatDateRFC822(item.createdDate)}", 
+	"modifiedOn": "${formatDateRFC822(item.modifiedDate)}", 
 	"permissions":
 	{
 		"edit": ${item.node.hasPermission("Write")?string},
@@ -59,16 +59,16 @@
 	<#-- draft vs internal published -->
 	"isDraft": ${item.isDraft?string},
 	<#if (! item.isDraft)>
-		"releasedOn": "${xmldate(item.releasedDate)}",
+		"releasedOn": "${formatDateRFC822(item.releasedDate)}",
 	</#if>
 	<#-- true if the post has been updated -->
 	"isUpdated": ${item.isUpdated?string},
 	<#if (item.isUpdated)>
-		"updatedOn": "${xmldate(item.updatedDate)}",
+		"updatedOn": "${formatDateRFC822(item.updatedDate)}",
 	</#if>
 	<#if (item.node.properties["blg:published"]?? && item.node.properties["blg:published"] == true)>
-	"publishedOn": "${xmldate(item.node.properties["blg:posted"])}",
-	"updatedOn": "${xmldate(item.node.properties["blg:lastUpdate"])}",
+	"publishedOn": "${formatDateRFC822(item.node.properties["blg:posted"])}",
+	"updatedOn": "${formatDateRFC822(item.node.properties["blg:lastUpdate"])}",
 	"postId": "${item.node.properties["blg:postId"]!''}",
 	"postLink": "${item.node.properties["blg:link"]!''}",
 	"outOfDate": ${item.outOfDate?string},
@@ -106,3 +106,10 @@
 	"item": <@blogpostJSON item=item />
 }
 </#macro>
+
+<#function formatDateRFC822 dateItem> 
+    <# local temp=${.locale}  --> 
+    <#setting locale="en_US"> 
+    <#return dateItem?datetime?string("EEE, d MMM yyyy HH:mm:ss Z")> 
+    <# setting locale=temp --> 
+</#function> 

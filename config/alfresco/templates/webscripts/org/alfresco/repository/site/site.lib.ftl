@@ -51,6 +51,7 @@
 		</#list>
 	],
 	</#if>
+	<#nested>
 	"isPublic": ${site.isPublic?string("true", "false")},
 	"visibility": "${site.visibility}"
 }

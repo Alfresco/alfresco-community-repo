@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -64,6 +64,8 @@ public abstract class AbstractArchivedNodeWebScript extends DeclarativeWebScript
     protected ServiceRegistry serviceRegistry;
     protected NodeArchiveService nodeArchiveService;
 
+    private int maxSizeView = 1000;
+    
     /**
      * Sets the serviceRegistry instance
      * 
@@ -84,6 +86,16 @@ public abstract class AbstractArchivedNodeWebScript extends DeclarativeWebScript
         this.nodeArchiveService = nodeArchiveService;
     }
 
+    /**
+     * Sets the maxSizeView
+     * 
+     * @param maxSizeView the maxSizeView
+     */
+    public void setMaxSizeView(int maxSizeView)
+    {
+        this.maxSizeView = maxSizeView;
+    }
+    
     protected StoreRef parseRequestForStoreRef(WebScriptRequest req)
     {
         // get the parameters that represent the StoreRef, we know they are present
@@ -158,7 +170,7 @@ public abstract class AbstractArchivedNodeWebScript extends DeclarativeWebScript
         NodeService nodeService = serviceRegistry.getNodeService();
         NodeRef archiveRootNode = nodeService.getStoreArchiveNode(storeRef);
 
-        List<ChildAssociationRef> children = nodeService.getChildAssocs(archiveRootNode);
+        List<ChildAssociationRef> children = nodeService.getChildAssocs(archiveRootNode, null, null, maxSizeView, true);
     
         // We must get the sys:archived children in order of their archiving.
         Comparator<ChildAssociationRef> archivedNodeSorter = new ArchivedDateComparator();

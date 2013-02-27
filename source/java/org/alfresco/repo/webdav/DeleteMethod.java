@@ -107,11 +107,11 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
         // MNT-181: working copies and versioned nodes are hidden rather than deleted
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
         {
-            setHidden(nodeRef, true);
+            fileFolderService.setHidden(nodeRef, true);
             getDAVLockService().unlock(nodeRef);
         }
         // We just ensure already-hidden nodes are left unlocked
-        else if (isHidden(nodeRef))
+        else if (fileFolderService.isHidden(nodeRef))
         {
             getDAVLockService().unlock(nodeRef);            
         }

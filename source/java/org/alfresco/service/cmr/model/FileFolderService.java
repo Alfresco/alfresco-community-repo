@@ -396,4 +396,8 @@ public interface FileFolderService
      */
     @Auditable(parameters = {"typeQName"})
     public FileFolderServiceType getType(QName typeQName);
+    
+    public boolean isHidden(NodeRef nodeRef);
+    
+    public void setHidden(NodeRef nodeRef, boolean isHidden);
 }

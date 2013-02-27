@@ -101,16 +101,6 @@ public class SOLRDAOTest extends TestCase
         {
             // Expected
         }
-        try
-        {
-            // No limit on results
-            solrDAO.getAcls(Collections.singletonList(1L), null, 0);
-            fail("Expected IllegalArgumentException");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected
-        }
     }
     
     public void testQueryAcls_All()

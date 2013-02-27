@@ -66,6 +66,7 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
 {
     public static final String VAR_SOURCE = "source";
     public static final String VAR_TARGET = "target";
+    public static final String VAR_PAGE_RANGE = "pageRange";
 
     private static Log logger = LogFactory.getLog(RuntimeExecutableContentTransformerWorker.class);
     
@@ -239,6 +240,15 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
         // add the source and target properties
         properties.put(VAR_SOURCE, sourceFile.getAbsolutePath());
         properties.put(VAR_TARGET, targetFile.getAbsolutePath());
+        
+        if (options.getPageLimit() >=0)
+        {
+            properties.put(VAR_PAGE_RANGE, "0-" + options.getPageLimit());
+        }
+        else
+        {
+            properties.put(VAR_PAGE_RANGE, "");
+        }
         
         // pull reader file into source temp file
         reader.getContent(sourceFile);

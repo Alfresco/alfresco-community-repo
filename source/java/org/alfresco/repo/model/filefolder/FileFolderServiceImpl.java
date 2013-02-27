@@ -1492,4 +1492,37 @@ public class FileFolderServiceImpl implements FileFolderService
         }
         return new Pair<String, String>(base, ext);
     }
+
+    @Override
+    public void setHidden(NodeRef nodeRef, boolean isHidden)
+    {
+        int mask = 0;
+        boolean allVisible = true;
+        Visibility webDavVisibility = isHidden ? Visibility.NotVisible : Visibility.Visible;
+        for (Client client : hiddenAspect.getClients())
+        {
+            Visibility clientVisibility = client == FileFilterMode.getClient() ? webDavVisibility : hiddenAspect
+                    .getVisibility(client, nodeRef);
+            if (clientVisibility != Visibility.Visible)
+            {
+                allVisible = false;
+            }
+            mask |= hiddenAspect.getClientVisibilityMask(client, clientVisibility);
+        }
+        if (allVisible)
+        {
+            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_HIDDEN);
+        }
+        else
+        {
+            hiddenAspect.hideNode(nodeRef, mask);
+        }
+    }
+
+    @Override
+    public boolean isHidden(NodeRef nodeRef)
+    {
+        return hiddenAspect.getVisibility(FileFilterMode.getClient(), nodeRef) != Visibility.Visible;
+    }
+
 }

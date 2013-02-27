@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,9 +20,12 @@ package org.alfresco.repo.content.filestore;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
@@ -120,7 +123,7 @@ public class FileContentStore
     {
         this(rootDirectoryStr);
         setApplicationContext(context);
-        publishEvent(context);
+        publishEvent(context, Collections.EMPTY_MAP);
     }
 
     /**
@@ -135,7 +138,14 @@ public class FileContentStore
     {
         this(rootDirectory);        
         setApplicationContext(context);
-        publishEvent(context);
+        publishEvent(context, Collections.EMPTY_MAP);
+    }
+    
+    public FileContentStore(ApplicationContext context, File rootDirectory, Map<String, Serializable> extendedEventParams)
+    {
+        this(rootDirectory);        
+        setApplicationContext(context);
+        publishEvent(context, extendedEventParams);
     }
     
     
@@ -639,10 +649,11 @@ public class FileContentStore
      * 
      * @param context
      *            the application context
+     * @param extendedEventParams 
      */
-    private void publishEvent(ApplicationContext context)
+    private void publishEvent(ApplicationContext context, Map<String, Serializable> extendedEventParams)
     {
-        context.publishEvent(new ContentStoreCreatedEvent(this));
+        context.publishEvent(new ContentStoreCreatedEvent(this, extendedEventParams));
     }
 
     public void onApplicationEvent(ApplicationEvent event)
@@ -651,7 +662,7 @@ public class FileContentStore
         // (e.g. for monitoring purposes)
         if (event instanceof ContextRefreshedEvent && event.getSource() == this.applicationContext)
         {
-            publishEvent(((ContextRefreshedEvent) event).getApplicationContext());
+            publishEvent(((ContextRefreshedEvent) event).getApplicationContext(), Collections.EMPTY_MAP);
         }
     }
 

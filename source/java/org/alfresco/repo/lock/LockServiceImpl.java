@@ -333,13 +333,15 @@ public class LockServiceImpl implements LockService,
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
             addToIgnoreSet(nodeRef);
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
             try
             {
-                // Clear the lock
+                // Clear the lock (without auto-versioning)
                 this.nodeService.removeAspect(nodeRef, ContentModel.ASPECT_LOCKABLE);
             }
             finally
             {
+                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
                 removeFromIgnoreSet(nodeRef);
             }
         }

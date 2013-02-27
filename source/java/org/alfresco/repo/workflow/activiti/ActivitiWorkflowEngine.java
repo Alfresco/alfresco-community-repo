@@ -28,8 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,22 +47,16 @@ import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.impl.RepositoryServiceImpl;
-import org.activiti.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
 import org.activiti.engine.impl.bpmn.behavior.ReceiveTaskActivityBehavior;
-import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.activiti.engine.impl.bpmn.deployer.BpmnDeployer;
 import org.activiti.engine.impl.bpmn.diagram.ProcessDiagramGenerator;
-import org.activiti.engine.impl.form.DefaultTaskFormHandler;
-import org.activiti.engine.impl.form.TaskFormHandler;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.persistence.entity.TimerEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
-import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.ReadOnlyProcessDefinition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
@@ -93,6 +85,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.workflow.LazyActivitiWorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -624,56 +617,16 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         defs.add(typeConverter.getTaskDefinition(startEvent, startTaskName, processDefinition.getId(), true));
         
         // Now, continue through process, finding all user-tasks
-        Collection<PvmActivity> taskActivities = findUserTasks(startEvent);
+        Collection<PvmActivity> taskActivities = typeConverter.findUserTasks(startEvent);
         for(PvmActivity act : taskActivities)
         {
-            String formKey = getFormKey(act, processDefinition);
+            String formKey = typeConverter.getFormKey(act, processDefinition);
             defs.add(typeConverter.getTaskDefinition(act, formKey, processDefinition.getId(), false));
         }
         
        return defs;
     }
 
-    private String getFormKey(PvmActivity act, ReadOnlyProcessDefinition processDefinition)
-    {
-        if(act instanceof ActivityImpl) 
-        {
-            ActivityImpl actImpl = (ActivityImpl) act;
-            if (actImpl.getActivityBehavior() instanceof UserTaskActivityBehavior)        
-            {
-            	UserTaskActivityBehavior uta = (UserTaskActivityBehavior) actImpl.getActivityBehavior();
-                return getFormKey(uta.getTaskDefinition());
-            }
-            else if(actImpl.getActivityBehavior() instanceof MultiInstanceActivityBehavior) 
-            {
-            	// Get the task-definition from the process-definition
-            	if(processDefinition instanceof ProcessDefinitionEntity)
-            	{
-            		// Task definition id is the same the the activity id
-            		TaskDefinition taskDef = ((ProcessDefinitionEntity) processDefinition).getTaskDefinitions().get(act.getId());
-            		if(taskDef != null)
-            		{
-            			return getFormKey(taskDef);
-            		}
-            	}
-            }
-        }
-        return null;
-    }
-    
-    private String getFormKey(TaskDefinition taskDefinition) 
-    {
-    	 TaskFormHandler handler = taskDefinition.getTaskFormHandler();
-    	 // We cast to DefaultTaskFormHandler since we do not configure our own
-         if(handler != null && handler instanceof DefaultTaskFormHandler)
-         {
-             // As of Activiti 5.11, form-key is an expression. For alfresco-usecases, we're the expression-text
-             // as is, as this will ALWAYS be a literal string, containing pointer to task-type.
-             return ((DefaultTaskFormHandler)handler).getFormKey().getExpressionText();
-         }
-         return null;
-    }
-    
     private boolean isReceiveTask(PvmActivity act)
     {
         if(act instanceof ActivityImpl) 
@@ -684,18 +637,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         return false;
     }
 
-    private Collection<PvmActivity> findUserTasks(PvmActivity startEvent)
-    {
-        // Use a linked hashmap to get the task defs in the right order
-        Map<String, PvmActivity> userTasks = new LinkedHashMap<String, PvmActivity>();
-        Set<String> processedActivities = new HashSet<String>();
-        
-        // Start finding activities recursively
-        findUserTasks(startEvent, userTasks, processedActivities);
-        
-        return userTasks.values();
-    }
-    
     private boolean isFirstActivity(PvmActivity activity, ReadOnlyProcessDefinition procDef)
     {
         if(procDef.getInitial().getOutgoingTransitions().size() == 1) 
@@ -704,42 +645,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             {
                 return true;
             }
-        }
-        return false;
-    }
-
-    private void findUserTasks(PvmActivity currentActivity, Map<String, PvmActivity> userTasks, Set<String> processedActivities)
-    {
-        // Only process activity if not already processed, to prevent endless loops
-        if(!processedActivities.contains(currentActivity.getId()))
-        {
-            processedActivities.add(currentActivity.getId());
-            if(isUserTask(currentActivity)) 
-            {
-                userTasks.put(currentActivity.getId(), currentActivity);
-            }
-            
-            // Process outgoing transitions
-            if(currentActivity.getOutgoingTransitions() != null)
-            {
-                for(PvmTransition transition : currentActivity.getOutgoingTransitions())
-                {
-                    if(transition.getDestination() != null)
-                    {
-                        findUserTasks(transition.getDestination(), userTasks, processedActivities);
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean isUserTask(PvmActivity currentActivity)
-    {
-        // TODO: Validate if this is the best way to find out an activity is a usertask
-        String type = (String) currentActivity.getProperty(ActivitiConstants.NODE_TYPE);
-        if(type != null && type.equals(ActivitiConstants.USER_TASK_NODE_TYPE))
-        {
-            return true;
         }
         return false;
     }
@@ -1226,10 +1131,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             public String apply(HistoricTaskInstance task)
             {
-                // TODO This probably isn't very performant!
                 String defId = task.getProcessDefinitionId();
-                ProcessDefinition definition = repoService.createProcessDefinitionQuery().processDefinitionId(defId)
-                        .singleResult();
+                ProcessDefinition definition = (ProcessDefinition) activitiUtil.getDeployedProcessDefinition(defId);
                 return definition.getKey();
             }
         });
@@ -1486,7 +1389,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state)
+    public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state, boolean lazyInitialization)
     {
         try
         {
@@ -1495,7 +1398,20 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 List<Task> tasks = taskService.createTaskQuery()
                     .taskAssignee(authority)
                     .list();
-                return typeConverter.convert(tasks);
+                
+                List<WorkflowTask> resultingTasks = new ArrayList<WorkflowTask>();
+                for(Task task : tasks) {
+                	
+                	if(lazyInitialization)
+                	{
+                		resultingTasks.add(new LazyActivitiWorkflowTask(task, typeConverter, tenantService));
+                	}
+                	else
+                	{
+                		resultingTasks.add(typeConverter.convert(task));
+                	}
+                }
+                return resultingTasks;
             }
             else
             {
@@ -1503,7 +1419,20 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                     .taskAssignee(authority)
                     .finished()
                     .list();
-                return typeConverter.convert(historicTasks);
+                
+                List<WorkflowTask> resultingTasks = new ArrayList<WorkflowTask>();
+                for(HistoricTaskInstance historicTask : historicTasks) {
+                	
+                	if(lazyInitialization)
+                	{
+                		resultingTasks.add(new LazyActivitiWorkflowTask(historicTask, typeConverter, tenantService));
+                	}
+                	else
+                	{
+                		resultingTasks.add(typeConverter.convert(historicTask));
+                	}
+                }
+                return resultingTasks;
             }
         }
         catch (ActivitiException ae)
@@ -1516,7 +1445,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
     * {@inheritDoc}
     */
-    public List<WorkflowTask> getPooledTasks(List<String> authorities)
+    public List<WorkflowTask> getPooledTasks(List<String> authorities, boolean lazyInitialization)
     {
         try 
         {
@@ -1544,17 +1473,30 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                     // Candidate group
                     addTasksForCandidateGroups(authorities, resultingTasks);
                 }
-                
-                List<Task> tasks = new ArrayList<Task>();
-                                // Only tasks that have NO assignee, should be returned
+                List<WorkflowTask> tasks = new ArrayList<WorkflowTask>();
+                WorkflowTask currentTask = null;
+                // Only tasks that have NO assignee, should be returned
                 for(Task task : resultingTasks.values()) 
                 {
                     if(task.getAssignee() == null) 
                     {
-                        tasks.add(task);
+                    	// ALF-12264: filter out tasks from other domain, can occur when tenants
+                    	// have a group with the same name
+                    	if(lazyInitialization)
+                    	{
+                    		currentTask = new LazyActivitiWorkflowTask(task, typeConverter, tenantService);
+                    	}
+                    	else
+                    	{
+                    		currentTask = typeConverter.convert(task, true);
+                    	}
+                    	if(currentTask != null)
+                    	{
+                    		tasks.add(currentTask);
+                    	}
                     }
                 }
-                return typeConverter.convert(tasks);
+                return tasks;
             }
             
             return Collections.emptyList();

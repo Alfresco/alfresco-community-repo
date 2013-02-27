@@ -2860,6 +2860,15 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     existingContent.getSize();
                     existingContent.getMimetype();
                     contentChanged = isContentChanged(existingContent, tempFile);
+                
+                    /* 
+                     * MNT-248 fix
+                     * No need to create a version of a zero byte file
+                     */
+                    if (file.getFileSize() > 0 && existingContent.getSize() == 0 && nodeService.hasAspect(target, ContentModel.ASPECT_VERSIONABLE))
+                    {
+                        getPolicyFilter().disableBehaviour(target, ContentModel.ASPECT_VERSIONABLE);
+                    }
                 }
                       
                 if(contentChanged)

@@ -182,4 +182,13 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
         }
 
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
+     */
+    @Override
+    public long getNumberFound()
+    {
+        return wrapped.getNumberFound();
+    }
 }

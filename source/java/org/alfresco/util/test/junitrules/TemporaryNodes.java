@@ -291,11 +291,55 @@ public class TemporaryNodes extends ExternalResource
             {
                 final NodeRef result = createNode(nodeCmName, parentNode, ContentModel.TYPE_CONTENT);
                 
-                File quickFile = loadQuickFile(mimetype);
+                File quickFile = loadQuickFile(getQuickResource(mimetype));
                 
                 ContentService contentService = appContextRule.getApplicationContext().getBean("contentService", ContentService.class);
                 ContentWriter writer = contentService.getWriter(result, ContentModel.PROP_CONTENT, true);
                 writer.setMimetype(mimetype);
+                writer.setEncoding("UTF-8");
+                writer.putContent(quickFile);
+                
+                return result;
+            }
+        });
+        
+        AuthenticationUtil.popAuthentication();
+        
+        this.temporaryNodeRefs.add(newNodeRef);
+        return newNodeRef;
+    }
+    
+    /**
+     * This method creates a cm:content NodeRef whose content is taken from the named Alfresco 'quick' file and adds it to the internal
+     * list of NodeRefs to be tidied up by the rule.
+     * This method will be run in its own transaction and will be run with the specified user as the fully authenticated user,
+     * thus ensuring the named user is the cm:creator of the new node.
+     * 
+     * @param parentNode the parent node
+     * @param nodeCmName the file name of the quick file - will also be the cm:name of the new node.
+     * @param nodeCreator the username of the person who will create the node
+     * @return the newly created NodeRef.
+     * @since 4.1.4
+     */
+    public NodeRef createQuickFileByName(final String quickFileName, final NodeRef parentNode, final String nodeCreator)
+    {
+        final MimetypeMap mimetypeService = (MimetypeMap) appContextRule.getApplicationContext().getBean("mimetypeService");
+        final RetryingTransactionHelper transactionHelper = (RetryingTransactionHelper) appContextRule.getApplicationContext().getBean("retryingTransactionHelper");
+        
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(nodeCreator);
+        
+        NodeRef newNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                final NodeRef result = createNode(quickFileName, parentNode, ContentModel.TYPE_CONTENT);
+                
+                File quickFile = loadQuickFile(quickFileName);
+                
+                ContentService contentService = appContextRule.getApplicationContext().getBean("contentService", ContentService.class);
+                ContentWriter writer = contentService.getWriter(result, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(mimetypeService.guessMimetype(quickFileName));
                 writer.setEncoding("UTF-8");
                 writer.putContent(quickFile);
                 
@@ -324,7 +368,12 @@ public class TemporaryNodes extends ExternalResource
         return childAssoc.getChildRef();
     }
     
-    private File loadQuickFile(String mimetype)
+    /**
+     * Gets the resource name for the Alfresco 'quick file' associated with the given mime type.
+     * @param mimetype the MIME type e.g. {@link MimetypeMap#MIMETYPE_IMAGE_JPEG}
+     * @return the resource path e.g. "quick/quick.jpg"
+     */
+    private String getQuickResource(String mimetype)
     {
         final MimetypeMap mimetypeService = (MimetypeMap) appContextRule.getApplicationContext().getBean("mimetypeService");
         final String extension = mimetypeService.getExtension(mimetype);
@@ -334,16 +383,34 @@ public class TemporaryNodes extends ExternalResource
             throw new UnsupportedOperationException("No 'quick' file for unrecognised mimetype: " + mimetype);
         }
         
-        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource("quick/quick." + extension);
+        return "quick." + extension;
+    }
+    
+    /**
+     * Gets the resource name for the named Alfresco 'quick file'.
+     * 
+     * @param quickFileName e.g. "quickGEO.jpg"
+     * @return the resource path e.g. "quick/quickGEO.jpg"
+     */
+    private String getNamedQuickResource(String quickFileName)
+    {
+        return "quick/" + quickFileName;
+    }
+    
+    private File loadQuickFile(String quickfile)
+    {
+        final String quickResource = getNamedQuickResource(quickfile);
+        
+        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(quickResource);
         
         if (url == null)
         {
-            throw new UnsupportedOperationException("No 'quick' file for extension: " + extension);
+            throw new UnsupportedOperationException("No 'quick' file for file: " + quickResource);
         }
         File file = new File(url.getFile());
         if (!file.exists())
         {
-            throw new UnsupportedOperationException("No 'quick' file for extension: " + extension);
+            throw new UnsupportedOperationException("No 'quick' file for file: " + quickResource);
         }
         return file;
     }

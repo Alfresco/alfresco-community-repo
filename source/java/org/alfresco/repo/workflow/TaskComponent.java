@@ -50,17 +50,19 @@ public interface TaskComponent
      * 
      * @param authority  the authority
      * @param state  filter by specified workflow task state
+     * @param lazyInitialization hint in order to return partially-initialized entities
      * @return  the list of assigned tasks
      */
-    public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state);
+    public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state, boolean lazyInitialization);
     
     /**
      * Gets the pooled tasks available to the specified authority
      * 
      * @param authority   the authority
+     * @param lazyInitialization hint in order to return partially-initialized entities
      * @return  the list of pooled tasks
      */
-    public List<WorkflowTask> getPooledTasks(List<String> authorities);
+    public List<WorkflowTask> getPooledTasks(List<String> authorities, boolean lazyInitialization);
     
     /**
      * @deprecated Use overloaded method with the {@code sameSession} parameter

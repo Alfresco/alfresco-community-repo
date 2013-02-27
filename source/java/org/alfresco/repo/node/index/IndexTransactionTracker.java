@@ -450,11 +450,9 @@ found:
             fromTimeInclusive -= decrement;
 
             // Try to find a transaction near to the time
-            List<Transaction> nextTransactions = nodeDAO.getTxnsByCommitTimeDescending(
+            List<Transaction> nextTransactions = nodeDAO.getOneTxnsByCommitTimeDescending(
                     fromTimeInclusive,
                     toTimeExclusive,
-                    1,
-                    null,
                     remoteOnly);
             // There are no transactions in that time range
             if (nextTransactions.size() == 0)

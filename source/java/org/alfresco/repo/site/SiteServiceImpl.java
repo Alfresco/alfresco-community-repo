@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -493,13 +493,22 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         final NodeRef siteNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
            @Override
            public NodeRef doWork() throws Exception {
-              return nodeService.createNode(
-                    siteParent,
-                    ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, shortName), 
-                    siteType, 
-                    properties
-              ).getChildRef();
+               
+               behaviourFilter.disableBehaviour(siteParent, ContentModel.ASPECT_AUDITABLE);
+               try
+               {
+                   return nodeService.createNode(
+                           siteParent,
+                           ContentModel.ASSOC_CONTAINS,
+                           QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, shortName), 
+                           siteType, 
+                           properties
+                     ).getChildRef();
+               }
+               finally
+               {
+                   behaviourFilter.enableBehaviour(siteParent, ContentModel.ASPECT_AUDITABLE);
+               }
            }
         }, AuthenticationUtil.getSystemUserName());
            
@@ -1036,20 +1045,22 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private List<SiteInfo> listSitesImpl(final String userName, int size)
     {
         final int maxResults = size > 0 ? size : 1000;
-        Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, userName, false);
         final Set<String> siteNames = new TreeSet<String>();
-        for(String authority : containingAuthorities)
-        {
-            if (siteNames.size() < maxResults)
+        authorityService.getContainingAuthoritiesInZone(AuthorityType.GROUP, userName, AuthorityService.ZONE_APP_SHARE, new AuthorityFilter(){
+            @Override
+            public boolean includeAuthority(String authority)
             {
-                String siteName = resolveSite(authority);
-                if (siteName != null)
+                if (siteNames.size() < maxResults)
                 {
-                    siteNames.add(siteName);
+                    String siteName = resolveSite(authority);
+                    if (siteName == null)
+                    {
+                        return false;
+                    }
+                    return siteNames.add(siteName);
                 }
-            }
-        }
-        
+                return false;
+            }}, maxResults);
         if (siteNames.isEmpty())
         {
             return Collections.emptyList();
@@ -1422,6 +1433,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         //
         // See ALF-7888 for some background on this issue
         this.behaviourFilter.disableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+        
+        NodeRef siteParent = getSiteParent(shortName);
+        this.behaviourFilter.disableBehaviour(siteParent, ContentModel.ASPECT_AUDITABLE);
+        
         try
         {
             this.nodeService.deleteNode(siteNodeRef);
@@ -1429,6 +1444,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         finally
         {
             this.behaviourFilter.enableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+            this.behaviourFilter.enableBehaviour(siteParent, ContentModel.ASPECT_AUDITABLE);
         }
         
         // Delete the associated groups
@@ -1467,6 +1483,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy#onRestoreNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void onRestoreNode(ChildAssociationRef childAssocRef)
     {
@@ -1563,7 +1580,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         {
             throw new SiteDoesNotExistException(shortName);
         }
-
+        
+        // max size limit
+        if (size <= 0)
+        {
+            size = Integer.MAX_VALUE;
+        }
+        
         // Build an array of name filter tokens pre lowercased to test against person properties
         // We require that matching people have at least one match against one of these on
         // either their firstname or last name
@@ -1607,9 +1630,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                             {
                                 // Add the user and their permission to the returned map
                                 members.add(new SiteMemberInfoImpl(authority, permission, false));
-
+                                
                                 // break on max size limit reached
-                                if (members.size() == size) break AUTHORITY_FIND;
+                                if (members.size() >= size) 
+                                {
+                                    break AUTHORITY_FIND;
+                                }
                             }
                             break;
                         case GROUP:
@@ -1644,19 +1670,24 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                                     // No name filter add this group
                                     members.add(new SiteMemberInfoImpl(authority, permission, false));
                                 }
-
+                                
                                 // break on max size limit reached
-                                if (members.size() == size) break AUTHORITY_FIND;
+                                if (members.size() >= size) 
+                                {
+                                    break AUTHORITY_FIND;
+                                }
                             }
+                            break;
+                        default:
                             break;
                     }
                 }
             }
         }
-
-        if (collapseGroups)
+        
+        if ((collapseGroups) && (members.size() < size))
         {
-            for (Map.Entry<String, String> entry : groupsToExpand.entrySet())
+            GROUP_EXPAND: for (Map.Entry<String, String> entry : groupsToExpand.entrySet())
             {
                 Set<String> subUsers = this.authorityService.getContainedAuthorities(AuthorityType.USER, entry.getKey(), false);
                 for (String subUser : subUsers)
@@ -1667,6 +1698,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                         // found a filter - does it match person first/last name?
                         addUser = matchPerson(nameFilters, subUser);
                     }
+                    
                     if (addUser)
                     {
                         SiteMemberInfo memberInfo = new SiteMemberInfoImpl(subUser,entry.getValue(), true);
@@ -1675,9 +1707,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                         {
                             members.add(memberInfo);
                         }
-
+                        
                         // break on max size limit reached
-                        if (members.size() == size) break;
+                        if (members.size() >= size) 
+                        {
+                            break GROUP_EXPAND;
+                        }
                     }
                 }
             }
@@ -1772,44 +1807,27 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             throw new SiteDoesNotExistException(shortName);
         }
         
-        SiteMemberInfo membership = null;
-        
         QName siteType = directNodeService.getType(siteNodeRef);
         Set<String> permissions = this.permissionService.getSettablePermissions(siteType);
+        // This set is a lazily evaluated one, so merely getting it in advance as we do here is not expensive
+        Set<String> userAuthoritySet = this.authorityService.getAuthoritiesForUser(authorityName);
         for (String role : permissions)
         {
-            if (membership == null)
+            String roleGroup = getSiteRoleGroup(shortName, role, true);
+            Set<String> authorities = this.authorityService.getContainedAuthorities(null, roleGroup, true);
+            if (authorities.contains(authorityName))
             {
-                String roleGroup = getSiteRoleGroup(shortName, role, true);
-                Set<String> authorities = this.authorityService.getContainedAuthorities(null, roleGroup, true);
-                if (authorities.contains(authorityName))
-                {
-                    // found a direct membership for this user - return this role info
-                    membership = new SiteMemberInfoImpl(authorityName, role, false);
-                }
-                else
-                {
-                    // else test each group returned to see if the user is contained within it
-                    for (String authority : authorities)
-                    {
-                        switch (AuthorityType.getAuthorityType(authority))
-                        {
-                            case GROUP:
-                                Set<String> users = this.authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
-                                if (users.contains(authorityName))
-                                {
-                                    membership = new SiteMemberInfoImpl(authorityName, role, true);
-                                    // skip out - one confirmed role membership is enough information
-                                    break;
-                                }
-                                break;
-                        }
-                    }
-                }
+                // found a direct membership for this user - return this role info
+                return new SiteMemberInfoImpl(authorityName, role, false);
+            }
+            // crawl the cache from the role group down to find the authority
+            else if (userAuthoritySet.contains(roleGroup))
+            {
+                return new SiteMemberInfoImpl(authorityName, role, true);
             }
         }
         
-        return membership;
+        return null;
     }
 
     /**

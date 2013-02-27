@@ -380,10 +380,16 @@ public class AlienProcessorImpl implements AlienProcessor
                 parentNodeRef = currentAssoc.getParentRef();
                 childNodeRef = currentAssoc.getChildRef();
             
+                // if parent node is transferred or alien
                 if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
                 {
-                    for(String alienRepoId : aliensToAdd)
+                    Iterator<String> i = aliensToAdd.iterator();
+                    
+                    // for each alien repo id to add
+                    while(i.hasNext())
                     {
+                        String alienRepoId = (String)i.next();
+                    
                         if (!isInvaded(parentNodeRef, alienRepoId))
                         {
                             if(log.isDebugEnabled())
@@ -413,7 +419,7 @@ public class AlienProcessorImpl implements AlienProcessor
                         else
                         {
                             log.debug("parent node is already invaded by:" + alienRepoId);
-                            aliensToAdd.remove(alienRepoId);
+                            i.remove();
                         }
                         
                         // Yes the parent has been invaded so step up to the parent's parent             

@@ -27,10 +27,12 @@ import org.alfresco.filesys.repo.OpenFileMode;
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
 import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
 import org.alfresco.filesys.repo.rules.commands.DeleteFileCommand;
+import org.alfresco.filesys.repo.rules.commands.MoveFileCommand;
 import org.alfresco.filesys.repo.rules.commands.RenameFileCommand;
 import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
 import org.alfresco.filesys.repo.rules.operations.OpenFileOperation;
+import org.alfresco.filesys.repo.rules.operations.MoveFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.apache.commons.logging.Log;
@@ -77,6 +79,8 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
     private long timeout = 30000;
     
     private boolean isComplete;
+    private String folderMiddle;
+    private String folderEnd;
     
     /**
      * Keep track of re-names
@@ -122,6 +126,13 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                 RenameFileOperation r = (RenameFileOperation)operation;
                 fileMiddle = r.getFrom();
                 fileEnd = r.getTo();
+                
+                String[] paths = FileName.splitPath(r.getFromPath());
+                folderMiddle = paths[0];
+                
+                String[] paths2 = FileName.splitPath(r.getToPath());
+                folderEnd = paths2[0];
+                
                 internalState = InternalState.RENAME1;
             }
             else
@@ -201,7 +212,68 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                     return new CompoundCommand(commands);                                        
                 }
             }
+
+            if(operation instanceof MoveFileOperation)
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.info("Tracking rename: " + operation);
+                }
+                MoveFileOperation r = (MoveFileOperation)operation;
             
+                // Now see if this rename makes a pair
+                if(fileMiddle.equalsIgnoreCase(r.getTo()))
+                {
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("Got second rename" );
+                    }
+                    
+                    fileFrom = r.getFrom();
+                    
+                    /**
+                     * This shuffle reverses the rename out of the way and then copies the 
+                     * content only.   Finally it moves the temp file into place for the subsequent 
+                     * delete.
+                     * a) Rename Z to Y (Reverse previous move)
+                     * b) Copy Content from X to Y
+                     * c) Rename X to Z (move temp file out to old location)
+                     */
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("Go and shuffle! fromName:" + fileFrom + " middle: " + fileMiddle + " end: " + fileEnd);
+                    }
+                        
+                    String[] paths = FileName.splitPath(r.getFromPath());
+                    String oldFolder = paths[0];
+           
+                    ArrayList<Command> commands = new ArrayList<Command>();
+                    
+                    RenameFileCommand r1 = new RenameFileCommand(fileEnd, fileMiddle, r.getRootNodeRef(), folderEnd + "\\" + fileEnd, folderMiddle + "\\" + fileMiddle);
+                    commands.add(r1);
+                    CopyContentCommand copyContent = new CopyContentCommand(fileFrom, fileMiddle, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, folderMiddle + "\\" + fileMiddle);
+                    commands.add(copyContent);
+                    if(deleteBackup)
+                    {
+                        logger.debug("deleteBackup option turned on");
+                        DeleteFileCommand d1 = new DeleteFileCommand(oldFolder, r.getRootNodeRef(), oldFolder + "\\" + fileFrom);
+                        commands.add(d1);
+                    }
+                    else
+                    {
+                       MoveFileCommand m1 = new MoveFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, folderEnd + "\\" + fileEnd);                     
+                        commands.add(m1);
+                    }
+                    /**
+                     * TODO - we may need to copy a new node for the backup and delete the temp node.
+                     * It depends if we care about the contents of the Backup file.
+                     */
+                    
+                    isComplete = true;
+                    return new CompoundCommand(commands);
+                }
+            }
+                
             break;
         }
         

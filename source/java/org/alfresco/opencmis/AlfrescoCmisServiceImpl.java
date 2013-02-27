@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,12 +19,9 @@
 package org.alfresco.opencmis;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -194,17 +191,21 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
             else
             {
-                // We have to go to the repo and authenticate
-                String user = context.getUsername();
-                String password = context.getPassword();
-                Authorization auth = new Authorization(user, password);
-                if (auth.isTicket())
+                // First check if we already are authenticated
+                if (AuthenticationUtil.getFullyAuthenticatedUser() == null)
                 {
-                    connector.getAuthenticationService().validate(auth.getTicket());
-                }
-                else
-                {
-                    connector.getAuthenticationService().authenticate(auth.getUserName(), auth.getPasswordCharArray());
+                    // We have to go to the repo and authenticate
+                    String user = context.getUsername();
+                    String password = context.getPassword();
+                    Authorization auth = new Authorization(user, password);
+                    if (auth.isTicket())
+                    {
+                        connector.getAuthenticationService().validate(auth.getTicket());
+                    }
+                    else
+                    {
+                        connector.getAuthenticationService().authenticate(auth.getUserName(), auth.getPasswordCharArray());
+                    }
                 }
                 this.authentication = AuthenticationUtil.getFullAuthentication();
             }
@@ -2669,53 +2670,29 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
     private File copyToTempFile(ContentStream contentStream)
     {
-        File tempFile = null;
-
         if (contentStream == null)
         {
-            return tempFile;
+            return null;
         }
 
-        int bufferSize = 40 * 1014;
-        long count = 0;
-
+        File result = null;
         try
         {
-            tempFile = TempFileProvider.createTempFile("cmis", "content");
-            if (contentStream.getStream() != null)
-            {
-                OutputStream out = new BufferedOutputStream(new FileOutputStream(tempFile), bufferSize);
-                //InputStream in = new BufferedInputStream(contentStream.getStream(), bufferSize);
-                // Temporary work around for bug in InternalTempFileInputStream which auto closes during read
-                // BufferedInputStream subsequent use of available() throws an exception.
-                InputStream in = contentStream.getStream();
-
-                byte[] buffer = new byte[bufferSize];
-                int i;
-                while ((i = in.read(buffer)) > -1)
-                {
-                    out.write(buffer, 0, i);
-                    count += i;
-                }
-
-                in.close();
-                out.close();
-            }
+            result = TempFileProvider.createTempFile(contentStream.getStream(), "cmis", "content");
         }
         catch (Exception e)
         {
-            removeTempFile(tempFile);
             throw new CmisStorageException("Unable to store content: " + e.getMessage(), e);
         }
 
-        if (contentStream.getLength() > -1 && contentStream.getLength() != count)
+        if ((contentStream.getLength() > -1) && (result == null || contentStream.getLength() != result.length()))
         {
-            removeTempFile(tempFile);
-            throw new CmisStorageException(
-                    "Expected " + contentStream.getLength() + " bytes but retrieved " + count + "bytes!");
+            removeTempFile(result);
+            throw new CmisStorageException("Expected " + contentStream.getLength() + " bytes but retrieved " +
+                    (result == null ? -1 :result.length()) + " bytes!");
         }
 
-        return tempFile;
+        return result;
     }
 
     private void removeTempFile(File tempFile)

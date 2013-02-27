@@ -459,9 +459,12 @@ public class ExportDb
                 popKey = popKey.replaceAll("\\$s", String.valueOf(digits));
                 popKey = popKey.replaceAll("\\$l", String.valueOf(size));
                 
+                // Variation of the size type with size unit of char, e.g. varchar2(255 char)
+                final String charSizeType = dbType + "(" + size + " char)";
+                
                 // If the populated key matches a precision/scale type or a size type
                 // then the populated key gives us the string we're after.
-                if (popKey.equals(precisionScaleType) || popKey.equals(sizeType))
+                if (popKey.equals(precisionScaleType) || popKey.equals(sizeType) || popKey.equals(charSizeType))
                 {
                     return popKey;
                 }

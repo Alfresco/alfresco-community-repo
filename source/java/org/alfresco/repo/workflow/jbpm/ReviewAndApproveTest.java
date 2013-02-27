@@ -119,7 +119,7 @@ public class ReviewAndApproveTest extends BaseSpringTest
         assertEquals("Test review", endedTask.getProperties().get(WorkflowModel.PROP_DESCRIPTION));
         assertEquals("Test review", endedTask.getPath().getInstance().getDescription());
         
-        List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
+        List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS, false);
         assertNotNull(assignedTasks);
         assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.getInstance().getId());
         

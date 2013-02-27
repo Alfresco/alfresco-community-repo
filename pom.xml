@@ -400,7 +400,7 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>1.7.0-alfresco-patched</version>
+            <version>1.7.0-alfresco-20130130</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>

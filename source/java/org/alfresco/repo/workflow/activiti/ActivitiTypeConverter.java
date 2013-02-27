@@ -21,10 +21,14 @@ package org.alfresco.repo.workflow.activiti;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.alfresco.repo.workflow.activiti.ActivitiConstants.DEFAULT_TRANSITION_NAME;
 import static org.alfresco.repo.workflow.activiti.ActivitiConstants.DEFAULT_TRANSITION_DESCRIPTION;
@@ -37,9 +41,16 @@ import org.activiti.engine.form.StartFormData;
 import org.activiti.engine.form.TaskFormData;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
+import org.activiti.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
+import org.activiti.engine.impl.form.DefaultTaskFormHandler;
+import org.activiti.engine.impl.form.TaskFormHandler;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.PvmActivity;
+import org.activiti.engine.impl.pvm.PvmTransition;
 import org.activiti.engine.impl.pvm.ReadOnlyProcessDefinition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
@@ -153,6 +164,48 @@ public class ActivitiTypeConverter
         WorkflowNode node = getNode(activity, processKey, true);
         String taskDefId = taskFormKey == null ? node.getName() : taskFormKey;
         return factory.createTaskDefinition(taskDefId, node, taskFormKey, isStart);
+    }
+    
+    public WorkflowTaskDefinition getTaskDefinition(Task task)
+    {
+    	// Get the task-form used (retrieved from cached process-definition)
+    	TaskFormData taskFormData = formService.getTaskFormData(task.getId());
+        String taskDefId = null;
+        if(taskFormData != null) 
+        {
+            taskDefId = taskFormData.getFormKey();
+        }
+        
+        // Fetch node based on cached process-definition
+        ReadOnlyProcessDefinition procDef = activitiUtil.getDeployedProcessDefinition(task.getProcessDefinitionId());
+        WorkflowNode node = convert(procDef.findActivity(task.getTaskDefinitionKey()), true);
+        
+        return factory.createTaskDefinition(taskDefId, node, taskDefId, false);
+    }
+
+    /**
+     * Get the taskDefinition key based on the Activiti task definition id,
+     * @param taskDefinitionId id of the {@link TaskDefinition}
+     * @return
+     */
+    public WorkflowTaskDefinition getTaskDefinition(String taskDefinitionKey, String processDefinitionId)
+    {
+    	 ProcessDefinitionEntity procDef = (ProcessDefinitionEntity) activitiUtil.getDeployedProcessDefinition(processDefinitionId);
+    	 Collection<PvmActivity> userTasks = findUserTasks(procDef.getInitial());
+    	 
+    	 TaskDefinition taskDefinition = null;
+    	 for(PvmActivity activity : userTasks)
+    	 {
+    		 taskDefinition = procDef.getTaskDefinitions().get(activity.getId());
+    		 if(taskDefinitionKey.equals(taskDefinition.getKey()))
+    		 {
+    			 String formKey = getFormKey(taskDefinition);
+    			 WorkflowNode node = convert(activity);
+    			 return factory.createTaskDefinition(formKey, node, formKey, false);
+    		 }
+    	 }
+    	 
+    	 return null;
     }
 
     private WorkflowTransition getDefaultTransition(String processDefKey, String nodeId)
@@ -340,6 +393,17 @@ public class ActivitiTypeConverter
     
     public WorkflowTask convert(Task task)
     {
+       return convert(task, false);
+    }
+    
+    /**
+     * Converts the given task into a {@link WorkflowTask}, allows ignoring domain mismatch (ALF-12264)
+     * @param task 
+     * @param ignoreDomainMismatch whether or not to ignore domain mismatch exception
+     * @return the converter task. Returns null when the domain mismatched and ignoreDomainMismatch was true.
+     */
+    public WorkflowTask convert(Task task, boolean ignoreDomainMismatch)
+    {
         if(task == null)
             return null;
         String id = task.getId();
@@ -347,27 +411,64 @@ public class ActivitiTypeConverter
         String defaultDescription = task.getDescription();
         
         WorkflowTaskState state = WorkflowTaskState.IN_PROGRESS;
-        Execution execution = activitiUtil.getExecution(task.getExecutionId());
-        WorkflowPath path  = convert(execution);
+        WorkflowPath path = getWorkflowPath(task.getExecutionId(), ignoreDomainMismatch);
         
-        // Since the task is active, it's safe to use the active node on
-        // the execution path
-        WorkflowNode node = path.getNode();
-        
-        
-        TaskFormData taskFormData =formService.getTaskFormData(task.getId());
-        String taskDefId = null;
-        if(taskFormData != null) 
+        if(path != null) 
         {
-            taskDefId = taskFormData.getFormKey();
+        	// Since the task is active, it's safe to use the active node on
+            // the execution path
+            WorkflowNode node = path.getNode();
+            
+            TaskFormData taskFormData =formService.getTaskFormData(task.getId());
+            String taskDefId = null;
+            if(taskFormData != null) 
+            {
+                taskDefId = taskFormData.getFormKey();
+            }
+            WorkflowTaskDefinition taskDef = factory.createTaskDefinition(taskDefId, node, taskDefId, false);
+            
+            // All task-properties should be fetched, not only local
+            Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task);
+            
+            return factory.createTask(id,
+                        taskDef, taskDef.getId(), defaultTitle, defaultDescription, state, path, properties);
         }
-        WorkflowTaskDefinition taskDef = factory.createTaskDefinition(taskDefId, node, taskDefId, false);
-        
-        // All task-properties should be fetched, not only local
-        Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task);
-        
-        return factory.createTask(id,
-                    taskDef, taskDef.getId(), defaultTitle, defaultDescription, state, path, properties);
+        else
+        {
+        	// Ignoring this task, domain mismatched and safely ignoring that
+        	return null;
+        }
+    }
+    
+    public Map<QName, Serializable> getTaskProperties(Task task)
+    {
+    	return propertyConverter.getTaskProperties(task);
+    }
+    
+    public Map<QName, Serializable> getTaskProperties(HistoricTaskInstance task)
+    {
+    	// Get the local task variables from the history
+        Map<String, Object> variables = propertyConverter.getHistoricTaskVariables(task.getId());
+       return propertyConverter.getTaskProperties(task, variables);
+    }
+    
+    public WorkflowPath getWorkflowPath(String executionId, boolean ignoreDomainMismatch)
+    {
+    	 Execution execution = activitiUtil.getExecution(executionId);
+         
+         WorkflowPath path = null;
+         try 
+         {
+         	path = convert(execution);
+         } 
+         catch(RuntimeException re) 
+         {
+         	if(!ignoreDomainMismatch)
+         	{
+         		throw re;
+         	}
+         }
+         return path;
     }
     
     public WorkflowTask getVirtualStartTask(String processInstanceId, Boolean inProgress)
@@ -480,21 +581,8 @@ public class ActivitiTypeConverter
         {
             return null;
         }
-        WorkflowPath path = null;
-        // Check to see if the instance is still running
-        Execution execution = activitiUtil.getExecution(historicTaskInstance.getExecutionId());
-        
-        if(execution != null)
-        {
-            // Process execution still running
-            path  = convert(execution);
-        }
-        else
-        {
-            // Process execution is historic
-            path  = buildCompletedPath(historicTaskInstance.getExecutionId(), historicTaskInstance.getProcessInstanceId());
-        }
-        
+       
+        WorkflowPath path = getWorkflowPath(historicTaskInstance);
         if(path == null)
         {
             // When path is null, workflow is deleted or cancelled. Task should
@@ -508,6 +596,7 @@ public class ActivitiTypeConverter
         WorkflowTaskState state= WorkflowTaskState.COMPLETED;
 
         String taskId = historicTaskInstance.getId();
+        
         // Get the local task variables from the history
         Map<String, Object> variables = propertyConverter.getHistoricTaskVariables(taskId);
         Map<QName, Serializable> historicTaskProperties = propertyConverter.getTaskProperties(historicTaskInstance, variables);
@@ -521,6 +610,63 @@ public class ActivitiTypeConverter
 
         return factory.createTask(taskId, taskDef, taskName, 
                     title, description, state, path, historicTaskProperties);
+    }
+    
+    public WorkflowPath getWorkflowPath(HistoricTaskInstance historicTaskInstance)
+    {
+    	 WorkflowPath path = null;
+         // Check to see if the instance is still running
+         Execution execution = activitiUtil.getExecution(historicTaskInstance.getExecutionId());
+         
+         if(execution != null)
+         {
+             // Process execution still running
+             path  = convert(execution);
+         }
+         else
+         {
+             // Process execution is historic
+             path  = buildCompletedPath(historicTaskInstance.getExecutionId(), historicTaskInstance.getProcessInstanceId());
+         }
+         return path;
+    }
+    
+    public String getFormKey(PvmActivity act, ReadOnlyProcessDefinition processDefinition)
+    {
+        if(act instanceof ActivityImpl) 
+        {
+            ActivityImpl actImpl = (ActivityImpl) act;
+            if (actImpl.getActivityBehavior() instanceof UserTaskActivityBehavior)        
+            {
+            	UserTaskActivityBehavior uta = (UserTaskActivityBehavior) actImpl.getActivityBehavior();
+                return getFormKey(uta.getTaskDefinition());
+            }
+            else if(actImpl.getActivityBehavior() instanceof MultiInstanceActivityBehavior) 
+            {
+            	// Get the task-definition from the process-definition
+            	if(processDefinition instanceof ProcessDefinitionEntity)
+            	{
+            		// Task definition id is the same the the activity id
+            		TaskDefinition taskDef = ((ProcessDefinitionEntity) processDefinition).getTaskDefinitions().get(act.getId());
+            		if(taskDef != null)
+            		{
+            			return getFormKey(taskDef);
+            		}
+            	}
+            }
+        }
+        return null;
+    }
+    
+    private String getFormKey(TaskDefinition taskDefinition) 
+    {
+    	 TaskFormHandler handler = taskDefinition.getTaskFormHandler();
+         if(handler != null && handler instanceof DefaultTaskFormHandler)
+         {
+             // We cast to DefaultTaskFormHandler since we do not configure our own
+             return ((DefaultTaskFormHandler)handler).getFormKey().getExpressionText();
+         }
+         return null;
     }
 
     private WorkflowNode buildHistoricTaskWorkflowNode(HistoricTaskInstance historicTaskInstance) 
@@ -575,9 +721,67 @@ public class ActivitiTypeConverter
         return factory.createInstance(id, definition, variables, isActive, startDate, endDate);
     }
     
+    public String getWorkflowDefinitionName(String workflowDefinitionId)
+    {
+    	ReadOnlyProcessDefinition def = activitiUtil.getDeployedProcessDefinition(workflowDefinitionId);
+    	return ((ProcessDefinition) def).getKey();
+    }
+    
+    public Collection<PvmActivity> findUserTasks(PvmActivity startEvent)
+    {
+        // Use a linked hashmap to get the task defs in the right order
+        Map<String, PvmActivity> userTasks = new LinkedHashMap<String, PvmActivity>();
+        Set<String> processedActivities = new HashSet<String>();
+        
+        // Start finding activities recursively
+        findUserTasks(startEvent, userTasks, processedActivities);
+        
+        return userTasks.values();
+    }
+
+    private void findUserTasks(PvmActivity currentActivity, Map<String, PvmActivity> userTasks, Set<String> processedActivities)
+    {
+        // Only process activity if not already processed, to prevent endless loops
+        if(!processedActivities.contains(currentActivity.getId()))
+        {
+            processedActivities.add(currentActivity.getId());
+            if(isUserTask(currentActivity)) 
+            {
+                userTasks.put(currentActivity.getId(), currentActivity);
+            }
+            
+            // Process outgoing transitions
+            if(currentActivity.getOutgoingTransitions() != null)
+            {
+                for(PvmTransition transition : currentActivity.getOutgoingTransitions())
+                {
+                    if(transition.getDestination() != null)
+                    {
+                        findUserTasks(transition.getDestination(), userTasks, processedActivities);
+                    }
+                }
+            }
+        }
+    }
+    
+    private boolean isUserTask(PvmActivity currentActivity)
+    {
+        // TODO: Validate if this is the best way to find out an activity is a usertask
+        String type = (String) currentActivity.getProperty(ActivitiConstants.NODE_TYPE);
+        if(type != null && type.equals(ActivitiConstants.USER_TASK_NODE_TYPE))
+        {
+            return true;
+        }
+        return false;
+    }
+    
     public WorkflowInstance convert(HistoricProcessInstance historicProcessInstance)
     {
     	return convertToInstanceAndSetVariables(historicProcessInstance, null);
     }
+    
+    public WorkflowObjectFactory getWorkflowObjectFactory() {
+		return factory;
+	}
 
 }

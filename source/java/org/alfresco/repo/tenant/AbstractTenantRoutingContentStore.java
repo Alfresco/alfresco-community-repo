@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,6 +21,9 @@ package org.alfresco.repo.tenant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.AbstractRoutingContentStore;
@@ -43,8 +46,13 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
 {
     private String defaultRootDirectory;
     private TenantAdminDAO tenantAdminDAO;
-    private TenantService tenantService;
+    protected TenantService tenantService;
     private ApplicationContext applicationContext;
+    
+    
+    private final ReentrantReadWriteLock tenantContentStoreLock = new ReentrantReadWriteLock();
+    private final WriteLock tenantContentStoreWriteLock = tenantContentStoreLock.writeLock();
+    private final ReadLock tenantContentStoreReadLock = tenantContentStoreLock.readLock();
     
     // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
     private SimpleCache<String, ContentStore> singletonCache; // eg. for contentStore
@@ -133,43 +141,82 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     
     private ContentStore getTenantContentStore()
     {
-        ContentStore cs = (ContentStore)singletonCache.get(KEY_CONTENT_STORE);
+        ContentStore cs = null;
+        
+        tenantContentStoreReadLock.lock();
+        try
+        {
+            cs = getTenantContentStoreImpl();
+        }
+        finally
+        {
+            tenantContentStoreReadLock.unlock();
+        }
+        
         if (cs == null)
         {
-            init();
-            cs = (ContentStore)singletonCache.get(KEY_CONTENT_STORE);
+            synchronized (this) 
+            {
+                cs = getTenantContentStoreImpl();
+                if (cs == null)
+                {
+                    init();
+                    cs = getTenantContentStoreImpl();
+                }
+            }
         }
         return cs;
     }
     
-    private void putTenantContentStore(ContentStore contentStore)
+    private ContentStore getTenantContentStoreImpl()
+    {
+        return (ContentStore)singletonCache.get(KEY_CONTENT_STORE);
+    }
+    
+    private void putTenantContentStoreImpl(ContentStore contentStore)
     {
         singletonCache.put(KEY_CONTENT_STORE, contentStore);
     }
     
-    private void removeTenantContentStore()
+    private void removeTenantContentStoreImpl()
     {
         singletonCache.remove(KEY_CONTENT_STORE);
     }
     
     public void init()
     {
-        String rootDir = getRootLocation();
-        Tenant tenant = tenantService.getTenant(tenantService.getCurrentUserDomain());
-        if (tenant != null)
+        tenantContentStoreWriteLock.lock();
+        try
         {
-            if (tenant.getRootContentStoreDir() != null)
+            String rootDir = getRootLocation();
+            Tenant tenant = tenantService.getTenant(tenantService.getCurrentUserDomain());
+            if (tenant != null)
             {
-               rootDir = tenant.getRootContentStoreDir();
+                if (tenant.getRootContentStoreDir() != null)
+                {
+                   rootDir = tenant.getRootContentStoreDir();
+                }
             }
+            
+            putTenantContentStoreImpl(initContentStore(this.applicationContext, rootDir));
         }
-        
-        putTenantContentStore(initContentStore(this.applicationContext, rootDir));
+        finally
+        {
+            tenantContentStoreWriteLock.unlock();
+        }
     }
     
     public void destroy()
     {
-        removeTenantContentStore();
+        tenantContentStoreWriteLock.lock();
+        try
+        {
+            removeTenantContentStoreImpl();
+        }
+        finally
+        {
+            tenantContentStoreWriteLock.unlock();
+        }
     }
     
     public void onEnableTenant()

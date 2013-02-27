@@ -148,6 +148,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_TXN_MIN_ID = "alfresco.node.select_TxnMinId";
     private static final String SELECT_TXN_MAX_ID = "alfresco.node.select_TxnMaxId";
     private static final String SELECT_TXN_UNUSED_MIN_COMMIT_TIME = "alfresco.node.select_TxnMinUnusedCommitTime";
+    private static final String SELECT_ONE_TXNS_BY_COMMIT_TIME_DESC = "alfresco.node.select_OneTxnsByCommitTimeDescending";
     
     protected QNameDAO qnameDAO;
     protected DictionaryService dictionaryService;
@@ -1673,4 +1674,22 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             return numDeleted;
         }
     }
+
+    /**
+     * Get most recent transaction made in a given commit time range
+     */
+    @SuppressWarnings("unchecked")
+    public List<Transaction> getOneTxnsByCommitTimeDescending(
+            Long fromTimeInclusive,
+            Long toTimeExclusive,
+            boolean remoteOnly)
+    {
+        Long serverId = remoteOnly ? getServerId() : null;
+        TransactionQueryEntity query = new TransactionQueryEntity();
+        query.setMinCommitTime(fromTimeInclusive);
+        query.setMaxCommitTime(toTimeExclusive);
+        query.setExcludeServerId(serverId);
+        return (List<Transaction>) template.selectList(SELECT_ONE_TXNS_BY_COMMIT_TIME_DESC, query);
+    }
+
 }

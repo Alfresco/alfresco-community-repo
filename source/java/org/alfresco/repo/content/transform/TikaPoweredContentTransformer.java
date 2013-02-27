@@ -32,11 +32,13 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
@@ -164,7 +166,6 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
     public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
     throws Exception
     {
-       InputStream is = reader.getContentInputStream();
        OutputStream os = writer.getContentOutputStream();
        String encoding = writer.getEncoding();
        String targetMimeType = writer.getMimetype();
@@ -182,6 +183,17 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
           throw new TransformerConfigurationException(
                 "Unable to create Tika Handler for configured output " + targetMimeType
           );
+       }
+
+       // Prefer the File if available - it takes less memory to process
+       InputStream is;
+       if(reader instanceof FileContentReader) 
+       {
+          is = TikaInputStream.get( ((FileContentReader)reader).getFile(), metadata );
+       }
+       else
+       {
+          is = reader.getContentInputStream();
        }
        
        try {

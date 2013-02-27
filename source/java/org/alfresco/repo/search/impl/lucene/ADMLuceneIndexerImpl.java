@@ -1207,32 +1207,24 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
             }
             
             // Regenerate all the required paths, accounting for cascading operations and avoiding duplicates
-            for (Pair<Boolean, Path> pathPair : pathsToRegenerate)
+            for (final Pair<Boolean, Path> pathPair : pathsToRegenerate)
             {
-                Path path = pathPair.getSecond();
-                NodeRef nodeRef = tenantService.getName(((ChildAssocElement) path.last()).getRef().getChildRef());
-                String pathString = path.toString();
-                if ((pathString.length() > 0) && (pathString.charAt(0) == '/'))
+                Document directoryEntry;
+                // ETHREEOH-2014 / ALF-17681: dictionary access should be in context of tenant (eg. full reindex with MT
+                // dynamic models)
+                if (tenantService.isEnabled() && ((AuthenticationUtil.getRunAsUser() == null) || (AuthenticationUtil.isRunAsUserTheSystemUser())))
                 {
-                    pathString = pathString.substring(1);
+                    directoryEntry = AuthenticationUtil.runAs(new RunAsWork<Document>()
+                    {
+                        public Document doWork()
+                        {
+                            return regenerateDocumentPath(pathPair);
+                        }
+                    }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(this.store.getIdentifier())));
                 }
-                Document directoryEntry = new Document();
-                directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS,
-                        Field.TermVector.NO));
-                directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED,
-                        Field.TermVector.NO));
-                for (NodeRef parent : getParents(path))
+                else
                 {
-                    directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(),
-                            Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
-                }
-                directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS,
-                        Field.TermVector.NO));
-
-                if (pathPair.getFirst())
-                {
-                    directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.NO_NORMS,
-                            Field.TermVector.NO));
+                    directoryEntry = regenerateDocumentPath(pathPair);
                 }
 
                 try
@@ -1285,6 +1277,36 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
             }
         }
+    }
+
+    private Document regenerateDocumentPath(Pair<Boolean, Path> pathPair)
+    {
+        Path path = pathPair.getSecond();
+        NodeRef nodeRef = tenantService.getName(((ChildAssocElement) path.last()).getRef().getChildRef());
+        String pathString = path.toString();
+        if ((pathString.length() > 0) && (pathString.charAt(0) == '/'))
+        {
+            pathString = pathString.substring(1);
+        }
+        Document directoryEntry = new Document();
+        directoryEntry.add(new Field("ID", nodeRef.toString(), Field.Store.YES, Field.Index.NO_NORMS,
+                Field.TermVector.NO));
+        directoryEntry.add(new Field("PATH", pathString, Field.Store.YES, Field.Index.TOKENIZED,
+                Field.TermVector.NO));
+        for (NodeRef parent : getParents(path))
+        {
+            directoryEntry.add(new Field("ANCESTOR", tenantService.getName(parent).toString(),
+                    Field.Store.NO, Field.Index.NO_NORMS, Field.TermVector.NO));
+        }
+        directoryEntry.add(new Field("ISCONTAINER", "T", Field.Store.YES, Field.Index.NO_NORMS,
+                Field.TermVector.NO));
+
+        if (pathPair.getFirst())
+        {
+            directoryEntry.add(new Field("ISCATEGORY", "T", Field.Store.YES, Field.Index.NO_NORMS,
+                    Field.TermVector.NO));
+        }
+        return directoryEntry;
     }
 
     private Serializable convertForMT(QName propertyName, Serializable inboundValue)

@@ -2289,10 +2289,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 result.getObjects().add(hit);
             }
 
-            int length = rs.getLength();
-            if(length != -1)
+            long numberFound = rs.getNumberFound();
+            if(numberFound != -1)
             {
-            	result.setNumItems(BigInteger.valueOf(length));
+            	result.setNumItems(BigInteger.valueOf(numberFound));
             }
             result.setHasMoreItems(rs.hasMore());
 

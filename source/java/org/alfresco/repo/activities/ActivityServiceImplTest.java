@@ -240,10 +240,10 @@ public class ActivityServiceImplTest extends TestCase
         ActivityPostEntity params = new ActivityPostEntity();
         params.setStatus(ActivityPostEntity.STATUS.PENDING.toString());
         
-        int cnt = postDAO.selectPosts(params).size();
+        int cnt = postDAO.selectPosts(params, -1).size();
         
         activityService.postActivity("org.alfresco.testActivityType4", "site2", "appToolA", "{\"title\":\"" + new String(namePattern, "UTF-8") + "\"}");
         
-        assertEquals(cnt+1, postDAO.selectPosts(params).size());
+        assertEquals(cnt+1, postDAO.selectPosts(params, -1).size());
     }
 }

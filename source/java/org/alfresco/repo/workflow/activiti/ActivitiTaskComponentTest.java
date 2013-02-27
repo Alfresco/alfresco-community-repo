@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.activiti.engine.history.HistoricDetail;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricVariableUpdate;
 import org.activiti.engine.task.Task;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -316,12 +318,98 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         assertNotNull(hti);
         assertEquals("admin", hti.getAssignee());
     }
-      
-    @SuppressWarnings("unchecked")
+    
+    @Test
+    public void testGetAssignedTasks() throws Exception 
+    {
+    	performGetAssignedTasks(false);
+    }
+    
+    @Test
+    public void testGetAssignedTasksLazyInitialization() throws Exception 
+    {
+    	// Lazy tasks should behave in exactly the same way, transparent for the user
+    	performGetAssignedTasks(true);
+    }
+    
+    protected void performGetAssignedTasks(boolean lazyInitialization) throws Exception
+    {
+    	  HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
+    	  props.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, new Date());
+    	  WorkflowPath path = workflowEngine.startWorkflow(workflowDef.getId(), props);
+          
+          // Get start task
+          WorkflowTask startTask = workflowEngine.getStartTask(path.getInstance().getId());
+          assertNotNull(startTask);
+          
+          // Finish the start task
+          workflowEngine.endTask(startTask.getId(), null);
+          
+          // No task should be assigned yet
+          Assert.assertEquals(0, workflowEngine.getAssignedTasks("testUser", WorkflowTaskState.IN_PROGRESS, lazyInitialization).size());
+          
+          // Get pooled task and assign
+          List<WorkflowTask> tasks = workflowEngine.getTasksForWorkflowPath(path.getId());
+          assertNotNull(tasks);
+          Assert.assertEquals(1, tasks.size());
+          
+          workflowEngine.updateTask(tasks.get(0).getId(), Collections.singletonMap(ContentModel.PROP_OWNER, (Serializable)"testUser"), null, null);
+          
+          // A task should be assigned to the testUser
+          tasks = workflowEngine.getAssignedTasks("testUser", WorkflowTaskState.IN_PROGRESS, lazyInitialization);
+          assertNotNull(tasks);
+          Assert.assertEquals(1, tasks.size());
+          
+          // Check task
+          WorkflowTask task = tasks.get(0);
+          assertEquals("Task", task.getDescription());
+          assertEquals("Task", task.getTitle());
+          assertEquals(WorkflowTaskState.IN_PROGRESS, task.getState());
+          assertEquals("testUser", task.getProperties().get(ContentModel.PROP_OWNER));
+          assertEquals(props.get(WorkflowModel.PROP_DUE_DATE), task.getProperties().get(WorkflowModel.PROP_DUE_DATE));
+          assertNotNull(task.getProperties().get(WorkflowModel.PROP_START_DATE));
+          
+          // Complete the task as "testUser"
+          AuthenticationUtil.setFullyAuthenticatedUser("testUser");
+          workflowEngine.endTask(task.getId(), ActivitiConstants.DEFAULT_TRANSITION_NAME);
+          
+          // NO active task should be assigned to the testUser
+          tasks = workflowEngine.getAssignedTasks("testUser", WorkflowTaskState.IN_PROGRESS, lazyInitialization);
+          assertNotNull(tasks);
+          Assert.assertEquals(0, tasks.size());
+          
+          // One completed task should be assigned to the testUser
+          tasks = workflowEngine.getAssignedTasks("testUser", WorkflowTaskState.COMPLETED, lazyInitialization);
+          assertNotNull(tasks);
+          Assert.assertEquals(1, tasks.size());
+          
+          // Check completed task
+          task = tasks.get(0);
+          assertEquals("Task", task.getDescription());
+          assertEquals("Task", task.getTitle());
+          assertEquals(WorkflowTaskState.COMPLETED, task.getState());
+          assertEquals("testUser", task.getProperties().get(ContentModel.PROP_OWNER));
+          assertEquals(props.get(WorkflowModel.PROP_DUE_DATE), task.getProperties().get(WorkflowModel.PROP_DUE_DATE));
+          assertNotNull(task.getProperties().get(WorkflowModel.PROP_START_DATE));
+    }
+    
     @Test
     public void testGetPooledTasks() throws Exception 
     {
-        // The first task in the TestTaskDefinition has candidate group 'testGroup'
+    	performGetPooledTasksTest(false);
+    }
+    
+    @Test
+    public void testGetPooledTasksLazyInitialization() throws Exception 
+    {
+    	// Lazy tasks should behave in exactly the same way, transparent for the user
+    	performGetPooledTasksTest(true);
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected void performGetPooledTasksTest(boolean lazy)
+    {
+    	 // The first task in the TestTaskDefinition has candidate group 'testGroup'
         // and candidate-user 'testUser'
         WorkflowPath path = workflowEngine.startWorkflow(workflowDef.getId(), new HashMap<QName, Serializable>());
         
@@ -350,30 +438,30 @@ public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
         Assert.assertTrue(pooledActorNodes.contains(testGroupNode));
         
         // The task should be found when pooled tasks are requested
-        List<WorkflowTask> pooledUserTasks = workflowEngine.getPooledTasks(Arrays.asList(TEST_USER));
+        List<WorkflowTask> pooledUserTasks = workflowEngine.getPooledTasks(Arrays.asList(TEST_USER), lazy);
         assertNotNull(pooledUserTasks);
         Assert.assertEquals(1, pooledUserTasks.size());
         Assert.assertEquals(theTask.getId(), pooledUserTasks.get(0).getId());
         
         // The task should be found when pooled taskes are requested
-        List<WorkflowTask> pooledGroupTasks = workflowEngine.getPooledTasks(Arrays.asList(TEST_GROUP));
+        List<WorkflowTask> pooledGroupTasks = workflowEngine.getPooledTasks(Arrays.asList(TEST_GROUP), lazy);
         assertNotNull(pooledGroupTasks);
         Assert.assertEquals(1, pooledGroupTasks.size());
         Assert.assertEquals(theTask.getId(), pooledGroupTasks.get(0).getId());
         
         // Only a single task should be found when task is both pooled for testUser and testGroup
-        List<WorkflowTask> pooledTasks = workflowEngine.getPooledTasks(Arrays.asList(TEST_USER, TEST_GROUP));
+        List<WorkflowTask> pooledTasks = workflowEngine.getPooledTasks(Arrays.asList(TEST_USER, TEST_GROUP), lazy);
         assertNotNull(pooledTasks);
         Assert.assertEquals(1, pooledTasks.size());
         Assert.assertEquals(theTask.getId(), pooledTasks.get(0).getId());
 
         // No tasks should be found
-        List<WorkflowTask> unexistingPooledTasks = workflowEngine.getPooledTasks(Arrays.asList("unexisting"));
+        List<WorkflowTask> unexistingPooledTasks = workflowEngine.getPooledTasks(Arrays.asList("unexisting"), lazy);
         assertNotNull(unexistingPooledTasks);
         Assert.assertEquals(0, unexistingPooledTasks.size());
         
         // If one authority matches, task should be returned
-        pooledGroupTasks = workflowEngine.getPooledTasks(Arrays.asList("unexistinggroup",TEST_GROUP));
+        pooledGroupTasks = workflowEngine.getPooledTasks(Arrays.asList("unexistinggroup",TEST_GROUP), lazy);
         assertNotNull(pooledGroupTasks);
         Assert.assertEquals(1, pooledGroupTasks.size());
         Assert.assertEquals(theTask.getId(), pooledGroupTasks.get(0).getId());

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1270,6 +1270,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         // Set the uuid of the new node
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_NODE_UUID, ((NodeRef)version.getVersionProperty(Version2Model.PROP_FROZEN_NODE_REF)).getId());
+        props.put(ContentModel.PROP_VERSION_LABEL, version.getVersionLabel()); 
 
         // Get the type of the frozen node
         QName type = (QName)dbNodeService.getType(VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()));

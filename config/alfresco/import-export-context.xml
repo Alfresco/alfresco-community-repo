@@ -397,6 +397,7 @@
                 <prop key="spaces.transfer_temp.childname">${spaces.transfer_temp.childname}</prop>
                 <prop key="spaces.inbound_transfer_records.childname">${spaces.inbound_transfer_records.childname}</prop>
                 <prop key="spaces.imap_attachments.childname">${spaces.imap_attachments.childname}</prop>
+                <prop key="spaces.imap_home.childname">${spaces.imap_home.childname}</prop>
                 <prop key="spaces.imap_templates.childname">${spaces.imap_templates.childname}</prop>
                 <prop key="spaces.emailActions.childname">${spaces.emailActions.childname}</prop>
                 <prop key="spaces.searchAction.childname">${spaces.searchAction.childname}</prop>

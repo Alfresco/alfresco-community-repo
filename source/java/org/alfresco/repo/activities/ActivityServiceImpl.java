@@ -288,13 +288,28 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
             Map<String, NodeRef> userIdToAvatarNodeRefCache = new HashMap<String, NodeRef>();
             
             
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Selected feed entries for user : '" + feedUserId + "',\n using format : '" + format + "',\n for site : '" + siteId + "',\n excluding this user : '"
+                        + excludeThisUser + "',\n excluding other users : '" + excludeOtherUsers + "',\n with min feed id : '" + minFeedId + "',\n with max feed items : '"
+                        + maxFeedItems);
+            }
+            
             for (ActivityFeedEntity activityFeed : activityFeeds)
             {
                 if (actvityFilter != null && !actvityFilter.contains(activityFeed.getActivityType())) {
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Filtering " + activityFeed.toString() + " \n by the activity filter.");
+                    }
                     continue;
                 }
                 
                 if (userFilter != null && !userFilter.contains(activityFeed.getPostUserId())) {
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Filtering " + activityFeed.toString() + " \n by the user filter.");
+                    }
                     continue;
                 }
                 
@@ -338,6 +353,10 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                 
                 activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
                 result.add(activityFeed);
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Selected user feed entry: " + activityFeed.toString());
+                }
             }
         }
         catch (SQLException se)
@@ -375,10 +394,19 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
             
             List<ActivityFeedEntity> activityFeeds = feedDAO.selectSiteFeedEntries(siteId, format, maxFeedItems);
             
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Selected feed entries for site : '" + siteId + "',\n using format : '" + format);
+            }
+            
             for (ActivityFeedEntity activityFeed : activityFeeds)
             {
                 activityFeed.setSiteNetwork(tenantService.getBaseName(activityFeed.getSiteNetwork()));
                 activityFeedEntries.add(activityFeed.getJSONString());
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Selected site feed entry: " + activityFeed.toString());
+                }
             }
         }
         catch (SQLException se)
@@ -423,6 +451,10 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         {
             if (! existsFeedControl(feedControl))
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Inserting feed control for siteId: " + feedControl.getSiteId() + ",\n appToolId : " + feedControl.getAppToolId() + ",\n for user : " + userId);
+                }
                 feedControlDAO.insertFeedControl(new FeedControlEntity(userId, feedControl));
             }
         }
@@ -475,10 +507,19 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         try
         {
             List<FeedControlEntity> feedControlDaos = feedControlDAO.selectFeedControls(userId);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Selecting feed controls for userId: " + userId);
+            }
             List<FeedControl> feedControls = new ArrayList<FeedControl>(feedControlDaos.size());
             for (FeedControlEntity feedControlDao : feedControlDaos)
             {
-                feedControls.add(feedControlDao.getFeedControl());
+                FeedControl feedCtrl = feedControlDao.getFeedControl();
+                feedControls.add(feedCtrl);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Found feed control for userId: " + userId + ",\n appToolId : " + feedCtrl.getAppToolId() + ",\n siteId: " + feedCtrl.getSiteId());
+                }
             }
             
             return feedControls;
@@ -507,6 +548,10 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         
         try
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Deleting feed control for siteId: " + feedControl.getSiteId() + ",\n appToolId : " + feedControl.getAppToolId() + ",\n for user : " + userId);
+            }
             feedControlDAO.deleteFeedControl(new FeedControlEntity(userId, feedControl));
         }
         catch (SQLException e) 
@@ -528,8 +573,24 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         
         try
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Selecting feed control for siteId: " + feedControl.getSiteId() + ",\n appToolId : " + feedControl.getAppToolId() + ",\n for user : " + userId);
+            }
             long id = feedControlDAO.selectFeedControl(new FeedControlEntity(userId, feedControl));
-            return (id != -1);
+            boolean exists = (id != -1);
+            if (logger.isDebugEnabled())
+            {
+                if(exists)
+                {
+                    logger.debug("The entry exists.");
+                }
+                else
+                {
+                    logger.debug("The entry doesn't exist.");
+                }
+            }
+            return exists;
         }
         catch (SQLException e) 
         {

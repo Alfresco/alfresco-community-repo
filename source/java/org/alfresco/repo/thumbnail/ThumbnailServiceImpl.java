@@ -72,8 +72,6 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     private static Log logger = LogFactory.getLog(ThumbnailServiceImpl.class);
     
     /** Error messages */
-//    private static final String ERR_NO_CREATE = "Thumbnail could not be created as required transformation is not supported from {0} to {1}";
-    private static final String ERR_DUPLICATE_NAME = "Thumbnail could not be created because of a duplicate name";
     private static final String ERR_NO_PARENT = "Thumbnail has no parent so update cannot take place.";
     
     /** Mimetype wildcard postfix */

@@ -634,11 +634,11 @@
          
    <bean id="transformer.complex.OutlookMsg2Image" 
         class="org.alfresco.repo.content.transform.ComplexContentTransformer" 
-        parent="baseContentTransformer" > 
+        parent="baseComplexContentTransformer" > 
       <property name="transformers"> 
          <list> 
             <ref bean="transformer.OutlookMsg" /> 
-            <ref bean="transformer.complex.Text.Image" /> 
+            <null /> 
          </list> 
       </property> 
       <property name="intermediateMimetypes"> 

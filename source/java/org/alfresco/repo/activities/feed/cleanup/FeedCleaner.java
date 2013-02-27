@@ -161,7 +161,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     }
 
     private static final long LOCK_TTL = 60000L;        // 1 minute
-    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "FeedCleaner");
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "org.alfresco.repo.activities.feed.cleanup.FeedCleaner");
     public int execute() throws JobExecutionException
     {
         checkProperties();
@@ -269,50 +269,109 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
             if (maxFeedSize > 0 && keepGoing.get())
             {
                 // Get user+format feeds exceeding the required maximum
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Selecting user+format feeds exceeding the required maximum of " + maxFeedSize + " entries.");
+                }
                 List<ActivityFeedEntity> userFeedsTooMany = feedDAO.selectUserFeedsToClean(maxFeedSize);
                 for (ActivityFeedEntity userFeedTooMany : userFeedsTooMany)
                 {
                     if (!keepGoing.get())
                     {
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace("Stopping cleaning the feeds.");
+                        }
                         break;
                     }
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Found user activity feed entity: " + userFeedTooMany.toString());
+                    }
                     String feedUserId = userFeedTooMany.getFeedUserId();
-                    String format = userFeedTooMany.getActivitySummaryFormat();
+                    String format = "json";   // format pending removal
                     // Rather than filter out the two usernames that indicate site-specific
                     // feed entries, we can just filter them out now.
                     if (feedUserId == null || feedUserId.length() == 0)
                     {
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace("Found site-specific feed entries, filtering.");
+                        }
                         continue;
                     }
                     // Get the feeds to keep
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Get the feeds to keep for user for all sites, not exluding users.");
+                    }
                     List<ActivityFeedEntity> feedsToKeep = feedDAO.selectUserFeedEntries(feedUserId, format, null, false, false, -1L, maxFeedSize);
+                    if (logger.isTraceEnabled())
+                    {
+                        for(ActivityFeedEntity feedToKeep : feedsToKeep)
+                        {
+                            logger.trace("Found user activity feed entity to keep: " + feedToKeep.toString());
+                        }
+                    }
                     // If the feeds have been removed, then ignore
                     if (feedsToKeep.size() < maxFeedSize)
                     {
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace("Found less then " + maxFeedSize + " .The feeds were removed, ignoring.");
+                        }
                         continue;
                     }
                     // Get the last one
                     Date oldestFeedEntry = feedsToKeep.get(maxFeedSize-1).getPostDate();
+                    
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Deleting the oldest feed entry: " + oldestFeedEntry.toString());
+                    }
                     int deletedCount = feedDAO.deleteUserFeedEntries(feedUserId, format, oldestFeedEntry);
                     if (logger.isTraceEnabled())
                     {
-                        logger.trace("Cleaned " + deletedCount + " entries for user '" + feedUserId + "'.");
+                        logger.trace("Cleaned " + deletedCount + " entries for user '" + feedUserId + "', using format '" + format + "'.");
                     }
                     maxSizeDeletedCount += deletedCount;
                 }
                 
                 // Get site+format feeds exceeding the required maximum
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Selecting site+format feeds exceeding the required maximum of " + maxFeedSize + " entries.");
+                }
                 List<ActivityFeedEntity> siteFeedsTooMany = feedDAO.selectSiteFeedsToClean(maxFeedSize);
                 for (ActivityFeedEntity siteFeedTooMany : siteFeedsTooMany)
                 {
                     if (!keepGoing.get())
                     {
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace("Stopping cleaning the feeds.");
+                        }
                         break;
                     }
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Found site activity feed entity: " + siteFeedTooMany.toString());
+                    }
                     String siteId = siteFeedTooMany.getSiteNetwork();
-                    String format = siteFeedTooMany.getActivitySummaryFormat();
+                    String format = "json"; // format pending removal siteFeedTooMany.getActivitySummaryFormat();
                     // Get the feeds to keep
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Get the feeds to keep for site.");
+                    }
                     List<ActivityFeedEntity> feedsToKeep = feedDAO.selectSiteFeedEntries(siteId, format, maxFeedSize);
+                    if (logger.isTraceEnabled())
+                    {
+                        for(ActivityFeedEntity feedToKeep : feedsToKeep)
+                        {
+                            logger.trace("Found site activity feed entity to keep: " + feedToKeep.toString());
+                        }
+                    }
                     // If the feeds have been removed, then ignore
                     if (feedsToKeep.size() < maxFeedSize)
                     {
@@ -320,6 +379,10 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     }
                     // Get the last one
                     Date oldestFeedEntry = feedsToKeep.get(maxFeedSize-1).getPostDate();
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Deleting the oldest feed entry: " + oldestFeedEntry.toString());
+                    }
                     int deletedCount = feedDAO.deleteSiteFeedEntries(siteId, format, oldestFeedEntry);
                     if (logger.isTraceEnabled())
                     {

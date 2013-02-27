@@ -196,6 +196,11 @@ public class RetryingTransactionHelper
     private Random random;
 
     /**
+     * List of extra exceptions that should be retried.
+     */
+    private List<Class<?>> extraExceptions;
+
+    /**
      * Callback interface
      * @author Derek Hulley
      */
@@ -285,6 +290,14 @@ public class RetryingTransactionHelper
         this.readOnly = false;
     }
 
+    /**
+     * Set the list of extra exceptions that should be retried
+     */
+    public void setExtraExceptions(List<Class<?>> extraExceptions)
+    {
+        this.extraExceptions = extraExceptions;
+    }
+    
     /**
      * Execute a callback in a transaction until it succeeds, fails
      * because of an error not the result of an optimistic locking failure,
@@ -520,6 +533,12 @@ public class RetryingTransactionHelper
                     }
                     // Check if there is a cause for retrying
                     Throwable retryCause = extractRetryCause(e);
+                    // ALF-17361 fix, also check for configured extra exceptions 
+                    if (retryCause == null && extraExceptions != null && !extraExceptions.isEmpty())
+                    {
+                        retryCause = ExceptionStackUtil.getCause(e, extraExceptions.toArray(new Class[] {}));
+                    }
+                    
                     if (retryCause != null)
                     {
                         // Sleep a random amount of time before retrying.

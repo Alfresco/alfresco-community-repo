@@ -45,7 +45,8 @@
    </bean>
    
    <!-- cleans processed posts - max age can be small, unless required to be kept longer (for debugging) -->
-   <bean id="postCleaner" class="org.alfresco.repo.activities.post.cleanup.PostCleaner">
+   <bean id="postCleaner" class="org.alfresco.repo.activities.post.cleanup.PostCleaner" init-method="init">
+      <property name="jobLockService" ref="JobLockService"/>
       <property name="postDAO" ref="postDAO"/>
       <property name="maxAgeMins">
          <value>30</value> <!-- 30 minutes -->
@@ -61,6 +62,8 @@
       <property name="personService" ref="personService"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="siteService" ref="SiteService"/>
+      <property name="jobLockService" ref="jobLockService"/>
+      <property name="maxItemsPerCycle" value="${activities.post.lookup.maxItemsPerCycle}"/>
    </bean>
     
    <bean id="baseFeedGenerator" class="org.alfresco.repo.activities.feed.AbstractFeedGenerator" abstract="true" init-method="init">
@@ -69,7 +72,7 @@
       <property name="sysAdminParams" ref="sysAdminParams"/>
       <property name="repoEndPoint" value="${repo.remote.endpoint}"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
-      <property name="maxItemsPerCycle" value="100"/>
+      <property name="maxItemsPerCycle" value="${activities.feed.generator.maxItemsPerCycle}"/>
       <property name="activityPostServiceImpl" ref="activityPostService"/>
       <property name="jobLockService" ref="jobLockService"/>
       <property name="transactionService" ref="transactionService"/>

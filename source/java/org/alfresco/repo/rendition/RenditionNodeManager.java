@@ -24,7 +24,7 @@ import static org.alfresco.model.ContentModel.PROP_STORE_NAME;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -212,16 +212,18 @@ public class RenditionNodeManager
                 }
                 
                 behaviourFilter.disableBehaviour(existingLinkedRendition, ContentModel.ASPECT_AUDITABLE);
+                behaviourFilter.disableBehaviour(sourceNode, ContentModel.ASPECT_AUDITABLE);
                 try
                 {
                     nodeService.removeAspect(existingLinkedRendition, RenditionModel.ASPECT_HIDDEN_RENDITION);
                     nodeService.removeAspect(existingLinkedRendition, RenditionModel.ASPECT_VISIBLE_RENDITION);
+                    nodeService.removeChildAssociation(parentAssoc);
                 }
                 finally
                 {
                     behaviourFilter.enableBehaviour(existingLinkedRendition, ContentModel.ASPECT_AUDITABLE);
+                    behaviourFilter.enableBehaviour(sourceNode, ContentModel.ASPECT_AUDITABLE);
                 }
-                nodeService.removeChildAssociation(parentAssoc);
                 return;
             }
         }
@@ -396,8 +398,22 @@ public class RenditionNodeManager
         
         QName assocName = getAssociationName(parentIsSource, renditionName);
         
-        ChildAssociationRef primaryAssoc = nodeService.createNode(parentRef,
-                    assocTypeQName, assocName, nodeTypeQName);
+        // We don't want to propagate timestamps to the source node.
+        // We don't want to index renditions.
+        ChildAssociationRef primaryAssoc = null;
+        try
+        {
+            behaviourFilter.disableBehaviour(parentRef, ContentModel.ASPECT_AUDITABLE);
+            // We create the rendition, being sure to turn indexing OFF
+            Map<QName, Serializable> indexProps = Collections.singletonMap(ContentModel.PROP_IS_INDEXED, (Serializable) Boolean.FALSE);
+            primaryAssoc = nodeService.createNode(
+                    parentRef, assocTypeQName, assocName, nodeTypeQName,
+                    indexProps);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(parentRef, ContentModel.ASPECT_AUDITABLE);
+        }
 
         if (logger.isDebugEnabled())
         {

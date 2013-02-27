@@ -19,6 +19,7 @@
 package org.alfresco.repo.transaction;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -35,10 +36,16 @@ import org.springframework.transaction.interceptor.TransactionAttribute;
 public class RetryingTransactionInterceptor extends TransactionAspectSupport implements MethodInterceptor
 {
     private TransactionService transactionService;
+    private List<Class<?>> extraExceptions;
 
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setExtraExceptions(List<Class<?>> extraExceptions)
+    {
+        this.extraExceptions = extraExceptions;
     }
 
     public Object invoke(final MethodInvocation invocation) throws Throwable
@@ -56,7 +63,10 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
             {
                 if (null != txnAttr && propagationBehaviour != TransactionAttribute.PROPAGATION_SUPPORTS)
                 {
-                    return transactionService.getRetryingTransactionHelper().doInTransaction(
+                    RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
+                    retryingTransactionHelper.setExtraExceptions(extraExceptions);
+
+                    return retryingTransactionHelper.doInTransaction(
                             new RetryingTransactionCallback<Object>()
                             {
                                 public Object execute()

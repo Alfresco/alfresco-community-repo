@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionInterceptor;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
@@ -44,6 +45,16 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     private RetryingTransactionInterceptor cmisTransactions;
     private AlfrescoCmisExceptionInterceptor cmisExceptions;
     private AlfrescoCmisServiceInterceptor cmisControl;
+    private AlfrescoCmisStreamInterceptor cmisStreams;
+    private AuthorityService authorityService;
+
+    /**
+     * Sets the Authority Service.
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
 
     /**
      * Sets the CMIS connector.
@@ -77,6 +88,14 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         this.cmisControl = cmisControl;
     }
 
+    /**
+     * @param cmisStreams                   interceptor to create reusable ContentStreams
+     */
+    public void setCmisStreams(AlfrescoCmisStreamInterceptor cmisStreams)
+    {
+        this.cmisStreams = cmisStreams;
+    }
+
     @Override
     public void init(Map<String, String> parameters)
     {
@@ -103,7 +122,13 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
                     "   User:             " + context.getUsername() + "\n" +
                     "   Repo:             " + context.getRepositoryId());
         }
-        
+
+        // Avoid using guest user if the user is provided in the context
+        if(AuthenticationUtil.getFullyAuthenticatedUser() != null && authorityService.isGuestAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
+
         AlfrescoCmisService cmisServiceTarget = new AlfrescoCmisServiceImpl(connector);
         
         // Wrap it
@@ -111,6 +136,7 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         proxyFactory.addInterface(AlfrescoCmisService.class);
         proxyFactory.addAdvice(cmisExceptions);
         proxyFactory.addAdvice(cmisControl);
+        proxyFactory.addAdvice(cmisStreams);
         proxyFactory.addAdvice(cmisTransactions);
         AlfrescoCmisService cmisService = (AlfrescoCmisService) proxyFactory.getProxy();
             

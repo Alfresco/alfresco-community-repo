@@ -18,10 +18,15 @@
  */
 package org.alfresco.opencmis;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 
@@ -32,6 +37,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.client.api.Repository;
@@ -40,12 +47,16 @@ import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
+import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
+import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisStorageException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -201,5 +212,156 @@ public class OpenCmisLocalTest extends TestCase
 
         assertEquals(doc1LastModifiedBefore, doc1LastModifiedAfter);
         assertEquals(doc2LastModifiedBefore, doc2LastModifiedAfter);
+    }
+    
+    // Test we don't get an exception with the interceptor
+    public void testAlfrescoCmisStreamInterceptor() throws Exception
+    {
+        simulateCallWithAdvice(true);
+    }
+    
+    // Test we do get an exception without the interceptor
+    public void testAlfrescoNonCmisStreamInterceptor() throws Exception
+    {
+        try
+        {
+            simulateCallWithAdvice(false);
+            fail("Expected an Exception reading InputStream a second time");
+        }
+        catch (CmisStorageException e)
+        {
+            // ignore expected
+        }
+    }
+    
+    /**
+     * Simulates the pattern of advice created by AlfrescoCmisServiceFactory.getService(CallContext),
+     * optionally including a AlfrescoCmisStreamInterceptor which changes ContentStream parameter
+     * values into ReusableContentStream parameters which unlike the original may be closed and then
+     * opened again. This is important as retrying transaction advice is also added (simulated here
+     * by the afterAdvice and the test target object. See MNT-285
+     * @param includeStreamInterceptor
+     */
+    private void simulateCallWithAdvice(boolean includeStreamInterceptor) throws Exception
+    {
+        final int loops = 3;
+
+        final AtomicInteger beforeAdviceCount = new AtomicInteger(0);
+        final AtomicInteger afterAdviceCount = new AtomicInteger(0);
+        final AtomicInteger targetCount = new AtomicInteger(0);
+        
+        MethodInterceptor beforeAdvice = new MethodInterceptor()
+        {
+            @Override
+            public Object invoke(MethodInvocation mi) throws Throwable
+            {
+                beforeAdviceCount.incrementAndGet();
+                return mi.proceed();
+            }
+        };
+        
+        AlfrescoCmisStreamInterceptor interceptor = new AlfrescoCmisStreamInterceptor();
+        
+        // Represents the retrying transaction
+        MethodInterceptor afterAdvice = new MethodInterceptor()
+        {
+            @Override
+            public Object invoke(MethodInvocation mi) throws Throwable
+            {
+                boolean exit = true;
+                do
+                {
+                    try
+                    {
+                        afterAdviceCount.incrementAndGet();
+                        return mi.proceed();
+                    }
+                    catch (RuntimeException e)
+                    {
+                        if ("Test".equals(e.getMessage()))
+                        {
+                            exit = false;
+                        }
+                        else
+                        {
+                            throw e;
+                        }
+                    }
+                }
+                while (!exit);
+                return null;
+            }
+        };
+        
+        TestStreamTarget target = new TestStreamTarget()
+        {
+            @Override
+            public void methodA(ContentStream csa, String str, ContentStream csb, ContentStream csc, int i) throws Exception
+            {
+                int count = targetCount.incrementAndGet();
+                
+                // Use input streams - normally only works once
+                File a = null;
+                File b = null;
+                File c = null;
+                try
+                {
+                    a = TempFileProvider.createTempFile(csa.getStream(), "csA", ".txt");
+                    b = TempFileProvider.createTempFile(csb.getStream(), "csB", ".txt");
+                    c = TempFileProvider.createTempFile(null,            "csC", ".txt");
+                    
+                    // Similar test to that in AlfrescoCmisServiceImpl.copyToTempFile(ContentStream)
+                    if ((csa.getLength() > -1) && (a == null || csa.getLength() != a.length()))
+                    {
+                        throw new CmisStorageException("Expected " + csa.getLength() + " bytes but retrieved " +
+                                (a == null ? -1 : a.length()) + " bytes!");
+                    }
+                }
+                finally
+                {
+                    if (a != null)
+                    {
+                        a.delete();
+                    }
+                    if (b != null)
+                    {
+                        b.delete();
+                    }
+                    if (c != null)
+                    {
+                        c.delete();
+                    }
+                }
+                
+                // Force the input stream to be reused
+                if (count < loops)
+                {
+                    throw new RuntimeException("Test");
+                }
+            }
+        };
+        
+        ProxyFactory proxyFactory = new ProxyFactory(target);
+        proxyFactory.addInterface(TestStreamTarget.class);
+        proxyFactory.addAdvice(beforeAdvice);
+        if (includeStreamInterceptor)
+        {
+            proxyFactory.addAdvice(interceptor);
+        }
+        proxyFactory.addAdvice(afterAdvice);
+        TestStreamTarget proxy = (TestStreamTarget) proxyFactory.getProxy();
+        
+        ContentStreamImpl csa = new ContentStreamImpl("file1", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The cat sat on the mat");
+        ContentStreamImpl csb = new ContentStreamImpl("file2", MimetypeMap.MIMETYPE_TEXT_PLAIN, "and the cow jumped over the moon.");
+        proxy.methodA(csa, "ignored", csb, null, 10);
+
+        assertEquals("beforeAdvice count", 1, beforeAdviceCount.intValue());
+        assertEquals("afterAdvice count", 1, beforeAdviceCount.intValue());
+        assertEquals("target count", loops, targetCount.intValue());
+    }
+    
+    private interface TestStreamTarget
+    {
+        void methodA(ContentStream csa, String str, ContentStream csb, ContentStream csc, int i) throws Exception;
     }
 }

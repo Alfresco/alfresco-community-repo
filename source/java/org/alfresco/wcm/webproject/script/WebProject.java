@@ -109,6 +109,13 @@ public class WebProject implements Serializable
 		}
 	}
 	
+    public void setTemplate(Boolean isTemplate) {
+        if (isTemplate != null)
+        {
+            this.setTemplate(isTemplate.booleanValue());
+        }
+    }
+    
 	public boolean isTemplate() {
 		return isTemplate;
 	}

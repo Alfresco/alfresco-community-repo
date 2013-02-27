@@ -63,7 +63,7 @@ public interface AuthorityDAO
      */
     Set<String> getContainedAuthorities(AuthorityType type, String parentName, boolean immediate);
 
-    public boolean isAuthorityContained(NodeRef authorityNodeRef, String authorityToFind);
+    public boolean isAuthorityContained(String authority, String authorityToFind, Set<String> positiveHits, Set<String> negativeHits);
 
     /**
      * Remove an authority.

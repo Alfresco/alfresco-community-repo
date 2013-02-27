@@ -227,4 +227,24 @@ public class ActivityFeedEntity
         
         return map;
     }
+    
+    // for debug only
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append("ActivityFeed\n[");
+        sb.append("id=").append(id).append(",");
+        sb.append("activityType=").append(activityType).append(",");
+        sb.append("activitySummary=").append(activitySummary).append(",");
+        sb.append("activitySummaryFormat=").append(activitySummaryFormat).append(",");
+        sb.append("feedUserId=").append(feedUserId).append(",");
+        sb.append("postUserId=").append(postUserId).append(",");
+        sb.append("postDate=").append(postDate).append(",");
+        sb.append("feedDate=").append(feedDate).append(",");
+        sb.append("siteNetwork=").append(siteNetwork).append(",");
+        sb.append("appTool=").append(appTool).append(",");
+        sb.append("type=").append(activityType).append(",");
+        sb.append("postId=").append(postId).append("\n]");
+        return sb.toString();
+    }
 }

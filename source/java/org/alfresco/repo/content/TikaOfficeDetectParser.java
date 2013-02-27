@@ -64,10 +64,23 @@ public class TikaOfficeDetectParser implements Parser {
          ParseContext parseContext) throws IOException, SAXException,
          TikaException 
    {
-      PushbackInputStream inp = new PushbackInputStream(stream, 4);
       byte[] initial4 = new byte[4];
-      IOUtils.readFully(inp, initial4);
-      inp.unread(initial4);
+      InputStream wrapped;
+      // Preserve TikaInputStreams as TikaInputStreams as they require less memory to process
+      if (stream.markSupported())
+      {
+         stream.mark(initial4.length);
+         IOUtils.readFully(stream, initial4);
+         stream.reset();
+         wrapped = stream;
+      }
+      else
+      {
+         PushbackInputStream inp = new PushbackInputStream(stream, 4);
+         IOUtils.readFully(inp, initial4);
+         inp.unread(initial4);
+         wrapped = inp;
+      }
       
       // Which is it?
       if(initial4[0] == POIFSConstants.OOXML_FILE_HEADER[0] &&
@@ -75,11 +88,11 @@ public class TikaOfficeDetectParser implements Parser {
          initial4[2] == POIFSConstants.OOXML_FILE_HEADER[2] &&
          initial4[3] == POIFSConstants.OOXML_FILE_HEADER[3])
       {
-         ooxmlParser.parse(inp, handler, metadata, parseContext);
+         ooxmlParser.parse(wrapped, handler, metadata, parseContext);
       }
       else
       {
-         ole2Parser.parse(inp, handler, metadata, parseContext);
+         ole2Parser.parse(wrapped, handler, metadata, parseContext);
       }
    }
 

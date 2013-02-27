@@ -102,10 +102,7 @@ public class SOLRDAOImpl implements SOLRDAO
     @SuppressWarnings("unchecked")
     public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults)
     {
-        if (maxResults <= 0 || maxResults == Integer.MAX_VALUE)
-        {
-            throw new IllegalArgumentException("Maximum results must be a reasonable number.");
-        }
+        
         if (aclChangeSetIds == null || aclChangeSetIds.size() == 0)
         {
             throw new IllegalArgumentException("'aclChangeSetIds' must contain IDs.");
@@ -123,7 +120,15 @@ public class SOLRDAOImpl implements SOLRDAO
         params.setIds(aclChangeSetIds);
         params.setFromIdInclusive(minAclId);
 
-        return (List<Acl>) template.selectList(SELECT_ACLS_BY_CHANGESET_IDS, params, new RowBounds(0, maxResults));
+        if (maxResults <= 0 || maxResults == Integer.MAX_VALUE)
+        {
+            return (List<Acl>) template.selectList(SELECT_ACLS_BY_CHANGESET_IDS, params);
+        }
+        else
+        {
+            return (List<Acl>) template.selectList(SELECT_ACLS_BY_CHANGESET_IDS, params, new RowBounds(0, maxResults));
+        }
+       
     }
 
     /**

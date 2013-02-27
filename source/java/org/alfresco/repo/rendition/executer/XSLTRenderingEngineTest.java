@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -34,11 +35,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
@@ -52,8 +50,6 @@ import org.apache.commons.logging.LogFactory;
 public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(XSLTRenderingEngineTest.class);
-    private XSLTFunctions xsltFunctions;
-    private SearchService searchService;
     private NodeRef companyHome;
     private FileFolderService fileFolderService;
     private TemplateProcessor xsltProcessor;
@@ -70,17 +66,14 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
-        this.searchService = (SearchService) this.applicationContext.getBean("SearchService");
-        this.xsltFunctions = (XSLTFunctions) this.applicationContext.getBean("xsltFunctions");
         this.nodeService = (NodeService) this.applicationContext.getBean("NodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
         this.fileFolderService = (FileFolderService) this.applicationContext.getBean("FileFolderService");
         this.xsltProcessor = (TemplateProcessor) this.applicationContext.getBean("xsltProcessor");
         this.templateService = (TemplateService) this.applicationContext.getBean("TemplateService");
         this.renditionService = (RenditionService) this.applicationContext.getBean("RenditionService");
-        ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
-                "/app:company_home");
-        this.companyHome = rs.getNodeRef(0);
+        
+        this.companyHome = this.applicationContext.getBean("repositoryHelper", Repository.class).getCompanyHome();
     }
 
     public void testSimplestStringTemplate() throws Exception

@@ -42,6 +42,8 @@ public class DetachedResultSet extends AbstractResultSet
     
     ResultSetMetaData rsmd;
     
+    long numberFound;
+    
     /**
      * Detached result set based on that provided
      * @param resultSet
@@ -55,6 +57,7 @@ public class DetachedResultSet extends AbstractResultSet
         {
             rows.add(new DetachedResultSetRow(this, row));
         }
+        numberFound = resultSet.getNumberFound();
     }
 
     public int length()
@@ -95,6 +98,15 @@ public class DetachedResultSet extends AbstractResultSet
     public boolean hasMore()
     {
         throw new UnsupportedOperationException();
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
+     */
+    @Override
+    public long getNumberFound()
+    {
+       return numberFound;
     }
 
 }

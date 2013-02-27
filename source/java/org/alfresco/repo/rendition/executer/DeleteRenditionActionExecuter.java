@@ -28,6 +28,8 @@ import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.rendition.RenditionedAspect;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.thumbnail.AddFailedThumbnailActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -90,36 +92,50 @@ public class DeleteRenditionActionExecuter extends ActionExecuterAbstractBase
 	/**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.service.cmr.repository.NodeRef, NodeRef)
      */
-    public void executeImpl(Action action, NodeRef actionedUponNodeRef)
+    public void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
-        final boolean nodeExists = this.nodeService.exists(actionedUponNodeRef);
-        if (nodeExists)
+        // It is possible that the user who triggered the thumbnail update does not have delete permissions on the node
+        // but does have write permissions. e.g. if a SiteCollaborator updates a node which they do not own, any failure
+        // to update renditions would trigger this DeleteRendition action and they would not have permissions to delete.
+        //
+        // For that reason this action is run as the system user.
+        final NodeService finalNodeService = nodeService;
+        
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            Map<String, Serializable> paramValues = action.getParameterValues();
-            final QName renditionDefName = (QName)paramValues.get(PARAM_RENDITION_DEFINITION_NAME);
-            
-            ChildAssociationRef existingRendition = renditionService.getRenditionByName(actionedUponNodeRef, renditionDefName);
-            
-            if (existingRendition != null)
+            @Override public Void doWork() throws Exception
             {
-                if (log.isDebugEnabled())
+                final boolean nodeExists = finalNodeService.exists(actionedUponNodeRef);
+                if (nodeExists)
                 {
-                    StringBuilder msg = new StringBuilder();
-                    msg.append("Deleting rendition node: ").append(existingRendition);
-                    log.debug(msg.toString());
+                    Map<String, Serializable> paramValues = action.getParameterValues();
+                    final QName renditionDefName = (QName)paramValues.get(PARAM_RENDITION_DEFINITION_NAME);
+                    
+                    ChildAssociationRef existingRendition = renditionService.getRenditionByName(actionedUponNodeRef, renditionDefName);
+                    
+                    if (existingRendition != null)
+                    {
+                        if (log.isDebugEnabled())
+                        {
+                            StringBuilder msg = new StringBuilder();
+                            msg.append("Deleting rendition node: ").append(existingRendition);
+                            log.debug(msg.toString());
+                        }
+                        
+                        behaviourFilter.disableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
+                        try
+                        {
+                            nodeService.deleteNode(existingRendition.getChildRef());
+                        }
+                        finally
+                        {
+                            behaviourFilter.enableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
+                        }
+                    }
                 }
-                
-                behaviourFilter.disableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
-                try
-                {
-                    nodeService.deleteNode(existingRendition.getChildRef());
-                }
-                finally
-                {
-                    behaviourFilter.enableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
-                }
+                return null;
             }
-        }
+        });
     }
 
     /**

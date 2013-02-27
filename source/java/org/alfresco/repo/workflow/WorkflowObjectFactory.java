@@ -220,17 +220,27 @@ public class WorkflowObjectFactory
                 WorkflowTaskState state, WorkflowPath path,
                 Map<QName, Serializable> properties)
     {
-        String defName = path.getInstance().getDefinition().getName();
-        String actualId = buildGlobalId(id);
-        
-        String processKey =  getProcessKey(defName) + ".task." + name;
-        TypeDefinition metadata = taskDef.getMetadata();
-        String title = getLabel(processKey, TITLE_LABEL, metadata.getTitle(dictionaryService), defaultTitle, name);
-        String description = getLabel(processKey, DESC_LABEL, metadata.getDescription(dictionaryService), defaultDescription, title);
-        return new WorkflowTask(actualId,
-                    taskDef, name, title, description,
-                    state, path, properties);
+        return createTask(id, taskDef, name, defaultTitle, defaultDescription, state, path, path.getInstance().getDefinition().getName(), properties);
     }
+    
+    public WorkflowTask createTask (String id,
+            WorkflowTaskDefinition taskDef, String name,
+            String defaultTitle, String defaultDescription,
+            WorkflowTaskState state, WorkflowPath path, String workflowDefinitionName,
+            Map<QName, Serializable> properties)
+{
+    String actualId = buildGlobalId(id);
+    
+    String processKey =  getProcessKey(workflowDefinitionName) + ".task." + name;
+    TypeDefinition metadata = taskDef.getMetadata();
+    String title = getLabel(processKey, TITLE_LABEL, metadata.getTitle(dictionaryService), defaultTitle, name);
+    String description = getLabel(processKey, DESC_LABEL, metadata.getDescription(dictionaryService), defaultDescription, title);
+    return new WorkflowTask(actualId,
+                taskDef, name, title, description,
+                state, path, properties);
+}
+    
+    
     
     public WorkflowTimer createWorkflowTimer(String id, String name, String error, 
     		Date dueDate, WorkflowPath workflowPath, WorkflowTask workflowTask)

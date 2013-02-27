@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -67,14 +68,17 @@ public class SolrJSONResultSet implements ResultSet
     
     private HashMap<String, List<Pair<String, Integer>>> fieldFacets = new HashMap<String, List<Pair<String, Integer>>>(1);
     
+    private NodeDAO nodeDao;
+    
     /**
      * Detached result set based on that provided
      * @param resultSet
      */
-    public SolrJSONResultSet(JSONObject json, SearchParameters searchParameters, NodeService nodeService, LimitBy limitBy, int maxResults)
+    public SolrJSONResultSet(JSONObject json, SearchParameters searchParameters, NodeService nodeService, NodeDAO nodeDao, LimitBy limitBy, int maxResults)
     {
         // Note all properties are returned as multi-valued from the WildcardField "*" definition in the SOLR schema.xml
         this.nodeService = nodeService;
+        this.nodeDao = nodeDao;
         try
         {
             JSONObject responseHeader = json.getJSONObject("responseHeader");
@@ -89,8 +93,10 @@ public class SolrJSONResultSet implements ResultSet
             JSONArray docs = response.getJSONArray("docs");
             
             int numDocs = docs.length();
-            page = new ArrayList<Pair<Long, Float>>(numDocs);
-            refs = new ArrayList<NodeRef>(numDocs);
+           
+            
+            ArrayList<Long> rawDbids = new ArrayList<Long>(numDocs);
+            ArrayList<Float> rawScores = new ArrayList<Float>(numDocs); 
             for(int i = 0; i < numDocs; i++)
             {
                 JSONObject doc = docs.getJSONObject(i);
@@ -98,15 +104,29 @@ public class SolrJSONResultSet implements ResultSet
                 Long dbid = dbids.getLong(0);
                 Float score = Float.valueOf(doc.getString("score"));
                 
-                NodeRef nodeRef = nodeService.getNodeRef(dbid);
+                rawDbids.add(dbid);
+                rawScores.add(score);;
                 
+            }
+            
+            // bulk load
+            
+            nodeDao.cacheNodesById(rawDbids);
+            
+            // filter out rubbish
+            
+            page = new ArrayList<Pair<Long, Float>>(numDocs);
+            refs = new ArrayList<NodeRef>(numDocs);
+            for(int i = 0; i < numDocs; i++)
+            {
+                Long dbid = rawDbids.get(i);
+                NodeRef nodeRef = nodeService.getNodeRef(dbid);
+
                 if(nodeRef != null)
                 {
-                    page.add(new Pair<Long, Float>(dbid, score));
+                    page.add(new Pair<Long, Float>(dbid, rawScores.get(i)));
                     refs.add(nodeRef);
                 }
-                
-                
             }
             
             if(json.has("facet_counts"))
@@ -337,9 +357,9 @@ public class SolrJSONResultSet implements ResultSet
     /**
      * @return the numberFound
      */
-    public Long getNumberFound()
+    public long getNumberFound()
     {
-        return numberFound;
+        return numberFound.longValue();
     }
 
     @Override

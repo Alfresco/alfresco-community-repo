@@ -256,6 +256,12 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         return data;
     }
     
+    public boolean getDisableSharedCacheReadForTransaction()
+    {
+        TransactionData txnData = getTransactionData();
+        return txnData.noSharedCacheRead;
+    }
+    
     /**
      * Transaction-long setting to force all the share cache to be bypassed for the current transaction.
      * <p/>

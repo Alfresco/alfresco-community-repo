@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -235,7 +235,8 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         
         // Only execute the action if this action is read only or the actioned upon node reference doesn't
         // have a lock applied for this user.
-        if (ignoreLock || !LockUtils.isLockedAndReadOnly(actionedUponNodeRef, lockService))
+        if ((baseNodeService == null || actionedUponNodeRef == null || baseNodeService.exists(actionedUponNodeRef)) && // Not all actions are node based
+            (ignoreLock || !LockUtils.isLockedAndReadOnly(actionedUponNodeRef, lockService)))
         {
             // Execute the implementation
             executeImpl(action, actionedUponNodeRef);
@@ -245,7 +246,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
             if (logger.isWarnEnabled() == true)
             {
                 logger.warn("Action (" + action.getActionDefinitionName() + 
-                             ") ignored because actioned upon node (" + actionedUponNodeRef.toString() + 
+                             ") ignored because actioned upon node (" + actionedUponNodeRef + 
                              ") is locked.");
             }
         }

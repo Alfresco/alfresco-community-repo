@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1315,7 +1315,7 @@ public class PassthruCifsAuthenticator extends CifsAuthenticatorBase implements 
     {
         return Capability.Unicode + Capability.RemoteAPIs + Capability.NTSMBs + Capability.NTFind +
                Capability.NTStatus + Capability.LargeFiles + Capability.LargeRead + Capability.LargeWrite +
-               Capability.ExtendedSecurity;
+               Capability.ExtendedSecurity + Capability.InfoPassthru + Capability.Level2Oplocks;
     }
     
     /**

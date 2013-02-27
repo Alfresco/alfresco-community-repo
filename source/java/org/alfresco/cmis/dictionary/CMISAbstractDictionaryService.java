@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.cmis.CMISDataTypeEnum;
 import org.alfresco.cmis.CMISDictionaryService;
@@ -96,8 +99,11 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
         this.singletonCache = singletonCache;
     }
     
-    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
     
+    private final ReentrantReadWriteLock registryLock = new ReentrantReadWriteLock();
+    private final WriteLock registryWriteLock = registryLock.writeLock();
+    private final ReadLock registryReadLock = registryLock.readLock();
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
     private SimpleCache<String, DictionaryRegistry> singletonCache; // eg. for cmisDictionaryRegistry
     private final String KEY_CMIS_DICTIONARY_REGISTRY = "key.cmisDictionaryRegistry";
     
@@ -210,7 +216,18 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     
     private DictionaryRegistry getRegistry()
     {
-        DictionaryRegistry registry = singletonCache.get(KEY_CMIS_DICTIONARY_REGISTRY);
+        DictionaryRegistry registry = null;
+        
+        registryReadLock.lock();
+        try
+        {
+            registry = singletonCache.get(KEY_CMIS_DICTIONARY_REGISTRY);
+        }
+        finally
+        {
+            registryReadLock.unlock();
+        }
+        
         if (registry == null)
         {
             init();
@@ -389,87 +406,95 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     private void init()
     {
-        DictionaryRegistry registry = new DictionaryRegistry();
-
-        if (logger.isDebugEnabled())
-            logger.debug("Creating type definitions...");
-        
-        // phase 1: construct type definitions
-        createDefinitions(registry);
-        for (CMISAbstractTypeDefinition objectTypeDef : registry.objectDefsByTypeId.values())
+        registryWriteLock.lock();
+        try
         {
-            Map<String, CMISPropertyDefinition> propDefs = objectTypeDef.createProperties(cmisMapping, dictionaryService);
-            for (CMISPropertyDefinition propDef : propDefs.values())
+            DictionaryRegistry registry = new DictionaryRegistry();
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Creating type definitions...");
+            
+            // phase 1: construct type definitions
+            createDefinitions(registry);
+            for (CMISAbstractTypeDefinition objectTypeDef : registry.objectDefsByTypeId.values())
             {
-                registry.registerPropertyDefinition(propDef);
+                Map<String, CMISPropertyDefinition> propDefs = objectTypeDef.createProperties(cmisMapping, dictionaryService);
+                for (CMISPropertyDefinition propDef : propDefs.values())
+                {
+                    registry.registerPropertyDefinition(propDef);
+                }
+                objectTypeDef.createSubTypes(cmisMapping, dictionaryService);
             }
-            objectTypeDef.createSubTypes(cmisMapping, dictionaryService);
-        }
-
-        if (logger.isDebugEnabled())
-            logger.debug("Linking type definitions...");
-
-        // phase 2: link together
-        for (CMISAbstractTypeDefinition objectTypeDef : registry.objectDefsByTypeId.values())
-        {
-            objectTypeDef.resolveDependencies(registry);
-        }
-
-        if (logger.isDebugEnabled())
-            logger.debug("Resolving type inheritance...");
-
-        // phase 3: resolve inheritance
-        Map<Integer,List<CMISAbstractTypeDefinition>> order = new TreeMap<Integer, List<CMISAbstractTypeDefinition>>();
-        for (CMISAbstractTypeDefinition typeDef : registry.objectDefsByTypeId.values())
-        {
-            // calculate class depth in hierarchy
-            int depth = 0;
-            CMISAbstractTypeDefinition parent = typeDef.getInternalParentType();
-            while (parent != null)
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Linking type definitions...");
+            
+            // phase 2: link together
+            for (CMISAbstractTypeDefinition objectTypeDef : registry.objectDefsByTypeId.values())
             {
-                depth = depth +1;
-                parent = parent.getInternalParentType();
+                objectTypeDef.resolveDependencies(registry);
             }
-
-            // map class to depth
-            List<CMISAbstractTypeDefinition> classes = order.get(depth);
-            if (classes == null)
+            
+            if (logger.isDebugEnabled())
+                logger.debug("Resolving type inheritance...");
+            
+            // phase 3: resolve inheritance
+            Map<Integer,List<CMISAbstractTypeDefinition>> order = new TreeMap<Integer, List<CMISAbstractTypeDefinition>>();
+            for (CMISAbstractTypeDefinition typeDef : registry.objectDefsByTypeId.values())
             {
-                classes = new ArrayList<CMISAbstractTypeDefinition>();
-                order.put(depth, classes);
+                // calculate class depth in hierarchy
+                int depth = 0;
+                CMISAbstractTypeDefinition parent = typeDef.getInternalParentType();
+                while (parent != null)
+                {
+                    depth = depth +1;
+                    parent = parent.getInternalParentType();
+                }
+                
+                // map class to depth
+                List<CMISAbstractTypeDefinition> classes = order.get(depth);
+                if (classes == null)
+                {
+                    classes = new ArrayList<CMISAbstractTypeDefinition>();
+                    order.put(depth, classes);
+                }
+                classes.add(typeDef);
             }
-            classes.add(typeDef);
-        }
-        for (int depth = 0; depth < order.size(); depth++)
-        {
-            for (CMISAbstractTypeDefinition typeDef : order.get(depth))
+            for (int depth = 0; depth < order.size(); depth++)
             {
-                typeDef.resolveInheritance(registry);
+                for (CMISAbstractTypeDefinition typeDef : order.get(depth))
+                {
+                    typeDef.resolveInheritance(registry);
+                }
             }
-        }
-
-        // phase 4: assert valid
-        for (CMISAbstractTypeDefinition typeDef : registry.objectDefsByTypeId.values())
-        {
-            typeDef.assertComplete();
-        }
-
-        // phase 5: register base types
-        for (CMISAbstractTypeDefinition typeDef : registry.objectDefsByTypeId.values())
-        {
-            if (typeDef.isPublic() && typeDef.getParentType() == null)
+            
+            // phase 4: assert valid
+            for (CMISAbstractTypeDefinition typeDef : registry.objectDefsByTypeId.values())
             {
-                registry.baseTypes.add(typeDef);
+                typeDef.assertComplete();
             }
+            
+            // phase 5: register base types
+            for (CMISAbstractTypeDefinition typeDef : registry.objectDefsByTypeId.values())
+            {
+                if (typeDef.isPublic() && typeDef.getParentType() == null)
+                {
+                    registry.baseTypes.add(typeDef);
+                }
+            }
+            
+            // publish new registry
+            singletonCache.put(KEY_CMIS_DICTIONARY_REGISTRY, registry);
+            
+            if (logger.isInfoEnabled())
+                logger.info("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Base Types:" + registry.baseTypes.size() + ", Properties:" + registry.propDefsByPropId.size());
         }
-        
-        // publish new registry
-        singletonCache.put(KEY_CMIS_DICTIONARY_REGISTRY, registry);
-        
-        if (logger.isInfoEnabled())
-            logger.info("Initialized CMIS Dictionary. Types:" + registry.typeDefsByTypeId.size() + ", Base Types:" + registry.baseTypes.size() + ", Properties:" + registry.propDefsByPropId.size());
+        finally
+        {
+            registryWriteLock.unlock();
+        }
     }
-
+    
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.dictionary.DictionaryListener#onInit()
@@ -493,7 +518,15 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
      */
     public void afterDictionaryDestroy()
     {
-        singletonCache.remove(KEY_CMIS_DICTIONARY_REGISTRY);
+        registryWriteLock.lock();
+        try
+        {
+            singletonCache.remove(KEY_CMIS_DICTIONARY_REGISTRY);
+        }
+        finally
+        {
+            registryWriteLock.unlock();
+        }
     }
     
     /*

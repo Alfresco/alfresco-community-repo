@@ -22,8 +22,6 @@ package org.alfresco.repo.workflow.activiti.properties;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -553,9 +551,6 @@ public class ActivitiPropertyConverter
     private Map<String, Object> getHistoricVariables(HistoricDetailQuery query)
     {
         List<HistoricDetail> historicDetails = query.variableUpdates()
-            .orderByVariableName().asc()
-            .orderByTime().desc()
-            .orderByVariableRevision().desc()
             .list(); 
         return convertHistoricDetails(historicDetails);
     }
@@ -849,27 +844,52 @@ public class ActivitiPropertyConverter
      */
     public Map<String, Object> convertHistoricDetails(List<HistoricDetail> details)
     {
-        // TODO: Sorting should be performed in query, not available right now.
-        Collections.sort(details, new Comparator<HistoricDetail>()
-        {
-            @Override
-            public int compare(HistoricDetail o1, HistoricDetail o2)
-            {
-                Long id1 = Long.valueOf(o1.getId());
-                Long id2 = Long.valueOf(o2.getId());
-                return - id1.compareTo(id2);
-            }
-        });
-        Map<String, Object> variables = new HashMap<String, Object>();
-        for(HistoricDetail detail : details)
-        {
-            HistoricVariableUpdate varUpdate = (HistoricVariableUpdate) detail;
-            // First value for a single key is used
-            if(!variables.containsKey(varUpdate.getVariableName()))
-            {
-                variables.put(varUpdate.getVariableName(), varUpdate.getValue());                
-            }
-        }
+    	HashMap<String, HistoricVariableUpdate> updateMap = new HashMap<String, HistoricVariableUpdate>();
+    	HistoricVariableUpdate previous = null;
+    	HistoricVariableUpdate current = null;
+    	boolean isMoreRecent = false;
+    	for(HistoricDetail detail : details)
+    	{
+    		current = (HistoricVariableUpdate) detail;
+    		previous = updateMap.get(current.getVariableName());
+    		
+    		if(previous == null)
+    		{
+    			isMoreRecent = true;
+    		}
+    		else
+    		{
+    			// Check if this update is more recent that the one already present in the map
+    			if(current.getTime().equals(previous.getTime()))
+    			{
+    				if(current.getRevision() == previous.getRevision())
+    				{
+    					// Revert to comparison of the ID
+    					isMoreRecent = Long.valueOf(current.getId()).longValue() > Long.valueOf(previous.getId()).longValue();
+    				}
+    				else
+    				{
+    					isMoreRecent = current.getRevision() > previous.getRevision();
+    				}
+    			}
+    			else
+    			{
+    				isMoreRecent = current.getTime().after(previous.getTime());
+    			}
+    		}
+    		
+    		// Add to the map if value is more recent than existing value or is the first value for this update
+    		if(isMoreRecent)
+    		{
+    			updateMap.put(current.getVariableName(), current);
+    		}
+    	}
+    	HashMap<String, Object> variables = new HashMap<String, Object>();
+    	for(Entry<String, HistoricVariableUpdate> entry : updateMap.entrySet())
+    	{
+    		variables.put(entry.getKey(), entry.getValue().getValue());
+    	}
+        
         return variables;
     }
     

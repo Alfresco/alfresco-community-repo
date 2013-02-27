@@ -609,13 +609,21 @@ public class QueryTest extends BaseCMISTest
 
     }
 
-    public void testEncodingOfTypeAndPropertyNames()
+    public void testEncodingOfTypeAndPropertyNames() throws Exception
     {
         addTypeTestDataModel();
+        
         assertNotNull("Type not found by query name "+ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findTypeByQueryName(ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService))));
         assertNotNull("Aspect not found by query name "+ISO9075.encodeSQL(aspectThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findTypeByQueryName(ISO9075.encodeSQL(aspectThatRequiresEncoding.toPrefixString(namespaceService))));
-        assertNotNull("Prpo not found by query name "+ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findPropertyByQueryName(ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService))));
+        assertNotNull("Prop not found by query name "+ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService)), cmisDictionaryService.findPropertyByQueryName(ISO9075.encodeSQL(propertyThatRequiresEncoding.toPrefixString(namespaceService))));
        
+        
+        testQuery("SELECT * FROM "+  ISO9075.encodeSQL(typeThatRequiresEncoding.toPrefixString(namespaceService)), 0, false, "cmis:allowedChildObjectTypeIds",
+                new String(), false);
+        testQuery("SELECT * FROM test:type_x002d_that_x002d_requires_x002d_encoding", 0, false, "cmis:allowedChildObjectTypeIds",
+                new String(), false);
+        testQuery("SELECT * FROM test:type_x002D_that_x002D_requires_x002D_encoding", 0, false, "cmis:allowedChildObjectTypeIds",
+                new String(), false);
     }
     
     public void test_ALLOWED_CHILD_OBJECT_TYPES() throws Exception
@@ -3816,7 +3824,7 @@ public class QueryTest extends BaseCMISTest
         options.setSkipCount(skip);
         options.setMaxItems(max);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals("Skip = " + skip + " max  = " + max, skip + max > folder_count ? folder_count - skip : max, rs.getLength());
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > folder_count ? Math.max(folder_count - skip, 0) : max, rs.getLength());
         assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < folder_count, rs.hasMore());
         assertEquals("Skip = " + skip + " max  = " + max, skip, rs.getStart());
         int actualPosition = skip;

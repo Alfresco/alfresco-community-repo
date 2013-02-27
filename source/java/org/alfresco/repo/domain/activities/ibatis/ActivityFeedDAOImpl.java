@@ -34,6 +34,13 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     @Override
     public long insertFeedEntry(ActivityFeedEntity activityFeed) throws SQLException
     {
+        // ALF-17455 temporary assertion that the format is "json" 
+        // TODO remove the summary format completely.
+        if(!activityFeed.getActivitySummaryFormat().equalsIgnoreCase("json"))
+        {
+            throw new AlfrescoRuntimeException("Obsolete summary format specified - only json expected");
+        }
+        
         template.insert("alfresco.activities.insert.insert_activity_feed", activityFeed);
         Long id = activityFeed.getId();
         return (id != null ? id : -1);
@@ -74,6 +81,7 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     @Override
     public int deleteSiteFeedEntries(String siteId, String format, Date keepDate) throws SQLException
     {
+        
         ActivityFeedEntity params = new ActivityFeedEntity();
         params.setSiteNetwork(siteId);
         params.setActivitySummaryFormat(format);

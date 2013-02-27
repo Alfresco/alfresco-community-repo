@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -78,6 +79,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private TenantService tenantService;
     private DictionaryService dictionaryService;
     private boolean enabled = true;
+    private boolean cacheAncestors =true;
     
     
     @Override
@@ -90,6 +92,14 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
+    }
+    
+    /**
+     * @param cacheAncestors the cacheAncestors to set
+     */
+    public void setCacheAncestors(boolean cacheAncestors)
+    {
+        this.cacheAncestors = cacheAncestors;
     }
 
     public void setSolrDAO(SOLRDAO solrDAO)
@@ -519,7 +529,15 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         }
         
         // Pre-evaluate ancestors so we can bulk load them
-        List<Long> ancestors = new ArrayList<Long>(nodeDAO.getCachedAncestors(nodeIds));
+        List<Long> ancestors;
+        if(cacheAncestors)
+        {
+            ancestors = cacheAncestors(nodeIds);
+        }
+        else
+        {
+            ancestors = nodeIds;
+        }
         // Ensure that we get fresh node references
         nodeDAO.setCheckNodeConsistency();
         // bulk load nodes and their ancestors      
@@ -527,6 +545,60 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         
         return nodeIds;
     }
+    
+    /**
+     * Does a 'breadth first' search of ancestors, caching as it goes
+     * @param nodeIds initial list of nodes to visit
+     * @return all visited nodes, in no particular order
+     */
+    private List<Long> cacheAncestors(List<Long> nodeIds)
+    {
+        final LinkedList<Long> toVisit = new LinkedList<Long>(nodeIds);
+        Set<Long> visited = new TreeSet<Long>();
+        Long nodeId;
+        nodeDAO.cacheNodesById(toVisit);
+        Long lastCached = toVisit.peekLast();
+        while ((nodeId = toVisit.pollFirst()) != null)
+        {
+            if (visited.add(nodeId))
+            {
+                nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
+                {
+                    @Override
+                    public boolean preLoadNodes()
+                    {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean orderResults()
+                    {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+                            Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                    {
+                        toVisit.add(parentNodePair.getFirst());
+                        return true;
+                    }
+
+                    @Override
+                    public void done()
+                    {
+                    }
+                });
+            }
+            if (nodeId == lastCached && !toVisit.isEmpty())
+            {
+                nodeDAO.cacheNodesById(toVisit);
+                lastCached = toVisit.peekLast();
+            }
+        }
+        return new ArrayList<Long>(visited);
+    }    
+
 
     protected Map<QName, Serializable> getProperties(Long nodeId)
     {

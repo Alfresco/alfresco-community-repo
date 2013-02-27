@@ -32,4 +32,5 @@ public interface WorkflowConstants
     public static final String PROP_CANCELLED = "cancelled";
     
     public static final String TASK_STATUS_COMPLETED = "Completed";
+    public static final String TASK_STATUS_IN_PROGRESS = "In Progress";
 }

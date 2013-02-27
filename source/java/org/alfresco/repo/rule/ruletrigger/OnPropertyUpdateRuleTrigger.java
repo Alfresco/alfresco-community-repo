@@ -19,6 +19,7 @@
 package org.alfresco.repo.rule.ruletrigger;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -150,7 +151,8 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
             // Ignore protected properties
             else if (!propertyDefinition.isProtected())
             {
-                if (propertyDefinition.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+                if (propertyDefinition.getDataType().getName().equals(DataTypeDefinition.CONTENT)
+                        && !propertyDefinition.isMultiValued())
                 {
                     // Remember whether the property was populated, regardless of the ignore setting
                     if (afterValue != null)
@@ -159,8 +161,8 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
                     }                    
                     if (this.ignoreEmptyContent)
                     {
-                        ContentData beforeContent = (ContentData) before.get(name);
-                        ContentData afterContent = (ContentData) after.get(name);
+                        ContentData beforeContent = toContentData(before.get(name));
+                        ContentData afterContent = toContentData(after.get(name));
                         if (!ContentData.hasContent(beforeContent) || beforeContent.getSize() == 0)
                         {
                             beforeValue = null;
@@ -206,6 +208,31 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
         }
     }
     
+    /**
+     * ALF-17483: It's possible that even for a single-valued contentdata property, its definition may have been changed
+     * and the previous persisted value is multi-valued, so let's be careful about converting to ContentData.
+     * 
+     * @param object
+     *            property value to convert
+     * @return a ContentData if one can be extracted
+     */
+    private static ContentData toContentData(Object object)
+    {
+        if (object == null)
+        {
+            return null;
+        }
+        if (object instanceof ContentData)
+        {
+            return (ContentData) object;
+        }
+        if (object instanceof Collection<?> && !((Collection<?>) object).isEmpty())
+        {
+            return toContentData(((Collection<?>) object).iterator().next());
+        }
+        return null;
+    }
+
     /**
      * Triggers rules if properties have been updated
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -116,9 +116,9 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
         }
         else
         {
-            return wrapped.length() - skip;
+            int lengthAfterSkipping = wrapped.length() - skip;
+            return lengthAfterSkipping < 0 ? 0 : lengthAfterSkipping;
         }
-
     }
 
     /*
@@ -240,5 +240,14 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
         return wrapped.getFieldFacet(field);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
+     */
+    @Override
+    public long getNumberFound()
+    {
+       return wrapped.getNumberFound();
     }
 }

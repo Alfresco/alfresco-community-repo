@@ -67,6 +67,9 @@ import freemarker.template.DefaultObjectWrapper;
 
 /**
  * The local (ie. not grid) feed task processor is responsible for processing the individual feed job
+ * 
+ * @author janv
+ * @since 3.0
  */
 public class LocalFeedTaskProcessor extends FeedTaskProcessor implements ApplicationContextAware
 {
@@ -176,22 +179,54 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
 
     public List<ActivityPostEntity> selectPosts(ActivityPostEntity selector) throws SQLException
     {
-        return postDAO.selectPosts(selector);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Selecting posts with the selector: " + selector.toString());
+        }
+        List<ActivityPostEntity> activityPosts = postDAO.selectPosts(selector, -1);
+        if (logger.isTraceEnabled())
+        {
+            for(ActivityPostEntity activityPost : activityPosts)
+            {
+                logger.trace("Selected post: " + activityPost.toString());
+            }
+        }
+        return activityPosts;
     }
 
     public long insertFeedEntry(ActivityFeedEntity feed) throws SQLException
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Inserting feed entry: " + feed.toString());
+        }
         return feedDAO.insertFeedEntry(feed);
     }
 
     public int updatePostStatus(long id, ActivityPostEntity.STATUS status) throws SQLException
     {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Updating post with id: " + id + " , with status: " + status.toString());
+        }
         return postDAO.updatePostStatus(id, status);
     }
 
     public List<FeedControlEntity> selectUserFeedControls(String userId) throws SQLException
     {
-        return feedControlDAO.selectFeedControls(userId);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Selecting feed controls for user : " + userId);
+        }
+        List<FeedControlEntity> userFeedControls = feedControlDAO.selectFeedControls(userId);
+        if (logger.isTraceEnabled())
+        {
+            for(FeedControlEntity userFeedControl : userFeedControls)
+            {
+                logger.trace("Selected user feed control: " + userFeedControl.toString());
+            }
+        }
+        return userFeedControls;
     }
     
     @Override

@@ -240,7 +240,7 @@ public class TemporaryNodesTest
         });
     }
     
-    @Test public void testCreateFolderAndQuickFile() throws Throwable
+    @Test public void testCreateFolderAndQuickFiles() throws Throwable
     {
         // Note that because we need to test that the Rule's 'after' behaviour has worked correctly, we cannot
         // use the Rule that has been declared in the normal way - otherwise nothing would be cleaned up until
@@ -259,8 +259,11 @@ public class TemporaryNodesTest
         // Create a target folder
         final NodeRef folder = myTemporaryNodes.createFolder(COMPANY_HOME, "testFolder", AuthenticationUtil.getAdminUserName());
         
-        // create a 'quick' node under it.
+        // create a normal 'quick' node under it.
         final NodeRef quickTxt = myTemporaryNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, folder, "quickFile", AuthenticationUtil.getAdminUserName());
+        
+        // create a named 'quick' node under it.
+        final NodeRef namedQuickTxt = myTemporaryNodes.createQuickFileByName("quickCorrupt.jpg", folder, AuthenticationUtil.getAdminUserName());
         
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
@@ -269,12 +272,15 @@ public class TemporaryNodesTest
                 // Check the nodes were created ok
                 assertTrue(NODE_SERVICE.exists(folder));
                 assertTrue(NODE_SERVICE.exists(quickTxt));
+                assertTrue(NODE_SERVICE.exists(namedQuickTxt));
                 
                 assertEquals(ContentModel.TYPE_FOLDER, NODE_SERVICE.getType(folder));
                 assertEquals(ContentModel.TYPE_CONTENT, NODE_SERVICE.getType(quickTxt));
+                assertEquals(ContentModel.TYPE_CONTENT, NODE_SERVICE.getType(namedQuickTxt));
                 
                 assertEquals(AuthenticationUtil.getAdminUserName(), NODE_SERVICE.getProperty(folder, ContentModel.PROP_CREATOR));
                 assertEquals(AuthenticationUtil.getAdminUserName(), NODE_SERVICE.getProperty(quickTxt, ContentModel.PROP_CREATOR));
+                assertEquals(AuthenticationUtil.getAdminUserName(), NODE_SERVICE.getProperty(namedQuickTxt, ContentModel.PROP_CREATOR));
                 
                 ContentReader reader = CONTENT_SERVICE.getReader(quickTxt, ContentModel.PROP_CONTENT);
                 assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, reader.getMimetype());
@@ -282,6 +288,10 @@ public class TemporaryNodesTest
                 assertEquals(235, reader.getSize()); // 235 chars in the quick.txt file
                 final String content = reader.getContentString();
                 assertTrue(content.contains("quick brown fox"));
+                
+                ContentReader reader2 = CONTENT_SERVICE.getReader(namedQuickTxt, ContentModel.PROP_CONTENT);
+                assertEquals(MimetypeMap.MIMETYPE_IMAGE_JPEG, reader2.getMimetype());
+                // No checks on the actual content.
                 
                 return null;
             }
@@ -297,6 +307,7 @@ public class TemporaryNodesTest
             {
                 assertFalse(NODE_SERVICE.exists(folder));
                 assertFalse(NODE_SERVICE.exists(quickTxt));
+                assertFalse(NODE_SERVICE.exists(namedQuickTxt));
                 return null;
             }
         });

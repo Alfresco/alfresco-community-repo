@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -849,6 +849,11 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         assertNotNull(contentReader2);
         assertEquals(TEST_CONTENT, contentReader2.getContentString());
         
+        // Check that the ContentModel.PROP_VERSION_LABEL property is correct
+        String versionLabel = (String)this.dbNodeService.getProperty(restoredNode, ContentModel.PROP_VERSION_LABEL);
+        assertNotNull(versionLabel);
+        assertEquals("0.2", versionLabel);
+        
         // Check that the aspects have been reverted correctly
         Set<QName> aspects2 = this.dbNodeService.getAspects(restoredNode);
         assertEquals(aspects2.size(), origAspects.size());
@@ -871,9 +876,6 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         assertEquals(VersionService.VERSION_STORE_PROTOCOL, versions[0].getFrozenStateNodeRef().getStoreRef().getProtocol());
         assertEquals(VersionService.VERSION_STORE_PROTOCOL, versions[1].getFrozenStateNodeRef().getStoreRef().getProtocol());
         
-        // The restored node won't have a version label set though
-        // TODO Is this correct?
-        assertEquals(null, nodeService.getProperty(restoredNode, ContentModel.PROP_VERSION_LABEL));
     }
     
     /**

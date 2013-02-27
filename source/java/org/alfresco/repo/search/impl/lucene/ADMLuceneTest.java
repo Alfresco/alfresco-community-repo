@@ -1301,7 +1301,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp.setSkipCount(skip);
         sp.setMaxItems(max);
         ResultSet results = searcher.query(sp);
-        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? 16 - skip : max, results.length());
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? Math.max(16 - skip, 0) : max, results.length());
         assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 16, results.hasMore());
         assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
         int actualPosition = skip;
@@ -1356,7 +1356,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp.setSkipCount(skip);
         sp.setMaxItems(max);
         ResultSet results = searcher.query(sp);
-        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? 16 - skip : max, results.length());
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 16 ? Math.max(16 - skip, 0) : max, results.length());
         assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 16, results.hasMore());
         assertEquals("Skip = " + skip + " max  = " + max, skip, results.getStart());
         int actualPosition = skip;

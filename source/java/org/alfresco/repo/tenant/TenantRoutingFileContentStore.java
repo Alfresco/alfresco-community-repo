@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,10 @@
 package org.alfresco.repo.tenant;
 
 import java.io.File;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 
 import org.alfresco.repo.content.ContentLimitProvider;
 import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
@@ -43,7 +47,13 @@ public class TenantRoutingFileContentStore extends AbstractTenantRoutingContentS
     
     protected ContentStore initContentStore(ApplicationContext ctx, String contentRoot)
     {
-        FileContentStore fileContentStore = new FileContentStore(ctx, new File(contentRoot));
+    	Map<String, Serializable> extendedEventParams = new HashMap<String, Serializable>();
+    	if (!TenantService.DEFAULT_DOMAIN.equals(tenantService.getCurrentUserDomain()))
+    	{
+    	    extendedEventParams.put("Tenant", tenantService.getCurrentUserDomain());
+    	}
+
+        FileContentStore fileContentStore = new FileContentStore(ctx, new File(contentRoot), extendedEventParams);
         
         // Set the content filesize limiter if there is one.
         if (this.contentLimitProvider != null)

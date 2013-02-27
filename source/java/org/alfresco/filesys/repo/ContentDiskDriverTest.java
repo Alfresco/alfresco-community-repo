@@ -271,7 +271,7 @@ public class ContentDiskDriverTest extends TestCase
         int openAction = FileAction.CreateNotExist;
         
 
-        final String FILE_NAME="testCreateFile.new";
+        final String FILE_NAME="testCreateFileX.new";
         final String FILE_PATH="\\"+FILE_NAME;
                   
         FileOpenParams params = new FileOpenParams(FILE_PATH, openAction, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
@@ -1874,7 +1874,7 @@ public class ContentDiskDriverTest extends TestCase
      * c) Delete smultronTest.txt
      * c) Rename .dat04cd.004 to smultronTest.txt
      */
-    public void DISABLED_testScenarioSmultronSave() throws Exception
+    public void testScenarioSmultronSave() throws Exception
     {
         logger.debug("testScenarioSmultronSave");
         final String FILE_NAME = "smultronTest.txt";
@@ -1942,7 +1942,7 @@ public class ContentDiskDriverTest extends TestCase
                 String testContent = "Smultron shuffle test";
                 byte[] testContentBytes = testContent.getBytes();
                 testContext.firstFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
-                testContext.firstFileHandle.close();            
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle);            
                 return null;
             }
         };
@@ -1962,7 +1962,7 @@ public class ContentDiskDriverTest extends TestCase
                 String testContent = "Smultron shuffle test This is new content";
                 byte[] testContentBytes = testContent.getBytes();
                 testContext.newFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
-                testContext.newFileHandle.close();
+                driver.closeFile(testSession, testConnection, testContext.newFileHandle);
               
                 return null;
             }
@@ -6139,30 +6139,45 @@ public class ContentDiskDriverTest extends TestCase
          };
          tran.doInTransaction(createFileCB, false, true);
              
-         /**
-          * b) Delete the target file by opening it and set the delete on close bit
-          */
-         RetryingTransactionCallback<Void> deleteTargetFileCB = new RetryingTransactionCallback<Void>() {
+//         /**
+//          * b) Delete the target file by opening it and set the delete on close bit
+//          */
+//         RetryingTransactionCallback<Void> deleteTargetFileCB = new RetryingTransactionCallback<Void>() {
+//
+//             @Override
+//             public Void execute() throws Throwable
+//             {
+//                 FileOpenParams openFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+//                 testContext.tempFileHandle = driver.openFile(testSession, testConnection, openFileParams);
+//                 FileInfo info = new FileInfo();
+//                 info.setFileInformationFlags(FileInfo.SetDeleteOnClose);
+//                 info.setDeleteOnClose(true);
+//                 testContext.tempFileHandle.setDeleteOnClose(true);
+//                 
+//                 driver.setFileInformation(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, info);
+//                 
+//                 assertNotNull(testContext.tempFileHandle);
+//                 logger.debug("this close should result in a file being deleted");
+//                 driver.closeFile(testSession, testConnection,  testContext.tempFileHandle);
+//                 return null;
+//             }
+//         };
+//         tran.doInTransaction(deleteTargetFileCB, false, true);
+         
+       /**
+       * b) Delete the target file by a simple delete
+       */
+      RetryingTransactionCallback<Void> deleteTargetFileCB = new RetryingTransactionCallback<Void>() {
 
-             @Override
-             public Void execute() throws Throwable
-             {
-                 FileOpenParams openFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
-                 testContext.tempFileHandle = driver.openFile(testSession, testConnection, openFileParams);
-                 FileInfo info = new FileInfo();
-                 info.setFileInformationFlags(FileInfo.SetDeleteOnClose);
-                 info.setDeleteOnClose(true);
-                 testContext.tempFileHandle.setDeleteOnClose(true);
-                 
-                 driver.setFileInformation(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, info);
-                 
-                 assertNotNull(testContext.tempFileHandle);
-                 logger.debug("this close should result in a file being deleted");
-                 driver.closeFile(testSession, testConnection,  testContext.tempFileHandle);
-                 return null;
-             }
-         };
-         tran.doInTransaction(deleteTargetFileCB, false, true);
+          @Override
+          public Void execute() throws Throwable
+          {
+                
+              driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+              return null;
+          }
+      };
+      tran.doInTransaction(deleteTargetFileCB, false, true);
          
          /**
           * c) Move the temp file into target directory
@@ -6197,6 +6212,149 @@ public class ContentDiskDriverTest extends TestCase
          tran.doInTransaction(validateCB, false, true);
 
      } // testScenarioMountainLionPreview
+
+     /**
+      * This test tries to simulate the cifs shuffling that is done 
+      * from Save from Mac Mountain Lion by Preview when document is saved first time
+      * 
+      * a) Temp file created in temporary folder (temp\image.jpg.sb-1e5e1543-ajn3cR)
+      * b) Temp file renamed to original name (temp\image.jpg.sb-1e5e1543-ajn3cR -> temp\image.jpg)
+      * c) Original document renamed to backup copy name (test\image.jpg -> test\image.jpg.sb-1e5e1543-ajn3cR)
+      * d) Renamed temp file moved to original (temp\image.jpg -> test\image.jpg)
+      */
+     public void testScenarioMacMountainLionPreview_MNT_263() throws Exception
+     {
+         logger.debug("testScenarioMacMountainLionPreview_MNT_263");
+         final String FILE_NAME = "image.jpg";
+         final String TEMP_FILE_NAME = "image.jpg.sb-1e5e1543-ajn3cR";
+         
+         final String UPDATED_TEXT = "Mac Lion Preview Updated Content";
+         
+         class TestContext
+         {
+             NetworkFile firstFileHandle;
+             NetworkFile tempFileHandle;            
+             NodeRef testNodeRef;   // node ref image.jpg
+         };
+         
+         final TestContext testContext = new TestContext();
+         
+         final String TEST_ROOT_DIR = "\\ContentDiskDriverTest";
+         final String TEST_DIR = "\\ContentDiskDriverTest\\testScenarioMountainLionPreview";
+         final String TEST_TEMP_DIR = "\\ContentDiskDriverTest\\testScenarioMountainLionPreview\\.Temporary Items";
+         
+         ServerConfiguration scfg = new ServerConfiguration("testServer");
+         TestServer testServer = new TestServer("testServer", scfg);
+         final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+         DiskSharedDevice share = getDiskSharedDevice();
+         final TreeConnection testConnection = testServer.getTreeConnection(share);
+         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+         
+         /**
+          * Create a file in the test directory
+          */           
+         RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 /**
+                  * Create the test directory we are going to use 
+                  */
+                 FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 FileOpenParams createTempDirParams = new FileOpenParams(TEST_TEMP_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 driver.createDirectory(testSession, testConnection, createRootDirParams);
+                 driver.createDirectory(testSession, testConnection, createDirParams);
+                 driver.createDirectory(testSession, testConnection, createTempDirParams);
+                 
+                 /**
+                  * Create the file we are going to use
+                  */
+                 FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                 assertNotNull(testContext.firstFileHandle);
+                 
+                 String testContent = "Mac Lion Preview Content";
+                 byte[] testContentBytes = testContent.getBytes();
+                  
+                 driver.writeFile(testSession, testConnection, testContext.firstFileHandle, testContentBytes, 0, testContentBytes.length, 0);
+                 driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                 
+                 /**
+                  * Create the temp file we are going to use
+                  */
+                 FileOpenParams createTempFileParams = new FileOpenParams(TEST_TEMP_DIR + "\\" + TEMP_FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                 testContext.tempFileHandle = driver.createFile(testSession, testConnection, createTempFileParams);
+                 assertNotNull(testContext.tempFileHandle);
+                                
+                 testContent = UPDATED_TEXT;
+                 testContentBytes = testContent.getBytes();
+                 driver.writeFile(testSession, testConnection, testContext.tempFileHandle, testContentBytes, 0, testContentBytes.length, 0);
+                 driver.closeFile(testSession, testConnection, testContext.tempFileHandle); 
+                                  
+                 /**
+                  * Also add versionable to target file
+                  */
+                 testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                 nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                 
+                 return null;
+             }
+         };
+         tran.doInTransaction(createFileCB, false, true);
+         
+         RetryingTransactionCallback<Void> renameTempFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.renameFile(testSession, testConnection, TEST_TEMP_DIR + "\\" + TEMP_FILE_NAME, TEST_TEMP_DIR + "\\" + FILE_NAME);
+                 return null;
+             }
+         };
+         tran.doInTransaction(renameTempFileCB, false, true);
+         
+         RetryingTransactionCallback<Void> renameFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + TEMP_FILE_NAME);
+                 return null;
+             }
+         };
+         tran.doInTransaction(renameFileCB, false, true);
+         
+         RetryingTransactionCallback<Void> moveRenamedTempFileCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+                 driver.renameFile(testSession, testConnection, TEST_TEMP_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + FILE_NAME);
+                 return null;
+             }
+         };
+         tran.doInTransaction(moveRenamedTempFileCB, false, true);
+         
+         RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+             @Override
+             public Void execute() throws Throwable
+             {
+
+                 NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+                 assertTrue("node is not versionable", nodeService.hasAspect(shuffledNodeRef, ContentModel.ASPECT_VERSIONABLE));
+                 assertEquals("shuffledNode ref is different", shuffledNodeRef, testContext.testNodeRef);
+                 assertEquals("Unexpected content size", contentService.getReader(shuffledNodeRef, ContentModel.PROP_CONTENT).getSize(), UPDATED_TEXT.length());
+                 
+                 return null;
+             }
+         };
+         
+         tran.doInTransaction(validateCB, false, true);
+
+     } // testScenarioMacMountainLionPreview_MNT_263
      
      /**
       *  Gedit has the nasty behaviour of renaming an open file.

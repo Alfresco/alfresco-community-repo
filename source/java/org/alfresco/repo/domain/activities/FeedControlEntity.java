@@ -109,4 +109,17 @@ public class FeedControlEntity
     {
         this.lastModified = lastModified;
     }
+    
+    // for debug only
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append("FeedControlEntity\n[");
+        sb.append("id=").append(id).append(",");
+        sb.append("feedUserId=").append(feedUserId).append(",");
+        sb.append("siteNetwork=").append(siteNetwork).append(",");
+        sb.append("appTool=").append(appTool).append(",");
+        sb.append("lastModified=").append(lastModified).append("\n]");
+        return sb.toString();
+    }
 }

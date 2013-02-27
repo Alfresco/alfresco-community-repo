@@ -486,39 +486,27 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         {
             // The current node is a folder e.g. Company Home and standard child folders.
             // optimized code path for cm:folder and sub-types supporting getChildrenByName() method
-            NodeRef result = null;
             final StringTokenizer t = new StringTokenizer(path, "/");
-            if (t.hasMoreTokens())
+            // allow traversal of a cm:name based path even if user cannot retrieve the node directly
+            NodeRef result = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
             {
-                result = this.nodeRef;
-                while (t.hasMoreTokens() && result != null)
+                @Override
+                public NodeRef doWork() throws Exception
                 {
-                    final String name = t.nextToken();
-                    final NodeRef lastName = result;
-                    result = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+                    NodeRef child = ScriptNode.this.nodeRef;
+                    while (t.hasMoreTokens() && child != null)
                     {
-                        @Override
-                        public NodeRef doWork() throws Exception
-                        {
-                            NodeRef child = null;
-                            if (t.hasMoreTokens())
-                            {
-                                // allow traversal of a cm:name based path even if user cannot retrieve the node directly
-                                child = nodeService.getChildByName(lastName, ContentModel.ASSOC_CONTAINS, name);
-                            }
-                            else
-                            {
-                                // final node must be accessible to the user via the usual ACL permission checks
-                                child = nodeService.getChildByName(lastName, ContentModel.ASSOC_CONTAINS, name);
-                                if (child != null && AccessStatus.ALLOWED != services.getPermissionService().hasPermission(child, PermissionService.READ_PROPERTIES))
-                                {
-                                    child = null;
-                                }
-                            }
-                            return child;
-                        }
-                    });
+                        String name = t.nextToken();
+                        child = nodeService.getChildByName(child, ContentModel.ASSOC_CONTAINS, name);
+                    }
+                    return child;
                 }
+            }, AuthenticationUtil.getSystemUserName());
+
+            // final node must be accessible to the user via the usual ACL permission checks
+            if (result != null && AccessStatus.ALLOWED != services.getPermissionService().hasPermission(result, PermissionService.READ_PROPERTIES))
+            {
+                result = null;
             }
             
             child = (result != null ? newInstance(result, this.services, this.scope) : null);

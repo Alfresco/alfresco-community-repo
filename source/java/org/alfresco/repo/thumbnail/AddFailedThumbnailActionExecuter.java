@@ -29,6 +29,8 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.thumbnail.conditions.NodeEligibleForRethumbnailingEvaluator;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -139,90 +141,110 @@ public class AddFailedThumbnailActionExecuter extends ActionExecuterAbstractBase
 	/**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.service.cmr.repository.NodeRef, NodeRef)
      */
-    public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
+    public void executeImpl(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {
-        final boolean nodeExists = this.nodeService.exists(actionedUponNodeRef);
-        if (nodeExists)
+        // This logic must always be executed as the 'system' user as it is possible that
+        // a user with read-only access to a node will trigger a thumbnail failure and thereby
+        // trigger the execution of this action.
+        AuthenticationUtil.pushAuthentication();
+        try
         {
-            Map<String, Serializable> paramValues = ruleAction.getParameterValues();
-            final String thumbDefName = (String)paramValues.get(PARAM_THUMBNAIL_DEFINITION_NAME);
-            final Date failureDateTime = (Date)paramValues.get(PARAM_FAILURE_DATETIME);
-            
-            final QName thumbDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbDefName);
-            
-            NodeRef existingThumbnail = thumbnailService.getThumbnailByName(actionedUponNodeRef,
-                    ContentModel.PROP_CONTENT_PROPERTY_NAME, thumbDefName);
-            
-            if (log.isDebugEnabled())
+            RunAsWork<Void> runAsWork = new RunAsWork<Void>()
             {
-                StringBuilder msg = new StringBuilder();
-                msg.append("Adding ").append(ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE)
-                .append(" to ").append(actionedUponNodeRef);
-                log.debug(msg.toString());
-
-                msg = new StringBuilder();
-                msg.append("  failed thumbnail definition is ").append(thumbDefName);
-                log.debug(msg.toString());
-
-                msg = new StringBuilder();
-                msg.append("  failed datetime is ").append(failureDateTime);
-                log.debug(msg.toString());
-
-                msg = new StringBuilder();
-                msg.append("  existing thumbnail is ").append(existingThumbnail);
-                log.debug(msg.toString());
-            }
-            
-            if (nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE) == false)
-            {
-                behaviourFilter.disableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
-                try
+                @Override public Void doWork() throws Exception
                 {
-                    this.nodeService.addAspect(actionedUponNodeRef, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE, null);
-                }
-                finally
-                {
-                    behaviourFilter.enableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
-                }
-            }
-            
-            List<ChildAssociationRef> failedChildren = nodeService.getChildAssocs(actionedUponNodeRef, ContentModel.ASSOC_FAILED_THUMBNAIL, thumbDefQName);
-            NodeRef childNode = failedChildren.isEmpty() ? null : failedChildren.get(0).getChildRef();
-            
-            // Does the actionedUponNodeRef already have a child for this thumbnail definition?
-            if (childNode == null)
-            {
-                // No existing failedThumbnail child, so this is a first time failure to render this source node with the current
-                // thumbnail definition.
-                // We'll create a new failedThumbnail child under the source node.
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-                props.put(ContentModel.PROP_FAILED_THUMBNAIL_TIME, failureDateTime);
-                props.put(ContentModel.PROP_FAILURE_COUNT, 1);
+                    final boolean nodeExists = nodeService.exists(actionedUponNodeRef);
+                    if (nodeExists)
+                    {
+                        Map<String, Serializable> paramValues = ruleAction.getParameterValues();
+                        final String thumbDefName = (String)paramValues.get(PARAM_THUMBNAIL_DEFINITION_NAME);
+                        final Date failureDateTime = (Date)paramValues.get(PARAM_FAILURE_DATETIME);
+                        
+                        final QName thumbDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbDefName);
+                        
+                        NodeRef existingThumbnail = thumbnailService.getThumbnailByName(actionedUponNodeRef,
+                                ContentModel.PROP_CONTENT_PROPERTY_NAME, thumbDefName);
+                        
+                        if (log.isDebugEnabled())
+                        {
+                            StringBuilder msg = new StringBuilder();
+                            msg.append("Adding ").append(ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE)
+                            .append(" to ").append(actionedUponNodeRef);
+                            log.debug(msg.toString());
 
-                behaviourFilter.disableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
-                try
-                {
-                    // The association is named after the failed thumbnail definition.
-                    nodeService.createNode(actionedUponNodeRef, ContentModel.ASSOC_FAILED_THUMBNAIL,
-                            thumbDefQName, ContentModel.TYPE_FAILED_THUMBNAIL, props);
+                            msg = new StringBuilder();
+                            msg.append("  failed thumbnail definition is ").append(thumbDefName);
+                            log.debug(msg.toString());
+
+                            msg = new StringBuilder();
+                            msg.append("  failed datetime is ").append(failureDateTime);
+                            log.debug(msg.toString());
+
+                            msg = new StringBuilder();
+                            msg.append("  existing thumbnail is ").append(existingThumbnail);
+                            log.debug(msg.toString());
+                        }
+                        
+                        if (nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE) == false)
+                        {
+                            behaviourFilter.disableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
+                            try
+                            {
+                                nodeService.addAspect(actionedUponNodeRef, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE, null);
+                            }
+                            finally
+                            {
+                                behaviourFilter.enableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
+                            }
+                        }
+                        
+                        List<ChildAssociationRef> failedChildren = nodeService.getChildAssocs(actionedUponNodeRef, ContentModel.ASSOC_FAILED_THUMBNAIL, thumbDefQName);
+                        NodeRef childNode = failedChildren.isEmpty() ? null : failedChildren.get(0).getChildRef();
+                        
+                        // Does the actionedUponNodeRef already have a child for this thumbnail definition?
+                        if (childNode == null)
+                        {
+                            // No existing failedThumbnail child, so this is a first time failure to render this source node with the current
+                            // thumbnail definition.
+                            // We'll create a new failedThumbnail child under the source node.
+                            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                            props.put(ContentModel.PROP_FAILED_THUMBNAIL_TIME, failureDateTime);
+                            props.put(ContentModel.PROP_FAILURE_COUNT, 1);
+
+                            behaviourFilter.disableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
+                            try
+                            {
+                                // The association is named after the failed thumbnail definition.
+                                nodeService.createNode(actionedUponNodeRef, ContentModel.ASSOC_FAILED_THUMBNAIL,
+                                        thumbDefQName, ContentModel.TYPE_FAILED_THUMBNAIL, props);
+                            }
+                            finally
+                            {
+                                behaviourFilter.enableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
+                            }
+                        }
+                        else
+                        {
+                            // There is already an existing failedThumbnail child, so this is a repeat failure to perform the same
+                            // thumbnail definition.
+                            // Therefore we don't need to create a new failedThumbnail child.
+                            // But we do need to update the failedThumbnailTime property.
+                            nodeService.setProperty(childNode, ContentModel.PROP_FAILED_THUMBNAIL_TIME, failureDateTime);
+                            
+                            // and increment the failure count.
+                            int currentFailureCount = (Integer) nodeService.getProperty(childNode, ContentModel.PROP_FAILURE_COUNT);
+                            nodeService.setProperty(childNode, ContentModel.PROP_FAILURE_COUNT, currentFailureCount + 1);
+                        }
+                    }
+                    
+                    return null;
                 }
-                finally
-                {
-                    behaviourFilter.enableBehaviour(actionedUponNodeRef, ContentModel.ASPECT_AUDITABLE);
-                }
-            }
-            else
-            {
-                // There is already an existing failedThumbnail child, so this is a repeat failure to perform the same
-                // thumbnail definition.
-                // Therefore we don't need to create a new failedThumbnail child.
-                // But we do need to update the failedThumbnailTime property.
-                nodeService.setProperty(childNode, ContentModel.PROP_FAILED_THUMBNAIL_TIME, failureDateTime);
-                
-                // and increment the failure count.
-                int currentFailureCount = (Integer) nodeService.getProperty(childNode, ContentModel.PROP_FAILURE_COUNT);
-                nodeService.setProperty(childNode, ContentModel.PROP_FAILURE_COUNT, currentFailureCount + 1);
-            }
+            };
+            AuthenticationUtil.runAsSystem(runAsWork);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
         }
     }
 

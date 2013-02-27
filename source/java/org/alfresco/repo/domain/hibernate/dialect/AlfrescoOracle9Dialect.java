@@ -37,5 +37,6 @@ public class AlfrescoOracle9Dialect extends Oracle9Dialect
     {
         super();
         registerColumnType(Types.VARBINARY, "blob");
+        registerColumnType(Types.NVARCHAR, 4000, "nvarchar2($l)");
     }
 }

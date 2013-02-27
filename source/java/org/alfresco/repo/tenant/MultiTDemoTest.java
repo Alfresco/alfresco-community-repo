@@ -38,9 +38,11 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
+import org.alfresco.repo.node.index.FullIndexRecoveryComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
@@ -100,7 +102,6 @@ public class MultiTDemoTest extends TestCase
     
     private NodeService nodeService;
     private NodeArchiveService nodeArchiveService;
-    private NamespaceService namespaceService;
     private MutableAuthenticationService authenticationService;
     private PersonService personService;
     private SiteService siteService;
@@ -119,6 +120,7 @@ public class MultiTDemoTest extends TestCase
     private TransactionService transactionService;
     private FileFolderService fileFolderService;
     private Repository repositoryHelper;
+    private FullIndexRecoveryComponent indexRecoverer;
     
     public static int NUM_TENANTS = 2;
     
@@ -173,7 +175,6 @@ public class MultiTDemoTest extends TestCase
         
         nodeService = (NodeService) ctx.getBean("NodeService");
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
-        namespaceService = (NamespaceService) ctx.getBean("NamespaceService");
         authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         tenantService = (TenantService) ctx.getBean("tenantService");
@@ -194,6 +195,8 @@ public class MultiTDemoTest extends TestCase
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         siteService = (SiteService) ctx.getBean("SiteService");
         
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        indexRecoverer = (FullIndexRecoveryComponent) luceneSubSystem.getApplicationContext().getBean("search.indexRecoveryComponent");
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
         
         createTenants();
@@ -213,13 +216,68 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
+    public synchronized void test_ALF_17681() throws Exception
+    {
+        // The issue was found on Lucene
+        final String tenantDomain = TEST_RUN+".alf17681";
+        final String query = "PATH:\"/app:company_home/app:dictionary\"";
+
+        // Create tenant
+        createTenant(tenantDomain);
+
+        final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
+        // Search for Data dictionary by tenant admin
+        int count = searchForDataDictionary(tenantAdminName, query);
+
+        assertEquals("Data dictionary should be found for tenant. ", 1, count);
+
+        indexRecoverer.setRecoveryMode(FullIndexRecoveryComponent.RecoveryMode.FULL.name());
+
+        // reindex
+        Thread reindexThread = new Thread()
+        {
+            public void run()
+            {
+                indexRecoverer.reindex();
+            }
+        };
+
+        reindexThread.start();
+
+        // must allow the rebuild to complete or the test after this one will fail to validate their indexes 
+        // - as they now will be deleted.
+        reindexThread.join();
+
+        // wait a bit and then terminate
+        wait(20000);
+        indexRecoverer.setShutdown(true);
+        wait(20000);
+
+        // Search for Data dictionary by tenant admin
+        int countAfter = searchForDataDictionary(tenantAdminName, query);
+
+        assertEquals("Data dictionary should be found for tenant after FULL reindex. ", 1, countAfter);
+    }
+    
+    private int searchForDataDictionary(String tenantAdminName, final String query)
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<Integer>()
+        {
+            public Integer doWork() throws Exception
+            {
+                ResultSet resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query, null);
+                return resultSet.length();
+            }
+        }, tenantAdminName);
+    }
+    
     public void test01CreateTenants() throws Throwable
     {   
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
         
         logger.info("Create tenants");
         
-        List<PersonInfo> persons = personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
+        List<PersonInfo> persons = personService.getPeople(null, null, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
         //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
         for (PersonInfo person : persons)
         {
@@ -553,7 +611,7 @@ public class MultiTDemoTest extends TestCase
     {
         logger.info("Create demo users");
         
-        List<PersonInfo> persons = personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
+        List<PersonInfo> persons = personService.getPeople(null, null, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
         //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
         for (PersonInfo person : persons)
         {
@@ -595,7 +653,7 @@ public class MultiTDemoTest extends TestCase
                 {
                     public Object doWork() throws Exception
                     {
-                        List<PersonInfo> persons = personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
+                        List<PersonInfo> persons = personService.getPeople(null, null, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
                         
                         for (PersonInfo person : persons)
                         {

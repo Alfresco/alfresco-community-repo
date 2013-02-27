@@ -1616,9 +1616,9 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     /**
      * {@inheritDoc}
      */
-    public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state)
+    public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state, boolean lazyInitialization)
     {
-        return getAssignedTasks(authority, state, false);
+        return getAssignedTasksInternal(authority, state, false);
     }
 
     /*
@@ -1629,7 +1629,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * , org.alfresco.service.cmr.workflow.WorkflowTaskState)
      */
     @SuppressWarnings("unchecked")
-    public List<WorkflowTask> getAssignedTasks(final String authority, final WorkflowTaskState state, final boolean sameSession)
+    public List<WorkflowTask> getAssignedTasksInternal(final String authority, final WorkflowTaskState state, final boolean sameSession)
     {
         try
         {
@@ -1871,7 +1871,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * org.alfresco.repo.workflow.TaskComponent#getPooledTasks(java.util.List)
      */
     @SuppressWarnings("unchecked")
-    public List<WorkflowTask> getPooledTasks(final List<String> authorities)
+    public List<WorkflowTask> getPooledTasks(final List<String> authorities, final boolean lazyInitialization)
     {
         try
         {

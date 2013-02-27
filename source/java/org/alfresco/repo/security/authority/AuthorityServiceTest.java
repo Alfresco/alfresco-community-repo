@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -414,7 +414,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(0, getAllAuthorities(AuthorityType.OWNER).size());
         assertEquals(0, getAllAuthorities(AuthorityType.ROLE).size());
         
-        int peopleCnt = personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage().size();
+        int peopleCnt = personService.getPeople(null, null, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage().size();
         assertEquals(peopleCnt, getAllAuthorities(AuthorityType.USER).size());
     }
 

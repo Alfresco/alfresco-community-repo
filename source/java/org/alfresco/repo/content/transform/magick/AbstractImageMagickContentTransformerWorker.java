@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -248,6 +248,9 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         // pull reader file into source temp file
         reader.getContent(sourceFile);
         
+        // For most target mimetypes, it only makes sense to read the first page of the
+        // source, as the target is a single page, so set the pageLimit automatically.
+        // However for others, such as PDF (see ALF-7278) all pages should be read.
         // transform the source temp file to the target temp file
         transformInternal(sourceFile, sourceMimetype, targetFile, targetMimetype, options);
         

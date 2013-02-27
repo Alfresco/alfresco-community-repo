@@ -74,6 +74,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     private Set<String> adminGroups = Collections.emptySet();
     
     private Set<String> guestGroups = Collections.emptySet();
+
+    private boolean useGetContainingAuthoritiesForHasAuthority = true;
     
     static
     {
@@ -86,6 +88,16 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         super();
     }
     
+    /**
+     * @param useGetContainingAuthoritiesForHasAuthority the useGetContainingAuthoritiesForHasAuthority to set
+     */
+    public void setUseGetContainingAuthoritiesForHasAuthority(boolean useGetContainingAuthoritiesForHasAuthority)
+    {
+        this.useGetContainingAuthoritiesForHasAuthority = useGetContainingAuthoritiesForHasAuthority;
+    }
+
+
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -210,7 +222,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
      * @param parentAuthority a normalized, case sensitive authority name
      * @return {@code true} if does, {@code false} otherwise.
      */
-    private boolean hasAuthority(String authority, String parentAuthority)
+    private boolean hasAuthority(String authority, String parentAuthority, Set<String> positiveHits, Set<String> negativeHits)
     {
         // Even users are matched case sensitively in ACLs
         if (AuthorityType.getAuthorityType(parentAuthority) == AuthorityType.USER)
@@ -223,12 +235,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             return true;
         }
 
-        NodeRef nodeRef = authorityDAO.getAuthorityNodeRefOrNull(parentAuthority);
-        if (nodeRef == null)
-        {
-            return false;
-        }
-        return authorityDAO.isAuthorityContained(nodeRef, authority);        
+        return authorityDAO.isAuthorityContained(parentAuthority, authority, positiveHits, negativeHits);        
+        
     }
     
     /**
@@ -250,7 +258,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     }
 
     // Return mapped roles
-    private Set<String> getRoleAuthorities(String currentUserName)
+    private Set<String> getRoleAuthorities(String currentUserName, Set<String> positiveHits, Set<String> negativeHits)
     {
         Set<String> authorities = new TreeSet<String>();
         
@@ -273,7 +281,9 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         {
             for (String authority : adminGroups)
             {
-                if (hasAuthority(currentUserName, authority) || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority)))
+                if (hasAuthority(currentUserName, authority, positiveHits, negativeHits)
+                        || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority), positiveHits,
+                                negativeHits))
                 {
                     isAdminUser = true;
                     break;
@@ -295,7 +305,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             {
                 for (String authority : guestGroups)
                 {
-                    if (hasAuthority(currentUserName, authority) || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority)))
+                if (hasAuthority(currentUserName, authority, positiveHits, negativeHits) || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority), positiveHits, negativeHits))
                     {
                         isGuestUser = true;
                         break;
@@ -308,15 +318,18 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         if (isAdminUser)
         {
             authorities.addAll(adminSet);
+            positiveHits.addAll(adminSet);
         }
         // Give all non-guest users the ALL authorities
         if (!isGuestUser)
         {
             authorities.addAll(allSet);
+           positiveHits.addAll(allSet);
         }
         else
         {
             authorities.addAll(guestSet);
+            positiveHits.addAll(guestSet);
         }
         
         return authorities;
@@ -733,8 +746,9 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         public UserAuthoritySet(String username)
         {
             this.username = username;
-            positiveHits = getRoleAuthorities(username);
+            positiveHits = new TreeSet<String>();
             negativeHits = new TreeSet<String>();
+            getRoleAuthorities(username, positiveHits, negativeHits);            
         }
 
         // Try to avoid evaluating the full set unless we have to!
@@ -743,9 +757,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             if (!allAuthoritiesLoaded)
             {
                 allAuthoritiesLoaded = true;
-                Set<String> tmp = positiveHits;  // must add role authorities back in.
-                positiveHits = getContainingAuthorities(null, username, false);
-                positiveHits.addAll(tmp);
+                // must add role authorities back in.
+                positiveHits.addAll(getContainingAuthorities(null, username, false));
                 negativeHits = null;
             }
             return positiveHits;
@@ -784,16 +797,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
                 return false;
             }
             // Remember positive and negative hits for next time
-            if (hasAuthority(username, (String) o))
-            {
-                positiveHits.add((String) o);
-                return true;
-            }
-            else
-            {
-                negativeHits.add((String)o);
-                return false;
-            }
+            return hasAuthority(username, (String) o, positiveHits, negativeHits);
         }
 
         @Override

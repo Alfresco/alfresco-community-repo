@@ -440,6 +440,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(preexistingSitesCount + 5, sites.size());
         List<SiteInfo> sitesFromFind = this.siteService.findSites(null, null, 100);
         assertEquals(preexistingSitesCount + 5, sitesFromFind.size());
+        List<SiteInfo> siteFromFind = this.siteService.findSites(null, null, 1);
+        assertEquals("SiteService.findSites did not limit results", (sites.isEmpty() ? 0 : 1), siteFromFind.size());
         
         // Get sites by matching name - as of 4.0 listSites only supports STARTS WITH matches
         sites = this.siteService.listSites("mySiteO", null);

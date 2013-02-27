@@ -331,5 +331,14 @@ public class LuceneResultSet extends AbstractResultSet
             throw new SearcherException(e);
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
+     */
+    @Override
+    public long getNumberFound()
+    {
+        return hits.length();
+    }
     
 }

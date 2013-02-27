@@ -1332,6 +1332,24 @@
             alf_transaction
     </select>
 
+    <select id="select_OneTxnsByCommitTimeDescending" parameterType="TransactionQuery" resultMap="result_Transaction">
+        <include refid="alfresco.node.select_Transaction_Results"/>
+        from
+            alf_transaction txn
+        WHERE id =
+        (SELECT MAX(id)
+            FROM alf_transaction
+            WHERE commit_time_ms =
+                (SELECT MAX(commit_time_ms)
+                    FROM alf_transaction txn
+                    WHERE 1=1
+                    <if test="minCommitTime != null"><![CDATA[ and txn.commit_time_ms >= #{minCommitTime}]]></if>
+                    <if test="maxCommitTime != null"><![CDATA[ and txn.commit_time_ms < #{maxCommitTime}]]></if>
+                    <if test="excludeServerId != null"><![CDATA[ and server_id <> #{excludeServerId}]]></if>
+                )
+        )
+    </select>
+
     <select id="select_TxnMinId" resultType="java.lang.Long">
         select
             min(id)

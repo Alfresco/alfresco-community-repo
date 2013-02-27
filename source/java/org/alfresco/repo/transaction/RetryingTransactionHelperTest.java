@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.transaction;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedList;
@@ -571,6 +572,47 @@ public class RetryingTransactionHelperTest extends TestCase
         {
             throw new RuntimeException("Unexpected exception", caughtExceptions.get(0));
         }
+    }
+    
+    public void testALF_17631()
+    {
+        final MutableInt callCount = new MutableInt(0);
+        RetryingTransactionCallback<Long> callback = new RetryingTransactionCallback<Long>()
+        {
+            public Long execute() throws Throwable
+            {
+                callCount.setValue(callCount.intValue() + 1);
+                throw new InvalidNodeRefException(new NodeRef("test", "test", "test"));
+            }
+        };
+
+        txnHelper.setMaxRetries(3);
+        try
+        {
+            txnHelper.doInTransaction(callback);
+        }
+        catch (InvalidNodeRefException e)
+        {
+            // Expected
+        }
+        assertEquals("Should have been called exactly once", 1, callCount.intValue());
+        
+        callCount.setValue(0);
+        
+        List<Class<?>> extraExceptions = new ArrayList<Class<?>>(1);
+        extraExceptions.add(InvalidNodeRefException.class);
+        txnHelper.setExtraExceptions(extraExceptions);
+        
+        try
+        {
+            txnHelper.doInTransaction(callback);
+        }
+        catch (InvalidNodeRefException e)
+        {
+            // Expected
+        }
+        assertEquals("Should have been called tree times", 3, callCount.intValue());
+        
     }
     
     private void runThreads(final RetryingTransactionHelper txnHelper, final List<Throwable> caughtExceptions,

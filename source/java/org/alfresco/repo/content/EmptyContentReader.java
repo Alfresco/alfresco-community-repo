@@ -22,6 +22,7 @@ import java.nio.channels.ReadableByteChannel;
 
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * A blank reader for which <code>exists()</code> always returns false.
@@ -50,7 +51,9 @@ public class EmptyContentReader extends AbstractContentReader
     @Override
     protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException
     {
-        throw new UnsupportedOperationException("The content never exists");
+        // ALF-17708: If we got the contentdata from the transactional cache, there's a chance that eager cleaning can
+        // remove the content from under our feet
+        throw new ConcurrencyFailureException(getContentUrl() + " no longer exists");
     }
 
     public boolean exists()

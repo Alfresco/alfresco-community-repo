@@ -924,4 +924,13 @@ public class SortedResultSet implements ResultSet
         return resultSet.getFieldFacet(field);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
+     */
+    @Override
+    public long getNumberFound()
+    {
+        return resultSet.getNumberFound();
+    }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,29 +25,37 @@ import java.util.List;
 
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
+import org.apache.ibatis.session.RowBounds;
 
+/**
+ * @author janv
+ * @since 3.0
+ */
 public class ActivityPostDAOImpl extends ActivitiesDAOImpl implements ActivityPostDAO
 {
     @SuppressWarnings("unchecked")
-    public List<ActivityPostEntity> selectPosts(ActivityPostEntity activityPost) throws SQLException 
+    public List<ActivityPostEntity> selectPosts(ActivityPostEntity activityPost, int maxItems) throws SQLException 
     {
+        int rowLimit = maxItems < 0 ? RowBounds.NO_ROW_LIMIT : maxItems;
+        RowBounds rowBounds = new RowBounds(RowBounds.NO_ROW_OFFSET, rowLimit);
+        
         if ((activityPost.getJobTaskNode() != -1) &&
             (activityPost.getMinId() != -1) &&
             (activityPost.getMaxId() != -1) &&
             (activityPost.getStatus() != null))
         {
-            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts_by_params", activityPost);
+            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts_by_params", activityPost, rowBounds);
         }
         else if (activityPost.getStatus() != null)
         {
-            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts_by_status", activityPost);
+            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts_by_status", activityPost, rowBounds);
         }
         else
         {
             return new ArrayList<ActivityPostEntity>(0);
         }
     }
-
+    
     public Long getMaxActivitySeq() throws SQLException 
     {
         return (Long)template.selectOne("alfresco.activities.select_activity_post_max_seq");

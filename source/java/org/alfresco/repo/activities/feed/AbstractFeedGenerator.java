@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.activities.feed;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.alfresco.repo.activities.ActivityPostServiceImpl;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
@@ -42,10 +44,10 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     private static Log logger = LogFactory.getLog(AbstractFeedGenerator.class);
 
     /** The name of the lock used to ensure that feed generator does not run on more than one node at the same time */
-    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ActivityFeedGenerator");
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "org.alfresco.repo.activities.feed.AbstractFeedGenerator");
     
-    /** The time this lock will persist in the database (30 sec but refreshed at regular intervals) */
-    private static final long LOCK_TTL = 1000 * 30;
+    /** The time this lock will persist in the database (60 sec but refreshed at regular intervals) */
+    private static final long LOCK_TTL = 1000 * 60;
     
     private static VmShutdownListener vmShutdownListener = new VmShutdownListener(AbstractFeedGenerator.class.getName());
     
@@ -161,14 +163,14 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
             return;
         }
 
-        String lockToken = null;
-        LockCallback lockCallback = null;
+        LockCallback lockCallback =  new LockCallback();
 
+        String lockToken = null;
         try
         {
-            lockCallback = new LockCallback();
             lockToken = acquireLock(lockCallback);
-
+            
+            // lock held here
             
             if (logger.isTraceEnabled())
             {
@@ -213,26 +215,21 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
 
     private class LockCallback implements JobLockRefreshCallback
     {
-        private volatile boolean busy = false;
+        final AtomicBoolean running = new AtomicBoolean(true);
         
         @Override
         public boolean isActive()
         {
-            return busy;
+            return running.get();
         }
         
         @Override
         public void lockReleased()
         {
-            // note: currently the cycle will try to complete (even if refresh failed)
-            synchronized(this)
+            running.set(false);
+            if (logger.isDebugEnabled())
             {
-                if (logger.isInfoEnabled())
-                {
-                    logger.debug("Lock released (refresh failed): " + LOCK_QNAME);
-                }
-                
-                busy = false;
+                logger.debug("Lock released : " + LOCK_QNAME);
             }
         }
     }
@@ -245,8 +242,6 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         // Got the lock - now register the refresh callback which will keep the lock alive
         jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, lockCallback);
         
-        ((LockCallback)lockCallback).busy = true;
-        
         if (logger.isDebugEnabled())
         {
             logger.debug("lock aquired:  " + lockToken);
@@ -257,10 +252,13 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
     
     private void releaseLock(LockCallback lockCallback, String lockToken)
     {
-        if (lockCallback != null && lockToken != null)
+        if (lockCallback != null)
         {
-            ((LockCallback)lockCallback).busy = false;
-            
+            lockCallback.running.set(false);
+        }
+        
+        if(lockToken != null)
+        { 
             jobLockService.releaseLock(lockToken, LOCK_QNAME);
             
             if (logger.isInfoEnabled())

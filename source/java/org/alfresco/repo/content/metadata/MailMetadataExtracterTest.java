@@ -20,6 +20,8 @@ package org.alfresco.repo.content.metadata;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -81,16 +83,16 @@ public class MailMetadataExtracterTest extends AbstractMetadataExtracterTest
         // Two equivalent ones
         assertEquals(
                 "Property " + ContentModel.PROP_AUTHOR + " not found for mimetype " + mimetype,
-                "Kevin Roast",
+                "Mark Rogers",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_AUTHOR)));
         assertEquals(
               "Property " + ContentModel.PROP_ORIGINATOR + " not found for mimetype " + mimetype,
-              "Kevin Roast",
+              "Mark Rogers",
               DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_ORIGINATOR)));
         // One other common bit
         assertEquals(
                 "Property " + ContentModel.PROP_DESCRIPTION + " not found for mimetype " + mimetype,
-                "Test the content transformer",
+                "This is a quick test",
                 DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION)));
     }
 
@@ -99,16 +101,16 @@ public class MailMetadataExtracterTest extends AbstractMetadataExtracterTest
     */
    protected void testFileSpecificMetadata(String mimetype,
          Map<QName, Serializable> properties) {
-      // Sent Date
+      // TODO Sent Date should be a date/time as per the contentModel.xml
       assertEquals(
             "Property " + ContentModel.PROP_SENTDATE + " not found for mimetype " + mimetype,
-            "2007-06-14T09:42:55.000+01:00",
+            "2013-01-18T13:47:27.000Z",
             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_SENTDATE)));
       
       // Addressee
       assertEquals(
             "Property " + ContentModel.PROP_ADDRESSEE + " not found for mimetype " + mimetype,
-            "Kevin Roast",
+            "mark.rogers@alfresco.com",
             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_ADDRESSEE)));
       
       // Addressees
@@ -116,15 +118,28 @@ public class MailMetadataExtracterTest extends AbstractMetadataExtracterTest
             "Property " + ContentModel.PROP_ADDRESSEES + " not found for mimetype " + mimetype,
             properties.get(ContentModel.PROP_ADDRESSEES) != null
       );
-      assertEquals(
-            "Property " + ContentModel.PROP_ADDRESSEES + " wrong content for mimetype " + mimetype,
-            "kevin.roast@alfresco.org",
-            DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_ADDRESSEES)));
+      
+      Collection<String> addresses = DefaultTypeConverter.INSTANCE.getCollection(String.class, 
+              properties.get(ContentModel.PROP_ADDRESSEES));
+       
+      assertTrue(
+            "Property " + ContentModel.PROP_ADDRESSEES + " wrong content for mimetype " + mimetype + ", mark",
+            addresses.contains("mark.rogers@alfresco.com"));
+      
+      assertTrue(
+              "Property " + ContentModel.PROP_ADDRESSEES + " wrong content for mimetype " + mimetype + ", mrquick",
+              addresses.contains("mrquick@nowhere.com"));
+
+      // Feature: metadata extractor has normalised internet address ... from "Whizz <speedy@quick.com>"
+      assertTrue(
+              "Property " + ContentModel.PROP_ADDRESSEES + " wrong content for mimetype " + mimetype + ", Whizz",
+              addresses.contains("speedy@quick.com"));
       
       // Subject Line  
       assertEquals(
             "Property " + ContentModel.PROP_SUBJECT + " not found for mimetype " + mimetype,
-            "Test the content transformer",
+            "This is a quick test",
             DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_SUBJECT)));
    }
 }
+

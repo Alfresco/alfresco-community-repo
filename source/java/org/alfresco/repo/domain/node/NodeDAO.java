@@ -846,4 +846,13 @@ public interface NodeDAO extends NodeBulkLoader
      * @param isPrimary     count just primary associations?
      */
     public int countChildAssocsByParent(Long parentNodeId, boolean isPrimary);
+
+    /**
+     * Get one last transaction in a given time range.
+     */
+    public List<Transaction> getOneTxnsByCommitTimeDescending(
+            Long fromTimeInclusive,
+            Long toTimeExclusive,
+            boolean remoteOnly);
+
 }

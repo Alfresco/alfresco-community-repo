@@ -39,11 +39,18 @@
         <property name="cmisTransactions"       ref="CMISService_Transactions" />
         <property name="cmisExceptions"         ref="CMISService_Exceptions" />
         <property name="cmisControl"            ref="CMISService_Control" />
+        <property name="cmisStreams"            ref="CMISService_Streams" />
+        <property name="authorityService"       ref="authorityService" />
     </bean>
 
     <bean id="CMISService_Transactions" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
         <property name="transactionService"     ref="TransactionService" />
         <property name="transactionManager"     ref="transactionManager" />
+        <property name="extraExceptions">
+            <list>
+                <value>org.alfresco.service.cmr.repository.InvalidNodeRefException</value>
+            </list>
+        </property>
         <property name="transactionAttributes">
             <props>
                 <prop key="get*">${server.transaction.mode.readOnly}</prop>
@@ -58,6 +65,8 @@
     <bean id="CMISService_Exceptions" class="org.alfresco.opencmis.AlfrescoCmisExceptionInterceptor" />
 
     <bean id="CMISService_Control" class="org.alfresco.opencmis.AlfrescoCmisServiceInterceptor" />
+    
+    <bean id="CMISService_Streams" class="org.alfresco.opencmis.AlfrescoCmisStreamInterceptor" />
 
     <bean id="cmisActivityPoster" class="org.alfresco.opencmis.ActivityPosterImpl">
         <property name="activityService"        ref="activityService" />

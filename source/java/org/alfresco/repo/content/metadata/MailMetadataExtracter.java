@@ -88,12 +88,12 @@ public class MailMetadataExtracter extends TikaPoweredMetadataExtracter
        putRawValue(KEY_ADDRESSEE, metadata.get(Metadata.MESSAGE_TO), properties); 
        
        // Store each of To, CC and BCC in their own fields
-       putRawValue(KEY_TO_NAMES, metadata.get(Metadata.MESSAGE_TO), properties);
-       putRawValue(KEY_CC_NAMES, metadata.get(Metadata.MESSAGE_CC), properties);
-       putRawValue(KEY_BCC_NAMES, metadata.get(Metadata.MESSAGE_BCC), properties);
+       putRawValue(KEY_TO_NAMES, metadata.getValues(Metadata.MESSAGE_TO), properties);
+       putRawValue(KEY_CC_NAMES, metadata.getValues(Metadata.MESSAGE_CC), properties);
+       putRawValue(KEY_BCC_NAMES, metadata.getValues(Metadata.MESSAGE_BCC), properties);
        
        // But store all email addresses (to/cc/bcc) in the addresses field
-       putRawValue(KEY_ADDRESSEES, metadata.get(Metadata.MESSAGE_RECIPIENT_ADDRESS), properties); 
+       putRawValue(KEY_ADDRESSEES, metadata.getValues(Metadata.MESSAGE_RECIPIENT_ADDRESS), properties); 
        
        return properties;
     }

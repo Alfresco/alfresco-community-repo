@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.activities.feed;
 
 import java.util.Collection;
@@ -5,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.model.ContentModel;
@@ -15,6 +34,7 @@ import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -166,21 +186,40 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
             return;
         }
 
-        String lockToken = getLock(LOCK_TTL);
-        if (lockToken == null)
-        {
-            logger.info("Can't get lock. Assume multiple feed notifiers...");
-            return;
-        }
+        String lockToken = null;
+        // Use a flag to keep track of the running job
+        final AtomicBoolean running = new AtomicBoolean(true);
 
         try
         {
+            lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+            if (lockToken == null)
+            {
+                logger.info("Can't get lock. Assume multiple feed notifiers...");
+                return;
+            }
+            
             if (logger.isTraceEnabled())
             {
                 logger.trace("Activities email notification started");
             }
 
-            executeInternal(lockToken, repeatIntervalMins);
+            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, new JobLockRefreshCallback()
+            {
+                @Override
+                public boolean isActive()
+                {
+                    return running.get();
+                }
+
+                @Override
+                public void lockReleased()
+                {
+                    running.set(false);
+                }
+            });
+
+            executeInternal(repeatIntervalMins);
             
             // Done
             if (logger.isTraceEnabled())
@@ -206,7 +245,12 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         }
         finally
         {
-            releaseLock(lockToken);
+            // The lock will self-release if answer isActive in the negative
+            running.set(false);
+            if (lockToken != null)
+            {
+                jobLockService.releaseLock(lockToken, LOCK_QNAME);
+            }
         }
     }
 
@@ -236,7 +280,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         return fileFolderService.getLocalizedSibling(nodeRefs.get(0));
     }
     
-    private void executeInternal(final String lockToken, final int repeatIntervalMins)
+    private void executeInternal(final int repeatIntervalMins)
     {
         final NodeRef emailTemplateRef = getEmailTemplateRef();
         
@@ -278,8 +322,6 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 	            public void beforeProcess() throws Throwable
 	            {
 	                AuthenticationUtil.setRunAsUser(currentUser);
-
-	                refreshLock(lockToken, batchSize * 500L);
 	            }
 
 	            public void afterProcess() throws Throwable
@@ -345,18 +387,19 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 				}
 
 				@Override
-				public Collection<PersonInfo> getNextWork()
-				{
-                                    if (!hasMore)
-                                    {
-                                        return Collections.emptyList();
-                                    }
-				    PagingResults<PersonInfo> people = personService.getPeople(null, true, null, new PagingRequest(skip, maxItems));
-				    skip += maxItems;
-                                    hasMore = people.hasMoreItems();
-				    return people.getPage();
-				}
-			};
+                public Collection<PersonInfo> getNextWork()
+                {
+                    if (!hasMore)
+                    {
+                        return Collections.emptyList();
+                    }
+                    PagingResults<PersonInfo> people = personService.getPeople(null, null, null, new PagingRequest(skip, maxItems));
+                    List<PersonInfo> page = people.getPage();
+                    skip += page.size();
+                    hasMore = people.hasMoreItems();
+                    return page;
+                }
+	    };
 
             final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
             txHelper.setMaxRetries(0);
@@ -414,39 +457,6 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         return I18NUtil.getMessage(MSG_EMAIL_SUBJECT, ModelUtil.getProductName(repoAdminService));
     }
     
-    private String getLock(long time)
-    {
-        try
-        {
-            return jobLockService.getLock(LOCK_QNAME, time);
-        }
-        catch (LockAcquisitionException e)
-        {
-            return null;
-        }
-    }
-    
-    protected void refreshLock(String lockToken, long time)
-    {
-        if (lockToken == null)
-        {
-            throw new IllegalArgumentException("Must provide existing lockToken");
-        }
-        jobLockService.refreshLock(lockToken, LOCK_QNAME, time);
-    }
-    
-    /**
-     * Release the lock after the job completes
-     */
-    private void releaseLock(String lockToken)
-    {
-	    if (lockToken == null)
-	    {
-	        throw new IllegalArgumentException("Must provide existing lockToken");
-	    }
-	    jobLockService.releaseLock(lockToken, LOCK_QNAME);
-    }
-
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
 	{

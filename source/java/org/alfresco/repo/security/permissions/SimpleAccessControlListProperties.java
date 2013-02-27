@@ -26,19 +26,12 @@ package org.alfresco.repo.security.permissions;
 public class SimpleAccessControlListProperties implements AccessControlListProperties
 {
     private Long id;
-
     private ACLType aclType;
-
     private Long aclVersion;
-
     private Boolean inherits;
-
     private Boolean latest;
-
     private Boolean versioned;
-
     private String aclId;
-
     private Long aclChangeSetId;
 
     // Default constructor
@@ -55,6 +48,15 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
         this.latest = props.isLatest();
         this.versioned = props.isVersioned();
         this.aclId = props.getAclId();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SimpleAccessControlListProperties [id=" + id + ", aclType=" + aclType
+                + ", aclVersion=" + aclVersion + ", inherits=" + inherits + ", latest=" + latest
+                + ", versioned=" + versioned + ", aclId=" + aclId + ", aclChangeSetId="
+                + aclChangeSetId + "]";
     }
 
     public String getAclId()

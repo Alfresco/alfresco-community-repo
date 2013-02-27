@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,21 +18,27 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.transaction.TransactionUtil.TransactionWork;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
@@ -52,6 +58,9 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
     
     /** The action service */
     private ActionService actionService;
+    
+    /** The CheckOut/CheckIn service */
+    private CheckOutCheckInService checkOutCheckInService;
     
     private RetryingTransactionHelper transactionHelper;
     
@@ -73,6 +82,7 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
     @Override
     protected void onSetUpInTransaction() throws Exception
     {
+        this.checkOutCheckInService = (CheckOutCheckInService) this.applicationContext.getBean("checkOutCheckInService");
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         this.ruleService = (RuleService)this.applicationContext.getBean("ruleService");
         this.actionService = (ActionService)this.applicationContext.getBean("actionService");
@@ -89,6 +99,65 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
 
         // Get the executer instance 
         this.executer = (ExecuteAllRulesActionExecuter)this.applicationContext.getBean(ExecuteAllRulesActionExecuter.NAME);
+    }
+    
+    /**
+     * ALF-17517: if inbound "Add classifiable Aspect" rule is applied on folder
+     * test that no InvalidNodeRefException is thrown during Checkout/Checkin for
+     * the document in folder. Such case can happen during revert to older document version.
+     */
+    public void testRevertVersion()
+    {
+        // Create a folder
+        final NodeRef folder = this.nodeService.createNode(
+            this.rootNodeRef,
+            ContentModel.ASSOC_CHILDREN,
+            QName.createQName("{test}FolderWithInboundRule"),
+            ContentModel.TYPE_FOLDER).getChildRef();
+
+        // Create "Add classifiable Aspect" rule on folder
+        Rule classifiableRule = new Rule();
+        classifiableRule.setRuleType(RuleType.INBOUND);
+        Action addFeaturesAction = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
+        addFeaturesAction.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+        classifiableRule.setAction(addFeaturesAction);
+        this.ruleService.saveRule(folder, classifiableRule);
+        
+        // Put a document into folder        
+        final NodeRef doc = this.nodeService.createNode(
+                folder,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName("{test}TestDoc"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+        
+        // Execute rule on document upload
+        ActionImpl action = new ActionImpl(null, ID, ExecuteAllRulesActionExecuter.NAME, null);
+        this.executer.execute(action, folder);
+        setComplete();
+        endTransaction();
+        assertTrue(this.nodeService.hasAspect(doc, ContentModel.ASPECT_CLASSIFIABLE));
+        
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                // Checkout/Checkin the node - to store the new version in version history
+                NodeRef workingCopyRef = checkOutCheckInService.checkout(doc);
+                Map<String, Serializable> props = new HashMap<String, Serializable>(2, 1.0f);
+                props.put(Version.PROP_DESCRIPTION, "");
+                props.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                NodeRef original = checkOutCheckInService.checkin(workingCopyRef, props);
+                
+                // Execute the action
+                ActionImpl action = new ActionImpl(null, ID, ExecuteAllRulesActionExecuter.NAME, null);
+                action.setParameterValue(ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, Boolean.TRUE);
+                executer.execute(action, folder);
+                
+                return null;
+            }                 
+        });
+        
+        assertTrue(this.nodeService.hasAspect(doc, ContentModel.ASPECT_CLASSIFIABLE));
     }
     
     /**

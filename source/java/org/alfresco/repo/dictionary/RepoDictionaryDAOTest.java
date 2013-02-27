@@ -235,14 +235,14 @@ public class RepoDictionaryDAOTest extends TestCase
         
         // check the individual constraints
         ConstraintDefinition constraintDef = constraints.get(0);
-        assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().startsWith("prop1_anon"));
+        assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().equals("dictionarydaotest_base_prop1_anon_0"));
         
         // inherit title / description for reference constraint
         assertTrue("Constraint title incorrect", constraintDef.getTitle(service).equals("Regex1 title"));
         assertTrue("Constraint description incorrect", constraintDef.getDescription(service).equals("Regex1 description"));
         
         constraintDef = constraints.get(1);
-        assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().startsWith("prop1_anon"));
+        assertTrue("Constraint anonymous name incorrect", constraintDef.getName().getLocalName().equals("dictionarydaotest_base_prop1_anon_1"));
         
         assertTrue("Constraint title incorrect", constraintDef.getTitle(service).equals("Prop1 Strlen1 title"));
         assertTrue("Constraint description incorrect", constraintDef.getDescription(service).equals("Prop1 Strlen1 description"));

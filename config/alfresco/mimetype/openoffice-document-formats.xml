@@ -48,10 +48,28 @@
     </export-filters>
   </document-format>
 
+  <document-format><name>OpenDocument Text Template</name>
+    <family>Text</family>
+    <mime-type>application/vnd.oasis.opendocument.text-template</mime-type>
+    <file-extension>ott</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>writer8</string></entry>
+    </export-filters>
+  </document-format>
+
   <document-format><name>OpenOffice.org 1.0 Text Document</name>
     <family>Text</family>
     <mime-type>application/vnd.sun.xml.writer</mime-type>
     <file-extension>sxw</file-extension>
+    <export-filters>
+      <entry><family>Text</family><string>StarOffice XML (Writer)</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>OpenOffice.org 1.0 Text Document Template</name>
+    <family>Text</family>
+    <mime-type>application/vnd.sun.xml.writer.template</mime-type>
+    <file-extension>stw</file-extension>
     <export-filters>
       <entry><family>Text</family><string>StarOffice XML (Writer)</string></entry>
     </export-filters>
@@ -140,6 +158,15 @@
     </export-filters>
   </document-format>
 
+  <document-format><name>OpenDocument Spreadsheet Template</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.oasis.opendocument.spreadsheet-template</mime-type>
+    <file-extension>ots</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>calc8</string></entry>
+    </export-filters>
+  </document-format>
+
   <document-format><name>OpenOffice.org 1.0 Spreadsheet</name>
     <family>Spreadsheet</family>
     <mime-type>application/vnd.sun.xml.calc</mime-type>
@@ -148,6 +175,16 @@
       <entry><family>Spreadsheet</family><string>StarOffice XML (Calc)</string></entry>
     </export-filters>
   </document-format>
+
+  <document-format><name>OpenOffice.org 1.0 Spreadsheet Template</name>
+    <family>Spreadsheet</family>
+    <mime-type>application/vnd.sun.xml.calc.template</mime-type>
+    <file-extension>stc</file-extension>
+    <export-filters>
+      <entry><family>Spreadsheet</family><string>StarOffice XML (Calc)</string></entry>
+    </export-filters>
+  </document-format>
+
 
   <document-format><name>Microsoft Excel</name>
     <family>Spreadsheet</family>
@@ -238,10 +275,28 @@
     </export-filters>
   </document-format>
 
+  <document-format><name>OpenDocument Presentation Template</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.oasis.opendocument.presentation-template</mime-type>
+    <file-extension>otp</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>impress8</string></entry>
+    </export-filters>
+  </document-format>
+
   <document-format><name>OpenOffice.org 1.0 Presentation</name>
     <family>Presentation</family>
     <mime-type>application/vnd.sun.xml.impress</mime-type>
     <file-extension>sxi</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>StarOffice XML (Impress)</string></entry>
+    </export-filters>
+  </document-format>
+
+  <document-format><name>OpenOffice.org 1.0 Presentation Template</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.sun.xml.impress.template</mime-type>
+    <file-extension>sti</file-extension>
     <export-filters>
       <entry><family>Presentation</family><string>StarOffice XML (Impress)</string></entry>
     </export-filters>

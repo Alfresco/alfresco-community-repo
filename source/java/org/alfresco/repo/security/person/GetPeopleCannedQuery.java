@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -112,9 +112,9 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
         final List<Pair<QName, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();
         
         String pattern = paramBean.getPattern();
-        if ((sortPairs.size() > 0) && ((pattern == null) || (pattern.equals(""))))
+        if ((pattern == null) || (pattern.equals("")))
         {
-            // note: although no pattern means no filtering required, we currently need to match all if sort required
+            // note: although no pattern means no filtering required, set to match all in case sort required
             pattern = "%";
         }
         else if ((! pattern.endsWith("%")) && (! pattern.endsWith("*")))
@@ -123,7 +123,7 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
             pattern = pattern + "%";
         }
         
-        // Set filter pattern
+        // Set filter pattern (should not be null)
         params.setPattern(pattern);
         
         // Set sort / filter params
@@ -172,7 +172,8 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
         PersonResultHandler resultHandler = new PersonResultHandler(c);
         
         int offset = parameters.getPageDetails().getSkipResults();
-        int limit = parameters.getPageDetails().getPageSize();
+        int totalResultCountMax = parameters.getTotalResultCountMax();
+        int limit = totalResultCountMax > 0 ? totalResultCountMax : parameters.getPageDetails().getPageSize();
         if (limit != Integer.MAX_VALUE)
         {
             // to enable hasMore flag
@@ -266,7 +267,7 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
     @Override
     protected Pair<Integer, Integer> getTotalResultCount(List<NodeRef> results)
     {
-        return null;
+        return super.getTotalResultCount(results);
     }
     
     protected interface PersonQueryCallback

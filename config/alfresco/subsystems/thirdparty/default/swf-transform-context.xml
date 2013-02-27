@@ -16,7 +16,7 @@
                   </entry>
                </map>
             </property>
-            <property name="errorCodes">
+            <property name="errorCodes"> 
                <value>1</value>
             </property>
          </bean>
@@ -26,9 +26,9 @@
             <property name="commandMap">
                <map>
                   <entry key=".*">
-                     <value>${swf.exe} -T ${flashVersion} ${swf.encoder.params} ${source} -o ${target} -s languagedir=${swf.languagedir}</value>
+                     <value>${swf.exe} -T ${flashVersion} ${swf.encoder.params} ${source} -o ${target} -s languagedir=${swf.languagedir} -p ${pageRange}</value>
                   </entry>
-               </map>
+               </map> 
             </property>
             <property name="defaultProperties">
                <map>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -50,6 +51,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.person.PersonServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -83,65 +85,51 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
 {
     private static Log logger = LogFactory.getLog(AuthorityDAOImpl.class);
     
-    private static final String CANNED_QUERY_AUTHS_LIST = "authsGetAuthoritiesCannedQueryFactory"; // see authority-services-context.xml
+    private static String DELETING_AUTHORITY_SET_RESOURCE = "DeletingAuthoritySetResource";
     
-    private static final String CANNED_QUERY_AUTH_BRIDGE_LINK_LIST = "authsGetAuthorityBridgeCannedQueryFactory"; // see authority-services-context.xml
-    
-    private StoreRef storeRef;
-
-    private NodeService nodeService;
-
-    private NamespacePrefixResolver namespacePrefixResolver;
-
-    private QName qnameAssocSystem;
-
-    private QName qnameAssocAuthorities;
-
-    private QName qnameAssocZones;
-
-    private SearchService searchService;
-
-    private DictionaryService dictionaryService;
-
-    private PersonService personService;
-    
-    private TenantService tenantService;
-    
-    private SimpleCache<Pair<String, String>, NodeRef> authorityLookupCache;
+    private static String PARENTS_OF_DELETING_CHILDREN_SET_RESOURCE = "ParentsOfDeletingChildrenSetResource";
     
     private static final NodeRef NULL_NODEREF = new NodeRef("null", "null", "null");
-    
-    private SimpleCache<String, Set<String>> userAuthorityCache;
-
-    private SimpleCache<Pair<String, String>, List<ChildAssociationRef>> zoneAuthorityCache;
-
-    private SimpleCache<NodeRef, List<ChildAssociationRef>> childAuthorityCache;
-    
-    private SimpleCache<String, BridgeTable<String>> authorityBridgeTableByTenantCache;
-   
-    /** System Container ref cache (Tennant aware) */
-    private Map<String, NodeRef> systemContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
-    
-    private AclDAO aclDao;
-    
-    private PolicyComponent policyComponent;
-    
-    /** The number of authorities in a zone to pre-cache, allowing quick generation of 'first n' results. */
-    private int zoneAuthoritySampleSize = 10000;
-        
-    private NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry;
-    
-    private AuthorityBridgeDAO authorityBridgeDAO;
-    
-    private boolean useBridgeTable = true;
-    
+    private static final String CANNED_QUERY_AUTHS_LIST = "authsGetAuthoritiesCannedQueryFactory"; // see authority-services-context.xml
     private static final Collection<AuthorityType> SEARCHABLE_AUTHORITY_TYPES = new LinkedList<AuthorityType>();
-    
     static
     {
         SEARCHABLE_AUTHORITY_TYPES.add(AuthorityType.ROLE);
         SEARCHABLE_AUTHORITY_TYPES.add(AuthorityType.GROUP);
     }
+    
+    private StoreRef storeRef;
+    private NodeService nodeService;
+    private NamespacePrefixResolver namespacePrefixResolver;
+    private QName qnameAssocSystem;
+    private QName qnameAssocAuthorities;
+    private QName qnameAssocZones;
+    private SearchService searchService;
+    private DictionaryService dictionaryService;
+    private PersonService personService;
+    private TenantService tenantService;
+    
+    private SimpleCache<Pair<String, String>, NodeRef> authorityLookupCache;
+    private SimpleCache<String, Set<String>> userAuthorityCache;
+    private SimpleCache<Pair<String, String>, List<ChildAssociationRef>> zoneAuthorityCache;
+    private SimpleCache<NodeRef, Pair<Map<NodeRef,String>, List<NodeRef>>> childAuthorityCache;
+    private SimpleCache<String, BridgeTable<String>> authorityBridgeTableByTenantCache;
+   
+    /** System Container ref cache (Tennant aware) */
+    private Map<String, NodeRef> systemContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
+
+    /** Limit the number of copies of authority names floating about by keeping them in a pool **/
+    private ConcurrentMap<String, String> authorityNamePool = new ConcurrentHashMap<String, String>();
+    
+    /** The number of authorities in a zone to pre-cache, allowing quick generation of 'first n' results. */
+    private int zoneAuthoritySampleSize = 10000;
+
+    private boolean useBridgeTable = true;
+    
+    private AclDAO aclDao;
+    private PolicyComponent policyComponent;
+    private NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry;
+    private AuthorityBridgeDAO authorityBridgeDAO;
     
     public AuthorityDAOImpl()
     {
@@ -204,7 +192,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         this.zoneAuthorityCache = zoneAuthorityCache;
     }
 
-    public void setChildAuthorityCache(SimpleCache<NodeRef, List<ChildAssociationRef>> childAuthorityCache)
+    public void setChildAuthorityCache(SimpleCache<NodeRef, Pair<Map<NodeRef,String>, List<NodeRef>>> childAuthorityCache)
     {
         this.childAuthorityCache = childAuthorityCache;
     }
@@ -339,7 +327,13 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     private Pair<String, String> cacheKey(String authorityName)
     {
         String tenantDomain = AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER ? tenantService.getDomain(authorityName) : tenantService.getCurrentUserDomain();
-        return new Pair<String, String>(tenantDomain, authorityName);
+        return new Pair<String, String>(tenantDomain, getPooledName(authorityName));
+    }
+    
+    private String getPooledName(String authorityName)
+    {
+        String pooledName = authorityNamePool.putIfAbsent(authorityName, authorityName);
+        return pooledName == null ? authorityName : pooledName;
     }
 
     public void deleteAuthority(String name)
@@ -476,7 +470,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         
         for (PersonInfo person : result)
         {
-            auths.add(person.getUserName());
+            auths.add(getPooledName(person.getUserName()));
         }
         
         return new PagingResults<String>()
@@ -766,14 +760,20 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             List<AuthorityBridgeLink> parents = authorityBridgeDAO.getDirectAuthoritiesForUser(authRef);
             for(AuthorityBridgeLink parent : parents)
             {
-                authorities.add(parent.getParentName());
-                authorities.addAll(bridgeTable.getAncestors(parent.getParentName()));
+                authorities.add(getPooledName(parent.getParentName()));
+                for (String ancestor : bridgeTable.getAncestors(parent.getParentName()))
+                {
+                    authorities.add(getPooledName(ancestor));
+                }
             }
             break;
         case GROUP:
         case OWNER:
         case ROLE:
-            authorities.addAll(bridgeTable.getAncestors(name));
+            for (String ancestor : bridgeTable.getAncestors(name))
+            {
+                authorities.add(getPooledName(ancestor));
+            }
             break;
         }        
     }
@@ -797,7 +797,10 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 {
                     listAuthorities(null, name, authorities, true, true);
                 }
-                userAuthorityCache.put(name, authorities);
+                if(!TransactionalResourceHelper.getSet(DELETING_AUTHORITY_SET_RESOURCE).contains(name))
+                {
+                    userAuthorityCache.put(name, Collections.unmodifiableSet(authorities));
+                }
             }
             // If we wanted the unfiltered set we are done
             if (type == null)
@@ -849,6 +852,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         // Now search each for the required authority. If the number of results is greater than or close to the size
         // limit, then this will be the most efficient route
         Set<String> result = new TreeSet<String>();
+        Set<String> positiveHits = new TreeSet<String>();
+        Set<String> negativeHits = new TreeSet<String>();
         final int maxResults = size > 0 ? size : Integer.MAX_VALUE;
         int hits = 0, processed = 0;
         for (ChildAssociationRef groupAssoc : zoneAuthorities)
@@ -871,10 +876,10 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                     }
             }
             if ((type == null || containingType == type)
-                    && (authority == null || isAuthorityContained(groupAssoc.getChildRef(), authority))
+                    && (authority == null || isAuthorityContained(groupAssoc.getChildRef(), containing, authority, positiveHits, negativeHits))
                     && (filter == null || filter.includeAuthority(containing)))
             {
-                result.add(containing);
+                result.add(getPooledName(containing));
                 if (++hits == maxResults)
                 {
                     break;
@@ -959,7 +964,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     {
         if (type == null || AuthorityType.getAuthorityType(authorityName).equals(type))
         {
-            authorities.add(authorityName);
+            authorities.add(getPooledName(authorityName));
         }
     }
     
@@ -969,20 +974,20 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         {
             if (pattern == null)
             {
-                authorities.add(authorityName);
+                authorities.add(getPooledName(authorityName));
             }
             else
             {
                 if (pattern.matcher(getShortName(authorityName)).matches())
                 {
-                    authorities.add(authorityName);
+                    authorities.add(getPooledName(authorityName));
                 }
                 else
                 {
                     String displayName = getAuthorityDisplayName(authorityName);
                     if (displayName != null && pattern.matcher(displayName).matches())
                     {
-                        authorities.add(authorityName);
+                        authorities.add(getPooledName(authorityName));
                     }
                 }
             }
@@ -1015,13 +1020,27 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     
     private void listAuthorities(AuthorityType type, NodeRef nodeRef, Set<String> authorities, boolean parents, boolean recursive, boolean includeNode)
     {
+        Set<String> unfilteredAuthorities = new TreeSet<String>();
+        listAuthoritiesUnfiltered(nodeRef, unfilteredAuthorities, parents, recursive, includeNode);
+        for (String authorityName : unfilteredAuthorities)
+        {
+            addAuthorityNameIfMatches(authorities, authorityName, type);
+        }
+    }
+    
+    private void listAuthoritiesUnfiltered(NodeRef nodeRef, Set<String> authorities, boolean parents, boolean recursive, boolean includeNode)
+    {
         if (includeNode)
         {
             String authorityName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService
                     .getProperty(nodeRef, dictionaryService.isSubClass(nodeService.getType(nodeRef),
                             ContentModel.TYPE_AUTHORITY_CONTAINER) ? ContentModel.PROP_AUTHORITY_NAME
                             : ContentModel.PROP_USERNAME));
-            addAuthorityNameIfMatches(authorities, authorityName, type);
+            if (!authorities.add(authorityName))
+            {
+                // Stop recursing if we've already been here
+                return;
+            }
         }
         
         // Loop over children if we want immediate children or are in recursive mode
@@ -1033,60 +1052,106 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 
                 for (ChildAssociationRef car : cars)
                 {
-                    listAuthorities(type, car.getParentRef(), authorities, true, recursive, true);
+                    listAuthoritiesUnfiltered(car.getParentRef(), authorities, true, recursive, true);
                 }
             }
             else
             {
-                List<ChildAssociationRef> cars = childAuthorityCache.get(nodeRef);
-                if (cars == null)
+                Pair<Map<NodeRef, String>, List<NodeRef>> childAuthorities = getChildAuthorities(nodeRef);
+                Map<NodeRef, String> childAuthorityMap = childAuthorities.getFirst();
+                // Recurse on non-leaves
+                if (recursive)
                 {
-                    cars = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL,
-                            RegexQNamePattern.MATCH_ALL, false);
-                    if (!cars.isEmpty() && cars.get(0).getTypeQName().equals(ContentModel.ASSOC_MEMBER))
+                    for (NodeRef childRef : childAuthorities.getSecond())
                     {
-                        childAuthorityCache.put(nodeRef, cars);
+                        String childAuthorityName = childAuthorityMap.get(childRef);
+                        if (authorities.add(childAuthorityName))
+                        {
+                            listAuthoritiesUnfiltered(childRef, authorities, false, true, false);
+                        }
                     }
                 }
-                
-                // Take advantage of the fact that the authority name is on the child association
-                for (ChildAssociationRef car : cars)
-                {
-                    String childName = car.getQName().getLocalName();
-                    AuthorityType childType = AuthorityType.getAuthorityType(childName);
-                    addAuthorityNameIfMatches(authorities, childName, type);
-                    if (recursive && childType != AuthorityType.USER)
-                    {
-                        listAuthorities(type, car.getChildRef(), authorities, false, true, false);
-                    }
-                }
+                // Add leaves
+                authorities.addAll(childAuthorityMap.values());
             }
         }
     }
 
 
-    // Take advantage of the fact that the authority name is on the child association
-    public boolean isAuthorityContained(NodeRef authorityNodeRef, String authorityToFind)
+    public boolean isAuthorityContained(String authority, String authorityToFind, Set<String> positiveHits, Set<String> negativeHits)
     {
-        List<ChildAssociationRef> cars = childAuthorityCache.get(authorityNodeRef);
-        if (cars == null)
+        if (positiveHits.contains(authority))
         {
-            cars = nodeService.getChildAssocs(authorityNodeRef, RegexQNamePattern.MATCH_ALL,
-                    RegexQNamePattern.MATCH_ALL, false);
-            childAuthorityCache.put(authorityNodeRef, cars);
+            return true;
+        }
+        if (negativeHits.contains(authority))
+        {
+            return false;
         }
         
-        // Loop over children recursively to find authorityToFind
-        for (ChildAssociationRef car : cars)
+        NodeRef authorityNodeRef = getAuthorityNodeRefOrNull(authority);
+        if (authorityNodeRef == null)
         {
-            String authorityName = car.getQName().getLocalName();
-            if (authorityToFind.equals(authorityName)
-                    || AuthorityType.getAuthorityType(authorityName) != AuthorityType.USER
-                    && isAuthorityContained(car.getChildRef(), authorityToFind))
+            negativeHits.add(getPooledName(authority));
+            return false;
+        }
+
+        return isAuthorityContained(authorityNodeRef, getPooledName(authority), authorityToFind, positiveHits, negativeHits);
+    }
+    
+    private boolean isAuthorityContained(NodeRef authorityNodeRef, String authority, String authorityToFind, Set<String> positiveHits, Set<String> negativeHits)
+    {
+        // Look up the desired authority using case sensitivity rules appropriate for the authority type
+        NodeRef authorityToFindRef = getAuthorityOrNull(authorityToFind);
+        if (authorityToFindRef == null)
+        {
+            // No such authority so it won't be contained anywhere
+            negativeHits.add(authority);
+            return false;
+        }
+        // Now we can just search for the NodeRef
+        return isAuthorityContainedImpl(authorityNodeRef, authority, authorityToFindRef, positiveHits, negativeHits);
+    }
+
+    /**
+     * @param authorityNodeRef              a containing authority
+     * @param authorityToFindRef            an authority to find in the hierarchy
+     * @return                              Returns <tt>true</tt> if the authority to find occurs
+     *                                      in the hierarchy and is reachable via the {@link ContentModel#ASSOC_MEMBER}
+     *                                      association.
+     */
+    private boolean isAuthorityContainedImpl(NodeRef authorityNodeRef, String authority, NodeRef authorityToFindRef,
+            Set<String> positiveHits, Set<String> negativeHits)
+    {
+        if (positiveHits.contains(authority))
+        {
+            return true;
+        }
+        if (negativeHits.contains(authority))
+        {
+            return false;
+        }
+        Pair<Map<NodeRef, String>, List<NodeRef>> childAuthorities = getChildAuthorities(authorityNodeRef);
+        Map<NodeRef, String> childAuthorityMap = childAuthorities.getFirst();
+
+        // Is the authority we are looking for in the set provided (NodeRef is lookup)
+        if (childAuthorityMap.containsKey(authorityToFindRef))
+        {
+            positiveHits.add(authority);
+            return true;
+        }
+
+        // Recurse on non-user authorities
+        for (NodeRef nodeRef : childAuthorities.getSecond())
+        {
+            if (isAuthorityContainedImpl(nodeRef, childAuthorityMap.get(nodeRef),
+                    authorityToFindRef, positiveHits, negativeHits))
             {
+                positiveHits.add(authority);
                 return true;
             }
         }
+        negativeHits.add(authority);
         return false;
     }
     
@@ -1097,6 +1162,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             NodeRef parentRef = car.getParentRef();
             if (dictionaryService.isSubClass(nodeService.getType(parentRef), ContentModel.TYPE_AUTHORITY_CONTAINER))
             {
+                TransactionalResourceHelper.getSet(PARENTS_OF_DELETING_CHILDREN_SET_RESOURCE).add(parentRef);
                 childAuthorityCache.remove(parentRef);
             }
         }
@@ -1206,7 +1272,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 name = (String) nodeService.getProperty(authorityRef, ContentModel.PROP_USERNAME);
             }
         }
-        return name;
+        return getPooledName(name);
     }
 
     public String getAuthorityDisplayName(String authorityName)
@@ -1378,7 +1444,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     // Listen out for person removals so that we can clear cached authorities
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        userAuthorityCache.remove(getAuthorityName(nodeRef));
+        String authorityName = getAuthorityName(nodeRef);
+        TransactionalResourceHelper.getSet(DELETING_AUTHORITY_SET_RESOURCE).add(authorityName);
+        userAuthorityCache.remove(authorityName);
         removeParentsFromChildAuthorityCache(nodeRef);
     }
 
@@ -1451,7 +1519,54 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.TYPE_AUTHORITY, new JavaBehaviour(
                 this, "onUpdateProperties"));
     }
-
+    
+    /**
+     * @param parentNodeRef         the parent authority
+     * @return                      Returns authorities reachable by the {@link ContentModel#ASSOC_MEMBER} association
+     */
+    private Pair<Map<NodeRef, String>, List<NodeRef>> getChildAuthorities(NodeRef parentNodeRef)
+    {
+        Pair<Map<NodeRef,String>, List<NodeRef>> result = childAuthorityCache.get(parentNodeRef);
+        if (result == null)
+        {
+            List<ChildAssociationRef> cars = nodeService.getChildAssocs(
+                    parentNodeRef,
+                    ContentModel.ASSOC_MEMBER,
+                    RegexQNamePattern.MATCH_ALL,
+                    false);
+            if (cars.isEmpty())
+            {
+                // ALF-17702: BM-0013: Soak: Run 02: getCachedChildAuthorities is not caching results
+                //            Don't return here.  We need to cache the miss.
+                result = new Pair<Map<NodeRef, String>, List<NodeRef>>(Collections.<NodeRef, String> emptyMap(),
+                        Collections.<NodeRef> emptyList());
+            }
+            else
+            {
+                Map<NodeRef,String> lookup = new HashMap<NodeRef, String>(cars.size() * 2);
+                List<NodeRef> parents = new LinkedList<NodeRef>();
+                for (ChildAssociationRef car : cars)
+                {
+                    NodeRef memberNodeRef = car.getChildRef();
+                    String memberName = getPooledName(car.getQName().getLocalName());
+                    lookup.put(memberNodeRef, memberName);
+                    AuthorityType authorityType = AuthorityType.getAuthorityType(memberName);
+                    if (authorityType == AuthorityType.GROUP || authorityType == AuthorityType.ROLE)
+                    {
+                        parents.add(memberNodeRef);
+                    }
+                }
+                result = new Pair<Map<NodeRef, String>, List<NodeRef>>(lookup, parents);
+            }
+            // Cache whatever we have
+            if(!TransactionalResourceHelper.getSet(PARENTS_OF_DELETING_CHILDREN_SET_RESOURCE).contains(parentNodeRef))
+            {
+                childAuthorityCache.put(parentNodeRef, result);
+            }
+        }
+        return result;
+    }
+   
     private abstract class AbstractPagingResults<R> implements PagingResults<R>
     {
         protected CannedQueryResults<AuthorityInfo> results;
@@ -1488,7 +1603,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             List<String> auths = new ArrayList<String>(results.getPageCount());
             for (AuthorityInfo authInfo : results.getPage())
             {
-                auths.add((String) authInfo.getAuthorityName());
+                auths.add((String) getPooledName(authInfo.getAuthorityName()));
             }
             return auths;
         }

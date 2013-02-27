@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.activities.feed;
 
 import java.io.Serializable;
@@ -127,6 +145,10 @@ public abstract class AbstractUserNotifier implements UserNotifier
 		Long feedDBID = getFeedId(personNodeRef);
 
 		// own + others (note: template can be changed to filter out user's own activities if needed)
+		if (logger.isDebugEnabled())
+		{
+		    logger.debug("Get user feed entries: " + feedUserId + ", " + feedDBID);
+		}
 		List<ActivityFeedEntity> feedEntries = activityService.getUserFeedEntries(feedUserId, FeedTaskProcessor.FEED_FORMAT_JSON, null, false, false, null, null, feedDBID);
 		
 		if (feedEntries.size() > 0)

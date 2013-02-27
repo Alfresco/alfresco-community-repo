@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,9 @@
  */
 package org.alfresco.repo.content;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.springframework.context.ApplicationEvent;
 
@@ -31,18 +34,21 @@ import org.springframework.context.ApplicationEvent;
 public class ContentStoreCreatedEvent extends ApplicationEvent
 {
     private static final long serialVersionUID = 7090069096441126707L;
+    protected transient Map<String, Serializable> extendedEventParams;
 
     /**
      * The Constructor.
      * 
      * @param source
      *            the source content store
+     * @param extendedEventParams 
      * @param rootDirectory
      *            the root directory
      */
-    public ContentStoreCreatedEvent(ContentStore source)
+    public ContentStoreCreatedEvent(ContentStore source, Map<String, Serializable> extendedEventParams)
     {
         super(source);
+        this.extendedEventParams = extendedEventParams;
     }
     
     /**
@@ -51,5 +57,10 @@ public class ContentStoreCreatedEvent extends ApplicationEvent
     public ContentStore getContentStore()
     {
         return (ContentStore) getSource();
+    }
+    
+    public Map<String, Serializable> getExtendedEventParams()
+    {
+    	return extendedEventParams;
     }
 }

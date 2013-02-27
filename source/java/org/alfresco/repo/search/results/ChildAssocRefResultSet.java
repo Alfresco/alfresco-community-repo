@@ -132,4 +132,13 @@ public class ChildAssocRefResultSet extends AbstractResultSet
     {
         throw new UnsupportedOperationException();
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
+     */
+    @Override
+    public long getNumberFound()
+    {
+        return cars.size();
+    }
 }

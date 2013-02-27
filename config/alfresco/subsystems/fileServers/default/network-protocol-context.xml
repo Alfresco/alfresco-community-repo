@@ -231,6 +231,13 @@
                     <property name="ranking"><value>MEDIUM</value></property>
                     <property name="deleteBackup"><value>false</value></property>
                 </bean> 
+                
+                <bean id="preview2011MountainLion" class="org.alfresco.filesys.repo.rules.ScenarioDoubleRenameShuffle">
+                    <property name="pattern"><value>.*\.sb(-[A-Za-z0-9]*){2}</value></property>
+                    <property name="timeout"><value>20000</value></property>
+                    <property name="ranking"><value>MEDIUM</value></property>
+                    <property name="deleteBackup"><value>false</value></property>
+                </bean> 
                           
             </list>
         </property>
@@ -243,6 +250,8 @@
    <bean name="fileStateDriver" class="org.alfresco.filesys.repo.LegacyFileStateDriver"
      init-method="init">
          <property name="diskInterface"><ref bean="ruleDriver" /></property>
+         <property name="opLockInterface"><ref bean="contentDiskDriver2" /></property>
+         <property name="fileLockingInterface"><ref bean="contentDiskDriver2" /></property>
    </bean> 
    
    <!-- Shuffle Disk Driver - adds rule evaluation to the disk driver -->

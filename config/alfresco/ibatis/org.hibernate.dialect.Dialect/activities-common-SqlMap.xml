@@ -90,9 +90,9 @@
    <!-- select user feeds for cleaning -->
    <select id="select_activity_user_feeds_greater_than_max" parameterType="int" resultType="ActivityFeed">
       <![CDATA[
-      select feed_user_id as feedUserId, activity_format as activitySummaryFormat
+      select feed_user_id as feedUserId
       from alf_activity_feed
-      group by feed_user_id, activity_format
+      group by feed_user_id
       having count(*) > #{maxFeedSize}
       ]]>
    </select>
@@ -100,9 +100,9 @@
    <!-- select site feeds for cleaning -->
    <select id="select_activity_site_feeds_greater_than_max" parameterType="int" resultType="ActivityFeed">
       <![CDATA[
-      select site_network as siteNetwork, activity_format as activitySummaryFormat
+      select site_network as siteNetwork
       from alf_activity_feed
-      group by site_network, activity_format
+      group by site_network
       having count(*) > #{maxFeedSize}
       ]]>
    </select>

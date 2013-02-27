@@ -29,6 +29,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -39,6 +42,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PathUtil;
@@ -63,6 +68,12 @@ public class PostLookup
     
     private static VmShutdownListener vmShutdownListener = new VmShutdownListener(PostLookup.class.getName());
     
+    /** The name of the lock used to ensure that post lookup does not run on more than one node at the same time */
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ActivityPostLookup");
+    
+    /** The time this lock will persist in the database (30 sec but refreshed at regular intervals) */
+    private static final long LOCK_TTL = 1000 * 30;
+    
     private ActivityPostDAO postDAO;
     private NodeService nodeService;
     private PermissionService permissionService;
@@ -70,6 +81,7 @@ public class PostLookup
     private PersonService personService;
     private TenantService tenantService;
     private SiteService siteService;
+    private JobLockService jobLockService;
     
     private volatile boolean busy;
     
@@ -97,6 +109,7 @@ public class PostLookup
     // note: consistent with Share 'groupActivitiesAt'
     private int rollupCount = 5;
     
+    private int maxItemsPerCycle = 500;
     
     public void setPostDAO(ActivityPostDAO postDAO)
     {
@@ -138,6 +151,16 @@ public class PostLookup
         this.rollupCount = rollupCount;
     }
     
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+    
+    public void setMaxItemsPerCycle(int maxItemsPerCycle)
+    {
+        this.maxItemsPerCycle = maxItemsPerCycle;
+    }
+    
     /**
      * Perform basic checks to ensure that the necessary dependencies were injected.
      */
@@ -167,14 +190,24 @@ public class PostLookup
             return;
         }
         
-        busy = true;
+        long start = System.currentTimeMillis();
+        String lockToken = null;
         try
         {
+            if (jobLockService != null)
+            {
+                JobLockRefreshCallback lockCallback = new LockCallback();
+                lockToken = acquireLock(lockCallback);
+            }
+            
             ActivityPostEntity params = new ActivityPostEntity();
             params.setStatus(ActivityPostEntity.STATUS.PENDING.toString());
-            
-            // get all pending post (for this job run) 
-            final List<ActivityPostEntity> activityPosts = postDAO.selectPosts(params);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Selecting activity posts with status: " + ActivityPostEntity.STATUS.PENDING.toString());
+            }
+            final List<ActivityPostEntity> activityPosts = postDAO.selectPosts(params, maxItemsPerCycle);
             
             if (activityPosts.size() > 0)
             {
@@ -209,6 +242,14 @@ public class PostLookup
                 updatePosts(activityPostsToUpdate);
             }
         }
+        catch (LockAcquisitionException e)
+        {
+            // Job being done by another process
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("execute: Can't get lock. Assume post lookup job already underway: "+e);
+            }
+        }
         catch (SQLException e)
         {
             logger.error("Exception during select of posts: ", e);
@@ -228,7 +269,7 @@ public class PostLookup
         }
         finally
         {
-            busy = false;
+            releaseLock(lockToken);
         }
         
     }
@@ -271,6 +312,10 @@ public class PostLookup
     {
         for (final ActivityPostEntity activityPost : activityPosts)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Selected activity post: " + activityPost);
+            }
             final String postUserId = activityPost.getUserId();
             try
             {
@@ -710,5 +755,65 @@ public class PostLookup
         jo.put(JSON_LASTNAME, lastName);
         
         return jo;
+    }
+    
+    private class LockCallback implements JobLockRefreshCallback
+    {
+        @Override
+        public boolean isActive()
+        {
+            return busy;
+        }
+        
+        @Override
+        public void lockReleased()
+        {
+            // note: currently the cycle will try to complete (even if refresh failed)
+            synchronized(this)
+            {
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Lock released (refresh failed): " + LOCK_QNAME);
+                }
+                
+                busy = false;
+            }
+        }
+    }
+    
+    private String acquireLock(JobLockRefreshCallback lockCallback) throws LockAcquisitionException
+    {
+        // Try to get lock
+        String lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+        
+        // Got the lock - now register the refresh callback which will keep the lock alive
+        jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, lockCallback);
+        
+        busy = true;
+        
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Lock aquired:  " + lockToken);
+        }
+        
+        return lockToken;
+    }
+    
+    private void releaseLock(String lockToken)
+    {
+        try
+        {
+            busy = false;
+            
+            if (lockToken != null ) { jobLockService.releaseLock(lockToken, LOCK_QNAME); }
+        }
+        catch (LockAcquisitionException e)
+        {
+            // Ignore
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Can't release lock: "+e);
+            }
+        }
     }
 }

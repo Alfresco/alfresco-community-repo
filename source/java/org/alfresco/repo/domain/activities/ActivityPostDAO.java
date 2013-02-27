@@ -37,8 +37,8 @@ public interface ActivityPostDAO extends ActivitiesDAO
     public static final int MAX_LEN_APP_TOOL_ID = 36;      // needs to match schema: app_tool
     
     public static final int MAX_LEN_NAME = 255;            // eg. filename
-    
-    public List<ActivityPostEntity> selectPosts(ActivityPostEntity activityPost) throws SQLException;
+
+    public List<ActivityPostEntity> selectPosts(ActivityPostEntity activityPost, int maxItems) throws SQLException;
     
     public Long getMaxActivitySeq() throws SQLException;
     

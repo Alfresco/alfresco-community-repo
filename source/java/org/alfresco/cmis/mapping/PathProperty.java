@@ -23,6 +23,8 @@ import java.io.Serializable;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -60,9 +62,9 @@ public class PathProperty extends AbstractProperty
     }
     
 
-    private String toDisplayPath(Path path)
+    private String toDisplayPath(final Path path)
     {
-        StringBuilder displayPath = new StringBuilder(64);
+        final StringBuilder displayPath = new StringBuilder(64);
 
         // skip to CMIS root path
         NodeRef rootNode = cmisService.getDefaultRootNodeRef();
@@ -97,18 +99,27 @@ public class PathProperty extends AbstractProperty
         {
             // render CMIS scoped path
             i++;
-            while (i < path.size())
+            final int pathStart = i;
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
             {
-                Path.Element element = path.get(i);
-                if (element instanceof ChildAssocElement)
+
+                @Override
+                public Void doWork() throws Exception
                 {
-                    ChildAssociationRef assocRef = ((ChildAssocElement)element).getRef();
-                    NodeRef node = assocRef.getChildRef();
-                    displayPath.append("/");
-                    displayPath.append(getServiceRegistry().getNodeService().getProperty(node, ContentModel.PROP_NAME));
+                    for (int j = pathStart; j < path.size(); j++)
+                    {
+                        Path.Element element = path.get(j);
+                        if (element instanceof ChildAssocElement)
+                        {
+                            ChildAssociationRef assocRef = ((ChildAssocElement)element).getRef();
+                            NodeRef node = assocRef.getChildRef();
+                            displayPath.append("/");
+                            displayPath.append(getServiceRegistry().getNodeService().getProperty(node, ContentModel.PROP_NAME));
+                        }
+                    }
+                    return null;
                 }
-                i++;
-            }
+            }, AuthenticationUtil.getSystemUserName());
         }
         
         return displayPath.toString();

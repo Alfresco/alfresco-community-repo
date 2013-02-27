@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -634,8 +634,8 @@ public class AuditComponentTest extends TestCase
             }
         }
 
-        // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
-        // 1 second sleep to ensure that the audit is processed
+        // ALF-3055 : auditing of failures is now asynchronous, so loop up to 60 times with
+        // a 5 second sleep to ensure that the audit is processed
         for(int i = 0; i < 60; i++)
         {
             results.clear();
@@ -645,7 +645,7 @@ public class AuditComponentTest extends TestCase
 	        {
 	        	break;
 	        }
-        	Thread.sleep(1000);
+        	Thread.sleep(5000);
         }
 
         logger.debug(sb.toString());

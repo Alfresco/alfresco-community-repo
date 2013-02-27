@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,7 +19,9 @@
 package org.alfresco.service.cmr.model;
 
 import java.util.List;
+import java.util.Set;
 
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -32,7 +34,6 @@ import org.alfresco.service.namespace.QName;
  */
 public class FileFolderUtil
 {
-        
     /**
      * Checks for the presence of, and creates as necessary, the folder
      * structure in the provided path.
@@ -54,6 +55,26 @@ public class FileFolderUtil
     public static FileInfo makeFolders(FileFolderService service,
             NodeRef parentNodeRef, List<String> pathElements,
             QName folderTypeQName)
+    {
+        return makeFolders(service, parentNodeRef,pathElements, folderTypeQName, null, null);
+    }
+    
+    /**
+     * Same as above, with option to disable parent behaviour(s) when creating sub-folder
+     * 
+     * @param service
+     * @param parentNodeRef
+     * @param pathElements
+     * @param folderTypeQName
+     * @param behaviourFilter
+     * @param parentBehavioursToDisable
+     * @return
+     */
+    public static FileInfo makeFolders(FileFolderService service,
+            NodeRef parentNodeRef, List<String> pathElements,
+            QName folderTypeQName,
+            BehaviourFilter behaviourFilter,
+            Set<QName> parentBehavioursToDisable)
     {
         if (pathElements.size() == 0)
         {
@@ -80,12 +101,33 @@ public class FileFolderUtil
 
             if (nodeRef == null)
             {
-                // not present - make it
-                // If this uses the public service it will check create
-                // permissions
-                FileInfo createdFileInfo = service.create(currentParentRef,
-                        pathElement, folderTypeQName);
-                currentParentRef = createdFileInfo.getNodeRef();
+                if ((behaviourFilter != null) && (parentBehavioursToDisable != null))
+                {
+                    for (QName parentBehaviourToDisable : parentBehavioursToDisable)
+                    {
+                        behaviourFilter.disableBehaviour(currentParentRef, parentBehaviourToDisable);
+                    }
+                }
+                
+                try
+                {
+                    // not present - make it
+                    // If this uses the public service it will check create
+                    // permissions
+                    FileInfo createdFileInfo = service.create(currentParentRef,
+                            pathElement, folderTypeQName);
+                    currentParentRef = createdFileInfo.getNodeRef();
+                }
+                finally
+                {
+                    if ((behaviourFilter != null) && (parentBehavioursToDisable != null))
+                    {
+                        for (QName parentBehaviourToDisable : parentBehavioursToDisable)
+                        {
+                            behaviourFilter.enableBehaviour(currentParentRef, parentBehaviourToDisable);
+                        }
+                    }
+                }
             }
             else
             {

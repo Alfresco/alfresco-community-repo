@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -142,14 +142,14 @@ public class PersonTest extends TestCase
         // Can either get a large page with all results (up to a given max) ...
         
         PagingRequest pagingRequest = new PagingRequest(20000, null); // note: people (up to max of 20000)
-        int count = personService.getPeople(null, true, null, pagingRequest).getPage().size();
+        int count = personService.getPeople(null, null, null, pagingRequest).getPage().size();
         
         // ... or request 1 item + total count (up to a given max)
         
         pagingRequest = new PagingRequest(0, 1, null);
         pagingRequest.setRequestTotalCountMax(20000); // note: request total people count (up to max of 20000)
         
-        PagingResults<PersonInfo> ppr = personService.getPeople(null, true, null, pagingRequest);
+        PagingResults<PersonInfo> ppr = personService.getPeople(null, null, null, pagingRequest);
         
         Pair<Integer, Integer> totalResultCount = ppr.getTotalResultCount();
         assertNotNull(totalResultCount);
@@ -164,7 +164,7 @@ public class PersonTest extends TestCase
     private void checkPeopleContain(String userName)
     {
         PagingRequest pagingRequest = new PagingRequest(0, 20000, null);
-        PagingResults<PersonInfo> ppr = personService.getPeople(null, true, null, pagingRequest);
+        PagingResults<PersonInfo> ppr = personService.getPeople(null, null, null, pagingRequest);
         
         boolean found = false;
         for (PersonInfo person : ppr.getPage())
@@ -692,19 +692,19 @@ public class PersonTest extends TestCase
         filters.clear();
         filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "y"));
         assertEquals(2, personService.getPeople(filters, true, null, pr).getPage().size());
-        assertEquals(1, personService.getPeople(filters, false, null, pr).getPage().size());
+//        assertEquals(1, personService.getPeople(filters, false, null, pr).getPage().size()); filterIgnoreCase is now ignored
         
         filters.clear();
         filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "b"));
         filters.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, "b"));
         filters.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, "b"));
         assertEquals(3, personService.getPeople(filters, true, null, pr).getPage().size());
-        assertEquals(1, personService.getPeople(filters, false, null, pr).getPage().size());
+//        assertEquals(1, personService.getPeople(filters, false, null, pr).getPage().size()); filterIgnoreCase is now ignored
         
         filters.clear();
         filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "A"));
         assertEquals(2, personService.getPeople(filters, true, null, pr).getPage().size()); // includes "admin"
-        assertEquals(0, personService.getPeople(filters, false, null, pr).getPage().size());
+//        assertEquals(0, personService.getPeople(filters, false, null, pr).getPage().size()); filterIgnoreCase is now ignored
         
         personService.deletePerson("aa");
         
@@ -749,7 +749,7 @@ public class PersonTest extends TestCase
         
         // page 1
         PagingRequest pr = new PagingRequest(0, 2, null);
-        PagingResults<PersonInfo> ppr = personService.getPeople(null, true, sort, pr);
+        PagingResults<PersonInfo> ppr = personService.getPeople(null, null, sort, pr);
         List<PersonInfo> results = ppr.getPage();
         assertEquals(2, results.size());
         assertEquals(p3, results.get(0).getNodeRef());
@@ -757,7 +757,7 @@ public class PersonTest extends TestCase
         
         // page 2
         pr = new PagingRequest(2, 2, null);
-        ppr = personService.getPeople(null, true, sort, pr);
+        ppr = personService.getPeople(null, null, sort, pr);
         results = ppr.getPage();
         assertEquals(2, results.size());
         assertEquals(p6, results.get(0).getNodeRef());
@@ -765,7 +765,7 @@ public class PersonTest extends TestCase
         
         // page 3
         pr = new PagingRequest(4, 2, null);
-        ppr = personService.getPeople(null, true, sort, pr);
+        ppr = personService.getPeople(null, null, sort, pr);
         results = ppr.getPage();
         assertEquals(2, results.size());
         assertEquals(p7, results.get(0).getNodeRef());
@@ -773,7 +773,7 @@ public class PersonTest extends TestCase
         
         // page 4
         pr = new PagingRequest(6, 2, null);
-        ppr = personService.getPeople(null, true, sort, pr);
+        ppr = personService.getPeople(null, null, sort, pr);
         results = ppr.getPage();
         assertEquals(1, results.size());
         assertEquals(p5, results.get(0).getNodeRef());
@@ -1568,5 +1568,5 @@ public class PersonTest extends TestCase
                 return null;
             }
         }, false, true);
-    }	
+    }   
 }

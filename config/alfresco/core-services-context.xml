@@ -374,6 +374,11 @@
         <property name="transactionService">
             <ref bean="transactionService" />
         </property>
+        <property name="extraExceptions">
+            <list>
+                <value>org.alfresco.service.cmr.repository.InvalidNodeRefException</value>
+            </list>
+        </property>
         <property name="maxRetries">
             <value>${server.transaction.max-retries}</value>
         </property>
@@ -638,6 +643,7 @@
                 <value>webdav:sharedLockTokens</value>
                 <value>webdav:lockDepth</value>
                 <value>webdav:lockScope</value>
+                <value>webdav:deadproperties</value>
                 <value>cm:likesRatingSchemeTotal</value>
                 <value>cm:likesRatingSchemeCount</value>
                 <value>cm:fiveStarRatingSchemeCount</value>
@@ -647,7 +653,7 @@
                 <value>cm:expiryDate</value>
                 <!-- MNT-181 -->
                 <value>sys:clientVisibilityMask</value>
-</list>
+            </list>
         </property>
         <property name="enableAutoVersioning" value="${version.store.enableAutoVersioning}" />
     </bean>
@@ -679,7 +685,7 @@
             <ref bean="compiledModelsCache"/>
         </property>
         <property name="defaultAnalyserResourceBundleName">
-            <value>alfresco/model/dataTypeAnalyzers</value>
+            <value>${lucene.defaultAnalyserResourceBundleName}</value>
         </property>
     </bean>
 

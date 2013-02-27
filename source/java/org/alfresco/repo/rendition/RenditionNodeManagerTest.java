@@ -24,6 +24,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
+
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
@@ -70,8 +75,9 @@ public class RenditionNodeManagerTest extends TestCase
     // the parent node is the source node.
     public void testNoOldRenditionAndNoDestinationSpecifiedAndParentIsSource()
     {
+        Map<QName, Serializable> indexProps = Collections.singletonMap(ContentModel.PROP_IS_INDEXED, (Serializable) Boolean.FALSE);
         ChildAssociationRef parentAssoc = makeAssoc(source, destination, true);
-        when(nodeService.createNode(source, RenditionModel.ASSOC_RENDITION, renditionName, ContentModel.TYPE_CONTENT))
+        when(nodeService.createNode(source, RenditionModel.ASSOC_RENDITION, renditionName, ContentModel.TYPE_CONTENT, indexProps))
             .thenReturn(parentAssoc);
         
         RenditionLocation location = new RenditionLocationImpl(source, null, renditionName.getLocalName());
@@ -90,7 +96,8 @@ public class RenditionNodeManagerTest extends TestCase
         NodeRef parent = new NodeRef("http://test/parentId");
         ChildAssociationRef parentAssoc = makeAssoc(parent, destination, assocName, false);
         
-        when(nodeService.createNode(parent, ContentModel.ASSOC_CONTAINS, assocName, ContentModel.TYPE_CONTENT))
+        Map<QName, Serializable> indexProps = Collections.singletonMap(ContentModel.PROP_IS_INDEXED, (Serializable) Boolean.FALSE);
+        when(nodeService.createNode(parent, ContentModel.ASSOC_CONTAINS, assocName, ContentModel.TYPE_CONTENT, indexProps))
             .thenReturn(parentAssoc);
         
         RenditionLocation location = new RenditionLocationImpl(parent, null, localName);

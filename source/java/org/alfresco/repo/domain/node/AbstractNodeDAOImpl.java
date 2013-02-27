@@ -97,7 +97,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.util.Assert;
 
 /**
@@ -481,7 +480,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @see ServerIdCallback
      */
-    private Long getServerId()
+    protected Long getServerId()
     {
         return serverIdCallback.execute();
     }
@@ -1211,23 +1210,30 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Node parentNode = getNodeNotNull(parentNodeId, true);
         // Find an initial ACL for the node
         Long parentAclId = parentNode.getAclId();
+        AccessControlListProperties inheritedAcl = null;
         Long childAclId = null;
         if (parentAclId != null)
         {
             try
             {
                 Long inheritedACL = aclDAO.getInheritedAccessControlList(parentAclId);
-                AccessControlListProperties inheritedAcl = aclDAO.getAccessControlListProperties(inheritedACL);
+                inheritedAcl = aclDAO.getAccessControlListProperties(inheritedACL);
                 if (inheritedAcl != null)
                 {
                     childAclId = inheritedAcl.getId();
                 }
             }
-            catch (Throwable e)
+            catch (RuntimeException e)
             {
                 // The get* calls above actually do writes.  So pessimistically get rid of the
                 // parent node from the cache in case it was wrong somehow.
                 invalidateNodeCaches(parentNodeId);
+                // Rethrow for a retry (ALF-17286)
+                throw new RuntimeException(
+                        "Failure while 'getting' inherited ACL or ACL properties: \n" +
+                        "   parent ACL ID:  " + parentAclId + "\n" +
+                        "   inheritied ACL: " + inheritedAcl,
+                        e);
             }
         }
         // Build the cm:auditable properties
@@ -3886,6 +3892,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         
         // get the parent associations of the given node
         ParentAssocsInfo parentAssocInfo = getParentAssocsCached(currentNodeId); // note: currently may throw NotLiveNodeException
+        // bulk load parents as we are certain to hit them in the next call
+        ArrayList<Long> toLoad = new ArrayList<Long>(parentAssocInfo.getParentAssocs().size());
+        for(Map.Entry<Long, ChildAssocEntity> entry : parentAssocInfo.getParentAssocs().entrySet())
+        {
+            toLoad.add(entry.getValue().getParentNode().getId());
+        }
+        cacheNodesById(toLoad);
 
         // does the node have parents
         boolean hasParents = parentAssocInfo.getParentAssocs().size() > 0;
@@ -4345,7 +4358,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
          * no results.  To avoid unnecessary checking when the cache is PROBABLY cold, we
          * examine the ratio of hits/misses at regular intervals.
          */
-        if (nodeIds.size() < 10)
+        
+        boolean disableSharedCacheReadForTransaction = false;
+        if (nodesTransactionalCache != null)
+        {
+            disableSharedCacheReadForTransaction = nodesTransactionalCache.getDisableSharedCacheReadForTransaction();
+        }
+        
+        if ((disableSharedCacheReadForTransaction == false) && nodeIds.size() < 10)
         {
             // We only cache where the number of results is potentially
             // a problem for the N+1 loading that might result.

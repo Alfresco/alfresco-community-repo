@@ -62,10 +62,16 @@ import org.springframework.extensions.config.ConfigElement;
 public class LegacyFileStateDriver implements ExtendedDiskInterface
 {
     private ExtendedDiskInterface diskInterface;
+    
+    private OpLockInterface opLockInterface;
+    
+    private FileLockingInterface fileLockingInterface; 
           
     public void init()
     {
         PropertyCheck.mandatory(this, "diskInterface", diskInterface);
+        PropertyCheck.mandatory(this, "fileLockingInterface", fileLockingInterface);
+        PropertyCheck.mandatory(this, "opLockInterface", getOpLockInterface());
     }
     
     private static final Log logger = LogFactory.getLog(LegacyFileStateDriver.class);
@@ -429,8 +435,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                 }
                 // Release the oplock
                 
-                OpLockInterface flIface = (OpLockInterface) this;
-                OpLockManager oplockMgr = flIface.getOpLockManager(sess, tree);
+                OpLockManager oplockMgr = opLockInterface.getOpLockManager(sess, tree);
                 
                 oplockMgr.releaseOpLock( file.getOpLock().getPath());
 
@@ -452,9 +457,7 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
                    logger.debug("Release all locks, file=" + file.getFullName());
                 }
               
-                //  Get the lock manager
-                FileLockingInterface flIface = (FileLockingInterface) this;
-                LockManager lockMgr = flIface.getLockManager(sess, tree);
+                LockManager lockMgr = fileLockingInterface.getLockManager(sess, tree);
                 
                 if(lockMgr != null)
                 {
@@ -697,6 +700,27 @@ public class LegacyFileStateDriver implements ExtendedDiskInterface
     {
         
         return diskInterface.createContext(shareName, args);
+    }
+
+     
+    public void setFileLockingInterface(FileLockingInterface fileLockingInterface)
+    {
+        this.fileLockingInterface = fileLockingInterface;
+    }
+
+    public FileLockingInterface getFileLockingInterface()
+    {
+        return fileLockingInterface;
+    }
+    
+    public void setOpLockInterface(OpLockInterface opLockInterface)
+    {
+        this.opLockInterface = opLockInterface;
+    }
+
+    public OpLockInterface getOpLockInterface()
+    {
+        return opLockInterface;
     }
 }
   

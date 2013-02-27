@@ -327,4 +327,13 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     {
        return unfiltered.getFieldFacet(field);
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
+     */
+    @Override
+    public long getNumberFound()
+    {
+        return inclusionMask.cardinality();
+    }
 }

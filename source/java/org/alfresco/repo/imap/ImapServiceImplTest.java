@@ -540,7 +540,44 @@ public class ImapServiceImplTest extends TestCase
         assertFalse("Can't rename mailbox", checkMailbox(user, MAILBOX_ACCENTED_NAME_A));
         assertTrue("Can't rename mailbox", checkMailbox(user, MAILBOX_ACCENTED_NAME_B));
         imapService.deleteMailbox(user, MAILBOX_ACCENTED_NAME_B);
-    } 
+    }
+    
+    public void testContentRecovery() throws Exception
+    {
+        reauthenticate(USER_NAME, USER_PASSWORD);
+        
+        // create content
+        NodeRef nodeRef = nodeService.createNode(testImapFolderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "content_recover"), ContentModel.TYPE_CONTENT).getChildRef();
+        FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
+        
+        // Outlook sets flags that indicates that a content was seen and deleted
+        imapService.setFlag(fileInfo, Flags.Flag.DELETED, true);
+        imapService.setFlag(fileInfo, Flags.Flag.SEEN, true);
+        
+        // delete a content
+        fileFolderService.delete(nodeRef);
+        
+        // get archive node reference
+        String storePath = "archive://SpacesStore";
+        StoreRef storeRef = new StoreRef(storePath);
+        NodeRef archivedNodeRef = new NodeRef(storeRef, nodeRef.getId());
+       
+        // restore a node and check flags
+        Boolean value = false;
+        if (nodeService.exists(archivedNodeRef))
+        {
+            NodeRef restoredNode = nodeService.restoreNode(archivedNodeRef, testImapFolderNodeRef, null, null);
+
+            Map<QName, Serializable> props = nodeService.getProperties(restoredNode);
+
+            if (props.containsKey(ImapModel.PROP_FLAG_DELETED) && props.containsKey(ImapModel.PROP_FLAG_SEEN))
+            {
+                value = !(Boolean) props.get(ImapModel.PROP_FLAG_DELETED) && !(Boolean) props.get(ImapModel.PROP_FLAG_SEEN);
+            }
+        }
+        
+        assertTrue("Can't set DELETED flag to false", value);
+    }
     
     /**
      * Test attachment extraction with a TNEF message

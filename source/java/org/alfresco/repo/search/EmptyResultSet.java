@@ -155,4 +155,13 @@ public class EmptyResultSet implements ResultSet
     {
         return Collections.<Pair<String, Integer>>emptyList();
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
+     */
+    @Override
+    public long getNumberFound()
+    {
+        return 0;
+    }
 }

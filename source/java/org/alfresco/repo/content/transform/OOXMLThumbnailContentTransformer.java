@@ -52,9 +52,27 @@ public class OOXMLThumbnailContentTransformer extends AbstractContentTransformer
 
     private static final Log log = LogFactory.getLog(OOXMLThumbnailContentTransformer.class);
     
-    private static final List<String> OOXML_MIMETYPES = Arrays.asList(new String[]{MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET,
-                                                                                   MimetypeMap.MIMETYPE_OPENXML_PRESENTATION,
-                                                                                   MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING});
+    private static final List<String> OOXML_MIMETYPES = Arrays.asList(new String[]{
+            MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING,
+            MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING_MACRO,
+            MimetypeMap.MIMETYPE_OPENXML_WORD_TEMPLATE,
+            MimetypeMap.MIMETYPE_OPENXML_WORD_TEMPLATE_MACRO,
+            MimetypeMap.MIMETYPE_OPENXML_PRESENTATION,
+            MimetypeMap.MIMETYPE_OPENXML_PRESENTATION_MACRO,
+            MimetypeMap.MIMETYPE_OPENXML_PRESENTATION_SLIDESHOW,
+            MimetypeMap.MIMETYPE_OPENXML_PRESENTATION_SLIDESHOW_MACRO,
+            MimetypeMap.MIMETYPE_OPENXML_PRESENTATION_TEMPLATE,
+            MimetypeMap.MIMETYPE_OPENXML_PRESENTATION_TEMPLATE_MACRO,
+            MimetypeMap.MIMETYPE_OPENXML_PRESENTATION_ADDIN,
+            MimetypeMap.MIMETYPE_OPENXML_PRESENTATION_SLIDE,
+            MimetypeMap.MIMETYPE_OPENXML_PRESENTATION_SLIDE_MACRO,
+            MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET,
+            MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET_TEMPLATE,
+            MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET_MACRO,
+            MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET_TEMPLATE_MACRO,
+            MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET_ADDIN_MACRO,
+            MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET_BINARY_MACRO});
+    
     private static final List<String> TARGET_MIMETYPES = Arrays.asList(new String[]{MimetypeMap.MIMETYPE_IMAGE_JPEG});
     
     @Override

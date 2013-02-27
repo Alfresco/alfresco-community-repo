@@ -62,6 +62,7 @@ import org.alfresco.repo.imap.config.ImapConfigMountPointsBean;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -124,7 +125,7 @@ import com.icegreen.greenmail.store.SimpleStoredMessage;
  * @author David Ward
  * @since 3.2
  */
-public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPolicy, OnDeleteChildAssociationPolicy, OnUpdatePropertiesPolicy, BeforeDeleteNodePolicy
+public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCreateChildAssociationPolicy, OnDeleteChildAssociationPolicy, OnUpdatePropertiesPolicy, BeforeDeleteNodePolicy
 {
     private Log logger = LogFactory.getLog(ImapServiceImpl.class);
 
@@ -506,6 +507,10 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                 BeforeDeleteNodePolicy.QNAME,
                 ContentModel.TYPE_CONTENT,
                 new JavaBehaviour(this, "beforeDeleteNode", NotificationFrequency.EVERY_EVENT));
+        policyComponent.bindClassBehaviour(
+                OnRestoreNodePolicy.QNAME,
+                ContentModel.TYPE_CONTENT,
+                new JavaBehaviour(this, "onRestoreNode", NotificationFrequency.EVERY_EVENT));
     }
 
     // ---------------------- Service Methods --------------------------------
@@ -1756,6 +1761,25 @@ public class ImapServiceImpl implements ImapService, OnCreateChildAssociationPol
                             listener.forceNewUidvalidity();
                         }
                     }
+                }
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void onRestoreNode(final ChildAssociationRef childAssocRef)
+    {
+        doAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                NodeRef childNodeRef = childAssocRef.getChildRef();
+                if (serviceRegistry.getDictionaryService().isSubClass(nodeService.getType(childNodeRef), ContentModel.TYPE_CONTENT))
+                {
+                    setFlag(childNodeRef, Flags.Flag.DELETED, false);
+                    setFlag(childNodeRef, Flags.Flag.SEEN, false);
                 }
                 return null;
             }

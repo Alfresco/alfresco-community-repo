@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -377,7 +377,7 @@ public class AclDAOImpl implements AclDAO
             }
         }
 
-        getWritable(id, parent, exclude, toAdd, inheritsFrom, inherited, positions, cascade, 0, changes, mode, false);
+        getWritable(id, parent, new HashSet<Long>(), exclude, toAdd, inheritsFrom, inherited, positions, cascade, 0, changes, mode, false);
     }
 
     /**
@@ -385,11 +385,12 @@ public class AclDAOImpl implements AclDAO
      * slightly for copy on write (no need to add and then remove)
      */
     private void getWritable(
-            final Long id, final Long parent,
+            final Long id, final Long parent, Set<Long> visitedAcls,
             List<? extends AccessControlEntry> exclude, List<Ace> toAdd, Long inheritsFrom,
             List<Ace> inherited, List<Integer> positions,
             boolean cascade, int depth, List<AclChange> changes, WriteMode mode, boolean requiresVersion)
     {
+
         AclChange current = getWritable(id, parent, exclude, toAdd, inheritsFrom, inherited, positions, depth, mode, requiresVersion);
         changes.add(current);
 
@@ -404,10 +405,20 @@ public class AclDAOImpl implements AclDAO
             List<Long> inheritors = aclCrudDAO.getAclsThatInheritFromAcl(id);
             for (Long nextId : inheritors)
             {
-                // Check for those that inherit themselves to other nodes ...
-                if (!nextId.equals(id))
+                if (visitedAcls.contains(nextId))
                 {
-                    getWritable(nextId, current.getAfter(), exclude, toAdd, current.getAfter(), inherited, positions, cascade, depth + 1, changes, mode, cascadeVersion);
+                    if (logger.isWarnEnabled())
+                    {
+                        StringBuilder message = new StringBuilder("ACL cycle detected! Repeated ALC id = '").append(nextId).append("', inherited ACL id = '").append(id).append(
+                                "', already visited ACLs: '").append(visitedAcls).append("'. Skipping processing of the ACL id...");
+                        logger.warn(message.toString());
+                    }
+                }
+                else
+                {
+                    // Check for those that inherit themselves to other nodes ...
+                    getWritable(nextId, current.getAfter(), visitedAcls, exclude, toAdd, current.getAfter(), inherited, positions, cascade, depth + 1, changes, mode,
+                            cascadeVersion);
                 }
             }
         }
@@ -1208,11 +1219,21 @@ public class AclDAOImpl implements AclDAO
         // if inherited already inherits from the target
 
         Acl test = inheritedAcl;
+        Set<Long> visitedAcls = new HashSet<Long>();
         while (test != null)
         {
-            if (test.getId()!= null && test.getId().equals(target))
+            Long testId = test.getId();
+            if (testId != null && testId.equals(target))
             {
                 throw new IllegalStateException("Cyclical ACL detected");
+            }
+            if (visitedAcls.contains(testId))
+            {
+                throw new IllegalStateException("Cyclical InheritsFrom detected. AclId: " + testId);
+            }
+            else
+            {
+                visitedAcls.add(testId);
             }
             Long parent = test.getInheritsFrom();
             if ((parent == null) || (parent == -1l))

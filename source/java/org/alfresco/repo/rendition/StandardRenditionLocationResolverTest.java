@@ -31,9 +31,6 @@ import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -49,7 +46,6 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
     private NodeRef companyHome;
     private StandardRenditionLocationResolverImpl locationResolver;
     private RenditionService renditionService;
-    private SearchService searchService;
     private Repository repositoryHelper;
 
     /**
@@ -64,16 +60,9 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         // Get the required services
         this.serviceRegistry = (ServiceRegistry) this.getApplicationContext().getBean("ServiceRegistry");
         this.nodeService=serviceRegistry.getNodeService();
-        this.searchService = serviceRegistry.getSearchService();
         this.renditionService = (RenditionService) this.getApplicationContext().getBean("RenditionService");
         this.repositoryHelper = (Repository) this.getApplicationContext().getBean("repositoryHelper");
-        ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
-                    "/app:company_home");
-        if (rs.length() != 1)
-        {
-            fail("Could not find company home");
-        }
-        companyHome = rs.getNodeRef(0);
+        this.companyHome = this.applicationContext.getBean("repositoryHelper", Repository.class).getCompanyHome();
         locationResolver = new StandardRenditionLocationResolverImpl();
         locationResolver.setServiceRegistry(serviceRegistry);
         locationResolver.setRepositoryHelper(repositoryHelper);

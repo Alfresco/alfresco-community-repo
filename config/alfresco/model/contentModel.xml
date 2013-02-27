@@ -1516,6 +1516,19 @@
          </properties>
       </aspect>
       
+      <!-- Introduced in ALF-17519. Used to store arbitrary webdav 'dead' properties that may be set by webdav clients -->
+      <aspect name="webdav:object">
+         <title>Webdav Object</title>
+         <properties>
+            <property name="webdav:deadproperties">
+               <title>Webdav Dead Properties</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </aspect>
+      
       <!--             -->
       <!--  DEPRECATED -->
       <!--             -->

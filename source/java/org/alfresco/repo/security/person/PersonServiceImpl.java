@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -44,11 +45,6 @@ import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
-import org.alfresco.repo.node.getchildren.FilterProp;
-import org.alfresco.repo.node.getchildren.FilterPropString;
-import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
-import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
-import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.SearcherException;
@@ -73,11 +69,15 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -109,8 +109,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 {
     private static Log logger = LogFactory.getLog(PersonServiceImpl.class);
     
+    private static String DELETING_PERSON_SET_RESOURCE = "DeletingPersonSetResource";
+    
     private static final String CANNED_QUERY_PEOPLE_LIST = "getPeopleCannedQueryFactory";
-    private static final String CANNED_QUERY_PEOPLE_LIST_DEPRECATED = "peopleGetChildrenCannedQueryFactory";
 
     private static final String DELETE = "DELETE";
     private static final String SPLIT = "SPLIT";
@@ -1160,41 +1161,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public Set<NodeRef> getAllPeople()
     {
-        List<PersonInfo> personInfos = getPeople(null, true, null, new PagingRequest(Integer.MAX_VALUE, null)).getPage();
+        List<PersonInfo> personInfos = getPeople(null, null, null, new PagingRequest(Integer.MAX_VALUE, null)).getPage();
         Set<NodeRef> refs = new HashSet<NodeRef>(personInfos.size());
         for (PersonInfo personInfo : personInfos)
         {
             refs.add(personInfo.getNodeRef());
         }
         return refs;
-    }
-    
-    private List<FilterProp> getFilterProps(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase)
-    {
-        List<FilterProp> filterProps = null;
-        if (stringPropFilters != null)
-        {
-            filterProps = new ArrayList<FilterProp>(stringPropFilters.size());
-            for (Pair<QName, String> filterProp : stringPropFilters)
-            {
-                String filterStr = filterProp.getSecond();
-                if ((filterStr == null) || (filterStr.equals("")) || (filterStr.equals("*")))
-                {
-                    // The wildcard means no filtering is needed on this property
-                    continue;
-                }
-                else if (filterStr.endsWith("*"))
-                {
-                    // The trailing * is implicit
-                    filterStr = filterStr.substring(0, filterStr.length()-1);
-                }
-                
-                // Turn this into a canned query filter
-                filterProps.add(new FilterPropString(filterProp.getFirst(), filterStr, (filterIgnoreCase ? FilterTypeString.STARTSWITH_IGNORECASE : FilterTypeString.STARTSWITH)));
-            }
-        }
-        
-        return filterProps;
     }
     
     /**
@@ -1219,6 +1192,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         cqResults = cq.execute();
         
         final CannedQueryResults<NodeRef> results = cqResults;
+        
+        boolean nonFinalHasMoreItems = results.hasMoreItems();
         List<NodeRef> nodeRefs;
         if (results.getPageCount() > 0)
         {
@@ -1227,12 +1202,15 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 // eg. since hasMoreItems added one (for a pre-paged result)
                 nodeRefs = nodeRefs.subList(0, pagingRequest.getMaxItems());
+                nonFinalHasMoreItems = true;
             }
         }
         else
         {
             nodeRefs = Collections.emptyList();
         }
+        
+        final boolean hasMoreItems = nonFinalHasMoreItems;
         
         // set total count
         final Pair<Integer, Integer> totalCount;
@@ -1247,10 +1225,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         
         if (start != null)
         {
-            int cnt = results.getPagedResultCount();
+            int cnt = nodeRefs.size();
             int skipCount = pagingRequest.getSkipCount();
             int maxItems = pagingRequest.getMaxItems();
-            boolean hasMoreItems = results.hasMoreItems();
             int pageNum = (skipCount / maxItems) + 1;
             
             if (logger.isDebugEnabled())
@@ -1291,7 +1268,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             @Override
             public boolean hasMoreItems()
             {
-                return results.hasMoreItems();
+                return hasMoreItems;
             }
             @Override
             public Pair<Integer, Integer> getTotalResultCount()
@@ -1303,46 +1280,131 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     
     /**
      * {@inheritDoc}
+     * 
+     * @deprecated see getPeople(String pattern, List<QName> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
      */
     public PagingResults<PersonInfo> getPeople(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
-        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-        
-        CannedQueryResults<NodeRef> cqResults = null;
-        
-        NodeRef contextNodeRef = getPeopleContainer();
-        
-        Set<QName> childTypeQNames = new HashSet<QName>(1);
-        childTypeQNames.add(ContentModel.TYPE_PERSON);
-        
-        // get canned query
-        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST_DEPRECATED);
-        
-        List<FilterProp> filterProps = getFilterProps(stringPropFilters, filterIgnoreCase);
-        
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, null, null, childTypeQNames, filterProps, sortProps, pagingRequest);
-        
-        // execute canned query
-        cqResults = cq.execute();
-        
-        final CannedQueryResults<NodeRef> results = cqResults;
-        final List<NodeRef> nodeRefs;
-        if (results.getPageCount() > 0)
+
+        if (stringPropFilters == null)
         {
-            nodeRefs = results.getPages().get(0);
+            return getPeople(null, null, sortProps, pagingRequest);
+        }
+        
+        String firstName = "";
+        String lastName = "";
+        String userName = "";
+        for (Pair<QName, String> item : stringPropFilters)
+        {
+            if (ContentModel.PROP_FIRSTNAME.equals(item.getFirst()))
+            {
+                firstName = item.getSecond().trim();
+            }
+            if (ContentModel.PROP_LASTNAME.equals(item.getFirst()))
+            {
+                lastName = item.getSecond().trim();
+            }
+            if (ContentModel.PROP_USERNAME.equals(item.getFirst()))
+            {
+                userName = item.getSecond().trim();
+            }
+        }
+        String searchStr = "";
+        boolean useCQ = false;
+        if (userName.length() == 0)
+        {
+            if (firstName.equalsIgnoreCase(lastName))
+            {
+                searchStr = firstName;
+                useCQ = true;
+            }
+            else
+            {
+                searchStr = firstName + " " + lastName;
+            }
+        }
+        else
+        {
+            searchStr = userName;
+            useCQ = searchStr.split(" ").length == 1;
+        }
+
+        PagingResults<PersonInfo> result = null;
+        if (useCQ)
+        {
+            List<QName> filterProps = new ArrayList<QName>(3);
+            filterProps.add(ContentModel.PROP_FIRSTNAME);
+            filterProps.add(ContentModel.PROP_LASTNAME);
+            filterProps.add(ContentModel.PROP_USERNAME);
+            sortProps = sortProps == null ? new ArrayList<Pair<QName, Boolean>>(1) : new ArrayList<Pair<QName, Boolean>>(sortProps);
+            sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true)); 
+            result = getPeople(searchStr, filterProps, sortProps, pagingRequest);
+
+            // Fall back to FTS if no results. For case:  First Name: Gerard, Last Name: Perez Winkler
+            if (result.getPage().size() == 0)
+            {
+                result = null;
+            }
+        }
+
+        if (result == null)
+        {
+            result = getPeopleFts(searchStr, pagingRequest);
+        }
+
+        return result;
+    }
+    
+    /**
+     * Get paged list of people optionally filtered and/or sorted using FTS
+     * 
+     * @param pattern - String to search
+     * @param pagingRequest
+     * @return
+     */
+    private PagingResults<PersonInfo> getPeopleFts(String pattern, PagingRequest pagingRequest)
+    {
+        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+        List<NodeRef> people = null;
+        try
+        {
+            people = getPeopleFtsList(pattern, pagingRequest);
+        }
+        catch (Throwable e1)
+        {
+            // search is failed
+        }
+
+        List<NodeRef> nodeRefs;
+        boolean nonFinalHasMoreItems = false;
+        if (people != null && people.size() > 0)
+        {
+            nodeRefs = people;
+            if (nodeRefs.size() > pagingRequest.getMaxItems())
+            {
+                // eg. since hasMoreItems added one (for a pre-paged result)
+                nodeRefs = nodeRefs.subList(0, pagingRequest.getMaxItems());
+                nonFinalHasMoreItems = true;
+            }
         }
         else
         {
             nodeRefs = Collections.emptyList();
         }
+        if (people == null || people.size() == 0)
+        {
+            nodeRefs = Collections.emptyList();
+        }
         
+        final boolean hasMoreItems = nonFinalHasMoreItems;
+
         // set total count
         final Pair<Integer, Integer> totalCount;
         if (pagingRequest.getRequestTotalCountMax() > 0)
         {
-            totalCount = results.getTotalResultCount();
+            int size = people != null ? people.size() : 0;
+            totalCount = new Pair<Integer, Integer>(size, size);
         }
         else
         {
@@ -1351,55 +1413,156 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         
         if (start != null)
         {
-            int cnt = results.getPagedResultCount();
+            int cnt = nodeRefs.size();
             int skipCount = pagingRequest.getSkipCount();
             int maxItems = pagingRequest.getMaxItems();
-            boolean hasMoreItems = results.hasMoreItems();
             int pageNum = (skipCount / maxItems) + 1;
             
             if (logger.isDebugEnabled())
             {
                 logger.debug(
-                        "getPeople: "+cnt+" items in "+(System.currentTimeMillis()-start)+" msecs " +
-                        		"[pageNum="+pageNum+",skip="+skipCount+",max="+maxItems+",hasMorePages="+hasMoreItems+
-                        		",totalCount="+totalCount+",filters="+stringPropFilters+
-                        		",filtersIgnoreCase="+filterIgnoreCase+",sortProps="+sortProps+"]");
+                        "getPeople: " + cnt + " items in " + (System.currentTimeMillis() - start) + " msecs " +
+                        "[pageNum=" + pageNum + ",skip=" + skipCount + ",max="+ maxItems + ",hasMorePages=" + hasMoreItems +
+                        ",totalCount=" + totalCount + ",pattern=" + pattern + "]");
             }
         }
         
         final List<PersonInfo> personInfos = new ArrayList<PersonInfo>(nodeRefs.size());
         for (NodeRef nodeRef : nodeRefs)
         {
-            Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-            personInfos.add(new PersonInfo(nodeRef, 
-                                           (String)props.get(ContentModel.PROP_USERNAME), 
-                                           (String)props.get(ContentModel.PROP_FIRSTNAME),
-                                           (String)props.get(ContentModel.PROP_LASTNAME)));
+            try
+            {
+                Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+                personInfos.add(new PersonInfo(nodeRef,
+                                (String)props.get(ContentModel.PROP_USERNAME),
+                                (String) props.get(ContentModel.PROP_FIRSTNAME),
+                                (String) props.get(ContentModel.PROP_LASTNAME)));
+            }
+            catch (InvalidNodeRefException e)
+            {
+                logger.warn("Stale search result", e);
+            }
         }
-        
+
         return new PagingResults<PersonInfo>()
         {
             @Override
             public String getQueryExecutionId()
             {
-                return results.getQueryExecutionId();
+                // it's FTS search
+                return null;
             }
+
             @Override
             public List<PersonInfo> getPage()
             {
                 return personInfos;
             }
+
             @Override
             public boolean hasMoreItems()
             {
-                return results.hasMoreItems();
+                return hasMoreItems;
             }
+
             @Override
             public Pair<Integer, Integer> getTotalResultCount()
             {
                 return totalCount;
             }
         };
+    }
+    
+    private List<NodeRef> getPeopleFtsList(String pattern, PagingRequest pagingRequest) throws Throwable
+    {
+        // Think this code is based on org.alfresco.repo.jscript.People.getPeopleImplSearch(String, StringTokenizer, int, int)
+        List<NodeRef> people = null;
+
+        SearchParameters params = new SearchParameters();
+        params.addQueryTemplate("_PERSON", "|%firstName OR |%lastName OR |%userName");
+        params.setDefaultFieldName("_PERSON");
+
+        StringBuilder query = new StringBuilder(256);
+
+        query.append("TYPE:\"").append(ContentModel.TYPE_PERSON).append("\" AND (");
+
+        StringTokenizer t = new StringTokenizer(pattern, " ");
+
+        if (t.countTokens() == 1)
+        {
+            // fts-alfresco property search i.e. location:"maidenhead"
+            query.append('"').append(pattern).append("*\"");
+        }
+        else
+        {
+
+            // multiple terms supplied - look for first and second name etc.
+            // assume first term is first name, any more are second i.e.
+            // "Fraun van de Wiels"
+            // also allow fts-alfresco property search to reduce results
+            params.setDefaultOperator(SearchParameters.Operator.AND);
+            boolean firstToken = true;
+            boolean tokenSurname = false;
+            {
+                pattern = t.nextToken();
+                if (firstToken)
+                {
+                    query.append("firstName:\"");
+                    query.append(pattern);
+                    query.append("*\" ");
+
+                    firstToken = false;
+                }
+                else
+                {
+                    if (tokenSurname)
+                    {
+                        query.append("OR ");
+                    }
+                    query.append("lastName:\"");
+                    query.append(pattern);
+                    query.append("*\" ");
+
+                    tokenSurname = true;
+                }
+            }
+        }
+        query.append(")");
+
+        // define the search parameters
+        params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        params.addStore(this.storeRef);
+        params.setQuery(query.toString());
+        if (pagingRequest.getMaxItems() > 0)
+        {
+            params.setLimitBy(LimitBy.FINAL_SIZE);
+            params.setLimit(pagingRequest.getMaxItems());
+        }
+
+        ResultSet results = null;
+        try
+        {
+            results = searchService.query(params);
+            people = results.getNodeRefs();
+        }
+        catch (Throwable err)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Failed to execute people search: " + query.toString(), err);
+            }
+
+            throw err;
+        }
+        finally
+        {
+            if (results != null)
+            {
+                results.close();
+            }
+        }
+
+        return people;
     }
     
     /**
@@ -1419,6 +1582,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             throw new AlfrescoRuntimeException("Property '" + propertyKey + "' is not defined " + "for content model type cm:person");
         }
+        if (!propertyKey.equals(ContentModel.PROP_FIRSTNAME) &&
+            !propertyKey.equals(ContentModel.PROP_LASTNAME) &&
+            !propertyKey.equals(ContentModel.PROP_USERNAME))
+        {
+            logger.warn("PersonService.getPeopleFilteredByProperty() is being called to find people by "+propertyKey+
+                    ". Only PROP_FIRSTNAME, PROP_LASTNAME, PROP_USERNAME are now used in the search, so fewer nodes may " +
+                    "be returned than expected of there are more than "+count+" users in total.");
+        }
         
         List<Pair<QName, String>> filterProps = new ArrayList<Pair<QName, String>>(1);
         filterProps.add(new Pair<QName, String>(propertyKey, (String)propertyValue));
@@ -1429,7 +1600,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         Set<NodeRef> refs = new HashSet<NodeRef>(personInfos.size());
         for (PersonInfo personInfo : personInfos)
         {
-            refs.add(personInfo.getNodeRef());
+            NodeRef nodeRef = personInfo.getNodeRef();
+            String value = (String) this.nodeService.getProperty(nodeRef, propertyKey);
+            if (EqualsHelper.nullSafeEquals(value, propertyValue))
+            {
+                refs.add(nodeRef);
+            }
         }
         
         return refs;
@@ -1538,12 +1714,18 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     
     private void putToCache(String userName, Set<NodeRef> refs)
     {
-        this.personCache.put(userName.toLowerCase(), refs);
+        String key = userName.toLowerCase();
+        if(!TransactionalResourceHelper.getSet(DELETING_PERSON_SET_RESOURCE).contains(key))
+        {
+            this.personCache.put(key, refs);
+        }
     }
     
     private void removeFromCache(String userName)
     {
-        this.personCache.remove(userName.toLowerCase());
+        String key = userName.toLowerCase();
+        TransactionalResourceHelper.getSet(DELETING_PERSON_SET_RESOURCE).add(key);
+        this.personCache.remove(key);
     }
 
     /**

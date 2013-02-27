@@ -20,10 +20,16 @@ package org.alfresco.repo.activities.post.cleanup;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
+import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VmShutdownListener;
 import org.apache.commons.logging.Log;
@@ -42,6 +48,11 @@ public class PostCleaner
     private int maxAgeMins = 0;
     
     private ActivityPostDAO postDAO;
+    private JobLockService jobLockService;
+    
+    private static final long LOCK_TTL = 60000L;        // 1 minute
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "org.alfresco.repo.activities.post.cleanup.PostCleaner");
+
     
     public void setPostDAO(ActivityPostDAO postDAO)
     {
@@ -53,12 +64,23 @@ public class PostCleaner
         this.maxAgeMins = mins;
     }
     
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+    
+    public void init()
+    {
+        checkProperties();
+    }
+    
     /**
      * Perform basic checks to ensure that the necessary dependencies were injected.
      */
     private void checkProperties()
     {
         PropertyCheck.mandatory(this, "postDAO", postDAO);
+        PropertyCheck.mandatory(this, "jobLockService", jobLockService);
         
         // check the max age
         if (maxAgeMins <= 0)
@@ -68,6 +90,50 @@ public class PostCleaner
     }
         
     public void execute() throws JobExecutionException
+    {
+        final AtomicBoolean keepGoing = new AtomicBoolean(true);
+        String lockToken = null;
+        try
+        {
+            // Lock
+            lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+            // Refresh to get callbacks
+            JobLockRefreshCallback callback = new JobLockRefreshCallback()
+            {
+                @Override
+                public void lockReleased()
+                {
+                    keepGoing.set(false);
+                }
+            
+                @Override
+                public boolean isActive()
+                {
+                    return keepGoing.get();
+                }
+            };
+            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, callback);
+            
+            executeWithLock();
+        }
+        catch (LockAcquisitionException e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Skipping post cleaning.  " + e.getMessage());
+            }
+        }
+        finally
+        {
+            keepGoing.set(false);           // Notify the refresh callback that we are done
+            if (lockToken != null)
+            {
+                jobLockService.releaseLock(lockToken, LOCK_QNAME);
+            }
+        }
+    }
+    
+    public void executeWithLock() throws JobExecutionException
     {
         checkProperties();
         try

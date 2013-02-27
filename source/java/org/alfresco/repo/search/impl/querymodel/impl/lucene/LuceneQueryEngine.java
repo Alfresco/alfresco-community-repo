@@ -47,6 +47,8 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Sort;
@@ -57,6 +59,8 @@ import org.apache.lucene.search.SortField;
  */
 public class LuceneQueryEngine implements QueryEngine
 {
+    protected static final Log logger = LogFactory.getLog(LuceneQueryEngine.class);
+    
     private DictionaryService dictionaryService;
 
     private LuceneIndexerAndSearcher indexAndSearcher;
@@ -216,6 +220,11 @@ public class LuceneQueryEngine implements QueryEngine
                     LuceneQueryBuilder builder = (LuceneQueryBuilder) query;
                     org.apache.lucene.search.Query luceneQuery = builder.buildQuery(selectorGroup, luceneContext, functionContext);
 
+                    if(logger.isDebugEnabled())
+                    {
+                        logger.debug("Executing lucene query: "+luceneQuery);
+                    }
+                    
                     Sort sort = builder.buildSort(selectorGroup, luceneContext, functionContext);
 
                    

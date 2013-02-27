@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -60,6 +60,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
 {
     private String documentFormatsConfiguration;
     private DocumentFormatRegistry formatRegistry;
+    protected TransformerDebug transformerDebug;
 
     /**
      * Set a non-default location from which to load the document format mappings.
@@ -81,6 +82,15 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
     protected abstract void convert(File tempFromFile, DocumentFormat sourceFormat, File tempToFile,
             DocumentFormat targetFormat);
     
+    /**
+     * Helper setter of the transformer debug. 
+     * @param transformerDebug
+     */
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
+    }
+
     public void afterPropertiesSet() throws Exception
     {
         // load the document conversion configuration
@@ -337,7 +347,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         // For these reasons, if the file is of zero length, we will not use JooConverter & OpenOffice
         // and will instead ask Apache PDFBox to produce an empty pdf file for us.
         final long documentSize = reader.getSize();
-        if (documentSize == 0L)
+        if (documentSize == 0L || temporaryMsFile(options))
         {
             produceEmptyPdfFile(tempToFile);
         }
@@ -373,6 +383,12 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         }
     }
     
+    private boolean temporaryMsFile(TransformationOptions options)
+    {
+        String fileName = transformerDebug == null ? null : transformerDebug.getFileName(options, true, -1);
+        return fileName != null && fileName.startsWith("~$");
+    }
+
     /**
      * Populates a file with the content in the reader.
      */

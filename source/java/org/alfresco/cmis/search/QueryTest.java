@@ -3809,7 +3809,7 @@ public class QueryTest extends BaseCMISTest
         options.setSkipCount(skip);
         options.setMaxItems(max);
         CMISResultSet rs = cmisQueryService.query(options);
-        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 10 ? 10 - skip : max, rs.getLength());
+        assertEquals("Skip = " + skip + " max  = " + max, skip + max > 10 ? Math.max(10 - skip, 0) : max, rs.getLength());
         assertEquals("Skip = " + skip + " max  = " + max, (skip + max) < 10, rs.hasMore());
         assertEquals("Skip = " + skip + " max  = " + max, skip, rs.getStart());
         int actualPosition = skip;

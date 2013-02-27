@@ -427,9 +427,24 @@ public interface WorkflowService
      * 
      * @param authority  the authority
      * @param state  filter by specified workflow task state
+     * @param lazyInitialization hint to the underlying workflow-engine to allow returning {@link WorkflowTask}s which
+     * 		  aren't fully initialized but will be when the required values are required. If <code>true</code>, the
+     * 		  returned enities should be used inside of the transaction-boundaries of this service-call.
+     *        If <code>false</code>, fully initialized entities are returned, just as with {@link #getAssignedTasks(String, WorkflowTaskState)}.
+     *        <br>It's a hint to the underlying workflow-engine and may be ignored by the actual implementation.
      * @return  the list of assigned tasks
      */
-    @Auditable(parameters = {"authority", "state"})
+    @Auditable(parameters = {"authority", "state", "lazyInitialization"})
+    public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state, boolean lazyInitialization);
+    
+    /**
+     * Gets all tasks assigned to the specified authority
+     * 
+     * @param authority  the authority
+     * @param state  filter by specified workflow task state
+     * @return  the list of assigned tasks
+     */
+    @Auditable(parameters = {"authority", "state", "lazy"})
     public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state);
     
     /**
@@ -440,6 +455,19 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"authority"})
     public List<WorkflowTask> getPooledTasks(String authority);
+    /**
+     * Gets the pooled tasks available to the specified authority
+     * 
+     * @param authority   the authority
+     * @param lazyInitialization hint to the underlying workflow-engine to allow returning {@link WorkflowTask}s which
+     * 		  aren't fully initialized but will be when the required values are required. If <code>true</code>, the
+     * 		  returned enities should be used inside of the transaction-boundaries of this service-call.
+     *        If <code>false</code>, fully initialized entities are returned, just as with {@link #getPooledTasks(String)}.
+     *        <br>It's a hint to the underlying workflow-engine and may be ignored by the actual implementation.
+     * @return  the list of pooled tasks
+     */
+    @Auditable(parameters = {"authority"})
+    public List<WorkflowTask> getPooledTasks(String authority, boolean lazyinitialization);
     
     /**
      * @deprecated Use overloaded method with the {@code sameSession} parameter
@@ -493,6 +521,18 @@ public interface WorkflowService
     public boolean isTaskEditable(WorkflowTask task, String username);
     
     /**
+     * Determines if the given user can edit the given task
+     * 
+     * @param task The task to check
+     * @param username The user to check
+     * @param refreshTask Whether or not to refresh the {@link WorkflowTask} before check is perfromed
+     * @return true if the user can edit the task
+     * @since 4.1
+     */
+    @Auditable(parameters = {"task", "username", "refreshTask"})
+    public boolean isTaskEditable(WorkflowTask task, String username, boolean refreshTask);
+    
+    /**
      * Determines if the given user can reassign the given task
      * 
      * @param task The task to check
@@ -502,6 +542,18 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"task", "username"})
     public boolean isTaskReassignable(WorkflowTask task, String username);
+    
+    /**
+     * Determines if the given user can reassign the given task
+     * 
+     * @param task The task to check
+     * @param username The user to check
+     * @param refreshTask Whether or not to refresh the {@link WorkflowTask} before check is perfromed
+     * @return true if the user can reassign the task
+     * @since 4.1
+     */
+    @Auditable(parameters = {"task", "username", "refreshTask"})
+    public boolean isTaskReassignable(WorkflowTask task, String username, boolean refreshTask);
     
     /**
      * Determines if the given user can claim the given task
@@ -515,6 +567,18 @@ public interface WorkflowService
     public boolean isTaskClaimable(WorkflowTask task, String username);
     
     /**
+     * Determines if the given user can claim the given task
+     * 
+     * @param task The task to check
+     * @param username The user to check
+     * @param refreshTask Whether or not to refresh the {@link WorkflowTask} before check is perfromed
+     * @return true if the user can claim the task
+     * @since 4.1
+     */
+    @Auditable(parameters = {"task", "username", "refreshTask"})
+    public boolean isTaskClaimable(WorkflowTask task, String username, boolean refreshTask);
+    
+    /**
      * Determines if the given user can release the given task
      * 
      * @param task The task to check
@@ -524,6 +588,18 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"task", "username"})
     public boolean isTaskReleasable(WorkflowTask task, String username);
+    
+    /**
+     * Determines if the given user can release the given task
+     * 
+     * @param task The task to check
+     * @param username The user to check
+     * @param refreshTask Whether or not to refresh the {@link WorkflowTask} before check is perfromed
+     * @return true if the user can release the task
+     * @since 4.1
+     */
+    @Auditable(parameters = {"task", "username", "refreshTask"})
+    public boolean isTaskReleasable(WorkflowTask task, String username, boolean refreshTask);
     
     //
     // Package Management

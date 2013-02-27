@@ -140,6 +140,9 @@
       <property name="documentFormatsConfiguration">
          <value>classpath:alfresco/mimetype/openoffice-document-formats.xml</value>
       </property>
+      <property name="transformerDebug">
+         <ref bean="transformerDebug" />
+      </property>
    </bean>
 
 </beans>

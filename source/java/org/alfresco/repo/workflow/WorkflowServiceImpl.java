@@ -87,6 +87,8 @@ public class WorkflowServiceImpl implements WorkflowService
     private NodeService protectedNodeService;
     private ServiceRegistry services;
     private WorkflowAdminService workflowAdminService;
+    private int maxAuthoritiesForPooledTasks = 100;
+    private int maxPooledTasks = -1;
     
     /**
      * Sets the Authority Service
@@ -184,6 +186,30 @@ public class WorkflowServiceImpl implements WorkflowService
     public void setServices(ServiceRegistry services)
     {
         this.services = services;
+    }
+
+    /**
+     * Sets the maximum number of groups to check for pooled tasks. For performance reasons, this is limited to 100 by
+     * default.
+     * 
+     * @param maxAuthoritiesForPooledTasks
+     *            the limit to set. If this is less than or equal to zero then there is no limit.
+     */
+    public void setMaxAuthoritiesForPooledTasks(int maxAuthoritiesForPooledTasks)
+    {
+        this.maxAuthoritiesForPooledTasks = maxAuthoritiesForPooledTasks;
+    }
+
+    /**
+     * Sets the maximum number of pooled tasks to return in a query. It may be necessary to limit this depending on UI
+     * limitations.
+     * 
+     * @param maxPooledTasks
+     *            the limit to set. If this is less than or equal to zero then there is no limit.
+     */
+    public void setMaxPooledTasks(int maxPooledTasks)
+    {
+        this.maxPooledTasks = maxPooledTasks;
     }
 
     /*
@@ -726,14 +752,20 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state)
     {
-        List<WorkflowTask> tasks = new ArrayList<WorkflowTask>(10);
-        String[] ids = registry.getTaskComponents();
-        for (String id : ids)
-        {
-            TaskComponent component = registry.getTaskComponent(id);
-            tasks.addAll(component.getAssignedTasks(authority, state));
-        }
-        return Collections.unmodifiableList(tasks);
+       return getAssignedTasks(authority, state, false);
+    }
+    
+    @Override
+    public List<WorkflowTask> getAssignedTasks(String authority,
+    		WorkflowTaskState state, boolean lazyInitialization) {
+    	 List<WorkflowTask> tasks = new ArrayList<WorkflowTask>(10);
+         String[] ids = registry.getTaskComponents();
+         for (String id : ids)
+         {
+             TaskComponent component = registry.getTaskComponent(id);
+             tasks.addAll(component.getAssignedTasks(authority, state, lazyInitialization));
+         }
+         return Collections.unmodifiableList(tasks);
     }
 
     /*
@@ -744,22 +776,48 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public List<WorkflowTask> getPooledTasks(String authority)
     {
-        // Expand authorities to include associated groups (and parent groups)
+       return getPooledTasks(authority, false);
+    }
+    
+    @Override
+    public List<WorkflowTask> getPooledTasks(String authority,
+    		boolean lazyinitialization) {
+    	 // Expand authorities to include associated groups (and parent groups)
         List<String> authorities = new ArrayList<String>();
         authorities.add(authority);
         Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, authority, false);
         authorities.addAll(parents);
-        
-        // Retrieve pooled tasks for authorities (from each of the registered
-        // task components)
+        if (maxAuthoritiesForPooledTasks > 0 && authorities.size() > maxAuthoritiesForPooledTasks)
+        {
+            authorities = authorities.subList(0, maxAuthoritiesForPooledTasks);
+        }
+
+        // Retrieve pooled tasks for authorities (from each of the registered task components)
         List<WorkflowTask> tasks = new ArrayList<WorkflowTask>(10);
+        int taskCount = 0;
         String[] ids = registry.getTaskComponents();
-        for (String id : ids)
+        OUTER: for (String id : ids)
         {
             TaskComponent component = registry.getTaskComponent(id);
-            for(int i = 0; i < authorities.size(); i+=1000)
+            for (int i = 0; i < authorities.size(); i += 1000)
             {
-                tasks.addAll(component.getPooledTasks(authorities.subList(i*1000, ((i+1)*1000) > authorities.size() ? authorities.size() : ((i+1)*1000))));
+                List<WorkflowTask> pooledTasks = component.getPooledTasks(authorities.subList(i, Math.min(i + 1000, authorities.size())), lazyinitialization);
+                // Clip the results if necessary
+                if (maxPooledTasks > 0)
+                {
+                    for (WorkflowTask pooledTask: pooledTasks)
+                    {
+                        tasks.add(pooledTask);
+                        if (++taskCount >= maxPooledTasks)
+                        {
+                            break OUTER;
+                        }
+                    }
+                }
+                else
+                {
+                    tasks.addAll(pooledTasks);
+                }
             }
         }
         return Collections.unmodifiableList(tasks);
@@ -893,20 +951,30 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public boolean isTaskEditable(WorkflowTask task, String username)
     {
-        task = getTaskById(task.getId()); // Refresh the task.
-        
+       return isTaskEditable(task, username, true);
+    }
+    
+    @Override
+    public boolean isTaskEditable(WorkflowTask task, String username,
+    		boolean refreshTask) 
+    {
+    	if(refreshTask)
+    	{
+    		task = getTaskById(task.getId()); // Refresh the task.
+    	}
+         
         // if the task is complete it is not editable
         if (task.getState() == WorkflowTaskState.COMPLETED)
         {
             return false;
         }
-
+        
         if (isUserOwnerOrInitiator(task, username))
         {
             // editable if the current user is the task owner or initiator
             return true;
         }
-        
+         
         if (task.getProperties().get(ContentModel.PROP_OWNER) == null)
         {
             // if the user is not the owner or initiator check whether they are
@@ -926,7 +994,17 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public boolean isTaskReassignable(WorkflowTask task, String username)
     {
-        task = getTaskById(task.getId()); // Refresh the task.
+        return isTaskReassignable(task, username, true);
+    }
+    
+    @Override
+    public boolean isTaskReassignable(WorkflowTask task, String username,
+    		boolean refreshTask) 
+    {
+    	if(refreshTask)
+    	{
+    		task = getTaskById(task.getId()); // Refresh the task.
+    	}
         
         // if the task is complete it is not reassignable
         if (task.getState() == WorkflowTaskState.COMPLETED)
@@ -970,7 +1048,17 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public boolean isTaskClaimable(WorkflowTask task, String username)
     {
-        task = getTaskById(task.getId()); // Refresh the task.
+        return isTaskClaimable(task, username, true);
+    }
+    
+    @Override
+    public boolean isTaskClaimable(WorkflowTask task, String username,
+    		boolean refreshTask) 
+    {
+    	if(refreshTask)
+    	{
+    		task = getTaskById(task.getId()); // Refresh the task.
+    	}
         
         // if the task is complete it is not claimable
         if (task.getState() == WorkflowTaskState.COMPLETED)
@@ -994,8 +1082,16 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public boolean isTaskReleasable(WorkflowTask task, String username)
     {
-        task = getTaskById(task.getId()); // Refresh the task.
-        
+    	return isTaskReleasable(task, username, true);
+    }
+    
+    @Override
+    public boolean isTaskReleasable(WorkflowTask task, String username,	boolean refreshTask) 
+    {
+    	if(refreshTask)
+    	{
+    		task = getTaskById(task.getId()); // Refresh the task.
+    	}
         // if the task is complete it is not releasable
         if (task.getState() == WorkflowTaskState.COMPLETED)
         {

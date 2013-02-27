@@ -11,7 +11,7 @@
    </bean>
 
    <bean name="hiddenAspect" class="org.alfresco.repo.model.filefolder.HiddenAspect">
-      <property name="nodeService" ref="NodeService"/>
+      <property name="nodeService" ref="nodeService"/>
       <property name="fileFolderService" ref="fileFolderService"/>
       <property name="searchService" ref="searchService"/>
 

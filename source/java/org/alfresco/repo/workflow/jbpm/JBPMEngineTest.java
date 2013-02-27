@@ -335,7 +335,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         List<WorkflowInstance> instances1 = workflowComponent.getActiveWorkflows(workflowDef.getId());
         assertNotNull(instances1);
         assertEquals(1, instances1.size());
-        List<WorkflowTask> tasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
+        List<WorkflowTask> tasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS, false);
         assertNotNull(tasks);
         assertTrue(tasks.size() > 0);
         WorkflowInstance cancelledInstance = workflowComponent.cancelWorkflow(instances1.get(0).getId());
@@ -344,7 +344,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         List<WorkflowInstance> instances2 = workflowComponent.getActiveWorkflows(workflowDef.getId());
         assertNotNull(instances2);
         assertEquals(0, instances2.size());
-        List<WorkflowTask> tasks1 = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
+        List<WorkflowTask> tasks1 = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS, false);
         assertNotNull(tasks1);
         tasks1 = filterTasksByWorkflowInstance(tasks1, cancelledInstance.getId());
         assertEquals(0, tasks1.size());
@@ -414,7 +414,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
 
     private void ParallelReject(String user)
     {
-        List<WorkflowTask> tasks = taskComponent.getAssignedTasks(user, WorkflowTaskState.IN_PROGRESS);
+        List<WorkflowTask> tasks = taskComponent.getAssignedTasks(user, WorkflowTaskState.IN_PROGRESS, false);
         assertEquals(1, tasks.size());
         WorkflowTask task = tasks.get(0);
         taskComponent.endTask(task.getId(), "reject");
@@ -446,11 +446,11 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         assertEquals(1, tasks.size());
         WorkflowTask updatedTask = taskComponent.endTask(tasks.get(0).getId(), path.getNode().getTransitions()[0].getId());
         assertNotNull(updatedTask);
-        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.COMPLETED);
+        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.COMPLETED, false);
         assertNotNull(completedTasks);
         completedTasks = filterTasksByWorkflowInstance(completedTasks, path.getInstance().getId());
         assertEquals(1, completedTasks.size());
-        List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS);
+        List<WorkflowTask> assignedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.IN_PROGRESS, false);
         assertNotNull(assignedTasks);
         assignedTasks = filterTasksByWorkflowInstance(assignedTasks, path.getInstance().getId());
         assertEquals(1, assignedTasks.size());
@@ -494,7 +494,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
         WorkflowTask updatedTask = taskComponent.endTask(tasks1.get(0).getId(), null);
         assertNotNull(updatedTask);
         assertEquals(WorkflowTaskState.COMPLETED, updatedTask.getState());
-        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.COMPLETED);
+        List<WorkflowTask> completedTasks = taskComponent.getAssignedTasks(AuthenticationUtil.getAdminUserName(), WorkflowTaskState.COMPLETED, false);
         assertNotNull(completedTasks);
         completedTasks = filterTasksByWorkflowInstance(completedTasks, path.getInstance().getId());
         assertEquals(1, completedTasks.size());

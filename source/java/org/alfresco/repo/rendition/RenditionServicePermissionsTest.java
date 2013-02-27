@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,11 +19,12 @@
 
 package org.alfresco.repo.rendition;
 
-import java.io.File;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.Serializable;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
@@ -31,133 +32,142 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
+import org.alfresco.repo.thumbnail.ThumbnailHelper;
+import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.BaseAlfrescoSpringTest;
-import org.alfresco.util.PropertyMap;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.test.junitrules.AlfrescoPerson;
+import org.alfresco.util.test.junitrules.ApplicationContextInit;
+import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
+import org.alfresco.util.test.junitrules.TemporaryNodes;
+import org.alfresco.util.test.junitrules.TemporarySites;
+import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
 
 /**
  * @author Neil McErlean
  * @since 3.3
  */
-public class RenditionServicePermissionsTest extends BaseAlfrescoSpringTest
+public class RenditionServicePermissionsTest
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RenditionServicePermissionsTest.class);
-
+    
+    // JUnit Rule to initialise the default Alfresco spring configuration
+    public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
+    
+    // JUnit Rules to create test users.
+    public static AlfrescoPerson TEST_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, "UserOne");
+    
+    // Tie them together in a static Rule Chain
+    @ClassRule public static RuleChain staticRuleChain = RuleChain.outerRule(APP_CONTEXT_INIT)
+                                                            .around(TEST_USER1);
+    
+    // A JUnit Rule to manage test nodes use in each test method
+    public TemporaryNodes testNodes = new TemporaryNodes(APP_CONTEXT_INIT);
+    // A JUnit Rule to create a test site.
+    public TemporarySites testSites = new TemporarySites(APP_CONTEXT_INIT);
+    
+    // A JUnit Rule to run tests as the given user.
+    public RunAsFullyAuthenticatedRule runTestsAsUser = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getAdminUserName());
+    
+    // Tie them together in a static Rule Chain
+    @Rule public RuleChain nonStaticRuleChain = RuleChain.outerRule(runTestsAsUser)
+                                                            .around(testNodes)
+                                                            .around(testSites);
+    
     private final static QName RESCALE_RENDER_DEFN_NAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
             ImageRenderingEngine.NAME + System.currentTimeMillis());
 
-    private NodeRef nodeWithImageContent;
+
+    private static ContentService            contentService;
+    private static NodeService               nodeService;
+    private static PermissionService         permissionService;
+    private static RenditionService          renditionService;
+    private static Repository                repositoryHelper;
+    private static RetryingTransactionHelper transactionHelper;
+    private static ServiceRegistry           services;
+    private static ThumbnailRegistry         thumbnailRegistry;
+    
+    private NodeRef companyHome;
+    private String  testFolderName;
     private NodeRef testFolder;
-
-    private PermissionService permissionService;
-    private PersonService personService;
-    private RenditionService renditionService;
-    private Repository repositoryHelper;
-    private RetryingTransactionHelper transactionHelper;
-    private String testFolderName;
     
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    private NodeRef nodeWithImageContent;
+    private TestSiteAndMemberInfo testSiteInfo;
+    private NodeRef brokenJpg;
+    
+    @BeforeClass public static void initStaticData() throws Exception
     {
-        super.onSetUpInTransaction();
-        this.permissionService = (PermissionService)this.applicationContext.getBean("PermissionService");
-        this.personService = (PersonService)this.applicationContext.getBean("PersonService");
-        this.renditionService = (RenditionService) this.applicationContext.getBean("renditionService");
-        this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
-        this.transactionHelper = (RetryingTransactionHelper) this.applicationContext
-                    .getBean("retryingTransactionHelper");
+        contentService    = (ContentService)            APP_CONTEXT_INIT.getApplicationContext().getBean("ContentService");
+        nodeService       = (NodeService)               APP_CONTEXT_INIT.getApplicationContext().getBean("NodeService");
+        permissionService = (PermissionService)         APP_CONTEXT_INIT.getApplicationContext().getBean("PermissionService");
+        renditionService  = (RenditionService)          APP_CONTEXT_INIT.getApplicationContext().getBean("renditionService");
+        repositoryHelper  = (Repository)                APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
+        transactionHelper = (RetryingTransactionHelper) APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper");
+        services          = (ServiceRegistry)           APP_CONTEXT_INIT.getApplicationContext().getBean("ServiceRegistry");
+        thumbnailRegistry = (ThumbnailRegistry)         APP_CONTEXT_INIT.getApplicationContext().getBean("thumbnailRegistry");
+    }
+    
+    @Before public void initNonStaticData() throws Exception
+    {
+        companyHome = repositoryHelper.getCompanyHome();
         
-        NodeRef companyHome = this.repositoryHelper.getCompanyHome();
-
         // Create the test folder used for these tests
-        this.testFolderName= "Test-folder-"+ System.currentTimeMillis();
-        this.testFolder = nodeService.createNode(companyHome,
-                    ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(NamespaceService.APP_MODEL_1_0_URI,testFolderName),
-                                ContentModel.TYPE_FOLDER).getChildRef();
-        nodeService.setProperty(testFolder, ContentModel.PROP_NAME, testFolderName);
-        // Create the node used as a content supplier for tests
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        props.put(ContentModel.PROP_NAME, "Test-image-node-" + System.currentTimeMillis());
-
+        testFolderName = "Test-folder-"+ System.currentTimeMillis();
+        testFolder     = testNodes.createFolder(companyHome, testFolderName, AuthenticationUtil.getAdminUserName());
+        
+        // Create the node used as a content supplier for one test
         String testImageNodeName = "testImageNode" + System.currentTimeMillis();
-        this.nodeWithImageContent = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(NamespaceService.APP_MODEL_1_0_URI, testImageNodeName),
-                    ContentModel.TYPE_CONTENT, props).getChildRef();
-        // Stream some well-known image content into the node.
-        URL url = RenditionServicePermissionsTest.class.getClassLoader().getResource("images/gray21.512.png");
-        assertNotNull("url of test image was null", url);
-        File imageFile = new File(url.getFile());
-        assertTrue(imageFile.exists());
-
-        nodeService.setProperty(nodeWithImageContent, ContentModel.PROP_CONTENT, new ContentData(null,
-                    MimetypeMap.MIMETYPE_IMAGE_PNG, 0L, null));
-        ContentWriter writer = contentService.getWriter(nodeWithImageContent, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_IMAGE_PNG);
-        writer.setEncoding("UTF-8");
-        writer.putContent(imageFile);
+        nodeWithImageContent     = testNodes.createQuickFile(MimetypeMap.MIMETYPE_IMAGE_PNG, companyHome, testImageNodeName, AuthenticationUtil.getAdminUserName());
+        
+        // Create a test site - note that 'admin' is the site creator.
+        testSiteInfo = testSites.createTestSiteWithUserPerRole(this.getClass().getSimpleName(),
+                                                               "sitePreset",
+                                                               SiteVisibility.PRIVATE,
+                                                               AuthenticationUtil.getAdminUserName());
+        final NodeRef siteDocLib = testSiteInfo.doclib;
+        // Put a piece of content in that site - again the creator is admin.
+        // This piece of content is malformed and it will not be possible to create thumbnails from it.
+        brokenJpg                = testNodes.createQuickFileByName("quickCorrupt.jpg", siteDocLib, AuthenticationUtil.getAdminUserName());
     }
     
-
-
-    @Override
-    protected void onTearDownInTransaction() throws Exception
-    {
-        nodeService.deleteNode(nodeWithImageContent);
-        nodeService.deleteNode(testFolder);
-    }
-
     /**
      * This test method uses the RenditionService to render a test document and place the
      * rendition under a folder for which the user does not have write permissions.
      * This should be allowed as all renditions are performed as system.
      */
-    @SuppressWarnings("deprecation")
-    public void testRenditionAccessPermissions() throws Exception
+    @Test public void testRenditionAccessPermissions() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-        
-        final String normalUser = "renditionUser";
+        final String normalUser = TEST_USER1.getUsername();
 
         // As admin, create a user who has read-only access to the testFolder
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
-                // Set the current security context as admin
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                assertEquals("admin", authenticationService.getCurrentUserName());
-
-                if (authenticationService.authenticationExists(normalUser) == false)
-                {
-                    authenticationService.createAuthentication(normalUser, "PWD".toCharArray());
-                    
-                    PropertyMap personProperties = new PropertyMap();
-                    personProperties.put(ContentModel.PROP_USERNAME, normalUser);
-                    personProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + normalUser);
-                    personProperties.put(ContentModel.PROP_FIRSTNAME, "firstName");
-                    personProperties.put(ContentModel.PROP_LASTNAME, "lastName");
-                    personProperties.put(ContentModel.PROP_EMAIL, "email@email.com");
-                    personProperties.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-                    
-                    personService.createPerson(personProperties);
-                }
-                
                 // Restrict write access to the test folder
                 permissionService.setPermission(testFolder, normalUser, PermissionService.CONSUMER, true);
                 
@@ -172,7 +182,6 @@ public class RenditionServicePermissionsTest extends BaseAlfrescoSpringTest
             {
                 // Set the current security context as a rendition user
                 AuthenticationUtil.setFullyAuthenticatedUser(normalUser);
-                assertEquals(normalUser, authenticationService.getCurrentUserName());
                 
                 assertFalse("Source node has unexpected renditioned aspect.", nodeService.hasAspect(nodeWithImageContent,
                             RenditionModel.ASPECT_RENDITIONED));
@@ -188,6 +197,7 @@ public class RenditionServicePermissionsTest extends BaseAlfrescoSpringTest
                 logger.debug("Created rendition: " + renditionAssoc.getChildRef());
                 
                 NodeRef renditionNode = renditionAssoc.getChildRef();
+                testNodes.addNodeRef(renditionNode);
                 
                 assertEquals("The parent node was not correct", nodeWithImageContent, renditionAssoc.getParentRef());
                 logger.debug("rendition's primary parent: " + nodeService.getPrimaryParent(renditionNode));
@@ -216,6 +226,130 @@ public class RenditionServicePermissionsTest extends BaseAlfrescoSpringTest
                 });
         }
 
+    /** This test case relates to ALF-17797. */
+    @Test public void userWithReadOnlyAccessToNodeShouldNotCauseFailedThumbnailProblems() throws Exception
+    {
+        final String siteConsumer = testSiteInfo.siteConsumer;
+        
+        // Let's trigger the creation of a doclib thumbnail for the broken JPG node.
+        // We know this cannot succeed. We also know the user triggering it does not have write permissions for the node.
+        AuthenticationUtil.setFullyAuthenticatedUser(siteConsumer);
+        
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // This is what ScriptNode.createThumbnail does
+                ThumbnailDefinition details = thumbnailRegistry.getThumbnailDefinition("doclib");
+                Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
+                
+                // Queue async creation of thumbnail
+                services.getActionService().executeAction(action, brokenJpg, true, true);
+                return null;
+            }
+        });
+        
+        // FIXME Yuck. Sleeping to wait for the completion of the above async action.
+        Thread.sleep(2000);
+        
+        // The node in question should have no thumbnail/rendition. But it should be marked as having had a failed rendition.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertTrue("Expected an empty list of renditions for brokenJpg.",
+                           renditionService.getRenditions(brokenJpg).isEmpty());
+                
+                assertTrue("Expected brokenJpg to have FailedThumbnailSource aspect.",
+                           nodeService.hasAspect(brokenJpg, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE));
+                
+                List<ChildAssociationRef> failedThumbnailChildren = nodeService.getChildAssocs(brokenJpg, ContentModel.ASSOC_FAILED_THUMBNAIL, RegexQNamePattern.MATCH_ALL);
+                assertEquals("Wrong number of failed thumbnail child nodes.", 1, failedThumbnailChildren.size());
+                
+                NodeRef failedThumbnailChildNode = failedThumbnailChildren.get(0).getChildRef();
+                
+                assertEquals(1, nodeService.getProperty(failedThumbnailChildNode, ContentModel.PROP_FAILURE_COUNT));
+                
+                return null;
+            }
+        });
+    }
+    
+    /**
+     * This test case relates to ALF-17886.
+     * 
+     * The bug is as follows.
+     * <ol>
+     * <li>A user creates a node and triggers rendition (thumbnail) creation.</li>
+     * <li>It all succeeds.</li>
+     * <li>Another user (Role SiteColaborator: Only has update, not delete privileges) updates the content with something that cannot be thumbnailed e.g. corrupt document.</li>
+     * <li>There should be no failures in executing the DeleteRenditionActionExecuter.</li>
+     * </ol>
+     */
+    @Test public void userWithoutDeleteAccessToNodeShouldNotCauseFailedThumbnailProblemsOnUpdate() throws Exception
+    {
+        final String siteManager      = testSiteInfo.siteManager;
+        final String siteCollaborator = testSiteInfo.siteCollaborator;
+        
+        // Let's trigger the creation of a doclib thumbnail for a JPG node.
+        AuthenticationUtil.setFullyAuthenticatedUser(siteManager);
+        
+        final NodeRef imgNode = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                NodeRef imgNode = testNodes.createQuickFile(MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                                                            testSiteInfo.doclib,
+                                                            "quick.jpg",
+                                                            AuthenticationUtil.getFullyAuthenticatedUser());
+                
+                // This is what ScriptNode.createThumbnail does
+                ThumbnailDefinition details = thumbnailRegistry.getThumbnailDefinition("doclib");
+                Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
+                
+                // Creation of thumbnail
+                services.getActionService().executeAction(action, imgNode, true, false);
+                
+                // The node in question should now have a thumbnail/rendition.
+                assertEquals(1, renditionService.getRenditions(imgNode).size());
+                
+                return imgNode;
+            }
+        });
+        
+        
+        // Now switch to another user. This user can add/update but cannot delete any content.
+        AuthenticationUtil.setFullyAuthenticatedUser(siteCollaborator);
+        
+        // And we'll update the image node with some broken content.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                final ContentWriter writer = contentService.getWriter(imgNode, ContentModel.PROP_CONTENT, true);
+                final ContentReader reader = contentService.getReader(brokenJpg, ContentModel.PROP_CONTENT);
+                
+                writer.putContent(reader.getContentInputStream());
+                
+                // Simply updating the content like this should trigger rendition updates, which in this case will fail.
+                return null;
+            }
+        });
+        
+        // FIXME Yuck. Sleeping to wait for the completion of the above async action.
+        Thread.sleep(2000);
+        
+        // Now to check that the node has no renditions as the previous one should have been deleted.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertTrue(renditionService.getRenditions(imgNode).isEmpty());
+                return null;
+            }
+        });
+    }
+    
     /**
      * Creates a RenditionDefinition for the RescaleImageActionExecutor.
      * 

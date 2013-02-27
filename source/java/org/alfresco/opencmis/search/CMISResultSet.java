@@ -340,4 +340,17 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     {
         return Collections.<Pair<String, Integer>>emptyList();
     }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
+     */
+    @Override
+    public long getNumberFound()
+    {
+        for (ResultSet resultSet : wrapped.values())
+        {
+            return resultSet.getNumberFound();
+        }
+        throw new IllegalStateException();
+    }
 }

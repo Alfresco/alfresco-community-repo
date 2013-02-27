@@ -355,7 +355,7 @@ public class UIContentSelector extends UIInput
                   NamespaceService.CONTENT_MODEL_1_0_URI, "name"));
          query.append(nameAttr);
          
-         query.append(":\"*" + safeContains + "\"*");
+         query.append(":\"*" + safeContains + "*\"");
       }
 
       int maxResults = Application.getClientConfig(context).getSelectorsSearchMaxResults();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -5418,7 +5418,7 @@ alfresco.xforms.FocusResolver = new Class({
     // Ignores the event if focus actually is the same as at previous time or if nothing is focused
     if ((null == focusedElement) || ((null != resolver._currentElement) && !resolver._forced && ((resolver._currentElement.id == focusedElement.id) || (0 == focusedElement.id.indexOf("undefined")))))
     {
-      if (0 != focusedElement.id.indexOf("undefined"))
+      if ((null != focusedElement) && (0 != focusedElement.id.indexOf("undefined")))
       {
         resolver._navigationDirection = 0;
       }
@@ -5589,7 +5589,7 @@ alfresco.xforms.FocusResolver = new Class({
 
   findControl: function(element, ignoreTabIndex, dontCareAboutValidity)
   {
-    if ((null == element) || (("DIV" == element.tagName) && element.hasClass("xformsItemLabelContainer")))
+    if ((null == element) || (("DIV" == element.tagName) && this._hasClass(element, "xformsItemLabelContainer")))
     {
       return null;
     }
@@ -5611,6 +5611,11 @@ alfresco.xforms.FocusResolver = new Class({
     }
 
     return result;
+  },
+
+  _hasClass: function(element, className)
+  {
+    return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;
   },
 
   _isElementInTheScope: function(element)

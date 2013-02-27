@@ -39,6 +39,9 @@
       <property name="configService">
          <ref bean="webClientConfigService" />
       </property>
+      <property name="remoteUserMapper">
+         <ref bean="RemoteUserMapper" />
+      </property>
    </bean>
 
    <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptSSOAuthenticationFilter">

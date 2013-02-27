@@ -6,6 +6,10 @@
 	modified BSD license. For more information on Dojo licensing, see:
 
 		http://dojotoolkit.org/community/licensing.shtml
+
+ 2013 - Alfresco Software, Ltd.
+ Alfresco Software has modified source of this file
+ The details of changes can be found in svn at location root\projects\web-client\source\web\scripts\ajax\dojo 
 */
 
 dojo.provide("dojo.widget.TimePicker");
@@ -246,6 +250,22 @@ dojo.widget.defineWidget(
 		this.setSelectedMinute(evt);
 		this.selectedTime.anyTime = false;
 		this.onSetTime();
+	},
+
+	handleNewHourSelectedKey: function(event) {
+		// DOJO accessibility for Alfresco WCM: ALF-11956
+		if((null != event) && (((null != event.keyCode) && ((13 == event.keyCode) || (32 == event.keyCode))) || ((null != event.charCode) && ((13 == event.charCode) || (32 == event.charCode))))) {
+			event.stopPropagation();
+			this.onSetSelectedHour(event);
+		}
+	},
+
+	handleNewMinuteSelectedKey: function(event) {
+		// DOJO accessibility for Alfresco WCM: ALF-11956
+		if((null != event) && (((null != event.keyCode) && ((13 == event.keyCode) || (32 == event.keyCode))) || ((null != event.charCode) && ((13 == event.charCode) || (32 == event.charCode))))) {
+			event.stopPropagation();
+			this.onSetSelectedMinute(event);
+		}
 	},
 
 	setSelectedMinute: function(evt) {

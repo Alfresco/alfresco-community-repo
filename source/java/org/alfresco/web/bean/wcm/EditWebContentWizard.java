@@ -48,6 +48,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
    
    private AVMNode avmNode;
    private Form form;
+   private String storeNameBeforeEditing;
    
    protected Set<String> existingLocks = null;
 
@@ -87,6 +88,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
       
       // calculate which locks are present at init time
       this.existingLocks = new HashSet<String>(4);
+      this.storeNameBeforeEditing = null;
       String lock = this.getAvmLockingService().getLockOwner(AVMUtil.getStoreId(this.createdPath),
               AVMUtil.getStoreRelativePath(this.createdPath));
       if (lock != null)
@@ -148,6 +150,24 @@ public class EditWebContentWizard extends CreateWebContentWizard
             }
          }
       }
+
+      if (this.storeNameBeforeEditing != null)
+      {
+          String storeId = AVMUtil.getStoreId(this.createdPath);
+          String storePath = AVMUtil.getStoreRelativePath(this.createdPath);
+          String lockOwner = this.getAvmLockingService().getLockOwner(storeId, storePath);
+          Map<String, String> lockData = this.getAvmLockingService().getLockData(storeId, storePath);
+    
+          if (lockOwner != null)
+          {
+             if (logger.isDebugEnabled())
+                 logger.debug("transferring lock from " + lockData.get(WCMUtil.LOCK_KEY_STORE_NAME) + " to " +
+                         storeNameBeforeEditing + " on cancel editing");
+    
+             lockData.put(WCMUtil.LOCK_KEY_STORE_NAME, this.storeNameBeforeEditing);
+             this.getAvmLockingService().modifyLock(storeId, storePath, lockOwner, storeId, storePath, lockData);
+          }
+      }
       
       return super.cancel();
    }
@@ -182,6 +202,7 @@ public class EditWebContentWizard extends CreateWebContentWizard
           if (logger.isDebugEnabled())
                 logger.debug("transferring lock from " + lockData.get(WCMUtil.LOCK_KEY_STORE_NAME) + " to " + storeName);
 
+          this.storeNameBeforeEditing = lockData.get(WCMUtil.LOCK_KEY_STORE_NAME);
           lockData.put(WCMUtil.LOCK_KEY_STORE_NAME, AVMUtil.getStoreName(this.createdPath));
           this.getAvmLockingService().modifyLock(storeId, storePath, lockOwner, storeId, storePath, lockData);
       }

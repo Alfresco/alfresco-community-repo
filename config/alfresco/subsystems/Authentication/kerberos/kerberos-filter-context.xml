@@ -48,6 +48,9 @@
       <property name="stripKerberosUsernameSuffix">
          <value>${kerberos.authentication.stripUsernameSuffix}</value>
       </property>
+      <property name="remoteUserMapper">
+         <ref bean="RemoteUserMapper" />
+      </property>
    </bean>
 
    <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptSSOAuthenticationFilter">

@@ -137,7 +137,17 @@
          <param-value>WebscriptAuthenticationFilter</param-value>
       </init-param>
    </filter>
-   
+
+   <filter>
+      <filter-name>WebScript Cookie Authentication Filter</filter-name>
+      <description>Directly handles login script calls, allowing Surf to establish a cookie for a manual login</description>
+      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+      <init-param>
+         <param-name>beanName</param-name>
+         <param-value>WebscriptCookieAuthenticationFilter</param-value>
+      </init-param>
+   </filter>
+      
    <filter>
       <filter-name>WebDAV Authentication Filter</filter-name>
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
@@ -218,6 +228,17 @@
       <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/d/*</url-pattern>
    </filter-mapping>
+ 
+    <!-- The Cookie WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->  
+   <filter-mapping>
+      <filter-name>WebScript Cookie Authentication Filter</filter-name>
+      <url-pattern>/wcservice/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>WebScript Cookie Authentication Filter</filter-name>
+      <url-pattern>/wcs/*</url-pattern>
+   </filter-mapping>
    
    <!-- The WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->
    <filter-mapping>
@@ -294,7 +315,17 @@
       <filter-name>JSF Session Synchronized Filter</filter-name>
       <url-pattern>/faces/*</url-pattern>
    </filter-mapping>
-   
+
+   <filter-mapping>
+      <filter-name>Global Authentication Filter</filter-name>
+      <url-pattern>/cmisatom/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>Authentication Filter</filter-name>
+      <url-pattern>/cmisatom/*</url-pattern>
+   </filter-mapping>
+
    <filter-mapping>
       <filter-name>CacheExpiresFilter</filter-name>
       <url-pattern>*.jpg</url-pattern>

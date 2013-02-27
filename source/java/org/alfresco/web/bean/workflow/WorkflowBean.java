@@ -150,7 +150,7 @@ public class WorkflowBean implements Serializable
             tx.begin();
             
             // get the current pooled tasks for the current user
-            List<WorkflowTask> tasks = this.getWorkflowService().getPooledTasks(userName);
+            List<WorkflowTask> tasks = this.getWorkflowService().getPooledTasks(userName, true);
             
             // create a list of transient nodes to represent
             this.pooledTasks = new ArrayList<Node>(tasks.size());
@@ -200,7 +200,7 @@ public class WorkflowBean implements Serializable
             
             // get the current in progress tasks for the current user
             List<WorkflowTask> tasks = this.getWorkflowService().getAssignedTasks(
-                  userName, WorkflowTaskState.IN_PROGRESS);
+                  userName, WorkflowTaskState.IN_PROGRESS, true);
             
             // create a list of transient nodes to represent
             this.tasks = new ArrayList<Node>(tasks.size());
@@ -376,54 +376,6 @@ public class WorkflowBean implements Serializable
     */
    protected TransientMapNode createTask(WorkflowTask task)
    {
-      // get the type of the task
-      WorkflowTaskDefinition taskDef = task.definition;
-      
-      // create the basic transient node
-      TransientMapNode node = new TransientMapNode(taskDef.metadata.getName(),
-            task.title, task.properties);
-      
-      // add properties for the other useful metadata
-      node.getProperties().put(ContentModel.PROP_NAME.toString(), task.title);
-      node.getProperties().put("type", node.getType().toString());
-      node.getProperties().put("id", task.id);
-      
-      // add extra properties for completed tasks
-      if (task.state.equals(WorkflowTaskState.COMPLETED))
-      {
-         // add the outcome label for any completed task
-         String outcome = null;
-         String transition = (String)task.properties.get(WorkflowModel.PROP_OUTCOME);
-         if (transition != null)
-         {
-            WorkflowTransition[] transitions = task.definition.node.transitions;
-            for (WorkflowTransition trans : transitions)
-            {
-               if (trans.id.equals(transition))
-               {
-                  outcome = trans.title;
-                  break;
-               }
-            }
-            
-            if(outcome == null)
-            {
-            	// TODO: is this okay -> no real transitions exist for activiti
-            	outcome = transition;
-            }
-            if (outcome != null)
-            {
-               node.getProperties().put("outcome", outcome);
-            }
-         }
-         
-         // add the workflow instance id and name this taks belongs to
-         node.getProperties().put("workflowInstanceId", task.path.instance.id);
-         
-         // add the task itself as a property
-         node.getProperties().put("workflowTask", task);
-      }
-      
-      return node;
+      return new WorkflowTaskNode(task);
    }
 }

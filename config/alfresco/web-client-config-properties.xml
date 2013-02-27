@@ -841,5 +841,15 @@
          <show-property name="cm:isContentIndexed" converter="org.alfresco.faces.BooleanLabelConverter" />
       </property-sheet>
    </config>
-   
+
+   <!-- ********************************************** -->
+   <!-- Configuration for Activiti Invite Pending Task -->
+   <!-- ********************************************** -->
+   <config evaluator="node-type" condition="inwf:activitiInvitePendingTask">
+      <property-sheet>
+         <show-property name="bpm:comment" component-generator="TextAreaGenerator" />
+         <show-property name="inwf:inviteOutcome" display-label-id="inviteOutcome"/>
+       </property-sheet>
+   </config>
+
 </alfresco-config>

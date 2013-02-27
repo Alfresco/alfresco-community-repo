@@ -26,27 +26,22 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.alfresco.repo.webdav.auth.BaseAuthenticationFilter;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.bean.repository.User;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.RuntimeContainer;
-import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 
 /**
  * WebScript aware Authentication Filter Class. Takes into account the authentication setting in the descriptor for the
  * webscript before chaining to the downstream authentication filters. If authentication is not required then chains
  * with the NO_AUTH_REQUIRED request attribute set, which should cause any downstream authentication filter to bypass
- * authentication checks. Also directly handles login script calls, allowing Surf to establish a cookie for a manual log
- * in, rather than the usual stateless ticket based logins used in non-SSO mode.
+ * authentication checks.
  * 
  * @author Kevin Roast
  * @author dward
@@ -54,16 +49,9 @@ import org.springframework.extensions.webscripts.Description.RequiredAuthenticat
 public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter implements DependencyInjectedFilter,
         ActivateableBean
 {
-    private static final String API_LOGIN = "/api/login";
     private static final Log logger = LogFactory.getLog(WebScriptSSOAuthenticationFilter.class);
     private RuntimeContainer container;        
     private boolean isActive = true;
-    
-    
-    public WebScriptSSOAuthenticationFilter()
-    {
-        setUserAttributeName(AuthenticationHelper.AUTHENTICATION_USER);                
-    }
 
     /**
      * @param container the container to set
@@ -72,8 +60,7 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
     {
         this.container = container;
     }
-
-    
+   
     /**
      * Activates or deactivates the bean
      * 
@@ -102,7 +89,6 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
     {
         // Get the HTTP request/response
         HttpServletRequest req = (HttpServletRequest)sreq;
-        HttpServletResponse res = (HttpServletResponse)sresp;
         
         // find a webscript match for the requested URI
         String requestURI = req.getRequestURI();
@@ -125,32 +111,9 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
             }
         }
 
-        // Allow propagation of manual logins to the session user
-        String script = req.getPathInfo();
-        if (script != null && script.equals(API_LOGIN) && req.getMethod().equalsIgnoreCase("POST"))
-        {
-            if (handleLoginForm(req, res));
-            {
-               // Establish the session locale using request headers rather than web client preferences
-               AuthenticationHelper.setupThread(context, req, res, false);
-            }
-        }
-        else
-        {
-            chain.doFilter(sreq, sresp);
-        }
+        chain.doFilter(sreq, sresp);
     }
-    
-    @Override
-    protected SessionUser createUserObject(String userName, String ticket, NodeRef personNode, NodeRef homeSpaceRef)
-    {
-        // Create a web client user object
-        User user = new User( userName, ticket, personNode);
-        user.setHomeSpaceId( homeSpaceRef.getId());
-        
-        return user;
-    }
-    
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger()
      */

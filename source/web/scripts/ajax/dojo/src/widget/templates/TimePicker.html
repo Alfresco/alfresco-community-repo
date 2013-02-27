@@ -13,7 +13,7 @@
 				<td valign="top" colspan="2" class="hours">
 					<table align="center">
 						<tbody dojoAttachPoint="hourContainerNode"  
-							dojoAttachEvent="onClick: onSetSelectedHour;">
+							dojoAttachEvent="onClick: onSetSelectedHour; onKey: handleNewHourSelectedKey;">
 							<tr>
 								<td role="button" aria-label="12 (${this.calendar.field-hour})" tabIndex="0">12</td>
 								<td role="button" aria-label="6 (${this.calendar.field-hour})" tabIndex="0">6</td>
@@ -44,7 +44,7 @@
 				<td valign="top" class="minutes" colspan="2">
 					<table align="center">
 						<tbody dojoAttachPoint="minuteContainerNode" 
-							dojoAttachEvent="onClick: onSetSelectedMinute;">
+							dojoAttachEvent="onClick: onSetSelectedMinute; onKey: handleNewMinuteSelectedKey;">
 							<tr>
 								<td role="button" aria-label="00 (${this.calendar.field-minute})" tabIndex="0">00</td>
 								<td role="button" aria-label="30 (${this.calendar.field-minute})" tabIndex="0">30</td>

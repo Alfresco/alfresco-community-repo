@@ -6,6 +6,10 @@
 	modified BSD license. For more information on Dojo licensing, see:
 
 		http://dojotoolkit.org/community/licensing.shtml
+
+ 2013 - Alfresco Software, Ltd.
+ Alfresco Software has modified source of this file
+ The details of changes can be found in svn at location root\projects\web-client\source\web\scripts\ajax\dojo 
 */
 
 	dojo.provide("dojo.widget.DatePicker");
@@ -406,7 +410,7 @@ dojo.widget.defineWidget(
 			if(null != event){
 				event.stopPropagation();
 
-				if((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))){
+				if(((null != event.keyCode) && ((13 == event.keyCode) || (32 == event.keyCode))) || ((null != event.charCode) && ((13 == event.charCode) || (32 == event.charCode)))) {
 					this.onIncrementWeek(event);
 				}
 			}
@@ -425,7 +429,7 @@ dojo.widget.defineWidget(
 			if(null != event){
 				event.stopPropagation();
 
-				if((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))){
+				if(((null != event.keyCode) && ((13 == event.keyCode) || (32 == event.keyCode))) || ((null != event.charCode) && ((13 == event.charCode) || (32 == event.charCode)))) {
 					this.onIncrementMonth(event);
 				}
 			}
@@ -444,7 +448,7 @@ dojo.widget.defineWidget(
 			if(null != event){
 				event.stopPropagation();
 
-				if((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))){
+				if(((null != event.keyCode) && ((13 == event.keyCode) || (32 == event.keyCode))) || ((null != event.charCode) && ((13 == event.charCode) || (32 == event.charCode)))) {
 					this.onIncrementYear(event);
 				}
 			}
@@ -523,7 +527,7 @@ dojo.widget.defineWidget(
 			if(null != event){
 				event.stopPropagation();
 
-				if((13 == event.keyCode) || (32 == event.keyCode) || ((null != event.charCode) && (32 == event.charCode))){
+				if(((null != event.keyCode) && ((13 == event.keyCode) || (32 == event.keyCode))) || ((null != event.charCode) && ((13 == event.charCode) || (32 == event.charCode)))) {
 					this._handleUiClick(event);
 				}
 			}

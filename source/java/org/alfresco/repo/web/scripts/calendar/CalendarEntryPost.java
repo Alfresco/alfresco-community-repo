@@ -65,7 +65,7 @@ public class CalendarEntryPost extends AbstractCalendarWebScript
          // Handle tags
          if (json.containsKey("tags"))
          {
-            StringTokenizer st = new StringTokenizer((String)json.get("tags"), " ");
+            StringTokenizer st = new StringTokenizer((String)json.get("tags"), ",");
             while (st.hasMoreTokens())
             {
                entry.getTags().add(st.nextToken());

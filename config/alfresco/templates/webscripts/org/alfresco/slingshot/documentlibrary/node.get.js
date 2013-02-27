@@ -60,29 +60,18 @@ function getDoclist()
       item.location.file = "";
    }
       
-   // Is our thumbnail type registered?
-   var is = item.node.properties.content.inputStream;
-   try
+   // Check: thumbnail type is registered && node is a cm:content subtype
+   if (isThumbnailNameRegistered && item.node.isSubType("cm:content"))
    {
-      if (isThumbnailNameRegistered && item.node.isSubType("cm:content") && (null != is))
+      // Make sure we have a thumbnail.
+      thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
+      if (thumbnail === null)
       {
-         // Make sure we have a thumbnail.
-         thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
-         if (thumbnail === null)
-         {
-            // No thumbnail, so queue creation
-            item.node.createThumbnail(THUMBNAIL_NAME, true);
-         }
+         // No thumbnail, so queue creation
+         item.node.createThumbnail(THUMBNAIL_NAME, true);
       }
    }
-   finally
-   {
-      if (null != is)
-      {
-         is.close();
-      }
-   }
-      
+   
    return (
    {
       parent: parent,

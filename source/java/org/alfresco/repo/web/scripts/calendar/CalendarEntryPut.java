@@ -133,7 +133,7 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
          {
             entry.getTags().clear();
             
-            StringTokenizer st = new StringTokenizer((String)json.get("tags"), " ");
+            StringTokenizer st = new StringTokenizer((String)json.get("tags"), ",");
             while (st.hasMoreTokens())
             {
                entry.getTags().add(st.nextToken());
@@ -173,7 +173,7 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
       result.put("uri", "calendar/event/" + site.getShortName() + "/" +
                         entry.getSystemName() + dateOpt);
       
-      result.put("tags", generateTagString(entry));
+      result.put("tags", entry.getTags());
       result.put("allday", isAllDay);
       result.put("docfolder", entry.getSharePointDocFolder());
       
@@ -190,24 +190,5 @@ public class CalendarEntryPut extends AbstractCalendarWebScript
       Map<String, Object> model = new HashMap<String, Object>();
       model.put("result", result);
       return model;
-   }
-   
-   /**
-    * We use lists for tags internally, and the other webscripts
-    *  return arrays too. This one is different, and it needs to 
-    *  a single space separated string. This does the conversion
-    */
-   protected String generateTagString(CalendarEntry entry)
-   {
-      StringBuffer sb = new StringBuffer();
-      if (entry.getTags() != null)
-      {
-         for (String tag : entry.getTags())
-         {
-            if (sb.length() > 0) sb.append(' ');
-            sb.append(tag);
-         }
-      }
-      return sb.toString();
    }
 }

@@ -240,15 +240,7 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
         // add the source and target properties
         properties.put(VAR_SOURCE, sourceFile.getAbsolutePath());
         properties.put(VAR_TARGET, targetFile.getAbsolutePath());
-        
-        if (options.getPageLimit() >=0)
-        {
-            properties.put(VAR_PAGE_RANGE, "0-" + options.getPageLimit());
-        }
-        else
-        {
-            properties.put(VAR_PAGE_RANGE, "");
-        }
+        properties.put(VAR_PAGE_RANGE, "0-"+(options.getPageLimit() >=0 ? options.getPageLimit() : ""));
         
         // pull reader file into source temp file
         reader.getContent(sourceFile);

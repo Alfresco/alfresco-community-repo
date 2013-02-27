@@ -2798,19 +2798,21 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         }
         
         // If there's nothing currently registered to generate thumbnails for the
-        //  specified mimetype, then log a message and bail out
+        // specified mimetype, then log a message and bail out
         String nodeMimeType = getMimetype();
         Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
-        if (contentData == null)
+        if (!ContentData.hasContent(contentData) ||
+            !services.getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT).exists())
         {
-            logger.info("Unable to create thumbnail '" + details.getName() + "' as there is no content");
+            if (logger.isDebugEnabled())
+                logger.debug("Unable to create thumbnail '" + details.getName() + "' as there is no content");
             return null;
         }
         if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), nodeMimeType, getSize(), nodeRef, details))
         {
             logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
-                    nodeMimeType + " as no transformer is currently available");
+                        nodeMimeType + " as no transformer is currently available.");
             return null;
         }
         

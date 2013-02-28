@@ -11,9 +11,9 @@
          </list>
       </property>
    </bean>
-   
+
    <!-- test messages -->
-   
+
    <bean id="org_alfresco_module_rm_testResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
       <property name="resourceBundles">
          <list>
@@ -29,7 +29,7 @@
       </property>
    </bean>
    <bean id="testAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction" parent="rmAction"/>
-   
+
    <bean id="testAction2_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
       <property name="target">
          <ref bean="testAction2"/>
@@ -38,23 +38,23 @@
    <bean id="testAction2" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction">
       <property name="publicAction" value="true"/>
    </bean>
-   
+
    <bean id="testActionParams_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
       <property name="target">
          <ref bean="testActionParams"/>
       </property>
    </bean>
    <bean id="testActionParams" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams" parent="rmAction"/>
-   
+
    <bean id="testActionPropertySubs_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
       <property name="target">
          <ref bean="testActionPropertySubs"/>
       </property>
    </bean>
-   <bean id="testActionPropertySubs" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionPropertySubs" parent="rmAction">      
+   <bean id="testActionPropertySubs" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionPropertySubs" parent="rmAction">
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>
-   
+
 
    <!--  Applicability tests -->
 
@@ -173,6 +173,12 @@
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="fileFolderService" ref="FileFolderService"/>
       <property name="namespaceService" ref="NamespaceService" />
+   </bean>
+
+   <!-- webscript dictionary -->
+   <bean id="webscript.dictionary" abstract="true" parent="webscript">
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
    </bean>
 
 </beans>

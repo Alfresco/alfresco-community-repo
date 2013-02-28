@@ -32,14 +32,14 @@ import org.apache.commons.lang.ArrayUtils;
 
 /**
  * Node parameter processor.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 public class NodeParameterProcessor extends ParameterProcessor
 {
     /** Supported data types */
-    private QName[] supportedDataTypes = 
+    private QName[] supportedDataTypes =
     {
             DataTypeDefinition.TEXT,
             DataTypeDefinition.BOOLEAN,
@@ -49,16 +49,16 @@ public class NodeParameterProcessor extends ParameterProcessor
             DataTypeDefinition.FLOAT,
             DataTypeDefinition.INT
     };
-    
+
     /** Node service */
     private NodeService nodeService;
-    
+
     /** Namespace service */
     private NamespaceService namespaceService;
-    
+
     /** Dictionary service */
     private DictionaryService dictionaryService;
-    
+
     /**
      * @param nodeService   node service
      */
@@ -66,7 +66,7 @@ public class NodeParameterProcessor extends ParameterProcessor
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param namespaceService  namespace service
      */
@@ -74,7 +74,7 @@ public class NodeParameterProcessor extends ParameterProcessor
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param dictionaryService dictionary service
      */
@@ -82,7 +82,7 @@ public class NodeParameterProcessor extends ParameterProcessor
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.parameter.ParameterProcessor#process(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -91,19 +91,19 @@ public class NodeParameterProcessor extends ParameterProcessor
     {
         // the default position is to return the value un-changed
         String result = value;
-        
+
         // strip the processor name from the value
-        value = stripName(value);        
+        value = stripName(value);
         if (value.isEmpty() == false)
         {
-            QName qname = QName.createQName(value, namespaceService);
-            
+            QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, value, namespaceService);
+
             PropertyDefinition propertyDefinition = dictionaryService.getProperty(qname);
             if (propertyDefinition == null)
             {
                 throw new AlfrescoRuntimeException("The property " + value + " does not have a property definition.");
             }
-            
+
             QName type = propertyDefinition.getDataType().getName();
             if (ArrayUtils.contains(supportedDataTypes, type) == true)
             {
@@ -115,7 +115,7 @@ public class NodeParameterProcessor extends ParameterProcessor
                 throw new AlfrescoRuntimeException("The property " + value + " is of type " + type.toString() + " which is not supported by parameter substitution.");
             }
         }
-        
+
         return result;
     }
 }

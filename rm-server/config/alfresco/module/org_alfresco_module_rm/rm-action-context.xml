@@ -681,7 +681,9 @@
       </property>
    </bean>
 
-   <bean id="reject" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RejectAction" parent="rmAction" />
+   <bean id="reject" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RejectAction" parent="rmAction">
+      <property name="publicAction" value="true"/>
+   </bean>
 
    <!--  File To -->
 

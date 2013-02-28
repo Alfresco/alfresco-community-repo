@@ -96,7 +96,7 @@ public class NodeParameterProcessor extends ParameterProcessor
         value = stripName(value);
         if (value.isEmpty() == false)
         {
-            QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, value, namespaceService);
+            QName qname = QName.createQName(value, namespaceService);
 
             PropertyDefinition propertyDefinition = dictionaryService.getProperty(qname);
             if (propertyDefinition == null)

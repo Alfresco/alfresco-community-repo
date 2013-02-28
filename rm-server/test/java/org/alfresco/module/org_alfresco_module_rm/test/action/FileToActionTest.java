@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * FileTo action unit test
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -46,9 +46,9 @@ public class FileToActionTest extends BaseRMTestCase
     private static final String PATH2 = "/rmcontainer/rmfolder";
     private static final String PATH_BAD = "monkey/rmfolder";
     private static final String PATH_CREATE = "rmcontainer/newrmfolder";
-    
-    private static final String PATH_SUB1 = "rmcontainer/${node.name}";
-    
+
+    private static final String PATH_SUB1 = "rmcontainer/${node.cm:name}";
+
     protected ActionService dmActionService;
 
     @Override
@@ -57,55 +57,55 @@ public class FileToActionTest extends BaseRMTestCase
         super.initServices();
         dmActionService = (ActionService) applicationContext.getBean("ActionService");
     }
-    
+
     @Override
     protected boolean isCollaborationSiteTest()
     {
         return true;
     }
-    
+
     @Override
     protected boolean isUserTest()
     {
         return true;
     }
-    
+
     public void testFileToNodeRef()
     {
         initRecord();
-        
+
         doTestInTransaction(new Test<Void>()
         {
             public Void run()
             {
-                NodeRef unfiledContainer = filePlanService.getUnfiledContainer(filePlan);                
+                NodeRef unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
-                
+
                 Capability capability = capabilityService.getCapability("FileToRecords");
                 assertNotNull(capability);
                 assertEquals(AccessStatus.ALLOWED, capability.hasPermission(dmDocument));
-                
+
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(FileToAction.PARAM_DESTINATION_RECORD_FOLDER, rmFolder);
-                
+
                 // execute file-to action
                 actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-                
+
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
                 assertTrue(recordService.isFiled(dmDocument));
-                
+
                 // is the record folder the primary parent of the filed record
                 NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
                 assertEquals(rmFolder, parent);
-                
+
                 return null;
             }
-        }, rmAdminName);        
+        }, rmAdminName);
     }
-    
+
     private void initRecord()
     {
         doTestInTransaction(new Test<Void>()
@@ -114,24 +114,24 @@ public class FileToActionTest extends BaseRMTestCase
             {
                 // create record from document
                 recordService.createRecord(filePlan, dmDocument);
-                
+
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
                 assertFalse(recordService.isFiled(dmDocument));
-                
+
                 // is the unfiled container the primary parent of the filed record
                 NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
                 assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
-                
+
                 return null;
             }
         }, dmCollaborator);
     }
-    
+
     public void testFileToPath()
     {
         initRecord();
-        
+
         doTestInTransaction(new Test<Void>()
         {
             public Void run()
@@ -139,27 +139,27 @@ public class FileToActionTest extends BaseRMTestCase
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(FileToAction.PARAM_PATH, PATH);
-                
+
                 // execute file-to action
                 actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-                
+
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
                 assertTrue(recordService.isFiled(dmDocument));
-                
+
                 // is the record folder the primary parent of the filed record
                 NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
                 assertEquals(rmFolder, parent);
-                
+
                 return null;
             }
-        }, rmAdminName);        
+        }, rmAdminName);
     }
-    
+
     public void testFileToPath2()
     {
         initRecord();
-        
+
         doTestInTransaction(new Test<Void>()
         {
             public Void run()
@@ -167,40 +167,40 @@ public class FileToActionTest extends BaseRMTestCase
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(FileToAction.PARAM_PATH, PATH2);
-                
+
                 // execute file-to action
                 actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-                
+
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
                 assertTrue(recordService.isFiled(dmDocument));
-                
+
                 // is the record folder the primary parent of the filed record
                 NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
                 assertEquals(rmFolder, parent);
-                
+
                 return null;
             }
-        }, rmAdminName);        
+        }, rmAdminName);
     }
-    
+
     public void testCreate() throws Exception
     {
         initRecord();
         createRecord(PATH_CREATE, "newrmfolder");
     }
-    
+
     public void testCreateSub() throws Exception
     {
         initRecord();
         createRecord(PATH_SUB1, "collabDocument.txt", "rmcontainer/collabDocument.txt");
     }
-    
+
     private void createRecord(String path, String name)
     {
         createRecord(path, name, path);
     }
-    
+
     private void createRecord(final String path, final String name, final String resolvedPath)
     {
         doTestInTransaction(new Test<Void>()
@@ -208,38 +208,38 @@ public class FileToActionTest extends BaseRMTestCase
             public Void run() throws Exception
             {
                 String[] pathValues = StringUtils.tokenizeToStringArray(resolvedPath, "/");
-             
+
                 // show the folder doesn't exist to begin with
                 FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
                 assertNull(createdRecordFolder);
-                
+
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(FileToAction.PARAM_PATH, path);
                 params.put(FileToAction.PARAM_CREATE_RECORD_FOLDER, true);
-                
+
                 // execute file-to action
                 actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-                
+
                 // show the folder has now been created
                 createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
                 assertNotNull(createdRecordFolder);
                 assertEquals(name, createdRecordFolder.getName());
                 NodeRef createdRecordFolderNodeRef = createdRecordFolder.getNodeRef();
-                
+
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
                 assertTrue(recordService.isFiled(dmDocument));
-                
+
                 // is the record folder the primary parent of the filed record
                 NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
                 assertEquals(createdRecordFolderNodeRef, parent);
-                
+
                 return null;
             }
-        }, rmAdminName); 
+        }, rmAdminName);
     }
-    
+
     public void failureTests() throws Exception
     {
         doTestInTransaction(new Test<Void>()
@@ -248,55 +248,55 @@ public class FileToActionTest extends BaseRMTestCase
             {
                 // create record from document
                 recordService.createRecord(filePlan, dmDocument);
-                
+
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
                 assertFalse(recordService.isFiled(dmDocument));
-                
+
                 // is the unfiled container the primary parent of the filed record
                 NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
                 assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
-                
+
                 return null;
             }
         }, dmCollaborator);
-        
+
         doTestInTransaction(new FailureTest
         (
             "Path is invalid and record create not set."
         )
-        {            
+        {
             @Override
             public void run() throws Exception
             {
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(FileToAction.PARAM_PATH, PATH_BAD);
-                
+
                 // execute file-to action
                 actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-                
+
             }
         });
-        
+
         doTestInTransaction(new FailureTest
         (
             "Path is for a new folder, but create not set."
         )
-        {            
+        {
             @Override
             public void run() throws Exception
             {
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(FileToAction.PARAM_PATH, PATH_CREATE);
-                
+
                 // execute file-to action
                 actionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-                
+
             }
         });
-        
+
     }
 
 }

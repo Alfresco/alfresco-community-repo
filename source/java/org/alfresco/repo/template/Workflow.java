@@ -238,6 +238,22 @@ public class Workflow extends BaseTemplateProcessorExtension
             return (NodeRef)this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
         }
         
+        /** 
+        * @return The workflow package ref as a TemplateNode 
+        */ 
+        public TemplateNode getPackageTemplateNode() 
+        { 
+            NodeRef nodeRef = this.getPackage(); 
+            if (nodeRef != null) 
+            { 
+                return new TemplateNode(nodeRef, this.services, this.resolver); 
+            }
+            else
+            { 
+                return null; 
+            } 
+        } 
+        
         /**
          * @return the resources from the package attached to this workflow task
          */

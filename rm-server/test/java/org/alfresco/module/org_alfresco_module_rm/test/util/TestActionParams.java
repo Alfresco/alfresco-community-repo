@@ -34,7 +34,7 @@ public class TestActionParams extends RMActionExecuterAbstractBase
         Object dateValue = action.getParameterValue(PARAM_DATE);
         if ((dateValue instanceof java.util.Date) == false)
         {
-            throw new AlfrescoRuntimeException("Param we not a Date as expected.");
+            throw new AlfrescoRuntimeException("Param was not a Date as expected.");
         }
-    }     
+    }  
 }

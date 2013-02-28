@@ -4,10 +4,20 @@
 <beans>
 
    <!--  test model -->
-   <bean id="org_alfresco_module_dod5015_rmTestdictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+   <bean id="org_alfresco_module_rm_rmTestdictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
       <property name="models">
          <list>
             <value>test-model.xml</value>
+         </list>
+      </property>
+   </bean>
+   
+   <!-- test messages -->
+   
+   <bean id="org_alfresco_module_rm_testResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>test</value>
          </list>
       </property>
    </bean>
@@ -19,6 +29,7 @@
       </property>
    </bean>
    <bean id="testAction" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction" parent="rmAction"/>
+   
    <bean id="testAction2_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
       <property name="target">
          <ref bean="testAction2"/>
@@ -27,12 +38,23 @@
    <bean id="testAction2" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestAction2" parent="rmAction">
       <property name="publicAction" value="true"/>
    </bean>
+   
    <bean id="testActionParams_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
       <property name="target">
          <ref bean="testActionParams"/>
       </property>
    </bean>
    <bean id="testActionParams" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams" parent="rmAction"/>
+   
+   <bean id="testActionPropertySubs_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+      <property name="target">
+         <ref bean="testActionPropertySubs"/>
+      </property>
+   </bean>
+   <bean id="testActionPropertySubs" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestActionPropertySubs" parent="rmAction">      
+      <property name="allowParameterSubstitutions" value="true"/>
+   </bean>
+   
 
    <!--  Applicability tests -->
 

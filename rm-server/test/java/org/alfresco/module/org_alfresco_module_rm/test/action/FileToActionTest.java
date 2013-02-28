@@ -47,6 +47,8 @@ public class FileToActionTest extends BaseRMTestCase
     private static final String PATH_BAD = "monkey/rmfolder";
     private static final String PATH_CREATE = "rmcontainer/newrmfolder";
     
+    private static final String PATH_SUB1 = "rmcontainer/${node.name}";
+    
     protected ActionService dmActionService;
 
     @Override
@@ -70,24 +72,7 @@ public class FileToActionTest extends BaseRMTestCase
     
     public void testFileToNodeRef()
     {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // create record from document
-                recordService.createRecord(filePlan, dmDocument);
-                
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(recordService.isFiled(dmDocument));
-                
-                // is the unfiled container the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
-                
-                return null;
-            }
-        }, dmCollaborator);
+        initRecord();
         
         doTestInTransaction(new Test<Void>()
         {
@@ -118,14 +103,13 @@ public class FileToActionTest extends BaseRMTestCase
                 
                 return null;
             }
-        }, rmAdminName);
-        
+        }, rmAdminName);        
     }
     
-    public void testFileToPath()
+    private void initRecord()
     {
         doTestInTransaction(new Test<Void>()
-            {
+        {
             public Void run()
             {
                 // create record from document
@@ -142,6 +126,11 @@ public class FileToActionTest extends BaseRMTestCase
                 return null;
             }
         }, dmCollaborator);
+    }
+    
+    public void testFileToPath()
+    {
+        initRecord();
         
         doTestInTransaction(new Test<Void>()
         {
@@ -169,24 +158,7 @@ public class FileToActionTest extends BaseRMTestCase
     
     public void testFileToPath2()
     {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // create record from document
-                recordService.createRecord(filePlan, dmDocument);
-                
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(recordService.isFiled(dmDocument));
-                
-                // is the unfiled container the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
-                
-                return null;
-            }
-        }, dmCollaborator);
+        initRecord();
         
         doTestInTransaction(new Test<Void>()
         {
@@ -214,38 +186,36 @@ public class FileToActionTest extends BaseRMTestCase
     
     public void testCreate() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // create record from document
-                recordService.createRecord(filePlan, dmDocument);
-                
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(recordService.isFiled(dmDocument));
-                
-                // is the unfiled container the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
-                
-                return null;
-            }
-        }, dmCollaborator);
-        
+        initRecord();
+        createRecord(PATH_CREATE, "newrmfolder");
+    }
+    
+    public void testCreateSub() throws Exception
+    {
+        initRecord();
+        createRecord(PATH_SUB1, "collabDocument.txt", "rmcontainer/collabDocument.txt");
+    }
+    
+    private void createRecord(String path, String name)
+    {
+        createRecord(path, name, path);
+    }
+    
+    private void createRecord(final String path, final String name, final String resolvedPath)
+    {
         doTestInTransaction(new Test<Void>()
         {
             public Void run() throws Exception
             {
-                String[] pathValues = StringUtils.tokenizeToStringArray(PATH_CREATE, "/");
+                String[] pathValues = StringUtils.tokenizeToStringArray(resolvedPath, "/");
              
-                // show the folder doesn' exist to begin with
+                // show the folder doesn't exist to begin with
                 FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
                 assertNull(createdRecordFolder);
                 
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-                params.put(FileToAction.PARAM_PATH, PATH_CREATE);
+                params.put(FileToAction.PARAM_PATH, path);
                 params.put(FileToAction.PARAM_CREATE_RECORD_FOLDER, true);
                 
                 // execute file-to action
@@ -254,7 +224,7 @@ public class FileToActionTest extends BaseRMTestCase
                 // show the folder has now been created
                 createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
                 assertNotNull(createdRecordFolder);
-                assertEquals("newrmfolder", createdRecordFolder.getName());
+                assertEquals(name, createdRecordFolder.getName());
                 NodeRef createdRecordFolderNodeRef = createdRecordFolder.getNodeRef();
                 
                 // check things have gone according to plan
@@ -268,7 +238,6 @@ public class FileToActionTest extends BaseRMTestCase
                 return null;
             }
         }, rmAdminName); 
-        
     }
     
     public void failureTests() throws Exception

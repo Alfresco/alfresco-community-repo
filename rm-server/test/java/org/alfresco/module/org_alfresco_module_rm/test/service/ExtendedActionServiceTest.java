@@ -21,6 +21,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.service;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.module.org_alfresco_module_rm.test.util.TestActionPropertySubs;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -141,5 +143,30 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
         }
         
         return result;
+    }
+    
+    public void testActionPropertySubstitution() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            public Void run()
+            {
+                Action action = dmActionService.createAction(TestActionPropertySubs.NAME);
+                
+                action.setParameterValue("longMonth", "${date.month.long}");
+                action.setParameterValue("shortMonth", "${date.month}");
+                action.setParameterValue("year", "${date.year}");
+                
+                action.setParameterValue("name", "${node.cm:name}");
+                
+                action.setParameterValue("company", "${message.test.company}");
+                
+                action.setParameterValue("combo", "${date.year}/${date.month.short}/${node.cm:name}-${message.test.company}.txt");
+                
+                dmActionService.executeAction(action, rmFolder);
+                
+                return null;
+            }
+        });
     }
 }

@@ -157,6 +157,27 @@
         </property>
     </bean>
     
+    <bean id="parameterProcessorComponent" class="org.alfresco.repo.action.parameter.ParameterProcessorComponent"/>
+    
+    <bean id="baseParamenterProcessor" abstract="true" init-method="init">
+    	<property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
+    </bean>
+    
+    <bean id="nodeParameterProcessor" parent="baseParamenterProcessor" class="org.alfresco.repo.action.parameter.NodeParameterProcessor" >
+    	<property name="name" value="node" />
+    	<property name="nodeService" ref="NodeService" />
+    	<property name="dictionaryService" ref="DictionaryService" />
+    	<property name="namespaceService" ref="NamespaceService" />
+    </bean>
+    
+    <bean id="dateParameterProcessor" parent="baseParamenterProcessor" class="org.alfresco.repo.action.parameter.DateParameterProcessor">
+    	<property name="name" value="date" />
+    </bean>
+    
+    <bean id="messageParameterProcessor" parent="baseParamenterProcessor" class="org.alfresco.repo.action.parameter.MessageParameterProcessor">
+    	<property name="name" value="message" />
+    </bean>
+    
     <!--  Rule Service -->
     
     <bean id="ruleService" class="org.alfresco.repo.rule.ExtendedRuleServiceImpl" init-method="init">

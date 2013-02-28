@@ -6,9 +6,7 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
-import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -83,25 +81,15 @@ public class FileToAction extends RMActionExecuterAbstractBase
                 {
                     // TODO .. what if a record of the same name already exists in the destination record folder??
                     
-                    final NodeRef finalRecordFolder = recordFolder;
-                   // AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                   // {
-                   //     @Override
-                   //     public Void doWork() throws Exception
-                   //     {                    
-                            try
-                            {
-                                // TODO .. why do I have to execute this as system .. I should have permission to do this!!!
-                                fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
-                            }
-                            catch (FileNotFoundException fileNotFound)
-                            {
-                               throw new AlfrescoRuntimeException("Unable to execute file to action, because the move operation failed.", fileNotFound);
-                            }
-                    //        
-                    //        return null;
-                    //    }
-                   // });
+                    final NodeRef finalRecordFolder = recordFolder;                 
+                    try
+                    {
+                        fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
+                    }
+                    catch (FileNotFoundException fileNotFound)
+                    {
+                       throw new AlfrescoRuntimeException("Unable to execute file to action, because the move operation failed.", fileNotFound);
+                    }
                 }
                 else
                 {
@@ -138,6 +126,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
         // look for the path parameter
         String path = (String)action.getParameterValue(PARAM_PATH);
         String[] pathValues = ArrayUtils.EMPTY_STRING_ARRAY;
+        
         if (path != null && path.isEmpty() == false)
         {
             pathValues = StringUtils.tokenizeToStringArray(path, "/", false, true);
@@ -193,25 +182,15 @@ public class FileToAction extends RMActionExecuterAbstractBase
     private NodeRef resolvePath(final NodeRef context, final String[] pathValues)
     {
         NodeRef result = null;
-        
-        //FileInfo fileInfo = AuthenticationUtil.runAsSystem(new RunAsWork<FileInfo>()
-        //{
-        //    @Override
-        //    public FileInfo doWork() throws Exception
-        //    {
-                FileInfo fileInfo = null;
-                try
-                {
-                    fileInfo = fileFolderService.resolveNamePath(context, new ArrayList<String>(Arrays.asList(pathValues)), false);
-                }
-                catch (FileNotFoundException e)
-                {
-                    // ignore, checking for null
-                }
-         //       return fileInfo;
-         //   }
-        //});
-            
+        FileInfo fileInfo = null;
+        try
+        {
+            fileInfo = fileFolderService.resolveNamePath(context, new ArrayList<String>(Arrays.asList(pathValues)), false);
+        }
+        catch (FileNotFoundException e)
+        {
+            // ignore, checking for null
+        }   
         if (fileInfo != null)
         {
             result = fileInfo.getNodeRef();

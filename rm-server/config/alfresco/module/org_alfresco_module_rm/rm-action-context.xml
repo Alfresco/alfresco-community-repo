@@ -32,6 +32,7 @@
       <property name="ownableService" ref="ownableService"/>
       <property name="freezeService" ref="freezeService"/>
       <property name="recordService" ref="recordService"/>
+      <property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
    </bean>
 
    <bean id="rmProxyAction"
@@ -696,6 +697,7 @@
    <bean id="fileTo" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction" parent="rmAction">
       <property name="fileFolderService" ref="FileFolderService"/>
       <property name="publicAction" value="true"/>
+      <property name="allowParameterSubstitutions" value="true"/>
    </bean>
 
 </beans>

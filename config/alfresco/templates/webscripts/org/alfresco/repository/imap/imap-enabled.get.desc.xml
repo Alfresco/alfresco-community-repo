@@ -6,6 +6,6 @@
    <url>/imap/servstatus</url>
    <format default="html">extension</format>
    <authentication>user</authentication>
-   <transaction>required</transaction>
+   <transaction allow="readonly">required</transaction>
    <family>IMAP</family>
 </webscript>

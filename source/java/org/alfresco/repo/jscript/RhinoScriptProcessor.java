@@ -282,9 +282,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     /**
      * Resolve the imports in the specified script. Supported include directives are of the following form:
      * <pre>
-     * <import resource="classpath:alfresco/includeme.js">
-     * <import resource="workspace://SpacesStore/6f73de1b-d3b4-11db-80cb-112e6c2ea048">
-     * <import resource="/Company Home/Data Dictionary/Scripts/includeme.js">
+     * &lt;import resource="classpath:alfresco/includeme.js"&gt;
+     * &lt;import resource="workspace://SpacesStore/6f73de1b-d3b4-11db-80cb-112e6c2ea048"&gt;
+     * &lt;import resource="/Company Home/Data Dictionary/Scripts/includeme.js"&gt;
      * </pre>
      * Either a classpath resource, NodeRef or cm:name path based script can be includes. Multiple includes
      * of the same script are dealt with correctly and nested includes of scripts is fully supported.

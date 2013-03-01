@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -33,16 +34,19 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareDTO;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
+import org.alfresco.util.test.junitrules.TemporaryModels;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
@@ -66,9 +70,40 @@ public class QuickShareServiceIntegrationTest
 {
     private static final ApplicationContextInit testContext = new ApplicationContextInit();
     
+    private static final String MODEL = 
+    	"<?xml version='1.0' encoding='UTF-8'?>" +
+		"<model name='lx:lxmodel' xmlns='http://www.alfresco.org/model/dictionary/1.0'>" +
+            "<description>LX model</description>" +
+            "<author>Peter Löfgren</author>" +
+            "<version>1.0</version>" +
+            "<imports>" +
+	            "<import uri='http://www.alfresco.org/model/dictionary/1.0' prefix='d' />" +
+                "<import uri='http://www.alfresco.org/model/content/1.0' prefix='cm' />" +
+	        "</imports>" +
+            "<namespaces>" +
+	            "<namespace uri='http://bugtestmodel' prefix='lx' />" +
+            "</namespaces>" +
+	        "<constraints>" +
+            "</constraints>" +
+	        "<types>" +
+                "<type name='lx:doc'>" +
+		            "<title>LX dokument</title>" +
+                    "<parent>cm:content</parent>" +
+		            "<mandatory-aspects>" +
+                        "<aspect>cm:generalclassifiable</aspect>" +
+		            "</mandatory-aspects>" +
+                "</type>" +
+                "<type name='lx:doc2'>" +
+		            "<title>LX dokument 2</title>" +
+                    "<parent>cm:cmobject</parent>" +
+                "</type>" +
+		    "</types>" +
+        "</model>";
+    
     private static CopyService copyService;
     private static NodeService nodeService;
     private static QuickShareService quickShareService;
+    private static DictionaryService dictionaryService;
     private static Repository repository;
     
     private static AlfrescoPerson user1 = new AlfrescoPerson(testContext, "UserOne");
@@ -76,6 +111,8 @@ public class QuickShareServiceIntegrationTest
     
     // A rule to manage test nodes reused across all the test methods
     @Rule public TemporaryNodes testNodes = new TemporaryNodes(testContext);
+    
+    @Rule public TemporaryModels temporaryModels = new TemporaryModels(testContext);
 
     @ClassRule public static RuleChain classChain = RuleChain.outerRule(testContext)
                                                          .around(user1)
@@ -96,6 +133,7 @@ public class QuickShareServiceIntegrationTest
         ApplicationContext ctx = testContext.getApplicationContext();
         
         copyService = ctx.getBean("CopyService", CopyService.class);
+        dictionaryService = ctx.getBean("dictionaryService", DictionaryService.class);
         nodeService = ctx.getBean("NodeService", NodeService.class);
         quickShareService = ctx.getBean("QuickShareService", QuickShareService.class);
         repository = ctx.getBean("repositoryHelper", Repository.class);        
@@ -160,18 +198,8 @@ public class QuickShareServiceIntegrationTest
     }
     
     @Test public void unshare() {
-        final QuickShareDTO dto = share(testNode, user1.getUsername());
-        
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-
-            @Override
-            public Void doWork() throws Exception
-            {
-                quickShareService.unshareContent(dto.getId());
-                return null;
-            }
-        }, user1.getUsername());
+		final QuickShareDTO dto = share(testNode, user1.getUsername());
+        unshare(dto.getId(), user1.getUsername());
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>(){
 
             @Override
@@ -185,6 +213,21 @@ public class QuickShareServiceIntegrationTest
             
         });
     }
+
+
+	private void unshare(final String sharedId, final String userName) {
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+
+            @Override
+            public Void doWork() throws Exception
+            {
+                quickShareService.unshareContent(sharedId);
+                return null;
+            }
+        }, userName);
+	}
 
     private QuickShareDTO share(final NodeRef nodeRef, String username)
     {
@@ -255,4 +298,66 @@ public class QuickShareServiceIntegrationTest
             }
         }, user1.getUsername());
     }
+    
+    /**
+     * Content types that extend cm:content should be shareable.
+     * 
+     * See https://issues.alfresco.com/jira/browse/ALF-16274.
+     */
+    @Test public void testWithCustomContentType() 
+    {
+    	ByteArrayInputStream modelStream = new ByteArrayInputStream(MODEL.getBytes());
+    	temporaryModels.loadModel(modelStream);
+        
+        QName sharableType = QName.createQName("{http://bugtestmodel}doc");
+        QName unsharableType = QName.createQName("{http://bugtestmodel}doc2");
+
+    	final NodeRef sharableNode = testNodes.createNodeWithTextContent(userHome,
+                           "Quick Share Custom Type Sharable Test Node",
+                           sharableType, 
+                           user1.getUsername(),
+                           "Quick Share Test Node Content");
+    	
+        Map<String, Object> metadata = getMetadata(sharableNode, user1);
+        
+        assertTrue((Boolean)metadata.get("sharable"));
+        
+        QuickShareDTO dto = share(sharableNode, user1.getUsername());
+        unshare(dto.getId(), user1.getUsername());        
+        
+    	final NodeRef unsharableNode = testNodes.createNodeWithTextContent(userHome,
+                "Quick Share Custom Type Unsharable Test Node",
+                unsharableType, 
+                user1.getUsername(),
+                "Quick Share Test Node Content");
+
+		metadata = getMetadata(unsharableNode, user1);
+        assertFalse((Boolean)metadata.get("sharable"));
+
+		boolean exceptionThrown = false;
+		try {
+			// Prior to fixing ALF-16274, this would throw an InvalidNodeRefException. 
+			share(unsharableNode, user1.getUsername());
+		}
+		catch(InvalidNodeRefException ex)
+		{
+			exceptionThrown = true;
+		}
+		assertTrue("InvalidNodeRefException not thrown on trying to share an unsharable content type", exceptionThrown);
+    }
+
+
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> getMetadata(final NodeRef nodeRef, AlfrescoPerson user) {
+		Map<String, Object> container = AuthenticationUtil.runAs(new RunAsWork<Map<String, Object>>()
+        {
+            @Override
+            public Map<String, Object> doWork() throws Exception
+            {
+            	return quickShareService.getMetaData(nodeRef);
+            }
+        }, user.getUsername());
+		return (Map<String, Object>)container.get("item");
+	}
+    
 }

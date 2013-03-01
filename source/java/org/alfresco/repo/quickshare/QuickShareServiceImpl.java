@@ -40,6 +40,7 @@ import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareDTO;
 import org.alfresco.service.cmr.quickshare.QuickShareDisabledException;
@@ -79,6 +80,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     private boolean enabled;
 
     private AttributeService attributeService;
+    private DictionaryService dictionaryService;
     private NodeService nodeService;
     private PersonService personService;
     private PolicyComponent policyComponent;
@@ -101,6 +103,14 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         this.attributeService = attributeService;
     }
 
+    /**
+     * Set the dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;	
+    }
+    
     /**
      * Set the node service
      */
@@ -167,7 +177,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         
         //Check the node is the correct type
         QName typeQName = nodeService.getType(nodeRef);
-        if (! typeQName.equals(ContentModel.TYPE_CONTENT))
+        if (isSharable(typeQName) == false)
         {
             throw new InvalidNodeRefException(nodeRef);
         }
@@ -312,6 +322,12 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         {
             metadata.put("sharedId", nodeProps.get(QuickShareModel.PROP_QSHARE_SHAREDID));
         }
+        else
+        {
+        	QName type = nodeService.getType(nodeRef);
+        	boolean sharable = isSharable(type);
+        	metadata.put("sharable", sharable);        	
+        }
 
         Map<String, Object> model = new HashMap<String, Object>(1);
         model.put("item", metadata);
@@ -425,7 +441,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
             public Void doWork() throws Exception
             {
                 QName typeQName = nodeService.getType(nodeRef);
-                if (! typeQName.equals(ContentModel.TYPE_CONTENT))
+                if (! isSharable(typeQName))
                 {
                     throw new InvalidNodeRefException(nodeRef);
                 }
@@ -451,6 +467,10 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         }
     }
 
+    private boolean isSharable(QName type)
+    {
+    	return type.equals(ContentModel.TYPE_CONTENT) || dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT);
+    }
     // Prevent copying of Quick share properties on node copy.
     @Override
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)

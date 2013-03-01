@@ -54,6 +54,7 @@
    <!-- Calendar Service base bean -->
 	<bean id="quickShareService" class="org.alfresco.repo.quickshare.QuickShareServiceImpl" init-method="init">
         <property name="attributeService" ref="AttributeService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
         <property name="enabled" value="${system.quickshare.enabled}" />
         <property name="nodeService" ref="NodeService"/>
         <property name="personService" ref="PersonService"/>

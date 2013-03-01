@@ -26,6 +26,7 @@ import java.util.Map;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -33,6 +34,8 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+import org.springframework.extensions.webscripts.GUID;
 
 public class CMISPropertyServiceTest extends BaseCMISTest
 {
@@ -750,5 +753,25 @@ public class CMISPropertyServiceTest extends BaseCMISTest
 
         assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_NAME.toUpperCase()), "BaseFolder");
         assertEquals(cmisService.getProperty(folder, CMISDictionaryModel.PROP_NAME.toLowerCase()), "BaseFolder");
+    }
+
+    public void testContentMimeTypeDetection() throws Exception
+    {
+        // create simple text plain content
+        NodeRef content = fileFolderService.create(rootNodeRef, "textFile" + GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+        ContentWriter writer = serviceRegistry.getContentService().getWriter(content, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent("Simple text plain document");
+
+        // create content stream with undefined mimetype and file name
+        ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, null, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");
+        String objectId = (String) cmisService.getProperty(content, CMISDictionaryModel.PROP_OBJECT_ID);
+
+        cmisService.setContentStream(objectId, null, true, contentStreamHTML.getStream(), null);
+
+        // check mimetype
+        String mimetype = (String) cmisService.getProperty(content, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE);
+        assertTrue("Mimetype is not defined correctly.", mimetype.equals(MimetypeMap.MIMETYPE_HTML));
     }
 }

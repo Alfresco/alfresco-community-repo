@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.WCMModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -20,6 +22,8 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
@@ -29,7 +33,12 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
+import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringImpl;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
@@ -164,6 +173,52 @@ public class CMISTest
         this.repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
     	this.factory = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
         this.context = new SimpleCallContext("admin", "admin");
+    }
+    
+    /**
+     * ALF-18006 Test content mimetype auto-detection into CmisStreamInterceptor when "Content-Type" is not defined.
+     */
+    @Test
+    public void testContentMimeTypeDetection()
+    {
+        String repositoryId = null;
+
+        CmisService cmisService = factory.getService(context);
+        try
+        {
+            // get repository id
+            List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+            assertTrue(repositories.size() > 0);
+            RepositoryInfo repo = repositories.get(0);
+            repositoryId = repo.getId();
+
+            // create content properties
+            PropertiesImpl properties = new PropertiesImpl();
+            String objectTypeId = "cmis:document";
+            properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, objectTypeId));
+            String fileName = "textFile" + GUID.generate();
+            properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, fileName));
+
+            // create content stream
+            ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
+
+            // create simple text plain content
+            String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().toString(), contentStream, VersioningState.MAJOR, null, null);
+
+            Holder<String> objectIdHolder = new Holder<String>(objectId);
+
+            // create content stream with undefined mimetype and file name
+            ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, null, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");
+            cmisService.setContentStream(repositoryId, objectIdHolder, true, null, contentStreamHTML, null);
+
+            // check mimetype
+            boolean mimetypeHTML = cmisService.getObjectInfo(repositoryId, objectId).getContentType().equals(MimetypeMap.MIMETYPE_HTML);
+            assertTrue("Mimetype is not defined correctly.", mimetypeHTML);
+        }
+        finally
+        {
+            cmisService.close();
+        }
     }
     
     /**

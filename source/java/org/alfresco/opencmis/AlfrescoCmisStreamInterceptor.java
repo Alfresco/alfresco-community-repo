@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.util.TempFileProvider;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -42,6 +44,16 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
  */
 public class AlfrescoCmisStreamInterceptor implements MethodInterceptor
 {
+    private MimetypeService mimetypeService;
+
+    /**
+     * @param mimetypeService service for helping with mimetypes
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
+    }
+
     public Object invoke(MethodInvocation mi) throws Throwable
     {
         List<ReusableContentStream> reusableContentStreams = null;
@@ -61,6 +73,14 @@ public class AlfrescoCmisStreamInterceptor implements MethodInterceptor
                             reusableContentStreams = new ArrayList<ReusableContentStream>();
                         }
                         ReusableContentStream reuableContentStream = new ReusableContentStream(contentStream);
+
+                        // ALF-18006
+//                        if (contentStream.getMimeType() == null)
+//                        {
+//                            String mimeType = mimetypeService.guessMimetype(reuableContentStream.getFileName(), new FileContentReader(reuableContentStream.file));
+//                            reuableContentStream.setMimeType(mimeType);
+//                        }
+
                         reusableContentStreams.add(reuableContentStream);
                         
                         // It is possible to just change the arguments. No need to call a setter.

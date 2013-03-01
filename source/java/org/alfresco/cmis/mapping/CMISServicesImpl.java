@@ -1971,8 +1971,9 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
                 throw new CMISContentAlreadyExistsException();
             }
 
-            ContentWriter writer = contentService.getWriter(nodeRef, propertyQName, true);
+            final ContentWriter writer = contentService.getWriter(nodeRef, propertyQName, true);
             writer.guessEncoding();
+            writer.guessMimetype(null);
             writer.setMimetype(mimeType);
             writer.putContent(contentStream);
 

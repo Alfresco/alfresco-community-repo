@@ -438,6 +438,7 @@
     </bean>
 
     <bean id="move" class="org.alfresco.repo.action.executer.MoveActionExecuter" parent="action-executer">
+        <property name="nodeService" ref="NodeService" />
         <property name="fileFolderService">
             <ref bean="FileFolderService" />
         </property>

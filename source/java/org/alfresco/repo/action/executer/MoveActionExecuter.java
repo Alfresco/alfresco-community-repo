@@ -20,6 +20,7 @@ package org.alfresco.repo.action.executer;
 
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -27,11 +28,12 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 
 /**
- * Copy action executor.
+ * Move action executor.
  * <p>
- * Copies the actioned upon node to a specified location.
+ * Moves the actioned upon node to a specified location.
  * 
  * @author Roy Wetherall
  */
@@ -44,10 +46,23 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
      * FileFolder service
      */
     private FileFolderService fileFolderService;
+    
+    /**
+     * The node service
+     */
+    private NodeService nodeService;
 	
     public void setFileFolderService(FileFolderService fileFolderService) 
     {
         this.fileFolderService = fileFolderService;
+    }
+
+    /**
+     * Sets the node service
+     */
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
     }
 
     @Override
@@ -61,14 +76,19 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-        NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
-        try
+        // ALF-17635: A move action should not fire on a working copy - wait until check in
+        if (this.nodeService.exists(actionedUponNodeRef)
+                && !this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
-            fileFolderService.move(actionedUponNodeRef, destinationParent, null);
-        }
-        catch (FileNotFoundException e)
-        {
-            // Do nothing
+            NodeRef destinationParent = (NodeRef) ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+            try
+            {
+                fileFolderService.move(actionedUponNodeRef, destinationParent, null);
+            }
+            catch (FileNotFoundException e)
+            {
+                // Do nothing
+            }
         }
     }
 

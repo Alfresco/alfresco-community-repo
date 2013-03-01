@@ -123,7 +123,7 @@ public class DiscussionServiceImplTest
         PERSON_SERVICE         = (PersonService)testContext.getBean("personService");
         TRANSACTION_HELPER     = (RetryingTransactionHelper)testContext.getBean("retryingTransactionHelper");
         PERMISSION_SERVICE     = (PermissionService)testContext.getBean("permissionService");
-        SITE_SERVICE           = (SiteService)testContext.getBean("siteService");
+        SITE_SERVICE           = (SiteService)testContext.getBean("SiteService");
         TAGGING_SERVICE        = (TaggingService)testContext.getBean("TaggingService");
         TENANT_ADMIN_SERVICE   = testContext.getBean("tenantAdminService", TenantAdminService.class);
 

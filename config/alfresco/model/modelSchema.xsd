@@ -277,8 +277,6 @@
                      maxOccurs="1" minOccurs="0" />
                   <xs:element name="many" type="xs:boolean"
                      maxOccurs="1" minOccurs="0" />
-                  <xs:element name="protected" type="xs:boolean"
-                     maxOccurs="1" minOccurs="0" />
                </xs:sequence>
             </xs:complexType>
          </xs:element>

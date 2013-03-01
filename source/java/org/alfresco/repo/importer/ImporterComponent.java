@@ -937,7 +937,8 @@ public class ImporterComponent
             {
                 childName = bindPlaceHolder(childName, binding);
                 // <Fix for ETHREEOH-2299>
-                if (ContentModel.TYPE_PERSON.equals(context.getTypeDefinition().getName()))
+                if (ContentModel.TYPE_PERSON.equals(context.getTypeDefinition().getName())
+                        && assocType.equals(ContentModel.ASSOC_CHILDREN))
                 {
                     childName = childName.toLowerCase();
                 }

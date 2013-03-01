@@ -40,7 +40,7 @@
         <property name="cmisExceptions"         ref="CMISService_Exceptions" />
         <property name="cmisControl"            ref="CMISService_Control" />
         <property name="cmisStreams"            ref="CMISService_Streams" />
-        <property name="authorityService"       ref="authorityService" />
+        <property name="authorityService"       ref="AuthorityService" />
     </bean>
 
     <bean id="CMISService_Transactions" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
@@ -66,7 +66,9 @@
 
     <bean id="CMISService_Control" class="org.alfresco.opencmis.AlfrescoCmisServiceInterceptor" />
     
-    <bean id="CMISService_Streams" class="org.alfresco.opencmis.AlfrescoCmisStreamInterceptor" />
+    <bean id="CMISService_Streams" class="org.alfresco.opencmis.AlfrescoCmisStreamInterceptor">
+        <property name="mimetypeService" ref="MimetypeService" />
+    </bean>
 
     <bean id="cmisActivityPoster" class="org.alfresco.opencmis.ActivityPosterImpl">
         <property name="activityService"        ref="activityService" />

@@ -45,6 +45,9 @@ import org.apache.commons.logging.LogFactory;
  * b) Close fileA
  * c) Rename whatever fileA
  * 
+ * a) Delete fileA
+ * b)Rename File~ to File
+ * 
  * This rule will kick in and ...
  * 
  */

@@ -2320,9 +2320,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                         ContentData targetData = (ContentData)targetProp;
                         logger.debug("copy the existing mimetype");
                         prop = ContentData.setMimetype(data, targetData.getMimetype());
-                    }
-               
-                    
+                    }       
                 }
             }
             
@@ -2330,8 +2328,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         }
         else
         {
-            // No content to set
             logger.debug("no content to save");
+            // No content to set - need to remove old content
+            ContentWriter writer = contentService.getWriter(targetNodeRef, ContentModel.PROP_CONTENT, true);
+            writer.putContent("");
         }
      
     }

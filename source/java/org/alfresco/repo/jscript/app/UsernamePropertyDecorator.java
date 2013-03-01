@@ -19,7 +19,6 @@
 package org.alfresco.repo.jscript.app;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -57,13 +56,12 @@ public class UsernamePropertyDecorator extends BasePropertyDecorator
         String lastName = null;
         JSONObject map = new JSONObject();
         map.put("userName", username);
-
+        
         if (this.personService.personExists(username))
         {
             NodeRef personRef = this.personService.getPerson(username);
-            Map<QName, Serializable> properties = this.nodeService.getProperties(personRef);
-            firstName = (String)properties.get(ContentModel.PROP_FIRSTNAME);
-            lastName = (String)properties.get(ContentModel.PROP_LASTNAME);
+            firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+            lastName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
         }
         else if (username.equals("System") || username.startsWith("System@"))
         {
@@ -75,7 +73,7 @@ public class UsernamePropertyDecorator extends BasePropertyDecorator
             map.put("isDeleted", true);
             return map;
         }
-
+        
         map.put("firstName", firstName);
         map.put("lastName", lastName);
         map.put("displayName", ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).replaceAll("^\\s+|\\s+$", ""));

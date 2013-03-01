@@ -308,7 +308,26 @@ public interface FileFolderService
      */
     @Auditable(parameters = {"nodeRef"})
     public void delete(NodeRef nodeRef);
-      
+    
+    /**
+     * Get the file or folder information from the root down to and including the node provided.
+     * <ul>
+     *   <li>The root node can be of any type and is not included in the path list.</li>
+     *   <li>Only the primary path is considered.  If the target node is not a descendant of the
+     *       root along purely primary associations, then an exception is generated.</li>
+     *   <li>If an invalid type is encountered along the path, then an exception is generated.</li>
+     * </ul>
+     * 
+     * @param rootNodeRef the start of the returned path, or null if the <b>store</b> root
+     *        node must be assumed.
+     * @param nodeRef a reference to the file or folder
+     * @return Returns a list of file/folder infos from the root (excluded) down to and
+     *         including the destination file or folder
+     * @throws FileNotFoundException if the node could not be found
+     */
+    @Auditable(parameters = {"rootNodeRef", "nodeRef"})
+    public List<FileInfo> getNamePath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException;
+    
     /**
      * Get the file or folder names from the root down to and including the node provided.
      * <ul>
@@ -319,14 +338,14 @@ public interface FileFolderService
      * </ul>
      * 
      * @param rootNodeRef the start of the returned path, or null if the <b>store</b> root
-     *      node must be assumed.
+     *        node must be assumed.
      * @param nodeRef a reference to the file or folder
-     * @return Returns a list of file/folder infos from the root (excluded) down to and
-     *      including the destination file or folder
+     * @return Returns a list of file/folder names from the root (excluded) down to and
+     *         including the destination file or folder
      * @throws FileNotFoundException if the node could not be found
      */
     @Auditable(parameters = {"rootNodeRef", "nodeRef"})
-    public List<FileInfo> getNamePath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException;
+    public List<String> getNameOnlyPath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException;
     
     /**
      * Resolve a file or folder name path from a given root node down to the final node.

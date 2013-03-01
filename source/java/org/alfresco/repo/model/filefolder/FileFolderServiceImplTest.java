@@ -839,6 +839,36 @@ public class FileFolderServiceImplTest extends TestCase
         }
     }
 
+    public void testGetNameOnlyPath() throws Exception
+    {
+        FileInfo fileInfo = getByName(NAME_L1_FILE_A, false);
+        assertNotNull(fileInfo);
+        NodeRef nodeRef = fileInfo.getNodeRef();
+
+        List<String> infoPaths = fileFolderService.getNameOnlyPath(workingRootNodeRef, nodeRef);
+        assertEquals("Not enough elements", 2, infoPaths.size());
+        assertEquals("First level incorrent", NAME_L0_FOLDER_A, infoPaths.get(0));
+        assertEquals("Second level incorrent", NAME_L1_FILE_A, infoPaths.get(1));
+
+        // pass in a null root and make sure that it still works
+        infoPaths = fileFolderService.getNameOnlyPath(null, nodeRef);
+        assertEquals("Not enough elements", 3, infoPaths.size());
+        assertEquals("First level incorrent", workingRootNodeRef.getId(), infoPaths.get(0));
+        assertEquals("Second level incorrent", NAME_L0_FOLDER_A, infoPaths.get(1));
+        assertEquals("Third level incorrent", NAME_L1_FILE_A, infoPaths.get(2));
+
+        // check that a non-aligned path is detected
+        NodeRef startRef = getByName(NAME_L0_FOLDER_B, true).getNodeRef();
+        try
+        {
+            fileFolderService.getNameOnlyPath(startRef, nodeRef);
+            fail("Failed to detect non-aligned path from root to target node");
+        }
+        catch (FileNotFoundException e)
+        {
+            // expected
+        }
+    }
 
     public void testGetNamePathDoesNotReturnPathContainingNonLeafFileNode() throws Exception
     {

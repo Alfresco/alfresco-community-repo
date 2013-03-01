@@ -90,7 +90,7 @@ public class WebDavServiceImpl implements WebDavService
             
             if (getIsContainer(typeName) || getIsDocument(typeName))
             {
-                List<FileInfo> paths = fileFolderService.getNamePath(getRootNode().getNodeForCurrentTenant(), nodeRef);
+                List<String> paths = fileFolderService.getNameOnlyPath(getRootNode().getNodeForCurrentTenant(), nodeRef);
                 
                 // build up the webdav url
                 StringBuilder path = new StringBuilder(128);
@@ -99,7 +99,7 @@ public class WebDavServiceImpl implements WebDavService
                 for (int i=0; i<paths.size(); i++)
                 {
                     path.append("/")
-                        .append(URLEncoder.encode(paths.get(i).getName()));
+                        .append(URLEncoder.encode(paths.get(i)));
                 }
                 url = path.toString();
             }

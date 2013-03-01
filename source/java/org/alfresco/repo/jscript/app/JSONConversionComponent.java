@@ -1,11 +1,27 @@
-/**
- * 
+/*
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.jscript.app;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +34,7 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -42,6 +58,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
  * JSON Conversion Component
  * 
  * @author Roy Wetherall
+ * @author Kevin Roast
  */
 public class JSONConversionComponent
 {
@@ -52,10 +69,20 @@ public class JSONConversionComponent
     private static Log logger = LogFactory.getLog(JSONConversionComponent.class);
     
     /** Registered decorators */
-    protected Map<QName, PropertyDecorator> propertyDecorators = new HashMap<QName, PropertyDecorator>(3);
-
+    protected Map<QName, PropertyDecorator> propertyDecorators = new HashMap<QName, PropertyDecorator>(8);
+    
     /** User permissions */
     protected String[] userPermissions;
+    
+    /** Thread local cache of namespace prefixes for long QName to short prefix name conversions */
+    protected static ThreadLocal<Map<String, String>> namespacePrefixCache = new ThreadLocal<Map<String, String>>()
+    {
+        @Override
+        protected Map<String, String> initialValue()
+        {
+            return new HashMap<String, String>(8);
+        }
+    };
     
     /** Services */
     protected NodeService nodeService;
@@ -65,6 +92,7 @@ public class JSONConversionComponent
     protected LockService lockService;    
     protected ContentService contentService;    
     protected PermissionService permissionService;
+    
     
     /**
      * @param nodeService   node service
@@ -148,31 +176,34 @@ public class JSONConversionComponent
      * implementation.
      */
     @SuppressWarnings("unchecked")
-    public String toJSON(NodeRef nodeRef, boolean useShortQNames)
+    public String toJSON(final NodeRef nodeRef, final boolean useShortQNames)
     {
-        JSONObject json = new JSONObject();
-    
-        if (this.nodeService.exists(nodeRef) == true)
+        final JSONObject json = new JSONObject();
+        
+        if (this.nodeService.exists(nodeRef))
         {
             if (publicServiceAccessService.hasAccess(ServiceRegistry.NODE_SERVICE.getLocalName(), "getProperties", nodeRef) == AccessStatus.ALLOWED)
             {
+                // init namespace prefix cache
+                namespacePrefixCache.get().clear();
+                
                 // Get node info
-                FileInfo nodeInfo = fileFolderService.getFileInfo(nodeRef);
-
+                FileInfo nodeInfo = this.fileFolderService.getFileInfo(nodeRef);
+                
                 // Set root values
                 setRootValues(nodeInfo, json, useShortQNames);                                       
-
+                
                 // add permissions
                 json.put("permissions", permissionsToJSON(nodeRef));
-
+                
                 // add properties
-                json.put("properties", propertiesToJSON(nodeRef, useShortQNames));
-
+                json.put("properties", propertiesToJSON(nodeRef, nodeInfo.getProperties(), useShortQNames));
+                
                 // add aspects
                 json.put("aspects", apsectsToJSON(nodeRef, useShortQNames));
             }
         }    
-       
+        
         return json.toJSONString();
     }
     
@@ -184,17 +215,17 @@ public class JSONConversionComponent
      * @throws JSONException
      */
     @SuppressWarnings("unchecked")
-    protected void setRootValues(FileInfo nodeInfo, JSONObject rootJSONObject, boolean useShortQNames)
+    protected void setRootValues(final FileInfo nodeInfo, final JSONObject rootJSONObject, final boolean useShortQNames)
     {
-        NodeRef nodeRef = nodeInfo.getNodeRef();
+        final NodeRef nodeRef = nodeInfo.getNodeRef();
         
         rootJSONObject.put("nodeRef", nodeInfo.getNodeRef().toString());
         rootJSONObject.put("type", nameToString(nodeInfo.getType(), useShortQNames));                   
         rootJSONObject.put("isContainer", nodeInfo.isFolder()); //node.getIsContainer() || node.getIsLinkToContainer());
         rootJSONObject.put("isLocked", isLocked(nodeInfo.getNodeRef()));
-            
+        
         rootJSONObject.put("isLink", nodeInfo.isLink());
-        if (nodeInfo.isLink() == true)
+        if (nodeInfo.isLink())
         {
             NodeRef targetNodeRef = nodeInfo.getLinkNodeRef();
             if (targetNodeRef != null)
@@ -208,9 +239,8 @@ public class JSONConversionComponent
         
         if (nodeInfo.isFolder() == false)
         {
-            ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-            
-            if (reader != null)
+            final ContentData cdata = nodeInfo.getContentData();
+            if (cdata != null)
             {
                 String contentURL = MessageFormat.format(
                         CONTENT_DOWNLOAD_API_URL, new Object[]{
@@ -220,23 +250,24 @@ public class JSONConversionComponent
                                 URLEncoder.encode(nodeInfo.getName())});
                 
                 rootJSONObject.put("contentURL", contentURL);
-                rootJSONObject.put("mimetype", reader.getMimetype());
-                rootJSONObject.put("encoding", reader.getEncoding());
-                rootJSONObject.put("size", reader.getSize());
+                rootJSONObject.put("mimetype", cdata.getMimetype());
+                rootJSONObject.put("encoding", cdata.getEncoding());
+                rootJSONObject.put("size", cdata.getSize());
             }
         }
     }
     
     /**
-     * 
+     * Handles the work of converting node permissions to JSON.
+     *  
      * @param nodeRef
      * @return
      * @throws JSONException
      */
     @SuppressWarnings("unchecked")
-    protected JSONObject permissionsToJSON(NodeRef nodeRef)
+    protected JSONObject permissionsToJSON(final NodeRef nodeRef)
     {
-        JSONObject permissionsJSON = new JSONObject();        
+        final JSONObject permissionsJSON = new JSONObject();        
         if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.READ_PERMISSIONS)) == true)
         {
             permissionsJSON.put("inherited", permissionService.getInheritParentPermissions(nodeRef));
@@ -247,14 +278,15 @@ public class JSONConversionComponent
     }
     
     /**
+     * Handles the work of converting user permissions to JSON.
      * 
      * @param nodeRef
      * @return
      */
     @SuppressWarnings("unchecked")
-    protected JSONObject userPermissionsToJSON(NodeRef nodeRef)
+    protected JSONObject userPermissionsToJSON(final NodeRef nodeRef)
     {        
-        JSONObject userPermissionJSON = new JSONObject();
+        final JSONObject userPermissionJSON = new JSONObject();
         for (String userPermission : this.userPermissions)
         {
             boolean hasPermission = AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, userPermission));
@@ -273,12 +305,12 @@ public class JSONConversionComponent
      * @return the JSON value
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected Object propertyToJSON(NodeRef nodeRef, QName propertyName, String key, Serializable value)
+    protected Object propertyToJSON(final NodeRef nodeRef, final QName propertyName, final String key, final Serializable value)
     {
     	if (value != null)
         {
             // Has a decorator has been registered for this property?
-            if (propertyDecorators.containsKey(propertyName) == true)
+            if (propertyDecorators.containsKey(propertyName))
             {
                 JSONAware jsonAware = propertyDecorators.get(propertyName).decorate(propertyName, nodeRef, value);
                 if (jsonAware != null)
@@ -326,16 +358,16 @@ public class JSONConversionComponent
     /**
      * 
      * @param nodeRef
+     * @param map 
      * @param useShortQNames
      * @return
      * @throws JSONException
      */
     @SuppressWarnings("unchecked")
-    protected JSONObject propertiesToJSON(NodeRef nodeRef, boolean useShortQNames)
+    protected JSONObject propertiesToJSON(NodeRef nodeRef, Map<QName, Serializable> properties, boolean useShortQNames)
     {
         JSONObject propertiesJSON = new JSONObject();
         
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
         for (QName propertyName : properties.keySet())
         {
             try
@@ -357,6 +389,7 @@ public class JSONConversionComponent
     }
     
     /**
+     * Handles the work of converting aspects to JSON.
      * 
      * @param nodeRef
      * @param useShortQNames
@@ -367,7 +400,7 @@ public class JSONConversionComponent
     protected JSONArray apsectsToJSON(NodeRef nodeRef, boolean useShortQNames)
     {
         JSONArray aspectsJSON = new JSONArray();
-     
+        
         Set<QName> aspects = this.nodeService.getAspects(nodeRef);
         for (QName aspect : aspects)
         {
@@ -378,6 +411,7 @@ public class JSONConversionComponent
     }
     
     /**
+     * Handles the work of converting all set permissions to JSON.
      * 
      * @param nodeRef
      * @return
@@ -402,17 +436,27 @@ public class JSONConversionComponent
     }
     
     /**
+     * Convert a qname to a string - either full or short prefixed named.
      * 
      * @param qname
      * @param isShortName
-     * @return
+     * @return qname string.
      */
-    private String nameToString(QName qname, boolean isShortName)
+    private String nameToString(final QName qname, final boolean isShortName)
     {
-        String result = null;
-        if (isShortName == true)
+        String result;
+        if (isShortName)
         {
-            result = qname.toPrefixString(namespaceService);
+            final Map<String, String> cache = namespacePrefixCache.get();
+            String prefix = cache.get(qname.getNamespaceURI());
+            if (prefix == null)
+            {
+                // first request for this namespace prefix, get and cache result
+                Collection<String> prefixes = this.namespaceService.getPrefixes(qname.getNamespaceURI());
+                prefix = prefixes.size() != 0 ? prefixes.iterator().next() : "";
+                cache.put(qname.getNamespaceURI(), prefix);
+            }
+            result = prefix + QName.NAMESPACE_PREFIX + qname.getLocalName();
         }
         else
         {
@@ -422,11 +466,12 @@ public class JSONConversionComponent
     }
     
     /**
+     * Return true if the node is locked.
      * 
      * @param nodeRef
      * @return
      */
-    private boolean isLocked(NodeRef nodeRef)
+    private boolean isLocked(final NodeRef nodeRef)
     {
         boolean locked = false;
         

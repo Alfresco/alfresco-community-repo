@@ -103,11 +103,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
-import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -956,9 +956,9 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             this.properties = new ContentAwareScriptableQNameMap<String, Serializable>(this, this.services);
             
             Map<QName, Serializable> props = null;
-            if (nodeInfo != null)
+            if (this.nodeInfo != null)
             {
-                props = nodeInfo.getProperties();
+                props = this.nodeInfo.getProperties();
             }
             else
             {
@@ -1334,7 +1334,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         {
             if (getIsContainer() || getIsDocument())
             {
-                List<FileInfo> paths = this.services.getFileFolderService().getNamePath(null, getNodeRef());
+                List<String> paths = this.services.getFileFolderService().getNameOnlyPath(null, getNodeRef());
                 
                 // build up the webdav url
                 StringBuilder path = new StringBuilder(128);
@@ -1344,7 +1344,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                 for (int i=1; i<paths.size(); i++)
                 {
                     path.append("/")
-                        .append(URLEncoder.encode(paths.get(i).getName()));
+                        .append(URLEncoder.encode(paths.get(i)));
                 }
                 url = path.toString();
             }
@@ -2774,7 +2774,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     /**
      * Creates a thumbnail for the content property of the node.
      * 
-     * The thumbnail name correspionds to pre-set thumbnail details stored in the 
+     * The thumbnail name corresponds to pre-set thumbnail details stored in the 
      * repository.
      * 
      * If the thumbnail is created asynchronously then the result will be null and creation

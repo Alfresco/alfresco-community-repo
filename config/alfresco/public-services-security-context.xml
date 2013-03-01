@@ -431,6 +431,7 @@
                org.alfresco.service.cmr.model.FileFolderService.create=ACL_NODE.0.sys:base.CreateChildren
                org.alfresco.service.cmr.model.FileFolderService.delete=ACL_NODE.0.sys:base.DeleteNode
                org.alfresco.service.cmr.model.FileFolderService.getNamePath=ACL_NODE.1.sys:base.ReadProperties
+               org.alfresco.service.cmr.model.FileFolderService.getNameOnlyPath=ACL_NODE.1.sys:base.ReadProperties
                org.alfresco.service.cmr.model.FileFolderService.resolveNamePath=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.model.FileFolderService.getFileInfo=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.model.FileFolderService.getReader=ACL_NODE.0.sys:base.ReadContent

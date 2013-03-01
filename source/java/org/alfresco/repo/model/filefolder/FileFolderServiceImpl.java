@@ -1303,6 +1303,22 @@ public class FileFolderServiceImpl implements FileFolderService
         return FileFolderUtil.makeFolders(service, parentNodeRef, pathElements, folderTypeQName);
     }
 
+    /**
+     * Get the file or folder information from the root down to and including the node provided.
+     * <ul>
+     *   <li>The root node can be of any type and is not included in the path list.</li>
+     *   <li>Only the primary path is considered.  If the target node is not a descendant of the
+     *       root along purely primary associations, then an exception is generated.</li>
+     *   <li>If an invalid type is encountered along the path, then an exception is generated.</li>
+     * </ul>
+     * 
+     * @param rootNodeRef the start of the returned path, or null if the <b>store</b> root
+     *        node must be assumed.
+     * @param nodeRef a reference to the file or folder
+     * @return Returns a list of file/folder infos from the root (excluded) down to and
+     *         including the destination file or folder
+     * @throws FileNotFoundException if the node could not be found
+     */
     public List<FileInfo> getNamePath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException
     {
         // check the root
@@ -1334,13 +1350,13 @@ public class FileFolderServiceImpl implements FileFolderService
                     continue;
                 }
                 // we found the root and expect to be building the path up
-                //Run as system as the user could not have access to all folders in the path, see ALF-13816
+                // Run as system as the user could not have access to all folders in the path, see ALF-13816
                 FileInfo pathInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<FileInfo>()
                 {
-                  public FileInfo doWork() throws Exception
-                  {
-                    return toFileInfo(childNodeRef, true);
-                  }
+                    public FileInfo doWork() throws Exception
+                    {
+                        return toFileInfo(childNodeRef, true);
+                    }
                 }, AuthenticationUtil.getSystemUserName());
                 
                 // we can't append a path element to the results if there is already a (non-folder) file at the tail
@@ -1365,6 +1381,85 @@ public class FileFolderServiceImpl implements FileFolderService
                         "   node: " + nodeRef + "\n" +
                         "   path: " + results);
             }
+            return results;
+        }
+        catch (InvalidNodeRefException e)
+        {
+            throw new FileNotFoundException(nodeRef);
+        }
+    }
+    
+    /**
+     * Get the file or folder names from the root down to and including the node provided.
+     * <ul>
+     *   <li>The root node can be of any type and is not included in the path list.</li>
+     *   <li>Only the primary path is considered.  If the target node is not a descendant of the
+     *       root along purely primary associations, then an exception is generated.</li>
+     *   <li>If an invalid type is encountered along the path, then an exception is generated.</li>
+     * </ul>
+     * 
+     * @param rootNodeRef the start of the returned path, or null if the <b>store</b> root
+     *        node must be assumed.
+     * @param nodeRef a reference to the file or folder
+     * @return Returns a list of file/folder names from the root (excluded) down to and
+     *         including the destination file or folder
+     * @throws FileNotFoundException if the node could not be found
+     */
+    public List<String> getNameOnlyPath(NodeRef rootNodeRef, final NodeRef nodeRef) throws FileNotFoundException
+    {
+        // check the root
+        if (rootNodeRef == null)
+        {
+            rootNodeRef = nodeService.getRootNode(nodeRef.getStoreRef());
+        }
+        try
+        {
+            final NodeRef rNodeRef = rootNodeRef;
+            final ArrayList<String> results = new ArrayList<String>(10);
+            // Run as system as the user could not have access to all folders in the path, see ALF-13816
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+            {
+                public Void doWork() throws Exception
+                {
+                    // get the primary path
+                    Path path = nodeService.getPath(nodeRef);
+                    // iterate and turn the results into file info objects
+                    boolean foundRoot = false;
+                    for (Path.Element element : path)
+                    {
+                        // ignore everything down to the root
+                        Path.ChildAssocElement assocElement = (Path.ChildAssocElement) element;
+                        final NodeRef childNodeRef = assocElement.getRef().getChildRef();
+                        if (childNodeRef.equals(rNodeRef))
+                        {
+                            // just found the root - but we don't put in an entry for it
+                            foundRoot = true;
+                            continue;
+                        }
+                        else if (!foundRoot)
+                        {
+                            // keep looking for the root
+                            continue;
+                        }
+                        results.add(nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME).toString());
+                    }
+                    // check that we found the root
+                    if (!foundRoot)
+                    {
+                        throw new FileNotFoundException(nodeRef);
+                    }
+                    // done
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Built name path for node: \n" +
+                                "   root: " + rNodeRef + "\n" +
+                                "   node: " + nodeRef + "\n" +
+                                "   path: " + results);
+                    }
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName());
+            
             return results;
         }
         catch (InvalidNodeRefException e)

@@ -256,8 +256,9 @@
         <property name="permissionService" ref="PermissionService"/>
         <property name="jsonConversionComponent" ref="jsonConversionComponent"/>
     </bean>
-        
+    
     <bean id="usernamePropertiesDecorator" parent="baseDecorator" class="org.alfresco.repo.jscript.app.UsernamePropertyDecorator">
+        <property name="nodeService" ref="nodeService"/>
         <property name="personService" ref="PersonService" />
         <property name="propertyNames">
             <set>
@@ -266,7 +267,7 @@
                 <value>cm:workingCopyOwner</value>
                 <value>cm:lockOwner</value>
                 <value>cm:owner</value>
-            <value>qshare:sharedBy</value>
+                <value>qshare:sharedBy</value>
             </set>
         </property>
     </bean>

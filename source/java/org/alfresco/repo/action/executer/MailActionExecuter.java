@@ -271,6 +271,18 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     public boolean sendTestMessage() 
     {
+        if(testMessageTo == null || testMessageTo.length() == 0)
+        {
+            throw new AlfrescoRuntimeException("email.outbound.err.test.no.to");
+        }
+        if(testMessageSubject == null || testMessageSubject.length() == 0)
+        {
+            throw new AlfrescoRuntimeException("email.outbound.err.test.no.subject");
+        }
+        if(testMessageText == null || testMessageText.length() == 0)
+        {
+            throw new AlfrescoRuntimeException("email.outbound.err.test.no.text");
+        }
         Map<String, Serializable> params = new HashMap<String, Serializable>();
         params.put(PARAM_TO, testMessageTo);
         params.put(PARAM_SUBJECT, testMessageSubject);
@@ -314,7 +326,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         numberFailedSends.set(0);
         
         super.init();
-        if (sendTestMessage)
+        if (sendTestMessage && testMessageTo != null)
         {
             Map<String, Serializable> params = new HashMap<String, Serializable>();
             params.put(PARAM_TO, testMessageTo);

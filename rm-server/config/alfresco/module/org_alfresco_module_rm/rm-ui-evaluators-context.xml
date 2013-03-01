@@ -696,5 +696,11 @@
       </property>
       <property name="capability" value="HideRecords" />
    </bean>
+   
+   <bean id="jsonConversionComponent.manageRules"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="manageRules"/>
+      <property name="capability" value="ManageRules"/>         
+   </bean>
 
 </beans>

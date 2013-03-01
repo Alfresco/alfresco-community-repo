@@ -15,7 +15,7 @@
    <#escape x as jsonUtils.encodeJSONString(x)>
       <#local node = item.node>
       <#local version = "1.0">
-      <#if node.hasAspect("cm:versionable")><#local version = node.properties["cm:versionLabel"]!""></#if>
+      <#if node.hasAspect("{http://www.alfresco.org/model/content/1.0}versionable")><#local version = node.properties["cm:versionLabel"]!""></#if>
       <#if item.createdBy??>
          <#local createdBy = item.createdBy.displayName>
          <#local createdByUser = item.createdBy.userName>
@@ -45,7 +45,7 @@
    "linkedNodeRef": "${item.linkedNode.nodeRef?string}",
 </#if>
    "fileName": "<#if item.linkedNode??>${item.linkedNode.name}<#else>${node.name}</#if>",
-   "displayName": "<#if item.linkedNode??>${item.linkedNode.name}<#elseif node.hasAspect("cm:workingcopy")>${node.name?replace(workingCopyLabel, "")}<#else>${node.name}</#if>",
+   "displayName": "<#if item.linkedNode??>${item.linkedNode.name}<#elseif node.hasAspect("{http://www.alfresco.org/model/content/1.0}workingcopy")>${node.name?replace(workingCopyLabel, "")}<#else>${node.name}</#if>",
    "status": "<#list item.status?keys as s><#if item.status[s]?is_boolean && item.status[s] == true>${s}<#if s_has_next>,</#if></#if></#list>",
    "title": "${node.properties.title!""}",
    "description": "${node.properties.description!""}",
@@ -56,7 +56,7 @@
    "modifiedOn": "<@dateFormat node.properties.modified />",
    "modifiedBy": "${modifiedBy}",
    "modifiedByUser": "${modifiedByUser}",
-   <#if node.hasAspect("cm:thumbnailModification")>
+   <#if node.hasAspect("{http://www.alfresco.org/model/content/1.0}thumbnailModification")>
       <#list node.properties.lastThumbnailModification as thumbnailMod>
          <#if thumbnailMod?contains("doclib")>
    "lastThumbnailModification": "${thumbnailMod}",
@@ -71,7 +71,7 @@
    "webdavUrl": "${node.webdavUrl}",
    "actionSet": "${item.actionSet}",
    "tags": <#noescape>[${tags}]</#noescape>,
-   <#if node.hasAspect("cm:generalclassifiable")>
+   <#if node.hasAspect("{http://www.alfresco.org/model/content/1.0}generalclassifiable")>
    "categories": [<#list node.properties.categories![] as c>["${c.name}", "${c.displayPath?replace("/categories/General","")}"]<#if c_has_next>,</#if></#list>],
    </#if>
    <#if item.activeWorkflows??>"activeWorkflows": "<#list item.activeWorkflows as aw>${aw}<#if aw_has_next>,</#if></#list>",</#if>
@@ -98,12 +98,12 @@
       </#if>
       }
    },
-   <#if node.hasAspect("cm:geographic")>"geolocation":
+   <#if node.hasAspect("{http://www.alfresco.org/model/content/1.0}geographic")>"geolocation":
    {
       "latitude": <@renderNumber node.properties["cm:latitude"] />,
       "longitude": <@renderNumber node.properties["cm:longitude"] />
    },</#if>
-   <#if node.hasAspect("audio:audio")>"audio":
+   <#if node.hasAspect("{http://www.alfresco.org/model/audio/1.0}audio")>"audio":
    {
       "album": "${node.properties["audio:album"]!""}",
       "artist": "${node.properties["audio:artist"]!""}",
@@ -117,7 +117,7 @@
       "channelType": "${node.properties["audio:channelType"]!""}",
       "compressor": "${node.properties["audio:compressor"]!""}"
    },</#if>
-   <#if node.hasAspect("exif:exif")>"exif":
+   <#if node.hasAspect("{http://www.alfresco.org/model/exif/1.0}exif")>"exif":
    {
       "dateTimeOriginal": "<@dateFormat node.properties["exif:dateTimeOriginal"] />",
       "pixelXDimension": <@renderNumber node.properties["exif:pixelXDimension"] />,

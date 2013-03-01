@@ -57,12 +57,12 @@ var Evaluator =
              */
             case "document":
                // Working Copy?
-               if (node.hasAspect("cm:workingcopy"))
+               if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}workingcopy"))
                {
                   var wcNode = node.assocs["cm:original"][0];
                   workingCopy["isWorkingCopy"] = true;
                   workingCopy["sourceNodeRef"] = wcNode.nodeRef;
-                  if (wcNode.hasAspect("cm:versionable"))
+                  if (wcNode.hasAspect("{http://www.alfresco.org/model/content/1.0}versionable"))
                   {
                      workingCopy["workingCopyVersion"] = wcNode.properties["cm:versionLabel"];
                   }
@@ -75,7 +75,7 @@ var Evaluator =
                   }
                }
                // Locked?
-               else if (node.isLocked && !node.hasAspect("trx:transferred") && node.hasAspect("cm:checkedOut"))
+               else if (node.isLocked && !node.hasAspect("trx:transferred") && node.hasAspect("{http://www.alfresco.org/model/content/1.0}checkedOut"))
                {
                   var srcNode = node.assocs["cm:workingcopylink"][0];
                   workingCopy["hasWorkingCopy"] = true;

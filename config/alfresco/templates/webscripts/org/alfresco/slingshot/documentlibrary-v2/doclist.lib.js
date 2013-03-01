@@ -267,7 +267,7 @@ function doclist_main()
          item.location = location;
          
          // Check: thumbnail type is registered && node is a cm:content subtype
-         if (isThumbnailNameRegistered && item.node.isSubType("cm:content"))
+         if (isThumbnailNameRegistered && item.node.isSubType("{http://www.alfresco.org/model/content/1.0}content"))
          {
             // Make sure we have a thumbnail.
             thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);

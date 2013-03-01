@@ -1,7 +1,7 @@
 <#macro itemJSON item>
    <#local node = item.node>
    <#local version = "1.0">
-   <#if node.hasAspect("cm:versionable")><#local version = node.properties["cm:versionLabel"]!""></#if>
+   <#if node.hasAspect("{http://www.alfresco.org/model/content/1.0}versionable")><#local version = node.properties["cm:versionLabel"]!""></#if>
    <#escape x as jsonUtils.encodeJSONString(x)>
    "version": "${version}",
    "webdavUrl": "${node.webdavUrl}",

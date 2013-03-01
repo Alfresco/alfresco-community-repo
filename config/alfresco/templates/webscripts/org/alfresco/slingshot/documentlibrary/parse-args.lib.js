@@ -294,8 +294,8 @@ var Common =
 
       try
       {
-         isLiked = ratingService.getRating(node, LIKES_SCHEME) !== -1;
          totalLikes = ratingService.getRatingsCount(node, LIKES_SCHEME);
+         isLiked = totalLikes === 0 ? false : ratingService.getRating(node, LIKES_SCHEME) !== -1;
       }
       catch (e) {}
       

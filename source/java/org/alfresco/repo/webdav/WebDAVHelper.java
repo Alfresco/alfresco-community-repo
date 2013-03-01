@@ -56,9 +56,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.Pair;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
@@ -538,14 +535,14 @@ public class WebDAVHelper
         FileFolderService fileFolderService = getFileFolderService();
         
         // get the path elements
-        List<FileInfo> pathInfos = fileFolderService.getNamePath(rootNodeRef, nodeRef);
+        List<String> pathInfos = fileFolderService.getNameOnlyPath(rootNodeRef, nodeRef);
         
         // build the path string
         StringBuilder sb = new StringBuilder(pathInfos.size() * 20);
-        for (FileInfo fileInfo : pathInfos)
+        for (String fileInfo : pathInfos)
         {
             sb.append(WebDAVHelper.PathSeperatorChar);
-            sb.append(fileInfo.getName());
+            sb.append(fileInfo);
         }
         // done
         if (logger.isDebugEnabled())

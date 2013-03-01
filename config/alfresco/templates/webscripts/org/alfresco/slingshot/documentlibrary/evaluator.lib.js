@@ -151,7 +151,7 @@ var Evaluator =
             Evaluator.documentAndFolder(node, permissions, status, actionLabels);
             
             // Working Copy?
-            if (node.hasAspect("cm:workingcopy"))
+            if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}workingcopy"))
             {
                var wcStatus = "";
                lockedBy = Common.getPerson(node.properties["cm:workingCopyOwner"]);
@@ -169,7 +169,7 @@ var Evaluator =
                var wcNode = node.assocs["cm:original"][0];
                custom["isWorkingCopy"] = true;
                custom["workingCopyOriginal"] = wcNode.nodeRef;
-               if (wcNode.hasAspect("cm:versionable"))
+               if (wcNode.hasAspect("{http://www.alfresco.org/model/content/1.0}versionable"))
                {
                   custom["workingCopyVersion"] = wcNode.properties["cm:versionLabel"];
                }
@@ -198,7 +198,7 @@ var Evaluator =
             else if (node.isLocked && !node.hasAspect("trx:transferred"))
             {
                var lockStatus = "";
-               lockedBy = Common.getPerson(node.properties["cm:lockOwner"]);
+               lockedBy = Common.getPerson(node.properties["{http://www.alfresco.org/model/content/1.0}lockOwner"]);
                lockOwnerUser = lockedBy.userName;
                if (lockOwnerUser == person.properties.userName)
                {
@@ -210,7 +210,7 @@ var Evaluator =
                   lockStatus = "locked " + lockedBy.displayName + "|" + lockedBy.userName;
                   actionSet = "locked";
                }
-               if (node.hasAspect("cm:checkedOut"))
+               if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}checkedOut"))
                {
                   var srcNode = node.assocs["cm:workingcopylink"][0];
                   custom["hasWorkingCopy"] = true;

@@ -30,7 +30,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCancelCheckOut;
@@ -108,8 +107,6 @@ import org.alfresco.service.namespace.QName;
     private static final String CANCEL_CHECK_OUT = "cancelCheckOut";
 
     private static final String INVALID_PATH_CHAR_REPLACEMENT = "-";
-    private static final Pattern INVALID_PATH_COMP_CHAR_PATTERN =
-        Pattern.compile(AuditApplication.AUDIT_INVALID_PATH_COMP_CHAR_REGEX);
     
     public static Collection<String> SUMMARY_KEYS = new ArrayList<String>();
     static
@@ -798,6 +795,6 @@ import org.alfresco.service.namespace.QName;
      */
     private String replaceInvalidPathChars(String path)
     {
-        return INVALID_PATH_COMP_CHAR_PATTERN.matcher(path).replaceAll(INVALID_PATH_CHAR_REPLACEMENT);
+        return AuditApplication.AUDIT_INVALID_PATH_COMP_CHAR_PATTERN.matcher(path).replaceAll(INVALID_PATH_CHAR_REPLACEMENT);
     }
 }

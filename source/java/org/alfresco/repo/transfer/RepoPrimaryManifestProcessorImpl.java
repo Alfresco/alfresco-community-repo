@@ -39,6 +39,8 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -560,7 +562,40 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
 
             // Deal with the content properties
             writeContent(nodeToUpdate, contentProps);
-            
+
+            // Change the type of the content
+            if(!nodeService.getType(nodeToUpdate).equals(node.getType()))
+            {
+                // The type has changed, check the dictionary to contain the model for that type
+                TypeDefinition newTypeDef = dictionaryService.getType(node.getType());
+                if(newTypeDef == null)
+                {
+                    log.warn("Failed to update the type: " + node.getType() + " for node: " + nodeToUpdate + ", as there is no type definition for it");
+                }
+                else
+                {
+                    // Check the default properties
+                    Map<QName, PropertyDefinition> typeProperties = newTypeDef.getProperties();
+                    // Search if all the properties are in place
+                    boolean fail = false;
+                    for(QName key : typeProperties.keySet())
+                    {
+                        PropertyDefinition propDef = typeProperties.get(key);
+                        if(!props.containsKey(key) && propDef.isMandatory())
+                        {
+                            log.warn("Failed to update the type: " + node.getType() + " for node: " + nodeToUpdate + ", as the mandatory property '" + propDef.getName() + "' was not transferred.");
+                            fail = true;
+                            break;
+                        }
+                    }
+                    if(!fail)
+                    {
+                        // Set the new type
+                        nodeService.setType(nodeToUpdate, node.getType());
+                    }
+                }
+            }
+
             // Blend the aspects together
             Set<QName> suppliedAspects = new HashSet<QName>(node.getAspects());
             Set<QName> existingAspects = nodeService.getAspects(nodeToUpdate);

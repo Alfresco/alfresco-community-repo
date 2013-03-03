@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.alfresco.repo.audit.extractor.DataExtractor;
 import org.alfresco.repo.audit.generator.DataGenerator;
@@ -47,9 +48,9 @@ public class AuditApplication
 {
     public static final String AUDIT_APPLICATION_PREFIX_FOR_PRE_DATA = "PreCallData";
     public static final String AUDIT_PATH_SEPARATOR = "/";
-    public static final String AUDIT_KEY_REGEX = "[a-zA-Z0-9\\-\\_\\.]+";
-    public static final String AUDIT_PATH_REGEX = "(/[a-zA-Z0-9:\\-\\_\\.]+)+";
-    public static final String AUDIT_INVALID_PATH_COMP_CHAR_REGEX = "[^a-zA-Z0-9:\\-\\_\\.]";
+    public static final Pattern AUDIT_KEY_PATTERN = Pattern.compile("[a-zA-Z0-9\\-\\_\\.]+");
+    public static final Pattern AUDIT_PATH_PATTERN = Pattern.compile("(/[a-zA-Z0-9:\\-\\_\\.]+)+");
+    public static final Pattern AUDIT_INVALID_PATH_COMP_CHAR_PATTERN = Pattern.compile("[^a-zA-Z0-9:\\-\\_\\.]");
     
     private static final Log logger = LogFactory.getLog(AuditApplication.class);
 
@@ -177,11 +178,11 @@ public class AuditApplication
         {
             generateException(path, "Empty or null audit path");
         }
-        else if (!path.matches(AUDIT_PATH_REGEX))
+        else if (!AUDIT_PATH_PATTERN.matcher(path).matches())
         {
             generateException(
                     path,
-                    "An audit must match regular expression: " + AUDIT_PATH_REGEX);
+                    "An audit must match regular expression: " + AUDIT_PATH_PATTERN);
         }
         else if (path.indexOf(applicationKey, 0) != 1)
         {
@@ -205,10 +206,10 @@ public class AuditApplication
         {
             throw new AuditModelException("Empty or null audit path: " + path);
         }
-        else if (!path.matches(AUDIT_PATH_REGEX))
+        else if (!AUDIT_PATH_PATTERN.matcher(path).matches())
         {
             throw new AuditModelException(
-                        "Audit path '" + path + "' does not match regular expression: " + AUDIT_PATH_REGEX);
+                        "Audit path '" + path + "' does not match regular expression: " + AUDIT_PATH_PATTERN);
         }
     }
     
@@ -240,10 +241,10 @@ public class AuditApplication
         }
         String path = sb.toString();
         // Check the path format
-        if (!path.matches(AUDIT_PATH_REGEX))
+        if (!AUDIT_PATH_PATTERN.matcher(path).matches())
         {
             StringBuffer msg = new StringBuffer();
-            msg.append("The audit path is invalid and must be matched by regular expression: ").append(AUDIT_PATH_REGEX).append("\n")
+            msg.append("The audit path is invalid and must be matched by regular expression: ").append(AUDIT_PATH_PATTERN).append("\n")
                .append("   Path elements: ");
             for (String pathComponent : pathComponents)
             {

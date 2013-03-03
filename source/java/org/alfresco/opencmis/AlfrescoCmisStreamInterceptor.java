@@ -75,11 +75,11 @@ public class AlfrescoCmisStreamInterceptor implements MethodInterceptor
                         ReusableContentStream reuableContentStream = new ReusableContentStream(contentStream);
 
                         // ALF-18006
-//                        if (contentStream.getMimeType() == null)
-//                        {
-//                            String mimeType = mimetypeService.guessMimetype(reuableContentStream.getFileName(), new FileContentReader(reuableContentStream.file));
-//                            reuableContentStream.setMimeType(mimeType);
-//                        }
+                        if (contentStream.getMimeType() == null)
+                        {
+                            String mimeType = mimetypeService.guessMimetype(reuableContentStream.getFileName(), new FileContentReader(reuableContentStream.file));
+                            reuableContentStream.setMimeType(mimeType);
+                        }
 
                         reusableContentStreams.add(reuableContentStream);
                         

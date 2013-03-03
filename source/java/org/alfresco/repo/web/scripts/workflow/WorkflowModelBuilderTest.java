@@ -103,7 +103,7 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(lastName, owner.get(WorkflowModelBuilder.PERSON_LAST_NAME));
         
         Map<String, Object> props = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_PROPERTIES);
-        assertEquals(task.getProperties().size(), props.size());
+        assertEquals(task.getProperties().size() + 1, props.size());
         assertEquals(5, props.get("test_int"));
         assertEquals(false, props.get("test_boolean"));
         assertEquals("foo bar", props.get("test_string"));
@@ -164,7 +164,7 @@ public class WorkflowModelBuilderTest extends TestCase
         assertEquals(lastName, owner.get(WorkflowModelBuilder.PERSON_LAST_NAME));
 
         Map<String, Object> props = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_PROPERTIES);
-        assertEquals(workflowTask.getProperties().size(), props.size());
+        assertEquals(workflowTask.getProperties().size() + 1, props.size());
 
         Map<String, Object> workflowInstance = (Map<String, Object>) model.get(WorkflowModelBuilder.TASK_WORKFLOW_INSTANCE);
         

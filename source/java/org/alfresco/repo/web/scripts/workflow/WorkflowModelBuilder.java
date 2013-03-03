@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -414,12 +415,24 @@ public class WorkflowModelBuilder
             keys.addAll(propDefs.keySet());
             keys.addAll(assocDefs.keySet());
             keys.addAll(propKeys);
+            keys.add(WorkflowModel.PROP_HIDDEN_TRANSITIONS);
         }
         else
         {
             keys = buildQNameKeys(propertyFilters);
         }
-        return buildQNameProperties(properties, keys);
+        
+        Map<String, Object> result = buildQNameProperties(properties, keys);
+        // ALF-18092: Special handling for the "hiddenTransitions" property, as it can be an empty string
+        if (keys.contains(WorkflowModel.PROP_HIDDEN_TRANSITIONS))
+        {
+            List<?> hiddenTransitions = getHiddenTransitions(properties);
+            if (hiddenTransitions != null)
+            {
+                result.put(qNameConverter.mapQNameToName(WorkflowModel.PROP_HIDDEN_TRANSITIONS), hiddenTransitions);
+            }
+        }
+        return result;
     }
     
     private Map<String, String> buildPropertyLabels(WorkflowTask task, Map<String, Object> properties)
@@ -595,8 +608,15 @@ public class WorkflowModelBuilder
         }
         else if (hiddenSer instanceof String)
         {
-            String hiddenStr = (String) hiddenSer;
-            return Arrays.asList(hiddenStr.split(","));
+        	if(((String) hiddenSer).isEmpty())
+        	{
+        		return Collections.emptyList();
+        	}
+        	else
+        	{
+        		String hiddenStr = (String) hiddenSer;
+        		return Arrays.asList(hiddenStr.split(","));
+        	}
         }
         return null;
     }

@@ -130,8 +130,20 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                     
                     if (prop != null)
                     {
-                        // convert property using its data type specified in model
-                        value = (Serializable) DefaultTypeConverter.INSTANCE.convert(prop.getDataType(), jsonValue);
+                        if (prop.isMultiValued() && jsonValue instanceof JSONArray)
+                        {
+                            value = new ArrayList<Serializable>();
+                            
+                            for (int i = 0; i < ((JSONArray)jsonValue).length(); i++)
+                            {
+                                ((List<Serializable>)value).add((Serializable) DefaultTypeConverter.INSTANCE.convert(prop.getDataType(),((JSONArray)jsonValue).get(i)));
+                            }
+                        }
+                        else
+                        {
+                            // convert property using its data type specified in model
+                            value = (Serializable) DefaultTypeConverter.INSTANCE.convert(prop.getDataType(), jsonValue);
+                        }
                     }
                     else
                     {

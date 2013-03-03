@@ -195,7 +195,7 @@ public abstract class AbstractCalendarListingWebScript extends AbstractCalendarW
       Date newEnd = new Date(newStart.getTime() + duration);
       result.put(RESULT_START,  ISO8601DateFormat.format(newStart));
       result.put(RESULT_END, ISO8601DateFormat.format(newEnd));
-      String legacyDateFormat = "M/d/yyyy";
+      String legacyDateFormat = "yyyy-MM-dd";
       SimpleDateFormat ldf = new SimpleDateFormat(legacyDateFormat);
       String legacyTimeFormat ="HH:mm";
       SimpleDateFormat ltf = new SimpleDateFormat(legacyTimeFormat);

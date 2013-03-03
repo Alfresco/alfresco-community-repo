@@ -39,6 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionSer
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
@@ -55,8 +56,10 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -66,10 +69,15 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 {
 	/** Site id */
     protected static final String SITE_ID = "mySite";
-    
+    /** Collab site id */
+    protected static final String COLLAB_SITE_ID = "myCollabSite";
+
 	/** Common test utils */
 	protected CommonRMTestUtils utils;
-	
+
+	/** Application context */
+	protected ApplicationContext applicationContext;
+
 	 /** Services */
     protected NodeService nodeService;
     protected ContentService contentService;
@@ -82,12 +90,14 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected MutableAuthenticationService authenticationService;
     protected AuthorityService authorityService;
     protected PersonService personService;
-    
+    protected TransactionService transactionService;
+    protected TaggingService taggingService;
+
     /** RM Services */
     protected RecordsManagementService rmService;
     protected DispositionService dispositionService;
     protected RecordsManagementEventService eventService;
-    protected RecordsManagementAdminService adminService;    
+    protected RecordsManagementAdminService adminService;
     protected RecordsManagementActionService actionService;
     protected RecordsManagementSearchService rmSearchService;
     protected FilePlanRoleService filePlanRoleService;
@@ -95,10 +105,10 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected RecordsManagementAuditService auditService;
     protected CapabilityService capabilityService;
     protected VitalRecordService vitalRecordService;
-    
+
     /** test data */
     protected StoreRef storeRef;
-    protected NodeRef rootNodeRef;   
+    protected NodeRef rootNodeRef;
     protected SiteInfo siteInfo;
     protected NodeRef folder;
     protected NodeRef filePlan;
@@ -107,42 +117,53 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef recordFolder;
     protected NodeRef recordFolder2;
-	
+
+    /**
+     * Indicates whether the test collaboration site should be created
+     * or not.
+     */
+    protected boolean isCollaborationSiteTest()
+    {
+        return false;
+    }
+
     @Override
     protected void setUp() throws Exception
     {
     	super.setUp();
-    	
+
         // Initialise the service beans
-        initServices();    
-        
+        initServices();
+
         // Setup test data
         setupTestData();
     }
-    
+
     /**
      * Initialise the service beans.
      */
     protected void initServices()
     {
-    	ApplicationContext applicationContext = getServer().getApplicationContext();
-    	
+    	applicationContext = getServer().getApplicationContext();
+
     	// Common test utils
     	utils = new CommonRMTestUtils(applicationContext);
-    	
+
         // Get services
         nodeService = (NodeService)applicationContext.getBean("NodeService");
         contentService = (ContentService)applicationContext.getBean("ContentService");
         retryingTransactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
         namespaceService = (NamespaceService)applicationContext.getBean("NamespaceService");
         searchService = (SearchService)applicationContext.getBean("SearchService");
-        policyComponent = (PolicyComponent)applicationContext.getBean("policyComponent");  
+        policyComponent = (PolicyComponent)applicationContext.getBean("policyComponent");
         dictionaryService = (DictionaryService)applicationContext.getBean("DictionaryService");
         siteService = (SiteService)applicationContext.getBean("SiteService");
         authorityService = (AuthorityService)applicationContext.getBean("AuthorityService");
         authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
         personService = (PersonService)applicationContext.getBean("PersonService");
-        
+        transactionService = (TransactionService)applicationContext.getBean("TransactionService");
+        taggingService = (TaggingService)applicationContext.getBean("TaggingService");
+
         // Get RM services
         rmService = (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
@@ -156,7 +177,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
         vitalRecordService = (VitalRecordService)applicationContext.getBean("VitalRecordService");
     }
-    
+
     /**
      * @see junit.framework.TestCase#tearDown()
      */
@@ -170,27 +191,33 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
             {
                 // As system user
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-                
-                // Do the tear down 
+
+                // Do the tear down
                 tearDownImpl();
-                
+
                 return null;
             }
-        });       
+        });
     }
-    
+
     /**
      * Tear down implementation
      */
-    protected void tearDownImpl() 
+    protected void tearDownImpl()
     {
         // Delete the folder
         nodeService.deleteNode(folder);
-        
+
         // Delete the site
         siteService.deleteSite(SITE_ID);
+
+        // Delete the collaboration site (if required)
+        if (isCollaborationSiteTest() == true)
+        {
+            siteService.deleteSite(COLLAB_SITE_ID);
+        }
     }
-    
+
     /**
      * Setup test data for tests
      */
@@ -207,7 +234,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
             }
         });
     }
-    
+
     /**
      * Impl of test data setup
      */
@@ -215,40 +242,78 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     {
         storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         rootNodeRef = nodeService.getRootNode(storeRef);
-        
+
         // Create folder
         String containerName = "RM2_" + System.currentTimeMillis();
         Map<QName, Serializable> containerProps = new HashMap<QName, Serializable>(1);
         containerProps.put(ContentModel.PROP_NAME, containerName);
         folder = nodeService.createNode(
-              rootNodeRef, 
-              ContentModel.ASSOC_CHILDREN, 
-              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName), 
+              rootNodeRef,
+              ContentModel.ASSOC_CHILDREN,
+              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName),
               ContentModel.TYPE_FOLDER,
               containerProps).getChildRef();
         assertNotNull("Could not create base folder", folder);
-        
+
         // Create the site
-        siteInfo = siteService.createSite("preset", SITE_ID, "title", "descrition", SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
+        siteInfo = siteService.createSite("rm-site-dashboard", SITE_ID, "title", "descrition", SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
         filePlan = siteService.getContainer(SITE_ID, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
         assertNotNull("Site document library container was not created successfully.", filePlan);
-                        
+
         recordSeries = rmService.createRecordCategory(filePlan, "recordSeries");
         assertNotNull("Could not create record category with no disposition schedule", recordSeries);
-        
+
         recordCategory = rmService.createRecordCategory(recordSeries, "rmContainer");
         assertNotNull("Could not create record category", recordCategory);
-        
+
         // Make vital record
         vitalRecordService.setVitalRecordDefintion(recordCategory, true, new Period("week|1"));
-        
+
         // Create disposition schedule
         dispositionSchedule = utils.createBasicDispositionSchedule(recordCategory);
-        
+
         // Create RM folder
         recordFolder = rmService.createRecordFolder(recordCategory, "rmFolder");
         assertNotNull("Could not create rm folder", recordFolder);
         recordFolder2 = rmService.createRecordFolder(recordCategory, "rmFolder2");
         assertNotNull("Could not create rm folder 2", recordFolder2);
+
+        // Create collaboration data
+        if (isCollaborationSiteTest() == true)
+        {
+            setupCollaborationSiteTestData();
+        }
+    }
+
+    protected void setupCollaborationSiteTestData()
+    {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                // As system user
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+                setupCollaborationSiteTestDataImpl();
+
+                return null;
+            }
+        });
+    }
+
+    protected void setupCollaborationSiteTestDataImpl()
+    {
+        // create collaboration site
+        siteService.createSite("preset", COLLAB_SITE_ID, "title", "description", SiteVisibility.PRIVATE);
+        NodeRef documentLibrary = SiteServiceImpl.getSiteContainer(
+                COLLAB_SITE_ID,
+                SiteService.DOCUMENT_LIBRARY,
+                true,
+                siteService,
+                transactionService,
+                taggingService);
+
+        assertNotNull("Collaboration site document library component was not successfully created.", documentLibrary);
     }
 }

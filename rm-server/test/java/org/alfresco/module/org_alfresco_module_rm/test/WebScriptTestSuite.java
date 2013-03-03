@@ -21,11 +21,17 @@ package org.alfresco.module.org_alfresco_module_rm.test;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.module.org_alfresco_module_rm.test.webscript.ActionDefinitionsRestApiTest;
+import org.alfresco.module.org_alfresco_module_rm.test.webscript.CapabilitiesRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.DataSetRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.DispositionRestApiTest;
+import org.alfresco.module.org_alfresco_module_rm.test.webscript.EmailMapKeysRestApiTest;
+import org.alfresco.module.org_alfresco_module_rm.test.webscript.EmailMapScriptTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.EventRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RMCaveatConfigScriptTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RMConstraintScriptTest;
+import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmClassesRestApiTest;
+import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmPropertiesRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RoleRestApiTest;
 
@@ -52,6 +58,12 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite(RmRestApiTest.class);
         suite.addTestSuite(RoleRestApiTest.class);
         suite.addTestSuite(DataSetRestApiTest.class);
+        suite.addTestSuite(EmailMapScriptTest.class);
+        suite.addTestSuite(EmailMapKeysRestApiTest.class);
+        suite.addTestSuite(CapabilitiesRestApiTest.class);
+        suite.addTestSuite(ActionDefinitionsRestApiTest.class);
+        suite.addTestSuite(RmClassesRestApiTest.class);
+        suite.addTestSuite(RmPropertiesRestApiTest.class);
         return suite;
     }
 }

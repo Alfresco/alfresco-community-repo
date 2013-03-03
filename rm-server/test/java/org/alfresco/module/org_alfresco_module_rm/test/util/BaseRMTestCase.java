@@ -73,37 +73,37 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * Base test case class to use for RM unit tests.
- * 
+ *
  * @author Roy Wetherall
  */
-public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase 
+public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                                      implements RecordsManagementModel, ContentModel, RMPermissionModel
-{    
+{
     /** Application context */
-    protected static final String[] CONFIG_LOCATIONS = new String[] 
-    { 
+    protected static final String[] CONFIG_LOCATIONS = new String[]
+    {
         "classpath:alfresco/application-context.xml",
         "classpath:test-context.xml"
     };
     protected ApplicationContext applicationContext;
-    
+
     /** test model constants */
     protected String URI = "http://www.alfresco.org/model/rmtest/1.0";
     protected String PREFIX = "rmt";
     protected QName TYPE_CUSTOM_TYPE = QName.createQName(URI, "customType");
     protected QName ASPECT_CUSTOM_ASPECT = QName.createQName(URI, "customAspect");
     protected QName ASPECT_RECORD_META_DATA = QName.createQName(URI, "recordMetaData");
-    
+
     /** site id's */
     protected static final String SITE_ID = "mySite";
     protected static final String COLLABORATION_SITE_ID = "collab-site-id";
-    
+
     /** Common test utils */
     protected CommonRMTestUtils utils;
-    
+
     /** RM Admin user name */
     protected String rmAdminUserName;
-    
+
     /** Services */
     protected NodeService nodeService;
     protected ContentService contentService;
@@ -120,12 +120,12 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected FileFolderService fileFolderService;
     protected PermissionService permissionService;
     protected TaggingService taggingService;
-    
+
     /** RM Services */
     protected RecordsManagementService rmService;
     protected DispositionService dispositionService;
     protected RecordsManagementEventService eventService;
-    protected RecordsManagementAdminService adminService;    
+    protected RecordsManagementAdminService adminService;
     protected RecordsManagementActionService actionService;
     protected RecordsManagementSearchService rmSearchService;
     protected FilePlanRoleService filePlanRoleService;
@@ -137,10 +137,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected RecordService recordService;
     protected FilePlanService filePlanService;
     protected FilePlanAuthenticationService filePlanAuthenticationService;
-    
+
     /** test data */
     protected StoreRef storeRef;
-    protected NodeRef rootNodeRef;   
+    protected NodeRef rootNodeRef;
     protected SiteInfo siteInfo;
     protected NodeRef folder;
     protected NodeRef filePlan;
@@ -148,8 +148,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef rmFolder;
     protected NodeRef unfiledContainer;
-    
-    /** multi-hierarchy test data 
+
+    /** multi-hierarchy test data
      *
      *   |--rmRootContainer
      *      |
@@ -160,7 +160,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      *         |  |--mhContainer-2-1
      *         |     |
      *         |     |--mhContainer-3-1
-     *         |         
+     *         |
      *         |--mhContainer-1-2 (has schedule - folder level)
      *            |
      *            |--mhContainer-2-2
@@ -168,26 +168,26 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      *            |  |--mhContainer-3-2
      *            |  |
      *            |  |--mhContainer-3-3 (has schedule - record level)
-     *            |  
+     *            |
      *            |--mhContainer-2-3 (has schedule - folder level)
      *               |
      *               |--mhContainer-3-4
-     *               |     
-     *               |--mhContainer-3-5 (has schedule- record level)        
+     *               |
+     *               |--mhContainer-3-5 (has schedule- record level)
      */
-    
+
     protected NodeRef mhContainer;
-    
+
     protected NodeRef mhContainer11;
     protected DispositionSchedule mhDispositionSchedule11;
     protected NodeRef mhContainer12;
     protected DispositionSchedule mhDispositionSchedule12;
-    
+
     protected NodeRef mhContainer21;
     protected NodeRef mhContainer22;
     protected NodeRef mhContainer23;
     protected DispositionSchedule mhDispositionSchedule23;
-    
+
     protected NodeRef mhContainer31;
     protected NodeRef mhContainer32;
     protected NodeRef mhContainer33;
@@ -195,22 +195,22 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef mhContainer34;
     protected NodeRef mhContainer35;
     protected DispositionSchedule mhDispositionSchedule35;
-    
+
     protected NodeRef mhRecordFolder41;
     protected NodeRef mhRecordFolder42;
     protected NodeRef mhRecordFolder43;
     protected NodeRef mhRecordFolder44;
     protected NodeRef mhRecordFolder45;
-    
+
     /** test user names */
     protected String[] testUsers;
-    protected String userName;    
+    protected String userName;
     protected String rmUserName;
     protected String powerUserName;
     protected String securityOfficerName;
     protected String recordsManagerName;
     protected String rmAdminName;
-    
+
     /** test people */
     protected NodeRef userPerson;
     protected NodeRef rmUserPerson;
@@ -218,7 +218,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef securityOfficerPerson;
     protected NodeRef recordsManagerPerson;
     protected NodeRef rmAdminPerson;
-    
+
     /** test records */
     protected NodeRef recordOne;
     protected NodeRef recordTwo;
@@ -227,7 +227,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef recordFive;
     protected NodeRef recordDeclaredOne;
     protected NodeRef recordDeclaredTwo;
-    
+
     /** collaboration site artifacts */
     protected SiteInfo collaborationSite;
     protected NodeRef documentLibrary;
@@ -239,7 +239,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef dmConsumerNodeRef;
     protected String dmCollaborator;
     protected NodeRef dmCollaboratorNodeRef;
-    
+
     /**
      * Indicates whether this is a multi-hierarchy test or not.  If it is then the multi-hierarchy record
      * taxonomy test data is loaded.
@@ -248,7 +248,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         return false;
     }
-    
+
     /**
      * Indicates whether the test users should be created or not.
      */
@@ -256,7 +256,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         return false;
     }
-    
+
     /**
      * Indicates whether the test records should be created or not.
      */
@@ -264,7 +264,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         return false;
     }
-    
+
     /**
      * Indicates whether the test users should have filling on the file plan structure
      * by default or not.
@@ -273,7 +273,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         return false;
     }
-    
+
     /**
      * Indicates whether the test collaboration site should be created
      * or not.
@@ -282,7 +282,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         return false;
     }
-    
+
     /**
      * @see junit.framework.TestCase#setUp()
      */
@@ -292,10 +292,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         // Get the application context
         applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
         utils = new CommonRMTestUtils(applicationContext);
-        
+
         // Initialise the service beans
         initServices();
-        
+
         // grab the rmadmin user name
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
@@ -305,26 +305,26 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 // As system user
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                 rmAdminUserName = filePlanAuthenticationService.getRmAdminUserName();
-                
+
                 return null;
             }
         });
-        
+
         // Setup test data
-        setupTestData();               
-        
+        setupTestData();
+
         // Create multi hierarchy data
         if (isMultiHierarchyTest() == true)
         {
             setupMultiHierarchyTestData();
-        }    
-        
+        }
+
         // Create collaboration data
         if (isCollaborationSiteTest() == true)
         {
             setupCollaborationSiteTestData();
         }
-        
+
         // Create the users here
         if (isUserTest() == true)
         {
@@ -343,7 +343,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         retryingTransactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
         namespaceService = (NamespaceService)this.applicationContext.getBean("NamespaceService");
         searchService = (SearchService)this.applicationContext.getBean("SearchService");
-        policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");  
+        policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
         dictionaryService = (DictionaryService)this.applicationContext.getBean("DictionaryService");
         siteService = (SiteService)this.applicationContext.getBean("SiteService");
         authorityService = (AuthorityService)this.applicationContext.getBean("AuthorityService");
@@ -353,7 +353,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         fileFolderService = (FileFolderService)applicationContext.getBean("FileFolderService");
         permissionService = (PermissionService)applicationContext.getBean("PermissionService");
         taggingService = (TaggingService)applicationContext.getBean("TaggingService");
-        
+
         // Get RM services
         rmService = (RecordsManagementService)applicationContext.getBean("RecordsManagementService");
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
@@ -371,7 +371,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
         filePlanAuthenticationService = (FilePlanAuthenticationService) applicationContext.getBean("FilePlanAuthenticationService");
     }
-    
+
     /**
      * @see junit.framework.TestCase#tearDown()
      */
@@ -385,33 +385,33 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             {
                 // As system user
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-                
-                // Do the tear down 
+
+                // Do the tear down
                 tearDownImpl();
-                
+
                 return null;
             }
-        });       
+        });
     }
-    
+
     /**
      * Tear down implementation
      */
-    protected void tearDownImpl() 
+    protected void tearDownImpl()
     {
         // Delete the folder
         nodeService.deleteNode(folder);
-        
+
         // Delete the site
         siteService.deleteSite(SITE_ID);
-        
+
         // delete the collaboration site (if required)
         if (isCollaborationSiteTest() == true)
         {
             siteService.deleteSite(COLLABORATION_SITE_ID);
         }
     }
-    
+
     /**
      * @see org.alfresco.util.RetryingTransactionHelperTestCase#getRetryingTransactionHelper()
      */
@@ -420,7 +420,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         return retryingTransactionHelper;
     }
-    
+
     /**
      * Setup test data for tests
      */
@@ -431,15 +431,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             public Void run()
             {
             	setupTestDataImpl();
-            	
+
             	if (isRecordTest() == true)
             	{
             	    setupTestRecords();
             	}
-            	
+
             	return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
             {
@@ -454,10 +454,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
                 assertNotNull(unfiledContainer);
             }
-        }, 
-        AuthenticationUtil.getAdminUserName());    	
+        },
+        AuthenticationUtil.getAdminUserName());
     }
-    
+
     /**
      * Impl of test data setup
      */
@@ -465,36 +465,36 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         rootNodeRef = nodeService.getRootNode(storeRef);
-        
+
         // Create folder
         String containerName = "RM2_" + System.currentTimeMillis();
         Map<QName, Serializable> containerProps = new HashMap<QName, Serializable>(1);
         containerProps.put(ContentModel.PROP_NAME, containerName);
         folder = nodeService.createNode(
-              rootNodeRef, 
-              ContentModel.ASSOC_CHILDREN, 
-              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName), 
+              rootNodeRef,
+              ContentModel.ASSOC_CHILDREN,
+              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName),
               ContentModel.TYPE_FOLDER,
               containerProps).getChildRef();
         assertNotNull("Could not create base folder", folder);
-        
+
         // Create the site
-        siteInfo = siteService.createSite("preset", SITE_ID, "title", "descrition", SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
+        siteInfo = siteService.createSite("rm-site-dashboard", SITE_ID, "title", "descrition", SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
         filePlan = siteService.getContainer(SITE_ID, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
         assertNotNull("Site document library container was not created successfully.", filePlan);
-                        
+
         // Create RM container
         rmContainer = rmService.createRecordCategory(filePlan, "rmContainer");
         assertNotNull("Could not create rm container", rmContainer);
-        
+
         // Create disposition schedule
         dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
-        
+
         // Create RM folder
         rmFolder = rmService.createRecordFolder(rmContainer, "rmFolder");
         assertNotNull("Could not create rm folder", rmFolder);
     }
-    
+
     protected void setupTestRecords()
     {
         recordOne = utils.createRecord(rmFolder, "one.txt");
@@ -505,7 +505,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         recordDeclaredOne = utils.createRecord(rmFolder, "declaredOne.txt");
         recordDeclaredTwo = utils.createRecord(rmFolder, "declaredTwo.txt");
     }
-    
+
     protected void setupTestUsers(final NodeRef filePlan)
     {
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
@@ -519,46 +519,46 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             }
         });
     }
-    
+
     /**
-     * 
+     *
      * @param filePlan
      */
     protected void setupTestUsersImpl(NodeRef filePlan)
     {
         userName = GUID.generate();
         userPerson = createPerson(userName);
-        
+
         rmUserName = GUID.generate();
         rmUserPerson = createPerson(rmUserName);
         filePlanRoleService.assignRoleToAuthority(filePlan, "User", rmUserName);
-        
+
         powerUserName = GUID.generate();
         powerUserPerson = createPerson(powerUserName);
         filePlanRoleService.assignRoleToAuthority(filePlan, "PowerUser", powerUserName);
-        
+
         securityOfficerName = GUID.generate();
         securityOfficerPerson = createPerson(securityOfficerName);
         filePlanRoleService.assignRoleToAuthority(filePlan, "SecurityOfficer", securityOfficerName);
-        
+
         recordsManagerName = GUID.generate();
         recordsManagerPerson = createPerson(recordsManagerName);
         filePlanRoleService.assignRoleToAuthority(filePlan, "RecordsManager", recordsManagerName);
-        
+
         rmAdminName = GUID.generate();
         rmAdminPerson = createPerson(rmAdminName);
-        filePlanRoleService.assignRoleToAuthority(filePlan, "Administrator", rmAdminName);  
-        
+        filePlanRoleService.assignRoleToAuthority(filePlan, "Administrator", rmAdminName);
+
         testUsers = new String[]
         {
                 userName,
-                rmUserName, 
-                powerUserName, 
-                securityOfficerName, 
-                recordsManagerName, 
+                rmUserName,
+                powerUserName,
+                securityOfficerName,
+                recordsManagerName,
                 rmAdminName
         };
-        
+
         if (isFillingForAllUsers() == true)
         {
             // Give all the users file permission objects
@@ -567,13 +567,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 filePlanPermissionService.setPermission(filePlan, user, FILING);
                 filePlanPermissionService.setPermission(rmContainer, user, FILING);
                 filePlanPermissionService.setPermission(unfiledContainer, user, FILING);
-            } 
+            }
         }
     }
-    
+
     /**
      * Util method to create a person.
-     * @param userName  user name  
+     * @param userName  user name
      * @return NodeRef  user node reference
      */
     protected NodeRef createPerson(String userName)
@@ -583,7 +583,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         properties.put(ContentModel.PROP_USERNAME, userName);
         return personService.createPerson(properties);
     }
-    
+
     /**
      * Setup multi hierarchy test data
      */
@@ -596,29 +596,29 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             {
                 // As system user
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-                
+
                 // Do setup
                 setupMultiHierarchyTestDataImpl();
-                
+
                 return null;
             }
         });
     }
-    
+
     /**
      * Impl of multi hierarchy test data
      */
     protected void setupMultiHierarchyTestDataImpl()
     {
         // Create root mh container
-        mhContainer = rmService.createRecordCategory(filePlan, "mhContainer");                
-        
+        mhContainer = rmService.createRecordCategory(filePlan, "mhContainer");
+
         // Level 1
         mhContainer11 = rmService.createRecordCategory(mhContainer, "mhContainer11");
         mhDispositionSchedule11 = utils.createBasicDispositionSchedule(mhContainer11, "ds11", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
         mhContainer12 = rmService.createRecordCategory(mhContainer, "mhContainer12");
         mhDispositionSchedule12 = utils.createBasicDispositionSchedule(mhContainer12, "ds12", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, false, true);
-        
+
         // Level 2
         mhContainer21 = rmService.createRecordCategory(mhContainer11, "mhContainer21");
         mhContainer22 = rmService.createRecordCategory(mhContainer12, "mhContainer22");
@@ -633,15 +633,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         mhContainer34 = rmService.createRecordCategory(mhContainer23, "mhContainer34");
         mhContainer35 = rmService.createRecordCategory(mhContainer23, "mhContainer35");
         mhDispositionSchedule35 = utils.createBasicDispositionSchedule(mhContainer35, "ds35", CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, true, true);
-        
+
         // Record folders
         mhRecordFolder41 = rmService.createRecordFolder(mhContainer31, "mhFolder41");
         mhRecordFolder42 = rmService.createRecordFolder(mhContainer32, "mhFolder42");
         mhRecordFolder43 = rmService.createRecordFolder(mhContainer33, "mhFolder43");
         mhRecordFolder44 = rmService.createRecordFolder(mhContainer34, "mhFolder44");
-        mhRecordFolder45 = rmService.createRecordFolder(mhContainer35, "mhFolder45");        
+        mhRecordFolder45 = rmService.createRecordFolder(mhContainer35, "mhFolder45");
     }
-    
+
     protected void setupCollaborationSiteTestData()
     {
         doTestInTransaction(new Test<Void>()
@@ -653,17 +653,17 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             }
         }, AuthenticationUtil.getAdminUserName());
     }
-    
+
     protected void setupCollaborationSiteTestDataImpl()
     {
         // create collaboration site
         collaborationSite = siteService.createSite("preset", COLLABORATION_SITE_ID, "title", "description", SiteVisibility.PRIVATE);
         documentLibrary = SiteServiceImpl.getSiteContainer(
-                COLLABORATION_SITE_ID, 
-                SiteService.DOCUMENT_LIBRARY, 
+                COLLABORATION_SITE_ID,
+                SiteService.DOCUMENT_LIBRARY,
                 true,
-                siteService, 
-                transactionService, 
+                siteService,
+                transactionService,
                 taggingService);
 
         assertNotNull("Collaboration site document library component was not successfully created.", documentLibrary);
@@ -671,35 +671,35 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         // create a folder and documents
         dmFolder = fileFolderService.create(documentLibrary, "collabFolder", ContentModel.TYPE_FOLDER).getNodeRef();
         dmDocument = fileFolderService.create(dmFolder, "collabDocument.txt", ContentModel.TYPE_CONTENT).getNodeRef();
-                
+
         dmConsumer = GUID.generate();
         dmConsumerNodeRef = createPerson(dmConsumer);
         siteService.setMembership(COLLABORATION_SITE_ID, dmConsumer, SiteModel.SITE_CONSUMER);
-        
+
         dmCollaborator = GUID.generate();
         dmCollaboratorNodeRef = createPerson(dmCollaborator);
         siteService.setMembership(COLLABORATION_SITE_ID, dmCollaborator, SiteModel.SITE_COLLABORATOR);
     }
-    
+
     /**
      * Override to ensure the tests are run as the 'rmadmin' user by default.
      */
-    
+
     @Override
     protected <A> A doTestInTransaction(Test<A> test)
     {
         return super.doTestInTransaction(test, rmAdminUserName);
     }
-    
+
     @Override
     protected void doTestInTransaction(FailureTest test)
     {
         super.doTestInTransaction(test, rmAdminUserName);
     }
-    
+
     /**
      * Helper class to try and simplify {@link Void} tests.
-     * 
+     *
      * @author Roy Wetherall
      * @since 2.1
      */
@@ -711,20 +711,20 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             runImpl();
             return null;
         }
-        
+
         public abstract void runImpl() throws Exception;
-        
+
         @Override
         public void test(Void result) throws Exception
         {
             testImpl();
         }
-        
+
         public void testImpl() throws Exception
         {
             // empty implementation
         }
-        
-        
+
+
     }
 }

@@ -26,9 +26,8 @@ function getDoclist()
       node = parsedArgs.pathNode,
       parent = null;
 
-   var isThumbnailNameRegistered = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME),
-      thumbnail = null,
-      item = Evaluator.run(node);
+   var thumbnail = null,
+       item = Evaluator.run(node);
 
    item.isFavourite = (favourites[node.nodeRef] === true);
    item.likes = Common.getLikes(node);
@@ -58,18 +57,6 @@ function getDoclist()
       (parsedArgs.libraryRoot && String(parsedArgs.libraryRoot.nodeRef) == String(node.nodeRef)))
    {
       item.location.file = "";
-   }
-      
-   // Check: thumbnail type is registered && node is a cm:content subtype
-   if (isThumbnailNameRegistered && item.node.isSubType("cm:content"))
-   {
-      // Make sure we have a thumbnail.
-      thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
-      if (thumbnail === null)
-      {
-         // No thumbnail, so queue creation
-         item.node.createThumbnail(THUMBNAIL_NAME, true);
-      }
    }
    
    return (

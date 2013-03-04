@@ -182,10 +182,9 @@ function getDoclist()
       };
    }
 
-   var isThumbnailNameRegistered = thumbnailService.isThumbnailNameRegistered(THUMBNAIL_NAME),
-      thumbnail = null,
-      locationNode,
-      item;
+   var thumbnail = null,
+       locationNode,
+       item;
    
    // Loop through and evaluate each node in this result set
    for each (node in nodes)
@@ -224,18 +223,6 @@ function getDoclist()
          
          // Resolved location
          item.location = location;
-         
-         // Check: thumbnail type is registered && node is a cm:content subtype
-         if (isThumbnailNameRegistered && item.node.isSubType("cm:content"))
-         {
-            // Make sure we have a thumbnail.
-            thumbnail = item.node.getThumbnail(THUMBNAIL_NAME);
-            if (thumbnail === null)
-            {
-               // No thumbnail, so queue creation
-               item.node.createThumbnail(THUMBNAIL_NAME, true);
-            }
-         }
          
          items.push(item);
       }

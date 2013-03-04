@@ -248,6 +248,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         this.testMessageTo = testMessageTo;
     }
     
+    public String getTestMessageTo()
+    {
+        return testMessageTo;
+    }
+    
     public void setTestMessageSubject(String testMessageSubject)
     {
         this.testMessageSubject = testMessageSubject;

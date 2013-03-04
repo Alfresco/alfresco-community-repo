@@ -1,6 +1,7 @@
 package org.alfresco.repo.action.executer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 public class MailActionExecuterMonitor
 {
@@ -11,7 +12,9 @@ public class MailActionExecuterMonitor
         try
         {
             mailActionExceuter.sendTestMessage();
-            return "email message sent";
+            Object[] params = {mailActionExceuter.getTestMessageTo()};
+            String message = I18NUtil.getMessage("email.outbound.test.send.success", params);
+            return message;
         }
         catch
         (AlfrescoRuntimeException are)

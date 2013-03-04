@@ -145,7 +145,19 @@ function main()
          var rootCategories = classification.getRootCategories(catAspect);
          if (rootCategories != null && rootCategories.length > 0)
          {
-            rootNode = rootCategories[0].parent;
+            if (argsRootNode)
+            {
+               rootNode = resolveNode(argsRootNode);
+               if (rootNode == null)
+               {
+                  rootNode = rootCategories[0].parent;
+               }
+            }
+            else
+            {
+               rootNode = rootCategories[0].parent;
+            }
+
             if (nodeRef == "alfresco://category/root")
             {
                parent = rootNode;

@@ -1466,6 +1466,15 @@ public class FileFolderServiceImpl implements FileFolderService
         {
             throw new FileNotFoundException(nodeRef);
         }
+        catch (RuntimeException e)
+        {
+            // the runAs() is too keen on wrapping everything in an outer RuntimeException - which we don't want.
+            if (e.getCause() instanceof FileNotFoundException)
+            {
+                throw (FileNotFoundException)e.getCause();
+            }
+            else throw e;
+        }
     }
 
     public FileInfo resolveNamePath(NodeRef rootNodeRef, List<String> pathElements) throws FileNotFoundException

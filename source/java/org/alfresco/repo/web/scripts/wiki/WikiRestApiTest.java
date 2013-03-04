@@ -516,7 +516,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        // Have it renamed
        page = renamePage(PAGE_TITLE_TWO, PAGE_TITLE_THREE, Status.STATUS_OK);
        name2 = PAGE_TITLE_THREE.replace(' ', '_');
-       assertEquals(name2, page.getString("name"));
+       assertEquals(PAGE_TITLE_THREE, page.getString("title"));
        
        
        // Fetch it at the new address
@@ -529,7 +529,7 @@ public class WikiRestApiTest extends BaseWebScriptTest
        page = getPage(name, Status.STATUS_OK);
        assertEquals(name, page.getString("name"));
        assertEquals(PAGE_TITLE_TWO, page.getString("title"));
-       assertEquals("This page has been moved [["+name2+"|here]].", page.getString("pagetext"));
+       assertEquals("This page has been moved [["+PAGE_TITLE_THREE+"|here]].", page.getString("pagetext"));
        
        
        // Ensure you can't rename onto an existing page

@@ -11,7 +11,7 @@
    <#list result.pageList as p>
       "${p}"<#if p_has_next>,</#if>
    </#list>
-   ],
+   ]<#if !result.minWikiData>,</#if>
    <#if !result.minWikiData>
       "tags": [
       <#list result.tags as tag>

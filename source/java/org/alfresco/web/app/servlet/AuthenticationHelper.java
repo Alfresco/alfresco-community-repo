@@ -430,11 +430,11 @@ public final class AuthenticationHelper
                   User user = new User(currentUsername, ticket, personRef);
                   NodeRef homeRef = (NodeRef) nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
 
-                  // check that the home space node exists - else Login cannot proceed
-                  if (nodeService.exists(homeRef) == false)
+                  if (homeRef==null || !nodeService.exists(homeRef))
                   {
-                     throw new InvalidNodeRefException(homeRef);
+                      throw new AuthenticationException("Home folder is missing for user " + currentUsername);
                   }
+
                   user.setHomeSpaceId(homeRef.getId());
                   return user;
                }

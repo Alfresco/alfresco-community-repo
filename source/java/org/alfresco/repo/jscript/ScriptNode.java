@@ -1103,7 +1103,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     }
     
     /**
-     * @return The array of aspects applied to this node
+     * @return The array of aspects applied to this node as fully qualified qname strings
      */
     public Scriptable getAspects()
     {
@@ -1113,6 +1113,31 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         for (QName qname : aspects)
         {
             result[count++] = qname.toString();
+        }
+        return Context.getCurrentContext().newArray(this.scope, result);
+    }
+    
+    /**
+     * @return The array of aspects applied to this node as short prefix qname strings
+     */
+    public Scriptable getAspectsShort()
+    {
+        final NamespaceService ns = this.services.getNamespaceService();
+        final Map<String, String> cache = new HashMap<String, String>();
+        final Set<QName> aspects = getAspectsSet();
+        final Object[] result = new Object[aspects.size()];
+        int count = 0;
+        for (final QName qname : aspects)
+        {
+            String prefix = cache.get(qname.getNamespaceURI());
+            if (prefix == null)
+            {
+                // first request for this namespace prefix, get and cache result
+                Collection<String> prefixes = ns.getPrefixes(qname.getNamespaceURI());
+                prefix = prefixes.size() != 0 ? prefixes.iterator().next() : "";
+                cache.put(qname.getNamespaceURI(), prefix);
+            }
+            result[count++] = prefix + QName.NAMESPACE_PREFIX + qname.getLocalName();
         }
         return Context.getCurrentContext().newArray(this.scope, result);
     }

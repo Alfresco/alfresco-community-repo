@@ -125,7 +125,7 @@ public class WebClientConfigBootstrap implements ApplicationContextAware, BeanNa
     {
     	if (configService != null && this.configs != null && this.configs.size() != 0)
         {
-            UrlConfigSource configSource = new UrlConfigSource(this.configs);
+            UrlConfigSource configSource = new UrlConfigSource(this.configs, true);
             return configService.appendConfig(configSource);
         }
     	

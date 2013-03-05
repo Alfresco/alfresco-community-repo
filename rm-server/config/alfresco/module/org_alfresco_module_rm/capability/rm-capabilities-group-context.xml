@@ -107,16 +107,54 @@
    </bean>
 
    <bean id="rmCopy"
-      parent="declarativeCapability">
+      parent="compositeCapability">
       <property name="name" value="Copy"/>
+      <property name="private" value="true"/>
+      <property name="capabilities">
+         <list>
+            <ref bean="rmCopyRecordCapability"/>
+            <ref bean="rmCopyRecordFolderCapability"/>
+            <ref bean="rmCopyRecordCategoryCapability"/>
+         </list>
+      </property>
+      <property name="targetCapability" ref="rmCreate" />
+   </bean>
+
+   <bean id="rmCopyRecordCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CopyRecord"/>
       <property name="private" value="true"/>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.isRecord" value="true"/>
             <entry key="capabilityCondition.recordFiled" value="true"/>
          </map>
       </property>
-      <property name="targetCapability" ref="rmCreate" />
+   </bean>
+
+   <bean id="rmCopyRecordFolderCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CopyRecordFolder"/>
+      <property name="private" value="true"/>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.isRecordFolder" value="true"/>            
+         </map>
+      </property>
+   </bean>
+
+   <bean id="rmCopyRecordCategoryCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CopyRecordCategory"/>
+      <property name="private" value="true"/>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.isRecordCategory" value="true"/>            
+         </map>
+      </property>
    </bean>
 
    <bean id="rmImport"

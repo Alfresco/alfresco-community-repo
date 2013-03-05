@@ -2,9 +2,9 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-    
+
     <!--  Capability Conditions -->
-    
+
     <bean id="capabilityCondition.base"
           abstract="true">
         <property name="recordsManagementService" ref="recordsManagementService" />
@@ -13,133 +13,148 @@
         <property name="freezeService" ref="FreezeService" />
         <property name="recordService" ref="recordService" />
     </bean>
-    
-    <bean id="capabilityCondition.frozen" 
+
+    <bean id="capabilityCondition.frozen"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FrozenCapabilityCondition">
     </bean>
-    
-    <bean id="capabilityCondition.frozenOrFrozenChildren" 
+
+    <bean id="capabilityCondition.frozenOrFrozenChildren"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FrozenCapabilityCondition">
     	<property name="checkChildren" value="true" />
     </bean>
-    
-    <bean id="capabilityCondition.frozenOrHold" 
+
+    <bean id="capabilityCondition.frozenOrHold"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FrozenOrHoldCondition">
     </bean>
-    
-    <bean id="capabilityCondition.cutoff" 
+
+    <bean id="capabilityCondition.cutoff"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.CutoffCapabilityCondition">
     </bean>
-    
-    <bean id="capabilityCondition.closed" 
+
+    <bean id="capabilityCondition.closed"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.ClosedCapabilityCondition">
     </bean>
-    
-    <bean id="capabilityCondition.declared" 
+
+    <bean id="capabilityCondition.declared"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.DeclaredCapabilityCondition">
     </bean>
-    
-    <bean id="capabilityCondition.filling" 
+
+    <bean id="capabilityCondition.filling"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FillingCapabilityCondition">
     </bean>
-    
-    <bean id="capabilityCondition.transferred" 
+
+    <bean id="capabilityCondition.transferred"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.TransferredCapabilityCondition">
     </bean>
-    
-    <bean id="capabilityCondition.destroyed" 
+
+    <bean id="capabilityCondition.destroyed"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.DestroyedCapabilityCondition">
     </bean>
-    
-    <bean id="capabilityCondition.vitalRecordOrFolder" 
+
+    <bean id="capabilityCondition.vitalRecordOrFolder"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.VitalRecordOrFolderCapabilityCondition">
     </bean>
-    
+
     <bean id="capabilityCondition.recordFiled"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.RecordFiledCapabilityCondition">
     </bean>
-    
-    <bean id="capabilityCondition.destroyMayBeScheduled" 
+
+    <bean id="capabilityCondition.destroyMayBeScheduled"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.MayBeScheduledCapabilityCondition">
     	<property name="dispositionService" ref="DispositionService"/>
     	<property name="dispositionAction"  value="destroy"/>
     </bean>
-    
-    <bean id="capabilityCondition.destroyIsScheduled" 
+
+    <bean id="capabilityCondition.destroyIsScheduled"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsScheduledCapabilityCondition">
     	<property name="dispositionService" ref="DispositionService"/>
     	<property name="dispositionAction"  value="destroy"/>
     </bean>
-    
-    <bean id="capabilityCondition.hasEvents" 
+
+    <bean id="capabilityCondition.hasEvents"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasEventsCapabilityCondition">
     	<property name="dispositionService" ref="DispositionService"/>
     </bean>
-    
-    <bean id="capabilityCondition.fileable" 
+
+    <bean id="capabilityCondition.fileable"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FileableCapabilityCondition">
     	<property name="dictionaryService" ref="DictionaryService"/>
     </bean>
-    
-    <bean id="capabilityCondition.transferIsScheduled" 
+
+    <bean id="capabilityCondition.transferIsScheduled"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsScheduledCapabilityCondition">
     	<property name="dispositionService" ref="DispositionService"/>
     	<property name="dispositionAction" value="transfer"/>
     </bean>
-    
-    <bean id="capabilityCondition.accessionIsScheduled" 
+
+    <bean id="capabilityCondition.accessionIsScheduled"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsScheduledCapabilityCondition">
     	<property name="dispositionService" ref="DispositionService"/>
     	<property name="dispositionAction" value="accession"/>
     </bean>
-    
-    <bean id="capabilityCondition.cutoffIsScheduled" 
+
+    <bean id="capabilityCondition.cutoffIsScheduled"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsScheduledCapabilityCondition">
     	<property name="dispositionService" ref="DispositionService"/>
     	<property name="dispositionAction" value="cutoff"/>
     </bean>
-    
-    <bean id="capabilityCondition.isTransferAccession" 
+
+    <bean id="capabilityCondition.isTransferAccession"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsTransferAccessionCapabilityCondition">
     </bean>
-    
-    <bean id="capabilityCondition.isTransferring" 
+
+    <bean id="capabilityCondition.isTransferring"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasAspectCapabilityCondition">
        <property name="aspectName" value="rma:transferring"/>
        <property name="namespaceService" ref="NamespaceService"/>
     </bean>
-    
-    <bean id="capabilityCondition.hasDispositionAsOfDate" 
+
+    <bean id="capabilityCondition.hasDispositionAsOfDate"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasDispositionDateCapabilityCondition">
        <property name="dispositionService" ref="DispositionService"/>
     </bean>
-    
-    <bean id="capabilityCondition.lastDispositionActionCutoff" 
+
+    <bean id="capabilityCondition.lastDispositionActionCutoff"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.LastDispositionActionCondition">
        <property name="dispositionService" ref="DispositionService"/>
        <property name="dispositionActionName" value="cutoff"/>
     </bean>
+
+   <bean id="capabilityCondition.isRecord"
+         parent="capabilityCondition.base"
+         class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsRecordCondition">
+   </bean>
+
+   <bean id="capabilityCondition.isRecordFolder"
+         parent="capabilityCondition.base"
+         class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsRecordFolderCondition">
+   </bean>
+
+   <bean id="capabilityCondition.isRecordCategory"
+         parent="capabilityCondition.base"
+         class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsRecordCategoryCondition">
+   </bean>
 
 </beans>

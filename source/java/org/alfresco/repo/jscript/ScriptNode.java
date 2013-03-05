@@ -196,6 +196,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     private Boolean isLinkToContainer = null;
     private Boolean hasChildren = null;
     private String displayPath = null;
+    private String qnamePath = null;
     protected TemplateImageResolver imageResolver = null;
     protected ScriptNode parent = null;
     private ChildAssociationRef primaryParentAssoc = null;
@@ -1169,7 +1170,39 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      */
     public String getQnamePath()
     {
-        return this.services.getNodeService().getPath(getNodeRef()).toPrefixString(this.services.getNamespaceService());
+        if (this.qnamePath == null)
+        {
+            final NamespaceService ns = this.services.getNamespaceService();
+            final Map<String, String> cache = new HashMap<String, String>();
+            final StringBuilder buf = new StringBuilder(128);
+            final Path path = this.services.getNodeService().getPath(getNodeRef());
+            for (final Path.Element e : path)
+            {
+                if (e instanceof Path.ChildAssocElement)
+                {
+                    final QName qname = ((Path.ChildAssocElement)e).getRef().getQName();
+                    if (qname != null)
+                    {
+                        String prefix = cache.get(qname.getNamespaceURI());
+                        if (prefix == null)
+                        {
+                            // first request for this namespace prefix, get and cache result
+                            Collection<String> prefixes = ns.getPrefixes(qname.getNamespaceURI());
+                            prefix = prefixes.size() != 0 ? prefixes.iterator().next() : "";
+                            cache.put(qname.getNamespaceURI(), prefix);
+                        }
+                        buf.append('/').append(prefix).append(':').append(ISO9075.encode(qname.getLocalName()));
+                    }
+                }
+                else
+                {
+                    buf.append('/').append(e.toString());
+                }
+            }
+            this.qnamePath = buf.toString();
+        }
+        
+        return this.qnamePath;
     }
 
     /**
@@ -1177,13 +1210,13 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      */
     public String getDisplayPath()
     {
-        if (displayPath == null)
+        if (this.displayPath == null)
         {
-            displayPath = this.nodeService.getPath(this.nodeRef).toDisplayPath(
+            this.displayPath = this.nodeService.getPath(this.nodeRef).toDisplayPath(
                     this.nodeService, this.services.getPermissionService());
         }
         
-        return displayPath;
+        return this.displayPath;
     }
     
     /**
@@ -3399,6 +3432,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         this.hasChildren = null;
         this.parentAssocs = null;
         this.displayPath = null;
+        this.qnamePath = null;
         this.isDocument = null;
         this.isContainer = null;
         this.parent = null;

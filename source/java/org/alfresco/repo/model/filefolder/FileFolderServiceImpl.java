@@ -1139,7 +1139,10 @@ public class FileFolderServiceImpl implements FileFolderService
        
         // Only update the name if it has changed
         String currentName = (String)nodeService.getProperty(targetNodeRef, ContentModel.PROP_NAME);
-        if (currentName.equals(newName) == false)
+        
+        // ALF-13949: WorkingCopyAspect intentionally generates new names for all copies of working copies (which no
+        // longer have the working copy aspect) so leave these alone after copy
+        if (!currentName.equals(newName) && !nodeService.hasAspect(sourceNodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
             try
             {

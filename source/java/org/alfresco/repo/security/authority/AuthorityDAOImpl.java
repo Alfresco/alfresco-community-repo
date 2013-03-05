@@ -797,7 +797,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 {
                     listAuthorities(null, name, authorities, true, true);
                 }
-                if(!TransactionalResourceHelper.getSet(DELETING_AUTHORITY_SET_RESOURCE).contains(name))
+                if(AlfrescoTransactionSupport.getTransactionId() != null && !TransactionalResourceHelper.getSet(DELETING_AUTHORITY_SET_RESOURCE).contains(name))
                 {
                     userAuthorityCache.put(name, Collections.unmodifiableSet(authorities));
                 }

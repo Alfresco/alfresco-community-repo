@@ -548,8 +548,14 @@ public class CopyServiceImpl implements CopyService
             ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
             if (dropName && !childAssocDef.getDuplicateChildNamesAllowed())
             {
-                // duplicate children are not allowed.
-                targetNodeProperties.remove(ContentModel.PROP_NAME);
+                // ALF-13949: A behaviour callback (e.g. WorkingCopyAspect) may already have generated a new name, so
+                // preserve the new name if it has changed
+                String newName = (String) targetNodeProperties.get(ContentModel.PROP_NAME);
+                if (newName != null && newName.equals(nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME)))
+                {
+                    // duplicate children are not allowed.
+                    targetNodeProperties.remove(ContentModel.PROP_NAME);
+                }
             }
         }
         

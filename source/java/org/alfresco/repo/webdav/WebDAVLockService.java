@@ -21,10 +21,7 @@ package org.alfresco.repo.webdav;
 
 import javax.servlet.http.HttpSession;
 
-import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -69,9 +66,15 @@ public interface WebDAVLockService
      * @param nodeRef    the node reference
      * @return           the lock status
      */
-    @Auditable(parameters = { "nodeRef" })
     LockInfo getLockInfo(NodeRef nodeRef);
-
+    
+    /**
+     * Determines if the node is locked AND it's not a WRITE_LOCK for the current user.<p>
+     *
+     * @return true if the node is locked AND it's not a WRITE_LOCK for the current user
+     */
+    public boolean isLockedAndReadOnly(NodeRef nodeRef);
+    
     /**
      * Caches current session in a thread local variable.
      * 

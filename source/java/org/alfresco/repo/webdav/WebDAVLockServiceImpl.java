@@ -25,15 +25,13 @@ import java.util.List;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.lock.LockType;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
@@ -365,10 +363,19 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
      * @return           the lock status
      */
     @Override
-    @Auditable(parameters = {"nodeRef"})
     public LockInfo getLockInfo(NodeRef nodeRef)
     {
         return lockStore.get(nodeRef);
+    }
+
+    /**
+     * Determines if the node is locked AND it's not a WRITE_LOCK for the current user.<p>
+     *
+     * @return true if the node is locked AND it's not a WRITE_LOCK for the current user
+     */
+    public boolean isLockedAndReadOnly(NodeRef nodeRef)
+    {
+        return LockUtils.isLockedAndReadOnly(nodeRef, this.lockService);
     }
 
     /**

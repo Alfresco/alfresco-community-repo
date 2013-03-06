@@ -36,8 +36,15 @@ public final class ViewRecordsCapability extends DeclarativeCapability
             {
                 return checkRmRead(nodeRef);
             }
+            else
+            {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("View Records capability abstains, because node is not a file plan component. (nodeRef=" + nodeRef.toString() + ")");
+                }
+            }
         }
-
+        
         return AccessDecisionVoter.ACCESS_ABSTAIN;
     }
 }

@@ -31,6 +31,8 @@ import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -43,6 +45,9 @@ import org.springframework.context.ApplicationContextAware;
 public class DeclarativeCapability extends AbstractCapability 
                                    implements ApplicationContextAware
 {
+    /** Logger */
+    protected static Log logger = LogFactory.getLog(DeclarativeCapability.class);
+    
     /** Application Context */
     protected ApplicationContext applicationContext;
     
@@ -303,6 +308,12 @@ public class DeclarativeCapability extends AbstractCapability
         
         // Last chance for child implementations to veto/change the result
         result = onEvaluate(nodeRef, result);
+        
+        // log access denied to help with debug
+        if (logger.isDebugEnabled() == true && AccessDecisionVoter.ACCESS_DENIED == result)
+        {
+            logger.debug("Capability " + getName() + " returned an Access Denied result during evaluation of node " + nodeRef.toString());
+        }
         
         return result;
     }

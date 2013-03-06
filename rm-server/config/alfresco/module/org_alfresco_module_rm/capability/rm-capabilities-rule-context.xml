@@ -9,6 +9,11 @@
       <property name="permission" value="ManageRules" />
       <property name="group"><ref bean="rulesGroup"/></property>
       <property name="index" value="10" />
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
    </bean>
 
 </beans>

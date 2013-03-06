@@ -23,6 +23,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 
@@ -53,6 +54,28 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     public void setRecordsManagementService(RecordsManagementService recordsManagementService)
     {
         this.recordsManagementService = recordsManagementService;
+    }
+    
+    @Override
+    public void saveRule(final NodeRef nodeRef, final Rule rule)
+    {
+        if (recordsManagementService.isFilePlanComponent(nodeRef) == true && runAsRmAdmin == true)
+        {     
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    ExtendedRuleServiceImpl.super.saveRule(nodeRef, rule);
+                    return null;
+                }
+                
+            });
+        }
+        else
+        {
+            saveRule(nodeRef, rule);
+        }
     }
     
     @Override

@@ -863,6 +863,7 @@
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.security.PersonService.getPerson=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.security.PersonService.getPersonOrNull=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.security.PersonService.personExists=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.createMissingPeople=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.setCreateMissingPeople=ACL_METHOD.ROLE_ADMINISTRATOR

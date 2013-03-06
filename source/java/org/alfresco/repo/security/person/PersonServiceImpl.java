@@ -417,22 +417,53 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     /**
      * {@inheritDoc}
      */
+    public NodeRef getPersonOrNull(String userName)
+    {
+        return getPerson(userName, false, false);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public NodeRef getPerson(final String userName, final boolean autoCreateHomeFolderAndMissingPersonIfAllowed)
     {
-        return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed);
+        return getPerson(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, true);
     }
-
-    private NodeRef getPersonImpl(String userName, boolean autoCreateHomeFolderAndMissingPersonIfAllowed)
+    
+    private NodeRef getPerson(
+            final String userName,
+            final boolean autoCreateHomeFolderAndMissingPersonIfAllowed,
+            final boolean exceptionOrNull)
     {
-        if(userName == null)
+        // MT share - for activity service system callback
+        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
+        {
+            final String tenantDomain = tenantService.getUserDomain(userName);
+            
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, exceptionOrNull);
+                }
+            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+        }
+        else
+        {
+            return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, exceptionOrNull);
+        }
+    }
+    
+    private NodeRef getPersonImpl(
+            final String userName,
+            final boolean autoCreateHomeFolderAndMissingPersonIfAllowed,
+            final boolean exceptionOrNull)
+    {
+        if (userName == null || userName.length() == 0)
         {
             return null;
         }
-        if(userName.length() == 0)
-        {
-            return null;
-        }
-        NodeRef personNode = getPersonOrNull(userName);
+        final NodeRef personNode = getPersonOrNullImpl(userName);
         if (personNode == null)
         {
             TxnReadState txnReadState = AlfrescoTransactionSupport.getTransactionReadState();
@@ -444,7 +475,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
             else
             {
-                throw new NoSuchPersonException(userName);
+                if (exceptionOrNull)
+                {
+                    throw new NoSuchPersonException(userName);
+                }
             }
         }
         else if (autoCreateHomeFolderAndMissingPersonIfAllowed)
@@ -459,10 +493,10 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public boolean personExists(String caseSensitiveUserName)
     {
-        return getPersonOrNull(caseSensitiveUserName) != null;
+        return getPersonOrNullImpl(caseSensitiveUserName) != null;
     }
     
-    private NodeRef getPersonOrNull(String searchUserName)
+    private NodeRef getPersonOrNullImpl(String searchUserName)
     {
         Set<NodeRef> allRefs = getFromCache(searchUserName);
         boolean addToCache = false;
@@ -738,7 +772,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public void setPersonProperties(String userName, Map<QName, Serializable> properties, boolean autoCreateHomeFolder)
     {
-        NodeRef personNode = getPersonOrNull(userName);
+        NodeRef personNode = getPersonOrNullImpl(userName);
         if (personNode == null)
         {
             if (createMissingPeople())
@@ -1077,7 +1111,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             return;
         }
         
-        NodeRef personRef = getPersonOrNull(userName);
+        NodeRef personRef = getPersonOrNullImpl(userName);
         
         deletePersonImpl(userName, personRef);
     }
@@ -1715,7 +1749,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private void putToCache(String userName, Set<NodeRef> refs)
     {
         String key = userName.toLowerCase();
-        if(AlfrescoTransactionSupport.getTransactionId() != null && !TransactionalResourceHelper.getSet(DELETING_PERSON_SET_RESOURCE).contains(key))
+        if (AlfrescoTransactionSupport.getTransactionId() != null && !TransactionalResourceHelper.getSet(DELETING_PERSON_SET_RESOURCE).contains(key))
         {
             this.personCache.put(key, refs);
         }
@@ -1733,7 +1767,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public String getUserIdentifier(String caseSensitiveUserName)
     {
-        NodeRef nodeRef = getPersonOrNull(caseSensitiveUserName);
+        NodeRef nodeRef = getPersonOrNullImpl(caseSensitiveUserName);
         if ((nodeRef != null) && nodeService.exists(nodeRef))
         {
             String realUserName = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
@@ -1857,7 +1891,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             return;
         }
         // Get the person
-        NodeRef personNodeRef = getPersonOrNull(userName);
+        NodeRef personNodeRef = getPersonOrNullImpl(userName);
         if (personNodeRef == null)
         {
             // Don't attempt to maintain enabled/disabled flag

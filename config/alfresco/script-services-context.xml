@@ -67,6 +67,7 @@
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>
         </property>
+        <property name="nodeService" ref="nodeService"/>
     </bean>
     
     <bean id="testScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.ScriptTestUtils">

@@ -362,6 +362,8 @@ public class PersonTest extends TestCase
         }
         personService.createPerson(createDefaultProperties("andy", "Andy", "Hind", "andy@hind", "alfresco", rootNodeRef));
         personService.getPerson("andy");
+        // test getting with getPersonOrNull
+        assertNotNull(personService.getPersonOrNull("andy"));
         personService.deletePerson("andy");
         try
         {
@@ -372,6 +374,8 @@ public class PersonTest extends TestCase
         {
 
         }
+        // test getting with getPersonOrNull - no exception, just null returned
+        assertNull(personService.getPersonOrNull("andy"));
     }
 
     public void testCreateMissingPeople1()

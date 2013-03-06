@@ -22,10 +22,12 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.repo.security.permissions.noop.PermissionServiceNOOPImpl;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ScriptPagingDetails;
@@ -40,9 +42,12 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 public class ScriptUtils extends BaseScopableProcessorExtension
 {
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
-
+    
     /** Services */
     private ServiceRegistry services;
+    
+    private NodeService unprotNodeService;
+    
     
     /**
      * Sets the service registry
@@ -52,6 +57,26 @@ public class ScriptUtils extends BaseScopableProcessorExtension
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
+    }
+    
+    /**
+     * @param nodeService   the NodeService to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.unprotNodeService = nodeService;
+    }
+    
+    /**
+     * Function to return the cm:name display path for a node with minimum performance overhead.
+     *  
+     * @param node  ScriptNode
+     * @return cm:name based human readable display path for the give node.
+     */
+    public String displayPath(ScriptNode node)
+    {
+        return this.unprotNodeService.getPath(node.nodeRef).toDisplayPath(
+                    this.unprotNodeService, new PermissionServiceNOOPImpl());
     }
     
     /**

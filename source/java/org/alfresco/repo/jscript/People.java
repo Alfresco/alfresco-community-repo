@@ -837,23 +837,41 @@ public final class People extends BaseScopableProcessorExtension implements Init
         peopleRefs.toArray(people);
         
         return people;
-    }    
+    }
+    
     /**
      * Gets the Person given the username
      * 
      * @param username  the username of the person to get
      * @return the person node (type cm:person) or null if no such person exists 
      */
-    public ScriptNode getPerson(String username)
+    public ScriptNode getPerson(final String username)
     {
         ParameterCheck.mandatoryString("Username", username);
-        ScriptNode person = null;
-        if (personService.personExists(username))
+        final NodeRef personRef = personService.getPerson(username, false);
+        return new ScriptNode(personRef, services, getScope());
+    }
+    
+    /**
+     * Faster helper when the script just wants to build the Full name for a person.
+     * Avoids complete getProperties() retrieval for a cm:person.
+     * 
+     * @param username  the username of the person to get Full name for
+     * @return full name for a person or null if the user does not exist in the system.
+     */
+    public String getPersonFullName(final String username)
+    {
+        String name = null;
+        ParameterCheck.mandatoryString("Username", username);
+        final NodeRef personRef = personService.getPersonOrNull(username);
+        if (personRef != null)
         {
-            NodeRef personRef = personService.getPerson(username);
-            person = new ScriptNode(personRef, services, getScope());
+            final NodeService nodeService = services.getNodeService();
+            final String firstName = (String)nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+            final String lastName = (String)nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
+            name = (firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "");
         }
-        return person;
+        return name;
     }
 
     /**

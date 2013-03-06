@@ -65,6 +65,20 @@ public interface PersonService
      */
     @Auditable(parameters = {"userName"})
     public NodeRef getPerson(String userName);
+    
+    /**
+     * Get a person by userName. The person is store in the repository. No missing
+     * person objects will be created as a side effect of this call. If the person
+     * is missing from the repository null will be returned.
+     * 
+     * @param userName -
+     *            the userName key to find the person
+     * @return Returns the existing person node, or null if does not exist.
+     * 
+     * @see #createMissingPeople()
+     */
+    @Auditable(parameters = {"userName"})
+    public NodeRef getPersonOrNull(String userName);
 
     /**
      * Retrieve the person NodeRef for a {@code username}, optionally creating

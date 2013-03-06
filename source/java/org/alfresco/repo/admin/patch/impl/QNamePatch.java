@@ -148,14 +148,13 @@ public class QNamePatch extends AbstractPatch
         
         Pair<Long, QName> before = qnameDAO.getQName(qnameBefore);
         
-        for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
-        {
-            Work work = new Work(before.getFirst(), i);
-            retryingTransactionHelper.doInTransaction(work, false, true);
-        }
-        
         if (before != null)
         {
+            for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
+            {
+                Work work = new Work(before.getFirst(), i);
+                retryingTransactionHelper.doInTransaction(work, false, true);
+            }
             qnameDAO.updateQName(qnameBefore, qnameAfter);
         }
     

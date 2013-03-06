@@ -1715,7 +1715,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private void putToCache(String userName, Set<NodeRef> refs)
     {
         String key = userName.toLowerCase();
-        if(AlfrescoTransactionSupport.getTransactionId() != null && TransactionalResourceHelper.getSet(DELETING_PERSON_SET_RESOURCE).contains(key))
+        if(AlfrescoTransactionSupport.getTransactionId() != null && !TransactionalResourceHelper.getSet(DELETING_PERSON_SET_RESOURCE).contains(key))
         {
             this.personCache.put(key, refs);
         }

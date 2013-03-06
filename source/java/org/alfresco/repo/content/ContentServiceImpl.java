@@ -39,7 +39,6 @@ import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
-import org.alfresco.repo.content.transform.OOXMLThumbnailContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.node.NodeServicePolicies;

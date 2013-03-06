@@ -58,11 +58,10 @@ function getPersonDisplayName(userId)
       return personDataCache[userId];
    }
    
-   var displayName = "";
-   var person = people.getPerson(userId);
-   if (person != null)
+   var displayName = people.getPersonFullName(userId);
+   if (displayName == null)
    {
-      displayName = person.properties.firstName + " " + person.properties.lastName;
+      displayName = "";
    }
    personDataCache[userId] = displayName;
    return displayName;
@@ -520,13 +519,13 @@ function getItem(siteId, containerId, pathParts, node)
 function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath)
 {
    var path = node.qnamePath,
-       displayPath = node.displayPath.split("/"),
+       displayPath = utils.displayPath(node).split("/"),
        parts = null;
    
    // restructure the display path of the node if we have an overriden root node
    if (rootNodeDisplayPath != null && path.indexOf(rootNodeQNamePath) === 0)
    {
-      var nodeDisplayPath = node.displayPath.split("/");
+      var nodeDisplayPath = utils.displayPath(node).split("/");
       nodeDisplayPath = nodeDisplayPath.splice(rootNodeDisplayPath.length);
       nodeDisplayPath.unshift("");
       displayPath = nodeDisplayPath;
@@ -570,7 +569,7 @@ function processResults(nodes, maxResults, rootNode)
       parts,
       item,
       failed = 0,
-      rootNodeDisplayPath = rootNode ? rootNode.displayPath.split("/") : null,
+      rootNodeDisplayPath = rootNode ? utils.displayPath(rootNode).split("/") : null,
       rootNodeQNamePath = rootNode ? rootNode.qnamePath : null;
    
    if (logger.isLoggingEnabled())

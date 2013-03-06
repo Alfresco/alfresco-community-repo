@@ -694,7 +694,21 @@
             <ref bean="dictionaryDAO" />
         </property>
         <property name="messageLookup">
-            <ref bean="messageService" />
+            <bean class="org.springframework.aop.framework.ProxyFactoryBean" >
+                <!-- Lazy init to avoid circular dependencies -->
+                <property name="targetSource">
+                    <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                        <property name="targetBeanName">
+                            <idref bean="messageService" />
+                        </property>
+                    </bean>
+                </property> 
+                <property name="proxyInterfaces">
+                    <list>
+                        <value>org.alfresco.service.cmr.i18n.MessageLookup</value>
+                    </list>
+                </property>
+            </bean>
         </property>
     </bean>
 

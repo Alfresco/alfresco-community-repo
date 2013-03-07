@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -291,9 +291,26 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
          */
         public void start()
         {
+            boolean oneSuccess = false;
+            RuntimeException lastError = null;
             for (String instance : getInstanceIds())
             {
-                getApplicationContext(instance);
+                try
+                {
+                    getApplicationContext(instance);
+                    oneSuccess = true;
+                }
+                catch (RuntimeException e)
+                {
+                    // One of the subsystems failed to initialize. The cause would have been logged. Treat this as
+                    // non-fatal
+                    lastError = e;
+                }
+            }
+            // If we weren't able to start any subsystems, then pass on the last error
+            if (lastError != null && !oneSuccess)
+            {
+                throw lastError;
             }
         }
 

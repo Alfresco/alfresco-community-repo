@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,6 +27,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
 
 /**
  * A factory bean, used in conjunction with {@link ChildApplicationContextManager} allowing selected interfaces to be
@@ -63,10 +64,20 @@ public class ChainingSubsystemProxyFactory extends ProxyFactoryBean
                 {
                     for (String instance : applicationContextManager.getInstanceIds())
                     {
+                        ApplicationContext context;
+                        try
+                        {
+                            context = ChainingSubsystemProxyFactory.this.applicationContextManager
+                                    .getApplicationContext(instance);
+                        }
+                        catch (RuntimeException e)
+                        {
+                            // This subsystem won't start. The reason would have been logged. Ignore and continue.
+                            continue;
+                        }
                         if (ChainingSubsystemProxyFactory.this.sourceBeanName == null)
                         {
-                            Map<?, ?> beans = ChainingSubsystemProxyFactory.this.applicationContextManager
-                                    .getApplicationContext(instance).getBeansOfType(method.getDeclaringClass());
+                            Map<?, ?> beans = context.getBeansOfType(method.getDeclaringClass());
                             Object activeBean = null;
                             for (Object bean : beans.values())
                             {
@@ -93,9 +104,7 @@ public class ChainingSubsystemProxyFactory extends ProxyFactoryBean
                         {
                             try
                             {
-                                Object bean = ChainingSubsystemProxyFactory.this.applicationContextManager
-                                        .getApplicationContext(instance).getBean(
-                                                ChainingSubsystemProxyFactory.this.sourceBeanName);
+                                Object bean = context.getBean(ChainingSubsystemProxyFactory.this.sourceBeanName);
 
                                 // Ignore inactive beans
                                 if (!(bean instanceof ActivateableBean) || ((ActivateableBean) bean).isActive())
@@ -138,7 +147,7 @@ public class ChainingSubsystemProxyFactory extends ProxyFactoryBean
      * (non-Javadoc)
      * @see org.springframework.aop.framework.AdvisedSupport#setInterfaces(java.lang.Class[])
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
     public void setInterfaces(Class[] interfaces)
     {

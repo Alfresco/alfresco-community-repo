@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -465,133 +465,135 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             }
             for (String id : instanceIds)
             {
-                ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
+                UserRegistry plugin;
                 try
                 {
-                    UserRegistry plugin = (UserRegistry) context.getBean(this.sourceBeanName);
-                    if (!(plugin instanceof ActivateableBean) || ((ActivateableBean) plugin).isActive())
-                    {
-                        if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
-                        {
-                            mbeanServer = (MBeanServerConnection) getApplicationContext().getBean("alfrescoMBeanServer");
-                            try
-                            {
-                                StringBuilder nameBuff = new StringBuilder(200).append("Alfresco:Type=Configuration,Category=Authentication,id1=managed,id2=").append(
-                                        URLDecoder.decode(id, "UTF-8"));
-                                ObjectName name = new ObjectName(nameBuff.toString());
-                                if (mbeanServer != null && mbeanServer.isRegistered(name))
-                                {
-                                    MBeanInfo info = mbeanServer.getMBeanInfo(name);
-                                    MBeanAttributeInfo[] attributes = info.getAttributes();
-                                    ChainingUserRegistrySynchronizer.logger.debug(id + " attributes:");
-                                    for (MBeanAttributeInfo attribute : attributes)
-                                    {
-                                        Object value = mbeanServer.getAttribute(name, attribute.getName());
-                                        ChainingUserRegistrySynchronizer.logger.debug(attribute.getName() + " = " + value);
-                                    }
-                                }
-                            }
-                            catch(UnsupportedEncodingException e)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                                {
-                                    ChainingUserRegistrySynchronizer.logger
-                                    .warn("Exception during logging", e);
-                                }
-                            }
-                            catch (MalformedObjectNameException e)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                                {
-                                    ChainingUserRegistrySynchronizer.logger
-                                    .warn("Exception during logging", e);
-                                }
-                            }
-                            catch (InstanceNotFoundException e)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                                {
-                                    ChainingUserRegistrySynchronizer.logger
-                                    .warn("Exception during logging", e);
-                                }
-                            }
-                            catch (IntrospectionException e)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                                {
-                                    ChainingUserRegistrySynchronizer.logger
-                                    .warn("Exception during logging", e);
-                                }
-                            }
-                            catch (AttributeNotFoundException e)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                                {
-                                    ChainingUserRegistrySynchronizer.logger
-                                    .warn("Exception during logging", e);
-                                }
-                            }
-                            catch (ReflectionException e)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                                {
-                                    ChainingUserRegistrySynchronizer.logger
-                                    .warn("Exception during logging", e);
-                                }
-                            }
-                            catch (MBeanException e)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                                {
-                                    ChainingUserRegistrySynchronizer.logger
-                                    .warn("Exception during logging", e);
-                                }
-                            }
-                            catch (IOException e)
-                            {
-                                if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                                {
-                                    ChainingUserRegistrySynchronizer.logger
-                                    .warn("Exception during logging", e);
-                                }
-                            }
-
-                        }
-                        if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger
-                                    .info("Synchronizing users and groups with user registry '" + id + "'");
-                        }
-                        if (isFullSync && ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
-                        {
-                            ChainingUserRegistrySynchronizer.logger
-                                    .warn("Full synchronization with user registry '"
-                                            + id + "'");
-                            if (allowDeletions)
-                            {
-                                ChainingUserRegistrySynchronizer.logger
-                                        .warn("Some users and groups previously created by synchronization with this user registry may be removed.");
-                            }
-                            else
-                            {
-                                ChainingUserRegistrySynchronizer.logger
-                                        .warn("Deletions are disabled. Users and groups removed from this registry will be logged only and will remain in the repository. Users previously found in a different registry will be moved in the repository rather than recreated.");
-                            }
-                        }
-                        // Work out whether we should do the work in a separate transaction (it's most performant if we
-                        // bunch it into small transactions, but if we are doing a sync on login, it has to be the same
-                        // transaction)
-                        boolean requiresNew = splitTxns
-                                || AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
-
-                        syncWithPlugin(id, plugin, forceUpdate, isFullSync, requiresNew, visitedZoneIds, allZoneIds);
-                    }
+                    ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
+                    plugin = (UserRegistry) context.getBean(this.sourceBeanName);
                 }
-                catch (NoSuchBeanDefinitionException e)
+                catch (RuntimeException e)
                 {
-                    // Ignore and continue
+                    // The bean doesn't exist or this subsystem won't start. The reason would have been logged. Ignore and continue.
+                    continue;
                 }
+                
+                if (!(plugin instanceof ActivateableBean) || ((ActivateableBean) plugin).isActive())
+                {
+                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                    {
+                        mbeanServer = (MBeanServerConnection) getApplicationContext().getBean("alfrescoMBeanServer");
+                        try
+                        {
+                            StringBuilder nameBuff = new StringBuilder(200).append("Alfresco:Type=Configuration,Category=Authentication,id1=managed,id2=").append(
+                                    URLDecoder.decode(id, "UTF-8"));
+                            ObjectName name = new ObjectName(nameBuff.toString());
+                            if (mbeanServer != null && mbeanServer.isRegistered(name))
+                            {
+                                MBeanInfo info = mbeanServer.getMBeanInfo(name);
+                                MBeanAttributeInfo[] attributes = info.getAttributes();
+                                ChainingUserRegistrySynchronizer.logger.debug(id + " attributes:");
+                                for (MBeanAttributeInfo attribute : attributes)
+                                {
+                                    Object value = mbeanServer.getAttribute(name, attribute.getName());
+                                    ChainingUserRegistrySynchronizer.logger.debug(attribute.getName() + " = " + value);
+                                }
+                            }
+                        }
+                        catch(UnsupportedEncodingException e)
+                        {
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                .warn("Exception during logging", e);
+                            }
+                        }
+                        catch (MalformedObjectNameException e)
+                        {
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                .warn("Exception during logging", e);
+                            }
+                        }
+                        catch (InstanceNotFoundException e)
+                        {
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                .warn("Exception during logging", e);
+                            }
+                        }
+                        catch (IntrospectionException e)
+                        {
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                .warn("Exception during logging", e);
+                            }
+                        }
+                        catch (AttributeNotFoundException e)
+                        {
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                .warn("Exception during logging", e);
+                            }
+                        }
+                        catch (ReflectionException e)
+                        {
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                .warn("Exception during logging", e);
+                            }
+                        }
+                        catch (MBeanException e)
+                        {
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                .warn("Exception during logging", e);
+                            }
+                        }
+                        catch (IOException e)
+                        {
+                            if (ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                            {
+                                ChainingUserRegistrySynchronizer.logger
+                                .warn("Exception during logging", e);
+                            }
+                        }
 
+                    }
+                    if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger
+                                .info("Synchronizing users and groups with user registry '" + id + "'");
+                    }
+                    if (isFullSync && ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger
+                                .warn("Full synchronization with user registry '"
+                                        + id + "'");
+                        if (allowDeletions)
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .warn("Some users and groups previously created by synchronization with this user registry may be removed.");
+                        }
+                        else
+                        {
+                            ChainingUserRegistrySynchronizer.logger
+                                    .warn("Deletions are disabled. Users and groups removed from this registry will be logged only and will remain in the repository. Users previously found in a different registry will be moved in the repository rather than recreated.");
+                        }
+                    }
+                    // Work out whether we should do the work in a separate transaction (it's most performant if we
+                    // bunch it into small transactions, but if we are doing a sync on login, it has to be the same
+                    // transaction)
+                    boolean requiresNew = splitTxns
+                            || AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
+
+                    syncWithPlugin(id, plugin, forceUpdate, isFullSync, requiresNew, visitedZoneIds, allZoneIds);
+                }
             }
         }
         catch (RuntimeException e)
@@ -664,18 +666,18 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean impl
             {
                 continue;
             }
-            ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
             try
             {
+                ApplicationContext context = this.applicationContextManager.getApplicationContext(id);
                 UserRegistry plugin = (UserRegistry) context.getBean(this.sourceBeanName);
                 if (!(plugin instanceof ActivateableBean) || ((ActivateableBean) plugin).isActive())
                 {
                     return plugin.getPersonMappedProperties();
                 }
             }
-            catch (NoSuchBeanDefinitionException e)
+            catch (RuntimeException e)
             {
-                // Ignore and continue
+                // The bean doesn't exist or this subsystem won't start. The reason would have been logged. Ignore and continue.
             }
         }
 

@@ -43,14 +43,17 @@ public class WorkflowAdminServiceImpl implements WorkflowAdminService
     private Set<String> enabledEngines = new HashSet<String>();
     private Set<String> visibleEngines = new HashSet<String>();
     
-    /**
+     /**
      * {@inheritDoc}
-      */
+     */
      public boolean isEngineEnabled(String engineId)
      {
          return enabledEngines.contains(engineId);
      }
      
+     /**
+     * {@inheritDoc}
+     */
      public void setEngineEnabled(String engineId, boolean isEnabled)
      {
          if(isEnabled)
@@ -63,12 +66,17 @@ public class WorkflowAdminServiceImpl implements WorkflowAdminService
          }
      }
      
-     
+     /**
+     * {@inheritDoc}
+     */
      public boolean isEngineVisible(String engineId)
      {
          return isEngineEnabled(engineId) && visibleEngines.contains(engineId);
      }
      
+     /**
+     * {@inheritDoc}
+     */
      public void setEngineVisibility(String engineId, boolean isVisible)
      {
          if(isVisible)

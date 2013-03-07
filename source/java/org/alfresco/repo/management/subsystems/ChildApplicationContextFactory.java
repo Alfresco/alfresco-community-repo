@@ -37,7 +37,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ListFactoryBean;
@@ -553,6 +552,9 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
 
         /** The child application context. */
         private ClassPathXmlApplicationContext applicationContext;
+        
+        /** Error when we last tried to start. */
+        private RuntimeException lastStartupError;
 
         /**
          * Instantiates a new application context state.
@@ -632,6 +634,7 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
                 throw new IllegalStateException("Illegal write to property \""
                         + ChildApplicationContextFactory.TYPE_NAME_PROPERTY + "\"");
             }
+            this.lastStartupError = null;
             Class<?> type = ChildApplicationContextFactory.this.compositePropertyTypes.get(name);
             if (type != null)
             {
@@ -727,14 +730,32 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
             // properties.
             if (this.applicationContext == null)
             {
+                // The properties haven't been edited since we last tried to start up and fail, so rethrow the exception
+                // without logging
+                if (this.lastStartupError != null)
+                {
+                    throw this.lastStartupError;
+                }
+
                 ChildApplicationContextFactory.logger
                         .info("Starting '" + getCategory() + "' subsystem, ID: " + getId());
                 ClassPathXmlApplicationContext applicationContext = ChildApplicationContextFactory.this.new ChildApplicationContext(
                         this.properties, this.compositeProperties);
-                applicationContext.refresh();
-                this.applicationContext = applicationContext;
-                ChildApplicationContextFactory.logger.info("Startup of '" + getCategory() + "' subsystem, ID: "
-                        + getId() + " complete");
+                try
+                {
+                    applicationContext.refresh();
+                    this.applicationContext = applicationContext;
+                    ChildApplicationContextFactory.logger.info("Startup of '" + getCategory() + "' subsystem, ID: "
+                            + getId() + " complete");
+                }
+                catch (RuntimeException e)
+                {
+                    // Log startup errors and remember for next time
+                    ChildApplicationContextFactory.logger.warn("Startup of '" + getCategory() + "' subsystem, ID: "
+                            + getId() + " failed", e);
+                    this.lastStartupError = e;
+                    throw e;
+                }
             }
         }
 

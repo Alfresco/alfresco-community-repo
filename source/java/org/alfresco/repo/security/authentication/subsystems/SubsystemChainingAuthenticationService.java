@@ -30,7 +30,6 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AbstractChainingAuthenticationService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -94,7 +93,16 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
 
             for (String instance : this.instanceIds)
             {
-                ApplicationContext newContext = this.applicationContextManager.getApplicationContext(instance);
+                ApplicationContext newContext;
+                try
+                {
+                    newContext = this.applicationContextManager.getApplicationContext(instance);
+                }
+                catch (RuntimeException e)
+                {
+                    // This subsystem won't start. The reason would have been logged. Ignore and continue.
+                    newContext = null;
+                }
                 ApplicationContext context = this.contexts.get(instance);
                 if (context != newContext)
                 {
@@ -104,14 +112,16 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
                         this.lock.writeLock().lock();
                         haveWriteLock = true;
                     }
-                    newContext = this.applicationContextManager.getApplicationContext(instance);
-                    this.contexts.put(instance, newContext);
                     try
                     {
+                        newContext = this.applicationContextManager.getApplicationContext(instance);
+                        this.contexts.put(instance, newContext);
                         this.sourceBeans.put(instance, newContext.getBean(this.sourceBeanName));
                     }
-                    catch (NoSuchBeanDefinitionException e)
+                    catch (RuntimeException e)
                     {
+                        // This subsystem won't start or the bean doesn't exist. The reason would have been logged. Ignore and continue.
+                        this.contexts.remove(instance);
                         this.sourceBeans.remove(instance);
                     }
                 }
@@ -178,8 +188,9 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
                 AuthenticationService authenticationService = (AuthenticationService) this.sourceBeans.get(instance);
                 // Only add active authentication components. E.g. we might have an ldap context that is only used for
                 // synchronizing
-                if (!(authenticationService instanceof ActivateableBean)
-                        || ((ActivateableBean) authenticationService).isActive())
+                if (authenticationService != null
+                        && (!(authenticationService instanceof ActivateableBean) || ((ActivateableBean) authenticationService)
+                                .isActive()))
                 {
 
                     result.add(authenticationService);

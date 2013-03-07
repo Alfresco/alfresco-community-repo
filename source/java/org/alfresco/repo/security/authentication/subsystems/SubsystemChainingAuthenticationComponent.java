@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -72,9 +72,9 @@ public class SubsystemChainingAuthenticationComponent extends AbstractChainingAu
         List<AuthenticationComponent> result = new LinkedList<AuthenticationComponent>();
         for (String instance : this.applicationContextManager.getInstanceIds())
         {
-            ApplicationContext context = this.applicationContextManager.getApplicationContext(instance);
             try
             {
+                ApplicationContext context = this.applicationContextManager.getApplicationContext(instance);
                 AuthenticationComponent authenticationComponent = (AuthenticationComponent) context
                         .getBean(sourceBeanName);
                 // Only add active authentication components. E.g. we might have an ldap context that is only used for
@@ -85,9 +85,9 @@ public class SubsystemChainingAuthenticationComponent extends AbstractChainingAu
                     result.add(authenticationComponent);
                 }
             }
-            catch (NoSuchBeanDefinitionException e)
+            catch (RuntimeException e)
             {
-                // Ignore and continue
+                // The bean doesn't exist or this subsystem won't start. The reason would have been logged. Ignore and continue.
             }
         }
         return result;

@@ -19,7 +19,6 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,7 +48,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 
 /**
@@ -374,6 +372,16 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
             }
         }
 
+        if (getLogger().isDebugEnabled())
+        {
+                StringBuilder msg = new StringBuilder();
+                msg.append("transforming ")
+                    .append(tempFromFile.getName())
+                    .append(" to ")
+                    .append(tempToFile.getName());
+                getLogger().debug(msg.toString());
+        }
+        
         // upload the temp output to the writer given us
         writer.putContent(tempToFile);
 

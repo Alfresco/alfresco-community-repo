@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -121,9 +121,16 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
         boolean transformable = isTransformable(sourceMimetype, sourceSize, targetMimetype, options);
         if (transformable == false)
         {
-            AlfrescoRuntimeException e = new AlfrescoRuntimeException("Unsuported transformation attempted: \n" +
-                    "   reader: " + reader + "\n" +
-                    "   writer: " + writer);
+            // This method is only called once a transformer has been selected, so it should be able to
+            // handle the mimetypes but might not be able to handle all the limits as it might be part of
+            // of a complex (compound) transformer. So report the max size if set.
+            long maxSourceSizeKBytes = getMaxSourceSizeKBytes(sourceMimetype, targetMimetype, options);
+            boolean sizeOkay = maxSourceSizeKBytes < 0 || (maxSourceSizeKBytes > 0 && sourceSize <= maxSourceSizeKBytes*1024);
+            AlfrescoRuntimeException e = new UnsupportedTransformationException("Unsupported transformation: " +
+                    getBeanName()+' '+sourceMimetype+" to "+targetMimetype+' '+
+                    (sizeOkay
+                    ? ""
+                    : transformerDebug.fileSize(sourceSize)+" > "+ transformerDebug.fileSize(maxSourceSizeKBytes)));
             throw transformerDebug.setCause(e);
         }
         // it all checks out OK
@@ -208,6 +215,12 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
                 // the finally block below will still perform tidyup. Otherwise we're done.
                 // We rethrow the exception
                 throw cste;
+            }
+            catch (UnsupportedTransformationException e)
+            {
+                // Don't record an error or even the time, as this is normal in compound transformations.
+                transformerDebug.debug("          Failed", e);
+                throw e;
             }
             catch (Throwable e)
             {

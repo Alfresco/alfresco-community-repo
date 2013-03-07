@@ -41,6 +41,7 @@ import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -722,19 +723,21 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                     if (done)
                     {
                         message = "Transformer succeeded after previous transformer failed"+ (message == null ? "" : ": "+message);
-                        if (rootCause instanceof UnimportantTransformException)
+                        if (rootCause instanceof UnsupportedTransformationException ||
+                            rootCause instanceof UnimportantTransformException)
                         {
                             logger.debug(message);
                         }
                         else
                         {
-                            logger.error(message, e);
+                            logger.warn(message, e);
                         }
                     }
                     else if (!first) // The first exception is logged later
                     {
                         message = "Transformer exception"+ (message == null ? "" : ": "+message);
-                        if (rootCause instanceof UnimportantTransformException)
+                        if (rootCause instanceof UnsupportedTransformationException ||
+                            rootCause instanceof UnimportantTransformException)
                         {
                             logger.debug(message);
                         }

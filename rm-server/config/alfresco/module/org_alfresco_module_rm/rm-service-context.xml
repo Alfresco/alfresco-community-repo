@@ -655,7 +655,6 @@
     	<property name="policyComponent" ref="policyComponent" />
     	<property name="nodeService" ref="NodeService" />
     	<property name="namespaceService" ref="namespaceService" />
-    	<property name="filePlanRoleService" ref="FilePlanRoleService" />
     	<property name="recordsManagementService" ref="RecordsManagementService" />
     </bean>
 

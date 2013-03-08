@@ -25,9 +25,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -35,6 +34,7 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -65,9 +65,6 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
 
     /** Namespace service */
     private NamespaceService namespaceService;
-
-    /** File plan role service */
-    private FilePlanRoleService filePlanRoleService;
 
     /** Records management service */
     private RecordsManagementService recordsManagementService;
@@ -127,14 +124,6 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
-    }
-
-    /**
-     * @param filePlanRoleService   file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
     }
 
     /**
@@ -245,16 +234,15 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
 
         NodeRef filePlan = recordsManagementService.getFilePlan(nodeRef);
         if (filePlan != null)
-        {
-            Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getFullyAuthenticatedUser());
-            for (Role role : roles)
+        {            
+            for (Capability capability : artifact.getCapabilities())
             {
-                if (Collections.disjoint(role.getCapabilities(), artifact.getCapabilities()) == false)
+                if (capability.hasPermission(nodeRef).equals(AccessStatus.ALLOWED) == true)
                 {
                     result = true;
                     break;
                 }
-            }
+            }                
         }
 
         return result;

@@ -560,7 +560,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         Long lastCached = toVisit.peekLast();
         while ((nodeId = toVisit.pollFirst()) != null)
         {
-            if (visited.add(nodeId))
+            if (visited.add(nodeId) && (nodeDAO.getNodeIdStatus(nodeId) != null) && (false == nodeDAO.getNodeIdStatus(nodeId).isDeleted()))
             {
                 nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
                 {

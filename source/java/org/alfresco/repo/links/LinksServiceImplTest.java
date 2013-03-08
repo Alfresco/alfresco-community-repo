@@ -491,8 +491,15 @@ public class LinksServiceImplTest
        assertEquals(0, results.getPage().size());
 
        // Double check that we're only allowed to see the 1st site
-       assertEquals(true,  SITE_SERVICE.isMember(LINKS_SITE.getShortName(), TEST_USER));
-       assertEquals(false, SITE_SERVICE.isMember(ALTERNATE_LINKS_SITE.getShortName(), TEST_USER));
+       TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+       {
+          @Override public Void execute() throws Throwable
+          {
+              assertEquals(true,  SITE_SERVICE.isMember(LINKS_SITE.getShortName(), TEST_USER));
+              assertEquals(false, SITE_SERVICE.isMember(ALTERNATE_LINKS_SITE.getShortName(), TEST_USER));
+              return null;
+          }
+       });
        
        
        // Now become the test user

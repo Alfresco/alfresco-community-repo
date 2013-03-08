@@ -848,8 +848,8 @@ public final class People extends BaseScopableProcessorExtension implements Init
     public ScriptNode getPerson(final String username)
     {
         ParameterCheck.mandatoryString("Username", username);
-        final NodeRef personRef = personService.getPerson(username, false);
-        return new ScriptNode(personRef, services, getScope());
+        final NodeRef personRef = personService.getPersonOrNull(username);
+        return personRef == null ? null : new ScriptNode(personRef, services, getScope());
     }
     
     /**

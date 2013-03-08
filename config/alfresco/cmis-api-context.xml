@@ -30,8 +30,6 @@
         <property name="repository" ref="repositoryHelper" />
         <property name="checkOutCheckInService" ref="CheckoutCheckinService" />
         <property name="versionService" ref="VersionService" />
-        <property name="mimetypeService" ref="MimetypeService" />
-        <property name="hiddenAspect" ref="hiddenAspect" />
     </bean>
     
     <bean id="CMISDictionaryService" class="org.alfresco.cmis.dictionary.CMISStrictDictionaryService" >

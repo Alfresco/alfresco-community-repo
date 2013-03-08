@@ -238,7 +238,13 @@
                     <property name="ranking"><value>MEDIUM</value></property>
                     <property name="deleteBackup"><value>false</value></property>
                 </bean> 
-                          
+                
+                <bean id="preview2011MountainLion2" class="org.alfresco.filesys.repo.rules.ScenarioRenameDeleteMove">
+                   <property name="pattern"><value>\.smbdelete.*</value></property>
+                   <property name="timeout"><value>20000</value></property>
+                   <property name="ranking"><value>HIGH</value></property>
+                </bean>
+                
             </list>
         </property>
        

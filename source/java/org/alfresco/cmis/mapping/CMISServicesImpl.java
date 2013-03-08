@@ -67,7 +67,6 @@ import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -92,7 +91,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -160,7 +158,6 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     private CMISRenditionService cmisRenditionService;
     private CheckOutCheckInService checkOutCheckInService;
     private VersionService versionService;
-    private MimetypeService mimetypeService;
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
 
     // CMIS supported version
@@ -336,33 +333,13 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         this.versionService = versionService;
     }
     
-    /**
-     * Sets the mimetype service.
-     * 
-     * @param mimetypeService
-     *            the mimetype service
-     */
-    public void setMimetypeService(MimetypeService mimetypeService)
-    {
-        this.mimetypeService = mimetypeService;
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         lifecycle.setApplicationContext(applicationContext);
     }
     
-    public void setHiddenAspect(HiddenAspect hiddenAspect)
-    {
-        this.hiddenAspect = hiddenAspect;
-    }
-
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
-     */
+    @Override
     public void onApplicationEvent(ApplicationContextEvent event)
     {
         lifecycle.onApplicationEvent(event);
@@ -374,43 +351,31 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
     private class ProcessorLifecycle extends AbstractLifecycleBean
     {
         
-        /* (non-Javadoc)
-         * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
-         */
         @Override
         protected void onBootstrap(ApplicationEvent event)
         {
             init();
         }
     
-        /* (non-Javadoc)
-         * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
-         */
         @Override
         protected void onShutdown(ApplicationEvent event)
         {
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onEnableTenant()
-     */
+    @Override
     public void onEnableTenant()
     {
         init();
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onDisableTenant()
-     */
+    @Override
     public void onDisableTenant()
     {
         destroy();
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#init()
-     */
+    @Override
     public void init()
     {
         // initialise data types
@@ -595,18 +560,12 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
         }
     }
     
-    private HiddenAspect hiddenAspect;
-    
-    /* 
-     * (non-Javadoc)
-     * @see org.alfresco.cmis.CMISServices#getChildren(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.cmis.CMISTypesFilterEnum, java.lang.String)
-     */
+    @Override
     public NodeRef[] getChildren(NodeRef folderNodeRef, CMISTypesFilterEnum typesFilter, String orderBy)
             throws CMISInvalidArgumentException
     {
         PagingResults<FileInfo> pageOfNodeInfos =  getChildren(folderNodeRef, typesFilter, BigInteger.valueOf(Integer.MAX_VALUE), BigInteger.valueOf(0), orderBy);
 
-//        List<FileInfo> filteredChildren = hiddenAspect.removeHiddenFiles(Client.cmis, pageOfNodeInfos.getPage());
         List<FileInfo> filteredChildren = pageOfNodeInfos.getPage();
         int pageCnt = filteredChildren.size();
         NodeRef[] result = new NodeRef[pageCnt];
@@ -1663,7 +1622,10 @@ public class CMISServicesImpl implements CMISServices, ApplicationContextAware, 
             CMISTypeDefinition typeDef = getTypeDefinition(nodeRef);
             if (typeDef.getTypeId().getBaseTypeId() == CMISDictionaryModel.FOLDER_TYPE_ID)
             {
-                if (nodeService.getChildAssocs(nodeRef).size() > 0)
+                if (nodeService.getChildAssocs(
+                        nodeRef,
+                        ContentModel.ASSOC_CONTAINS,
+                        RegexQNamePattern.MATCH_ALL).size() > 0)
                 {
                     throw new CMISConstraintException("Could not delete folder with at least one Child");
                 }

@@ -55,7 +55,7 @@ public class LazyActivitiWorkflowTask extends WorkflowTask
 	private LazyPropertiesMap lazyPropertiesMap;
 	
 	@SuppressWarnings("deprecation")
-	public LazyActivitiWorkflowTask(Task task, ActivitiTypeConverter typeConverter, TenantService tenantService) 
+	public LazyActivitiWorkflowTask(Task task, ActivitiTypeConverter typeConverter, TenantService tenantService, String workflowDefinitionName) 
 	{
 		super(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, task.getId()), null, null, null, null, null, null, null);
 		this.task = task;
@@ -64,9 +64,6 @@ public class LazyActivitiWorkflowTask extends WorkflowTask
 		
 		// Fetch task-definition and a partially-initialized WorkflowTask (not including properties and path)
 		WorkflowTaskDefinition taskDefinition = activitiTypeConverter.getTaskDefinition(task);
-		
-		String workflowDefinitionName = activitiTypeConverter.getWorkflowDefinitionName(task.getProcessDefinitionId());
-		workflowDefinitionName = tenantService.getBaseName(workflowDefinitionName);
 		
 		WorkflowTask partiallyInitialized = typeConverter.getWorkflowObjectFactory().createTask(task.getId(), taskDefinition, taskDefinition.getId(), task.getName(),
 				task.getDescription(), WorkflowTaskState.IN_PROGRESS, null, workflowDefinitionName , lazyPropertiesMap);

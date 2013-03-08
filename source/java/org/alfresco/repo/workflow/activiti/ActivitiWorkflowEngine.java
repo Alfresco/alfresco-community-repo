@@ -1404,7 +1404,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 	
                 	if(lazyInitialization)
                 	{
-                		resultingTasks.add(new LazyActivitiWorkflowTask(task, typeConverter, tenantService));
+                		resultingTasks.add(new LazyActivitiWorkflowTask(task, typeConverter, tenantService, 
+                				typeConverter.getWorkflowDefinitionName(task.getProcessDefinitionId())));
                 	}
                 	else
                 	{
@@ -1484,7 +1485,17 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                     	// have a group with the same name
                     	if(lazyInitialization)
                     	{
-                    		currentTask = new LazyActivitiWorkflowTask(task, typeConverter, tenantService);
+                    		String workflowDefinitionName = typeConverter.getWorkflowDefinitionName(task.getProcessDefinitionId());
+                    		try
+                    		{
+                    			workflowDefinitionName = tenantService.getBaseName(workflowDefinitionName);
+                    			currentTask = new LazyActivitiWorkflowTask(task, typeConverter, tenantService, workflowDefinitionName);
+                    		}
+                    		catch(RuntimeException re)
+                    		{
+                    			// Domain mismatch, don't use this task
+                    			currentTask = null;
+                    		}
                     	}
                     	else
                     	{

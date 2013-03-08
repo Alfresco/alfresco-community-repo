@@ -32,17 +32,20 @@ import org.alfresco.cmis.CMISRenditionService;
 import org.alfresco.cmis.CMISServices;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -58,61 +61,39 @@ import org.springframework.context.ApplicationContext;
  * Basic TX control and authentication
  * 
  * @author andyh
- *
  */
 public abstract class BaseCMISTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     protected CMISMapping cmisMapping;
-    
     protected CMISServices cmisService;
-    
     protected CMISDictionaryService cmisDictionaryService;
-    
     protected CMISRenditionService cmisRenditionService;
-    
     protected CMISAccessControlService cmisAccessControlService;
-    
     protected DictionaryService dictionaryService;
-
     protected TransactionService transactionService;
-
     protected AuthenticationComponent authenticationComponent;
-
     protected UserTransaction testTX;
-
     protected NodeService nodeService;
-
     protected NodeRef rootNodeRef;
-
     protected FileFolderService fileFolderService;
-
     protected ServiceRegistry serviceRegistry;
-
     protected NamespaceService namespaceService;
-    
     protected CMISQueryService cmisQueryService;
-
     private MutableAuthenticationService authenticationService;
-
     private MutableAuthenticationDao authenticationDAO;
-
     protected SearchService searchService;
-
     protected ContentService contentService;
-
     protected PermissionService permissionService;
-    
     protected ThumbnailService thumbnailService;
-    
     protected ModelDAO permissionModelDao;
-
     protected DictionaryDAO dictionaryDAO;
-
     protected NamespaceDAOImpl namespaceDao;
-
     protected VersionService versionService;
+    protected ActionService actionService;
+    protected RuleService ruleService;
+    protected Repository repositoryHelper;
 
     public void setUp() throws Exception
     {
@@ -139,6 +120,11 @@ public abstract class BaseCMISTest extends TestCase
         permissionService = (PermissionService) ctx.getBean("permissionService");
         
         versionService = (VersionService) ctx.getBean("versionService");
+        
+        actionService = (ActionService)ctx.getBean("actionService");
+        ruleService = (RuleService)ctx.getBean("ruleService");
+        
+        repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
         
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");

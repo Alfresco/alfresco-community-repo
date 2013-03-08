@@ -7,23 +7,29 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
+import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
+import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.service.cmr.rule.Rule;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
@@ -66,6 +72,9 @@ public class CMISTest
 	private AlfrescoCmisServiceFactory factory;
 	private SimpleCallContext context;
 
+	private ActionService actionService;
+	private RuleService ruleService;
+	
     /**
      * Test class to provide the service factory
      * 
@@ -167,6 +176,8 @@ public class CMISTest
     @Before
     public void before()
     {
+        this.actionService = (ActionService)ctx.getBean("actionService");
+        this.ruleService = (RuleService)ctx.getBean("ruleService");
     	this.fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
     	this.transactionService = (TransactionService)ctx.getBean("transactionService");
     	this.nodeService = (NodeService)ctx.getBean("NodeService");
@@ -359,5 +370,164 @@ public class CMISTest
     	{
     		AuthenticationUtil.popAuthentication();
     	}
+    }
+   
+    /**
+     * Test for ALF-18151.
+     */
+    @Test
+    public void testDeleteFolder()
+    {
+        String repositoryId = null;
+        ObjectData objectData = null;
+        Holder<String> objectId = null;
+
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        Map<FileInfo, Boolean> testFolderMap = new HashMap<FileInfo, Boolean>(4);
+
+        try
+        {
+            // create folder with file
+            String folderName = "testfolder" + GUID.generate();
+            String docName = "testdoc.txt" + GUID.generate();
+            FileInfo folder = createContent(folderName, docName, false);
+            testFolderMap.put(folder, Boolean.FALSE);
+
+            // create empty folder
+            String folderNameEmpty = "testfolder_empty1" + GUID.generate();
+            FileInfo folderEmpty = createContent(folderNameEmpty, null, false);
+            testFolderMap.put(folderEmpty, Boolean.TRUE);
+
+            // create folder with file
+            String folderNameRule = "testfolde_rule" + GUID.generate();
+            String docNameRule = "testdoc_rule.txt" + GUID.generate();
+            FileInfo folderWithRule = createContent(folderNameRule, docNameRule, true);
+            testFolderMap.put(folderWithRule, Boolean.FALSE);
+
+            // create empty folder
+            String folderNameEmptyRule = "testfolde_empty_rule1" + GUID.generate();
+            FileInfo folderEmptyWithRule = createContent(folderNameEmptyRule, null, true);
+            testFolderMap.put(folderEmptyWithRule, Boolean.TRUE);
+
+            CmisService service = factory.getService(context);
+
+            try
+            {
+                List<RepositoryInfo> repositories = service.getRepositoryInfos(null);
+                RepositoryInfo repo = repositories.get(0);
+                repositoryId = repo.getId();
+
+                for (Map.Entry<FileInfo, Boolean> entry : testFolderMap.entrySet())
+                {
+                    objectData = service.getObjectByPath(repositoryId, "/" + entry.getKey().getName(), null, true, IncludeRelationships.NONE, null, false, true, null);
+
+                    objectId = new Holder<String>(objectData.getId());
+
+                    try
+                    {
+                        // delete folder
+                        service.deleteObjectOrCancelCheckOut(repositoryId, objectId.getValue(), Boolean.TRUE, null);
+                    }
+                    catch (CmisConstraintException ex)
+                    {
+                        assertTrue(!entry.getValue());
+                        continue;
+                    }
+
+                    assertTrue(entry.getValue());
+                }
+            }
+            finally
+            {
+                service.close();
+            }
+
+        }
+        finally
+        {
+            for (Map.Entry<FileInfo, Boolean> entry : testFolderMap.entrySet())
+            {
+                if (fileFolderService.exists(entry.getKey().getNodeRef()))
+                {
+                    fileFolderService.delete(entry.getKey().getNodeRef());
+                }
+            }
+
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
+    private FileInfo createContent(final String folderName, final String docName, final boolean isRule)
+    {
+        final FileInfo folderInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
+        {
+            @Override
+            public FileInfo execute() throws Throwable
+            {
+                NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+                FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                assertNotNull(folderInfo);
+
+                FileInfo fileInfo;
+                if (docName != null)
+                {
+                    fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+                    assertNotNull(fileInfo);
+                }
+
+                if (isRule)
+                {
+                    Rule rule = addRule(true, folderName);
+
+                    assertNotNull(rule);
+
+                    // Attach the rule to the node
+                    ruleService.saveRule(folderInfo.getNodeRef(), rule);
+
+                    assertTrue(ruleService.getRules(folderInfo.getNodeRef()).size() > 0);
+                }
+
+                return folderInfo;
+            }
+        });
+
+        return folderInfo;
+    }
+
+    private Rule addRule(boolean isAppliedToChildren, String title)
+    {
+
+        // Rule properties
+        Map<String, Serializable> conditionProps = new HashMap<String, Serializable>();
+        conditionProps.put(ComparePropertyValueEvaluator.PARAM_VALUE, ".txt");
+
+        Map<String, Serializable> actionProps = new HashMap<String, Serializable>();
+        actionProps.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
+
+        List<String> ruleTypes = new ArrayList<String>(1);
+        ruleTypes.add(RuleType.INBOUND);
+
+        // Create the action
+        org.alfresco.service.cmr.action.Action action = actionService.createAction(title);
+        action.setParameterValues(conditionProps);
+
+        ActionCondition actionCondition = actionService.createActionCondition(ComparePropertyValueEvaluator.NAME);
+        actionCondition.setParameterValues(conditionProps);
+        action.addActionCondition(actionCondition);
+
+        // Create the rule
+        Rule rule = new Rule();
+        rule.setRuleTypes(ruleTypes);
+        rule.setTitle(title);
+        rule.setDescription("description");
+        rule.applyToChildren(isAppliedToChildren);
+        rule.setAction(action);
+
+        return rule;
     }
 }

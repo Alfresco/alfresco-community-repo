@@ -19,19 +19,29 @@
 package org.alfresco.cmis.mapping;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.cmis.CMISConstraintException;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
+import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.lock.LockType;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.Rule;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
@@ -773,5 +783,137 @@ public class CMISPropertyServiceTest extends BaseCMISTest
         // check mimetype
         String mimetype = (String) cmisService.getProperty(content, CMISDictionaryModel.PROP_CONTENT_STREAM_MIME_TYPE);
         assertTrue("Mimetype is not defined correctly.", mimetype.equals(MimetypeMap.MIMETYPE_HTML));
+    }
+    
+    /**
+     * Test for ALF-18151.
+     */
+    public void testDeleteFolder() throws Exception
+    {
+        Map<FileInfo, Boolean> testFolderMap = new HashMap<FileInfo, Boolean>(4);
+
+        try
+        {
+            // create folder with file
+            String folderName = "cmistestfolder" + GUID.generate();
+            String docName = "cmistestdoc.txt" + GUID.generate();
+            FileInfo folder = createContent(folderName, docName, false);
+            testFolderMap.put(folder, Boolean.FALSE);
+
+            // create empty folder
+            String folderNameEmpty = "cmistestfolder_empty1" + GUID.generate();
+            FileInfo folderEmpty = createContent(folderNameEmpty, null, false);
+            testFolderMap.put(folderEmpty, Boolean.TRUE);
+
+            // create folder with file
+            String folderNameRule = "cmistestfolde_rule" + GUID.generate();
+            String docNameRule = "cmistestdoc_rule.txt" + GUID.generate();
+            FileInfo folderWithRule = createContent(folderNameRule, docNameRule, true);
+            testFolderMap.put(folderWithRule, Boolean.FALSE);
+
+            // create empty folder
+            String folderNameEmptyRule = "cmistestfolde_empty_rule1" + GUID.generate();
+            FileInfo folderEmptyWithRule = createContent(folderNameEmptyRule, null, true);
+            testFolderMap.put(folderEmptyWithRule, Boolean.TRUE);
+
+            for (Map.Entry<FileInfo, Boolean> entry : testFolderMap.entrySet())
+            {
+                try
+                {
+                    // delete folder
+                    cmisService.deleteObject((String) cmisService.getProperty(entry.getKey().getNodeRef(), CMISDictionaryModel.PROP_OBJECT_ID), Boolean.TRUE);
+                }
+                catch (CMISConstraintException ex)
+                {
+                    assertTrue(!entry.getValue());
+                    continue;
+                }
+
+                assertTrue(entry.getValue());
+            }
+
+        }
+        finally
+        {
+            for (Map.Entry<FileInfo, Boolean> entry : testFolderMap.entrySet())
+            {
+                if (fileFolderService.exists(entry.getKey().getNodeRef()))
+                {
+                    fileFolderService.delete(entry.getKey().getNodeRef());
+                }
+            }
+        }
+    }
+
+    private FileInfo createContent(final String folderName, final String docName, final boolean isRule)
+    {
+        final FileInfo folderInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
+        {
+            @Override
+            public FileInfo execute() throws Throwable
+            {
+                NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+                FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+                assertNotNull(folderInfo);
+
+                FileInfo fileInfo;
+                if (docName != null)
+                {
+                    fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+                    assertNotNull(fileInfo);
+                }
+
+                if (isRule)
+                {
+                    Rule rule = addRule(true, folderName);
+
+                    assertNotNull(rule);
+
+                    // Attach the rule to the node
+                    ruleService.saveRule(folderInfo.getNodeRef(), rule);
+
+                    assertTrue(ruleService.getRules(folderInfo.getNodeRef()).size() > 0);
+                }
+
+                return folderInfo;
+            }
+        });
+
+        return folderInfo;
+    }
+
+    private Rule addRule(boolean isAppliedToChildren, String title)
+    {
+
+        // Rule properties
+        Map<String, Serializable> conditionProps = new HashMap<String, Serializable>();
+        conditionProps.put(ComparePropertyValueEvaluator.PARAM_VALUE, ".txt");
+
+        Map<String, Serializable> actionProps = new HashMap<String, Serializable>();
+        actionProps.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
+
+        List<String> ruleTypes = new ArrayList<String>(1);
+        ruleTypes.add(RuleType.INBOUND);
+
+        // Create the action
+        org.alfresco.service.cmr.action.Action action = actionService.createAction(title);
+        action.setParameterValues(conditionProps);
+
+        ActionCondition actionCondition = actionService.createActionCondition(ComparePropertyValueEvaluator.NAME);
+        actionCondition.setParameterValues(conditionProps);
+        action.addActionCondition(actionCondition);
+
+        // Create the rule
+        Rule rule = new Rule();
+        rule.setRuleTypes(ruleTypes);
+        rule.setTitle(title);
+        rule.setDescription("description");
+        rule.applyToChildren(isAppliedToChildren);
+        rule.setAction(action);
+
+        return rule;
     }
 }

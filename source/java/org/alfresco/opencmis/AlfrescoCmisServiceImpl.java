@@ -1546,7 +1546,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             // handle folders
             if (info.isFolder())
             {
-                if (connector.getNodeService().getChildAssocs(nodeRef).size() > 0)
+                if (connector.getNodeService().getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL).size() > 0)
                 {
                     throw new CmisConstraintException(
                             "Could not delete folder with at least one child!");

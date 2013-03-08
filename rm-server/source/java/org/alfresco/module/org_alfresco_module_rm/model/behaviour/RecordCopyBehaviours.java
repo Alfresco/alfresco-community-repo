@@ -119,22 +119,26 @@ public class RecordCopyBehaviours implements RecordsManagementModel
      */
     public void onMoveRecordNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
-        final NodeRef newNodeRef = newChildAssocRef.getChildRef();
-        final NodeService nodeService = rmServiceRegistry.getNodeService();
-        
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        // check the records parent has actually changed
+        if (oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()) == false)
         {
-            public Object doWork() throws Exception
+            final NodeRef newNodeRef = newChildAssocRef.getChildRef();
+            final NodeService nodeService = rmServiceRegistry.getNodeService();
+            
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
-                if (nodeService.exists(newNodeRef) == true)
+                public Object doWork() throws Exception
                 {
-                    // Remove unwanted aspects
-                    removeUnwantedAspects(nodeService, newNodeRef);
+                    if (nodeService.exists(newNodeRef) == true)
+                    {
+                        // Remove unwanted aspects
+                        removeUnwantedAspects(nodeService, newNodeRef);
+                    }
+                    
+                    return null;
                 }
-                
-                return null;
-            }
-        }, AuthenticationUtil.getAdminUserName());
+            }, AuthenticationUtil.getAdminUserName());
+        }
     }
     
     /**
@@ -146,40 +150,43 @@ public class RecordCopyBehaviours implements RecordsManagementModel
     @SuppressWarnings("unused")
     public void onMoveRecordFolderNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
-        final NodeRef newNodeRef = newChildAssocRef.getChildRef();
-        final NodeService nodeService = rmServiceRegistry.getNodeService();
-        final RecordsManagementService rmService = rmServiceRegistry.getRecordsManagementService();        
-        final RecordsManagementActionService rmActionService = rmServiceRegistry.getRecordsManagementActionService();
-        
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
+        if (oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()) == false)
+        {        
+            final NodeRef newNodeRef = newChildAssocRef.getChildRef();
+            final NodeService nodeService = rmServiceRegistry.getNodeService();
+            final RecordsManagementService rmService = rmServiceRegistry.getRecordsManagementService();        
+            final RecordsManagementActionService rmActionService = rmServiceRegistry.getRecordsManagementActionService();
+            
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
-                if (nodeService.exists(newNodeRef) == true)
+                public Object doWork() throws Exception
                 {
-                    // Remove unwanted aspects
-                    removeUnwantedAspects(nodeService, newNodeRef);
+                    if (nodeService.exists(newNodeRef) == true)
+                    {
+                        // Remove unwanted aspects
+                        removeUnwantedAspects(nodeService, newNodeRef);
+                        
+                        // TODO .. this isn't right!!
+                        //      .. what if the folder is in motion .. do we really want to lose all the disposition information?
+                        //      .. how do we merge from one disposition schedule to another
+                        //      .. for now throw unsupportedOperationException and refactor when considered
+                        throw new UnsupportedOperationException("Moving a record folder is currently not supported.");
+                        
+    //                    // Trigger folder setup
+    //                    rmActionService.executeRecordsManagementAction(newNodeRef, "setupRecordFolder");
+    //                    
+    //                    // Sort out the child records
+    //                    for (NodeRef record : rmService.getRecords(newNodeRef))
+    //                    {
+    //                        removeUnwantedAspects(nodeService, record);
+    //                        rmActionService.executeRecordsManagementAction(record, "file");
+    //                    }
+                    }
                     
-                    // TODO .. this isn't right!!
-                    //      .. what if the folder is in motion .. do we really want to lose all the disposition information?
-                    //      .. how do we merge from one disposition schedule to another
-                    //      .. for now throw unsupportedOperationException and refactor when considered
-                    throw new UnsupportedOperationException("Moving a record folder is currently not supported.");
-                    
-//                    // Trigger folder setup
-//                    rmActionService.executeRecordsManagementAction(newNodeRef, "setupRecordFolder");
-//                    
-//                    // Sort out the child records
-//                    for (NodeRef record : rmService.getRecords(newNodeRef))
-//                    {
-//                        removeUnwantedAspects(nodeService, record);
-//                        rmActionService.executeRecordsManagementAction(record, "file");
-//                    }
+                    return null;
                 }
-                
-                return null;
-            }
-        }, AuthenticationUtil.getAdminUserName());
+            }, AuthenticationUtil.getAdminUserName());
+        }
     }
     
     /**

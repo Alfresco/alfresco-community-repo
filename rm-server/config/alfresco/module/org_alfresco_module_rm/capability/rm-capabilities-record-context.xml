@@ -48,6 +48,28 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="20" />
    </bean>
+   
+     <bean id="rmDeclareRecordsInClosedFoldersCapability"
+      	   parent="declarativeCapability">
+      <property name="name" value="DeclareRecordsInClosedFolders"/>
+      <property name="permission" value="DeclareRecordsInClosedFolders"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.closed" value="true"/>
+            <entry key="capabilityCondition.declared" value="false"/>
+         </map>
+      </property>
+      <property name="group"><ref bean="recordsGroup"/></property>
+      <property name="index" value="30" />
+   </bean>
 
    <bean id="rmCreateModifyRecordsInCuttoffFoldersCapability"
       parent="declarativeCapability">
@@ -124,6 +146,7 @@
             <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.frozen" value="false"/>
             <entry key="capabilityCondition.declared" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
          </map>
       </property>
       <property name="group"><ref bean="recordsGroup"/></property>

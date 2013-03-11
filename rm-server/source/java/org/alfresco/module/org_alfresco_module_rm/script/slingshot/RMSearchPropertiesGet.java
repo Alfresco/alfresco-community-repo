@@ -95,7 +95,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
             }
             
             AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
-            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(), propObjs);    
+            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(dictionaryService), propObjs);    
             groups.add(group);
         }
 
@@ -157,7 +157,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
             QName qName = propertyDefinition.getName().getPrefixedQName(namespaceService);
             this.prefix = QName.splitPrefixedQName(qName.toPrefixString())[0];
             this.shortName = qName.getLocalName();
-            this.label = propertyDefinition.getTitle();
+            this.label = propertyDefinition.getTitle(dictionaryService);
             this.type = propertyDefinition.getDataType().getName().getLocalName();
         }
         

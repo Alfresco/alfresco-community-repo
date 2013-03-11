@@ -26,6 +26,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -59,10 +60,18 @@ public class CustomRefsGet extends AbstractRmWebScript
     
     private static Log logger = LogFactory.getLog(CustomRefsGet.class);
     private RecordsManagementAdminService rmAdminService;
+    private DictionaryService dictionaryService;
+    
     
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
         this.rmAdminService = rmAdminService;
+    }
+
+    
+    public void setDictionaryService(DictionaryService dictionaryService) 
+    {
+        this.dictionaryService = dictionaryService; 
     }
 
     @Override
@@ -132,7 +141,7 @@ public class CustomRefsGet extends AbstractRmWebScript
             
             if (assDef != null)
             {
-                String compoundTitle = assDef.getTitle();
+                String compoundTitle = assDef.getTitle(dictionaryService);
     
                 data.put(REF_ID, typeQName.getLocalName());
     
@@ -166,7 +175,7 @@ public class CustomRefsGet extends AbstractRmWebScript
             
             if (assDef != null)
             {
-                data.put(LABEL, assDef.getTitle());
+                data.put(LABEL, assDef.getTitle(dictionaryService));
                 data.put(REF_ID, typeQName.getLocalName());
                 data.put(REFERENCE_TYPE, CustomReferenceType.BIDIRECTIONAL.toString());
                 data.put(SOURCE_REF, assRef.getSourceRef().toString());

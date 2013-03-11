@@ -421,7 +421,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	    		if (name.endsWith("Properties") == true)
 	    		{
 	    			QName type = null;
-	    			String prefixString = aspectDef.getDescription();
+	    			String prefixString = aspectDef.getDescription(dictionaryService);
 	    			if (prefixString == null)
 	    			{
 	    				// Backward compatibility from previous RM V1.0 custom models
@@ -1183,7 +1183,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     {
         for (AssociationDefinition associationDefinition : getCustomReferenceDefinitions().values())
         {
-            if (associationDefinition.getTitle().equalsIgnoreCase(label))
+            if (associationDefinition.getTitle(dictionaryService).equalsIgnoreCase(label))
             {
                 return true;
             }

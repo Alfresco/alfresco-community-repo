@@ -198,7 +198,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             
             if (propDef != null)
             {
-                Field field = FieldUtils.makePropertyField(propDef, null, null, namespaceService);
+                Field field = FieldUtils.makePropertyField(propDef, null, null, namespaceService, dictionaryService);
                 form.addField(field);
             }
             else if (logger.isWarnEnabled())

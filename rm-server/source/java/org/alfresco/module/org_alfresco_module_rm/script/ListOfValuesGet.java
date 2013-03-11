@@ -259,7 +259,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
             if (propDef != null)
             {
                 Map<String, String> item = new HashMap<String, String>(2);
-                String propTitle = propDef.getTitle();
+                String propTitle = propDef.getTitle(ddService);
                 if (propTitle == null || propTitle.length() == 0)
                 {
                     propTitle = StringUtils.capitalize(propName.getLocalName());

@@ -132,7 +132,7 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
 	        // setup field definition for each custom property
 	        Collection<PropertyDefinition> properties = customProps.values();
 	        FieldGroup group = new FieldGroup(CUSTOM_RM_FIELD_GROUP_ID, null, false, false, null);
-	        List<Field> fields = FieldUtils.makePropertyFields(properties, group, namespaceService);
+	        List<Field> fields = FieldUtils.makePropertyFields(properties, group, namespaceService, rmServiceRegistry.getDictionaryService());
 	        form.addFields(fields);
         }
     }

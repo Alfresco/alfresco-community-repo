@@ -96,7 +96,7 @@ public class CustomisableGet extends DeclarativeWebScript
             if (definition != null)
             {
                 String name = qname.toPrefixString(namespaceService);
-                String title = definition.getTitle();
+                String title = definition.getTitle(dictionaryService);
                 if (title == null || title.length() == 0)
                 {
                     title = qname.getLocalName();

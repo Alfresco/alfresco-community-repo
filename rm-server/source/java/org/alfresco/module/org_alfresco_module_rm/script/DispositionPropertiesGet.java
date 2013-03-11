@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -42,6 +43,7 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
 {
     protected DispositionService dispositionService;
     protected NamespaceService namespaceService;
+    protected DictionaryService dictionaryService;
     
     /**
      * Sets the disposition service
@@ -63,6 +65,11 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
         this.namespaceService = namespaceService;
     }
     
+    public void setDictionaryService(DictionaryService dictionaryService) 
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
@@ -87,7 +94,7 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
             if (propDef != null)
             {
                 Map<String, String> item = new HashMap<String, String>(2);
-                String propTitle = propDef.getTitle();
+                String propTitle = propDef.getTitle(dictionaryService);
                 if (propTitle == null || propTitle.length() == 0)
                 {
                     propTitle = StringUtils.capitalize(propName.getLocalName());

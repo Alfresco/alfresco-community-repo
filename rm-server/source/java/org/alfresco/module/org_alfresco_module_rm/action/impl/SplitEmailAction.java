@@ -84,7 +84,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         Map<QName, AssociationDefinition> map = recordsManagementAdminService.getCustomReferenceDefinitions();
         for (Map.Entry<QName, AssociationDefinition> entry : map.entrySet())
         {
-            if (compoundId.equals(entry.getValue().getTitle()) == true)
+            if (compoundId.equals(entry.getValue().getTitle(dictionaryService)) == true)
             {
                 relationshipQName = entry.getKey();
                 break;

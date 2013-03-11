@@ -39,7 +39,7 @@ import org.alfresco.service.namespace.QName;
 public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.RFC822MetadataExtracter
 {
     /** Reference to default properties */
-    private static final String PROPERTIES_URL = "org/alfresco/repo/content/metadata/RFC822MetadataExtracter.properties";    
+    private static final String PROPERTIES_URL = "alfresco/metadata/RFC822MetadataExtracter.properties";    
     
     /** Node service */
     private NodeService nodeService;

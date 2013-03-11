@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
@@ -56,6 +57,7 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
     
     private RecordsManagementAdminService rmAdminService;
     private NamespaceService namespaceService;
+    private DictionaryService dictionaryService;
 
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -65,6 +67,11 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
         this.rmAdminService = rmAdminService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService) 
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     @Override
@@ -120,7 +127,7 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
 			data.put(REFERENCE_TYPE, referenceType.toString());
 
 			// It is the title which stores either the label, or the source and target.
-			String nextTitle = nextValue.getTitle();
+			String nextTitle = nextValue.getTitle(dictionaryService);
             if (CustomReferenceType.PARENT_CHILD.equals(referenceType))
             {
                 if (nextTitle != null)

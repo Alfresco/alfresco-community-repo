@@ -130,7 +130,7 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
                 Serializable value = nodeService.getProperty(nodeRef, entry.getKey());
                 
                 FieldGroup group = new FieldGroup(setId, null, false, false, null);
-                Field field = FieldUtils.makePropertyField(prop, value, group, namespaceService);
+                Field field = FieldUtils.makePropertyField(prop, value, group, namespaceService, rmServiceRegistry.getDictionaryService());
                 
                 form.addField(field);
                 

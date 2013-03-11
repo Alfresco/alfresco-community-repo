@@ -144,7 +144,7 @@ public abstract class AbstractAuthorityBridgeDAO implements AuthorityBridgeDAO
             storeId = nodeDAO.getStore(tenantSpecificStoreRef).getFirst();
         }
 
-        Pair<Long, NodeRef> pair = (authRef == null) ? null : nodeDAO.getNodePair(authRef);
+        Pair<Long, NodeRef> pair = (authRef == null) ? null : nodeDAO.getNodePair(tenantService.getName(authRef));
         
         return selectDirectAuthoritiesForUser(authorityContainerTypeQNameId, memberAssocQNameId, authorityNameQNameId, storeId, (pair == null) ? -1L : pair.getFirst());
     }

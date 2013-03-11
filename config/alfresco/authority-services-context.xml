@@ -100,8 +100,8 @@
         <property name="authorityBridgeDAO">
             <ref bean="authorityBridgeDAO" />
         </property>
-        <property name="authorityBridgeTableByTenantCache">
-            <ref bean="authorityBridgeTableByTenantCache" />
+        <property name="authorityBridgeTableCache">
+            <ref bean="authorityBridgeTableCache" />
         </property>
         <property name="useBridgeTable">
             <value>${authority.useBridgeTable}</value>

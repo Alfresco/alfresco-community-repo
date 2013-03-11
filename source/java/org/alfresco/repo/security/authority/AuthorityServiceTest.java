@@ -74,6 +74,7 @@ public class AuthorityServiceTest extends TestCase
     private UserTransaction tx;
     private AclDAO aclDaoComponent;
     private NodeService nodeService;
+    private AuthorityBridgeTableAsynchronouslyRefreshedCache authorityBridgeTableCache;
     
     public AuthorityServiceTest()
     {
@@ -105,6 +106,7 @@ public class AuthorityServiceTest extends TestCase
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         aclDaoComponent = (AclDAO) ctx.getBean("aclDAO");
         nodeService = (NodeService) ctx.getBean("nodeService");
+        authorityBridgeTableCache = (AuthorityBridgeTableAsynchronouslyRefreshedCache) ctx.getBean("authorityBridgeTableCache");
         
         String defaultAdminUser = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(defaultAdminUser);
@@ -623,16 +625,19 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         auth3 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "three");
         pubAuthorityService.addAuthority(auth1, auth3);
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         assertEquals("GROUP_three", auth3);
         assertEquals(GRP_CNT+3, getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         auth4 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "four");
         pubAuthorityService.addAuthority(auth1, auth4);
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         assertEquals("GROUP_four", auth4);
         assertEquals(GRP_CNT+4, getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "five");
         pubAuthorityService.addAuthority(auth2, auth5);
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         assertEquals("GROUP_five", auth5);
         assertEquals(GRP_CNT+5, getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
@@ -640,6 +645,7 @@ public class AuthorityServiceTest extends TestCase
         //System.out.println("Users: "+ getAllAuthorities(AuthorityType.USER));
         checkAuthorityCollectionSize(3, getAllAuthorities(AuthorityType.USER), AuthorityType.USER);
         pubAuthorityService.addAuthority(auth5, "andy");
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         assertEquals(GRP_CNT+5, getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
@@ -658,6 +664,7 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth5, false).contains("andy"));
         
         pubAuthorityService.removeAuthority(auth5, "andy");
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         assertEquals(GRP_CNT+5, getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         // The next call looks for people not users :-)
@@ -700,12 +707,14 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         auth5 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "five");
         pubAuthorityService.addAuthority(auth2, auth5);
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         assertEquals(GRP_CNT+5, getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
         
         assertEquals(3, getAllAuthorities(AuthorityType.USER).size());
         pubAuthorityService.addAuthority(auth5, "andy");
         pubAuthorityService.addAuthority(auth1, "andy");
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         
         assertEquals(GRP_CNT+5, getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
@@ -725,6 +734,7 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains("andy"));
         
         pubAuthorityService.removeAuthority(auth1, "andy");
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         
         assertEquals(GRP_CNT+5, getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
@@ -776,6 +786,7 @@ public class AuthorityServiceTest extends TestCase
         checkAuthorityCollectionSize(3, getAllAuthorities(AuthorityType.USER), AuthorityType.USER);
         pubAuthorityService.addAuthority(auth5, "andy");
         pubAuthorityService.addAuthority(auth1, "andy");
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         
         assertEquals(GRP_CNT+5, getAllAuthorities(AuthorityType.GROUP).size());
         assertEquals(ROOT_GRP_CNT+2, pubAuthorityService.getAllRootAuthorities(AuthorityType.GROUP).size());
@@ -795,6 +806,7 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, false).contains("andy"));
         
         pubAuthorityService.addAuthority(auth3, auth2);
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         
         assertEquals(GRP_CNT+5, getAllAuthorities(AuthorityType.GROUP).size());
         
@@ -910,6 +922,7 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.addAuthority(auth6, "andy1");
         pubAuthorityService.addAuthority(auth6, "andy5");
         pubAuthorityService.addAuthority(auth6, "andy6");
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         
         assertEquals(2, pubAuthorityService.getContainedAuthorities(null, auth1, true).size());
         assertEquals(11, pubAuthorityService.getContainedAuthorities(null, auth1, false).size());
@@ -1078,6 +1091,8 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.addAuthority(auth5, "andy2");
         String auth6 = pubAuthorityService.createAuthority(AuthorityType.GROUP, "six");
         pubAuthorityService.addAuthority(auth6, "an3dy");
+        
+        authorityBridgeTableCache.forceInChangesForThisUncommittedTransaction();
         
         assertEquals(1, pubAuthorityService.getContainedAuthorities(null, auth1, true).size());
         assertTrue(pubAuthorityService.getContainedAuthorities(null, auth1, true).contains("1234"));

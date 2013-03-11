@@ -40,6 +40,8 @@ import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.cache.RefreshableCacheEvent;
+import org.alfresco.repo.cache.RefreshableCacheListener;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -76,12 +78,14 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
-public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.BeforeDeleteNodePolicy, NodeServicePolicies.OnUpdatePropertiesPolicy
+public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.BeforeDeleteNodePolicy, NodeServicePolicies.OnUpdatePropertiesPolicy, RefreshableCacheListener, InitializingBean
 {
     private static Log logger = LogFactory.getLog(AuthorityDAOImpl.class);
     
@@ -113,7 +117,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     private SimpleCache<String, Set<String>> userAuthorityCache;
     private SimpleCache<Pair<String, String>, List<ChildAssociationRef>> zoneAuthorityCache;
     private SimpleCache<NodeRef, Pair<Map<NodeRef,String>, List<NodeRef>>> childAuthorityCache;
-    private SimpleCache<String, BridgeTable<String>> authorityBridgeTableByTenantCache;
+    private AuthorityBridgeTableAsynchronouslyRefreshedCache authorityBridgeTableCache;
    
     /** System Container ref cache (Tennant aware) */
     private Map<String, NodeRef> systemContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
@@ -126,10 +130,13 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
 
     private boolean useBridgeTable = true;
     
+    private boolean useGetContainingAuthoritiesForIsAuthorityContained = true;
+    
     private AclDAO aclDao;
     private PolicyComponent policyComponent;
-    private NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry;
+    private NamedObjectRegistry<CannedQueryFactory<?>> cannedQueryRegistry;
     private AuthorityBridgeDAO authorityBridgeDAO;
+    
     
     public AuthorityDAOImpl()
     {
@@ -197,9 +204,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         this.childAuthorityCache = childAuthorityCache;
     }
     
-    public void setAuthorityBridgeTableByTenantCache(SimpleCache<String, BridgeTable<String>> authorityBridgeTableByTenantCache)
+    public void setAuthorityBridgeTableCache(AuthorityBridgeTableAsynchronouslyRefreshedCache authorityBridgeTableCache)
     {
-        this.authorityBridgeTableByTenantCache = authorityBridgeTableByTenantCache;
+        this.authorityBridgeTableCache = authorityBridgeTableCache;
     }
     
     /**
@@ -231,9 +238,17 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         this.policyComponent = policyComponent;
     }
     
-    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory> cannedQueryRegistry)
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<?>> cannedQueryRegistry)
     {
         this.cannedQueryRegistry = cannedQueryRegistry;
+    }
+    
+    /**
+     * @param useGetContainingAuthoritiesForHasAuthority the useGetContainingAuthoritiesForHasAuthority to set
+     */
+    public void setUseGetContainingAuthoritiesForIsAuthorityContained(boolean useGetContainingAuthoritiesForIsAuthorityContained)
+    {
+        this.useGetContainingAuthoritiesForIsAuthorityContained = useGetContainingAuthoritiesForIsAuthorityContained;
     }
     
     /**
@@ -296,7 +311,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         else
         {
             userAuthorityCache.clear();
-            authorityBridgeTableByTenantCache.clear();
+            authorityBridgeTableCache.refresh();
         }
     }
 
@@ -352,7 +367,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         removeParentsFromChildAuthorityCache(nodeRef);
         authorityLookupCache.remove(cacheKey(name));
         userAuthorityCache.clear();
-        authorityBridgeTableByTenantCache.clear();
+        authorityBridgeTableCache.refresh();
 
         nodeService.deleteNode(nodeRef);
     }
@@ -724,30 +739,14 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         else
         {
             userAuthorityCache.clear();
-            authorityBridgeTableByTenantCache.clear();
+            authorityBridgeTableCache.refresh();
         }
     }
 
-    private BridgeTable<String> getBridgeTable()
-    {
-        String tenant = tenantService.getCurrentUserDomain();
-        BridgeTable<String> bridgeTable = authorityBridgeTableByTenantCache.get(tenant);
-        if(bridgeTable == null)
-        {
-            List<AuthorityBridgeLink> links = authorityBridgeDAO.getAuthorityBridgeLinks();
-            bridgeTable = new BridgeTable<String>();
-            for(AuthorityBridgeLink link : links)
-            {
-                bridgeTable.addLink(link.getParentName(), link.getChildName());
-            }
-            authorityBridgeTableByTenantCache.put(tenant,  bridgeTable);
-        }
-        return bridgeTable;
-    }
-    
+   
     private void listAuthoritiesByBridgeTable(Set<String> authorities, String name)
     {
-        BridgeTable<String> bridgeTable = getBridgeTable();
+        BridgeTable<String> bridgeTable = authorityBridgeTableCache.get();
         
         AuthorityType type = AuthorityType.getAuthorityType(name);
         switch(type)
@@ -1095,8 +1094,21 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             negativeHits.add(getPooledName(authority));
             return false;
         }
-
-        return isAuthorityContained(authorityNodeRef, getPooledName(authority), authorityToFind, positiveHits, negativeHits);
+        if(useGetContainingAuthoritiesForIsAuthorityContained)
+        {
+            if(authorityBridgeTableCache.isUpToDate())
+            {
+                return getContainingAuthorities(null, authorityToFind, false).contains(authority);
+            }
+            else
+            {
+                return isAuthorityContained(authorityNodeRef, getPooledName(authority), authorityToFind, positiveHits, negativeHits);
+            }
+        }
+        else
+        {
+            return isAuthorityContained(authorityNodeRef, getPooledName(authority), authorityToFind, positiveHits, negativeHits);
+        }
     }
     
     private boolean isAuthorityContained(NodeRef authorityNodeRef, String authority, String authorityToFind, Set<String> positiveHits, Set<String> negativeHits)
@@ -1492,7 +1504,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                         }
                     }
                     authorityLookupCache.clear();
-                    authorityBridgeTableByTenantCache.clear();
+                    authorityBridgeTableCache.refresh();
                     
                     // Cache is out of date
                     userAuthorityCache.clear();
@@ -1621,5 +1633,57 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             }
             return auths;
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.cache.RefreshableCacheListener#onRefreshableCacheEvent(org.alfresco.repo.cache.RefreshableCacheEvent)
+     */
+    @Override
+    public void onRefreshableCacheEvent(RefreshableCacheEvent refreshableCacheEvent)
+    {
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("Bridge Table cache triggering userAuthorityCache.clear()");
+        }
+        userAuthorityCache.clear();
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.cache.RefreshableCacheListener#getCacheId()
+     */
+    @Override
+    public String getCacheId()
+    {
+        return AuthorityDAOImpl.class.getName();
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "aclDao", aclDao);
+        PropertyCheck.mandatory(this, "authorityBridgeDAO", authorityBridgeDAO);
+        PropertyCheck.mandatory(this, "authorityBridgeTableCache", authorityBridgeTableCache);
+        PropertyCheck.mandatory(this, "authorityLookupCache", authorityLookupCache);
+        PropertyCheck.mandatory(this, "cannedQueryRegistry", cannedQueryRegistry);
+        PropertyCheck.mandatory(this, "childAuthorityCache", childAuthorityCache);
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "namespacePrefixResolver", namespacePrefixResolver);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "personService", personService);
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        PropertyCheck.mandatory(this, "searchService", searchService);
+        PropertyCheck.mandatory(this, "storeRef", storeRef);
+        PropertyCheck.mandatory(this, "tenantService", tenantService);
+        PropertyCheck.mandatory(this, "userAuthorityCache", userAuthorityCache);
+        PropertyCheck.mandatory(this, "zoneAuthorityCache", zoneAuthorityCache);
+        PropertyCheck.mandatory(this, "storeRef", storeRef);
+        PropertyCheck.mandatory(this, "storeRef", storeRef);
+        authorityBridgeTableCache.register(this);
+        
     };
 }

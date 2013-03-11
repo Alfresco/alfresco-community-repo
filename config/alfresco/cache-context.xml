@@ -146,11 +146,45 @@
    <!-- Authority BridgeTable cache -->
    <!-- =========================== -->
 
-   <!-- The cross-transaction shared cache for authority bridge -->
-   
-   <bean name="authorityBridgeTableByTenantSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
-       <property name="maxItems" value="${cache.authorityBridgeTableByTenantSharedCache.maxItems}"/>
+   <bean id="asynchronouslyRefreshedCacheThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+      <property name="poolName">
+          <value>asynchronouslyRefreshedCacheThreadPool</value>
+      </property>
+      <property name="corePoolSize">
+          <value>1</value>
+      </property>
+      <property name="maximumPoolSize">
+         <value>1</value>
+      </property>
+      <property name="threadPriority">
+         <value>5</value>
+      </property>
+    </bean>
+
+   <bean name="asynchronouslyRefreshedCacheRegistry" class="org.alfresco.repo.cache.DefaultAsynchronouslyRefreshedCacheRegistry" >
    </bean>
+
+   <bean name="abstractAsynchronouslyRefreshedCache" class="org.alfresco.repo.cache.AbstractAsynchronouslyRefreshedCache" abstract="true">
+      <property name="threadPoolExecutor">
+         <ref bean="asynchronouslyRefreshedCacheThreadPoolExecutor" />
+      </property>
+      <property name="tenantService">
+         <ref bean="tenantService" />
+      </property>
+      <property name="registry">
+         <ref bean="asynchronouslyRefreshedCacheRegistry" />
+      </property>
+    </bean> 
+   
+   <bean name="authorityBridgeTableCache" class="org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCache" parent="abstractAsynchronouslyRefreshedCache">
+      <property name="authorityBridgeDAO">
+         <ref bean="authorityBridgeDAO" />
+      </property>
+      <property name="retryingTransactionHelper">
+         <ref bean="retryingTransactionHelper" />
+      </property>
+   </bean>
+ 
  
    <!-- ================================================ -->
    <!-- Zone lookup to ChildAssociationRefs              -->

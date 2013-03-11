@@ -220,21 +220,8 @@
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 
-   <!-- The transactional cache for authority bridge -->
-   
-   <bean name="authorityBridgeTableByTenantCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="authorityBridgeTableByTenantSharedCache" />
-      </property>
-      <property name="name">
-         <value>org.alfresco.authorityBridgeTableByTenantTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize" value="10" />
-      <property name="mutable" value="true" />
-      <property name="allowEqualsChecks" value="true" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
-   </bean>
-   
+
+
    <!-- The transactional cache for authority containers -->
    
    <bean name="zoneToAuthorityCache" class="org.alfresco.repo.cache.TransactionalCache">

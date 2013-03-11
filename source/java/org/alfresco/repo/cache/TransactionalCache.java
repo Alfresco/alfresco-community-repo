@@ -258,8 +258,15 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     
     public boolean getDisableSharedCacheReadForTransaction()
     {
-        TransactionData txnData = getTransactionData();
-        return txnData.noSharedCacheRead;
+        if (AlfrescoTransactionSupport.getTransactionId() != null)
+        {
+            TransactionData txnData = getTransactionData();
+            return txnData.noSharedCacheRead;
+        }
+        else
+        {
+            return false;
+        }
     }
     
     /**

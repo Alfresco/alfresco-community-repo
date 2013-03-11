@@ -98,6 +98,14 @@ subprojects {
 				password 'b@mb00'
 			}
 		}
+        // Temporarily add the internal-staging Maven repo, to be able to get the yet unreleased 4.1.4
+		maven {
+			url "https://artifacts.alfresco.com/nexus/content/repositories/internal-staging"
+			credentials {
+				username 'bamboo'
+				password 'b@mb00'
+			}
+		}
 	}
 	
 	dependencies {		     		

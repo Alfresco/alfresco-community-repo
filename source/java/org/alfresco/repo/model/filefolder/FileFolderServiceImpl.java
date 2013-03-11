@@ -1142,7 +1142,7 @@ public class FileFolderServiceImpl implements FileFolderService
         
         // ALF-13949: WorkingCopyAspect intentionally generates new names for all copies of working copies (which no
         // longer have the working copy aspect) so leave these alone after copy
-        if (!currentName.equals(newName) && !nodeService.hasAspect(sourceNodeRef, ContentModel.ASPECT_WORKING_COPY))
+        if (!currentName.equals(newName) && (move || !nodeService.hasAspect(sourceNodeRef, ContentModel.ASPECT_WORKING_COPY)))
         {
             try
             {

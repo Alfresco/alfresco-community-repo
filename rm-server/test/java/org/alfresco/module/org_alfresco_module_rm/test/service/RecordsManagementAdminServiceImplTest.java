@@ -214,8 +214,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
 	            	PropertyDefinition propDef = propDefs.get(result);
 	            	assertNotNull(propDef);	            	
 	            	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-	            	assertEquals("Description", propDef.getDescription());
-	            	assertEquals("Label1", propDef.getTitle());	            		            	
+	            	assertEquals("Description", propDef.getDescription(dictionaryService));
+	            	assertEquals("Label1", propDef.getTitle(dictionaryService));	            		            	
             	}
             	finally
             	{
@@ -259,8 +259,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
 	            	PropertyDefinition propDef = propDefs.get(result);
 	            	assertNotNull(propDef);	            	
 	            	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-	            	assertEquals("Description", propDef.getDescription());
-	            	assertEquals("Label2", propDef.getTitle());	            		            	
+	            	assertEquals("Description", propDef.getDescription(dictionaryService));
+	            	assertEquals("Label2", propDef.getTitle(dictionaryService));	            		            	
             	}
             	finally
             	{
@@ -310,8 +310,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
 	            	PropertyDefinition propDef = propDefs.get(result);
 	            	assertNotNull(propDef);	            	
 	            	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-	            	assertEquals("Description", propDef.getDescription());
-	            	assertEquals("Label3", propDef.getTitle());	     
+	            	assertEquals("Description", propDef.getDescription(dictionaryService));
+	            	assertEquals("Label3", propDef.getTitle(dictionaryService));	     
 	            	assertEquals("default", propDef.getDefaultValue());
 	            	assertFalse(propDef.isMandatory());
 	            	assertFalse(propDef.isMultiValued());
@@ -411,8 +411,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
             	PropertyDefinition propDef = propDefs.get(result);
             	assertNotNull(propDef);	            	
             	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-            	assertEquals("Description", propDef.getDescription());
-            	assertEquals("Label", propDef.getTitle());	
+            	assertEquals("Description", propDef.getDescription(dictionaryService));
+            	assertEquals("Label", propDef.getTitle(dictionaryService));	
             
             }
         });
@@ -456,8 +456,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
             	PropertyDefinition propDef = propDefs.get(result);
             	assertNotNull(propDef);	            	
             	assertEquals(DataTypeDefinition.TEXT, propDef.getDataType().getName());
-            	assertEquals("Description", propDef.getDescription());
-            	assertEquals("Label", propDef.getTitle());	
+            	assertEquals("Description", propDef.getDescription(dictionaryService));
+            	assertEquals("Label", propDef.getTitle(dictionaryService));	
             }
         });    
     }
@@ -679,7 +679,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         {
                             System.out.println("   - " + prop.toString());
                             
-                            String propId = props.get(prop).getTitle();
+                            String propId = props.get(prop).getTitle(dictionaryService);
                             assertNotNull("null client-id for " + prop, propId);
                             
                             System.out.println("       " + propId);
@@ -701,7 +701,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         for (QName reference : references.keySet())
                         {
                             System.out.println("    - " + reference.toString());
-                            System.out.println("      " + references.get(reference).getTitle());
+                            System.out.println("      " + references.get(reference).getTitle(dictionaryService));
                         }
                         return null;
                     }          
@@ -720,7 +720,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         for (ConstraintDefinition constraint : constraints)
                         {
                             System.out.println("   - " + constraint.getName());
-                            System.out.println("       " + constraint.getTitle());
+                            System.out.println("       " + constraint.getTitle(dictionaryService));
                         }
                         return null;
                     }          
@@ -842,7 +842,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         {
                             if (conDef.getName().equals(testCon))
                             {
-                                assertEquals(conTitle, conDef.getTitle());
+                                assertEquals(conTitle, conDef.getTitle(dictionaryService));
                                 
                                 Constraint con = conDef.getConstraint();
                                 assertTrue(con instanceof RMListOfValuesConstraint);
@@ -891,7 +891,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         {
                             if (conDef.getName().equals(testCon))
                             {
-                                assertEquals(conTitle, conDef.getTitle());
+                                assertEquals(conTitle, conDef.getTitle(dictionaryService));
                                 
                                 Constraint con = conDef.getConstraint();
                                 assertTrue(con instanceof RMListOfValuesConstraint);

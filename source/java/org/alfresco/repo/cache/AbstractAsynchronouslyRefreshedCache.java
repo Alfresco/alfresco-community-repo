@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.cache;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -288,7 +287,6 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
      */
     private TransactionData getTransactionData()
     {
-        @SuppressWarnings("unchecked")
         TransactionData data = (TransactionData) AlfrescoTransactionSupport.getResource(resourceKeyTxnData);
         if (data == null)
         {
@@ -341,7 +339,14 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
                    return false;
                }
            }
-           return true;
+           if (AlfrescoTransactionSupport.getTransactionId() != null)
+           {
+               return (!getTransactionData().tenantIds.contains(tenantId));
+           }
+           else
+           {
+               return true;
+           }
        }
        finally
        {
@@ -747,6 +752,7 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T> implements Asynchr
      * (non-Javadoc)
      * @see org.alfresco.repo.transaction.TransactionListener#flush()
      */
+    @SuppressWarnings("deprecation")
     @Override
     public void flush()
     {

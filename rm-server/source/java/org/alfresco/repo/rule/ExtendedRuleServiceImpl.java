@@ -29,38 +29,38 @@ import org.alfresco.service.cmr.rule.Rule;
 
 /**
  * Extended rule service implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 public class ExtendedRuleServiceImpl extends RuleServiceImpl
 {
     private boolean runAsRmAdmin = true;
-    
+
     private FilePlanAuthenticationService filePlanAuthenticationService;
-    
+
     private RecordsManagementService recordsManagementService;
-    
+
     public void setRunAsRmAdmin(boolean runAsRmAdmin)
     {
         this.runAsRmAdmin = runAsRmAdmin;
     }
-    
+
     public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
-    
+
     public void setRecordsManagementService(RecordsManagementService recordsManagementService)
     {
         this.recordsManagementService = recordsManagementService;
     }
-    
+
     @Override
     public void saveRule(final NodeRef nodeRef, final Rule rule)
     {
         if (recordsManagementService.isFilePlanComponent(nodeRef) == true && runAsRmAdmin == true)
-        {     
+        {
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
@@ -69,20 +69,20 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
                     ExtendedRuleServiceImpl.super.saveRule(nodeRef, rule);
                     return null;
                 }
-                
+
             });
         }
         else
         {
-            saveRule(nodeRef, rule);
+            super.saveRule(nodeRef, rule);
         }
     }
-    
+
     @Override
     public void executeRule(final Rule rule, final NodeRef nodeRef, final Set<ExecutedRuleData> executedRules)
     {
         if (isFilePlanComponentRule(rule) == true && runAsRmAdmin == true)
-        {     
+        {
             String user = AuthenticationUtil.getFullyAuthenticatedUser();
             try
             {
@@ -98,12 +98,12 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
         {
             // just execute the rule as the current user
             super.executeRule(rule, nodeRef, executedRules);
-        }       
+        }
     }
-    
+
     private boolean isFilePlanComponentRule(Rule rule)
     {
         NodeRef nodeRef = getOwningNodeRef(rule);
         return recordsManagementService.isFilePlanComponent(nodeRef);
-    }   
+    }
 }

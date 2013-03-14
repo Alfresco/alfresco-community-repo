@@ -31,6 +31,7 @@ import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.apache.commons.logging.Log;
@@ -68,6 +69,9 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     /** File plan service */
     private FilePlanService filePlanService;
     
+    /** Dictionary service */
+    private DictionaryService dictionaryService;
+    
     /**
      * @param recordsManagementService  records management service
      */
@@ -100,13 +104,36 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
         this.filePlanService = filePlanService;
     }
     
+    @Override
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+    
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {       
-        if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == true)
+        
+        if (nodeService.exists(actionedUponNodeRef) == false)        
+        {
+            // do not create record if the actioned upon node does not exist!
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " does not exist.");
+            }
+        }
+        else if (dictionaryService.isSubClass(ContentModel.TYPE_CONTENT, nodeService.getType(actionedUponNodeRef)) == false)
+        {
+            // TODO eventually we should support other types .. either as record folders or as composite records
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " is not a supported type.");
+            }
+        }
+        else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD) == true)
         {
             // Do not create record if the actioned upon node is already a record!
             if (logger.isDebugEnabled() == true)

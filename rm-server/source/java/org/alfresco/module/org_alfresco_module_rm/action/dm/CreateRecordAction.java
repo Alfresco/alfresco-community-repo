@@ -150,6 +150,14 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
             }
             
         }
+        else if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS) == true)
+        {
+            // can not create a record from a previously rejected one
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " has previously been rejected.");
+            }
+        }
         else 
         {
             NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);

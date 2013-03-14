@@ -229,7 +229,7 @@
             <value>RECORD</value>
          </set>
       </property>
-      <property name="capability" value="CopyRecords"/>
+      <property name="capability" value="CopyRecord"/>
    </bean>
 
    <bean id="jsonConversionComponent.copyRecordFolderAction"

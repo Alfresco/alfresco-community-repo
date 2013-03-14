@@ -124,10 +124,14 @@
       parent="declarativeCapability">
       <property name="name" value="CopyRecord"/>
       <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>
+         </list>
+      </property>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.frozen" value="false"/>
-            <entry key="capabilityCondition.isRecord" value="true"/>
             <entry key="capabilityCondition.recordFiled" value="true"/>
          </map>
       </property>
@@ -137,10 +141,14 @@
       parent="declarativeCapability">
       <property name="name" value="CopyRecordFolder"/>
       <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.frozen" value="false"/>
-            <entry key="capabilityCondition.isRecordFolder" value="true"/>            
+            <entry key="capabilityCondition.frozen" value="false"/>           
          </map>
       </property>
    </bean>
@@ -149,10 +157,14 @@
       parent="declarativeCapability">
       <property name="name" value="CopyRecordCategory"/>
       <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_CATEGORY</value>
+         </list>
+      </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.frozen" value="false"/>
-            <entry key="capabilityCondition.isRecordCategory" value="true"/>            
+            <entry key="capabilityCondition.frozen" value="false"/>           
          </map>
       </property>
    </bean>

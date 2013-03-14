@@ -515,7 +515,7 @@ public class RecordServiceImpl implements RecordService,
         ParameterCheck.mandatoryString("Reason", reason);
 
         // Save the id of the currently logged in user
-        final String userId = AuthenticationUtil.getRunAsUser();
+        final String userId = AuthenticationUtil.getFullyAuthenticatedUser();
 
         // do the work of rejecting the record as the system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -525,6 +525,9 @@ public class RecordServiceImpl implements RecordService,
             {
                 // take note of the record id
                 String recordId = (String)nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
+                
+                // take node of the original document owner
+                String documentOwner = (String) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_USER_ID);
                 
                 // first remove the secondary link association
                 NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
@@ -537,23 +540,24 @@ public class RecordServiceImpl implements RecordService,
                         break;
                     }
                 }
-
-                // remove the "record" and "file plan component" aspects
-                nodeService.removeAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD);
-                nodeService.removeAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT);
-
-                // remove "identifier" property
-                nodeService.removeProperty(nodeRef, PROP_IDENTIFIER);
-
+                
+                // remove all RM related aspects from the node
+                Set<QName> aspects = nodeService.getAspects(nodeRef);
+                for (QName aspect : aspects)
+                {
+                    if (RM_URI.equals(aspect.getNamespaceURI()) == true)
+                    {
+                        // remove the aspect
+                        nodeService.removeAspect(nodeRef, aspect);
+                    }
+                }
+                
                 // get the records primary parent association
                 ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
 
                 // move the record into the collaboration site
                 nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-
-                // remove all extended readers
-                extendedSecurityService.removeAllExtendedSecurity(nodeRef);
-
+               
                 // save the information about the rejection details
                 Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
                 aspectProperties.put(PROP_RECORD_REJECTION_USER_ID, userId);
@@ -561,8 +565,7 @@ public class RecordServiceImpl implements RecordService,
                 aspectProperties.put(PROP_RECORD_REJECTION_REASON, reason);
                 nodeService.addAspect(nodeRef, ASPECT_RECORD_REJECTION_DETAILS, aspectProperties);
 
-                // Restore the owner of the document
-                String documentOwner = (String) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_USER_ID);
+                // Restore the owner of the document                
                 if (StringUtils.isBlank(documentOwner))
                 {
                     throw new AlfrescoRuntimeException("Unable to find the creator of document.");
@@ -570,7 +573,7 @@ public class RecordServiceImpl implements RecordService,
                 ownableService.setOwner(nodeRef, documentOwner);
 
                 // send an email to the record creator
-                notificationHelper.recordRejectedEmailNotification(nodeRef, recordId);
+                notificationHelper.recordRejectedEmailNotification(nodeRef, recordId);               
 
                 return null;
             }

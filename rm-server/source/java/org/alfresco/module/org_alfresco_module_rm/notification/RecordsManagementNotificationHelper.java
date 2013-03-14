@@ -314,7 +314,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     {
         ParameterCheck.mandatory("record", record);
 
-        if (canSendRejectEmail(record) == true)
+        if (canSendRejectEmail(record, recordCreator) == true)
         {
             String site = siteService.getSite(record).getShortName();
             String rejectReason = (String) nodeService.getProperty(record, PROP_RECORD_REJECTION_REASON);
@@ -331,7 +331,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             args.put("rejectDate", rejectDate);
             args.put("recordId", recordId);
             args.put("recordName", recordName);
-
+            
             NotificationContext notificationContext = new NotificationContext();
             notificationContext.setAsyncNotification(true);
             notificationContext.setIgnoreNotificationFailure(true);
@@ -349,7 +349,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
      *
      * @param record    rejected record
      */
-    private boolean canSendRejectEmail(NodeRef record)
+    private boolean canSendRejectEmail(NodeRef record, String recordCreator)
     {
         boolean result = true;
 
@@ -361,7 +361,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             result = false;
             logger.warn(msg1 + "the site which should contain the node '" + record.toString() + "'" + msg2);
         }
-        if (StringUtils.isBlank((String) nodeService.getProperty(record, PROP_RECORD_ORIGINATING_USER_ID)) == true)
+        if (StringUtils.isBlank(recordCreator) == true)
         {
             result = false;
             logger.warn(msg1 + "the user, who created the record" + msg2);

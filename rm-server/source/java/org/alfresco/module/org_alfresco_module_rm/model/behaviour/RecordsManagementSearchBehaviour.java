@@ -323,7 +323,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             @Override
             public Void doWork() throws Exception
             {
-                if (nodeService.exists(nodeRef) == true)
+                if (nodeService.exists(nodeRef) == true && nodeService.hasAspect(nodeRef, ASPECT_RECORD) == true)
                 {
                     applySearchAspect(nodeRef);
                     setupDispositionScheduleProperties(nodeRef);

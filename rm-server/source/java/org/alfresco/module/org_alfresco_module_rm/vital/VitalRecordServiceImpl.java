@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -57,6 +58,7 @@ public class VitalRecordServiceImpl implements VitalRecordService,
     private PolicyComponent policyComponent;
     private RecordsManagementService rmService;
     private RecordsManagementActionService rmActionService;
+    private FilePlanAuthenticationService filePlanAuthenticationService;
     
     /** Behaviours */
     private JavaBehaviour onUpdateProperties;
@@ -94,6 +96,11 @@ public class VitalRecordServiceImpl implements VitalRecordService,
         this.rmActionService = rmActionService;
     }
     
+    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
+    {
+        this.filePlanAuthenticationService = filePlanAuthenticationService;
+    }
+    
     /**
      * Init method.
      */
@@ -122,11 +129,19 @@ public class VitalRecordServiceImpl implements VitalRecordService,
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
-    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    public void onUpdateProperties(final NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (nodeService.exists(nodeRef) == true)
+        if (nodeService.exists(nodeRef) == true && nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
         {
-            rmActionService.executeRecordsManagementAction(nodeRef, "broadcastVitalRecordDefinition");
+            filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    rmActionService.executeRecordsManagementAction(nodeRef, "broadcastVitalRecordDefinition");
+                    return null;
+                }}
+            );
         }        
     }
     

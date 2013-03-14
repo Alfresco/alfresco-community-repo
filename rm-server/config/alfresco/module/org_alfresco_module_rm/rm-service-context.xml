@@ -125,6 +125,7 @@
         <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
         <property name="nodeService" ref="NodeService"/>
+        <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
         <property name="policyComponent" ref="policyComponent"/>
     </bean>
 

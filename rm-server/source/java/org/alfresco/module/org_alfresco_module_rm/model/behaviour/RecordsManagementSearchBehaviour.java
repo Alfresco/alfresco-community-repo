@@ -334,14 +334,23 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         });
     }
     
-    public void recordFolderCreate(ChildAssociationRef childAssocRef)
+    public void recordFolderCreate(final ChildAssociationRef childAssocRef)
     {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) == true)
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
         {
-            applySearchAspect(nodeRef);
-            setupDispositionScheduleProperties(nodeRef);
-        }
+            @Override
+            public Void doWork() throws Exception
+            {        
+                NodeRef nodeRef = childAssocRef.getChildRef();
+                if (nodeService.exists(nodeRef) == true)
+                {
+                    applySearchAspect(nodeRef);
+                    setupDispositionScheduleProperties(nodeRef);
+                }
+                
+                return null;
+            }
+        });
     }
     
     private void setupDispositionScheduleProperties(NodeRef recordOrFolder)

@@ -573,7 +573,7 @@ public class RecordServiceImpl implements RecordService,
                 ownableService.setOwner(nodeRef, documentOwner);
 
                 // send an email to the record creator
-                notificationHelper.recordRejectedEmailNotification(nodeRef, recordId);               
+                notificationHelper.recordRejectedEmailNotification(nodeRef, recordId, documentOwner);               
 
                 return null;
             }

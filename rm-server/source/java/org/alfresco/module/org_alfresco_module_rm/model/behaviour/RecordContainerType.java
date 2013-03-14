@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -55,6 +56,9 @@ public class RecordContainerType implements RecordsManagementModel,
     /** Identity service */
     private IdentifierService recordsManagementIdentifierService;
     
+    /** File plan authentication service */
+    private FilePlanAuthenticationService filePlanAuthenticationService;
+    
     /**
      * Set the policy component
      * @param policyComponent   policy component
@@ -82,6 +86,14 @@ public class RecordContainerType implements RecordsManagementModel,
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * @param filePlanAuthenticationService file plan authentication service
+     */
+    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
+    {
+        this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
     
     /**
@@ -114,37 +126,46 @@ public class RecordContainerType implements RecordsManagementModel,
      * Deal with something created within a record container
      */
     @Override
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
+    public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean isNewNode)
     {   
-        // Get the elements of the created association
-        final NodeRef child = childAssocRef.getChildRef();
-        QName childType = nodeService.getType(child);
-        
-        // We only care about "folder" or sub-types
-        if (dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER) == true)
-        {       
-            if (dictionaryService.isSubClass(childType, ContentModel.TYPE_SYSTEM_FOLDER) == true)
+        filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
             {
-                // this is a rule container, make sure it is an file plan component
-                nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
-            }
-            else
-            {                
-                // We need to automatically cast the created folder to RM type if it is a plain folder
-                // This occurs if the RM folder has been created via IMap, WebDav, etc
-                if (nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT) == false)
-                {                
-                    // TODO it may not always be a record folder ... perhaps if the current user is a admin it would be a record category?? 
-                    
-                    // Assume any created folder is a rma:recordFolder
-                    nodeService.setType(child, TYPE_RECORD_FOLDER);     
-                }                           
+                // Get the elements of the created association
+                final NodeRef child = childAssocRef.getChildRef();
+                QName childType = nodeService.getType(child);
+                
+                // We only care about "folder" or sub-types
+                if (dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER) == true)
+                {       
+                    if (dictionaryService.isSubClass(childType, ContentModel.TYPE_SYSTEM_FOLDER) == true)
+                    {
+                        // this is a rule container, make sure it is an file plan component
+                        nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
+                    }
+                    else
+                    {                
+                        // We need to automatically cast the created folder to RM type if it is a plain folder
+                        // This occurs if the RM folder has been created via IMap, WebDav, etc
+                        if (nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT) == false)
+                        {                
+                            // TODO it may not always be a record folder ... perhaps if the current user is a admin it would be a record category?? 
+                            
+                            // Assume any created folder is a rma:recordFolder
+                            nodeService.setType(child, TYPE_RECORD_FOLDER);     
+                        }                           
 
-                // Catch all to generate the rm id (assuming it doesn't already have one!)
-                setIdenifierProperty(child);
-            }
-            
-        }
+                        // Catch all to generate the rm id (assuming it doesn't already have one!)
+                        setIdenifierProperty(child);
+                    }                    
+                }
+                
+                return null;
+            }            
+        });
+        
     }
 
     /**

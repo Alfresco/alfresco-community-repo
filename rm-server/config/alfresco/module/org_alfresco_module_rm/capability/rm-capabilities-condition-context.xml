@@ -156,5 +156,12 @@
          parent="capabilityCondition.base"
          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsRecordCategoryCondition">
    </bean>
+   
+   <bean id="capabilityCondition.isRejectedRecord"
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasAspectCapabilityCondition">
+       <property name="aspectName" value="rma:recordRejectionDetails"/>
+       <property name="namespaceService" ref="NamespaceService"/>
+    </bean>
 
 </beans>

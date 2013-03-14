@@ -300,12 +300,20 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     /**
      * Called after any Records Management property has been updated.
      */
-    public void onChangeToAnyRmProperty(NodeRef node, Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
+    public void onChangeToAnyRmProperty(final NodeRef node, final Map<QName, Serializable> oldProps, final Map<QName, Serializable> newProps)
     {
-        if (nodeService.exists(node) == true)
+        serviceRegistry.getFilePlanAuthenticationService().runAsRmAdmin(new RunAsWork<Void>()
         {
-            this.lookupAndExecuteScripts(node, oldProps, newProps);
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.exists(node) == true)
+                {
+                    RecordsManagementServiceImpl.this.lookupAndExecuteScripts(node, oldProps, newProps);
+                }
+                
+                return null;
+            }});
     }
     
     /**

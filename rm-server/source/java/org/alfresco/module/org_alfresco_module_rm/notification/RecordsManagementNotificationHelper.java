@@ -310,14 +310,13 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
      *
      * @param record    rejected record
      */
-    public void recordRejectedEmailNotification(NodeRef record, String recordId)
+    public void recordRejectedEmailNotification(NodeRef record, String recordId, String recordCreator)
     {
         ParameterCheck.mandatory("record", record);
 
         if (canSendRejectEmail(record) == true)
         {
             String site = siteService.getSite(record).getShortName();
-            String recordCreator = (String) nodeService.getProperty(record, PROP_RECORD_ORIGINATING_USER_ID);
             String rejectReason = (String) nodeService.getProperty(record, PROP_RECORD_REJECTION_REASON);
             String rejectedPerson = (String) nodeService.getProperty(record, PROP_RECORD_REJECTION_USER_ID);
             Date rejectDate = (Date) nodeService.getProperty(record, PROP_RECORD_REJECTION_DATE);

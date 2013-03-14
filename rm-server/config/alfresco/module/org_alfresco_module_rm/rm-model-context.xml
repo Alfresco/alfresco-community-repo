@@ -56,6 +56,7 @@
       parent="org_alfresco_module_rm_BaseBehaviour">
       <property name="dictionaryService" ref="DictionaryService"/>
       <property name="recordsManagementIdentifierService" ref="recordsManagementIdentifierService"/>
+      <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
    </bean>
 
    <bean id="org_alfresco_module_rm_RmSiteType"

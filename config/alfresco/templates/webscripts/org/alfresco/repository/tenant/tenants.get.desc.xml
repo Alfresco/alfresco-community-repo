@@ -1,0 +1,16 @@
+<webscript>
+  <shortname>Get Tenants</shortname>
+  <description><![CDATA[
+      Get list of tenants.
+      
+      <br />The repository must be in Multi-Tenant mode (1st tenant created).
+      <br />You must have "administrator" privileges to get list of tenants.
+   ]]>
+   </description>
+  <url>/api/tenants</url>
+  <format default="json">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
+  <family>MultiTenantAdmin</family>
+</webscript>

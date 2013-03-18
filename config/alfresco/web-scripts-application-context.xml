@@ -137,7 +137,7 @@
       <property name="extension"><value>js</value></property>
    </bean>
  
-   <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.RepositoryContainer" parent="webscripts.abstractcontainer">
+   <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.TenantRepositoryContainer" parent="webscripts.abstractcontainer">
       <property name="name"><value>Repository</value></property>
       <property name="scriptObjects">
          <map merge="true">
@@ -1873,8 +1873,7 @@
       </list>
     </property>
   </bean>
-   
-   
+  
     <!-- BEGIN: QuickShare (aka PublicView) -->
     
     <!-- unauthenticated (note: equivalent to authenticated "content.get") -->
@@ -1950,4 +1949,32 @@
     </bean>
 
     <!-- END: Download -->
+
+    
+   <!--                                                                                                       -->
+   <!-- Multi-Tenant Admin                                                                                    -->
+   <!--                                                                                                       -->
+   <!--                                                                                                       -->
+   
+   <bean id="abstractTenantAdminWebScript"
+          class="org.alfresco.repo.web.scripts.tenant.AbstractTenantAdminWebscript"
+          parent="webscript" abstract="true">
+        <property name="tenantAdminService" ref="tenantAdminService"/>
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.tenant.tenants.get"
+         class="org.alfresco.repo.web.scripts.tenant.TenantsGet"
+         parent="abstractTenantAdminWebScript">
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.tenant.tenants.post"
+         class="org.alfresco.repo.web.scripts.tenant.TenantPost"
+         parent="abstractTenantAdminWebScript">
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.tenant.tenants.delete"
+         class="org.alfresco.repo.web.scripts.tenant.TenantDelete"
+         parent="abstractTenantAdminWebScript">
+   </bean>
+   
 </beans>

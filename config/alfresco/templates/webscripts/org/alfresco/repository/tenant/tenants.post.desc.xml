@@ -1,0 +1,22 @@
+<webscript>
+   <shortname>Create Tenant</shortname>
+   <description><![CDATA[
+      Create a tenant.
+      
+      <br />The repository must be in Multi-Tenant mode (1st tenant created).
+      <br />You must have "administrator" privileges to create a tenant.
+      
+      <dl>
+      <dt>tenantDomain</dt> <dd> mandatory </dd>
+      <dt>tenantAdminPassword</dt> <dd> mandatory </dd>
+      <dt>tenantContentStoreRoot</dt> <dd> optional </dd>
+      </dl>
+   ]]>
+   </description>
+   <url>/api/tenants</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+   <lifecycle>draft_public_api</lifecycle>
+   <family>MultiTenantAdmin</family>
+</webscript>

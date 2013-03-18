@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,8 @@ import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionNotFound;
@@ -102,14 +104,14 @@ public class InviteByTicket extends DeclarativeWebScript
         
         // run as system user
         String mtAwareSystemUser = tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
-            
-        Map<String, Object> ret = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Map<String, Object>>()
+        
+        Map<String, Object> ret = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, Object>>()
         {
             public Map<String, Object> doWork() throws Exception
             {
                 return execute(req, status);
             }
-        }, mtAwareSystemUser);
+        }, tenantDomain);
         
         // authenticate as system for the rest of the webscript
         AuthenticationUtil.setRunAsUser(mtAwareSystemUser);

@@ -151,7 +151,7 @@ public abstract class BaseWebScriptTest extends TestCase
      * Sets custom context for Test Web Script Server (in-process only)
      * @param customContext
      */
-    protected void setCustomContext(String customContext)
+    public void setCustomContext(String customContext)
     {
         this.customContext = customContext;
     }
@@ -254,7 +254,7 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Get the server for the previously-supplied {@link #setCustomContext(String) custom context}
      */
-    protected TestWebScriptServer getServer()
+    public TestWebScriptServer getServer()
     {
         TestWebScriptServer server;
         if (customContext == null)

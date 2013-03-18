@@ -345,6 +345,11 @@ function main()
          // Also perform the encoding guess step in the write() method to save an additional Writer operation.
          newFile.properties.content.write(content, false, true);
          newFile.save();
+         
+         
+         // TODO (THOR-175) - review
+         // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
+         newFile.ensureVersioningEnabled(true, false);
 
          // NOTE: Removal of first request for thumbnails to improve upload performance
          //       Thumbnails are still requested by Share on first render of the doclist image.

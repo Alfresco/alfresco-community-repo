@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
@@ -88,13 +90,13 @@ public class InviteResponse extends DeclarativeWebScript
         }
         
         // run as system user
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Map<String, Object>>()
+        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, Object>>()
         {
             public Map<String, Object> doWork() throws Exception
             {
                 return execute(req, status);
             }
-        }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+        }, tenantDomain);
     }
     
     private Map<String, Object> execute(WebScriptRequest req, Status status)

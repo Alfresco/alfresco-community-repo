@@ -1,0 +1,18 @@
+<webscript>
+   <shortname>Delete Tenant</shortname>
+   <description><![CDATA[
+      Delete a tenant.
+      
+      <br />The repository must be configured such that Multi-Tenancy is enabled.
+      <br />You must have "administrator" privileges to delete a tenant.
+      
+      <br />WARNING: This operation cannot be recovered !!!
+   ]]>
+   </description>
+   <url>/api/tenants/{tenantDomain}</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+   <lifecycle>draft_public_api</lifecycle>
+   <family>MultiTenantAdmin</family>
+</webscript>

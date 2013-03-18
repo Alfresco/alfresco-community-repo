@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -777,7 +777,7 @@ public class PropertyValueDAOTest extends TestCase
                 public Void execute() throws Throwable
                 {
                     // Now update it
-                    propertyValueDAO.updatePropertyUniqueContext(id, "A", "AA", bbb);
+                    propertyValueDAO.updatePropertyUniqueContextKeys(id, "A", "AA", bbb);
                     // Should be able to create the previous one ...
                     propertyValueDAO.createPropertyUniqueContext("A", "AA", aaa, null);
                     // ... and fail to create the second one
@@ -851,7 +851,7 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Pair<Long, Serializable> execute() throws Throwable
             {
-                propertyValueDAO.updatePropertyUniqueContext(id, v1);
+                propertyValueDAO.updatePropertyUniqueContext(aaa, bbb, ccc, v1);
                 Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(aaa, bbb, ccc);
                 Serializable value = propertyValueDAO.getPropertyById(pair.getSecond());
                 return new Pair<Long, Serializable>(pair.getFirst(), value);
@@ -863,7 +863,7 @@ public class PropertyValueDAOTest extends TestCase
         {
             public Pair<Long, Serializable> execute() throws Throwable
             {
-                propertyValueDAO.updatePropertyUniqueContext(id, v2);
+                propertyValueDAO.updatePropertyUniqueContext(aaa, bbb, ccc, v2);
                 Pair<Long, Long> pair = propertyValueDAO.getPropertyUniqueContext(aaa, bbb, ccc);
                 Serializable value = propertyValueDAO.getPropertyById(pair.getSecond());
                 return new Pair<Long, Serializable>(pair.getFirst(), value);

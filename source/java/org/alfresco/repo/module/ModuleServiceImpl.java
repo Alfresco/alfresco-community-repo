@@ -113,6 +113,10 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
         this.moduleComponentHelper.setTenantAdminService(tenantAdminService);
     }
     
+    public void setApplyToTenants(boolean applyToTenants)
+    {
+        this.moduleComponentHelper.setApplyToTenants(applyToTenants);
+    }
     
     
     /* (non-Javadoc)

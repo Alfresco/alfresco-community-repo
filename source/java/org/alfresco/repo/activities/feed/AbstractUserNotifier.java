@@ -96,7 +96,7 @@ public abstract class AbstractUserNotifier implements UserNotifier
 
 	protected abstract boolean skipUser(NodeRef personNodeRef);
 	protected abstract Long getFeedId(NodeRef personNodeRef);
-	protected abstract void notifyUser(NodeRef personNodeRef, String subjectText, Map<String, Object> model, NodeRef templateNodeRef);
+	protected abstract void notifyUser(NodeRef personNodeRef, String subjectText, Map<String, Object> model, String templateNodeRef);
 	
     private void addSiteName(String siteId, Map<String, String> siteNames)
     {
@@ -129,7 +129,7 @@ public abstract class AbstractUserNotifier implements UserNotifier
     }
     
 	public Pair<Integer, Long> notifyUser(final NodeRef personNodeRef, String subjectText, Map<String, String> siteNames,
-			String shareUrl, int repeatIntervalMins, NodeRef templateNodeRef)
+			String shareUrl, int repeatIntervalMins, String templateNodeRef)
 	{
 		Map<QName, Serializable> personProps = nodeService.getProperties(personNodeRef);
 

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-
-
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+   
    <!-- The transactional cache for Encoding entities -->
-
+   
    <bean name="propertyValueCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache">
          <ref bean="propertyValueSharedCache" />
@@ -16,10 +15,25 @@
       <property name="maxCacheSize" value="1000" />
       <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="tenantAware" value="false" />
    </bean>
-
-
-    <!-- The transactional cache for ContentData -->
+   
+   <!-- The transactional cache for Property Unique Contexts -->
+   
+   <bean name="propertyUniqueContextCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="propertyUniqueContextSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.propertyUniqueContextTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="10000" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="tenantAware" value="false" />
+   </bean>
+   
+   <!-- The transactional cache for ContentData -->
    
    <bean name="contentDataCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache">

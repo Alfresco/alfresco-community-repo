@@ -23,8 +23,8 @@ import java.util.Set;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantContextHolder;
+import org.alfresco.util.Pair;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
 {
@@ -62,7 +62,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         try
         {
             // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'validate' below
-            clearCurrentSecurityContext();
+            //clearCurrentSecurityContext();
             preAuthenticationCheck(userName);
         	authenticationComponent.authenticate(userName, password);
         }
@@ -111,11 +111,20 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         String currentUser = null;
         try
         {
-
+            String tenant = TenantContextHolder.getTenantDomain();
+            
             // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'authenticate' above
             clearCurrentSecurityContext();
             currentUser = ticketComponent.validateTicket(ticket);
             authenticationComponent.setCurrentUser(currentUser, UserNameValidationMode.NONE);
+            
+            if (tenant == null)
+            {
+                Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(currentUser);
+                tenant = userTenant.getSecond();
+            }
+            
+            TenantContextHolder.setTenantDomain(tenant);
         }
         catch (AuthenticationException ae)
         {

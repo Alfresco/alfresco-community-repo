@@ -286,6 +286,9 @@
         <property name="minEvictableIdleTimeMillis" >
             <value>${db.pool.evict.idle.min}</value>
         </property>
+        <property name="numTestsPerEvictionRun" >
+            <value>${db.pool.evict.num.tests}</value>
+        </property>
         <property name="testOnBorrow" >
             <value>${db.pool.validate.borrow}</value>
         </property>

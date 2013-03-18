@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,7 +46,7 @@ public class NotificationContext
     private String body;
     
     /** Template node used to generate the body of the notification */
-    private NodeRef bodyTemplate;
+    private String bodyTemplate;
     
     /** Template arguments (appear as map under 'arg' property in template model) */
     private Map<String, Serializable> templateArgs;
@@ -135,12 +135,12 @@ public class NotificationContext
     }
     
     /**
-     * The body template is a node reference to a template that can be executed with the given
+     * The body template is a node re or classpath ref to a template that can be executed with the given
      * template arguments to produce the body of the notification.
      * 
      * @param bodyTemplate  body template
      */
-    public void setBodyTemplate(NodeRef bodyTemplate)
+    public void setBodyTemplate(String bodyTemplate)
     {
         this.bodyTemplate = bodyTemplate;
     }
@@ -148,10 +148,10 @@ public class NotificationContext
     /**
      * @return {@link NodeRef}  body template
      */
-    public NodeRef getBodyTemplate()
+    public String getBodyTemplate()
     {
         return bodyTemplate;
-    }    
+    }
     
     /**
      * The template arguments are used as context for the body template when it is executed.  Any values placed in this map will

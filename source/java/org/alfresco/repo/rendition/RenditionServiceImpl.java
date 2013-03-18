@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -66,7 +66,7 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     
-    private RenditionDefinitionPersisterImpl renditionDefinitionPersister;
+    private RenditionDefinitionPersister renditionDefinitionPersister;
     
     /**
      * @since 4.0.1
@@ -77,7 +77,7 @@ public class RenditionServiceImpl implements RenditionService, RenditionDefiniti
      * Injects the RenditionDefinitionPersister bean.
      * @param renditionDefinitionPersister
      */
-    public void setRenditionDefinitionPersister(RenditionDefinitionPersisterImpl renditionDefinitionPersister)
+    public void setRenditionDefinitionPersister(RenditionDefinitionPersister renditionDefinitionPersister)
     {
         this.renditionDefinitionPersister = renditionDefinitionPersister;
     }

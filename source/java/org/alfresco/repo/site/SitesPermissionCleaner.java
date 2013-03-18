@@ -92,7 +92,7 @@ public class SitesPermissionCleaner
     
     public void cleanSitePermissions(final NodeRef targetNode, SiteInfo containingSite)
     {
-        if (nodeService.exists(targetNode))
+        if (nodeDAO.exists(targetNode))
         {
             // We can calculate the containing site at the start of a recursive call & then reuse it on subsequent calls.
             if (containingSite == null)

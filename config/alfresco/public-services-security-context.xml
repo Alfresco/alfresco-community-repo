@@ -874,7 +874,7 @@
                 org.alfresco.service.cmr.security.PersonService.deletePerson=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PersonService.notifyPerson=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PersonService.getAllPeople=ACL_ALLOW
-                org.alfresco.service.cmr.security.PersonService.getPeople=ACL_ALLOW
+                org.alfresco.service.cmr.security.PersonService.getPeople=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.security.PersonService.getPeopleFilteredByProperty=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getPeopleContainer=ACL_ALLOW
                 org.alfresco.service.cmr.security.PersonService.getUserNamesAreCaseSensitive=ACL_ALLOW
@@ -886,7 +886,7 @@
     </bean>
 
     <bean id="PersonService_security_getPeople" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
-        <property name="methodSecurityInterceptor" ref="FileFolderService_security" />
+        <property name="methodSecurityInterceptor" ref="PersonService_security" />
         <property name="service" value="org.alfresco.service.cmr.security.PersonService" />
         <property name="methodName" value="getPeople" />
     </bean>

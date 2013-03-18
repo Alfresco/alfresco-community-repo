@@ -154,8 +154,11 @@
 	<!-- This is not ideal and only done to be compatible with NTLM -->
 	<!-- authentication against the default authentication mechanism. -->
 
-	<bean id="passwordEncoder"
-		class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl"></bean>
+	<bean id="passwordEncoder" class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl" />
+
+    <bean id="sha256PasswordEncoder" class="org.alfresco.repo.security.authentication.ShaPasswordEncoderImpl">
+        <constructor-arg index="0"><value>256</value></constructor-arg>
+    </bean>
 
 
 	<!-- The Authentication Service implementation. -->
@@ -293,10 +296,10 @@
         <property name="homeFolderManager" ref="HomeFolderManager" />
         <property name="repoAdminService" ref="repoAdminService" />
         <property name="serviceRegistry" ref="ServiceRegistry"/>
-		<!-- Configurable properties. -->
-		<property name="homeFolderCreationEager">
-			<value>${home.folder.creation.eager}</value>
-		</property>
+        
+        <!-- Configurable properties. -->
+        <property name="homeFolderCreationEager"    value= "${home.folder.creation.eager}" />
+        <property name="homeFolderCreationDisabled" value= "${home.folder.creation.disabled}" />
 		<!-- -->
 		<!-- TODO: -->
 		<!-- Add support for creating real home spaces adn setting -->

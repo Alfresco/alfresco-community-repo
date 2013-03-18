@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.notification.EMailNotificationProvider;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.notification.NotificationContext;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -58,9 +59,10 @@ public abstract class WorkflowNotificationUtils
     public static final String ARG_WF_PRIORITY = "workflowPriority";
     public static final String ARG_WF_POOLED = "workflowPooled";
     public static final String ARG_WF_DOCUMENTS = "workflowDocuments";
+    public static final String ARG_WF_TENANT = "workflowTenant";
 
     /** Standard workflow assigned template */
-    public static final NodeRef WF_ASSIGNED_TEMPLATE = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "wf-email-html-ftl");
+    public static String WF_ASSIGNED_TEMPLATE = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "wf-email-html-ftl").toString();
     
     /**
      * 
@@ -99,7 +101,7 @@ public abstract class WorkflowNotificationUtils
         notificationContext.setSubject(subject);
         
         // Set the email template
-        notificationContext.setBodyTemplate(services.getFileFolderService().getLocalizedSibling(WF_ASSIGNED_TEMPLATE));   
+        notificationContext.setBodyTemplate(WF_ASSIGNED_TEMPLATE);
         
         // Build the template args
         Map<String, Serializable>templateArgs = new HashMap<String, Serializable>(7);
@@ -133,6 +135,13 @@ public abstract class WorkflowNotificationUtils
                 }
                 templateArgs.put(ARG_WF_DOCUMENTS, docs);
             }
+        }
+        
+        // Add tenant, if in context of tenant
+        String tenant = TenantUtil.getCurrentDomain();
+        if (tenant != null)
+        {
+            templateArgs.put(ARG_WF_TENANT, tenant);
         }
         
         // Set the template args

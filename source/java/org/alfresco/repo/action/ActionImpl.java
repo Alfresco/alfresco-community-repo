@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -52,6 +52,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     private String modifier;
     private String actionDefinitionName;
     private String runAsUserName;
+    private String tenantId;
     private Set<String> actionChain;
     private List<ActionCondition> actionConditions = new ArrayList<ActionCondition>();
     
@@ -137,6 +138,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
             ActionImpl actionImpl = (ActionImpl) action;
             this.executionInstance = actionImpl.getExecutionInstance();
             this.runAsUserName = actionImpl.getRunAsUser();
+            this.tenantId = actionImpl.getTenantId();
             this.actionChain = actionImpl.actionChain;
         }
     }
@@ -356,10 +358,20 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
     {
         return this.runAsUserName;
     }
+    
+    public String getTenantId()
+    {
+        return this.tenantId;
+    }
 
     public void setRunAsUser(String runAsUserName)
     {
         this.runAsUserName = runAsUserName;
+    }
+    
+    public void setTenantId(String tenantId)
+    {
+        this.tenantId = tenantId;
     }
 
     @Override

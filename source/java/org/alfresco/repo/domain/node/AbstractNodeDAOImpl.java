@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -690,21 +690,21 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /*
      * Stores
      */
-
+    
     @Override
     public Pair<Long, StoreRef> getStore(StoreRef storeRef)
     {
-        StoreEntity store = selectStore(storeRef);
-        if (store == null)
+        Pair<StoreRef, Node> rootNodePair = rootNodesCache.getByKey(storeRef);
+        if (rootNodePair == null)
         {
-            return null;
+            throw new InvalidStoreRefException(storeRef);
         }
         else
         {
-            return new Pair<Long, StoreRef>(store.getId(), store.getStoreRef());
+            return new Pair<Long, StoreRef>(rootNodePair.getSecond().getStore().getId(), rootNodePair.getFirst());
         }
     }
-
+    
     @Override
     public List<Pair<Long, StoreRef>> getStores()
     {

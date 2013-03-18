@@ -13,7 +13,7 @@
       -->
    </bean>
    
-   <!-- This content limit provider is used above and also in the Thor module. -->
+   <!-- This content limit provider is used above (and can also be overriden, eg. by modules). -->
    <bean id="defaultContentLimitProvider" class="org.alfresco.repo.content.ContentLimitProvider$SimpleFixedLimitProvider">
        <property name="sizeLimitString" value="${system.content.maximumFileSizeLimit}"/>
    </bean>

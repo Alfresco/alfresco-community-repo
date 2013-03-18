@@ -39,6 +39,7 @@ import net.sf.acegisecurity.DisabledException;
 import net.sf.acegisecurity.LockedException;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
+import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -79,6 +80,7 @@ public class AuthenticationTest extends TestCase
     private AuthorityService authorityService;
     private TenantService tenantService;
     private MD4PasswordEncoder passwordEncoder;
+    private PasswordEncoder sha256PasswordEncoder;
     private MutableAuthenticationDao dao;
     private AuthenticationManager authenticationManager;
     private TicketComponent ticketComponent;
@@ -130,6 +132,7 @@ public class AuthenticationTest extends TestCase
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         tenantService = (TenantService) ctx.getBean("tenantService");
         passwordEncoder = (MD4PasswordEncoder) ctx.getBean("passwordEncoder");
+        sha256PasswordEncoder = (PasswordEncoder) ctx.getBean("sha256PasswordEncoder");
         ticketComponent = (TicketComponent) ctx.getBean("ticketComponent");
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         pubAuthenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
@@ -183,6 +186,7 @@ public class AuthenticationTest extends TestCase
         dao.setNodeService(nodeService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
+        dao.setSha256PasswordEncoder(sha256PasswordEncoder);
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);
@@ -401,6 +405,7 @@ public class AuthenticationTest extends TestCase
         dao.setAuthorityService(authorityService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
         dao.setPasswordEncoder(passwordEncoder);
+        dao.setSha256PasswordEncoder(sha256PasswordEncoder);
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);

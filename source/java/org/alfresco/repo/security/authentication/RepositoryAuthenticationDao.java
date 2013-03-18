@@ -52,6 +52,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -68,13 +69,13 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
 
     private static final Log logger = LogFactory.getLog(RepositoryAuthenticationDao.class);
 
-    private AuthorityService authorityService;
-
-    private NodeService nodeService;
-    private TenantService tenantService;
-    private NamespacePrefixResolver namespacePrefixResolver;
-    private PasswordEncoder passwordEncoder;
-    private PolicyComponent policyComponent;
+    protected AuthorityService authorityService;
+    protected NodeService nodeService;
+    protected TenantService tenantService;
+    protected NamespacePrefixResolver namespacePrefixResolver;
+    protected PasswordEncoder passwordEncoder;
+    protected PasswordEncoder sha256PasswordEncoder;
+    protected PolicyComponent policyComponent;
     
     private TransactionService transactionService;
 
@@ -118,6 +119,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     public void setPasswordEncoder(PasswordEncoder passwordEncoder)
     {
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public void setSha256PasswordEncoder(PasswordEncoder passwordEncoder)
+    {
+        this.sha256PasswordEncoder = passwordEncoder;
     }
 
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -199,10 +205,22 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
 
                     GrantedAuthority[] gas = new GrantedAuthority[1];
                     gas[0] = new GrantedAuthorityImpl("ROLE_AUTHENTICATED");
-
-                    return new CacheEntry(userRef, new User(userName, password, getEnabled(userName, properties),
-                            !getHasExpired(userName, properties), true, !getLocked(userName, properties), gas),
-                            getCredentialsExpiryDate(userName, properties));
+        
+                    boolean isAdminAuthority = authorityService.isAdminAuthority(userName);
+                    
+                    Date credentialsExpiryDate = getCredentialsExpiryDate(userName, properties, isAdminAuthority);
+                    boolean credentialsHaveNotExpired = (credentialsExpiryDate == null || credentialsExpiryDate.compareTo(new Date()) >= 0);
+                    
+                    UserDetails ud = new User(
+                            userName,
+                            password,
+                            getEnabled(userName, properties, isAdminAuthority),
+                            !getHasExpired(userName, properties, isAdminAuthority),
+                            credentialsHaveNotExpired,
+                            !getLocked(userName, properties, isAdminAuthority),
+                            gas);
+                    
+                    return new CacheEntry(userRef, ud, credentialsExpiryDate);
                 }
                 return null;
             }
@@ -252,9 +270,10 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         NodeRef typesNode = getUserFolderLocation(caseSensitiveUserName);
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USER_USERNAME, caseSensitiveUserName);
-        String salt = null; // GUID.generate();
+        String salt = GUID.generate();
         properties.put(ContentModel.PROP_SALT, salt);
-        properties.put(ContentModel.PROP_PASSWORD, passwordEncoder.encodePassword(new String(rawPassword), salt));
+        properties.put(ContentModel.PROP_PASSWORD, passwordEncoder.encodePassword(new String(rawPassword), null));
+        properties.put(ContentModel.PROP_PASSWORD_SHA256, sha256PasswordEncoder.encodePassword(new String(rawPassword), salt));
         properties.put(ContentModel.PROP_ACCOUNT_EXPIRES, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_ENABLED, Boolean.valueOf(true));
@@ -308,11 +327,13 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             throw new AuthenticationException("User name does not exist: " + userName);
         }
         Map<QName, Serializable> properties = nodeService.getProperties(userRef);
-        String salt = null; // GUID.generate();
+        String salt = GUID.generate();
         properties.remove(ContentModel.PROP_SALT);
         properties.put(ContentModel.PROP_SALT, salt);
         properties.remove(ContentModel.PROP_PASSWORD);
-        properties.put(ContentModel.PROP_PASSWORD, passwordEncoder.encodePassword(new String(rawPassword), salt));
+        properties.put(ContentModel.PROP_PASSWORD, passwordEncoder.encodePassword(new String(rawPassword), null));
+        properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+        properties.put(ContentModel.PROP_PASSWORD_SHA256, sha256PasswordEncoder.encodePassword(new String(rawPassword), salt));
         nodeService.setProperties(userRef, properties);
     }
 
@@ -342,7 +363,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     /**
      * @return                  Returns the user properties or <tt>null</tt> if there are none
      */
-    private Map<QName, Serializable> getUserProperties(String userName)
+    protected Map<QName, Serializable> getUserProperties(String userName)
     {
         NodeRef userNodeRef = getUserOrNull(userName);
         if (userNodeRef == null)
@@ -396,16 +417,20 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     @Override
     public boolean getAccountHasExpired(String userName)
     {
-        return getHasExpired(userName, null);
+        return getHasExpired(userName, null, null);
     }
 
     /**
      * @param userName          the username
      * @param properties        user properties or <tt>null</tt> to fetch them
      */
-    private boolean getHasExpired(String userName, Map<QName, Serializable> properties)
+    protected boolean getHasExpired(String userName, Map<QName, Serializable> properties, Boolean isAdminAuthority)
     {
-        if (authorityService.isAdminAuthority(userName))
+        if (isAdminAuthority == null)
+        {
+            isAdminAuthority = authorityService.isAdminAuthority(userName);
+        }
+        if (isAdminAuthority)
         {
             return false;            // Admin never expires
         }
@@ -434,26 +459,30 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             return false;
         }
     }
-
+    
     @Override
     public boolean getLocked(String userName)
     {
-        return getLocked(userName, null);
+        return getLocked(userName, null, null);
     }
-
+    
     @Override
     public boolean getAccountlocked(String userName)
     {
-        return getLocked(userName, null);
+        return getLocked(userName, null, null);
     }
-
+    
     /**
      * @param userName          the username
      * @param properties        user properties or <tt>null</tt> to fetch them
      */
-    private boolean getLocked(String userName, Map<QName, Serializable> properties)
+    protected boolean getLocked(String userName, Map<QName, Serializable> properties, Boolean isAdminAuthority)
     {
-        if (authorityService.isAdminAuthority(userName))
+        if (isAdminAuthority == null)
+        {
+            isAdminAuthority = authorityService.isAdminAuthority(userName);
+        }
+        if (isAdminAuthority)
         {
             return false;            // Admin is never locked
         }
@@ -486,7 +515,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
      * @param userName          the username
      * @param properties        user properties or <tt>null</tt> to fetch them
      */
-    private boolean getCredentialsExpire(String userName, Map<QName, Serializable> properties)
+    protected boolean getCredentialsExpire(String userName, Map<QName, Serializable> properties)
     {
         if (authorityService.isAdminAuthority(userName))
         {
@@ -534,15 +563,20 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     {
         return !loadUserByUsername(userName).isCredentialsNonExpired();
     }
-
+    
     /**
      * @param userName              the username (never <tt>null</tt>
      * @param properties            the properties associated with the user or <tt>null</tt> to get them
+     * @param isAdminAuthority      is admin authority
      * @return                      Date on which the credentials expire or <tt>null</tt> if they never expire
      */
-    private Date getCredentialsExpiryDate(String userName, Map<QName, Serializable> properties)
+    private Date getCredentialsExpiryDate(String userName, Map<QName, Serializable> properties, Boolean isAdminAuthority)
     {
-        if (authorityService.isAdminAuthority(userName))
+        if (isAdminAuthority == null)
+        {
+            isAdminAuthority = authorityService.isAdminAuthority(userName);
+        }
+        if (isAdminAuthority)
         {
             return null;            // Admin never expires
         }
@@ -550,33 +584,30 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         {
             properties = getUserProperties(userName);
         }
-        if (properties == null)
-        {
-            return null;
-        }
         if (DefaultTypeConverter.INSTANCE.booleanValue(properties.get(ContentModel.PROP_CREDENTIALS_EXPIRE)))
         {
             return DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_CREDENTIALS_EXPIRY_DATE));
-            }
-            else
-            {
-            return null;
         }
+        return null;
     }
-
+    
     @Override
     public boolean getEnabled(String userName)
     {
-        return getEnabled(userName, null);
+        return getEnabled(userName, null, null);
     }
-
+    
     /**
      * @param userName              the username
      * @param properties            the user's properties or <tt>null</tt>
      */
-    private boolean getEnabled(String userName, Map<QName, Serializable> properties)
+    protected boolean getEnabled(String userName, Map<QName, Serializable> properties, Boolean isAdminAuthority)
     {
-        if (authorityService.isAdminAuthority(userName))
+        if (isAdminAuthority == null)
+        {
+            isAdminAuthority = authorityService.isAdminAuthority(userName);
+        }
+        if (isAdminAuthority)
         {
             return true;            // Admin is always enabled
         }

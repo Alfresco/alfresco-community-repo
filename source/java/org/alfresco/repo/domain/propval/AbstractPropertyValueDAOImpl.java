@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
@@ -38,9 +39,11 @@ import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 
 /**
@@ -124,12 +127,26 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
      */
     private EntityLookupCache<Long, Serializable, Serializable> propertyCache;
     
+    private SimpleCache<CachePucKey, PropertyUniqueContextEntity> propertyUniqueContextCache; // cluster-aware
+    
+    /**
+     * Set the cache to use for <b>avm_version_roots</b> lookups (optional).
+     * 
+     * @param vrEntityCache
+     */
+    public void setPropertyUniqueContextCache(SimpleCache<CachePucKey, PropertyUniqueContextEntity> propertyUniqueContextCache)
+    {
+        this.propertyUniqueContextCache = propertyUniqueContextCache;
+    }
+    
+    
     /**
      * Default constructor.
      * <p>
      * This sets up the DAO accessors to bypass any caching to handle the case where the caches are not
      * supplied in the setters.
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public AbstractPropertyValueDAOImpl()
     {
         this.propertyClassDaoCallback = new PropertyClassCallbackDAO();
@@ -147,6 +164,8 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         this.propertySerializableValueCache = new EntityLookupCache<Long, Serializable, Serializable>(propertySerializableValueCallback);
         this.propertyValueCache = new EntityLookupCache<Long, Serializable, Serializable>(propertyValueCallback);
         this.propertyCache = new EntityLookupCache<Long, Serializable, Serializable>(propertyCallback);
+        
+        this.propertyUniqueContextCache = (SimpleCache<CachePucKey, PropertyUniqueContextEntity>)new NullCache();
     }
 
     /**
@@ -805,6 +824,9 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Pair<Long, Serializable> entityPair = propertyCache.getByKey(id);
         if (entityPair == null)
         {
+            // Remove from cache
+            propertyCache.removeByKey(id);
+            
             throw new DataIntegrityViolationException("No property value exists for ID " + id);
         }
         return entityPair.getSecond();
@@ -1085,7 +1107,63 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     //================================
     // 'alf_prop_unique_ctx' accessors
     //================================
-
+    
+    private CachePucKey getPucKey(Long id1, Long id2, Long id3)
+    {
+        return new CachePucKey(id1, id2, id3);
+    }
+    
+    /**
+     * Key for PropertyUniqueContext cache
+     */
+    public static class CachePucKey implements Serializable
+    {
+        private static final long serialVersionUID = -4294324585692613101L;
+        
+        private final Long key1;
+        private final Long key2;
+        private final Long key3;
+        
+        private final int hashCode;
+        
+        private CachePucKey(Long key1, Long key2, Long key3)
+        {
+            this.key1 = key1;
+            this.key2 = key2;
+            this.key3 = key3;
+            this.hashCode = (key1 == null ? 0 : key1.hashCode()) + (key2 == null ? 0 : key2.hashCode()) + (key3 == null ? 0 : key3.hashCode());
+        }
+        
+        @Override
+        public String toString()
+        {
+            return key1 + "." + key2 + "." + key3;
+        }
+        
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            else if (!(obj instanceof CachePucKey))
+            {
+                return false;
+            }
+            CachePucKey that = (CachePucKey) obj;
+            return EqualsHelper.nullSafeEquals(this.key1, that.key1) && 
+                   EqualsHelper.nullSafeEquals(this.key2, that.key2) &&
+                   EqualsHelper.nullSafeEquals(this.key3, that.key3);
+        }
+        
+        @Override
+        public int hashCode()
+        {
+            return hashCode;
+        }
+    }
+    
     public Pair<Long, Long> createPropertyUniqueContext(
             Serializable value1, Serializable value2, Serializable value3,
             Serializable propertyValue1)
@@ -1104,11 +1182,17 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             property1Id = createProperty(propertyValue1);
         }
         
+        CachePucKey pucKey = getPucKey(id1, id2, id3);
+        
         Savepoint savepoint = controlDAO.createSavepoint("createPropertyUniqueContext");
         try
         {
             PropertyUniqueContextEntity entity = createPropertyUniqueContext(id1, id2, id3, property1Id);
             controlDAO.releaseSavepoint(savepoint);
+            
+            // cache
+            propertyUniqueContextCache.put(pucKey, entity);
+            
             if (logger.isDebugEnabled())
             {
                 logger.debug(
@@ -1116,10 +1200,14 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                         "   Values: " + value1 + "-" + value2 + "-" + value3 + "\n" +
                         "   Result: " + entity);
             }
+            
             return new Pair<Long, Long>(entity.getId(), property1Id);
         }
         catch (Throwable e)
         {
+            // Remove from cache
+            propertyUniqueContextCache.remove(pucKey);
+            
             controlDAO.rollbackToSavepoint(savepoint);
             throw new PropertyUniqueConstraintViolation(value1, value2, value3, e);
         }
@@ -1132,14 +1220,48 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Pair<Long, Serializable> pair2 = getPropertyValue(value2);
         Pair<Long, Serializable> pair3 = getPropertyValue(value3);
         if (pair1 == null || pair2 == null || pair3 == null)
-            {
+        {
             // None of the values exist so no unique context values can exist
-                return null;
-            }
+            return null;
+        }
         Long id1 = pair1.getFirst();
         Long id2 = pair2.getFirst();
         Long id3 = pair3.getFirst();
-        PropertyUniqueContextEntity entity = getPropertyUniqueContextByValues(id1, id2, id3);
+        
+        CachePucKey pucKey = getPucKey(id1, id2, id3);
+        
+        // check cache
+        PropertyUniqueContextEntity entity = propertyUniqueContextCache.get(pucKey);
+        if (entity == null)
+        {
+            // Remove from cache
+            propertyUniqueContextCache.remove(pucKey);
+            
+            // query DB
+            entity = getPropertyUniqueContextByValues(id1, id2, id3);
+            
+            if (entity != null)
+            {
+                // cache
+                propertyUniqueContextCache.put(pucKey, entity);
+            }
+        }
+         
+        if ((entity != null) && (entity.getPropertyId() != null))
+        {
+            try
+            {
+                // eager fetch - ignore return for now (could change API)
+                getPropertyById(entity.getPropertyId());
+            }
+            catch (DataIntegrityViolationException dive)
+            {
+            	// Remove from cache
+                propertyUniqueContextCache.remove(pucKey);
+                throw dive;
+            }
+        }
+        
         // Done
         if (logger.isDebugEnabled())
         {
@@ -1168,7 +1290,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             }
             valueIds[i] = valuePair.getFirst();
         }
+        
+        // not cached
         getPropertyUniqueContextByValues(callback, valueIds);
+        
         // Done
         if (logger.isDebugEnabled())
         {
@@ -1177,8 +1302,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                     "   Values: " + Arrays.toString(values));
         }
     }
-
-    public void updatePropertyUniqueContext(Long id, Serializable value1, Serializable value2, Serializable value3)
+    
+    /*
+     * Update PUC keys - retain current property value
+     * 
+     */
+    public void updatePropertyUniqueContextKeys(Long id, Serializable value1, Serializable value2, Serializable value3)
     {
         /*
          * Use savepoints so that the PropertyUniqueConstraintViolation can be caught and handled in-transactioin
@@ -1189,19 +1318,30 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         Long id2 = getOrCreatePropertyValue(value2).getFirst();
         Long id3 = getOrCreatePropertyValue(value3).getFirst();
         
+        CachePucKey pucKey = getPucKey(id1, id2, id3);
+        
         Savepoint savepoint = controlDAO.createSavepoint("updatePropertyUniqueContext");
         try
         {
             PropertyUniqueContextEntity entity = getPropertyUniqueContextById(id);
             if (entity == null)
             {
+                // Remove from cache
+                propertyUniqueContextCache.remove(pucKey);
+                
                 throw new DataIntegrityViolationException("No unique property context exists for id: " + id);
             }
             entity.setValue1PropId(id1);
             entity.setValue2PropId(id2);
             entity.setValue3PropId(id3);
-            updatePropertyUniqueContext(entity);
+            
+            entity = updatePropertyUniqueContext(entity);
+            
             controlDAO.releaseSavepoint(savepoint);
+            
+            // cache
+            propertyUniqueContextCache.put(pucKey, entity);
+            
             // Done
             if (logger.isDebugEnabled())
             {
@@ -1214,43 +1354,83 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
         catch (Throwable e)
         {
+            // Remove from cache
+            propertyUniqueContextCache.remove(pucKey);
+            
             controlDAO.rollbackToSavepoint(savepoint);
             throw new PropertyUniqueConstraintViolation(value1, value2, value3, e);
         }
     }
-
-    public void updatePropertyUniqueContext(Long id, Serializable propertyValue)
+    
+    /* 
+     * Update property value by keys
+     */
+    public void updatePropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3, Serializable propertyValue)
     {
-        PropertyUniqueContextEntity entity = getPropertyUniqueContextById(id);
-        if (entity == null)
-        {
-            throw new DataIntegrityViolationException("No unique property context exists for id: " + id);
-        }
-        Long propertyIdToDelete = entity.getPropertyId();
-
-        Long propertyId = null;
-        if (propertyValue != null)
-        {
-            propertyId = createProperty(propertyValue);
-        }
+        // Translate the properties.  Null values are acceptable
+        Long id1 = getOrCreatePropertyValue(value1).getFirst();
+        Long id2 = getOrCreatePropertyValue(value2).getFirst();
+        Long id3 = getOrCreatePropertyValue(value3).getFirst();
         
-        // Create a new property
-        entity.setPropertyId(propertyId);
-        updatePropertyUniqueContext(entity);
+        CachePucKey pucKey = getPucKey(id1, id2, id3);
         
-        // Clean up the previous property, if present
-        if (propertyIdToDelete != null)
+        try
         {
-            deleteProperty(propertyIdToDelete);
+            Pair<Long, Long> entityPair = getPropertyUniqueContext(value1, value2, value3);
+            if (entityPair == null)
+            {
+                throw new DataIntegrityViolationException("No unique property context exists for values: " + value1 + "-" + value2 + "-" + value3);
+            }
+            
+            long id = entityPair.getFirst();
+            PropertyUniqueContextEntity entity = getPropertyUniqueContextById(id);
+            if (entity == null)
+            {
+                throw new DataIntegrityViolationException("No unique property context exists for id: " + id);
+            }
+            
+            Long propertyIdToDelete = entity.getPropertyId();
+            
+            Long propertyId = null;
+            if (propertyValue != null)
+            {
+                propertyId = createProperty(propertyValue);
+            }
+            
+            // Create a new property
+            entity.setPropertyId(propertyId);
+            
+            entity = updatePropertyUniqueContext(entity);
+            
+            // cache
+            propertyUniqueContextCache.put(pucKey, entity);
+            
+            // Clean up the previous property, if present
+            if (propertyIdToDelete != null)
+            {
+                deleteProperty(propertyIdToDelete);
+            }
+            
+            // Done
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(
+                        "Updated unique property context: \n" +
+                        "   ID: " + id + "\n" +
+                        "   Property: " + propertyId);
+            }
         }
-        
-        // Done
-        if (logger.isDebugEnabled())
+        catch (DataIntegrityViolationException e)
         {
-            logger.debug(
-                    "Updated unique property context: \n" +
-                    "   ID: " + id + "\n" +
-                    "   Property: " + propertyId);
+            // Remove from cache
+            propertyUniqueContextCache.remove(pucKey);
+            throw e;
+        }
+        catch (ConcurrencyFailureException e)
+        {
+            // Remove from cache
+            propertyUniqueContextCache.remove(pucKey);
+            throw e;
         }
     }
 
@@ -1272,6 +1452,20 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             valueIds[i] = valuePair.getFirst();
         }
         int deleted = deletePropertyUniqueContexts(valueIds);
+        
+        CachePucKey pucKey = getPucKey(valueIds[0], (values.length > 1 ? valueIds[1] : null), (values.length > 2 ? valueIds[2] : null));
+        
+        if (values.length == 3)
+        {
+            propertyUniqueContextCache.remove(pucKey);
+        }
+        else
+        {
+            // reasonable to clear for now (eg. only used by AVMLockingService.removeLocks*)
+            // note: in future, if we need to support mass removal based on specific key grouping then we need to use more intelligent cache (removal)
+            propertyUniqueContextCache.clear();
+        }
+        
         // Done
         if (logger.isDebugEnabled())
         {

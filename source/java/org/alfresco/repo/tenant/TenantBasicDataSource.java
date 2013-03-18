@@ -36,14 +36,29 @@ public class TenantBasicDataSource extends BasicDataSource
         this.setUrl(tenantUrl);
         this.setMaxActive(tenantMaxActive == -1 ? bds.getMaxActive() : tenantMaxActive);
         
-        // defaults
+        // defaults/overrides - see also 'baseDefaultDataSource' (core-services-context.xml + repository.properties)
+        
+        this.setDriverClassName(bds.getDriverClassName());
         this.setUsername(bds.getUsername());
         this.setPassword(bds.getPassword());
-        this.setDriverClassName(bds.getDriverClassName());
         
-        this.setMaxIdle(bds.getMaxIdle());
+        this.setInitialSize(bds.getInitialSize());
         this.setMinIdle(bds.getMinIdle());
-        
-        // TODO other default settings
+        this.setMaxIdle(bds.getMaxIdle());
+        this.setDefaultAutoCommit(bds.getDefaultAutoCommit());
+        this.setDefaultTransactionIsolation(bds.getDefaultTransactionIsolation());
+        this.setMaxWait(bds.getMaxWait());
+        this.setValidationQuery(bds.getValidationQuery());
+        this.setTimeBetweenEvictionRunsMillis(bds.getTimeBetweenEvictionRunsMillis());
+        this.setMinEvictableIdleTimeMillis(bds.getMinEvictableIdleTimeMillis());
+        this.setNumTestsPerEvictionRun(bds.getNumTestsPerEvictionRun());
+        this.setTestOnBorrow(bds.getTestOnBorrow());
+        this.setTestOnReturn(bds.getTestOnReturn());
+        this.setTestWhileIdle(bds.getTestWhileIdle());
+        this.setRemoveAbandoned(bds.getRemoveAbandoned());
+        this.setRemoveAbandonedTimeout(bds.getRemoveAbandonedTimeout());
+        this.setPoolPreparedStatements(bds.isPoolPreparedStatements());
+        this.setMaxOpenPreparedStatements(bds.getMaxOpenPreparedStatements());
+        this.setLogAbandoned(bds.getLogAbandoned());
     }
 }

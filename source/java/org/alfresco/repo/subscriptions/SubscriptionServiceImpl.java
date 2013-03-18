@@ -28,10 +28,12 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.domain.subscriptions.SubscriptionsDAO;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -73,12 +75,14 @@ public class SubscriptionServiceImpl implements SubscriptionService
     private static final String USER_USERNAME = "userUserName";
     private static final String FOLLOWING_COUNT = "followingCount";
     private static final String FOLLOWER_COUNT = "followerCount";
-
+    
     private static final String SUBSCRIBER_FIRSTNAME = "subscriberFirstName";
     private static final String SUBSCRIBER_LASTNAME = "subscriberLastName";
     private static final String SUBSCRIBER_USERNAME = "subscriberUserName";
     private static final String NODE = "node";
-
+    
+    private static final String TENANT_DOMAIN = "tenantDomain";
+    
     protected SubscriptionsDAO subscriptionsDAO;
     protected NodeService nodeService;
     protected PersonService personService;
@@ -90,6 +94,8 @@ public class SubscriptionServiceImpl implements SubscriptionService
     protected FileFolderService fileFolderService;
 
     protected boolean active;
+    
+    private RepositoryLocation followingEmailTemplateLocation;
 
     /**
      * Sets the subscriptions DAO.
@@ -167,7 +173,13 @@ public class SubscriptionServiceImpl implements SubscriptionService
     {
         this.active = active;
     }
-
+    
+    public void setFollowingEmailTemplateLocation(RepositoryLocation followingEmailTemplateLocation)
+    {
+        this.followingEmailTemplateLocation = followingEmailTemplateLocation;
+    }
+    
+    
     @Override
     public PagingSubscriptionResults getSubscriptions(String userId, SubscriptionItemTypeEnum type,
             PagingRequest pagingRequest)
@@ -472,7 +484,7 @@ public class SubscriptionServiceImpl implements SubscriptionService
             return;
         }
 
-        NodeRef templateNodeRef = getEmailTemplateRef();
+        String templateNodeRef = getEmailTemplateRef();
         if (templateNodeRef == null)
         {
             // we can't send an email without template
@@ -507,9 +519,16 @@ public class SubscriptionServiceImpl implements SubscriptionService
         } catch (Exception e)
         {
         }
-
+        
+        // Add tenant, if in context of tenant
+        String tenantDomain = TenantUtil.getCurrentDomain();
+        if (tenantDomain != null)
+        {
+            model.put(TENANT_DOMAIN, tenantDomain);
+        }
+        
         Action mail = actionService.createAction(MailActionExecuter.NAME);
-
+        
         mail.setParameterValue(MailActionExecuter.PARAM_TO, emailAddress);
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, subjectText);
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, templateNodeRef);
@@ -523,32 +542,48 @@ public class SubscriptionServiceImpl implements SubscriptionService
      * Returns the NodeRef of the email template or <code>null</code> if the
      * template coudln't be found.
      */
-    protected NodeRef getEmailTemplateRef()
+    protected String getEmailTemplateRef()
     {
-        // Find the following email template
-        String xpath = "app:company_home/app:dictionary/app:email_templates/app:following/cm:following-email.html.ftl";
-        try
+        String locationType = followingEmailTemplateLocation.getQueryLanguage();
+        
+        if (locationType.equals(SearchService.LANGUAGE_XPATH))
         {
-            NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-            List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, xpath, null, namespaceService, false);
-            if (nodeRefs.size() > 1)
+            // Find the following email template
+            StoreRef store = followingEmailTemplateLocation.getStoreRef();
+            String xpath = followingEmailTemplateLocation.getPath();
+            
+            try
             {
-                logger.error("Found too many email templates using: " + xpath);
-                nodeRefs = Collections.singletonList(nodeRefs.get(0));
-            } else if (nodeRefs.size() == 0)
+                NodeRef rootNodeRef = nodeService.getRootNode(store);
+                List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, xpath, null, namespaceService, false);
+                if (nodeRefs.size() > 1)
+                {
+                    logger.error("Found too many email templates using: " + xpath);
+                    nodeRefs = Collections.singletonList(nodeRefs.get(0));
+                } 
+                else if (nodeRefs.size() == 0)
+                {
+                    logger.error("Cannot find the email template using " + xpath);
+                    return null;
+                }
+                // Now localise this
+                return fileFolderService.getLocalizedSibling(nodeRefs.get(0)).toString();
+            } 
+            catch (SearcherException e)
             {
-                logger.error("Cannot find the email template using " + xpath);
-                return null;
+                logger.error("Cannot find the email template!", e);
             }
-            // Now localise this
-            NodeRef base = nodeRefs.get(0);
-            NodeRef local = fileFolderService.getLocalizedSibling(base);
-            return local;
-        } catch (SearcherException e)
-        {
-            logger.error("Cannot find the email template!", e);
+            
+            return null;
         }
-
-        return null;
+        else if (locationType.equals(RepositoryLocation.LANGUAGE_CLASSPATH))
+        {
+            return followingEmailTemplateLocation.getPath();
+        }
+        else
+        {
+            logger.error("Unsupported location type: "+locationType);
+            return null;
+        }
     }
 }

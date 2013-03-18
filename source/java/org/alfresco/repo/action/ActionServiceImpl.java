@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -38,6 +38,7 @@ import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -113,7 +114,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * The asynchronous action execution queues map of name, queue
      */
-    private Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues;
+    private Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues = new HashMap<String, AsynchronousActionExecutionQueue>();
 
     /**
      * Action transaction listener
@@ -216,11 +217,25 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      * 
      * @param asynchronousActionExecutionQueue the asynchronous action execution
      *            queues
+     * @deprecated Rather than inject a Map<String, AsynchronousActionExecutionQueue>, it is
+     *             preferable to inject individual {@link AsynchronousActionExecutionQueue} instances
+     *             during bean initialisation in a spring init-method.
      */
     public void setAsynchronousActionExecutionQueues(
                 Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues)
     {
         this.asynchronousActionExecutionQueues = asynchronousActionExecutionQueues;
+    }
+    
+    /**
+     * This method registers an {@link AsynchronousActionExecutionQueue} with the {@link ActionService}.
+     * @param key
+     * @param asyncExecQueue
+     * @since Thor Phase 2 Sprint 2
+     */
+    public void registerAsynchronousActionExecutionQueue(String key, AsynchronousActionExecutionQueue asyncExecQueue)
+    {
+        this.asynchronousActionExecutionQueues.put(key, asyncExecQueue);
     }
 
     public void init()
@@ -777,8 +792,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     Action compensatingAction = action.getCompensatingAction();
                     if (compensatingAction != null)
                     {
-                        // Set the current user
+                        // Set the current user & tenant. These should be the same for the primary action and the compensating action.
                         ((ActionImpl) compensatingAction).setRunAsUser(currentUserName);
+                        ((ActionImpl) compensatingAction).setTenantId(((ActionImpl)action).getTenantId());
                         queueAction(compensatingAction, actionedUponNodeRef);
                     }
                 }
@@ -1611,6 +1627,13 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                 logger.debug("The current user is: " + this.authenticationContext.getCurrentUserName());
             }
             ((ActionImpl) action).setRunAsUser(this.authenticationContext.getCurrentUserName());
+
+            // Set the tenant context to the current tenant
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("The current tenant is: " + TenantUtil.getCurrentDomain());
+            }
+            ((ActionImpl) action).setTenantId(TenantUtil.getCurrentDomain());
 
             // Ensure that the transaction listener is bound to the transaction
             AlfrescoTransactionSupport.bindListener(this.transactionListener);

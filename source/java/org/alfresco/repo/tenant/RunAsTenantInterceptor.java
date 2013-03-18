@@ -72,7 +72,8 @@ public class RunAsTenantInterceptor implements MethodInterceptor
         }
         else
         {
-            return TenantUtil.runAsPrimaryTenant(runAs, AuthenticationUtil.getFullyAuthenticatedUser());
+            // run as tenant using current tenant context (if no tenant context then it is implied as the primary tenant, based on username)
+            return TenantUtil.runAsTenant(runAs, AuthenticationUtil.getUserTenant(AuthenticationUtil.getFullyAuthenticatedUser()).getSecond());
         }
     }
 }

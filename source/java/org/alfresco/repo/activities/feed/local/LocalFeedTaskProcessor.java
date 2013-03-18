@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -40,6 +40,7 @@ import org.alfresco.repo.domain.activities.FeedControlEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.ClassPathRepoTemplateLoader;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -277,7 +278,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             final String siteId = tenantService.getBaseName(siteIdIn, true);
             
             // optimise for non-remote implementation - override remote repo callback (to "List Site Memberships" web script) with embedded call
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<String>>()
+            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Set<String>>()
             {
                 public Set<String> doWork() throws Exception
                 {
@@ -301,7 +302,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                     
                     return members;
                 }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+            }, tenantDomain);
         }
     }
     
@@ -372,13 +373,13 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             String tenantDomain = (String)model.get(PostLookup.JSON_TENANT_DOMAIN);
             if (tenantDomain == null) { tenantDomain = TenantService.DEFAULT_DOMAIN; }
             
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
+            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Boolean>()
             {
                 public Boolean doWork() throws Exception
                 {
                     return canReadImpl(connectedUser, nodeRef);
                 }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+            }, tenantDomain);
         }
         else
         {
@@ -585,7 +586,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         
         if (subscriptionService.isActive())
         {
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+            TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Void>()
             {
                 public Void doWork() throws Exception
                 {
@@ -598,7 +599,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                     
                     return null;
                 }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+            }, tenantDomain);
         }
         
         return result;

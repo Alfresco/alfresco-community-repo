@@ -295,9 +295,12 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                         + maxFeedItems);
             }
             
+            String currentTenantDomain = tenantService.getCurrentUserDomain();
+            
             for (ActivityFeedEntity activityFeed : activityFeeds)
             {
-                if (actvityFilter != null && !actvityFilter.contains(activityFeed.getActivityType())) {
+                if (actvityFilter != null && !actvityFilter.contains(activityFeed.getActivityType()))
+                {
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Filtering " + activityFeed.toString() + " \n by the activity filter.");
@@ -305,12 +308,26 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                     continue;
                 }
                 
-                if (userFilter != null && !userFilter.contains(activityFeed.getPostUserId())) {
+                if (userFilter != null && !userFilter.contains(activityFeed.getPostUserId()))
+                {
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Filtering " + activityFeed.toString() + " \n by the user filter.");
                     }
                     continue;
+                }
+                
+                if (siteId == null)
+                {
+                    // note: pending requirements for THOR-224, for now assume all activities are within context of site and filter by current tenant
+                    if (! currentTenantDomain.equals(tenantService.getDomain(activityFeed.getSiteNetwork())))
+                    {
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace("Filtering " + activityFeed.toString() + " \n by the site/tenant filter.");
+                        }
+                        continue;
+                    }
                 }
                 
                 // In order to prevent unnecessary 304 revalidations on user avatars in the activity stream the 

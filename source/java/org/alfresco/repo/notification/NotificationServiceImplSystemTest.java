@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -220,7 +220,7 @@ public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
                 context.setFrom(FROM_EMAIL);
                 context.addTo(TO_USER1);
                 context.setSubject(SUBJECT);
-                context.setBodyTemplate(template);
+                context.setBodyTemplate(template.toString());
                 
                 Map<String, Serializable> templateArgs = new HashMap<String, Serializable>(1);
                 templateArgs.put("template", template);

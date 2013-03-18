@@ -97,7 +97,8 @@ public class GetPeopleCannedQueryFactory extends AbstractCannedQueryFactory<Node
             List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>(sortProps.size());
             for (Pair<QName, Boolean> sortProp : sortProps)
             {
-                sortPairs.add(new Pair<QName, SortOrder>(sortProp.getFirst(), (sortProp.getSecond() ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
+                boolean sortAsc = ((sortProp.getSecond() == null) || sortProp.getSecond());
+                sortPairs.add(new Pair<QName, SortOrder>(sortProp.getFirst(), (sortAsc ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
             }
             
             cqsd = new CannedQuerySortDetails(sortPairs);

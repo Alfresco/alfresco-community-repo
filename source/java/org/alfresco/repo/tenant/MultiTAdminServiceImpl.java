@@ -307,17 +307,27 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                     throw new AlfrescoRuntimeException("MT: cannot start tenants - TenantRoutingContentStore is not configured AND not all tenants use co-mingled content store");
                 }
                 
+                String tenantDomain = tenant.getTenantDomain();
+                
                 if (tenant.isEnabled())
                 {
-                    // this will also call tenant deployers registered so far ...
-                    enableTenant(tenant.getTenantDomain(), true);
+                    // notify tenant deployers registered so far ...
+                    notifyAfterEnableTenant(tenantDomain);
                     enabledCount++;
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Tenant enabled: " + tenantDomain);
+                    }
                 }
                 else
                 {
-                    // explicitly disable, without calling disableTenant callback
-                    disableTenant(tenant.getTenantDomain(), false);
                     disabledCount++;
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Tenant disabled: " + tenantDomain);
+                    }
                 }
             }
             
@@ -377,7 +387,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     /**
      * @see TenantAdminService.createTenant()
      */
-    public void createTenant(final String tenantDomainIn, final char[] tenantAdminRawPassword, String contentRootPath, String dbUrl)
+    public void createTenant(final String tenantDomainIn, final char[] tenantAdminRawPassword, String contentRootPath, final String dbUrl)
     {
         ParameterCheck.mandatory("tenantAdminRawPassword", tenantAdminRawPassword);
         
@@ -429,65 +439,72 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             AuthenticationUtil.pushAuthentication();
             AuthenticationUtil.setFullyAuthenticatedUser(getSystemUser(tenantDomain));
             
-            dictionaryComponent.init();
-            
-            if (tenantFileContentStore instanceof TenantDeployer)
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
             {
-                ((TenantDeployer)tenantFileContentStore).init();
-            }
-            
-            // callback
-            RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Throwable
+                public Object doWork()
                 {
-                    // create tenant-specific stores
-                    ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap-mt");
-                    bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
+                    dictionaryComponent.init();
                     
-                    ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap-mt");
-                    bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
-                    
-                    // deprecated
-                    ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap-mt");
-                    bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
-                    
-                    ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap)ctx.getBean("version2Bootstrap-mt");
-                    bootstrapVersionTenantStore(version2ImporterBootstrap, tenantDomain);
-                    
-                    ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap-mt");
-                    bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
-                    
-                    ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap-mt");
-                    bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
-                    
-                    thumbnailRegistry.initThumbnailDefinitions();
-                    
-                    // TODO janv - resolve this conflict later
-                    /* Note: assume for now that all tenant deployers can lazily init
-                    
-                    // notify listeners that tenant has been created & hence enabled
-                    for (TenantDeployer tenantDeployer : tenantDeployers)
+                    if (tenantFileContentStore instanceof TenantDeployer)
                     {
-                        tenantDeployer.onEnableTenant();
-                    }
-                    */
-                    
-                    // bootstrap workflows
-                    for (WorkflowDeployer workflowDeployer : workflowDeployers)
-                    {
-                        workflowDeployer.init();
+                        ((TenantDeployer)tenantFileContentStore).init();
                     }
                     
-                    // bootstrap modules (if any)
-                    moduleService.startModules();
+                    // callback
+                    RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>()
+                    {
+                        public Object execute() throws Throwable
+                        {
+                            // create tenant-specific stores
+                            ImporterBootstrap userImporterBootstrap = (ImporterBootstrap)ctx.getBean("userBootstrap-mt");
+                            bootstrapUserTenantStore(userImporterBootstrap, tenantDomain, tenantAdminRawPassword);
+                            
+                            ImporterBootstrap systemImporterBootstrap = (ImporterBootstrap)ctx.getBean("systemBootstrap-mt");
+                            bootstrapSystemTenantStore(systemImporterBootstrap, tenantDomain);
+                            
+                            // deprecated
+                            ImporterBootstrap versionImporterBootstrap = (ImporterBootstrap)ctx.getBean("versionBootstrap-mt");
+                            bootstrapVersionTenantStore(versionImporterBootstrap, tenantDomain);
+                            
+                            ImporterBootstrap version2ImporterBootstrap = (ImporterBootstrap)ctx.getBean("version2Bootstrap-mt");
+                            bootstrapVersionTenantStore(version2ImporterBootstrap, tenantDomain);
+                            
+                            ImporterBootstrap spacesArchiveImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesArchiveBootstrap-mt");
+                            bootstrapSpacesArchiveTenantStore(spacesArchiveImporterBootstrap, tenantDomain);
+                            
+                            ImporterBootstrap spacesImporterBootstrap = (ImporterBootstrap)ctx.getBean("spacesBootstrap-mt");
+                            bootstrapSpacesTenantStore(spacesImporterBootstrap, tenantDomain);
+
+                            thumbnailRegistry.initThumbnailDefinitions();
                     
+                            // TODO janv - resolve this conflict later
+                            /* Note: assume for now that all tenant deployers can lazily init
+                            
+                            // notify listeners that tenant has been created & hence enabled
+                            for (TenantDeployer tenantDeployer : tenantDeployers)
+                            {
+                                tenantDeployer.onEnableTenant();
+                            }
+                            */
+                            
+                            // bootstrap workflows
+                            for (WorkflowDeployer workflowDeployer : workflowDeployers)
+                            {
+                                workflowDeployer.init();
+                            }                            
+                            
+                            // bootstrap modules (if any)
+                            moduleService.startModules();
+                            
+                            return null;
+                        }
+                    };
+                    
+                    // if not default DB (ie. dbUrl != null) then run in new Spring managed txn (to ensure datasource is switched)
+                    transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback, transactionService.isReadOnly(), (dbUrl != null));
                     return null;
                 }
-            };
-            
-            // if not default DB (ie. dbUrl != null) then run in new Spring managed txn (to ensure datasource is switched)
-            transactionService.getRetryingTransactionHelper().doInTransaction(doImportCallback, transactionService.isReadOnly(), (dbUrl != null));
+            }, tenantDomain);
         }
         finally
         {
@@ -620,35 +637,30 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             logger.warn("Tenant already enabled: " + tenantDomain);
         }
         
-        // Note: assume for now that all tenant deployers can lazily init
-        boolean notifyTenantDeployers = false;
-        enableTenant(tenantDomain, notifyTenantDeployers);
-    }
-    
-    protected void enableTenant(String tenantDomain, boolean notifyTenantDeployers)
-    {
-        // Check that all the passed values are not null
-        ParameterCheck.mandatory("tenantDomain", tenantDomain);
-        
         TenantUpdateEntity tenantUpdateEntity = tenantAdminDAO.getTenantForUpdate(tenantDomain);
         tenantUpdateEntity.setEnabled(true);
         tenantAdminDAO.updateTenant(tenantUpdateEntity);
         
-        if (notifyTenantDeployers)
+        notifyAfterEnableTenant(tenantDomain);
+    }
+    
+    protected void notifyAfterEnableTenant(String tenantDomain)
+    {
+        // Check that all the passed values are not null
+        ParameterCheck.mandatory("tenantDomain", tenantDomain);
+        
+        // notify listeners that tenant has been enabled
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
         {
-            // notify listeners that tenant has been enabled
-            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
+            public Object doWork()
             {
-                public Object doWork()
+                for (TenantDeployer tenantDeployer : tenantDeployers)
                 {
-                    for (TenantDeployer tenantDeployer : tenantDeployers)
-                    {
-                        tenantDeployer.onEnableTenant();
-                    }
-                    return null;
+                    tenantDeployer.onEnableTenant();
                 }
-            }, tenantDomain);
-        }
+                return null;
+            }
+        }, tenantDomain);
         
         if (logger.isInfoEnabled())
         {
@@ -670,33 +682,30 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             logger.warn("Tenant already disabled: " + tenantDomain);
         }
         
-        disableTenant(tenantDomain, true);
-    }
-    
-    protected void disableTenant(String tenantDomain, boolean notifyTenantDeployers)
-    {
-        tenantDomain = getTenantDomain(tenantDomain);
-        
-        if (notifyTenantDeployers)
-        {
-            // notify listeners that tenant has been disabled
-            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-            {
-                public Object doWork()
-                {
-                    for (TenantDeployer tenantDeployer : tenantDeployers)
-                    {
-                        tenantDeployer.onDisableTenant();
-                    }
-                    return null;
-                }
-            }, tenantDomain);
-        }
+        notifyBeforeDisableTenant(tenantDomain);
         
         // update tenant attributes / tenant cache - need to disable after notifying listeners (else they cannot disable) 
         TenantUpdateEntity tenantUpdateEntity = tenantAdminDAO.getTenantForUpdate(tenantDomain);
         tenantUpdateEntity.setEnabled(false);
         tenantAdminDAO.updateTenant(tenantUpdateEntity);
+    }
+    
+    protected void notifyBeforeDisableTenant(String tenantDomain)
+    {
+        tenantDomain = getTenantDomain(tenantDomain);
+        
+        // notify listeners that tenant has been disabled
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
+        {
+            public Object doWork()
+            {
+                for (TenantDeployer tenantDeployer : tenantDeployers)
+                {
+                    tenantDeployer.onDisableTenant();
+                }
+                return null;
+            }
+        }, tenantDomain);
         
         if (logger.isInfoEnabled())
         {
@@ -795,15 +804,13 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                     }
                 }, tenantDomain);
                 
-                final String tenantAdminUser = getTenantAdminUser(tenantDomain);
-                
                 // delete tenant-specific stores
-                nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_SPACES)));
-                nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_ARCHIVE, STORE_BASE_ID_SPACES)));
-                nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION1)));
-                nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION2)));
-                nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_SYSTEM, STORE_BASE_ID_SYSTEM)));
-                nodeService.deleteStore(tenantService.getName(tenantAdminUser, new StoreRef(PROTOCOL_STORE_USER, STORE_BASE_ID_USER)));
+                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_SPACES), tenantDomain, false));
+                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_ARCHIVE, STORE_BASE_ID_SPACES), tenantDomain, false));
+                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION1), tenantDomain, false));
+                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION2), tenantDomain, false));
+                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_SYSTEM, STORE_BASE_ID_SYSTEM), tenantDomain, false));
+                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_USER, STORE_BASE_ID_USER), tenantDomain, false));
                 
                 TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
                 {
@@ -1305,7 +1312,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         tenantAdminDAO.createTenant(tenantEntity);
     }
     
-    private void validateTenantName(String tenantDomain)
+    protected void validateTenantName(String tenantDomain)
     {
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
         

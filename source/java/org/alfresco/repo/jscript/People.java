@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
@@ -56,6 +55,7 @@ import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.ScriptPagingDetails;
 import org.alfresco.util.ValueDerivingMapFactory;
 import org.alfresco.util.ValueDerivingMapFactory.ValueDeriver;
 import org.apache.commons.logging.Log;
@@ -72,7 +72,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author davidc
  * @author kevinr
  */
-public final class People extends BaseScopableProcessorExtension implements InitializingBean
+public class People extends BaseScopableProcessorExtension implements InitializingBean
 {
     private static Log logger = LogFactory.getLog(People.class);
     
@@ -83,9 +83,10 @@ public final class People extends BaseScopableProcessorExtension implements Init
     private PersonService personService;
     private MutableAuthenticationService authenticationService;
     private ContentUsageService contentUsageService;
-    private TenantService tenantService;
     private UserNameGenerator usernameGenerator;
     private UserRegistrySynchronizer userRegistrySynchronizer;
+    protected TenantService tenantService;
+    
     private StoreRef storeRef;
     private ValueDerivingMapFactory<ScriptNode, String, Boolean> valueDerivingMapFactory;
     private int numRetries = 10;
@@ -535,6 +536,26 @@ public final class People extends BaseScopableProcessorExtension implements Init
      */
     public Scriptable getPeople(String filter, int maxResults, String sortBy, boolean sortAsc)
     {
+        return getPeople(filter, new ScriptPagingDetails(maxResults, 0), null, null);
+    }
+    
+    public Scriptable getPeople(String filter, ScriptPagingDetails pagingRequest, String sortBy, Boolean sortAsc)
+    {
+        List<PersonInfo> persons = getPeopleImpl(filter, pagingRequest, sortBy, sortAsc);
+        
+        Object[] peopleRefs = new Object[persons.size()];
+        for (int i = 0; i < peopleRefs.length; i++)
+        {
+            peopleRefs[i] = persons.get(i).getNodeRef();
+        }
+        
+        return Context.getCurrentContext().newArray(getScope(), peopleRefs);
+    }
+    
+    protected List<PersonInfo> getPeopleImpl(String filter, ScriptPagingDetails pagingRequest, String sortBy, Boolean sortAsc)
+    {
+        ParameterCheck.mandatory("pagingRequest", pagingRequest);
+        
         boolean useCQ = false;
         if (filter != null)
         {
@@ -544,96 +565,124 @@ public final class People extends BaseScopableProcessorExtension implements Init
                 filter = filter.substring(0, filter.length()-HINT_CQ_SUFFIX.length());
             }
         }
+        else
+        {
+            filter = "*";
+        }
         
-        Object[] people = null;
+        List<PersonInfo> persons = null;
         
+        int maxResults = pagingRequest.getMaxItems();
         if ((maxResults <= 0) || (maxResults > defaultListMaxResults))
         {
             // remove open-ended query (eg cutoff at default/configurable max, eg. 5000 people)
             maxResults = defaultListMaxResults;
+            pagingRequest.setMaxItems(maxResults);
         }
         
-        if ((filter == null || filter.length() == 0) || useCQ)
+        if (useCQ)
         {
-            people = getPeopleImplDB(filter, maxResults, sortBy, sortAsc);
+            persons = getPeopleImplDB(filter, pagingRequest, sortBy, sortAsc);
         }
         else
         {
             filter = filter.trim();
-            if (filter.length() != 0)
+            
+            String term = filter.replace("\\", "").replace("\"", "");
+            StringTokenizer t = new StringTokenizer(term, " ");
+            int propIndex = term.lastIndexOf(':');
+            int wildPosition = term.indexOf('*');
+            
+            // simple filter - can use CQ if search fails
+            useCQ = ((t.countTokens() == 1) && (propIndex == -1) && ((wildPosition == -1) || (wildPosition == (term.length() - 1))));
+            
+            try
             {
-                String term = filter.replace("\\", "").replace("\"", "");
-                StringTokenizer t = new StringTokenizer(term, " ");
-                int propIndex = term.lastIndexOf(':');
-                int wildPosition = term.indexOf('*');
+                // FTS
+                List<NodeRef> personRefs = getPeopleImplSearch(filter, pagingRequest, sortBy, sortAsc);
                 
-                // simple filter - can use CQ if search fails
-                useCQ = ((t.countTokens() == 1) && (propIndex == -1) && ((wildPosition == -1) || (wildPosition == (term.length() - 1))));
-                
-                try
+                if (personRefs != null)
                 {
-                    people = getPeopleImplSearch(term, t, propIndex, maxResults, sortBy, sortAsc);
-                }
-                catch (Throwable err)
-                {
-                    if (useCQ)
+                    persons = new ArrayList<PersonInfo>(personRefs.size());
+                    for (NodeRef personRef : personRefs)
                     {
-                        // search unavailable and/or parser exception - try CQ instead
-                        people = getPeopleImplDB(term, maxResults, sortBy, sortAsc);
+                        persons.add(personService.getPerson(personRef));
                     }
+                }
+            }
+            catch (Throwable err)
+            {
+                if (useCQ)
+                {
+                    // search unavailable and/or parser exception - try CQ instead
+                    // simple non-FTS filter: firstname or lastname or username starting with term (ignoring case)
+                    persons = getPeopleImplDB(filter, pagingRequest, sortBy, sortAsc);
                 }
             }
         }
         
-        if (people == null)
-        {
-            people = new Object[0];
-        }
-        
-        return Context.getCurrentContext().newArray(getScope(), people);
+        return (persons != null ? persons : new ArrayList<PersonInfo>(0));
     }
     
     // canned query
-    private Object[] getPeopleImplDB(String term, int maxResults, final String sortBy, boolean sortAsc)
+    protected List<PersonInfo> getPeopleImplDB(String filter, ScriptPagingDetails pagingRequest, String sortBy, Boolean sortAsc)
     {
-        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+        List<QName> filterProps = null;
         
-        List<NodeRef> peopleRefs = new ArrayList<NodeRef>();
-        
-        // simple non-FTS filter: firstname or lastname or username starting with term (ignoring case)
-        
-        List<QName> filterProps = new ArrayList<QName>(3);
-        filterProps.add(ContentModel.PROP_FIRSTNAME);
-        filterProps.add(ContentModel.PROP_LASTNAME);
-        filterProps.add(ContentModel.PROP_USERNAME);
-        
-        List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>(1);
-        sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
-        
-        PagingRequest pagingRequest = new PagingRequest(maxResults, null);
-        List<PersonInfo> persons = personService.getPeople(term, filterProps, sortProps, pagingRequest).getPage();
-        for (int i=0; i<persons.size(); i++)
+        if ((filter != null) && (filter.length() > 0))
         {
-            peopleRefs.add(persons.get(i).getNodeRef());
+            filter = filter.trim();
+            if (! filter.equals("*"))
+            {
+                filter = filter.replace("\\", "").replace("\"", "");
+                
+                // simple non-FTS filter: firstname or lastname or username starting with term (ignoring case)
+                
+                filterProps = new ArrayList<QName>(3);
+                filterProps.add(ContentModel.PROP_FIRSTNAME);
+                filterProps.add(ContentModel.PROP_LASTNAME);
+                filterProps.add(ContentModel.PROP_USERNAME);
+            }
         }
         
-        Object[] people = getSortedPeopleObjects(peopleRefs, sortBy, sortAsc);
-        
-        if (start != null)
+        // Build the sorting. The user controls the primary sort, we supply
+        // additional ones automatically
+        List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName,Boolean>>();
+        if ("lastName".equals(sortBy))
         {
-            logger.debug("getPeople: cq - "+people.length+" items (in "+(System.currentTimeMillis()-start)+" msecs)");
+           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, sortAsc));
+           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, sortAsc));
+           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, sortAsc));
         }
-       
-        return people;
+        else if ("firstName".equals(sortBy))
+        {
+           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, sortAsc));
+           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, sortAsc));
+           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, sortAsc));
+        }
+        else
+        {
+           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, sortAsc));
+           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_FIRSTNAME, sortAsc));
+           sort.add(new Pair<QName, Boolean>(ContentModel.PROP_LASTNAME, sortAsc));
+        }
+        
+        return personService.getPeople(filter, filterProps, sort, pagingRequest).getPage();
     }
     
     // search query
-    private Object[] getPeopleImplSearch(String term, StringTokenizer t, int propIndex, int maxResults, final String sortBy, boolean sortAsc) throws Throwable
+    protected List<NodeRef> getPeopleImplSearch(String filter, ScriptPagingDetails pagingRequest, String sortBy, Boolean sortAsc) throws Throwable
     {
+        List<NodeRef> personRefs = null;
+        
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
-        List<NodeRef> peopleRefs = new ArrayList<NodeRef>();
-        Object[] people = null;
+        String term = filter.replace("\\", "").replace("\"", "");
+        StringTokenizer t = new StringTokenizer(term, " ");
+        int propIndex = term.indexOf(':');
+        
+        int maxResults = pagingRequest.getMaxItems();
+        int skipCount = pagingRequest.getSkipCount();
         
         SearchParameters params = new SearchParameters();
         params.addQueryTemplate("_PERSON", "|%firstName OR |%lastName OR |%userName");
@@ -732,21 +781,57 @@ public final class People extends BaseScopableProcessorExtension implements Init
        params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
        params.addStore(this.storeRef);
        params.setQuery(query.toString());
+       
+       if (logger.isDebugEnabled())
+       {
+           if ((sortBy != null) && (! sortBy.isEmpty()))
+           {
+               logger.debug("getPeopleImplSearch: ignoring sortBy ("+sortBy+")- not yet supported by model for search");
+           }
+       }
+       
+       /* not yet supported (default property index tokenisation mode = true)
+       if ("lastName".equals(sortBy))
+       {
+           params.addSort("@{http://www.alfresco.org/model/content/1.0}lastName", sortAsc);
+           params.addSort("@{http://www.alfresco.org/model/content/1.0}firstName", sortAsc);
+           params.addSort("@{http://www.alfresco.org/model/content/1.0}userName", sortAsc);
+       }
+       else if ("firstName".equals(sortBy))
+       {
+           params.addSort("@{http://www.alfresco.org/model/content/1.0}firstName", sortAsc);
+           params.addSort("@{http://www.alfresco.org/model/content/1.0}lastName", sortAsc);
+           params.addSort("@{http://www.alfresco.org/model/content/1.0}userName", sortAsc);
+       }
+       else
+       {
+           params.addSort("@{http://www.alfresco.org/model/content/1.0}userName", sortAsc);
+           params.addSort("@{http://www.alfresco.org/model/content/1.0}firstName", sortAsc);
+           params.addSort("@{http://www.alfresco.org/model/content/1.0}userName", sortAsc);
+       }
+       */
+       
        if (maxResults > 0)
        {
            params.setLimitBy(LimitBy.FINAL_SIZE);
            params.setLimit(maxResults);
        }
        
+       if (skipCount > 0)
+       {
+           params.setSkipCount(skipCount);
+       }
+       
        ResultSet results = null;
        try
        {
            results = services.getSearchService().query(params);
-           people = getSortedPeopleObjects(results.getNodeRefs(), sortBy, sortAsc);
+           
+           personRefs = getSortedPeopleObjects(results.getNodeRefs(), sortBy, sortAsc);
            
            if (start != null)
            {
-               logger.debug("getPeople: search - "+people.length+" items (in "+(System.currentTimeMillis()-start)+" msecs)");
+               logger.debug("getPeople: search - "+personRefs.size()+" items (in "+(System.currentTimeMillis()-start)+" msecs)");
            }
        }
        catch (Throwable err)
@@ -766,10 +851,10 @@ public final class People extends BaseScopableProcessorExtension implements Init
            }
        }
        
-       return people;
+       return personRefs;
     }
     
-    private Object[] getSortedPeopleObjects(List<NodeRef> peopleRefs, final String sortBy, boolean sortAsc)
+    private List<NodeRef> getSortedPeopleObjects(List<NodeRef> peopleRefs, final String sortBy, boolean sortAsc)
     {
         final Collator col = Collator.getInstance(I18NUtil.getLocale());
         final NodeService nodeService = services.getNodeService();
@@ -831,12 +916,9 @@ public final class People extends BaseScopableProcessorExtension implements Init
                 return result.toString();
             }
 
-        });        
+        });
         
-        Object[] people = new Object[peopleRefs.size()];
-        peopleRefs.toArray(people);
-        
-        return people;
+        return peopleRefs;
     }
     
     /**

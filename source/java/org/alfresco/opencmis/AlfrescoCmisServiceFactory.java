@@ -129,7 +129,7 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
             AuthenticationUtil.clearCurrentSecurityContext();
         }
 
-        AlfrescoCmisService cmisServiceTarget = new AlfrescoCmisServiceImpl(connector);
+        AlfrescoCmisService cmisServiceTarget = getCmisServiceTarget(connector);
         
         // Wrap it
         ProxyFactory proxyFactory = new ProxyFactory(cmisServiceTarget);
@@ -149,5 +149,10 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         cmisService.open(context);
         
         return wrapperService;
+    }
+    
+    protected AlfrescoCmisService getCmisServiceTarget(CMISConnector connector)
+    {
+        return new AlfrescoCmisServiceImpl(connector);
     }
 }

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -66,7 +65,7 @@ public class ErrorProneUserNotifier extends AbstractUserNotifier
 
 	@Override
 	protected void notifyUser(NodeRef personNodeRef, String subjectText,
-			Map<String, Object> model, NodeRef templateNodeRef)
+			Map<String, Object> model, String templateNodeRef)
 	{
 //		super.notifyUser(personNodeRef, subjectText, model, templateNodeRef);
 

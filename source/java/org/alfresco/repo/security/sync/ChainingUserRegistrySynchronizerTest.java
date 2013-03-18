@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,6 +39,8 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.person.PersonServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -115,6 +117,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         this.authenticationContext = (AuthenticationContext) ChainingUserRegistrySynchronizerTest.context
                 .getBean("authenticationContext");
+        
+        
+        // this.authenticationContext.setSystemUserAsCurrentUser();
+        //AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         this.authenticationContext.setSystemUserAsCurrentUser();
 
         this.retryingTransactionHelper = (RetryingTransactionHelper) ChainingUserRegistrySynchronizerTest.context
@@ -298,8 +304,16 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
             public Object execute() throws Throwable
             {
-
-                ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(false, false, false);
+                // re: THOR-293 - note: use runAs else security context is cleared (=> current system user becomes null and personExists fails)
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(false, false, false);
+                        return null;
+                    }
+                });
+                
                 // Stay in the same transaction
                 assertExists("Z1", "U1");
                 assertEmailEquals("U1", "changeofemail@alfresco.com");

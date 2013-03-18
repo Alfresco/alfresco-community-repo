@@ -13,11 +13,17 @@
    <!-- The cross-transaction shared cache for Property entities -->
    
    <bean name="propertyValueSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
-      <!-- <property name="cacheName">
-         <value>org.alfresco.cache.propertyValueCache</value>
-      </property>
-      -->
-      <property name="maxItems" value="${cache.propertyValueCache.maxItems}"/>      
+      <property name="maxItems" value="${cache.propertyValueCache.maxItems}"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Property Unique Context Cache         -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Property Unique Contexts -->
+   
+   <bean name="propertyUniqueContextSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+      <property name="maxItems" value="${cache.propertyUniqueContextSharedCache.maxItems}"/>
    </bean>
    
    <!-- ===================================== -->

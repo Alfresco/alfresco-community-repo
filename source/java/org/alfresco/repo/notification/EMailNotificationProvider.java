@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.notification.NotificationProvider;
 import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.ModelUtil;
@@ -209,9 +210,9 @@ public class EMailNotificationProvider implements NotificationProvider
             mail.setParameterValue(MailActionExecuter.PARAM_TEXT, body);
         }
         else
-        {        
+        {
             // Check for template
-            NodeRef template = notificationContext.getBodyTemplate();
+            String template = notificationContext.getBodyTemplate();
             if (template == null)
             {
                 errorEncountered(notificationContext, 
@@ -220,12 +221,13 @@ public class EMailNotificationProvider implements NotificationProvider
             }
             else
             {
-                template = fileFolderService.getLocalizedSibling(template);
+                if (template.indexOf(StoreRef.URI_FILLER) != -1)
+                {
+                    template = fileFolderService.getLocalizedSibling(new NodeRef(template)).toString();
+                }
                 mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, template);
                 mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, 
                                        (Serializable)buildTemplateModel(notificationContext.getTemplateArgs()));
-                
-                
             }
         }
         

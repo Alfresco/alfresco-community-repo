@@ -956,7 +956,7 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
         }
         
         // Do we need to create the initial version history entry? By convention this is always a major version.
-        if(getVersionHistory(nodeRef) == null)
+        if(getVersionHistoryNodeRef(nodeRef) == null)
         {
             createVersion(nodeRef, Collections.<String,Serializable>singletonMap(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR));
         }

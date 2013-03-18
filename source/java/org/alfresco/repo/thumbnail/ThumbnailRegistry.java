@@ -57,17 +57,19 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(ThumbnailRegistry.class);
-
+    
     /** Content service */
     private ContentService contentService;
     
     /** Transaction service */
-    private TransactionService transactionService;
+    protected TransactionService transactionService;
     
     /** Rendition service */
-    private RenditionService renditionService;
+    protected RenditionService renditionService;
     
-    private TenantAdminService tenantAdminService;
+    protected TenantAdminService tenantAdminService;
+    
+    private boolean redeployStaticDefsOnStartup;
     
     /** Map of thumbnail definition */
     private Map<String, ThumbnailDefinition> thumbnailDefinitions = new HashMap<String, ThumbnailDefinition>();
@@ -124,7 +126,12 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     {
         this.tenantAdminService = tenantAdminService;
     }
-
+    
+    public void setRedeployStaticDefsOnStartup(boolean redeployStaticDefsOnStartup)
+    {
+        this.redeployStaticDefsOnStartup = redeployStaticDefsOnStartup;
+    }
+    
     /**
      * This method is used to inject the thumbnail definitions.
      * @param thumbnailDefinitions
@@ -348,12 +355,23 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         lifecycle.onApplicationEvent(event);
     }
     
+    protected boolean redeploy()
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+        {
+            public Boolean doWork() throws Exception
+            {
+                return ((getThumbnailDefinitions().size() > 0) && (redeployStaticDefsOnStartup || renditionService.loadRenditionDefinitions().size() == 0));
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
     /**
      * This class hooks in to the spring application lifecycle and ensures that any
      * ThumbnailDefinitions injected by spring are converted to RenditionDefinitions
      * and saved.
      */
-    private class RegistryLifecycle extends AbstractLifecycleBean
+    protected class RegistryLifecycle extends AbstractLifecycleBean
     {
         /* (non-Javadoc)
          * @see org.alfresco.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
@@ -361,49 +379,52 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         @Override
         protected void onBootstrap(ApplicationEvent event)
         {
-            long start = System.currentTimeMillis();
-            
-            // If the database is in read-only mode, then do not persist the thumbnail definitions.
-            if (transactionService.isReadOnly())
+            if (redeploy())
             {
-                if (logger.isDebugEnabled())
+                long start = System.currentTimeMillis();
+                
+                // If the database is in read-only mode, then do not persist the thumbnail definitions.
+                if (transactionService.isReadOnly())
                 {
-                    logger.debug("TransactionService is in read-only mode. Therefore no thumbnail definitions have been initialised.");
-                }
-                return;
-            }
-            
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
-            {
-                public Object doWork() throws Exception
-                {
-                    initThumbnailDefinitions();
-                    return null;
-                }
-            }, AuthenticationUtil.getSystemUserName());
-            
-            if (tenantAdminService.isEnabled())
-            {
-                List<Tenant> tenants = tenantAdminService.getAllTenants();
-                for (Tenant tenant : tenants)
-                {
-                    AuthenticationUtil.runAs(new RunAsWork<Object>()
+                    if (logger.isDebugEnabled())
                     {
-                        public Object doWork() throws Exception
-                        {
-                            initThumbnailDefinitions();
-                            return null;
-                        }
-                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+                        logger.debug("TransactionService is in read-only mode. Therefore no thumbnail definitions have been initialised.");
+                    }
+                    return;
                 }
-            }
-            
-            if (logger.isInfoEnabled())
-            {
-                logger.info("Init'ed thumbnail defs in "+(System.currentTimeMillis()-start)+" ms");
+                
+                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        initThumbnailDefinitions();
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+                
+                if (tenantAdminService.isEnabled())
+                {
+                    List<Tenant> tenants = tenantAdminService.getAllTenants();
+                    for (Tenant tenant : tenants)
+                    {
+                        AuthenticationUtil.runAs(new RunAsWork<Object>()
+                        {
+                            public Object doWork() throws Exception
+                            {
+                                initThumbnailDefinitions();
+                                return null;
+                            }
+                        }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+                    }
+                }
+                
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("Init'ed thumbnail defs in "+(System.currentTimeMillis()-start)+" ms");
+                }
             }
         }
-    
+        
         /* (non-Javadoc)
          * @see org.alfresco.util.AbstractLifecycleBean#onShutdown(org.springframework.context.ApplicationEvent)
          */

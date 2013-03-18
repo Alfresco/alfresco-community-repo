@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.model.filefolder;
 
 import java.io.Serializable;
@@ -15,6 +33,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -599,42 +618,44 @@ public class HiddenAspect
     {
         Visibility ret = Visibility.Visible;
 
-        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+        if (! AuthenticationUtil.isRunAsUserTheSystemUser())
         {
-            Integer visibilityMask = (Integer)nodeService.getProperty(nodeRef, ContentModel.PROP_VISIBILITY_MASK);
-            if(visibilityMask != null)
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
             {
-                if(visibilityMask.intValue() == 0)
+                Integer visibilityMask = (Integer)nodeService.getProperty(nodeRef, ContentModel.PROP_VISIBILITY_MASK);
+                if (visibilityMask != null)
                 {
-                    ret = Visibility.NotVisible;
-                }
-                else if(client == null)
-                {
-                    ret = Visibility.NotVisible;
+                    if(visibilityMask.intValue() == 0)
+                    {
+                        ret = Visibility.NotVisible;
+                    }
+                    else if(client == null)
+                    {
+                        ret = Visibility.NotVisible;
+                    }
+                    else
+                    {
+                        ret = getVisibility(visibilityMask.intValue(), client);
+                    }
                 }
                 else
                 {
-                    ret = getVisibility(visibilityMask.intValue(), client);
-                }
-            }
-            else
-            {
-                // no visibility mask property, so retain backwards compatibility with 3.4 hidden aspect behaviour
-                if(client == Client.cifs)
-                {
-                    ret = Visibility.HiddenAttribute;
-                }
-                else if(client == Client.webdav || client == Client.nfs || client == Client.imap)
-                {
-                    ret = Visibility.Visible;
-                }
-                else
-                {
-                    ret = Visibility.NotVisible;
+                    // no visibility mask property, so retain backwards compatibility with 3.4 hidden aspect behaviour
+                    if(client == Client.cifs)
+                    {
+                        ret = Visibility.HiddenAttribute;
+                    }
+                    else if(client == Client.webdav || client == Client.nfs || client == Client.imap)
+                    {
+                        ret = Visibility.Visible;
+                    }
+                    else
+                    {
+                        ret = Visibility.NotVisible;
+                    }
                 }
             }
         }
-
         return ret;
     }
 

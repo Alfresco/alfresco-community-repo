@@ -40,7 +40,7 @@
         <userTask id="verifyTaskDone" name="Verify Adhoc Task Completed."
             activiti:formKey="wf:completedAdhocTask" >
             <documentation>
-                Verify the arbitrary task was completed.
+                Verify the task was completed.
             </documentation>
             <extensionElements>
                <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">

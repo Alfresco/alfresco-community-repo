@@ -51,30 +51,6 @@
        </property>
     </bean>
     
-    <bean id="defaultAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
-      <property name="threadPoolExecutor">
-         <ref bean="defaultAsyncThreadPool"/>
-      </property>
-        <property name="transactionService">
-            <ref bean="transactionService"/>
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent"/>
-        </property>
-    </bean>
-    
-    <bean id="deploymentAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
-      <property name="threadPoolExecutor">
-         <ref bean="deploymentAsyncThreadPool"/>
-      </property>
-        <property name="transactionService">
-            <ref bean="transactionService"/>
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent"/>
-        </property>
-    </bean>
-    
     <!-- Action Service -->
     <bean id="actionService" class="org.alfresco.repo.action.ActionServiceImpl" init-method="init">
         <property name="policyComponent">
@@ -98,20 +74,37 @@
         <property name="monitor">
             <ref bean="actionServiceMonitor"/>
         </property>
-        
-        <property name="asynchronousActionExecutionQueues">
-            <map>
-                <!--  This is the default async queue -->
-               <entry key="">
-                      <ref bean="defaultAsynchronousActionExecutionQueue"/>
-               </entry>
-               <entry key="deployment">
-                      <ref bean="deploymentAsynchronousActionExecutionQueue"/>
-               </entry>
-            </map>   
-        </property>
     </bean>
 
+    <bean id="defaultAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
+      <property name="actionServiceImpl" ref="actionService"/>
+      <property name="threadPoolExecutor">
+         <ref bean="defaultAsyncThreadPool"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService"/>
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <!-- The empty string here is intentional -->
+      <property name="id" value=""/>
+    </bean>
+    
+    <bean id="deploymentAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">
+      <property name="actionServiceImpl" ref="actionService"/>
+      <property name="threadPoolExecutor">
+         <ref bean="deploymentAsyncThreadPool"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService"/>
+      </property>
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>
+      <property name="id" value="deployment"/>
+    </bean>
+    
     <!-- Action Tracking Service -->
     <bean id="actionTrackingService" class="org.alfresco.repo.action.ActionTrackingServiceImpl">
         <property name="transactionService">

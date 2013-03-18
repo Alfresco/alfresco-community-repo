@@ -102,7 +102,17 @@ public interface PersonService
      */
     @Auditable(parameters = {"userName", "autoCreate"})
     public NodeRef getPerson(final String userName, final boolean autoCreateHomeFolderAndMissingPersonIfAllowed);
-
+    
+    /**
+     * Retrieve the person info for an existing {@code person NodeRef}
+     * 
+     * @param person NodeRef
+     * @return PersonInfo (username, firstname, lastname)
+     * @throws NoSuchPersonException if the person doesn't exist
+     */
+    @Auditable(parameters = {"personRef"})
+    public PersonInfo getPerson(NodeRef personRef) throws NoSuchPersonException;
+    
     /**
      * Check if a person exists.
      * 

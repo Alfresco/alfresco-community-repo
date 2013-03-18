@@ -29,6 +29,7 @@
    <bean id="feedCleaner" class="org.alfresco.repo.activities.feed.cleanup.FeedCleaner" init-method="init">
       <property name="feedDAO" ref="feedDAO"/>
       <property name="jobLockService" ref="JobLockService"/>
+      <property name="tenantService" ref="tenantService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="policyComponent" ref="policyComponent"/>
       <property name="transactionService" ref="transactionService"/>
@@ -145,7 +146,10 @@
    <bean id="feedEmailTemplateLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
         <!-- other properties will be defaulted, but can be overridden here -->
         <property name="path">
-            <value>/app:company_home/app:dictionary/app:email_templates/cm:activities/cm:activities-email.ftl</value>
+            <value>${activities.feed.notifier.emailTemplatePath}</value>
+        </property>
+        <property name="queryLanguage">
+            <value>${activities.feed.notifier.emailTemplateLocationType}</value>
         </property>
    </bean>
    

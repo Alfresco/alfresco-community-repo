@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -325,15 +325,15 @@ public interface PropertyValueDAO
      * 
      * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable, Serializable)
      */
-    void updatePropertyUniqueContext(
+    void updatePropertyUniqueContextKeys(
             Long id,
             Serializable value1, Serializable value2, Serializable value3);
     /**
-     * Update the property associated with a unique context.
+     * Update the property associated with a unique context (based on one, two or three context values).
      * 
      * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable, Serializable)
      */
-    void updatePropertyUniqueContext(Long id, Serializable propertyValue1);
+    void updatePropertyUniqueContext(Serializable value1, Serializable value2, Serializable value3, Serializable propertyValue);
     /**
      * @see #createPropertyUniqueContext(Serializable, Serializable, Serializable, Serializable)
      */

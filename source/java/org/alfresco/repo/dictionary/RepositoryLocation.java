@@ -24,9 +24,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Repository location object, defines a location in the repository from which dictionary models/resources should be loaded
- * for inclusion in the data dictionary.
- *
+ * Repository location object - defines a location in the repository (can also be used for classpath location)
  */
 public class RepositoryLocation
 {
@@ -43,6 +41,7 @@ public class RepositoryLocation
     private String queryLanguage = "xpath"; // default
     
     public static final String LANGUAGE_PATH = "path"; // lookup directly using node (prefix qname) path
+    public static final String LANGUAGE_CLASSPATH = "classpath";
     
     
     /**
@@ -106,7 +105,10 @@ public class RepositoryLocation
      */
     public void setQueryLanguage(String queryLanguage)
     {
-        if (queryLanguage.equals(SearchService.LANGUAGE_LUCENE) || queryLanguage.equals(SearchService.LANGUAGE_XPATH) || queryLanguage.equals(LANGUAGE_PATH))
+        if (queryLanguage.equals(SearchService.LANGUAGE_LUCENE) || 
+            queryLanguage.equals(SearchService.LANGUAGE_XPATH) || 
+            queryLanguage.equals(LANGUAGE_PATH) ||
+            queryLanguage.equals(LANGUAGE_CLASSPATH))
         {
             this.queryLanguage = queryLanguage;
         }
@@ -117,7 +119,7 @@ public class RepositoryLocation
     }
 
     /**
-     * Get the store reference
+     * Get the store reference (note: should be ignored for classpath location)
      *
      * @return  the store reference
      */

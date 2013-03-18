@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -155,6 +155,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     private String testMessageSubject = "Test message";
     private String testMessageText = "This is a test message.";
 
+    private boolean validateAddresses = true;
+    
     /**
      * Test mode prevents email messages from being sent.
      * It is used when unit testing when we don't actually want to send out email messages.
@@ -321,6 +323,22 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
         
         return true;
+    }
+    
+    /**
+     * This stores an email address which, if it is set, overrides ALL email recipients sent from
+     * this class. It is intended for dev/test usage only !!
+     */
+    private String testModeRecipient;
+    
+    public void setTestModeRecipient(String testModeRecipient)
+    {
+        this.testModeRecipient = testModeRecipient;
+    }
+
+    public void setValidateAddresses(boolean validateAddresses)
+    {
+        this.validateAddresses = validateAddresses;
     }
 
     
@@ -600,15 +618,36 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     messageRef[0].setFrom(fromDefaultAddress);
                 }
                 
-
-
-                
                 // set subject line
                 messageRef[0].setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
                 
+                if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
+                {
+                    // If we have an override for the email recipient, we'll send the email to that address instead.
+                    // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
+                    messageRef[0].setTo(testModeRecipient);
+                    
+                    String emailRecipient = (String)ruleAction.getParameterValue(PARAM_TO);
+                    if (emailRecipient == null)
+                    {
+                       Object obj = ruleAction.getParameterValue(PARAM_TO_MANY);
+                       if (obj != null)
+                       {
+                           emailRecipient = obj.toString();
+                       }
+                    }
+                    
+                    String recipientPrefixedSubject = "(" + emailRecipient + ") " + (String)ruleAction.getParameterValue(PARAM_SUBJECT);
+                    
+                    messageRef[0].setSubject(recipientPrefixedSubject);
+                }
+                
                 // See if an email template has been specified
                 String text = null;
-                NodeRef templateRef = (NodeRef)ruleAction.getParameterValue(PARAM_TEMPLATE);
+                
+                // templateRef: either a nodeRef or classpath (see ClasspathRepoTemplateLoader)
+                Serializable ref = ruleAction.getParameterValue(PARAM_TEMPLATE);
+                String templateRef = (ref instanceof NodeRef ? ((NodeRef)ref).toString() : (String)ref);
                 if (templateRef != null)
                 {
                     Map<String, Object> suppliedModel = null;
@@ -630,7 +669,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef, suppliedModel, fromPerson);
                     
                     // process the template against the model
-                    text = templateService.processTemplate("freemarker", templateRef.toString(), model);
+                    text = templateService.processTemplate("freemarker", templateRef, model);
                 }
                 
                 // set the text body of the message
@@ -740,7 +779,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         
         // Validate the email, allowing for local email addresses
         EmailValidator emailValidator = EmailValidator.getInstance(true);
-        if (emailValidator.isValid(address))
+        if (!validateAddresses || emailValidator.isValid(address))
         {
             result = true;
         }

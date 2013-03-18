@@ -40,6 +40,9 @@
             <property name="usr:password">
                <type>d:text</type>
             </property>
+            <property name="usr:password2">
+               <type>d:text</type>
+            </property>
             <property name="usr:enabled">
                <type>d:boolean</type>
             </property>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -54,7 +54,7 @@ public class UpdateWorkflowNotificationTemplatesPatch extends GenericEMailTempla
     @Override
     protected NodeRef getBaseTemplate()
     {
-        return WorkflowNotificationUtils.WF_ASSIGNED_TEMPLATE;
+        return new NodeRef(WorkflowNotificationUtils.WF_ASSIGNED_TEMPLATE);
     }
     
     /**

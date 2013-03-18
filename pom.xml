@@ -9,7 +9,7 @@
     <parent>
         <artifactId>alfresco-parent</artifactId>
         <groupId>org.alfresco</groupId>
-        <version>4.2.d-SNAPSHOT</version>
+        <version>HEAD-CONV-SNAPSHOT</version>
         <relativePath>../../pom-experimental.xml</relativePath>
     </parent>
 
@@ -559,7 +559,7 @@
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>netcdf</artifactId>
-            <version>4.2</version>
+            <version>4.2-min</version>
         </dependency>
         <!-- Spring Surf -->
         <dependency>

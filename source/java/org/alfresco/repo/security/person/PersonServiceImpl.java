@@ -53,8 +53,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantDomainMismatchException;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -80,10 +78,12 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
@@ -165,7 +165,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private JavaBehaviour beforeDeleteNodeValidationBehaviour;
     
     private boolean homeFolderCreationEager;
-        
+    
+    private boolean homeFolderCreationDisabled = false; // if true then home folders creation is disabled (ie. home folders are not created - neither eagerly nor lazily)
+    
     static
     {
         Set<QName> props = new HashSet<QName>();
@@ -363,6 +365,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         this.homeFolderCreationEager = homeFolderCreationEager;
     }
     
+    /**
+     * Indicates if home folder creation should be disabled.
+     */
+    public void setHomeFolderCreationDisabled(boolean homeFolderCreationDisabled)
+    {
+        this.homeFolderCreationDisabled = homeFolderCreationDisabled;
+    }
+    
     public void setAclDAO(AclDAO aclDao)
     {
         this.aclDao = aclDao;
@@ -426,7 +436,35 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public NodeRef getPersonOrNull(String userName)
     {
-        return getPerson(userName, false, false);
+        return getPersonImpl(userName, false, false);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public PersonInfo getPerson(NodeRef personRef) throws NoSuchPersonException
+    {
+        Map<QName, Serializable> props = null;
+        try
+        {
+            props = nodeService.getProperties(personRef);
+        }
+        catch (InvalidNodeRefException inre)
+        {
+            throw new NoSuchPersonException(personRef.toString());
+        }
+        
+        // belts-and-braces
+        String username  = (String)props.get(ContentModel.PROP_USERNAME);
+        if (getPersonOrNull(username) == null)
+        {
+            throw new NoSuchPersonException(personRef.toString());
+        }
+        
+        return new PersonInfo(personRef, 
+                              username, 
+                              (String)props.get(ContentModel.PROP_FIRSTNAME),
+                              (String)props.get(ContentModel.PROP_LASTNAME));
     }
     
     /**
@@ -434,31 +472,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public NodeRef getPerson(final String userName, final boolean autoCreateHomeFolderAndMissingPersonIfAllowed)
     {
-        return getPerson(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, true);
-    }
-    
-    private NodeRef getPerson(
-            final String userName,
-            final boolean autoCreateHomeFolderAndMissingPersonIfAllowed,
-            final boolean exceptionOrNull)
-    {
-        // MT share - for activity service system callback
-        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
-        {
-            final String tenantDomain = tenantService.getUserDomain(userName);
-            
-            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
-            {
-                public NodeRef doWork() throws Exception
-                {
-                    return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, exceptionOrNull);
-                }
-            }, tenantDomain);
-        }
-        else
-        {
-            return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, exceptionOrNull);
-        }
+        return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, true);
     }
     
     private NodeRef getPersonImpl(
@@ -500,7 +514,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public boolean personExists(String caseSensitiveUserName)
     {
-        return getPersonOrNullImpl(caseSensitiveUserName) != null;
+        NodeRef person = getPersonOrNull(caseSensitiveUserName); 
+        if (person != null)
+        {
+            // re: THOR-293
+            return permissionServiceSPI.hasPermission(person, PermissionService.READ) == AccessStatus.ALLOWED;
+        }
+        return false;
     }
     
     private NodeRef getPersonOrNullImpl(String searchUserName)
@@ -840,7 +860,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     
     private void makeHomeFolderIfRequired(NodeRef person)
     {
-        if (person != null)
+        if ((person != null) && (homeFolderCreationDisabled == false))
         {
             NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
             if (homeFolder == null)
@@ -1701,7 +1721,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         // Make sure there is an authority entry - with a DB constraint for uniqueness
         // aclDao.createAuthority(username);
         
-        if (homeFolderCreationEager)
+        if ((homeFolderCreationEager) && (homeFolderCreationDisabled == false))
         {
             makeHomeFolderAsSystem(childAssocRef);
         }

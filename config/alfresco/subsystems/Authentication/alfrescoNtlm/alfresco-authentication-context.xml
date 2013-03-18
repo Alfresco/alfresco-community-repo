@@ -82,6 +82,7 @@
       <property name="tenantService" ref="tenantService" />
       <property name="namespaceService" ref="namespaceService" />
       <property name="passwordEncoder" ref="passwordEncoder" />
+      <property name="sha256PasswordEncoder" ref="sha256PasswordEncoder" />
       <property name="policyComponent" ref="policyComponent" />
       <property name="authenticationCache" ref="authenticationCache" />
       <property name="singletonCache" ref="immutableSingletonCache"/>

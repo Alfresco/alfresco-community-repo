@@ -19,9 +19,11 @@
 package org.alfresco.repo.activities.feed.cleanup;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.model.ContentModel;
@@ -35,6 +37,7 @@ import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -70,6 +73,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     
     private JobLockService jobLockService;
     private NodeService nodeService;
+    private TenantService tenantService;
     private PolicyComponent policyComponent;
     private TransactionService transactionService;
     
@@ -90,6 +94,11 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
     }
     
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -424,7 +433,13 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     {
         String userId = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
         
-        Set<String> deletedUserIds = TransactionalResourceHelper.getSet(KEY_DELETED_USER_IDS);
+        Set<String> deletedUserIds = (Set<String>)AlfrescoTransactionSupport.getResource(KEY_DELETED_USER_IDS);
+        if (deletedUserIds == null)
+        {
+            deletedUserIds = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>()); // Java 6
+            AlfrescoTransactionSupport.bindResource(KEY_DELETED_USER_IDS, deletedUserIds);
+        }
+        
         deletedUserIds.add(userId);
         
         AlfrescoTransactionSupport.bindListener(deletePersonTransactionListener);
@@ -434,7 +449,13 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     {
         String siteId = (String)nodeService.getProperty(siteNodeRef, ContentModel.PROP_NAME);
         
-        Set<String> deletedSiteIds = TransactionalResourceHelper.getSet(KEY_DELETED_SITE_IDS);
+        Set<String> deletedSiteIds = (Set<String>)AlfrescoTransactionSupport.getResource(KEY_DELETED_SITE_IDS);
+        if (deletedSiteIds == null)
+        {
+            deletedSiteIds = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>()); // Java 6
+            AlfrescoTransactionSupport.bindResource(KEY_DELETED_SITE_IDS, deletedSiteIds);
+        }
+        
         deletedSiteIds.add(siteId);
         
         AlfrescoTransactionSupport.bindListener(deleteSiteTransactionListener);

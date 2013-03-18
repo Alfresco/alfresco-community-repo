@@ -21,7 +21,10 @@ package org.alfresco.repo.domain.avm.ibatis;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.avm.AbstractAVMLockDAOImpl;
+import org.alfresco.repo.domain.propval.AbstractPropertyValueDAOImpl.CachePucKey;
+import org.alfresco.repo.domain.propval.PropertyUniqueContextEntity;
 import org.mybatis.spring.SqlSessionTemplate;
 
 /**
@@ -43,6 +46,18 @@ public class AVMLockDAOImpl extends AbstractAVMLockDAOImpl
         this.template = sqlSessionTemplate;
     }
     
+    private SimpleCache<CachePucKey, PropertyUniqueContextEntity> propertyUniqueContextCache; // cluster-aware
+    
+    /**
+     * Set the cache to use for <b>avm_version_roots</b> lookups (optional).
+     * 
+     * @param vrEntityCache
+     */
+    public void setPropertyUniqueContextCache(SimpleCache<CachePucKey, PropertyUniqueContextEntity> propertyUniqueContextCache)
+    {
+        this.propertyUniqueContextCache = propertyUniqueContextCache;
+    }
+    
     @Override
     protected int deletePropertyUniqueContexts(Long avmLocksValueId, Long avmStoreNameId, String dirPathToMatch, String lockDataStoreKey, String lockDataStoreValue)
     {
@@ -55,25 +70,34 @@ public class AVMLockDAOImpl extends AbstractAVMLockDAOImpl
             dirPathToMatch = dirPathToMatch + "%";
         }
         
-        if (lockDataStoreKey != null)
+        try
         {
-            Map<String, Object> params = new HashMap<String, Object>(5);
-            params.put("value1PropId", avmLocksValueId);
-            params.put("value2PropId", avmStoreNameId);
-            params.put("value3LikeStr", dirPathToMatch);
-            params.put("lockDataStoreKey", lockDataStoreKey);
-            params.put("lockDataStoreValue", lockDataStoreValue);
-            
-            return template.delete(DELETE_MATCHING_AVM_LOCKS_1_KV, params);
+            if (lockDataStoreKey != null)
+            {
+                Map<String, Object> params = new HashMap<String, Object>(5);
+                params.put("value1PropId", avmLocksValueId);
+                params.put("value2PropId", avmStoreNameId);
+                params.put("value3LikeStr", dirPathToMatch);
+                params.put("lockDataStoreKey", lockDataStoreKey);
+                params.put("lockDataStoreValue", lockDataStoreValue);
+                
+                return template.delete(DELETE_MATCHING_AVM_LOCKS_1_KV, params);
+            }
+            else
+            {
+                Map<String, Object> params = new HashMap<String, Object>(3);
+                params.put("value1PropId", avmLocksValueId);
+                params.put("value2PropId", avmStoreNameId);
+                params.put("value3LikeStr", dirPathToMatch);
+                
+                return template.delete(DELETE_MATCHING_AVM_LOCKS_0_KV, params);
+            }
         }
-        else
+        finally
         {
-            Map<String, Object> params = new HashMap<String, Object>(3);
-            params.put("value1PropId", avmLocksValueId);
-            params.put("value2PropId", avmStoreNameId);
-            params.put("value3LikeStr", dirPathToMatch);
-            
-            return template.delete(DELETE_MATCHING_AVM_LOCKS_0_KV, params);
+            // reasonable to clear for now (eg. only used by AVMLockingService.removeLocks*)
+            // note: in future, if we need to support mass removal based on specific key grouping then we need to use more intelligent cache (removal)
+            propertyUniqueContextCache.clear();
         }
     }
 }

@@ -87,6 +87,7 @@ public class ModuleComponentHelper
     private RegistryService registryService;
     private ModuleService moduleService;
     private TenantAdminService tenantAdminService;
+    private boolean applyToTenants;
     private Map<String, Map<String, ModuleComponent>> componentsByNameByModule;
 
     /** Default constructor */
@@ -131,7 +132,12 @@ public class ModuleComponentHelper
     {
         this.tenantAdminService = tenantAdminService;
     }
-
+    
+    public void setApplyToTenants(boolean applyToTenants)
+    {
+        this.applyToTenants = applyToTenants;
+    }
+    
     /**
      * Add a managed module component to the registry of components.  These will be controlled
      * by the {@link #startModules()} method.
@@ -197,40 +203,47 @@ public class ModuleComponentHelper
          */
     	AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-    		public Object doWork() throws Exception
+            public Object doWork() throws Exception
             {
-	    		try
-	    		{
-		            TransactionService transactionService = serviceRegistry.getTransactionService();
-		
-		            // Get all the modules
-		            List<ModuleDetails> modules = moduleService.getAllModules();
-		            loggerService.info(I18NUtil.getMessage(MSG_FOUND_MODULES, modules.size()));
+                try
+                {
+                    TransactionService transactionService = serviceRegistry.getTransactionService();
+                    
+                    // Note: for system bootstrap this will be the default domain, else tenant domain for tenant create/import
+                    final String tenantDomainCtx = tenantAdminService.getCurrentUserDomain();
+                    
+                    if (tenantAdminService.isEnabled() && (! tenantDomainCtx.equals(TenantService.DEFAULT_DOMAIN)) && (! applyToTenants))
+                    {
+                        // nothing to start (eg. when creating/importing tenant and applyToTenants = false)
+                        return null;
+                    }
+                    
+                    // Get all the modules
+                    List<ModuleDetails> modules = moduleService.getAllModules();
+                    loggerService.info(I18NUtil.getMessage(MSG_FOUND_MODULES, modules.size()));
+                    
+                    // Process each module in turn.  Ordering is not important.
+                    final Map<String, Set<ModuleComponent>> mapExecutedComponents = new HashMap<String, Set<ModuleComponent>>(1);
+                    final Map<String, Set<String>> mapStartedModules = new HashMap<String, Set<String>>(1);
+                    
+                    mapExecutedComponents.put(tenantDomainCtx, new HashSet<ModuleComponent>(10));
+                    mapStartedModules.put(tenantDomainCtx, new HashSet<String>(2));
+                    
+                    List<Tenant> tenantsNonFinal = null;
+                    if (tenantAdminService.isEnabled())
+                    {
+                        if (tenantDomainCtx.equals(TenantService.DEFAULT_DOMAIN) && applyToTenants)
+                        {
+                            tenantsNonFinal = tenantAdminService.getAllTenants();
+                            for (Tenant tenant : tenantsNonFinal)
+                            {
+                                mapExecutedComponents.put(tenant.getTenantDomain(), new HashSet<ModuleComponent>(10));
+                                mapStartedModules.put(tenant.getTenantDomain(), new HashSet<String>(2));
+                            }
+                        }
+                    }
 		            
-		            // Process each module in turn.  Ordering is not important.
-		            final Map<String, Set<ModuleComponent>> mapExecutedComponents = new HashMap<String, Set<ModuleComponent>>(1);
-		            final Map<String, Set<String>> mapStartedModules = new HashMap<String, Set<String>>(1);
-
-		            // Note: for system bootstrap this will be the default domain, else tenant domain for tenant create/import
-		            final String tenantDomainCtx = tenantAdminService.getCurrentUserDomain();
-		            
-		            mapExecutedComponents.put(tenantDomainCtx, new HashSet<ModuleComponent>(10));
-		            mapStartedModules.put(tenantDomainCtx, new HashSet<String>(2));
-		            
-		            final List<Tenant> tenants;
-		            if (tenantAdminService.isEnabled() && (tenantDomainCtx.equals(TenantService.DEFAULT_DOMAIN)))
-		            {
-		            	tenants = tenantAdminService.getAllTenants();
-		            	for (Tenant tenant : tenants)
-		                {
-		                    mapExecutedComponents.put(tenant.getTenantDomain(), new HashSet<ModuleComponent>(10));
-		                    mapStartedModules.put(tenant.getTenantDomain(), new HashSet<String>(2));
-		                }
-		            }
-		            else
-		            {
-		            	tenants = null;
-		            }
+		            final List<Tenant> tenants = tenantsNonFinal;
 		            
 		            for (final ModuleDetails module : modules)
 		            {

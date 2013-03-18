@@ -180,7 +180,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             {
                 // create a session -> set a cookie
                 // if the CMIS client supports cookies that might help in clustered environments
-                ((HttpServletRequest) context.get(CallContext.HTTP_SERVLET_REQUEST)).getSession();
+                ((HttpServletRequest) getContext().get(CallContext.HTTP_SERVLET_REQUEST)).getSession();
             }
             
             // Authenticate
@@ -195,8 +195,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 if (AuthenticationUtil.getFullyAuthenticatedUser() == null)
                 {
                     // We have to go to the repo and authenticate
-                    String user = context.getUsername();
-                    String password = context.getPassword();
+                    String user = getContext().getUsername();
+                    String password = getContext().getPassword();
                     Authorization auth = new Authorization(user, password);
                     if (auth.isTicket())
                     {
@@ -213,8 +213,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 //            // TODO: How is the proxy user working.
 //            //       Until we know what it is meant to do, it's not available
 //            String currentUser = connector.getAuthenticationService().getCurrentUserName();
-//            String user = context.getUsername();
-//            String password = context.getPassword();
+//            String user = getContext().getUsername();
+//            String password = getContext().getPassword();
 //            if (currentUser != null && currentUser.equals(connector.getProxyUser()))
 //            {
 //                if (user != null && user.length() > 0)
@@ -236,7 +236,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     {
         this.context = context;
     }
-
+    
+    protected CallContext getContext()
+    {
+        return context;
+    }
+    
     @Override
     public void close()
     {
@@ -580,7 +585,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     ObjectData object = connector.createCMISObject(ni, child, filter, includeAllowableActions,
                             includeRelationships, renditionFilter, false, false);
 
-                    if (context.isObjectInfoRequired())
+                    if (getContext().isObjectInfoRequired())
                     {
                         getObjectInfo(repositoryId, ni.getObjectId(), includeRelationships);
                     }
@@ -707,7 +712,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 object.setObject(connector.createCMISObject(
                         ni, filter, includeAllowableActions, includeRelationships,
                         renditionFilter, false, false));
-                if (context.isObjectInfoRequired())
+                if (getContext().isObjectInfoRequired())
                 {
                     getObjectInfo(repositoryId, ni.getObjectId(), includeRelationships);
                 }
@@ -772,7 +777,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         ObjectData result = connector.createCMISObject(
                 parentInfo, filter, false, IncludeRelationships.NONE,
                 CMISConnector.RENDITION_NONE, false, false);
-        if (context.isObjectInfoRequired())
+        if (getContext().isObjectInfoRequired())
         {
             getObjectInfo(
                     repositoryId,
@@ -812,7 +817,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 ObjectData object = connector.createCMISObject(
                         parentInfo, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, false, false);
-                if (context.isObjectInfoRequired())
+                if (getContext().isObjectInfoRequired())
                 {
                     getObjectInfo(repositoryId, object.getId(), includeRelationships);
                 }
@@ -839,7 +844,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 ObjectData object = connector.createCMISObject(
                         parentInfo, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, false, false);
-                if (context.isObjectInfoRequired())
+                if (getContext().isObjectInfoRequired())
                 {
                     getObjectInfo(repositoryId, object.getId(), includeRelationships);
                 }
@@ -996,7 +1001,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                             ni, filter, includeAllowableActions,
                             includeRelationships, renditionFilter, false, false);
 
-                    if (context.isObjectInfoRequired())
+                    if (getContext().isObjectInfoRequired())
                     {
                         getObjectInfo(repositoryId, ni.getObjectId(), includeRelationships);
                     }
@@ -1068,7 +1073,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisRuntimeException("Creation failed!");
         }
 
-        if (context.isObjectInfoRequired())
+        if (getContext().isObjectInfoRequired())
         {
             try
             {
@@ -1496,7 +1501,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
             objectId.setValue(connector.createObjectId(nodeRef));
 
-            if (context.isObjectInfoRequired())
+            if (getContext().isObjectInfoRequired())
             {
                 getObjectInfo(repositoryId, objectId.getValue(), "*", IncludeRelationships.NONE);
             }
@@ -1697,7 +1702,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 info, filter, includeAllowableActions, includeRelationships,
                 renditionFilter, includePolicyIds, includeAcl);
 
-        if (context.isObjectInfoRequired())
+        if (getContext().isObjectInfoRequired())
         {
             getObjectInfo(repositoryId, info.getObjectId(), includeRelationships);
         }
@@ -1736,7 +1741,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                         info, fileInfo, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, includePolicyIds, includeAcl);
 
-                if (context.isObjectInfoRequired())
+                if (getContext().isObjectInfoRequired())
                 {
                     getObjectInfo(repositoryId, info.getObjectId(), includeRelationships);
                 }
@@ -1758,7 +1763,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         // what kind of object is it?
         CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
 
-        if (context.isObjectInfoRequired())
+        if (getContext().isObjectInfoRequired())
         {
             getObjectInfo(repositoryId, info.getObjectId(), IncludeRelationships.NONE);
         }
@@ -1993,7 +1998,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             result.add(connector.createCMISObject(info, filter, includeAllowableActions, IncludeRelationships.NONE,
                     CMISConnector.RENDITION_NONE, false, false));
 
-            if (context.isObjectInfoRequired())
+            if (getContext().isObjectInfoRequired())
             {
                 getObjectInfo(repositoryId, info.getObjectId(), IncludeRelationships.NONE);
             }
@@ -2009,7 +2014,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                                 pwcInfo, filter, includeAllowableActions,
                                 IncludeRelationships.NONE, CMISConnector.RENDITION_NONE, false, false));
 
-                if (context.isObjectInfoRequired())
+                if (getContext().isObjectInfoRequired())
                 {
                     getObjectInfo(repositoryId, pwcInfo.getObjectId(), IncludeRelationships.NONE);
                 }
@@ -2025,7 +2030,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                                 versionInfo, filter, includeAllowableActions,
                                 IncludeRelationships.NONE, CMISConnector.RENDITION_NONE, false, false));
 
-                if (context.isObjectInfoRequired())
+                if (getContext().isObjectInfoRequired())
                 {
                     getObjectInfo(repositoryId, versionInfo.getObjectId(), IncludeRelationships.NONE);
                 }
@@ -2057,7 +2062,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 versionInfo, filter, includeAllowableActions,
                 includeRelationships, renditionFilter, includePolicyIds, includeAcl);
 
-        if (context.isObjectInfoRequired())
+        if (getContext().isObjectInfoRequired())
         {
             getObjectInfo(repositoryId, info.getObjectId(), includeRelationships);
         }
@@ -2642,7 +2647,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
     // --------------------------------------------------------
 
-    private void checkRepositoryId(String repositoryId)
+    protected void checkRepositoryId(String repositoryId)
     {
         if (!connector.getRepositoryId().equals(repositoryId))
         {

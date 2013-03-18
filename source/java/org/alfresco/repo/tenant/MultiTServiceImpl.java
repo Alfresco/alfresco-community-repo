@@ -117,7 +117,7 @@ public class MultiTServiceImpl implements TenantService
                 assocRef.getTypeQName(),
                 getName(assocRef.getTargetRef()));
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.tenant.TenantService#getName(java.lang.String, org.alfresco.service.cmr.repository.StoreRef)
      */
@@ -138,7 +138,23 @@ public class MultiTServiceImpl implements TenantService
         return storeRef;
     }
     
+    protected StoreRef getName(StoreRef storeRef, String tenantDomain, boolean checkTenantEnabled)
+    {
+        if (storeRef == null) { return null; }
+        if (tenantDomain != null) 
+        {
+            storeRef = new StoreRef(storeRef.getProtocol(), getName(storeRef.getIdentifier(), tenantDomain, checkTenantEnabled));
+        }
+        
+        return storeRef;
+    }
+    
     protected String getName(String name, String tenantDomain)
+    {
+        return getName(name, tenantDomain, true);
+    }
+    
+    protected String getName(String name, String tenantDomain, boolean checkTenantEnabled)
     {
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
         
@@ -147,7 +163,10 @@ public class MultiTServiceImpl implements TenantService
             return null;
         }
         
-        checkTenantEnabled(tenantDomain);
+        if (checkTenantEnabled)
+        {
+            checkTenantEnabled(tenantDomain);
+        }
         
         int idx1 = name.indexOf(SEPARATOR);
         if (idx1 != 0)
@@ -644,6 +663,10 @@ public class MultiTServiceImpl implements TenantService
         return nameDomain;
     }
     
+    /**
+     * @deprecated
+     * @return
+     */
     public static String getMultiTenantDomainName(String name)
     {
         // Check that all the passed values are not null

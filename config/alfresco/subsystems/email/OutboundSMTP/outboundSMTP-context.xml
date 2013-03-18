@@ -67,6 +67,9 @@
 		<property name="headerEncoding">
 			<value>${mail.header}</value>
 		</property>
+        <property name="validateAddresses">
+            <value>${mail.validate.addresses}</value>
+        </property>
 		<property name="fromAddress">
 			<value>${mail.from.default}</value>
 		</property>
@@ -88,6 +91,13 @@
         <property name="testMessageText">
             <value>${mail.testmessage.text}</value>
         </property>
+        
+        <!-- For dev/test only - emails sent to test email, irrespective of intended recipient -->
+        <property name="testModeRecipient" value="${dev.email.recipient.address}"/>
+        
+        <!-- For dev/test only - if true, emails are not actually sent -->
+        <property name="testMode" value="${dev.email.not.sent}"/>
+        
 	</bean>
 	
 	<bean id="monitor" class="org.alfresco.repo.action.executer.MailActionExecuterMonitor" >

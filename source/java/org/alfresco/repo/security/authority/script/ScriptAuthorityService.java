@@ -486,6 +486,8 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      * @param paging Paging object with max number to return, and items to skip
      * @param sortBy What to sort on (firstName, lastName or userName)
      * @return the users matching the query
+     * 
+     * @deprecated see People.getPeople(String filter, ScriptPagingDetails pagingRequest, String sortBy)
      */
     public ScriptUser[] searchUsers(String nameFilter, ScriptPagingDetails paging, String sortBy)
     {

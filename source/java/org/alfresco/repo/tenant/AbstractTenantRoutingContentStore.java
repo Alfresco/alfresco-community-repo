@@ -19,7 +19,6 @@
 package org.alfresco.repo.tenant;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -33,6 +32,8 @@ import org.alfresco.repo.domain.tenant.TenantAdminDAO;
 import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -44,6 +45,8 @@ import org.springframework.context.ApplicationContextAware;
  */
 public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingContentStore implements ApplicationContextAware, TenantRoutingContentStore
 {
+    private static Log logger = LogFactory.getLog(AbstractTenantRoutingContentStore.class);
+    
     private String defaultRootDirectory;
     private TenantAdminDAO tenantAdminDAO;
     protected TenantService tenantService;
@@ -102,14 +105,14 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     @Override
     public List<ContentStore> getAllStores()
     {
+        final List<ContentStore> allEnabledStores = new ArrayList<ContentStore>();
+        
         if (tenantService.isEnabled())
         {
             String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
             if ((currentUser == null) || (tenantService.getBaseNameUser(currentUser).equals(AuthenticationUtil.getSystemUserName())))
             {
                 // return enabled stores across all tenants, if running as system/null user, for example, ContentStoreCleaner scheduled job
-                final List<ContentStore> allEnabledStores = new ArrayList<ContentStore>();
-                
                 List<TenantEntity> tenants = tenantAdminDAO.listTenants();
                 for (TenantEntity tenant : tenants)
                 {
@@ -127,16 +130,18 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
                     }
                 }
                 
-                if (allEnabledStores.size() > 0)
+                if (logger.isDebugEnabled())
                 {
-                    allEnabledStores.add(getTenantContentStore());
-                    return allEnabledStores;
+                    logger.debug("getAllStores called without tenant ctx ("+tenants.size()+" tenants)");
                 }
                 
                 // drop through to ensure default content store has been init'ed
             }
         }
-        return Arrays.asList(getTenantContentStore());
+        
+        allEnabledStores.add(getTenantContentStore());
+        
+        return allEnabledStores;
     }
     
     private ContentStore getTenantContentStore()

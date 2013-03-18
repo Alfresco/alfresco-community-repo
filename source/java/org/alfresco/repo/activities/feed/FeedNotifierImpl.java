@@ -36,6 +36,7 @@ import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -259,30 +260,53 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         this.feedEmailTemplateLocation = feedEmailTemplateLocation;
     }
     
-    private NodeRef getEmailTemplateRef()
+    protected String getEmailTemplateRef()
     {
-        StoreRef store = feedEmailTemplateLocation.getStoreRef();
-        String xpath = feedEmailTemplateLocation.getPath();
+        String locationType = feedEmailTemplateLocation.getQueryLanguage();
         
-        if (! feedEmailTemplateLocation.getQueryLanguage().equals(SearchService.LANGUAGE_XPATH))
+        if (locationType.equals(SearchService.LANGUAGE_XPATH))
         {
-            logger.warn("Cannot find the activities email template - repository location query language is not 'xpath': "+feedEmailTemplateLocation.getQueryLanguage());
+            StoreRef store = feedEmailTemplateLocation.getStoreRef();
+            String xpath = feedEmailTemplateLocation.getPath();
+            
+            try
+            {
+                if (! feedEmailTemplateLocation.getQueryLanguage().equals(SearchService.LANGUAGE_XPATH))
+                {
+                    logger.error("Cannot find the activities email template - repository location query language is not 'xpath': "+feedEmailTemplateLocation.getQueryLanguage());
+                    return null;
+                }
+                
+                List<NodeRef> nodeRefs = searchService.selectNodes(nodeService.getRootNode(store), xpath, null, namespaceService, false);
+                if (nodeRefs.size() != 1)
+                {
+                    logger.error("Cannot find the activities email template: "+xpath);
+                    return null;
+                }
+                
+                return fileFolderService.getLocalizedSibling(nodeRefs.get(0)).toString();
+            } 
+            catch (SearcherException e)
+            {
+                logger.error("Cannot find the email template!", e);
+            }
+            
             return null;
         }
-        
-        List<NodeRef> nodeRefs = searchService.selectNodes(nodeService.getRootNode(store), xpath, null, namespaceService, false);
-        if (nodeRefs.size() != 1)
+        else if (locationType.equals(RepositoryLocation.LANGUAGE_CLASSPATH))
         {
-            logger.warn("Cannot find the activities email template: "+xpath);
+            return feedEmailTemplateLocation.getPath();
+        }
+        else
+        {
+            logger.error("Unsupported location type: "+locationType);
             return null;
         }
-
-        return fileFolderService.getLocalizedSibling(nodeRefs.get(0));
     }
     
     private void executeInternal(final int repeatIntervalMins)
     {
-        final NodeRef emailTemplateRef = getEmailTemplateRef();
+        final String emailTemplateRef = getEmailTemplateRef();
         
         if (emailTemplateRef == null)
         {

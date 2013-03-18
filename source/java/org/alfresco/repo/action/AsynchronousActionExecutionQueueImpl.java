@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,15 +34,14 @@ import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,11 +56,13 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     private static Log logger = LogFactory.getLog(AsynchronousActionExecutionQueueImpl.class);
     
     /** Services */
+    private ActionServiceImpl  actionServiceImpl;
     private ThreadPoolExecutor threadPoolExecutor;
     private TransactionService transactionService;
     private PolicyComponent policyComponent;
     private Map<String, AbstractAsynchronousActionFilter>
             actionFilters = new ConcurrentHashMap<String, AbstractAsynchronousActionFilter>();
+    private String id;
 
 	/**
 	 * We keep a record of ongoing asynchronous actions (this includes those being executed and
@@ -85,10 +86,29 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
      */
     public void init()
     {
+        // Register the execution queue with the ActionService
+        actionServiceImpl.registerAsynchronousActionExecutionQueue(id, this);
+        
         // Register the policies
         onAsyncActionExecuteDelegate = policyComponent.registerClassPolicy(OnAsyncActionExecute.class);
     }
-
+    
+    /**
+     * @since Thor Phase 2 Sprint 2
+     */
+    public void setActionServiceImpl(ActionServiceImpl serviceImpl)
+    {
+        this.actionServiceImpl = serviceImpl;
+    }
+    
+    /**
+     * @since Thor Phase 2 Sprint 2
+     */
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+    
     /**
      * Set the thread pool, which may be shared with other components, that will be used
      * to run the actions.
@@ -377,11 +397,13 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 final String userName = ((ActionImpl)ActionExecutionWrapper.this.action).getRunAsUser();
                 if (userName == null)
                 {
-                    throw new ActionServiceException("Cannot execute action asynchronously since run as user is 'null'");              
+                    throw new ActionServiceException("Cannot execute action asynchronously since run as user is 'null'");
                 }
+                // Get the tenant the action was submitted from
+                final String tenantId = ((ActionImpl)ActionExecutionWrapper.this.action).getTenantId();
                 
                 // import the content
-                RunAsWork<Object> actionRunAs = new RunAsWork<Object>()
+                TenantRunAsWork<Object> actionRunAs = new TenantRunAsWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
@@ -414,7 +436,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                         return transactionService.getRetryingTransactionHelper().doInTransaction(actionCallback);
                     }
                 };
-                AuthenticationUtil.runAs(actionRunAs, userName);
+                TenantUtil.runAsUserTenant(actionRunAs, userName, tenantId);
             }
             catch (Throwable e)
             {

@@ -173,6 +173,9 @@
       -->
       <property name="propertyValueCache" ref="propertyValueCache"/>
       <property name="propertyCache" ref="propertyValueCache"/>
+      
+      <property name="propertyUniqueContextCache" ref="propertyUniqueContextCache"/>
+      
    </bean>
    
    <bean id="auditDAO" class="org.alfresco.repo.domain.audit.ibatis.AuditDAOImpl">
@@ -213,6 +216,7 @@
    <bean id="avmLockDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMLockDAOImpl">
       <property name="sqlSessionTemplate" ref="avmSqlSessionTemplate"/>
       <property name="propertyValueDAO" ref="propertyValueDAO"/>
+      <property name="propertyUniqueContextCache" ref="propertyUniqueContextCache"/>
    </bean>
    
    <!-- Permissions (including ACLs / ACEs) -->

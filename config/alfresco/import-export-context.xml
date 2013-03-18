@@ -306,6 +306,8 @@
             <props>
                 <prop key="alfresco_user_store.adminusername">${alfresco_user_store.adminusername}</prop>
                 <prop key="alfresco_user_store.adminpassword">${alfresco_user_store.adminpassword}</prop>
+                <prop key="alfresco_user_store.adminsalt">${alfresco_user_store.adminsalt}</prop>
+                <prop key="alfresco_user_store.adminpassword2">${alfresco_user_store.adminpassword2}</prop>
                 <prop key="alfresco_user_store.system_container.childname">${alfresco_user_store.system_container.childname}</prop>
                 <prop key="alfresco_user_store.user_container.childname">${alfresco_user_store.user_container.childname}</prop>
             </props>
@@ -538,10 +540,10 @@
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
                 <props>
-				    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
-				    <prop key="location">alfresco/bootstrap/notification/workflow-email-notification.xml</prop>
-				    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-				</props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                    <prop key="location">alfresco/bootstrap/notification/workflow-email-notification.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.rss.childname}</prop>
                     <prop key="location">alfresco/templates/rss_templates.acp</prop>

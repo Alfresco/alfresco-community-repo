@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -173,9 +173,9 @@ public class AttributeServiceImpl implements AttributeService
         }
         else
         {
-            Long id = pair.getFirst();
-            propertyValueDAO.updatePropertyUniqueContext(id, value);
+            propertyValueDAO.updatePropertyUniqueContext(keys[0], keys[1], keys[2], value);
         }
+        
         // Done
         if (logger.isDebugEnabled())
         {
@@ -231,7 +231,7 @@ public class AttributeServiceImpl implements AttributeService
             else
             {
                 Long id = pair.getFirst();
-                propertyValueDAO.updatePropertyUniqueContext(id, keyAfter1, keyAfter2, keyAfter3);
+                propertyValueDAO.updatePropertyUniqueContextKeys(id, keyAfter1, keyAfter2, keyAfter3);
             }
         }
         catch (PropertyUniqueConstraintViolation e)

@@ -293,5 +293,20 @@
          </map>
       </property>
    </bean>
+   
+   <!--  Request record information capability -->
+   <bean id="rmRequestRecordInformationCapability" 
+         parent="declarativeCapability">
+      <property name="name" value="RequestRecordInformation"/>		        
+      <property name="permission" value="RequestRecordInformation"/>	<!--  Associated permission (this is assignable) -->
+      <property name="kind" value="RECORD" />							<!--  Only applies to records -->
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>		<!--  Must have read and file permissions -->
+            <entry key="capabilityCondition.frozen" value="false"/>     <!--  Not for frozen records -->
+            <entry key="capabilityCondition.declared" value="false"/>   <!--  Only for undeclared records -->
+         </map>
+      </property>
+   </bean>
 
 </beans>

@@ -17,7 +17,7 @@
       [
          "DeclareRecords",
          "ViewRecords",
-          "CreateRecords",
+         "CreateRecords",
          "CreateModifyDestroyFolders",
          "EditRecordMetadata",
          "EditNonRecordMetadata",
@@ -26,7 +26,8 @@
          "DeclareRecordsInClosedFolders",
          "ReOpenFolders",
          "CycleVitalRecords",
-         "PlanningReviewCycles"
+         "PlanningReviewCycles",
+         "RequestRecordInformation"
       ]
    },
    {
@@ -50,7 +51,8 @@
           "UpdateClassificationDates",
           "CreateModifyDestroyClassificationGuides",
           "UpgradeDowngradeAndDeclassifyRecords",
-          "UpdateExemptionCategories"
+          "UpdateExemptionCategories",
+          "RequestRecordInformation"
       ]
    },
    {
@@ -116,8 +118,8 @@
           "CreateModifyDestroyClassificationGuides",
           "UpgradeDowngradeAndDeclassifyRecords",
           "UpdateExemptionCategories",
-          "MapClassificationGuideMetadata"
-
+          "MapClassificationGuideMetadata",
+          "RequestRecordInformation"
       ]
    },
    {
@@ -185,7 +187,8 @@
           "UpdateExemptionCategories",
           "MapClassificationGuideMetadata",
           "ManageAccessControls",
-          "ManageRules"
+          "ManageRules",
+          "RequestRecordInformation"
       ]
    }
 ]

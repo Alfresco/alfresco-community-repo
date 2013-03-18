@@ -115,6 +115,12 @@ public class RMv21CapabilityPatch extends AbstractModuleComponent
             addCapability(filePlan,
                           "ManageRules",
                           FilePlanRoleService.ROLE_ADMIN);
+            addCapability(filePlan,
+                          "RequestRecordInformation", 
+                          FilePlanRoleService.ROLE_ADMIN, 
+                          FilePlanRoleService.ROLE_POWER_USER, 
+                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
             
         }
         

@@ -306,7 +306,9 @@
             <entry key="capabilityCondition.frozen" value="false"/>     <!--  Not for frozen records -->
             <entry key="capabilityCondition.declared" value="false"/>   <!--  Only for undeclared records -->
          </map>
-      </property>
+      </property>      
+      <property name="group"><ref bean="recordsGroup"/></property>      <!--  Part of the records group of capabilities -->
+      <property name="index" value="100" />
    </bean>
 
 </beans>

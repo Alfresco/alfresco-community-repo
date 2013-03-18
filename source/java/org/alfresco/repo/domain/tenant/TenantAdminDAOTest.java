@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,7 +33,7 @@ import org.springframework.context.ApplicationContext;
  * @see TenantAdminDAO
  * 
  * @author janv
- * @since 4.0 (thor)
+ * @since 4.0
  */
 public class TenantAdminDAOTest extends TestCase
 {
@@ -138,6 +138,10 @@ public class TenantAdminDAOTest extends TestCase
         TenantEntity tenantEntity= getTenant(tenantDomain);
         assertNull(tenantEntity);
         
+        TenantEntity newTenantEntity = new TenantEntity();
+        newTenantEntity.setTenantDomain(tenantDomain);
+        newTenantEntity.setEnabled(false);
+        
         TenantEntity createTenantEntity = createTenant(tenantDomain, false);
         assertNotNull(createTenantEntity);
         
@@ -152,6 +156,10 @@ public class TenantAdminDAOTest extends TestCase
     public void testCreateTenantWithRollback() throws Exception
     {
         final String tenantDomain = getName() + "-" + System.currentTimeMillis();
+        
+        final TenantEntity newTenantEntity = new TenantEntity();
+        newTenantEntity.setTenantDomain(tenantDomain);
+        newTenantEntity.setEnabled(false);
         
         RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
         {
@@ -192,12 +200,24 @@ public class TenantAdminDAOTest extends TestCase
         assertEquals(createTenantEntity, tenantUpdateEntity);
         assertFalse(tenantUpdateEntity.getEnabled());
         
+        assertEquals(createTenantEntity.getTenantDomain(), tenantUpdateEntity.getTenantDomain());
+        assertEquals(createTenantEntity.getEnabled(), tenantUpdateEntity.getEnabled());
+        assertEquals(createTenantEntity.getTenantName(), tenantUpdateEntity.getTenantName());
+        assertEquals(createTenantEntity.getContentRoot(), tenantUpdateEntity.getContentRoot());
+        assertEquals(createTenantEntity.getDbUrl(), tenantUpdateEntity.getDbUrl());
+        
         tenantUpdateEntity.setEnabled(true);
         updateTenant(tenantUpdateEntity);
         
         tenantEntity = getTenant(tenantDomain);
         assertNotNull(tenantEntity);
         assertTrue(tenantEntity.getEnabled());
+        
+        assertEquals(tenantEntity.getTenantDomain(), tenantUpdateEntity.getTenantDomain());
+        assertEquals(tenantEntity.getEnabled(), tenantUpdateEntity.getEnabled());
+        assertEquals(tenantEntity.getTenantName(), tenantUpdateEntity.getTenantName());
+        assertEquals(tenantEntity.getContentRoot(), tenantUpdateEntity.getContentRoot());
+        assertEquals(tenantEntity.getDbUrl(), tenantUpdateEntity.getDbUrl());
         
         deleteTenant(tenantDomain);
         

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -290,9 +290,9 @@ public class AuthorityMigrationPatch extends AbstractPatch
                 // Disable rules
                 ruleService.disableRules();
                 // Authentication
-                String systemUser = AuthenticationUtil.getSystemUserName();
-                systemUser = tenantAdminService.getDomainUser(systemUser, tenantDomain);
-                AuthenticationUtil.setRunAsUser(systemUser);
+                // TODO tenant switch
+                String tenantSystemUser = tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
+                AuthenticationUtil.setRunAsUser(tenantSystemUser);
             }
 
             public void afterProcess() throws Throwable

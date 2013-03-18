@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,13 +25,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.PatchException;
@@ -43,6 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Base implementation of the patch. This class ensures that the patch is thread- and transaction-safe.
@@ -403,24 +404,24 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     {
         // downgrade integrity checking
         IntegrityChecker.setWarnInTransaction();
-
+        
         String report = applyInternal();
         
-    	if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
+        if ((tenantAdminService != null) && tenantAdminService.isEnabled() && applyToTenants)
         {
-        	List<Tenant> tenants = tenantAdminService.getAllTenants();	                            	
+            List<Tenant> tenants = tenantAdminService.getAllTenants();
             for (Tenant tenant : tenants)
-            {          
-            	String tenantDomain = tenant.getTenantDomain();
-            	String tenantReport = AuthenticationUtil.runAs(new RunAsWork<String>()
+            {
+                String tenantDomain = tenant.getTenantDomain();
+                String tenantReport = TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>()
                 {
-            		public String doWork() throws Exception
+                    public String doWork() throws Exception
                     {
-            			return applyInternal();
+                        return applyInternal();
                     }
-                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
-            	
-            	report = report + "\n" + tenantReport + " (for tenant: " + tenantDomain + ")";
+                }, tenantDomain);
+                
+                report = report + "\n" + tenantReport + " (for tenant: " + tenantDomain + ")";
             }
             
             return report;

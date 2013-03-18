@@ -102,6 +102,7 @@ public class MultiTDemoTest extends TestCase
     
     private NodeService nodeService;
     private NodeArchiveService nodeArchiveService;
+    private NamespaceService namespaceService;
     private MutableAuthenticationService authenticationService;
     private PersonService personService;
     private SiteService siteService;
@@ -175,6 +176,7 @@ public class MultiTDemoTest extends TestCase
         
         nodeService = (NodeService) ctx.getBean("NodeService");
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
+        namespaceService = (NamespaceService) ctx.getBean("NamespaceService");
         authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
         tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         tenantService = (TenantService) ctx.getBean("tenantService");
@@ -200,6 +202,7 @@ public class MultiTDemoTest extends TestCase
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
         
         createTenants();
+        createUsers();
     }
     
     @Override
@@ -216,23 +219,93 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public synchronized void test_ALF_17681() throws Exception
+    private void createTenant(final String tenantDomain)
+    {
+        // create tenants (if not already created)
+        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                if (! tenantAdminService.existsTenant(tenantDomain))
+                {
+                    //tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), ROOT_DIR + "/" + tenantDomain);
+                    tenantAdminService.createTenant(tenantDomain, (DEFAULT_ADMIN_PW+" "+tenantDomain).toCharArray(), null); // use default root dir
+                    
+                    logger.info("Created tenant " + tenantDomain);
+                }
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    private void deleteTenant(final String tenantDomain)
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                // delete tenant (if it exists)
+                TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        if (tenantAdminService.existsTenant(tenantDomain))
+                        {
+                            tenantAdminService.deleteTenant(tenantDomain);
+                            
+                            logger.info("Deleted tenant " + tenantDomain);
+                        }
+                        
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+                return null;
+            }
+        });
+    }
+    
+    private void createUsers()
+    {
+        for (final String tenantDomain : tenants)
+        {
+            String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
+            TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    createUser(TEST_USER1, tenantDomain, TEST_USER1+" "+tenantDomain);
+                    createUser(TEST_USER2, tenantDomain, TEST_USER2+" "+tenantDomain);
+                    
+                    if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
+                    {
+                        createUser(TEST_USER3, tenantDomain, TEST_USER3+" "+tenantDomain);
+                    }
+                    
+                    return null;
+                }
+            }, tenantAdminName);
+        }
+    }
+    
+    // note: needs to come before test10CreateCategories & test15COCIandSearch ?
+    public synchronized void test00_ALF_17681() throws Exception
     {
         // The issue was found on Lucene
         final String tenantDomain = TEST_RUN+".alf17681";
         final String query = "PATH:\"/app:company_home/app:dictionary\"";
-
+        
         // Create tenant
         createTenant(tenantDomain);
-
+        
         final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
         // Search for Data dictionary by tenant admin
         int count = searchForDataDictionary(tenantAdminName, query);
-
+        
         assertEquals("Data dictionary should be found for tenant. ", 1, count);
-
+        
         indexRecoverer.setRecoveryMode(FullIndexRecoveryComponent.RecoveryMode.FULL.name());
-
+        
         // reindex
         Thread reindexThread = new Thread()
         {
@@ -241,48 +314,57 @@ public class MultiTDemoTest extends TestCase
                 indexRecoverer.reindex();
             }
         };
-
+        
         reindexThread.start();
-
+        
         // must allow the rebuild to complete or the test after this one will fail to validate their indexes 
         // - as they now will be deleted.
         reindexThread.join();
-
+        
         // wait a bit and then terminate
         wait(20000);
         indexRecoverer.setShutdown(true);
         wait(20000);
-
+        
         // Search for Data dictionary by tenant admin
         int countAfter = searchForDataDictionary(tenantAdminName, query);
-
+        
         assertEquals("Data dictionary should be found for tenant after FULL reindex. ", 1, countAfter);
     }
     
-    private int searchForDataDictionary(String tenantAdminName, final String query)
+    /*
+    public void test00_Setup() throws Throwable
     {
-        return AuthenticationUtil.runAs(new RunAsWork<Integer>()
-        {
-            public Integer doWork() throws Exception
-            {
-                ResultSet resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query, null);
-                return resultSet.length();
-            }
-        }, tenantAdminName);
+        // test common setup (see "setUp")
     }
+    */
     
     public void test01CreateTenants() throws Throwable
-    {   
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
+    {
+        // ignore common setup - test here explicitly
         
         logger.info("Create tenants");
         
-        List<PersonInfo> persons = personService.getPeople(null, null, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
+        final String tenantDomain1 = TEST_RUN+".one.createTenant";
+        final String tenantDomain2 = TEST_RUN+".two.createTenant";
+        
+        String[] tenantDomains = new String[] {tenantDomain1, tenantDomain2 };
+        
+        for (final String tenantDomain : tenantDomains)
+        {
+            createTenant(tenantDomain);
+        }
+        
+        // check default (super-tenant) domain
+        
+        List<PersonInfo> persons = personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
+        
         //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
+        
         for (PersonInfo person : persons)
         {
             String userName = person.getUserName();
-            for (final String tenantDomain : tenants)
+            for (final String tenantDomain : tenantDomains)
             {
                 assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
             }
@@ -290,7 +372,7 @@ public class MultiTDemoTest extends TestCase
     }
     
     
-    private void deleteTestAuthoritiesForTenant(final String[] uniqueGroupNames, final String tenantName)
+    private void deleteTestAuthoritiesForTenant(final String[] uniqueGroupNames, final String userName)
     {
         // Check deletion for tenant1
         TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
@@ -298,7 +380,7 @@ public class MultiTDemoTest extends TestCase
             public Object doWork() throws Exception
             {
                 // find person
-                NodeRef personNodeRef = personService.getPerson(tenantName);
+                NodeRef personNodeRef = personService.getPerson(userName);
                 NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
                 assertNotNull(homeSpaceRef);
                 
@@ -309,9 +391,9 @@ public class MultiTDemoTest extends TestCase
                 }
                 return null;
             }
-        }, tenantName);
+        }, userName);
     }
-    private void createTestAuthoritiesForTenant(final String[] uniqueGroupNames, final String tenantName)
+    private void createTestAuthoritiesForTenant(final String[] uniqueGroupNames, final String userName)
     {
         // Create groups for tenant
         TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
@@ -319,7 +401,7 @@ public class MultiTDemoTest extends TestCase
             public Object doWork() throws Exception
             {
                 // find person
-                NodeRef personNodeRef = personService.getPerson(tenantName);
+                NodeRef personNodeRef = personService.getPerson(userName);
                 NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
                 assertNotNull(homeSpaceRef);
                 
@@ -331,17 +413,17 @@ public class MultiTDemoTest extends TestCase
                 
                 return null;
             }
-        }, tenantName);
+        }, userName);
     }
 
-    private void checkTestAuthoritiesPresence(final String[] uniqueGroupNames, final String tenantName, final boolean shouldPresent)
+    private void checkTestAuthoritiesPresence(final String[] uniqueGroupNames, final String userName, final boolean shouldPresent)
     {
         // Check that created permissions are not visible to tenant 2
         TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
-                NodeRef personNodeRef = personService.getPerson(tenantName);
+                NodeRef personNodeRef = personService.getPerson(userName);
                 NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
                 Set<AccessPermission> perms = permissionService.getAllSetPermissions(homeSpaceRef);
                 Set<String> auths = authorityService.getAllAuthorities(AuthorityType.GROUP);
@@ -363,12 +445,314 @@ public class MultiTDemoTest extends TestCase
                 
                 return null;
             }
-        }, tenantName);
+        }, userName);
     }
     
-    // TODO fix CLOUD-1348
-    public void xtest02NonSharedGroupDeletion()
+    private void createGroup(String shortName, String parentShortName)
     {
+        // create new Group using authority Service
+        String groupName = this.authorityService.getName(AuthorityType.GROUP, shortName);
+        if (this.authorityService.authorityExists(groupName) == false)
+        {
+           String parentGroupName = null;
+           if (parentShortName != null)
+           {
+               parentGroupName = this.authorityService.getName(AuthorityType.GROUP, parentShortName);
+               if (this.authorityService.authorityExists(parentGroupName) == false)
+               {
+                   logger.warn("Parent group does not exist: " + parentShortName);
+                   return;
+               }
+           }
+           
+           this.authorityService.createAuthority(AuthorityType.GROUP, shortName);
+           
+           if (parentGroupName != null)
+           {
+               addToGroup(parentShortName, groupName);
+           }
+        }
+        else
+        {
+            logger.warn("Group already exists: " + shortName);
+        }
+    }
+    
+    private void addToGroup(String parentGroupShortName, String authorityName)
+    {
+        String parentGroupName = this.authorityService.getName(AuthorityType.GROUP, parentGroupShortName);
+        authorityService.addAuthority(parentGroupName, authorityName);
+    }
+    
+    private NodeRef createUser(String baseUserName, String tenantDomain, String password)
+    {
+        String userName = tenantService.getDomainUser(baseUserName, tenantDomain);
+        
+        NodeRef personNodeRef = null;
+        
+        if (! this.authenticationService.authenticationExists(userName))
+        {
+            NodeRef baseHomeFolder = getUserHomesNodeRef(SPACES_STORE);
+            
+            // Create the users home folder
+            NodeRef homeFolder = createHomeSpaceFolderNode(
+                                                baseHomeFolder,
+                                                baseUserName,
+                                                userName);
+            
+            // Create the authentication
+            this.authenticationService.createAuthentication(userName, password.toCharArray());
+            
+            // Create the person
+            Map<QName, Serializable> personProperties = new HashMap<QName, Serializable>();
+            personProperties.put(ContentModel.PROP_USERNAME, userName);
+            personProperties.put(ContentModel.PROP_HOMEFOLDER, homeFolder);
+            personProperties.put(ContentModel.PROP_FIRSTNAME, baseUserName);
+            personProperties.put(ContentModel.PROP_LASTNAME, baseUserName+"-"+tenantDomain); // add domain suffix here for demo only
+            personProperties.put(ContentModel.PROP_EMAIL, userName);
+            
+            personNodeRef = this.personService.createPerson(personProperties);
+            
+            // ensure the user can access their own Person object
+            this.permissionService.setPermission(personNodeRef, userName, permissionService.getAllPermission(), true);
+            
+            NodeRef checkHomeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+            assertNotNull(checkHomeSpaceRef);
+            
+            logger.info("Created user " + userName);
+        }
+        else
+        {
+            personNodeRef = personService.getPerson(userName);
+            
+            logger.info("Found existing user " + userName);
+        }
+        
+        return personNodeRef;
+    }
+    
+    private void loginLogoutUser(String username, String password)
+    {
+        // authenticate via the authentication service
+        authenticationService.authenticate(username, password.toCharArray());
+        
+        // set the user name as stored by the back end 
+        username = authenticationService.getCurrentUserName();
+        
+        NodeRef personRef = personService.getPerson(username);
+        NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+        
+        // check that the home space node exists - else user cannot login
+        if (nodeService.exists(homeSpaceRef) == false)
+        {
+           throw new InvalidNodeRefException(homeSpaceRef);
+        }
+        
+        // logout
+        authenticationService.clearCurrentSecurityContext();
+    }
+    
+    private NodeRef getUserHomesNodeRef(StoreRef storeRef)
+    {
+        // get the "User Homes" location
+        return findFolderNodeRef(storeRef, "/app:company_home/app:user_homes");
+    }
+    
+    private NodeRef getWebClientExtensionNodeRef(StoreRef storeRef)
+    {
+        // get the "Web Client Extensions" location
+        return findFolderNodeRef(storeRef, "/app:company_home/app:dictionary/app:webclient_extension");
+    }
+    
+    private NodeRef findFolderNodeRef(StoreRef storeRef, String folderXPath)
+    {
+        NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+        
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, folderXPath, null, namespaceService, false);
+        
+        NodeRef folderNodeRef = null;
+        if (nodeRefs.size() != 1)
+        {
+            throw new AlfrescoRuntimeException("Cannot find folder location: " + folderXPath);
+        }
+        else
+        {
+            folderNodeRef = nodeRefs.get(0);
+        }
+        return folderNodeRef;
+    }
+    
+    private NodeRef createFolderNode(NodeRef parentFolderNodeRef, String nameValue)
+    {
+        if (nameValue != null)
+        {       
+            Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>();
+            folderProps.put(ContentModel.PROP_NAME, nameValue);
+            
+            return this.nodeService.createNode(
+                    parentFolderNodeRef, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nameValue),
+                    ContentModel.TYPE_FOLDER,
+                    folderProps).getChildRef();
+        }
+        
+        return null;
+    }
+    
+    private NodeRef createCategory(StoreRef storeRef, NodeRef parentCategoryRef, String name, String description)
+    {
+        // create category using categoryservice
+        NodeRef ref;
+        if (parentCategoryRef == null)
+        {
+           ref = this.categoryService.createRootCategory(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, name);
+        }
+        else
+        {
+           ref = categoryService.createCategory(parentCategoryRef, name);
+        }
+        
+        // apply the titled aspect - for description
+        Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
+        titledProps.put(ContentModel.PROP_DESCRIPTION, description);
+        this.nodeService.addAspect(ref, ContentModel.ASPECT_TITLED, titledProps);
+        
+        return ref;
+    }
+    
+    private NodeRef createHomeSpaceFolderNode(NodeRef folderNodeRef, String spaceName, String userName)
+    {
+        if (spaceName != null)
+        {       
+            Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>();
+            folderProps.put(ContentModel.PROP_NAME, spaceName);
+            
+            NodeRef nodeRef = this.nodeService.createNode(
+                                                folderNodeRef, 
+                                                ContentModel.ASSOC_CONTAINS, 
+                                                QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, spaceName),
+                                                ContentModel.TYPE_FOLDER,
+                                                folderProps).getChildRef();
+            
+            // apply the uifacets aspect - icon and title props
+            Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(3);
+            uiFacetsProps.put(ApplicationModel.PROP_ICON, "space-icon-default");
+            uiFacetsProps.put(ContentModel.PROP_TITLE, spaceName);
+            this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
+            
+            setupHomeSpacePermissions(nodeRef, userName);
+            
+            return nodeRef;
+        }
+        
+        return null;
+    }
+    
+    private void setupHomeSpacePermissions(NodeRef homeSpaceRef, String userName)
+    {
+       // Admin Authority has full permissions by default (automatic - set in the permission config)
+       // give full permissions to the new user
+       this.permissionService.setPermission(homeSpaceRef, userName, permissionService.getAllPermission(), true);
+       
+       // by default other users will only have GUEST access to the space contents
+       String permission = "Consumer";
+       
+       if (permission != null && permission.length() != 0)
+       {
+          this.permissionService.setPermission(homeSpaceRef, permissionService.getAllAuthorities(), permission, true);
+       }
+       
+       // the new user is the OWNER of their own space and always has full permissions
+       this.ownableService.setOwner(homeSpaceRef, userName);
+       this.permissionService.setPermission(homeSpaceRef, permissionService.getOwnerAuthority(), permissionService.getAllPermission(), true);
+       
+       // now detach (if we did this first we could not set any permissions!)
+       this.permissionService.setInheritParentPermissions(homeSpaceRef, false);
+    }
+    
+    private NodeRef getHomeSpaceFolderNode(String userName)
+    {
+        return (NodeRef)this.nodeService.getProperty(personService.getPerson(userName), ContentModel.PROP_HOMEFOLDER);
+    }
+    
+    private NodeRef addContent(NodeRef spaceRef, String name, String textData, String mimeType)
+    {
+        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+        contentProps.put(ContentModel.PROP_NAME, name);
+        
+        ChildAssociationRef association = nodeService.createNode(spaceRef,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                ContentModel.TYPE_CONTENT,
+                contentProps);
+        
+        NodeRef content = association.getChildRef();
+        
+        // add titled aspect (for Web Client display)
+        Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
+        titledProps.put(ContentModel.PROP_TITLE, name);
+        titledProps.put(ContentModel.PROP_DESCRIPTION, name);
+        this.nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
+        
+        ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
+        
+        writer.setMimetype(mimeType);
+        writer.setEncoding("UTF-8");
+        
+        writer.putContent(textData);
+        
+        return content;
+    }
+    
+    private NodeRef addContent(NodeRef spaceRef, String name, InputStream is, String mimeType)
+    {
+        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+        contentProps.put(ContentModel.PROP_NAME, name);
+        
+        ChildAssociationRef association = nodeService.createNode(spaceRef,
+                ContentModel.ASSOC_CONTAINS, 
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
+                ContentModel.TYPE_CONTENT,
+                contentProps);
+        
+        NodeRef content = association.getChildRef();
+        
+        // add titled aspect (for Web Client display)
+        Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
+        titledProps.put(ContentModel.PROP_TITLE, name);
+        titledProps.put(ContentModel.PROP_DESCRIPTION, name);
+        this.nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
+        
+        ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
+        
+        writer.setMimetype(mimeType);
+        writer.setEncoding("UTF-8");
+        
+        writer.putContent(is);
+        
+        return content;
+    }
+    
+    private SiteInfo createSite(String siteId)
+    {
+        SiteInfo siteInfo = siteService.createSite(null, siteId, "title - "+siteId, "description - "+siteId, SiteVisibility.PRIVATE);
+        
+        // ensure that the Document Library folder is pre-created so that test code can start creating content straight away.
+        // At the time of writing V4.1 does not create this folder automatically, but Thor does.
+        NodeRef result = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
+        if (result == null)
+        {
+            result = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+        }
+        
+        return siteInfo;
+    }
+    
+    public void test02NonSharedGroupDeletion()
+    {
+        // ignore common setup - test here explicitly
+        
         final String tenantDomain1 = TEST_RUN+".groupdel1";
         final String tenantDomain2 = TEST_RUN+".groupdel2";
         
@@ -434,9 +818,10 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    // TODO fix CLOUD-1348
-    public void xtest03SharedGroupDeletion()
+    public void test03SharedGroupDeletion()
     {
+        // ignore common setup - test here explicitly
+        
         final String tenantDomain1 = TEST_RUN+".groupdel3";
         final String tenantDomain2 = TEST_RUN+".groupdel4";
         
@@ -526,54 +911,11 @@ public class MultiTDemoTest extends TestCase
     }
     
     
-    private void createTenant(final String tenantDomain)
-    {
-        // create tenants (if not already created)
-        TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                if (! tenantAdminService.existsTenant(tenantDomain))
-                {
-                    //tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), ROOT_DIR + "/" + tenantDomain);
-                    tenantAdminService.createTenant(tenantDomain, (DEFAULT_ADMIN_PW+" "+tenantDomain).toCharArray(), null); // use default root dir
-                    
-                    logger.info("Created tenant " + tenantDomain);
-                }
-                
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-    }
-    
-    private void deleteTenant(final String tenantDomain)
-    {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable
-            {
-                // delete tenant (if it exists)
-                TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
-                {
-                    public Object doWork() throws Exception
-                    {
-                        if (tenantAdminService.existsTenant(tenantDomain))
-                        {
-                            tenantAdminService.deleteTenant(tenantDomain);
-                            
-                            logger.info("Deleted tenant " + tenantDomain);
-                        }
-                        
-                        return null;
-                    }
-                }, AuthenticationUtil.getSystemUserName());
-                return null;
-            }
-        });
-    }
     
     public void test04_ETHREEOH_2015()
     {
+        // ignore common setup - test here explicitly
+        
         final String tenantDomain1 = TEST_RUN+".one.ethreeoh2015";
         final String tenantDomain2 = TEST_RUN+".two.ethreeoh2015";
         
@@ -607,44 +949,32 @@ public class MultiTDemoTest extends TestCase
     }
     
     
-    public void test05CreateUsers() throws Throwable
+    public void test05ValidateUsers() throws Throwable
     {
-        logger.info("Create demo users");
+        // use common setup
+        logger.info("Validate demo users");
         
-        List<PersonInfo> persons = personService.getPeople(null, null, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
-        //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
-        for (PersonInfo person : persons)
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            String userName = person.getUserName();
-            for (final String tenantDomain : tenants)
+            public Object doWork() throws Exception
             {
-                assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
+                List<PersonInfo> persons = personService.getPeople(null, true, null, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
+                //assertEquals(2, personRefs.size()); // super-tenant: admin, guest (note: checking for 2 assumes that this test is run in a fresh bootstrap env)
+                for (PersonInfo person : persons)
+                {
+                    String userName = person.getUserName();
+                    for (final String tenantDomain : tenants)
+                    {
+                        assertFalse("Unexpected (tenant) user: "+userName, userName.endsWith(tenantDomain));
+                    }
+                }
+                
+                return null;
             }
-        }
+        }, AuthenticationUtil.getAdminUserName());
         
         try
         {
-            for (final String tenantDomain : tenants)
-            {
-                String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
-                
-                TenantUtil.runAsPrimaryTenant(new TenantRunAsWork<Object>()
-                {
-                    public Object doWork() throws Exception
-                    {
-                        createUser(TEST_USER1, tenantDomain, TEST_USER1+" "+tenantDomain);
-                        createUser(TEST_USER2, tenantDomain, TEST_USER2+" "+tenantDomain);
-                        
-                        if (tenantDomain.equals(TEST_TENANT_DOMAIN2))
-                        {
-                            createUser(TEST_USER3, tenantDomain, TEST_USER3+" "+tenantDomain);
-                        }
-                        
-                        return null;
-                    }
-                }, tenantAdminName);
-            }
-            
             for (final String tenantDomain : tenants)
             {
                 String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
@@ -662,7 +992,7 @@ public class MultiTDemoTest extends TestCase
                             String userName = (String)nodeService.getProperty(personRef, ContentModel.PROP_USERNAME); 
                             assertTrue(userName.endsWith(tenantDomain));
                             
-                            logger.info("Create users: get all people - found user: "+userName);
+                            logger.info("Validate users: get all people - found user: "+userName);
                             
                             NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
                             assertNotNull(homeSpaceRef);
@@ -693,6 +1023,7 @@ public class MultiTDemoTest extends TestCase
     
     public void test06LoginTenantUsers() throws Throwable
     {
+        // use common setup
         logger.info("Login tenant users");
         
         try
@@ -1369,23 +1700,9 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    // TODO fix CLOUD-1348
-    // pseudo cleanup - if this test runs last
-    public void xtest20DeleteAllTenants()
-    {
-        logger.info("test delete tenants");
-        
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
-        List<Tenant> allTenants = tenantAdminService.getAllTenants();
-        for (final Tenant tenant : allTenants)
-        {    
-            deleteTenant(tenant.getTenantDomain());
-        }
-    }
     
     // TODO pending CLOUD-1350 fix
-    public void xtest21_ALF_12732()
+    public void xtest20_ALF_12732()
     {
         final String tenantDomain1 = TEST_RUN+".one.alf12732";
         
@@ -1425,7 +1742,7 @@ public class MultiTDemoTest extends TestCase
         }
     }
     
-    public void test22_ALF_14354()
+    public void test21_ALF_14354()
     {
         final String tenantDomain1 = TEST_RUN+".one.alf14354";
         final String tenantDomain2 = TEST_RUN+".two.alf14354";
@@ -1460,304 +1777,31 @@ public class MultiTDemoTest extends TestCase
         }, tenantAdminName);
     }
     
-    private void createGroup(String shortName, String parentShortName)
+
+    private int searchForDataDictionary(String tenantAdminName, final String query)
     {
-        // create new Group using authority Service
-        String groupName = this.authorityService.getName(AuthorityType.GROUP, shortName);
-        if (this.authorityService.authorityExists(groupName) == false)
+        return AuthenticationUtil.runAs(new RunAsWork<Integer>()
         {
-           String parentGroupName = null;
-           if (parentShortName != null)
-           {
-               parentGroupName = this.authorityService.getName(AuthorityType.GROUP, parentShortName);
-               if (this.authorityService.authorityExists(parentGroupName) == false)
-               {
-                   logger.warn("Parent group does not exist: " + parentShortName);
-                   return;
-               }
-           }
-           
-           this.authorityService.createAuthority(AuthorityType.GROUP, shortName);
-           
-           if (parentGroupName != null)
-           {
-               addToGroup(parentShortName, groupName);
-           }
+            public Integer doWork() throws Exception
+            {
+                ResultSet resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query, null);
+                return resultSet.length();
+            }
+        }, tenantAdminName);
+    }
+    
+    // pseudo cleanup - if this test runs last
+    public void test22DeleteAllTenants()
+    {
+        logger.info("test delete tenants");
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        List<Tenant> allTenants = tenantAdminService.getAllTenants();
+        for (final Tenant tenant : allTenants)
+        {    
+            deleteTenant(tenant.getTenantDomain());
         }
-        else
-        {
-            logger.warn("Group already exists: " + shortName);
-        }
-    }
-    
-    private void addToGroup(String parentGroupShortName, String authorityName)
-    {
-        String parentGroupName = this.authorityService.getName(AuthorityType.GROUP, parentGroupShortName);
-        authorityService.addAuthority(parentGroupName, authorityName);
-    }
-    
-    private NodeRef createUser(String baseUserName, String tenantDomain, String password)
-    {
-        String userName = tenantService.getDomainUser(baseUserName, tenantDomain);
-        
-        NodeRef personNodeRef = null;
-        
-        if (! this.authenticationService.authenticationExists(userName))
-        {
-            NodeRef baseHomeFolder = getUserHomesNodeRef(SPACES_STORE);
-            
-            // Create the users home folder
-            NodeRef homeFolder = createHomeSpaceFolderNode(
-                                                baseHomeFolder,
-                                                baseUserName,
-                                                userName);
-            
-            // Create the authentication
-            this.authenticationService.createAuthentication(userName, password.toCharArray());
-            
-            // Create the person
-            Map<QName, Serializable> personProperties = new HashMap<QName, Serializable>();
-            personProperties.put(ContentModel.PROP_USERNAME, userName);
-            personProperties.put(ContentModel.PROP_HOMEFOLDER, homeFolder);
-            personProperties.put(ContentModel.PROP_FIRSTNAME, baseUserName);
-            personProperties.put(ContentModel.PROP_LASTNAME, baseUserName+"-"+tenantDomain); // add domain suffix here for demo only
-            personProperties.put(ContentModel.PROP_EMAIL, userName);
-            
-            personNodeRef = this.personService.createPerson(personProperties);
-            
-            // ensure the user can access their own Person object
-            this.permissionService.setPermission(personNodeRef, userName, permissionService.getAllPermission(), true);
-            
-            NodeRef checkHomeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
-            assertNotNull(checkHomeSpaceRef);
-            
-            logger.info("Created user " + userName);
-        }
-        else
-        {
-            personNodeRef = personService.getPerson(userName);
-            
-            logger.info("Found existing user " + userName);
-        }
-        
-        return personNodeRef;
-    }
-    
-    private void loginLogoutUser(String username, String password)
-    {
-        // authenticate via the authentication service
-        authenticationService.authenticate(username, password.toCharArray());
-        
-        // set the user name as stored by the back end 
-        username = authenticationService.getCurrentUserName();
-        
-        NodeRef personRef = personService.getPerson(username);
-        NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-        
-        // check that the home space node exists - else user cannot login
-        if (nodeService.exists(homeSpaceRef) == false)
-        {
-           throw new InvalidNodeRefException(homeSpaceRef);
-        }
-        
-        // logout
-        authenticationService.clearCurrentSecurityContext();
-    }
-    
-    private NodeRef getUserHomesNodeRef(StoreRef storeRef)
-    {
-        // get the "User Homes" location
-        return findFolderNodeRef(storeRef, "/app:company_home/app:user_homes");
-    }
-    
-    private NodeRef getWebClientExtensionNodeRef(StoreRef storeRef)
-    {
-        // get the "Web Client Extensions" location
-        return findFolderNodeRef(storeRef, "/app:company_home/app:dictionary/app:webclient_extension");
-    }
-    
-    private NodeRef findFolderNodeRef(StoreRef storeRef, String folderXPath)
-    {
-        ResultSet rs = this.searchService.query(storeRef, SearchService.LANGUAGE_XPATH, folderXPath);
-        
-        NodeRef folderNodeRef = null;
-        if (rs.length() != 1)
-        {
-            throw new AlfrescoRuntimeException("Cannot find folder location: " + folderXPath);
-        }
-        else
-        {
-            folderNodeRef = rs.getNodeRef(0);
-        }
-        rs.close();
-        return folderNodeRef;
-    }
-    
-    private NodeRef createFolderNode(NodeRef parentFolderNodeRef, String nameValue)
-    {
-        if (nameValue != null)
-        {       
-            Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>();
-            folderProps.put(ContentModel.PROP_NAME, nameValue);
-            
-            return this.nodeService.createNode(
-                    parentFolderNodeRef, 
-                    ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nameValue),
-                    ContentModel.TYPE_FOLDER,
-                    folderProps).getChildRef();
-        }
-        
-        return null;
-    }
-    
-    private NodeRef createCategory(StoreRef storeRef, NodeRef parentCategoryRef, String name, String description)
-    {
-        // create category using categoryservice
-        NodeRef ref;
-        if (parentCategoryRef == null)
-        {
-           ref = this.categoryService.createRootCategory(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, name);
-        }
-        else
-        {
-           ref = categoryService.createCategory(parentCategoryRef, name);
-        }
-        
-        // apply the titled aspect - for description
-        Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-        titledProps.put(ContentModel.PROP_DESCRIPTION, description);
-        this.nodeService.addAspect(ref, ContentModel.ASPECT_TITLED, titledProps);
-        
-        return ref;
-    }
-    
-    private NodeRef createHomeSpaceFolderNode(NodeRef folderNodeRef, String spaceName, String userName)
-    {
-        if (spaceName != null)
-        {       
-            Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>();
-            folderProps.put(ContentModel.PROP_NAME, spaceName);
-            
-            NodeRef nodeRef = this.nodeService.createNode(
-                                                folderNodeRef, 
-                                                ContentModel.ASSOC_CONTAINS, 
-                                                QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, spaceName),
-                                                ContentModel.TYPE_FOLDER,
-                                                folderProps).getChildRef();
-            
-            // apply the uifacets aspect - icon and title props
-            Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(3);
-            uiFacetsProps.put(ApplicationModel.PROP_ICON, "space-icon-default");
-            uiFacetsProps.put(ContentModel.PROP_TITLE, spaceName);
-            this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
-            
-            setupHomeSpacePermissions(nodeRef, userName);
-            
-            return nodeRef;
-        }
-        
-        return null;
-    }
-    
-    private void setupHomeSpacePermissions(NodeRef homeSpaceRef, String userName)
-    {
-       // Admin Authority has full permissions by default (automatic - set in the permission config)
-       // give full permissions to the new user
-       this.permissionService.setPermission(homeSpaceRef, userName, permissionService.getAllPermission(), true);
-       
-       // by default other users will only have GUEST access to the space contents
-       String permission = "Consumer";
-       
-       if (permission != null && permission.length() != 0)
-       {
-          this.permissionService.setPermission(homeSpaceRef, permissionService.getAllAuthorities(), permission, true);
-       }
-       
-       // the new user is the OWNER of their own space and always has full permissions
-       this.ownableService.setOwner(homeSpaceRef, userName);
-       this.permissionService.setPermission(homeSpaceRef, permissionService.getOwnerAuthority(), permissionService.getAllPermission(), true);
-       
-       // now detach (if we did this first we could not set any permissions!)
-       this.permissionService.setInheritParentPermissions(homeSpaceRef, false);
-    }
-    
-    private NodeRef getHomeSpaceFolderNode(String userName)
-    {
-        return (NodeRef)this.nodeService.getProperty(personService.getPerson(userName), ContentModel.PROP_HOMEFOLDER);
-    }
-    
-    private NodeRef addContent(NodeRef spaceRef, String name, String textData, String mimeType)
-    {
-        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-        contentProps.put(ContentModel.PROP_NAME, name);
-        
-        ChildAssociationRef association = nodeService.createNode(spaceRef,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
-                ContentModel.TYPE_CONTENT,
-                contentProps);
-        
-        NodeRef content = association.getChildRef();
-        
-        // add titled aspect (for Web Client display)
-        Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
-        titledProps.put(ContentModel.PROP_TITLE, name);
-        titledProps.put(ContentModel.PROP_DESCRIPTION, name);
-        this.nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
-        
-        ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
-        
-        writer.setMimetype(mimeType);
-        writer.setEncoding("UTF-8");
-        
-        writer.putContent(textData);
-        
-        return content;
-    }
-    
-    private NodeRef addContent(NodeRef spaceRef, String name, InputStream is, String mimeType)
-    {
-        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-        contentProps.put(ContentModel.PROP_NAME, name);
-        
-        ChildAssociationRef association = nodeService.createNode(spaceRef,
-                ContentModel.ASSOC_CONTAINS, 
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name), 
-                ContentModel.TYPE_CONTENT,
-                contentProps);
-        
-        NodeRef content = association.getChildRef();
-        
-        // add titled aspect (for Web Client display)
-        Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
-        titledProps.put(ContentModel.PROP_TITLE, name);
-        titledProps.put(ContentModel.PROP_DESCRIPTION, name);
-        this.nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProps);
-        
-        ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
-        
-        writer.setMimetype(mimeType);
-        writer.setEncoding("UTF-8");
-        
-        writer.putContent(is);
-        
-        return content;
-    }
-    
-    private SiteInfo createSite(String siteId)
-    {
-        SiteInfo siteInfo = siteService.createSite(null, siteId, "title - "+siteId, "description - "+siteId, SiteVisibility.PRIVATE);
-        
-        // ensure that the Document Library folder is pre-created so that test code can start creating content straight away.
-        // At the time of writing V4.1 does not create this folder automatically, but Thor does.
-        NodeRef result = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
-        if (result == null)
-        {
-            result = siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
-        }
-        
-        return siteInfo;
     }
     
     /*

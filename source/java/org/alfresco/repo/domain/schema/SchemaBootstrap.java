@@ -751,6 +751,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         try
         {
             stmt.executeUpdate("drop table alf_bootstrap_lock");
+
+            // from Thor
+            executedStatementsThreadLocal.set(null);
         }
         catch (Throwable e)
         {
@@ -791,6 +794,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         
         if (create)
         {
+            long start = System.currentTimeMillis();
+            
             // execute pre-create scripts (not patches)
             for (String scriptUrl : this.preCreateScriptUrls)
             {
@@ -827,6 +832,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             for (String scriptUrl : this.postCreateScriptUrls)
             {
                 executeScriptUrl(cfg, connection, scriptUrl);
+            }
+
+            if (logger.isInfoEnabled())
+            {
+                logger.info("Create scripts executed in "+(System.currentTimeMillis()-start)+" ms");
             }
         }
         else
@@ -1478,12 +1488,16 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             SchemaBootstrap.setMaxStringLength(maximumStringLength);
         }
     }
-
+    
     @Override
-    protected synchronized void onBootstrap(ApplicationEvent event)
+    public synchronized void onBootstrap(ApplicationEvent event)
     {
-        // Use the application context to load resources
-        rpr = (ApplicationContext)event.getSource();
+        // from Thor
+        if (event != null)
+        {
+            // Use the application context to load resources
+            rpr = (ApplicationContext)event.getSource();
+        }
         
         // do everything in a transaction
         Session session = getSessionFactory().openSession();
@@ -1602,9 +1616,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
             // Reset the configuration
             cfg.setProperty(Environment.CONNECTION_PROVIDER, defaultConnectionProviderFactoryClass);
-            
-            // all done successfully
-            ((ApplicationContext) event.getSource()).publishEvent(new SchemaAvailableEvent(this));
+
+            if (event != null)
+            {
+                // all done successfully
+                ((ApplicationContext) event.getSource()).publishEvent(new SchemaAvailableEvent(this));
+            }
         }
         catch (BootstrapStopException e)
         {

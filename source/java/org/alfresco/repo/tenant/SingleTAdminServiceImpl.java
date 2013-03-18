@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -146,7 +146,12 @@ public class SingleTAdminServiceImpl implements TenantAdminService
     /**
      * @throws UnsupportedOperationException        always
      */
-    public void createTenant(String tenantDomain, char[] adminRawPassword, String rootContentStoreDir)
+    public void createTenant(String tenantDomain, char[] adminRawPassword, String contentRoot)
+    {
+        throw new UnsupportedOperationException("Single tenant mode is active.");
+    }
+    
+    public void createTenant(String tenantDomain, char[] adminRawPassword, String contentRoot, String dbUrl)
     {
         throw new UnsupportedOperationException("Single tenant mode is active.");
     }

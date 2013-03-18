@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -54,6 +53,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantDomainMismatchException;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -154,8 +155,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     /** a transactionally-safe cache to be injected */
     private SimpleCache<String, Set<NodeRef>> personCache;
     
-    /** People Container ref cache (Tennant aware) */
-    private Map<String, NodeRef> peopleContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    private SimpleCache<String, Object> singletonCache; // eg. for peopleContainerNodeRef
+    private final String KEY_PEOPLECONTAINER_NODEREF = "key.peoplecontainer.noderef";
     
     private UserNameMatcher userNameMatcher;
     
@@ -238,7 +240,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 ContentModel.TYPE_USER,
                 new JavaBehaviour(this, "onUpdatePropertiesUser"));
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -281,17 +283,22 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     {
         this.serviceRegistry = serviceRegistry;
     }
-
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-
+    
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-
+    
+    public void setSingletonCache(SimpleCache<String, Object> singletonCache)
+    {
+        this.singletonCache = singletonCache;
+    }
+    
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
@@ -440,13 +447,13 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             final String tenantDomain = tenantService.getUserDomain(userName);
             
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
             {
                 public NodeRef doWork() throws Exception
                 {
                     return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, exceptionOrNull);
                 }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+            }, tenantDomain);
         }
         else
         {
@@ -1068,33 +1075,32 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public NodeRef getPeopleContainer()
     {
-        String cacheKey = tenantService.getCurrentUserDomain();
-        NodeRef peopleNodeRef = peopleContainerRefs.get(cacheKey);
+        NodeRef peopleNodeRef = (NodeRef)singletonCache.get(KEY_PEOPLECONTAINER_NODEREF);
         if (peopleNodeRef == null)
         {
-            NodeRef rootNodeRef = nodeService.getRootNode(tenantService.getName(storeRef));
+            NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
             List<ChildAssociationRef> children = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL,
                     QName.createQName(SYSTEM_FOLDER_SHORT_QNAME, namespacePrefixResolver), false);
-
+            
             if (children.size() == 0)
             {
                 throw new AlfrescoRuntimeException("Required people system path not found: "
                         + SYSTEM_FOLDER_SHORT_QNAME);
             }
-
+            
             NodeRef systemNodeRef = children.get(0).getChildRef();
-
+            
             children = nodeService.getChildAssocs(systemNodeRef, RegexQNamePattern.MATCH_ALL, QName.createQName(
                     PEOPLE_FOLDER_SHORT_QNAME, namespacePrefixResolver), false);
-
+            
             if (children.size() == 0)
             {
                 throw new AlfrescoRuntimeException("Required people system path not found: "
                         + PEOPLE_FOLDER_SHORT_QNAME);
             }
-
+            
             peopleNodeRef = children.get(0).getChildRef();
-            peopleContainerRefs.put(cacheKey, peopleNodeRef);
+            singletonCache.put(KEY_PEOPLECONTAINER_NODEREF, peopleNodeRef);
         }
         return peopleNodeRef;
     }
@@ -1113,7 +1119,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         
         NodeRef personRef = getPersonOrNullImpl(userName);
         
-        deletePersonImpl(userName, personRef);
+        deletePersonAndAuthenticationImpl(userName, personRef);
     }
     
     /**
@@ -1125,7 +1131,31 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         if (typeQName.equals(ContentModel.TYPE_PERSON))
         {
             String userName = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
-            deletePersonImpl(userName, personRef);  
+            deletePersonAndAuthenticationImpl(userName, personRef);  
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("deletePerson: invalid type of node "+personRef+" (actual="+typeQName+", expected="+ContentModel.TYPE_PERSON+")");
+        }
+    }
+
+    /**
+     * {@inheritDoc} 
+     */
+    public void deletePerson(NodeRef personRef, boolean deleteAuthentication)
+    {
+        QName typeQName = nodeService.getType(personRef);
+        if (typeQName.equals(ContentModel.TYPE_PERSON))
+        {
+            if (deleteAuthentication)
+            {
+                String userName = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+                deletePersonAndAuthenticationImpl(userName, personRef);
+            }
+            else
+            {
+                deletePersonImpl(personRef);
+            }
         }
         else
         {
@@ -1133,7 +1163,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
     }
     
-    private void deletePersonImpl(String userName, NodeRef personRef)
+    
+    private void deletePersonAndAuthenticationImpl(String userName, NodeRef personRef)
     {
         if (userName != null)
         {
@@ -1161,6 +1192,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             permissionServiceSPI.deletePermissions(userName);
         }
         
+        deletePersonImpl(personRef);
+    }
+    
+    private void deletePersonImpl(NodeRef personRef)
+    {
         // delete the person
         if (personRef != null)
         {
@@ -1185,7 +1221,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {    
             AlfrescoTransactionSupport.bindListener(this);
         }
-  
     }
     
     /**

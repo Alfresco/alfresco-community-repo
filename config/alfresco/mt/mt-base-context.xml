@@ -33,6 +33,14 @@
       <property name="moduleService" ref="moduleService"/>
       <property name="baseAdminUsername" value="${alfresco_user_store.adminusername}"/>
       <property name="thumbnailRegistry" ref="thumbnailRegistry"/>
+
+      <!-- TODO review
+      <property name="contentRootContainerPath" value="${dir.contentstore}-tenants"/>
+      -->
+      
+      <!-- Experimental: Thor
+      <property name="tenantRoutingDataSource" ref="defaultDataSource"/>
+      -->
    </bean>
    
    <bean id="baseTenantRoutingContentStore" class="org.alfresco.repo.tenant.AbstractTenantRoutingContentStore" abstract="true">

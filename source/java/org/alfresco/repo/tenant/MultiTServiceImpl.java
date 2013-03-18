@@ -712,7 +712,7 @@ public class MultiTServiceImpl implements TenantService
         Tenant tenant = null;
         if (tenantEntity != null)
         {
-            tenant = new Tenant(tenantEntity.getTenantDomain(), tenantEntity.getEnabled(), tenantEntity.getContentRoot());
+            tenant = new Tenant(tenantEntity.getTenantDomain(), tenantEntity.getEnabled(), tenantEntity.getContentRoot(), null);
         }
         return tenant;
     }

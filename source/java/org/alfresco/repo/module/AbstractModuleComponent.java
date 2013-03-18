@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -361,5 +361,12 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
             // There are no second chances
         	executed.put(tenantDomain, true);
         }
+    }
+
+    // from Thor
+    public final synchronized void shutdown()
+    {
+        String tenantDomain = tenantAdminService.getCurrentUserDomain();
+        executed.put(tenantDomain, false);
     }
 }

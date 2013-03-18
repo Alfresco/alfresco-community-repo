@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -106,6 +106,17 @@ public class CMISStrictDictionaryService extends CMISAbstractDictionaryService
     {
         CMISTypeId typeId = cmisMapping.getCmisTypeId(CMISScope.RELATIONSHIP, CMISMapping.RELATIONSHIP_QNAME);
         ClassDefinition classDef = dictionaryService.getClass(cmisMapping.getCmisType(typeId.getQName()));
+
+        // from Thor
+        if (classDef == null)
+        {
+            if (classQNames.size() != 0)
+            {
+                logger.warn("Unexpected - no class for "+cmisMapping.getCmisType(typeId.getQName())+" - cannot create assocDefs for: "+classQNames);
+            }
+            return;
+        }
+        
         CMISAbstractTypeDefinition objectTypeDef = new CMISRelationshipTypeDefinition(cmisMapping, typeId, dictionaryService, classDef, null);
         registry.registerTypeDefinition(objectTypeDef);
         

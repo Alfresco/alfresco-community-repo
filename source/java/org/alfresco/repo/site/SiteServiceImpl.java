@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,6 +42,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
 import org.alfresco.repo.node.getchildren.FilterProp;
@@ -58,8 +58,9 @@ import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -125,12 +126,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private static final int GROUP_PREFIX_LENGTH = PermissionService.GROUP_PREFIX.length();
     private static final int GROUP_SITE_PREFIX_LENGTH = GROUP_SITE_PREFIX.length();
     
-    /** Site home ref cache (Tennant aware) */
-    private Map<String, NodeRef> siteHomeRefs = new ConcurrentHashMap<String, NodeRef>(4);
+    // note: caches are tenant-aware (if using EhCacheAdapter shared cache)
     
-    /** Site node ref cache (Tennant aware) */
-    private Map<String, NodeRef> siteNodeRefs = new ConcurrentHashMap<String, NodeRef>(256);
-
+    private SimpleCache<String, Object> singletonCache; // eg. for siteHomeNodeRef
+    private final String KEY_SITEHOME_NODEREF = "key.sitehome.noderef";
+    
+    private SimpleCache<String, NodeRef> siteNodeRefCache; // for site shortname to nodeRef lookup
+    
     private String sitesXPath;
     
     /** Messages */
@@ -144,7 +146,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private static final String MSG_CAN_NOT_CHANGE_MSHIP="site_service.can_not_change_membership";
     private static final String MSG_SITE_CONTAINER_NOT_FOLDER = "site_service.site_container_not_folder";
     private static final String MSG_INVALID_SITE_TYPE = "site_service.invalid_site_type";
-
+    
     /* Services */
     private NodeService nodeService;
     private NodeService directNodeService;
@@ -159,7 +161,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private AuthorityService authorityService;
     private DictionaryService dictionaryService;
     private TenantService tenantService;
-    private TenantAdminService tenantAdminService;
     private RetryingTransactionHelper retryingTransactionHelper;
     private Comparator<String> roleComparator;
     private SysAdminParams sysAdminParams;
@@ -292,12 +293,14 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         this.tenantService = tenantService;
     }
     
-    /**
-     * Sets the tenant admin service
-     */
-    public void setTenantAdminService(TenantAdminService tenantAdminService)
+    public void setSingletonCache(SimpleCache<String, Object> singletonCache)
     {
-        this.tenantAdminService = tenantAdminService;
+        this.singletonCache = singletonCache;
+    }
+    
+    public void setSiteNodeRefCache(SimpleCache<String, NodeRef> siteNodeRefCache)
+    {
+        this.siteNodeRefCache = siteNodeRefCache;
     }
     
     /**
@@ -745,8 +748,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */
     public NodeRef getSiteRoot()
     {
-        String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        NodeRef siteHomeRef = siteHomeRefs.get(tenantDomain);
+        NodeRef siteHomeRef = (NodeRef)singletonCache.get(KEY_SITEHOME_NODEREF);
         if (siteHomeRef == null)
         {
             siteHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
@@ -782,7 +784,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             // There may be domains with no sites (e.g. JSF-only clients).
             if (siteHomeRef != null)
             {
-                siteHomeRefs.put(tenantDomain, siteHomeRef);
+                singletonCache.put(KEY_SITEHOME_NODEREF, siteHomeRef);
             }
         }
         return siteHomeRef;
@@ -930,13 +932,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         {
             final String tenantDomain = tenantService.getUserDomain(userName);
             
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<SiteInfo>>()
-            {
-                public List<SiteInfo> doWork() throws Exception
+                return TenantUtil.runAsSystemTenant(new TenantRunAsWork<List<SiteInfo>>()
                 {
-                    return listSitesImpl(userName, size);
-                }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+                    public List<SiteInfo> doWork() throws Exception
+                    {
+                        return listSitesImpl(userName, size);
+                    }
+                }, tenantDomain);
         }
         else
         {
@@ -1167,14 +1169,14 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             final String tenantDomain = tenantService.getDomain(shortName);
             final String sName = tenantService.getBaseName(shortName, true);
             
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>()
+            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<SiteInfo>()
             {
                 public SiteInfo doWork() throws Exception
                 {
                     SiteInfo site = getSiteImpl(sName);
                     return new SiteInfoImpl(site.getSitePreset(), shortName, site.getTitle(), site.getDescription(), site.getVisibility(), site.getCustomProperties(), site.getNodeRef());
                 }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+            }, tenantDomain);
         }
         else
         {
@@ -1266,14 +1268,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */
     private NodeRef getSiteNodeRef(final String shortName, boolean enforcePermissions)
     {
-        final String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
-        NodeRef siteNodeRef = this.siteNodeRefs.get(cacheKey);
+        NodeRef siteNodeRef = siteNodeRefCache.get(shortName);
         if (siteNodeRef != null)
         {
             // test for existance - and remove from cache if no longer exists
             if (!this.directNodeService.exists(siteNodeRef))
             {
-                this.siteNodeRefs.remove(cacheKey);
+                siteNodeRefCache.remove(shortName);
                 siteNodeRef = null;
             }
         }
@@ -1292,7 +1293,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                     // cache the result if found - null results will be required to ensure new sites are found later
                     if (siteNode != null)
                     {
-                        siteNodeRefs.put(cacheKey, siteNode);
+                        siteNodeRefCache.put(shortName, siteNode);
                     }
                     return siteNode;
                 }
@@ -1309,7 +1310,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             return siteNodeRef;
         }
     }
-
+    
     /**
      * @see org.alfresco.service.cmr.site.SiteService#updateSite(org.alfresco.service.cmr.site.SiteInfo)
      */
@@ -1417,10 +1418,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             throw new SiteServiceException(MSG_CAN_NOT_DELETE, new Object[]{shortName});
         }
         final QName siteType = this.directNodeService.getType(siteNodeRef);
-        
+
         // Delete the cached reference
-        String cacheKey = this.tenantAdminService.getCurrentUserDomain() + '_' + shortName;
-        this.siteNodeRefs.remove(cacheKey);
+        siteNodeRefCache.remove(shortName);
         
         // Collection for recording the group memberships present on the site 
         final Map<String, Set<String>> groupsMemberships = new HashMap<String, Set<String>>();
@@ -1515,13 +1515,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             final String tenantDomain = tenantService.getDomain(shortName);
             final String sName = tenantService.getBaseName(shortName, true);
             
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Map<String, String>>()
+            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, String>>()
             {
                 public Map<String, String> doWork() throws Exception
                 {
                     return listMembersImpl(sName, nameFilter, roleFilter, size, collapseGroups);
                 }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+            }, tenantDomain);
         }
         else
         {

@@ -432,7 +432,7 @@
    <!-- Tenant Entity Cache                   -->
    <!-- ===================================== -->
 
-   <!-- The cross-transaction shared cache for in-memory Tenants -->
+   <!-- The cross-transaction shared cache for Tenant entities -->
    
    <bean name="tenantEntitySharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
       <property name="maxItems" value="${cache.tenantEntitySharedCache.maxItems}"/>
@@ -457,8 +457,19 @@
    <bean name="contentDiskDriver.fileInfoCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
       <property name="maxItems" value="${cache.contentDiskDriver.fileInfoCache.maxItems}"/>
    </bean>
-   
+
    <bean name="globalConfigSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
       <property name="maxItems" value="${cache.globalConfigSharedCache.maxItems}"/>
    </bean>
+   
+   <!-- ===================================== -->
+   <!-- Site ShortName to NodeRef look up     -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for Site NodeRefs -->
+   
+   <bean name="siteNodeRefSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+      <property name="maxItems" value="${cache.siteNodeRefSharedCache.maxItems}"/>
+   </bean>
+   
 </beans>

@@ -563,7 +563,7 @@
       <property name="name">
          <value>org.alfresco.tenantsTransactionalCache</value>
       </property>
-      <property name="maxCacheSize" value="100" />
+      <property name="maxCacheSize" value="1000" />
       <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
       <property name="tenantAware" value="false" />
@@ -583,4 +583,19 @@
       <property name="mutable" value="false" />
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
+   
+   <!-- The transactional cache for Site NodeRefs -->
+   
+   <bean name="siteNodeRefCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="siteNodeRefSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.siteNodeRefTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="5000" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+   </bean>
+   
 </beans>

@@ -88,6 +88,9 @@
         <property name="zoneAuthorityCache">
             <ref bean="zoneToAuthorityCache" />
         </property>
+        <property name="singletonCache">
+            <ref bean="immutableSingletonCache" />
+        </property>
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>

@@ -536,7 +536,16 @@ public abstract class CMISAbstractDictionaryService extends AbstractLifecycleBea
     protected void onBootstrap(ApplicationEvent event)
     {
         afterDictionaryInit();
-        dictionaryDAO.register(this);
+
+        // TODO revisit (for KS and/or 1.1)
+        if (dictionaryDAO != null)
+        {
+            dictionaryDAO.register(this);
+        }
+        else
+        {
+            logger.error("DictionaryDAO is null - hence CMIS Dictionary not registered for updates");
+        }
     }
 
     /*

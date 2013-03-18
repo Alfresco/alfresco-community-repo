@@ -238,10 +238,12 @@
         <property name="transactionService"><ref bean="transactionService"/></property>
         <property name="authenticationService"><ref bean="authenticationService"/></property>
     </bean>
-
-
+    
+    <!-- from Thor -->
+    <bean id="defaultDataSource" parent="baseDefaultDataSource" />
+    
     <!-- Datasource bean -->
-    <bean id="defaultDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <bean id="baseDefaultDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName">
             <value>${db.driver}</value>
         </property>

@@ -38,6 +38,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -178,8 +180,8 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
             final String overrideProviderName = getOverrideHomeFolderProviderName();
             
             // Scan users in default and each Tenant
-            String systemUserName = AuthenticationUtil.getSystemUserName();
-            scanPeople(systemUserName, TenantService.DEFAULT_DOMAIN, overrideProviderName);
+            
+            scanPeople(AuthenticationUtil.getSystemUserName(), TenantService.DEFAULT_DOMAIN, overrideProviderName);
             
             if (tenantAdminService.isEnabled())
             {
@@ -188,8 +190,16 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                 {
                     if (tenant.isEnabled())
                     {
-                        systemUserName = tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain());
-                        scanPeople(systemUserName, tenant.getTenantDomain(), overrideProviderName);
+                        final String tenantDomain = tenant.getTenantDomain();
+                        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
+                        {
+                            public NodeRef doWork() throws Exception
+                            {
+                                scanPeople(AuthenticationUtil.getSystemUserName(), tenantDomain, overrideProviderName);
+                                return null;
+                            }
+                        }, tenantDomain);
+                        
                     }
                 }
            }
@@ -206,7 +216,7 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
      *        in place of the all home folders existing providers. If {@code null}
      *        the existing provider is used. 
      */
-    private void scanPeople(final String systemUserName, String tenantDomain, final String overrideProvider)
+    private void scanPeople(final String systemUserName, final String tenantDomain, final String overrideProvider)
     {
         /*
          * To avoid problems with existing home folders that are located in locations
@@ -240,7 +250,7 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         final String createParentFoldersPhaseName = "createParentFolders";
         RunAsWorker[] workers = new RunAsWorker[]
         {
-            new RunAsWorker(systemUserName, "calculateParentFolderStructure")
+            new RunAsWorker(systemUserName, tenantDomain, "calculateParentFolderStructure")
             {
                 @Override
                 public void doWork(NodeRef person) throws Exception
@@ -249,8 +259,8 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                             parentFolderStructure, person, overrideProvider);
                 }
             },
-                
-            new RunAsWorker(systemUserName, "moveHomeFolderThatClashesWithParentFolderStructure")
+            
+            new RunAsWorker(systemUserName, tenantDomain, "moveHomeFolderThatClashesWithParentFolderStructure")
             {
                 @Override
                 public void doWork(NodeRef person) throws Exception
@@ -259,8 +269,8 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                             parentFolderStructure, tmpFolders, person, overrideProvider);
                 }
             },
-                
-            new RunAsWorker(systemUserName, createParentFoldersPhaseName)
+            
+            new RunAsWorker(systemUserName, tenantDomain, createParentFoldersPhaseName)
             {
                 @Override
                 public void doWork(NodeRef person) throws Exception
@@ -268,8 +278,8 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                     createParentFolders(person, overrideProvider);
                 }
             },
-                
-            new RunAsWorker(systemUserName, "moveHomeFolderIfRequired")
+            
+            new RunAsWorker(systemUserName, tenantDomain, "moveHomeFolderIfRequired")
             {
                 @Override
                 public void doWork(NodeRef person) throws Exception
@@ -283,6 +293,7 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         for (RunAsWorker worker: workers)
         {
             String name = worker.getName();
+            
             if (logger.isInfoEnabled())
             {
                 logger.info("  -- "+
@@ -908,26 +919,34 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
         }
 
         final String userName;
+        final String tenantDomain;
         final String name;
         
-        public RunAsWorker(String userName, String name)
+        public RunAsWorker(String userName, String tenantDomain, String name)
         {
             this.userName = userName;
+            this.tenantDomain = tenantDomain;
             this.name = name;
         }
         
         public void process(final NodeRef person) throws Throwable
         {
-            RunAsWork<Object> runAsWork = new RunAsWork<Object>()
+            // note: runAs before runAsTenant (to avoid clearing tenant context, if no previous auth)
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
                 @Override
                 public Object doWork() throws Exception
                 {
-                    RunAsWorker.this.doWork(person);
-                    return null;
+                    return TenantUtil.runAsTenant(new TenantRunAsWork<Void>()
+                    {
+                        public Void doWork() throws Exception
+                        {
+                           RunAsWorker.this.doWork(person);
+                            return null;
+                        }
+                    }, tenantDomain);
                 }
-            };
-            AuthenticationUtil.runAs(runAsWork, userName);
+            }, userName);
         }
         
         public abstract void doWork(NodeRef person) throws Exception;

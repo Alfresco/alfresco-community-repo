@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -63,12 +63,15 @@ public interface TenantAdminService extends TenantUserService
      */
     
     public void createTenant(String tenantDomain, char[] adminRawPassword);
+    
+    public void createTenant(String tenantDomain, char[] adminRawPassword, String contentRoot);
 
-    public void createTenant(String tenantDomain, char[] adminRawPassword, String rootContentStoreDir);
+    // experimental (unsupported)
+    public void createTenant(String tenantDomain, char[] adminRawPassword, String contentRoot, String dbUrl);
     
     public void exportTenant(String tenantDomain, File directoryDestination);
     
-    public void importTenant(String tenantDomain, File directorySource, String rootContentStoreDir);
+    public void importTenant(String tenantDomain, File directorySource, String contentRoot);
     
     public boolean existsTenant(String tenantDomain);
     

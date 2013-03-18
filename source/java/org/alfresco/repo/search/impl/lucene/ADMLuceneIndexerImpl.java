@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -58,6 +58,8 @@ import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -710,14 +712,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         {
             // ETHREEOH-2014 - dictionary access should be in context of tenant (eg. full reindex with MT dynamic
             // models)
-            return AuthenticationUtil.runAs(new RunAsWork<List<Document>>()
+            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<List<Document>>()
             {
                 public List<Document> doWork()
                 {
                     return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments,
                             cascade, pathsToRegenerate, childAssociationsSinceFlush, deltaReader, mainReader);
                 }
-            }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(new NodeRef(stringNodeRef).getStoreRef().getIdentifier())));
+            }, tenantService.getDomain(new NodeRef(stringNodeRef).getStoreRef().getIdentifier()));
         }
         else
         {

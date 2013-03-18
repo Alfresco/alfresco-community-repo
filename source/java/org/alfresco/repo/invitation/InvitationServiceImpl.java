@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,11 +35,11 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.PasswordGenerator;
 import org.alfresco.repo.security.authentication.UserNameGenerator;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.workflow.CancelWorkflowActionExecuter;
@@ -1064,6 +1064,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         final String finalUserName = inviteeUserName;
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
+            @SuppressWarnings("synthetic-access")
             public Object doWork() throws Exception
             {
                 NodeRef person = personService.createPerson(properties);
@@ -1265,6 +1266,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         
         String inviteePassword = created ? AuthenticationUtil.runAs(new RunAsWork<String>()
         {
+            @SuppressWarnings("synthetic-access")
             public String doWork()
             {
                 return createInviteeDisabledAccount(initeeUserNameFinal);
@@ -1452,6 +1454,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         // Run as system user
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
+            @SuppressWarnings("synthetic-access")
             public Object doWork() throws Exception
             {
                 QName type = nodeService.getType(siteRef);

@@ -278,6 +278,7 @@
         <property name="transactionService" ref="transactionService" />
         <property name="nodeService" ref="nodeService" />
         <property name="tenantService" ref="tenantService"/>
+        <property name="singletonCache" ref="immutableSingletonCache"/>
         <property name="searchService" ref="admSearchService" />
         <property name="permissionServiceSPI" ref="permissionServiceImpl" />
         <property name="authorityService" ref="authorityService" />
@@ -314,7 +315,7 @@
 		<!-- ${server.transaction.allow-writes} -->
 		<!-- false -->
 		<property name="createMissingPeople">
-			<value>${server.transaction.allow-writes}</value>
+			<value>${create.missing.people}</value>
 		</property>
 		<property name="userNameMatcher">
 			<ref bean="userNameMatcher" />

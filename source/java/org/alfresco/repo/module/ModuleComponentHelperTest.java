@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -247,7 +247,7 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
         {
             throw new UnsupportedOperationException();
         }
-
+        
         @Override
         public List<ModuleDetails> getMissingModules()
         {
@@ -264,6 +264,11 @@ public class ModuleComponentHelperTest extends BaseAlfrescoTestCase
             }
             // Done
             return details; 
+        }
+        
+        public void shutdownModules()
+        {
+            throw new UnsupportedOperationException();
         }
     }
     

@@ -118,10 +118,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     private SimpleCache<Pair<String, String>, List<ChildAssociationRef>> zoneAuthorityCache;
     private SimpleCache<NodeRef, Pair<Map<NodeRef,String>, List<NodeRef>>> childAuthorityCache;
     private AuthorityBridgeTableAsynchronouslyRefreshedCache authorityBridgeTableCache;
-   
-    /** System Container ref cache (Tennant aware) */
-    private Map<String, NodeRef> systemContainerRefs = new ConcurrentHashMap<String, NodeRef>(4);
-
+    private SimpleCache<String, Object> singletonCache; // eg. for system container nodeRefs (authorityContainer and zoneContainer)
+    private final String KEY_SYSTEMCONTAINER_NODEREF = "key.systemcontainer.noderef";
     /** Limit the number of copies of authority names floating about by keeping them in a pool **/
     private ConcurrentMap<String, String> authorityNamePool = new ConcurrentHashMap<String, String>();
     
@@ -226,6 +224,11 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+    
+    public void setSingletonCache(SimpleCache<String, Object> singletonCache)
+    {
+        this.singletonCache = singletonCache;
     }
     
     public void setAclDAO(AclDAO aclDao)
@@ -338,7 +341,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
         authorityLookupCache.put(cacheKey(name), childRef);
     }
-
+    
     private Pair<String, String> cacheKey(String authorityName)
     {
         String tenantDomain = AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER ? tenantService.getDomain(authorityName) : tenantService.getCurrentUserDomain();
@@ -350,7 +353,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         String pooledName = authorityNamePool.putIfAbsent(authorityName, authorityName);
         return pooledName == null ? authorityName : pooledName;
     }
-
+    
     public void deleteAuthority(String name)
     {
         NodeRef nodeRef = getAuthorityOrNull(name);
@@ -1242,8 +1245,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
      */
     private NodeRef getSystemContainer(QName assocQName)
     {
-        final String cacheKey = tenantService.getCurrentUserDomain() + assocQName.toString();
-        NodeRef systemContainerRef = systemContainerRefs.get(cacheKey);
+        final String cacheKey = KEY_SYSTEMCONTAINER_NODEREF + "." + assocQName.toString();
+        NodeRef systemContainerRef = (NodeRef)singletonCache.get(cacheKey);
         if (systemContainerRef == null)
         {
             NodeRef rootNodeRef = nodeService.getRootNode(this.storeRef);
@@ -1259,7 +1262,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 throw new AlfrescoRuntimeException("Required path not found: " + assocQName);
             }
             systemContainerRef = results.get(0).getChildRef();
-            systemContainerRefs.put(cacheKey, systemContainerRef);
+            singletonCache.put(cacheKey, systemContainerRef);
         }
         return systemContainerRef;
     }

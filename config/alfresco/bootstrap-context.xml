@@ -793,10 +793,10 @@
       <property name="personService" ref="personService" />
       <property name="fileFolderService" ref="fileFolderService" />
       <property name="searchService" ref="searchService" />
-      <property name="tenantAdminService" ref="tenantAdminService" />
       <property name="avmService" ref="AVMService" />
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
+      <property name="singletonCache" ref="immutableSingletonCache" />
    </bean>
 
    <!-- Site service cache warmer -->

@@ -30,8 +30,9 @@ import net.sf.acegisecurity.context.ContextHolder;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.Pair;
@@ -84,7 +85,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
                     {
                         public String execute() throws Throwable
                         {
-                            return AuthenticationUtil.runAs(new RunAsWork<String>()
+                            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>()
                             {
                                 public String doWork() throws Exception
                                 {
@@ -94,7 +95,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
                                     authenticationManager.authenticate(authentication);
                                     return normalized;
                                 }
-                            }, getSystemUserName(getUserDomain(userName)));
+                            }, tenantDomain);
                         }
                     }, true);
             
@@ -104,7 +105,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
             }
             else
             {
-                setCurrentUser(normalized, UserNameValidationMode.NONE);                
+                setCurrentUser(normalized, UserNameValidationMode.NONE);
             }
             
             TenantContextHolder.setTenantDomain(tenantDomain);

@@ -168,6 +168,7 @@ public class ActivitiScriptBase
         {
             userName = AuthenticationUtil.getFullyAuthenticatedUser();
         }
+        
         // The "System" user is a special case, which has no person object associated with it.
         if(userName != null && !AuthenticationUtil.SYSTEM_USER_NAME.equals(userName))
         {

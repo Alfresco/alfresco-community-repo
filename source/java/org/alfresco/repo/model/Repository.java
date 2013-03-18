@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,17 +21,13 @@ package org.alfresco.repo.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantAdminService;
-import org.alfresco.repo.tenant.TenantDeployer;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
@@ -51,7 +47,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
@@ -59,10 +54,10 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * 
  * @author davidc
  */
-public class Repository implements ApplicationContextAware, ApplicationListener, TenantDeployer
+public class Repository implements ApplicationContextAware
 {
     private ProcessorLifecycle lifecycle = new ProcessorLifecycle();
-
+    
     // dependencies
     private RetryingTransactionHelper retryingTransactionHelper;
     private NamespaceService namespaceService;
@@ -71,13 +66,14 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     private FileFolderService fileFolderService;
     private PersonService personService;
     private AVMService avmService;
-    private TenantAdminService tenantAdminService;
     
     // company home
-    private StoreRef companyHomeStore;
-    private String companyHomePath;
-    final private Map<String, NodeRef> companyHomeRefs = new ConcurrentHashMap<String, NodeRef>();
-    final private Map<String, NodeRef> rootRefs = new ConcurrentHashMap<String, NodeRef>();
+    private StoreRef companyHomeStore; // ie. workspace://SpaceStore
+    private String companyHomePath;    // ie. /app:company_home
+    
+    // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
+    private SimpleCache<String, NodeRef> singletonCache; // eg. for companyHomeNodeRef
+    private final String KEY_COMPANYHOME_NODEREF = "key.companyhome.noderef";
     
     
     /**
@@ -99,7 +95,12 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     {
         this.companyHomePath = companyHomePath;
     }
-
+    
+    public void setSingletonCache(SimpleCache<String, NodeRef> singletonCache)
+    {
+        this.singletonCache = singletonCache;
+    }
+    
     /**
      * Sets helper that provides transaction callbacks
      */
@@ -149,14 +150,6 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
     }
     
     /**
-     * Sets the tenant admin service
-     */
-    public void setTenantAdminService(TenantAdminService tenantAdminService)
-    {
-        this.tenantAdminService = tenantAdminService;
-    }
-
-    /**
      * Sets the AVM service
      */
     public void setAvmService(AVMService avmService)
@@ -184,21 +177,19 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
         {
             initContext();
         }
-    
+        
         @Override
         protected void onShutdown(ApplicationEvent event)
         {
         }
     }
-
+    
     /**
      * Initialise Repository Context
      */
     protected void initContext()
     {
-        tenantAdminService.register(this);
-        
-        getCompanyHome();
+        //NOOP
     }
     
     /**
@@ -208,22 +199,10 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
      */
     public NodeRef getRootHome()
     {
-        String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        NodeRef rootRef = rootRefs.get(tenantDomain);
-        if (rootRef == null)
-        {
-            rootRef = TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
-            {
-                public NodeRef doWork() throws Exception
-                {
-                   return nodeService.getRootNode(companyHomeStore);
-                }
-            }, tenantDomain);
-            rootRefs.put(tenantDomain, rootRef);
-        }
-        return rootRef;
+        // note: store root nodes are cached by the NodeDAO
+        return nodeService.getRootNode(companyHomeStore);
     }
-
+    
     /**
      * Gets the Company Home
      *  
@@ -231,11 +210,10 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
      */
     public NodeRef getCompanyHome()
     {
-        String tenantDomain = tenantAdminService.getCurrentUserDomain();
-        NodeRef companyHomeRef = companyHomeRefs.get(tenantDomain);
+        NodeRef companyHomeRef = singletonCache.get(KEY_COMPANYHOME_NODEREF);
         if (companyHomeRef == null)
         {
-            companyHomeRef = TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
+            companyHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
             {
                 public NodeRef doWork() throws Exception
                 {
@@ -247,13 +225,14 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
                             if (refs.size() != 1)
                             {
                                 throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
+                                }
+                                return refs.get(0);
                             }
-                            return refs.get(0);
-                        }
-                    }, true);
-                }
-            }, tenantDomain);
-            companyHomeRefs.put(tenantDomain, companyHomeRef);
+                        }, true);
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            
+            singletonCache.put(KEY_COMPANYHOME_NODEREF, companyHomeRef);
         }
         return companyHomeRef;
     }
@@ -460,25 +439,5 @@ public class Repository implements ApplicationContextAware, ApplicationListener,
         }
         
         return nodeRef;
-    }    
-    
-    public void onEnableTenant()
-    {
-        init();
-    }
-    
-    public void onDisableTenant()
-    {
-        destroy();
-    }
-    
-    public void init()
-    {
-        initContext();
-    }
-    
-    public void destroy()
-    {
-        companyHomeRefs.remove(tenantAdminService.getCurrentUserDomain());
     }
 }

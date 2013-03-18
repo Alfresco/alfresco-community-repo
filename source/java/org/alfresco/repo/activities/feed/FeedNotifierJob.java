@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,6 +24,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -74,15 +76,14 @@ public class FeedNotifierJob implements Job
             List<Tenant> tenants = tenantAdminService.getAllTenants();
             for (Tenant tenant : tenants)
             {
-                String tenantDomain = tenant.getTenantDomain();
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
                         feedNotifier.execute(repeatIntervalMins);
                         return null;
                     }
-                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+                }, tenant.getTenantDomain());
             }
         }
     }

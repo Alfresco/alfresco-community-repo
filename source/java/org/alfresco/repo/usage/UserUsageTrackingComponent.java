@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,13 +29,19 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.usage.UsageDAO;
 import org.alfresco.repo.domain.usage.UsageDAO.MapHandler;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -46,12 +52,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 
 /**
  * User Usage Tracking Component - to allow user usages to be collapsed or re-calculated
@@ -187,16 +187,16 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
             List<Tenant> tenants = tenantAdminService.getAllTenants();
             for (Tenant tenant : tenants)
             {
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
                         bootstrapInternal();
                         return null;
                     }
-                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+                }, tenant.getTenantDomain());
             }
-       }        
+       }
     }
     
     public void bootstrapInternal()
@@ -310,7 +310,10 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                         String username = (String)result.get("username");
                         String uuid = (String)result.get("uuid");
                         
-                        users.put(username, new NodeRef(personStoreRef, uuid));
+                        if (! username.equalsIgnoreCase(AuthenticationUtil.getSystemUserName()))
+                        {
+                            users.put(username, new NodeRef(personStoreRef, uuid));
+                        }
                     }
                 };
                 usageDAO.getUsersWithUsage(tenantService.getName(personStoreRef), userHandler);
@@ -406,7 +409,10 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                         String username = (String)result.get("username");
                         String uuid = (String)result.get("uuid");
                         
-                        users.put(username, new NodeRef(personStoreRef, uuid));
+                        if (! username.equalsIgnoreCase(AuthenticationUtil.getSystemUserName()))
+                        {
+                            users.put(username, new NodeRef(personStoreRef, uuid));
+                        }
                     }
                 };
                 
@@ -592,13 +598,13 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
         int collapseCount = 0;
         for (final NodeRef usageNodeRef : usageNodeRefs)
         {
-            Boolean collapsed = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+            Boolean collapsed = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Boolean>()
             {
                 public Boolean doWork() throws Exception
                 {
                     return collapseUsage(usageNodeRef);
                 }
-            }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantService.getDomain(usageNodeRef.getStoreRef().getIdentifier())));
+            }, tenantService.getDomain(usageNodeRef.getStoreRef().getIdentifier()));
             
             if (collapsed)
             {

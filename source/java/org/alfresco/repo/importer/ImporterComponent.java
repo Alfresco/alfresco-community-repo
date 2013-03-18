@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,7 +35,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.view.NodeContext;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.usage.ContentUsageImpl;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionUtil;
@@ -87,8 +87,7 @@ import org.xml.sax.ContentHandler;
  *  
  * @author David Caruana
  */
-public class ImporterComponent
-    implements ImporterService
+public class ImporterComponent implements ImporterService
 {
     // Logger
     private static final Log logger = LogFactory.getLog(ImporterComponent.class);
@@ -107,7 +106,6 @@ public class ImporterComponent
     private RuleService ruleService;
     private PermissionService permissionService;
     private AuthorityService authorityService;
-    private AuthenticationContext authenticationContext;
     private OwnableService ownableService;
     private VersionService versionService;
     private HiddenAspect hiddenAspect;
@@ -204,14 +202,6 @@ public class ImporterComponent
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
-    }
-
-    /**
-     * @param authenticationContext  authenticationContext
-     */
-    public void setAuthenticationContext(AuthenticationContext authenticationContext)
-    {
-        this.authenticationContext = authenticationContext;
     }
     
     /**
@@ -1417,7 +1407,8 @@ public class ImporterComponent
                 NodeRef nodeRef = assocRef.getChildRef();
 
                 // Note: non-admin authorities take ownership of new nodes
-                if (!(authenticationContext.isCurrentUserTheSystemUser() || authorityService.hasAdminAuthority()))
+                // from Thor
+                if (!(AuthenticationUtil.isRunAsUserTheSystemUser() || authorityService.hasAdminAuthority()))
                 {
                     ownableService.takeOwnership(nodeRef);
                 }
@@ -1425,7 +1416,9 @@ public class ImporterComponent
                 // apply permissions
                 List<AccessPermission> permissions = null;
                 AccessStatus writePermission = permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS);
-                if (authenticationContext.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
+
+                // from Thor
+                if (AuthenticationUtil.isRunAsUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
                 {
                     permissions = bindPermissions(node.getAccessControlEntries());
                     
@@ -1603,7 +1596,9 @@ public class ImporterComponent
                         // Apply permissions
                         List<AccessPermission> permissions = null;
                         AccessStatus writePermission = permissionService.hasPermission(existingNodeRef, PermissionService.CHANGE_PERMISSIONS);
-                        if (authenticationContext.isCurrentUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
+                        
+                        // from Thor
+                        if (AuthenticationUtil.isRunAsUserTheSystemUser() || writePermission.equals(AccessStatus.ALLOWED))
                         {
                             boolean inheritPermissions = node.getInheritPermissions();
                             if (!inheritPermissions)

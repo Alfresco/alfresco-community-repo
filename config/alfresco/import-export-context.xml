@@ -40,9 +40,6 @@
         <property name="authorityService">
            <ref bean="AuthorityService" />
         </property>
-        <property name="authenticationContext">
-           <ref bean="authenticationContext" />
-        </property>
         <property name="viewParser">
             <ref bean="viewParser" />
         </property>
@@ -92,9 +89,6 @@
         </property>
         <property name="authorityService">
            <ref bean="AuthorityService" />
-        </property>
-        <property name="authenticationContext">
-           <ref bean="authenticationContext" />
         </property>
         <property name="viewParser">
             <ref bean="viewParser" />

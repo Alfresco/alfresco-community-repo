@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,6 +39,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -235,7 +237,6 @@ public class HomeFolderProviderSynchronizerTest
                     nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
             final String domainUsername = tenantService.getBaseNameUser(username);
             String tenantDomain = tenantService.getUserDomain(username);
-            String systemUser = tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
             boolean disabled = !TenantService.DEFAULT_DOMAIN.equals(tenantDomain) &&
                                !tenantAdminService.isEnabledTenant(tenantDomain);
             try
@@ -244,14 +245,14 @@ public class HomeFolderProviderSynchronizerTest
                 {
                     tenantAdminService.enableTenant(tenantDomain);
                 }
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
-                    {
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
+                {
                     public Object doWork() throws Exception
                     {
                         deleteUser(adminGuestUserHomeFolders, nodeRef, username, domainUsername);
                         return null;
                     }
-                }, systemUser);
+                }, tenantDomain);
             }
             finally
             {
@@ -322,8 +323,7 @@ public class HomeFolderProviderSynchronizerTest
             final boolean createHomeDirectory) throws Exception
     {
         final String domainUsername = tenantService.getDomainUser(username, tenantDomain);
-        String systemUser = tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
-        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
         {
             public NodeRef doWork() throws Exception
             {
@@ -374,7 +374,7 @@ public class HomeFolderProviderSynchronizerTest
                 }
                 return person;
             }
-        }, systemUser);
+        }, tenantDomain);
     }
     
     private NodeRef createFolder(String path) throws Exception
@@ -538,24 +538,25 @@ public class HomeFolderProviderSynchronizerTest
         try
         {
             final String domainUsername = tenantService.getDomainUser(username, tenantDomain);
-            String systemUser = tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
-            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
             {
                 public NodeRef doWork() throws Exception
                 {
                     NodeRef person = personService.getPerson(domainUsername, false);
                     NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class,
                             nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
+                    
                     if (expectedPath != null)
                     {
                         assertNotNull("User: "+domainUsername+" home folder should exist", homeFolder);
                     }
+                    
                     NodeRef rootPath = homeFolderManager.getRootPathNodeRef(largeHomeFolderProvider);
                     String actualPath = toPath(rootPath, homeFolder);
                     assertEquals("User: "+domainUsername+" home folder location", expectedPath, actualPath);
                     return null;
                 }
-            }, systemUser);
+            }, tenantDomain);
         }
         catch (RuntimeException e)
         {

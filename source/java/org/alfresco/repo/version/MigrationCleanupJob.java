@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,9 +22,10 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
@@ -167,15 +168,14 @@ public class MigrationCleanupJob implements Job
             List<Tenant> tenants = tenantAdminService.getAllTenants();
             for (Tenant tenant : tenants)
             {
-                String tenantDomain = tenant.getTenantDomain();
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
                         migrationCleanup.executeCleanup(batchSize, threadCount);
                         return null;
                     }
-                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+                }, tenant.getTenantDomain());
             }
         }
     }

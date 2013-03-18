@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -233,6 +233,16 @@ public interface PersonService
     @Auditable(parameters = {"personRef"})
     public void deletePerson(NodeRef personRef);
 
+    /**
+     * Delete the person identified by the given ref, and optionally delete
+     * the associated authentication, if one.
+     * 
+     * @param personRef
+     * @param deleteAuthentication
+     */
+    @Auditable(parameters = {"personRef", "deleteAuthentication"})
+    public void deletePerson(NodeRef personRef, boolean deleteAuthentication);
+    
     /**
      * Get all the people we know about.
      * 

@@ -31,7 +31,6 @@ import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.tenant.TenantService;
@@ -249,12 +248,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         {
             throw new AuthenticationException("Null user name");
         }
-
+        
         if (isSystemUserName(userName))
         {
             return setSystemUserAsCurrentUser(getUserDomain(userName));
         }
-
+        
         try
         {
             UserDetails ud = null;
@@ -420,10 +419,9 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 return setCurrentUser(getGuestUserName(tenantDomain));
             }
             else
-{
+            {
                 throw new AuthenticationException("Guest authentication is not allowed");
             }
-
         }
     }
     
@@ -489,7 +487,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 final String tenantDomain = userTenant.getSecond();
                 
                 Authentication authentication = setCurrentUserImpl(userName);
-                AuthenticationUtil.runAs(new RunAsWork<Object>()
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
                 {
                     public Object doWork() throws Exception
                     {
@@ -645,7 +643,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         return authenticationContext.getSystemUserName(tenantDomain);
     }
-
+    
     public String getUserDomain(String userName)
     {
         return authenticationContext.getUserDomain(userName);

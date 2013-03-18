@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -227,6 +227,12 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         {
             String msg = I18NUtil.getMessage(ERR_MISSING_INDEXES, missingStoreIndexes);
             logger.error(msg);
+            
+            for (StoreRef missingIndexStoreRef : missingIndexStoreRefs)
+            {
+                logger.error("---> "+missingIndexStoreRef);
+            }
+            
             String msgRecover = I18NUtil.getMessage(MSG_HOWTO_INDEX_RECOVER);
             logger.info(msgRecover);
         }

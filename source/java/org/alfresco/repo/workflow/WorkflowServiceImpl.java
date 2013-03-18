@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -426,7 +426,7 @@ public class WorkflowServiceImpl implements WorkflowService
         String engineId = BPMEngineRegistry.getEngineId(workflowDefinitionId);
         WorkflowComponent component = getWorkflowComponent(engineId);
         WorkflowPath path = component.startWorkflow(workflowDefinitionId, parameters);
-        if(parameters!=null && parameters.containsKey(WorkflowModel.ASSOC_PACKAGE))
+        if(path != null && parameters!=null && parameters.containsKey(WorkflowModel.ASSOC_PACKAGE))
         {
             WorkflowInstance instance = path.getInstance();
             workflowPackageComponent.setWorkflowForPackage(instance);

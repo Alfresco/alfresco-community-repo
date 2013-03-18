@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -139,6 +139,16 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
     public void startModules()
     {
         moduleComponentHelper.startModules();
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @see ModuleComponentHelper#shutdownModules()
+     */
+    public void shutdownModules()
+    {
+        moduleComponentHelper.shutdownModules();
     }
     
     /**

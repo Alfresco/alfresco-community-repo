@@ -238,9 +238,8 @@ public class FeedNotifierTest
 	/**
 	 * ALF-16155 test
 	 */
-	// TODO fix CLOUD-1348
-	//@Test
-	public void xtestFailedNotifications()
+    @Test
+	public void testFailedNotifications()
 	{
 		AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 

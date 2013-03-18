@@ -106,9 +106,9 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
 
         String methodName = invocation.getMethod().getName();
         
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Intercepting method " + methodName);
+            logger.trace("Intercepting method " + methodName);
         }
         
         Object[] args = invocation.getArguments();
@@ -118,11 +118,11 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
             Object arg = args[i];
             Object newArg = convertInboundValue(arg);
             
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
                 if (!EqualsHelper.nullSafeEquals(newArg, arg))
                 {
-                    logger.debug(
+                    logger.trace(
                             "Argument converted: \n" +
                             "   Before: " + arg + "\n" +
                             "   After:  " + newArg);

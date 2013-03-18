@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,6 +28,7 @@ import java.util.List;
 import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -142,7 +143,12 @@ public class TenantInterpreter extends BaseInterpreter implements ApplicationCon
                            return executeCommand(line);
                        }
                    };
-                   return transactionService.getRetryingTransactionHelper().doInTransaction(txnWork);
+
+                   // from Thor
+                   RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                   txnHelper.setMaxRetries(1);
+                   
+                   return txnHelper.doInTransaction(txnWork);
                }
            };
            return AuthenticationUtil.runAs(executeWork, AuthenticationUtil.SYSTEM_USER_NAME);
@@ -224,8 +230,8 @@ public class TenantInterpreter extends BaseInterpreter implements ApplicationCon
                 {
                     if (tenant.isEnabled())
                     {
-                        String rootContentStoreDir = tenant.getRootContentStoreDir();
-                        out.println("Enabled  - Tenant: " + tenant.getTenantDomain() + " (" + rootContentStoreDir + ")");
+                        String contentRoot = tenant.getRootContentStoreDir();
+                        out.println("Enabled  - Tenant: " + tenant.getTenantDomain() + " (" + contentRoot + ")");
                     }
                 }
 
@@ -235,8 +241,8 @@ public class TenantInterpreter extends BaseInterpreter implements ApplicationCon
                 {
                     if (! tenant.isEnabled())
                     {
-                        String rootContentStoreDir = tenant.getRootContentStoreDir();
-                        out.println("Disabled - Tenant: " + tenant.getTenantDomain() + " (" + rootContentStoreDir + ")");
+                        String contentRoot = tenant.getRootContentStoreDir();
+                        out.println("Disabled - Tenant: " + tenant.getTenantDomain() + " (" + contentRoot + ")");
                     }
                 }                
             }
@@ -251,14 +257,14 @@ public class TenantInterpreter extends BaseInterpreter implements ApplicationCon
                 String tenantDomain = new String(command[2]).toLowerCase();
                 Tenant tenant = tenantAdminService.getTenant(tenantDomain);
                 
-                String rootContentStoreDir = tenant.getRootContentStoreDir();
+                String contentRoot = tenant.getRootContentStoreDir();
                 if (tenant.isEnabled())
                 {
-                    out.println("Enabled - Tenant: " + tenant.getTenantDomain() + " (" + rootContentStoreDir + ")");
+                    out.println("Enabled - Tenant: " + tenant.getTenantDomain() + " (" + contentRoot + ")");
                 }
                 else
                 {   
-                    out.println("Disabled - Tenant: " + tenant.getTenantDomain() + " (" + rootContentStoreDir + ")");
+                    out.println("Disabled - Tenant: " + tenant.getTenantDomain() + " (" + contentRoot + ")");
                 }
             }             
             
@@ -270,20 +276,35 @@ public class TenantInterpreter extends BaseInterpreter implements ApplicationCon
             
         else if (command[0].equals("create"))
         {
-            if ((command.length != 3) && (command.length != 4))
+            if ((command.length < 3) || (command.length > 5))
             {
                 return "Syntax Error, try 'help'.\n";
             }
             
             String newTenant = new String(command[1]).toLowerCase();
             char[] tenantAdminRawPassword = new String(command[2]).toCharArray();
-            String rootContentStoreDir = null;
-            if (command.length == 4)
+            String contentRoot = null;
+            if (command.length >= 4)
             {
-                rootContentStoreDir = new String(command[3]);
+                contentRoot = new String(command[3]);
+                if ("null".equals(contentRoot))
+                {
+                    contentRoot = null;
+                }
             }
             
-            tenantAdminService.createTenant(newTenant, tenantAdminRawPassword, rootContentStoreDir);
+            String dbUrl = null;
+            if (command.length >= 5)
+            {
+                // experimental (unsupported)
+                dbUrl = new String(command[4]);
+                if ("null".equals(dbUrl))
+                {
+                    dbUrl = null;
+                }
+            }
+            
+            tenantAdminService.createTenant(newTenant, tenantAdminRawPassword, contentRoot, dbUrl);
             
             out.println("created tenant: " + newTenant);      
         }
@@ -298,13 +319,13 @@ public class TenantInterpreter extends BaseInterpreter implements ApplicationCon
             String newTenant = new String(command[1]).toLowerCase();       
             File directorySource = new File(command[2]);
             
-            String rootContentStoreDir = null;
+            String contentRoot = null;
             if (command.length == 4)
             {
-                rootContentStoreDir = new String(command[3]);
+                contentRoot = new String(command[3]);
             }
             
-            tenantAdminService.importTenant(newTenant, directorySource, rootContentStoreDir);
+            tenantAdminService.importTenant(newTenant, directorySource, contentRoot);
             
             out.println("imported tenant: " + newTenant);
         }  

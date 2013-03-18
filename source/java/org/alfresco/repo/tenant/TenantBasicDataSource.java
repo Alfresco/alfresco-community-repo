@@ -18,11 +18,32 @@
  */
 package org.alfresco.repo.tenant;
 
+import java.sql.SQLException;
+
+import org.apache.commons.dbcp.BasicDataSource;
 
 /**
- * Content Store that supports tenant routing, if multi-tenancy is enabled.
+ * Experimental
+ * 
+ * @author janv
+ * @since 4.2
  */
-public interface TenantRoutingContentStore extends TenantDeployer
+public class TenantBasicDataSource extends BasicDataSource
 {
-    public String getRootLocation();
+    public TenantBasicDataSource(BasicDataSource bds, String tenantUrl, int tenantMaxActive) throws SQLException
+    {
+        // tenant-specific
+        this.setUrl(tenantUrl);
+        this.setMaxActive(tenantMaxActive == -1 ? bds.getMaxActive() : tenantMaxActive);
+        
+        // defaults
+        this.setUsername(bds.getUsername());
+        this.setPassword(bds.getPassword());
+        this.setDriverClassName(bds.getDriverClassName());
+        
+        this.setMaxIdle(bds.getMaxIdle());
+        this.setMinIdle(bds.getMinIdle());
+        
+        // TODO other default settings
+    }
 }

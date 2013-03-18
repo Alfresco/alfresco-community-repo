@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,6 +36,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleDependency;
@@ -242,15 +244,15 @@ public class ModuleComponentHelper
 		                        {
 		                            for (Tenant tenant : tenants)
 		                            {
-		                            	final String tenantDomain = tenant.getTenantDomain();
-		                            	AuthenticationUtil.runAs(new RunAsWork<Object>()
+		                                final String tenantDomain = tenant.getTenantDomain();
+		                                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
 		                                {
-		                            		public Object doWork() throws Exception
+		                                    public Object doWork() throws Exception
 		                                    {
-		                            			startModule(module, mapStartedModules.get(tenantDomain), mapExecutedComponents.get(tenantDomain));
-		                            			return null;
+		                                        startModule(module, mapStartedModules.get(tenantDomain), mapExecutedComponents.get(tenantDomain));
+		                                        return null;
 		                                    }
-		                                }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+		                                }, tenantDomain);
 		                            }
 		                        }
 		                        
@@ -267,14 +269,14 @@ public class ModuleComponentHelper
 		            {
 		                for (Tenant tenant : tenants)
 		                {
-		                	AuthenticationUtil.runAs(new RunAsWork<Object>()
+		                    TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
 		                    {
-		                		public Object doWork() throws Exception
+		                        public Object doWork() throws Exception
 		                        {
-		                		    checkForMissingModules();
-		                			return null;
+		                            checkForMissingModules();
+		                            return null;
 		                        }
-		                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
+		                    }, tenant.getTenantDomain());
 		                }
 		            }
 		            
@@ -285,15 +287,15 @@ public class ModuleComponentHelper
 		            {
 		                for (Tenant tenant : tenants)
 		                {
-		                	final String tenantDomain = tenant.getTenantDomain();
-		                	AuthenticationUtil.runAs(new RunAsWork<Object>()
+		                    final String tenantDomain = tenant.getTenantDomain();
+		                    TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
 		                    {
-		                		public Object doWork() throws Exception
+		                        public Object doWork() throws Exception
 		                        {
-		                			checkForOrphanComponents(mapExecutedComponents.get(tenantDomain));
-		                			return null;
+		                            checkForOrphanComponents(mapExecutedComponents.get(tenantDomain));
+		                            return null;
 		                        }
-		                    }, tenantAdminService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain));
+		                    }, tenantDomain);
 		                }
 		            }
 		        }
@@ -306,7 +308,42 @@ public class ModuleComponentHelper
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    public synchronized void shutdownModules()
+    {
+        // Check properties
+        PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
+        PropertyCheck.mandatory(this, "registryService", registryService);
+        PropertyCheck.mandatory(this, "moduleService", moduleService);
+        PropertyCheck.mandatory(this, "tenantAdminService", tenantAdminService);
+        
+        /*
+         * Ensure correct authentication
+         */
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // Get all the modules
+                List<ModuleDetails> modules = moduleService.getAllModules();
+                loggerService.info(I18NUtil.getMessage(MSG_FOUND_MODULES, modules.size()));
+
+                for (ModuleDetails module : modules)
+                {
+                    Map<String, ModuleComponent> components = getComponents(module.getId());
+                    for (ModuleComponent component : components.values())
+                    {
+                        component.shutdown();
+                    }
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
     /**
      * Checks that all components have been executed or considered for execution.
      * @param executedComponents

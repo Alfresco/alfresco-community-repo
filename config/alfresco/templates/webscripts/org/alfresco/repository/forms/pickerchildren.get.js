@@ -257,22 +257,20 @@ function sortByName(a, b)
    return (b.properties.name.toLowerCase() > a.properties.name.toLowerCase() ? -1 : 1);
 }
 
-function findUsers(searchTerm, maxResults, results)
+function findUsers(filterTerm, maxResults, results)
 {
    var paging = utils.createPaging(maxResults, -1);
-   var searchResults = groups.searchUsers(searchTerm, paging, "lastName");
+   
+   var personRefs = people.getPeople(filterTerm, paging, "lastName", true);
    
    // create person object for each result
-   for each(var user in searchResults)
+   for each(var personRef in personRefs)
    {
-      if (logger.isLoggingEnabled())
-         logger.log("found user = " + user.userName);
-      
       // add to results
       results.push(
       {
-         item: createPersonResult(user.person),
-         selectable: true 
+         item: createPersonResult(search.findNode(personRef)),
+         selectable: true
       });
    }
 }

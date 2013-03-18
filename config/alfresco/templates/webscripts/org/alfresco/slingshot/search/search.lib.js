@@ -581,15 +581,29 @@ function processResults(nodes, maxResults, rootNode)
        * For each node we extract the site/container qname path and then
        * let the per-container helper function decide what to do.
        */
-      parts = splitQNamePath(nodes[i], rootNodeDisplayPath, rootNodeQNamePath);
-      item = getItem(parts[0], parts[1], parts[2], nodes[i]);
-      if (item !== null)
+      try
       {
-         results.push(item);
-         added++;
+         parts = splitQNamePath(nodes[i], rootNodeDisplayPath, rootNodeQNamePath);
+         item = getItem(parts[0], parts[1], parts[2], nodes[i]);
+         if (item !== null)
+         {
+            results.push(item);
+            added++;
+         }
+         else
+         {
+            failed++;
+         }
       }
-      else
+      catch (e)
       {
+         // THOR-833
+         if (logger.isWarnLoggingEnabled() == true)
+         {
+            logger.warn("search.lib.js: Skipping node due to exception when processing query result: " + e);
+            logger.warn("..." + nodes[i].nodeRef);
+         }
+         
          failed++;
       }
    }

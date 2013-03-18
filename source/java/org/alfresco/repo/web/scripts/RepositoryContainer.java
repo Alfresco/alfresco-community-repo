@@ -235,7 +235,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         if (required == RequiredAuthentication.none)
         {
             // TODO revisit - cleared here, in-lieu of WebClient clear
-            AuthenticationUtil.clearCurrentSecurityContext();
+            //AuthenticationUtil.clearCurrentSecurityContext();
             
             transactionedExecuteAs(script, scriptReq, scriptRes);
         }

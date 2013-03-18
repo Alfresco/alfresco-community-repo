@@ -18,18 +18,13 @@
  */
 package org.alfresco.repo.web.scripts.bean;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-
 
 /**
  * Login and establish a ticket

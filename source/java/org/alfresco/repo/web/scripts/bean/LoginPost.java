@@ -19,19 +19,16 @@
 package org.alfresco.repo.web.scripts.bean;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 
 /**
  * Post based login script

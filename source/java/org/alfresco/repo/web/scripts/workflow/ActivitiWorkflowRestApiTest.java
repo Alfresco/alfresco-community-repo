@@ -33,8 +33,8 @@ import org.alfresco.service.namespace.QName;
 public class ActivitiWorkflowRestApiTest extends AbstractWorkflowRestApiTest 
 {
     private static final String ADHOC_WORKFLOW_DEFINITION_NAME = "activiti$activitiAdhoc";
-    private static final String ADHOC_WORKFLOW_DEFINITION_TITLE = "Adhoc Workflow";
-    private static final String ADHOC_WORKFLOW_DEFINITION_DESCRIPTION = "Assign arbitrary task to colleague using Activiti workflow engine";
+    private static final String ADHOC_WORKFLOW_DEFINITION_TITLE = "New Task";
+    private static final String ADHOC_WORKFLOW_DEFINITION_DESCRIPTION = "Assign a new task to yourself or a colleague";
     private static final String REVIEW_WORKFLOW_DEFINITION_NAME = "activiti$activitiReview";
     private static final String REVIEW_POOLED_WORKFLOW_DEFINITION_NAME = "activiti$activitiReviewPooled";
     

@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -69,6 +70,8 @@ public class TenantWebScriptServlet extends WebScriptServlet
         {
             // clear threadlocal
             I18NUtil.setLocale(null);
+            // clear authentication and tenant context
+            AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
 }

@@ -67,7 +67,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
             // add ticket to model for javascript and template access
             Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
+            model.put("username", username);
             model.put("ticket",  authenticationService.getCurrentTicket());
+            
             return model;
         }
         catch(AuthenticationException e)
@@ -79,4 +81,5 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
             AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
+
 }

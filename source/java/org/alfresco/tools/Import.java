@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterContentCache;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -514,37 +515,35 @@ public class Import extends Tool
         {
             this.uuidBinding = uuidBinding;
         }
-        
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#getUUIDBinding()
-         */
+
+        @Override
         public UUID_BINDING getUUIDBinding()
         {
             return uuidBinding;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#allowReferenceWithinTransaction()
-         */
+        @Override
         public boolean allowReferenceWithinTransaction()
         {
             return false;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#getValue(java.lang.String)
-         */
+        @Override
         public String getValue(String key)
         {
             return null;
         }
 
+        @Override
         public QName[] getExcludedClasses()
         {
             return new QName[] {};
+        }
+
+        @Override
+        public ImporterContentCache getImportConentCache()
+        {
+            return null;
         }
     }
 }

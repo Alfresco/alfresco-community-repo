@@ -55,9 +55,10 @@ public class AllowedChildObjectTypeIdsProperty extends AbstractProperty
     {
         if(nodeInfo.getType() == null)
         {
-            return (Serializable) Collections.emptyList();
+        	//If the type is null, we can't handle it so return an empty list	
+        	return (Serializable) Collections.emptyList();
         }
-        
+
         TypeDefinition type = getServiceRegistry().getDictionaryService()
                 .getType(nodeInfo.getType().getAlfrescoClass());
         if ((type != null) && (type.getChildAssociations() != null) && (!type.getChildAssociations().isEmpty()))

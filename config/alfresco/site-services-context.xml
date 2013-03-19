@@ -21,7 +21,7 @@
     <bean id="siteService_permissionBootstrap" parent="permissionModelBootstrap">
     	<property name="model" value="alfresco/model/sitePermissionDefinitions.xml"/>
     </bean>
-    
+
     <!-- Site service transaction beans -->
 
     <bean id="siteServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
@@ -33,6 +33,7 @@
                 <value>hasCreateSitePermissions</value>
                 <value>findSites</value>
                 <value>listSites</value>
+                <value>listSitesPaged</value>
                 <value>getSite</value>
                 <value>listMembers</value>
                 <value>listMembersInfo</value>
@@ -44,6 +45,11 @@
                 <value>getSiteGroup</value>
                 <value>getSiteRoleGroup</value>
                 <value>getSiteRoot</value>
+                <value>canAddMember</value>
+                <value>listContainers</value>
+                <value>isFavouriteSite</value>
+                <value>getFavouriteSites</value>
+                <value>addFavouriteSite</value>
             </list>
         </property>
     </bean>
@@ -130,7 +136,32 @@
        </property>
     </bean>
     
-    <bean id="siteService" class="org.alfresco.repo.site.SiteServiceImpl" init-method="init">
+    <bean id="siteService" parent="baseSiteService"/>
+    
+    <!-- Canned queries -->
+    
+    <bean name="sitesCannedQueryFactory" class="org.alfresco.repo.site.SiteMembershipCannedQueryFactory">
+        <property name="registry" ref="siteCannedQueryRegistry"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="authorityService" ref="authorityService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="personService" ref="PersonService"/>
+    </bean>
+    
+    <bean id="FileFolderService_security_list" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
+        <property name="methodSecurityInterceptor" ref="FileFolderService_security" />
+        <property name="service" value="org.alfresco.service.cmr.model.FileFolderService" />
+        <property name="methodName" value="list" />
+    </bean>
+
+    <bean name="siteContainersCannedQueryFactory" class="org.alfresco.repo.site.SiteContainersCannedQueryFactory">
+        <property name="registry" ref="siteCannedQueryRegistry"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="methodSecurity" ref="FileFolderService_security_list"/>
+    </bean>
+    
+    <bean id="baseSiteService" class="org.alfresco.repo.site.SiteServiceImpl" init-method="init">
        <property name="nodeService" ref="NodeService"/>
        <property name="directNodeService" ref="nodeService"/>
        <property name="fileFolderService" ref="FileFolderService"/>
@@ -184,4 +215,5 @@
        <property name="nodeDAO" ref="nodeDAO"/>
        <property name="tenantService" ref="tenantService"/>
     </bean>
+
 </beans>

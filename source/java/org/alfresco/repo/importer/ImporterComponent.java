@@ -66,6 +66,7 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterBinding;
 import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
+import org.alfresco.service.cmr.view.ImporterContentCache;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -763,6 +764,8 @@ public class ImporterComponent implements ImporterService
          */
         private void importContent(NodeRef nodeRef, QName propertyName, String importContentData)
         {
+            ImporterContentCache contentCache = (binding == null) ? null : binding.getImportConentCache();
+            
             // bind import content data description
             importContentData = bindPlaceHolder(importContentData, binding);
             if (importContentData != null && importContentData.length() > 0)
@@ -772,26 +775,35 @@ public class ImporterComponent implements ImporterService
                 String contentUrl = contentData.getContentUrl();
                 if (contentUrl != null && contentUrl.length() > 0)
                 {
-                    // import the content from the url
-                    InputStream contentStream = streamHandler.importStream(contentUrl);
-                    ContentWriter writer = contentService.getWriter(nodeRef, propertyName, true);
-                    writer.setEncoding(contentData.getEncoding());
-                    writer.setMimetype(contentData.getMimetype());
-                    
-                    Map<QName, Serializable> propsBefore = null;
-                    if (contentUsageImpl != null && contentUsageImpl.getEnabled())
+                    if (contentCache != null)
                     {
-                        propsBefore = nodeService.getProperties(nodeRef);
+                        // import content from source
+                        ContentData cachedContentData = contentCache.getContent(streamHandler, contentData);
+                        nodeService.setProperty(nodeRef, propertyName, cachedContentData);
                     }
-                    
-                    writer.putContent(contentStream);
-                    
-                    if (contentUsageImpl != null && contentUsageImpl.getEnabled())
+                    else
                     {
-                        // Since behaviours for content nodes have all been disabled,
-                        // it is necessary to update the user's usage stats.
-                        Map<QName, Serializable> propsAfter = nodeService.getProperties(nodeRef);
-                        contentUsageImpl.onUpdateProperties(nodeRef, propsBefore, propsAfter);
+                        // import the content from the url
+                        InputStream contentStream = streamHandler.importStream(contentUrl);
+                        ContentWriter writer = contentService.getWriter(nodeRef, propertyName, true);
+                        writer.setEncoding(contentData.getEncoding());
+                        writer.setMimetype(contentData.getMimetype());
+                        
+                        Map<QName, Serializable> propsBefore = null;
+                        if (contentUsageImpl != null && contentUsageImpl.getEnabled())
+                        {
+                            propsBefore = nodeService.getProperties(nodeRef);
+                        }
+                        
+                        writer.putContent(contentStream);
+                        
+                        if (contentUsageImpl != null && contentUsageImpl.getEnabled())
+                        {
+                            // Since behaviours for content nodes have all been disabled,
+                            // it is necessary to update the user's usage stats.
+                            Map<QName, Serializable> propsAfter = nodeService.getProperties(nodeRef);
+                            contentUsageImpl.onUpdateProperties(nodeRef, propsBefore, propsAfter);
+                        }
                     }
                     
                     reportContentCreated(nodeRef, contentUrl);

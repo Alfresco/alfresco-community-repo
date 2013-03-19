@@ -403,7 +403,7 @@ public class RatingServiceImpl implements RatingService
         float totalRating = getTotalRating(targetNode, ratingSchemeName);
         int ratingCount = getRatingsCount(targetNode, ratingSchemeName);
         
-        return ratingCount == 0 ? -1f : totalRating / (float)ratingCount;
+        return ratingCount == 0 ? -1 : Float.valueOf(totalRating / (float)ratingCount);
     }
 
     public int getRatingsCount(NodeRef targetNode, String ratingSchemeName)

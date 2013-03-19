@@ -49,6 +49,8 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
@@ -90,12 +92,16 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
     
+    /** Rule service */
+    private RuleService ruleService;
+    
     /**
      * The policy component.
      * @since 3.5.0
      */
     private PolicyComponent policyComponent;
 
+    
     /**
      * Set the behaviour filter.
      * 
@@ -145,6 +151,14 @@ public class ThumbnailServiceImpl implements ThumbnailService,
         this.policyComponent = policyComponent;
     }
 
+    /**
+     * @param ruleService   rule service
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
+    
     /**
      * Registers to listen for events of interest.
      * @since 3.5.0
@@ -692,7 +706,16 @@ public class ThumbnailServiceImpl implements ThumbnailService,
                           thumbnailMods.add(lastModifiedValue);
                           
                           // Set the property...
-                          nodeService.setProperty(parentNode, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA, (Serializable) thumbnailMods);
+                          
+                          ruleService.disableRuleType(RuleType.UPDATE);
+                          try
+                          {
+                              nodeService.setProperty(parentNode, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA, (Serializable) thumbnailMods);
+                          }
+                          finally
+                          {
+                              ruleService.enableRuleType(RuleType.UPDATE);
+                          }
                       }
                       else
                       {
@@ -703,7 +726,16 @@ public class ThumbnailServiceImpl implements ThumbnailService,
                           // Add the aspect with the new property...
                           Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
                           properties.put(ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA, (Serializable) thumbnailMods);
-                          nodeService.addAspect(parentNode, ContentModel.ASPECT_THUMBNAIL_MODIFICATION, properties);
+                          
+                          ruleService.disableRuleType(RuleType.UPDATE);
+                          try
+                          {
+                              nodeService.addAspect(parentNode, ContentModel.ASPECT_THUMBNAIL_MODIFICATION, properties);
+                          }
+                          finally
+                          {
+                              ruleService.enableRuleType(RuleType.UPDATE);
+                          }
                       }
                    }
                }

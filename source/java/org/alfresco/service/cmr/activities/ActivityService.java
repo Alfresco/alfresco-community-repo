@@ -21,6 +21,8 @@ package org.alfresco.service.cmr.activities;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.service.NotAuditable;
 
@@ -139,6 +141,9 @@ public interface ActivityService extends ActivityPostService
      */
     @NotAuditable
     public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, Set<String> userFilter, Set<String> actvityFilter, long minFeedId);
+    
+    @NotAuditable
+    public PagingResults<ActivityFeedEntity> getPagedUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest);
     
     /**
      * Retrieve site feed

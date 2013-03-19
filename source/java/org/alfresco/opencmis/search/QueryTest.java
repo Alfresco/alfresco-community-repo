@@ -232,7 +232,11 @@ public class QueryTest extends BaseCMISTest
     public void setUp() throws Exception
     {
         super.setUp();
-        
+
+        cmisConnector.destroy(); // clean cached NodeRefs
+        cmisConnector.setStore(storeRef.toString());
+        cmisConnector.setRootPath("/");
+
         // If FTS kicks in at the wrong moment, it can skew the test results. Temporarily disable it during the test
         this.luceneFTS.pause();
 
@@ -716,7 +720,7 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        options = new CMISQueryOptions("SELECT * FROM cmis:folder where cmis:parentId = '" + f8.toString() + "'", rootNodeRef.getStoreRef());
+        options = new CMISQueryOptions("SELECT * FROM cmis:folder where cmis:parentId = '" + f8.getId() + "'", rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
         rs = cmisQueryService.query(options);
@@ -726,7 +730,7 @@ public class QueryTest extends BaseCMISTest
             Serializable sValue = row.getValue("cmis:parentId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNotNull(value);
-            assertEquals(f8.toString(), value);
+            assertEquals(f8.getId(), value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:parentId");
             assertEquals(PropertyType.ID, column.getCMISDataType());
             assertEquals(Cardinality.SINGLE, column.getCMISPropertyDefinition().getPropertyDefinition().getCardinality());
@@ -734,31 +738,31 @@ public class QueryTest extends BaseCMISTest
         }
         rs.close();
 
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId =  '" + base.toString() + "'", 4, false, "cmis:parentId", new String(), false);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <> '" + base.toString() + "'", folder_count-4, false, "cmis:parentId", new String(), false);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <  '" + base.toString() + "'", 0, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <= '" + base.toString() + "'", 0, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId >  '" + base.toString() + "'", 0, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId >= '" + base.toString() + "'", 0, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId =  '" + base.getId() + "'", 4, false, "cmis:parentId", new String(), false);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <> '" + base.getId() + "'", folder_count-4, false, "cmis:parentId", new String(), false);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <  '" + base.getId() + "'", 0, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId <= '" + base.getId() + "'", 0, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId >  '" + base.getId() + "'", 0, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId >= '" + base.getId() + "'", 0, false, "cmis:parentId", new String(), true);
 
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId IN     ('" + base.toString() + "')", 4, false, "cmis:parentId", new String(), false);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId NOT IN ('" + base.toString() + "')", folder_count-4, false, "cmis:parentId", new String(), false);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId IN     ('" + base.getId() + "')", 4, false, "cmis:parentId", new String(), false);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId NOT IN ('" + base.getId() + "')", folder_count-4, false, "cmis:parentId", new String(), false);
 
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId     LIKE '" + base.toString() + "'", 4, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId NOT LIKE '" + base.toString() + "'", folder_count-4, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId     LIKE '" + base.getId() + "'", 4, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId NOT LIKE '" + base.getId() + "'", folder_count-4, false, "cmis:parentId", new String(), true);
 
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId IS NOT NULL", folder_count, false, "cmis:parentId", new String(), false);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE cmis:parentId IS     NULL", 0, false, "cmis:parentId", new String(), false);
 
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' =  ANY cmis:parentId", 4, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' <> ANY cmis:parentId", folder_count-4, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' <  ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' <= ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' >  ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.getId() + "' =  ANY cmis:parentId", 4, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.getId() + "' <> ANY cmis:parentId", folder_count-4, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.getId() + "' <  ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.getId() + "' <= ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.getId() + "' >  ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
         testQuery("SELECT cmis:parentId FROM cmis:folder WHERE '" + base.toString() + "' >= ANY cmis:parentId", 0, false, "cmis:parentId", new String(), true);
 
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE ANY cmis:parentId IN     ('" + base.toString() + "')", 4, false, "cmis:parentId", new String(), true);
-        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE ANY cmis:parentId NOT IN ('" + base.toString() + "')", folder_count-4, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE ANY cmis:parentId IN     ('" + base.getId() + "')", 4, false, "cmis:parentId", new String(), true);
+        testQuery("SELECT cmis:parentId FROM cmis:folder WHERE ANY cmis:parentId NOT IN ('" + base.getId() + "')", folder_count-4, false, "cmis:parentId", new String(), true);
     }
 
     public void test_PATH() throws Exception
@@ -1287,7 +1291,7 @@ public class QueryTest extends BaseCMISTest
             Serializable sValue = row.getValue("cmis:versionSeriesId");
             String value = DefaultTypeConverter.INSTANCE.convert(String.class, sValue);
             assertNotNull(value);
-            assertEquals(row.getNodeRef().toString(), value);
+            assertEquals(row.getNodeRef().getId(), value);
             CMISResultSetColumn column = rs.getResultSetMetaData().getColumn("cmis:versionSeriesId");
             assertNotNull(column);
             assertEquals(PropertyType.ID, column.getCMISDataType());
@@ -1793,7 +1797,7 @@ public class QueryTest extends BaseCMISTest
 
         Date lmd0 = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(c0, ContentModel.PROP_MODIFIED));
         String lmds0 = df.format(lmd0);
-        options = new CMISQueryOptions("SELECT * FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + lmds0 + "' and cmis:objectId = '" + c0.toString() + "'",
+        options = new CMISQueryOptions("SELECT * FROM cmis:document WHERE cmis:lastModificationDate = TIMESTAMP '" + lmds0 + "' and cmis:objectId = '" + c0.getId() + "'",
                 rootNodeRef.getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
@@ -2141,7 +2145,7 @@ public class QueryTest extends BaseCMISTest
 
         Date cd0 = DefaultTypeConverter.INSTANCE.convert(Date.class, nodeService.getProperty(c0, ContentModel.PROP_CREATED));
         String cds0 = df.format(cd0);
-        options = new CMISQueryOptions("SELECT * FROM cmis:document WHERE cmis:creationDate = TIMESTAMP '" + cds0 + "' and cmis:objectId = '" + c0.toString() + "'", rootNodeRef
+        options = new CMISQueryOptions("SELECT * FROM cmis:document WHERE cmis:creationDate = TIMESTAMP '" + cds0 + "' and cmis:objectId = '" + c0.getId() + "'", rootNodeRef
                 .getStoreRef());
         options.setDefaultFTSConnective(Connective.OR);
         options.setDefaultFTSFieldConnective(Connective.OR);
@@ -2770,7 +2774,7 @@ public class QueryTest extends BaseCMISTest
         
         //String docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
         
-        String docId = c0.toString();
+        String docId = c0.getId();
         
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + "'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count-1, false, "cmis:objectId", new String(), false);
@@ -2787,7 +2791,7 @@ public class QueryTest extends BaseCMISTest
         nodeService.setProperty(c0, ContentModel.PROP_VERSION_LABEL, "1.0");
         
         //docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
-        docId = c0.toString()+";1.0";
+        docId = c0.getId()+";1.0";
         
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + "'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count-1, false, "cmis:objectId", new String(), false);
@@ -2801,7 +2805,7 @@ public class QueryTest extends BaseCMISTest
         //docId = testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:name = 'Alfresco Tutorial'", 1, false, "cmis:objectId", new String(), false);
         // comes back as 1.0 ??
         
-        docId = c0.toString()+";2.1";
+        docId = c0.getId()+";2.1";
         
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId =  '" + docId + "'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:objectId <> '" + docId + "'", doc_count-1, false, "cmis:objectId", new String(), false);
@@ -3341,7 +3345,7 @@ public class QueryTest extends BaseCMISTest
 
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name = '" + Name + "'", 1, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:name = 'Folder 1'", 1, false, "cmis:objectId", new String(), false);
-        testQuery("SELECT * FROM cmis:folder WHERE cmis:parentId = '" + base.toString() + "'", 4, false, "cmis:objectId", new String(), false);
+        testQuery("SELECT * FROM cmis:folder WHERE cmis:parentId = '" + base.getId() + "'", 4, false, "cmis:objectId", new String(), false);
         testQuery("SELECT * FROM cmis:folder WHERE cmis:allowedChildObjectTypeIds = 'meep'", 0, false, "cmis:objectId", new String(), true);
     }
 

@@ -260,7 +260,7 @@
                     </source>
                     <target>
                         <class>bpm:workflowPackage</class>
-                        <mandatory>true</mandatory>
+                        <mandatory>false</mandatory>
                         <many>false</many>
                     </target>
                 </association>

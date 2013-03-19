@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,6 +43,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterContentCache;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
@@ -654,30 +655,34 @@ public class ImporterBootstrap extends AbstractLifecycleBean
             return value;
         }
 
+        @Override
         public UUID_BINDING getUUIDBinding()
         {
         	return uuidBinding;
         }
 
-        /**
-         * Allow bootstrap to override default Node UUID Binding
-         * 
-         * @param uuidBinding UUID_BINDING
-         */
         private void setUUIDBinding(UUID_BINDING uuidBinding)
         {
         	this.uuidBinding = uuidBinding;
         }
 
+        @Override
         public boolean allowReferenceWithinTransaction()
         {
             return true;
         }
 
+        @Override
         public QName[] getExcludedClasses()
         {
             // Note: Do not exclude any classes, we want to import all
             return new QName[] {};
+        }
+        
+        @Override
+        public ImporterContentCache getImportConentCache()
+        {
+            return null;
         }
     }
 

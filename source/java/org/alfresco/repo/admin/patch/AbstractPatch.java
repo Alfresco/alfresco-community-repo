@@ -420,9 +420,9 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
                         return applyInternal();
                     }
                 }, tenantDomain);
-                
-                report = report + "\n" + tenantReport + " (for tenant: " + tenantDomain + ")";
             }
+
+            report = report + "\n (also applied to " + tenants.size() + " tenants)";
             
             return report;
         }

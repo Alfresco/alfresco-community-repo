@@ -30,6 +30,9 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQueryPageDetails;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.tenant.TenantService;
@@ -46,6 +49,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -143,6 +147,11 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth)
     {
+    	return getChildren(categoryRef, mode, depth, false);
+    }
+
+    private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName)
+    {
         if (categoryRef == null)
         {
             return Collections.<ChildAssociationRef> emptyList();
@@ -191,7 +200,15 @@ public class LuceneCategoryServiceImpl implements CategoryService
             SearchService searcher = indexerAndSearcher.getSearcher(categoryRef.getStoreRef(), true);
             
             // Perform the search
-            resultSet = searcher.query(categoryRef.getStoreRef(), "lucene", luceneQuery.toString(), null);
+            SearchParameters searchParameters = new SearchParameters();
+            searchParameters.setQuery(luceneQuery.toString());
+            searchParameters.setLanguage("lucene");
+            if(sortByName)
+            {
+            	searchParameters.addSort("@" + ContentModel.PROP_NAME, true);
+            }
+            searchParameters.addStore(categoryRef.getStoreRef());
+            resultSet = searcher.query(searchParameters);
 
             // Convert from search results to the required Child Assocs
             return resultSetToChildAssocCollection(resultSet);
@@ -336,6 +353,68 @@ public class LuceneCategoryServiceImpl implements CategoryService
     public NodeRef createClassification(StoreRef storeRef, QName typeName, String attributeName)
     {
         throw new UnsupportedOperationException();
+    }
+
+    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName)
+    {
+        final List<ChildAssociationRef> assocs = new LinkedList<ChildAssociationRef>();
+        Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
+
+        final int skipCount = pagingRequest.getSkipCount();
+        final int maxItems = pagingRequest.getMaxItems();
+        final int size = (maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? CannedQueryPageDetails.DEFAULT_PAGE_SIZE : skipCount + maxItems);
+        int count = 0;
+        boolean moreItems = false;
+
+        OUTER: for(NodeRef nodeRef : nodeRefs)
+        {
+        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName);
+        	for(ChildAssociationRef child : children)
+        	{
+        		count++;
+
+	            if(count <= skipCount)
+	            {
+	            	continue;
+	            }
+	            
+	            if(count > size)
+	            {
+	            	moreItems = true;
+	            	break OUTER;
+	            }
+
+	            assocs.add(child);
+        	}
+        }
+        
+        final boolean hasMoreItems = moreItems;
+        return new PagingResults<ChildAssociationRef>()
+        {
+			@Override
+			public List<ChildAssociationRef> getPage()
+			{
+				return assocs;
+			}
+
+			@Override
+			public boolean hasMoreItems()
+			{
+				return hasMoreItems;
+			}
+
+			@Override
+			public Pair<Integer, Integer> getTotalResultCount()
+			{
+				return new Pair<Integer, Integer>(null, null);
+			}
+
+			@Override
+			public String getQueryExecutionId()
+			{
+				return null;
+			}
+        };
     }
 
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName)

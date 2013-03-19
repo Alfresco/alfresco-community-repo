@@ -19,7 +19,7 @@
 package org.alfresco.repo.security.authentication;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.quartz.Job;
+import org.quartz.StatefulJob;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -28,7 +28,7 @@ import org.quartz.JobExecutionException;
  * @author Andy
  *
  */
-public class TicketCleanupJob implements Job
+public class TicketCleanupJob implements StatefulJob
 {
 
     public TicketCleanupJob()

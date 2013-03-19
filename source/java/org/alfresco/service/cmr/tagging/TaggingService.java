@@ -20,11 +20,13 @@ package org.alfresco.service.cmr.tagging;
 
 import java.util.List;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.Pair;
 
 /**
  * Tagging Service Interface
@@ -43,6 +45,8 @@ public interface TaggingService
     @NotAuditable
     boolean isTag(StoreRef storeRef, String tag);
     
+    public String getTagName(NodeRef nodeRef);
+
     /**
      * Get all the tags currently available
      * 
@@ -50,6 +54,16 @@ public interface TaggingService
      */
     @NotAuditable
     List<String> getTags(StoreRef storeRef);
+    
+    /**
+     * Get a paged list of all the tags currently available 
+     * 
+     * @param storeRef
+     * @param pagingRequest
+     * @return
+     */
+    @NotAuditable
+    PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest);
     
     /** 
      * Get all the tags currently available that match the provided filter.
@@ -79,6 +93,9 @@ public interface TaggingService
     @Auditable(parameters = {"tag"})
     void deleteTag(StoreRef storeRef, String tag);
     
+    @Auditable(parameters = {"existingTag", "newTag"})
+    NodeRef changeTag(StoreRef storeRef, String existingTag, String newTag);
+    
     /**
      * Indicates whether a node has the specified tag or not.
      * 
@@ -96,7 +113,7 @@ public interface TaggingService
      * @param tag       tag name
      */
     @Auditable(parameters = {"tag"})
-    void addTag(NodeRef nodeRef, String tag);
+    NodeRef addTag(NodeRef nodeRef, String tag);
 
     /**
      * Gets the node reference for a given tag.
@@ -119,7 +136,7 @@ public interface TaggingService
      * @param tags      list of tags
      */
     @Auditable(parameters = {"tags"})
-    void addTags(NodeRef nodeRef, List<String> tags);
+    List<Pair<String, NodeRef>> addTags(NodeRef nodeRef, List<String> tags);
     
     /**
      * Remove a tag from a node.
@@ -147,6 +164,15 @@ public interface TaggingService
      */
     @NotAuditable
     List<String> getTags(NodeRef nodeRef);
+    
+    /**
+     * Get a paged list of all the tags on a node
+     * 
+     * @param nodeRef                    node reference
+     * @return PagingResults<String>     list of tags on the node
+     */
+    @NotAuditable
+    PagingResults<Pair<NodeRef, String>> getTags(NodeRef nodeRef, PagingRequest pagingRequest);
     
     /**
      * Sets the list of tags that are applied to a node, replaces any existing

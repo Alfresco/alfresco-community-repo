@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,12 +20,12 @@ package org.alfresco.repo.forum;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ForumModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * This is a starting point for a future service for handling Share comments.
- * <p/>
- * This class may change in the future as requirements become clearer.
+ * A service for handling comments.
  * 
  * @author Neil Mc Erlean
  * @since 4.0
@@ -50,4 +50,39 @@ public interface CommentService
      * @return the fm:topic NodeRef, if one exists, else <tt>null</tt>.
      */
     NodeRef getShareCommentsTopic(NodeRef discussableNode);
+
+    /**
+     * Creates a comment for the discussableNode
+     * 
+     * @param discussableNode the node in Share which is being commented on .
+     * @param title - title of the comment
+     * @param comment - body of the comment
+     * @param suppressRollups - should it suppressRollups
+     * @return NodeRef - the created node reference
+     */
+    NodeRef createComment(NodeRef discussableNode, String title, String comment, boolean suppressRollups);
+    
+    /**
+     * Updates the comment
+     * 
+     * @param nodeRef the comment node.
+     * @param title - title of the comment
+     * @param comment - body of the comment
+     */
+    void updateComment(NodeRef commentNodeRef, String title, String comment);
+
+    /**
+     * Returns a paged list of comments.
+     * 
+     * @param nodeRef the node which is being commented on .
+     * @return a list of comment nodes
+     */
+    PagingResults<NodeRef> listComments(NodeRef discussableNode, PagingRequest paging);
+
+    /**
+     * Deletes the comment for the discussableNode
+     * 
+     * @param commentNodeRef the node in Share which is being commented on.
+     */
+    void deleteComment(NodeRef commentNodeRef);
 }

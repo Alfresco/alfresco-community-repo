@@ -207,6 +207,7 @@ public class LuceneQueryEngine implements QueryEngine
         try
         {
             StoreRef storeRef = options.getStores().get(0);
+            searchParameters.addStore(storeRef);
             if (query instanceof LuceneQueryBuilder)
             {
                 SearchService searchService = indexAndSearcher.getSearcher(storeRef, options.isIncludeInTransactionData());

@@ -2,7 +2,6 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-
     <bean id="OpenCMISPropertyAccessorMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" >
         <property name="serviceRegistry"           ref="ServiceRegistry" />
         <property name="cmisConnector"             ref="CMISConnector" />
@@ -79,7 +78,10 @@
         <property name="hiddenAspect"           ref="hiddenAspect" />
         <property name="activitiesEnabled"      value="${opencmis.activities.enabled}" />
     </bean>
-
+    
+    <bean id="objectFilter" class="org.alfresco.opencmis.PassthroughObjectFilter">
+    </bean>
+    
     <bean id="CMISConnector" class="org.alfresco.opencmis.CMISConnector">
         <property name="store"                  value="${opencmis.connector.default.store}" />
         <property name="rootPath"               value="${opencmis.connector.default.rootPath}" />
@@ -111,6 +113,7 @@
         <property name="activityPoster"         ref="cmisActivityPoster" />
         <property name="hiddenAspect"           ref="hiddenAspect" />
         <property name="siteService"            ref="SiteService" />
+        <property name="objectFilter"           ref="objectFilter" />
         <property name="descriptorService"      ref="DescriptorService" />
         <property name="nodeService"            ref="NodeService" />
         <property name="fileFolderService"      ref="FileFolderService" />
@@ -152,5 +155,5 @@
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService" />
         <property name="registry"               ref="auditModel.extractorRegistry" />        
     </bean>
- 
+
 </beans>

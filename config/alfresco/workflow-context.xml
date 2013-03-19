@@ -93,13 +93,6 @@
        </property>
    </bean>
 
-   <!--                                                  -->
-   <!-- Base Workflow Engine Status  -->
-   <!--                                                  -->
-   <bean id="baseWorkflowEngineStatus" class="org.alfresco.repo.workflow.WorkflowEngineStatus" abstract="true">
-      <property name="workflowAdminService" ref="workflowAdminService" />
-   </bean>
-
    <!--                 -->
    <!-- Workflow Action -->
    <!--                 -->

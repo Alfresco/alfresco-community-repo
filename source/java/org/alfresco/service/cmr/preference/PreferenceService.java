@@ -21,7 +21,11 @@ package org.alfresco.service.cmr.preference;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.util.Pair;
 
 /**
  * @author Roy Wetherall
@@ -37,6 +41,9 @@ public interface PreferenceService
     @Auditable(parameters = {"userName"})
     Map<String, Serializable> getPreferences(String userName);
 
+    @Auditable(parameters = {"userName", "preferenceName"})
+    Serializable getPreference(String userName, String preferenceName);
+    
     /**
      * Get the preferences for a particular user.
      * <p>
@@ -51,6 +58,9 @@ public interface PreferenceService
      */
     @Auditable(parameters = {"userName", "preferenceFilter"})
     Map<String, Serializable> getPreferences(String userName, String preferenceFilter);
+    
+    @Auditable(parameters = {"userName", "preferenceFilter"})
+    PagingResults<Pair<String, Serializable>> getPagedPreferences(String userName, String preferenceFilter, PagingRequest pagingRequest);
     
     /**
      * Sets the preference values for a user.
@@ -84,5 +94,40 @@ public interface PreferenceService
      */
     @Auditable(parameters = {"userName", "preferenceFilter"})
     void clearPreferences(String userName, String preferenceFilter);
+    
+    /**
+     * Is siteShortName a favourite site of username?
+     * 
+     * @param userName          the user name
+     * @param siteShortName     the site short name
+     */
+    @Auditable(parameters = {"userName", "siteShortName"})
+    boolean isFavouriteSite(String userName, String siteShortName);
 
+    /**
+     * Returns a paged list of favourite sites for the user.
+     * 
+     * @param userName          the user name
+     * @param pagingRequest     paging request
+     */
+    @Auditable(parameters = {"userName", "pagingRequest"})
+    PagingResults<SiteInfo> getFavouriteSites(String userName, PagingRequest pagingRequest);
+
+    /**
+     * Adds siteShortName as a favourite site for the user.
+     * 
+     * @param userName          the user name
+     * @param siteShortName     the site short name
+     */
+    @Auditable(parameters = {"userName", "siteShortName"})
+    void addFavouriteSite(String userName, String siteShortName);
+
+    /**
+     * Removes siteShortName as a favourite site for the user.
+     * 
+     * @param userName          the user name
+     * @param siteShortName     the site short name
+     */
+    @Auditable(parameters = {"userName", "siteShortName"})
+    void removeFavouriteSite(String userName, String siteShortName);
 }

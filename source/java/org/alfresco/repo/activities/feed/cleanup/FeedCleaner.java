@@ -114,7 +114,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     {
         this.maxIdRange = maxIdRange;
     }
-
+    
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -478,7 +478,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                             try
                             {
                                 // Since we are in post-commit, we do best-effort
-                                int deletedCnt = feedDAO.deleteSiteFeedEntries(siteId);
+                                int deletedCnt = feedDAO.deleteSiteFeedEntries(tenantService.getName(siteId));
                                 
                                 if (logger.isDebugEnabled())
                                 {

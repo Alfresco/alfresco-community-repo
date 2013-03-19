@@ -968,8 +968,10 @@
                org.alfresco.service.cmr.site.SiteService.deleteSite=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.findSites=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.getContainer=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.site.SiteService.listContainers=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.getMembersRole=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.getMembersRoleInfo=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.resolveSite=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.getSite=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.getSiteGroup=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.getSiteRoleGroup=ACL_ALLOW
@@ -980,8 +982,11 @@
                org.alfresco.service.cmr.site.SiteService.isMember=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.listMembers=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.listMembersInfo=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.listMembersPaged=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.listSites=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+               org.alfresco.service.cmr.site.SiteService.listSitesPaged=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.removeMembership=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.canAddMember=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.setMembership=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.updateSite=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.*=ACL_DENY

@@ -288,9 +288,17 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private List<PermissionDefinition> repositoryPermissions;
     private Map<String, PermissionMapping> permissionMappings;
 
+    private ObjectFilter objectFilter;
+
+    public void setObjectFilter(ObjectFilter objectFilter)
+    {
+		this.objectFilter = objectFilter;
+	}
+
     // --------------------------------------------------------------
     // Configuration
     // --------------------------------------------------------------
+    
     /**
      * Sets the root store.
      * 
@@ -707,10 +715,18 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     // --------------------------------------------------------------
     // Alfresco methods
     // --------------------------------------------------------------
-
+    
     public SiteInfo getSite(NodeRef nodeRef)
     {
     	return siteService.getSite(nodeRef);
+    }
+    
+    /**
+     *  Should the node be filtered?
+     */
+	public boolean filter(NodeRef nodeRef)
+    {
+    	return objectFilter.filter(nodeRef);
     }
     
     public boolean disableBehaviour(QName className, NodeRef nodeRef)
@@ -871,17 +887,19 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         if(getFileFolderService().getFileInfo(currentVersionNodeRef).isFolder())
         {
-            return currentVersionNodeRef.toString();
+            // TODO code convergence - refer to public API and CLOUD-1267 - this needs to be resolved !! 
+            return currentVersionNodeRef.getId();
         }
         
         Serializable versionLabel = getNodeService()
                 .getProperty(currentVersionNodeRef, ContentModel.PROP_VERSION_LABEL);
         if (versionLabel == null)
         {
-            versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
+        	versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
         }
 
-        return currentVersionNodeRef.toString() + CMISConnector.ID_SEPERATOR + versionLabel;
+        // TODO code convergence - refer to public API and CLOUD-1267 - this needs to be resolved !! 
+        return currentVersionNodeRef.getId() + CMISConnector.ID_SEPERATOR + versionLabel;
     }
 
     /**
@@ -1049,11 +1067,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     }
 
     @SuppressWarnings("unchecked")
-    private ObjectData createCMISObjectImpl(CMISNodeInfo info, Properties nodeProps, String filter,
+    private ObjectData createCMISObjectImpl(final CMISNodeInfo info, Properties nodeProps, String filter,
             boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
             boolean includePolicyIds, boolean includeAcl)
     {
-        ObjectDataImpl result = new ObjectDataImpl();
+        final ObjectDataImpl result = new ObjectDataImpl();
 
         // set allowable actions
         if (includeAllowableActions)
@@ -1103,7 +1121,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             // set ACL
             if (includeAcl)
             {
-                result.setAcl(getACL(info.getCurrentNodeNodeRef(), false));
+            	AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            	{
+					@Override
+					public Void doWork() throws Exception
+					{
+		                result.setAcl(getACL(info.getCurrentNodeNodeRef(), false));
+						return null;
+					}
+            	});
             }
 
             // add aspects
@@ -1196,7 +1222,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             CMISNodeInfo streamInfo = createNodeInfo(streamId);
             if (!streamInfo.isVariant(CMISObjectVariant.CURRENT_VERSION))
             {
-                throw new CmisInvalidArgumentException("Stream id is invalid: " + streamId);
+                throw new CmisInvalidArgumentException("Stream id is invalid: " + streamId + ", expected variant " + CMISObjectVariant.CURRENT_VERSION + ", got variant " + streamInfo.getObjectVariant());
             }
 
             streamNodeRef = streamInfo.getNodeRef();
@@ -1549,7 +1575,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 if (value instanceof NodeRef)
                 {
-                    ((PropertyIdImpl) result).setValue(value.toString());
+                    ((PropertyIdImpl) result).setValue(((NodeRef)value).getId());
                 }
                 else
                 {
@@ -2547,7 +2573,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
             catch (FileNotFoundException e)
             {
-                throw new CmisInvalidArgumentException("Object with id " + nodeRef.toString() + " not found!");
+                throw new CmisInvalidArgumentException("Object with id " + nodeRef.getId() + " not found!");
             }
         }
         else
@@ -2890,7 +2916,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         ri.setVendorName("Alfresco");
         ri.setProductName("Alfresco " + descriptorService.getServerDescriptor().getEdition());
         ri.setProductVersion(currentDescriptor.getVersion());
-        ri.setRootFolder(getRootNodeRef().toString());
+        ri.setRootFolder(getRootNodeRef().getId());
         ri.setCmisVersionSupported("1.0");
 
         ri.setChangesIncomplete(true);

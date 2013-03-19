@@ -19,14 +19,22 @@
 package org.alfresco.repo.preference;
 
 import java.io.Serializable;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQueryPageDetails;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -41,6 +49,9 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,6 +62,9 @@ import org.json.JSONObject;
  */
 public class PreferenceServiceImpl implements PreferenceService
 {
+    private static final String FAVOURITE_SITES_PREFIX = "org.alfresco.share.sites.favourites.";
+    private static final int FAVOURITE_SITES_PREFIX_LENGTH = FAVOURITE_SITES_PREFIX.length();
+
     /** Node service */
     private NodeService nodeService;
 
@@ -60,6 +74,9 @@ public class PreferenceServiceImpl implements PreferenceService
     /** Person service */
     private PersonService personService;
 
+    /** Site service */
+    private SiteService siteService;
+    
     /** Permission Service */
     private PermissionService permissionService;
 
@@ -90,6 +107,16 @@ public class PreferenceServiceImpl implements PreferenceService
     }
 
     /**
+     * Set the site service
+     * 
+     * @param siteService    the site service
+     */
+    public void setSiteService(SiteService siteService)
+    {
+		this.siteService = siteService;
+	}
+
+	/**
      * Set the person service
      * 
      * @param personService the person service
@@ -136,13 +163,61 @@ public class PreferenceServiceImpl implements PreferenceService
     }
 
     /**
-     * @see org.alfresco.repo.person.PersonService#getPreferences(java.lang.String,
+     * @see org.alfresco.repo.person.PersonService#getPreferences(java.lang.String, java.lang.String)
      *      java.lang.String)
      */
     @SuppressWarnings("unchecked")
     public Map<String, Serializable> getPreferences(String userName, String preferenceFilter)
     {
-        Map<String, Serializable> preferences = new HashMap<String, Serializable>(20);
+        Map<String, Serializable> preferences = new TreeMap<String, Serializable>();
+        
+        try
+        {
+            JSONObject jsonPrefs = getPreferencesObject(userName);
+            if(jsonPrefs != null)
+            {
+                // Build hash from preferences stored in the repository
+                Iterator<String> keys = jsonPrefs.keys();
+                while (keys.hasNext())
+                {
+                    String key = (String)keys.next();
+                    
+                    if (preferenceFilter == null ||
+                        preferenceFilter.length() == 0 ||
+                        matchPreferenceNames(key, preferenceFilter) == true)
+                    {
+                        preferences.put(key, (Serializable)jsonPrefs.get(key));
+                    }
+                }
+            }
+        }
+        catch (JSONException exception)
+        {
+            throw new AlfrescoRuntimeException("Can not get preferences for " + userName + " because there was an error pasing the JSON data.", exception);
+        }
+        
+        return preferences;
+    }
+    
+    private PageDetails getPageDetails(PagingRequest pagingRequest, int totalSize)
+    {
+        int skipCount = pagingRequest.getSkipCount();
+        int maxItems = pagingRequest.getMaxItems();
+        int end = maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? totalSize : skipCount + maxItems;
+    	int pageSize = (maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? totalSize : maxItems);
+    	if(pageSize > totalSize - skipCount)
+    	{
+    		pageSize = totalSize - skipCount;
+    	}
+
+        boolean hasMoreItems = end < totalSize;
+        
+    	return new PageDetails(pageSize, hasMoreItems, skipCount, maxItems, end);
+    }
+    
+    private JSONObject getPreferencesObject(String userName) throws JSONException
+    {
+        JSONObject jsonPrefs = null;
 
         // Get the user node reference
         NodeRef personNodeRef = this.personService.getPerson(userName);
@@ -157,38 +232,16 @@ public class PreferenceServiceImpl implements PreferenceService
             authenticationContext.isSystemUserName(currentUserName) ||
             authorityService.isAdminAuthority(currentUserName))
         {
-            try
+            // Check for preferences aspect
+            if (this.nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PREFERENCES) == true)
             {
-                // Check for preferences aspect
-                if (this.nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PREFERENCES) == true)
+                // Get the preferences for this user
+                ContentReader reader = this.contentService.getReader(personNodeRef,
+                        ContentModel.PROP_PREFERENCE_VALUES);
+                if (reader != null)
                 {
-                    // Get the preferences for this user
-                    JSONObject jsonPrefs = new JSONObject();
-                    ContentReader reader = this.contentService.getReader(personNodeRef,
-                            ContentModel.PROP_PREFERENCE_VALUES);
-                    if (reader != null)
-                    {
-                        jsonPrefs = new JSONObject(reader.getContentString());
-                    }
-
-                    // Build hash from preferences stored in the repository
-                    Iterator<String> keys = jsonPrefs.keys();
-                    while (keys.hasNext())
-                    {
-                        final String key = (String) keys.next();
-
-                        if (preferenceFilter == null || preferenceFilter.length() == 0 ||
-                            matchPreferenceNames(key, preferenceFilter) == true)
-                        {
-                            preferences.put(key, (Serializable) jsonPrefs.get(key));
-                        }
-                    }
+                    jsonPrefs = new JSONObject(reader.getContentString());
                 }
-            }
-            catch (JSONException exception)
-            {
-                throw new AlfrescoRuntimeException("Can not get preferences for " + userName
-                        + " because there was an error pasing the JSON data.", exception);
             }
         }
         else
@@ -198,8 +251,90 @@ public class PreferenceServiceImpl implements PreferenceService
             throw new UnauthorizedAccessException("The current user " + currentUserName
                     + " does not have sufficient permissions to get the preferences of the user " + userName);
         }
+        
+        return jsonPrefs;
+    }
 
-        return preferences;
+    public Serializable getPreference(String userName, String preferenceName)
+    {
+    	String preferenceValue = null;
+
+        try
+        {
+	        JSONObject jsonPrefs = getPreferencesObject(userName);
+	        if(jsonPrefs != null)
+	        {
+	        	if(jsonPrefs.has(preferenceName))
+	        	{
+	        		preferenceValue = jsonPrefs.getString(preferenceName);
+	        	}
+            }
+        }
+        catch (JSONException exception)
+        {
+            throw new AlfrescoRuntimeException("Can not get preferences for " + userName + " because there was an error pasing the JSON data.", exception);
+        }
+
+        return preferenceValue;
+    }
+    
+    public PagingResults<Pair<String, Serializable>> getPagedPreferences(String userName, String preferenceFilter, PagingRequest pagingRequest)
+    {
+    	final Map<String, Serializable> prefs = getPreferences(userName, preferenceFilter);
+
+        int totalSize = prefs.size();
+        int skipCount = pagingRequest.getSkipCount();
+        int maxItems = pagingRequest.getMaxItems();
+        int end = maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? totalSize : skipCount + maxItems;
+    	int pageSize = (maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? totalSize : Math.max(maxItems, totalSize - skipCount));
+        final boolean hasMoreItems = end < totalSize;
+
+		final List<Pair<String, Serializable>> page = new ArrayList<Pair<String, Serializable>>(pageSize);
+		Iterator<Map.Entry<String, Serializable>> it = prefs.entrySet().iterator();
+        for(int counter = 0; counter < end && it.hasNext(); counter++)
+        {
+        	Map.Entry<String, Serializable> pref = it.next();
+
+			if(counter < skipCount)
+			{
+				continue;
+			}
+			
+			if(counter > end - 1)
+			{
+				break;
+			}
+
+			page.add(new Pair<String, Serializable>(pref.getKey(), pref.getValue()));
+        }
+
+        return new PagingResults<Pair<String, Serializable>>()
+        {
+			@Override
+			public List<Pair<String, Serializable>> getPage()
+			{
+				return page;
+			}
+
+			@Override
+			public boolean hasMoreItems()
+			{
+				return hasMoreItems;
+			}
+
+			@Override
+			public Pair<Integer, Integer> getTotalResultCount()
+			{
+				Integer total = Integer.valueOf(prefs.size());
+				return new Pair<Integer, Integer>(total, total);
+			}
+
+			@Override
+			public String getQueryExecutionId()
+			{
+				return null;
+			}
+        };
     }
 
     /**
@@ -408,5 +543,171 @@ public class PreferenceServiceImpl implements PreferenceService
                 personService.getUserIdentifier(userName).equals(personService.getUserIdentifier(currentUserName)) ||
                 authenticationContext.isSystemUserName(currentUserName) ||
                 permissionService.hasPermission(personNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED);
+    }
+    public static class PageDetails
+    {
+    	private boolean hasMoreItems = false;
+    	private int pageSize;
+    	private int skipCount;
+    	private int maxItems;
+    	private int end;
+
+		public PageDetails(int pageSize, boolean hasMoreItems, int skipCount, int maxItems, int end)
+		{
+			super();
+			this.hasMoreItems = hasMoreItems;
+			this.pageSize = pageSize;
+			this.skipCount = skipCount;
+			this.maxItems = maxItems;
+			this.end = end;
+		}
+
+		public int getSkipCount()
+		{
+			return skipCount;
+		}
+
+		public int getMaxItems()
+		{
+			return maxItems;
+		}
+
+		public int getEnd()
+		{
+			return end;
+		}
+
+		public boolean hasMoreItems()
+		{
+			return hasMoreItems;
+		}
+
+		public int getPageSize()
+		{
+			return pageSize;
+		}
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#isFavouriteSite(java.lang.String, java.lang.String)
+     */
+    public boolean isFavouriteSite(String userName, String siteShortName)
+    {
+		StringBuilder prefKey = new StringBuilder(FAVOURITE_SITES_PREFIX);
+		prefKey.append(siteShortName);
+
+    	String value = (String)getPreference(userName, prefKey.toString());
+    	return (value == null ? false : value.equalsIgnoreCase("true"));
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.preference.PreferenceService#addFavouriteSite(java.lang.String, java.lang.String)
+     */
+    public void addFavouriteSite(String userName, String siteShortName)
+    {
+		StringBuilder prefKey = new StringBuilder(FAVOURITE_SITES_PREFIX);
+		prefKey.append(siteShortName);
+
+		Map<String, Serializable> preferences = new HashMap<String, Serializable>(1);
+		preferences.put(prefKey.toString(), Boolean.TRUE);
+		setPreferences(userName, preferences);
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.preference.PreferenceService#removeFavouriteSite(java.lang.String, java.lang.String)
+     */
+    public void removeFavouriteSite(String userName, String siteShortName)
+    {
+		StringBuilder prefKey = new StringBuilder(FAVOURITE_SITES_PREFIX);
+		prefKey.append(siteShortName);
+
+		clearPreferences(userName, prefKey.toString());
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.site.SiteService#getFavouriteSites(java.lang.String, org.alfresco.query.PagingRequest)
+     */
+    public PagingResults<SiteInfo> getFavouriteSites(String userName, PagingRequest pagingRequest)
+    {
+    	final Collator collator = Collator.getInstance();
+
+        final Set<SiteInfo> sortedFavouriteSites = new TreeSet<SiteInfo>(new Comparator<SiteInfo>()
+        {
+			@Override
+			public int compare(SiteInfo o1, SiteInfo o2)
+			{
+				return collator.compare(o1.getTitle(), o2.getTitle());
+			}
+		});
+
+        Map<String, Serializable> prefs = getPreferences(userName, FAVOURITE_SITES_PREFIX);
+        for(String key : prefs.keySet())
+        {
+        	boolean isFavourite = false;
+        	Serializable s = prefs.get(key);
+        	if(s instanceof Boolean)
+        	{
+        		isFavourite = (Boolean)s;
+        	}
+        	if(isFavourite)
+        	{
+	        	String siteShortName = key.substring(FAVOURITE_SITES_PREFIX_LENGTH);
+	        	SiteInfo siteInfo = siteService.getSite(siteShortName);
+	        	if(siteInfo != null)
+	        	{
+	        		sortedFavouriteSites.add(siteInfo);
+	        	}
+        	}
+        }
+
+        int totalSize = sortedFavouriteSites.size();
+        final PageDetails pageDetails = getPageDetails(pagingRequest, totalSize);
+
+		final List<SiteInfo> page = new ArrayList<SiteInfo>(pageDetails.getPageSize());
+		Iterator<SiteInfo> it = sortedFavouriteSites.iterator();
+        for(int counter = 0; counter < pageDetails.getEnd() && it.hasNext(); counter++)
+        {
+        	SiteInfo favouriteSite = it.next();
+
+			if(counter < pageDetails.getSkipCount())
+			{
+				continue;
+			}
+			
+			if(counter > pageDetails.getEnd() - 1)
+			{
+				break;
+			}
+
+			page.add(favouriteSite);
+        }
+
+        return new PagingResults<SiteInfo>()
+        {
+			@Override
+			public List<SiteInfo> getPage()
+			{
+				return page;
+			}
+
+			@Override
+			public boolean hasMoreItems()
+			{
+				return pageDetails.hasMoreItems();
+			}
+
+			@Override
+			public Pair<Integer, Integer> getTotalResultCount()
+			{
+				Integer total = Integer.valueOf(sortedFavouriteSites.size());
+				return new Pair<Integer, Integer>(total, total);
+			}
+
+			@Override
+			public String getQueryExecutionId()
+			{
+				return null;
+			}
+        };
     }
 }

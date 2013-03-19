@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClientFactory;
+import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
@@ -95,6 +96,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     private HashMap<StoreRef, HttpClient> httpClients = new HashMap<StoreRef, HttpClient>();
     
     private HashMap<StoreRef, SolrStoreMapping> mappingLookup = new HashMap<StoreRef, SolrStoreMapping>();
+
+	private String alternativeDictionary = CMISStrictDictionaryService.DEFAULT;
 	
 	private RepositoryState repositoryState;
 
@@ -128,6 +131,11 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
             httpClients.put(mapping.getStoreRef(), httpClient);
         }
+    }
+
+    public void setAlternativeDictionary(String alternativeDictionary)
+    {
+        this.alternativeDictionary = alternativeDictionary;
     }
 
     /**
@@ -262,7 +270,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             }
             url.append("&locale=");
             url.append(encoder.encode(locale.toString(), "UTF-8"));
-
+            url.append("&").append(SearchParameters.ALTERNATIVE_DICTIONARY).append("=").append(alternativeDictionary);
             StringBuffer sortBuffer = new StringBuffer();
             for (SortDefinition sortDefinition : searchParameters.getSortDefinitions())
             {

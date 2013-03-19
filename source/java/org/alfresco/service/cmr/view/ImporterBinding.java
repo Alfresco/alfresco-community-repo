@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -66,5 +66,6 @@ public interface ImporterBinding
      * @return  list of model class qnames to exclude (return null to indicate use of default list)
      */
     public QName[] getExcludedClasses();
-    
+
+    public ImporterContentCache getImportConentCache();
 }

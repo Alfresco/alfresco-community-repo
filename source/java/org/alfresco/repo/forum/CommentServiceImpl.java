@@ -18,36 +18,94 @@
  */
 package org.alfresco.repo.forum;
 
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.query.CannedQueryFactory;
+import org.alfresco.query.CannedQueryResults;
+import org.alfresco.query.EmptyPagingResults;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
+import org.alfresco.util.registry.NamedObjectRegistry;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONObject;
 
 /**
  * @author Neil Mc Erlean
  * @since 4.0
  */
+// TODO consolidate this and ScriptCommentService and the implementations of comments.* web scripts.
 public class CommentServiceImpl implements CommentService
 {
+    private static Log logger = LogFactory.getLog(CommentServiceImpl.class);  
+
     /**
      * Naming convention for Share comment model. fm:forum contains fm:topic
      */
     private static final QName FORUM_TO_TOPIC_ASSOC_QNAME = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments");
+    private static final String COMMENTS_TOPIC_NAME = "Comments";
+
+    private static final String CANNED_QUERY_GET_CHILDREN = "commentsGetChildrenCannedQueryFactory";
     
     // Injected services
     private NodeService nodeService;
+    private ContentService contentService;
+    private ActivityService activityService;
+    private SiteService siteService;
     
-    public void setNodeService(NodeService nodeService)
+    private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
+
+	public void setSiteService(SiteService siteService)
+    {
+		this.siteService = siteService;
+	}
+
+	public void setActivityService(ActivityService activityService)
+    {
+		this.activityService = activityService;
+	}
+    
+	public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
+
+	public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
     
-    @Override
+    public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry)
+    {
+		this.cannedQueryRegistry = cannedQueryRegistry;
+	}
+
+	@Override
     public NodeRef getDiscussableAncestor(NodeRef descendantNodeRef)
     {
         // For "Share comments" i.e. fm:post nodes created via the Share commenting UI, the containment structure is as follows:
@@ -85,6 +143,29 @@ public class CommentServiceImpl implements CommentService
         
         return result;
     }
+
+    @Override
+    public PagingResults<NodeRef> listComments(NodeRef discussableNode, PagingRequest paging)
+    {
+    	NodeRef commentsFolder = getShareCommentsTopic(discussableNode);
+    	if(commentsFolder != null)
+    	{
+    		List<Pair<QName,Boolean>> sort = new ArrayList<Pair<QName,Boolean>>();
+    		sort.add(new Pair<QName, Boolean>(ContentModel.PROP_CREATED, false));
+
+	        // Run the canned query
+	        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
+	        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(commentsFolder, null, null, null, null, sort, paging);
+	
+	        // Execute the canned query
+	        CannedQueryResults<NodeRef> results = cq.execute();
+	        return results;
+    	}
+    	else
+    	{
+    		return new EmptyPagingResults<NodeRef>();
+    	}
+    }
     
     @Override
     public NodeRef getShareCommentsTopic(NodeRef discussableNode)
@@ -113,5 +194,218 @@ public class CommentServiceImpl implements CommentService
         }
         
         return result;
+    }
+
+//    private ScriptNode createCommentsFolder(ScriptNode node)
+//    {
+//        final NodeRef nodeRef = node.getNodeRef();
+//        
+//        NodeRef commentsFolder = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
+//        {
+//            public NodeRef doWork() throws Exception
+//            {
+//                NodeRef commentsFolder = null;
+//                
+//                // ALF-5240: turn off auditing round the discussion node creation to prevent
+//                // the source document from being modified by the first user leaving a comment
+//                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+//                
+//                try
+//                {
+//                    nodeService.addAspect(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussable"), null);
+//                    List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion"), RegexQNamePattern.MATCH_ALL);
+//                    if (assocs.size() != 0)
+//                    {
+//                        NodeRef forumFolder = assocs.get(0).getChildRef();
+//                        
+//                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+//                        props.put(ContentModel.PROP_NAME, COMMENTS_TOPIC_NAME);
+//                        commentsFolder = nodeService.createNode(
+//                                forumFolder,
+//                                ContentModel.ASSOC_CONTAINS, 
+//                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, COMMENTS_TOPIC_NAME), 
+//                                QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "topic"),
+//                                props).getChildRef();
+//                    }
+//                }
+//                finally
+//                {
+//                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+//                }
+//                
+//                return commentsFolder;
+//            }
+//    
+//        }, AuthenticationUtil.getSystemUserName()); 
+//        
+//        return new ScriptNode(commentsFolder, serviceRegistry, getScope());
+//    }
+    
+    private String getSiteId(final NodeRef nodeRef)
+    {
+        String siteId = AuthenticationUtil.runAsSystem(new RunAsWork<String>()
+        {
+			@Override
+			public String doWork() throws Exception
+			{
+				String siteId = null;
+		        SiteInfo siteInfo = siteService.getSite(nodeRef);
+		        if(siteInfo != null)
+		        {
+		        	siteId = siteInfo.getShortName();
+		        }
+				return siteId;
+			}
+        });
+
+        return siteId;
+    }
+
+    @SuppressWarnings("unchecked")
+	private JSONObject getActivityData(String siteId, final NodeRef nodeRef)
+    {
+        if(siteId != null)
+        {
+	        // create an activity (with some Share-specific parts)
+	        JSONObject json = new JSONObject();
+	        json.put("title", nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+			try
+			{
+				StringBuilder sb = new StringBuilder("document-details?nodeRef=");
+				sb.append(URLEncoder.encode(nodeRef.toString(), "UTF-8"));
+		        json.put("page", sb.toString());
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				logger.warn("Unable to urlencode page for create comment activity");
+			}
+
+			return json;
+        }
+        else
+        {
+        	logger.warn("Unable to determine site in which node " + nodeRef + " resides.");
+        	return null;
+        }
+    }
+    
+	private void postActivity(String siteId, String activityType, JSONObject activityData)
+    {
+		if(activityData != null)
+		{
+			activityService.postActivity(activityType, siteId, "comments", activityData.toString());
+		}
+    }
+
+	@Override
+    public NodeRef createComment(final NodeRef discussableNode, String title, String comment, boolean suppressRollups)
+    {
+    	if(comment == null)
+    	{
+    		throw new IllegalArgumentException("Must provide a non-null comment");
+    	}
+
+        // There is no CommentService, so we have to create the node structure by hand.
+        // This is what happens within e.g. comment.put.json.js when comments are submitted via the REST API.
+        if (!nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
+        {
+            nodeService.addAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE, null);
+        }
+        if (!nodeService.hasAspect(discussableNode, ForumModel.ASPECT_COMMENTS_ROLLUP) && !suppressRollups)
+        {
+            nodeService.addAspect(discussableNode, ForumModel.ASPECT_COMMENTS_ROLLUP, null);
+        }
+        // Forum node is created automatically by DiscussableAspect behaviour.
+        NodeRef forumNode = nodeService.getChildAssocs(discussableNode, ForumModel.ASSOC_DISCUSSION, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion")).get(0).getChildRef();
+        
+        final List<ChildAssociationRef> existingTopics = nodeService.getChildAssocs(forumNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments"));
+        NodeRef topicNode = null;
+        if (existingTopics.isEmpty())
+        {
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+            props.put(ContentModel.PROP_NAME, COMMENTS_TOPIC_NAME);
+            topicNode = nodeService.createNode(forumNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments"), ForumModel.TYPE_TOPIC, props).getChildRef();
+        }
+        else
+        {
+            topicNode = existingTopics.get(0).getChildRef();
+        }
+
+        NodeRef postNode = nodeService.createNode(topicNode, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ForumModel.TYPE_POST).getChildRef();
+        nodeService.setProperty(postNode, ContentModel.PROP_CONTENT, new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null));
+        nodeService.setProperty(postNode, ContentModel.PROP_TITLE, title);
+        ContentWriter writer = contentService.getWriter(postNode, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
+        writer.setEncoding("UTF-8");
+        writer.putContent(comment);
+
+    	// determine the siteId and activity data of the comment NodeRef
+        String siteId = getSiteId(discussableNode);
+        JSONObject activityData = getActivityData(siteId, discussableNode);
+
+        postActivity(siteId, "org.alfresco.comments.comment-created", activityData);
+
+        return postNode;
+    }
+
+    public void updateComment(NodeRef commentNodeRef, String title, String comment)
+    {
+    	QName nodeType = nodeService.getType(commentNodeRef);
+    	if(!nodeType.equals(ForumModel.TYPE_POST))
+    	{
+    		throw new IllegalArgumentException("Node to update is not a comment node.");
+    	}
+
+    	ContentWriter writer = contentService.getWriter(commentNodeRef, ContentModel.PROP_CONTENT, true);
+    	writer.setMimetype(MimetypeMap.MIMETYPE_HTML); // TODO should this be set by the caller?
+    	writer.putContent(comment);
+
+    	if(title != null)
+    	{
+    		nodeService.setProperty(commentNodeRef, ContentModel.PROP_TITLE, title);
+    	}
+
+    	// determine the siteId and activity data of the comment NodeRef
+        String siteId = getSiteId(commentNodeRef);
+        NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
+        if(discussableNodeRef != null)
+        {
+        	JSONObject activityData = getActivityData(siteId, discussableNodeRef);
+
+        	postActivity(siteId, "org.alfresco.comments.comment-updated", activityData);
+        }
+        else
+        {
+        	logger.warn("Unable to determine discussable node for the comment with nodeRef " + commentNodeRef + ", not posting an activity");
+        }
+    }
+
+    public void deleteComment(NodeRef commentNodeRef)
+    {
+    	QName nodeType = nodeService.getType(commentNodeRef);
+    	if(!nodeType.equals(ForumModel.TYPE_POST))
+    	{
+    		throw new IllegalArgumentException("Node to delete is not a comment node.");
+    	}
+
+    	// determine the siteId and activity data of the comment NodeRef (do this before removing the comment NodeRef)
+        String siteId = getSiteId(commentNodeRef);
+        NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
+        JSONObject activityData = null;
+        if(discussableNodeRef != null)
+        {
+        	activityData = getActivityData(siteId, discussableNodeRef);
+        }
+
+    	nodeService.deleteNode(commentNodeRef);
+
+    	if(activityData != null)
+    	{
+    		postActivity(siteId, "org.alfresco.comments.comment-deleted", activityData);
+    	}
+        else
+        {
+        	logger.warn("Unable to determine discussable node for the comment with nodeRef " + commentNodeRef + ", not posting an activity");
+        }
     }
 }

@@ -247,7 +247,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     {
         // Put these resources on the transactions
         context = null;
-        authentication = null;
         nodeInfoMap.clear();
         objectInfoMap.clear();
     }
@@ -575,13 +574,25 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             {
                 try
                 {
+                	if(connector.filter(child.getNodeRef()))
+                	{
+                		continue;
+                	}
+
                     // create a child CMIS object
                     CMISNodeInfo ni = createNodeInfo(child.getNodeRef());
+                    
                     if (getObjectInfo(repositoryId, ni.getObjectId())==null)
                     {
                         // ignore invalid children
                         continue;
                     }
+                    
+                    if (CMISObjectVariant.NOT_A_CMIS_OBJECT.equals(ni.getObjectVariant()))
+                    {
+                        continue;  //Skip non-cmis objects
+                    }
+                    
                     ObjectData object = connector.createCMISObject(ni, child, filter, includeAllowableActions,
                             includeRelationships, renditionFilter, false, false);
 
@@ -700,12 +711,22 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 {
                     continue;
                 }
-
+                
                 if(isFolder && type.getAlfrescoClass().equals(ContentModel.TYPE_SYSTEM_FOLDER))
                 {
                 	continue;
                 }
+                
+            	if(connector.isHidden(child.getChildRef()))
+            	{
+            		continue;
+            	}
 
+            	if(connector.filter(child.getChildRef()))
+            	{
+            		continue;
+            	}
+            	
                 // create a child CMIS object
                 ObjectInFolderDataImpl object = new ObjectInFolderDataImpl();
                 CMISNodeInfo ni = createNodeInfo(child.getChildRef());
@@ -982,6 +1003,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             for (NodeRef nodeRef : nodeRefs)
             {
+            	// TODO - perhaps filter by path in the query instead?
+            	if(connector.filter(nodeRef))
+            	{
+            		continue;
+            	}
+
                 if (skipCounter > 0)
                 {
                     skipCounter--;
@@ -1117,7 +1144,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         
         connector.getActivityPoster().postFileFolderAdded(fileInfo);
 
-        return nodeRef.toString();
+        return nodeRef.getId();
     }
 
     private String stripEncoding(String mimeType)
@@ -1680,7 +1707,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
         catch (Exception e)
         {
-            result.add(nodeRef.toString());
+            result.add(nodeRef.getId());
         }
 
         return result;
@@ -1734,6 +1761,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 FileInfo fileInfo = connector.getFileFolderService().resolveNamePath(
                         rootNodeRef,
                         Arrays.asList(path.substring(1).split("/")));
+
+                if(connector.filter(fileInfo.getNodeRef()))
+                {
+                    throw new CmisObjectNotFoundException("Object not found: " + path);
+                }
 
                 CMISNodeInfo info = createNodeInfo(fileInfo.getNodeRef());
 
@@ -1992,6 +2024,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         NodeRef nodeRef = info.getNodeRef();
         VersionHistory versionHistory = ((CMISNodeInfoImpl) info).getVersionHistory();
 
+//      Collection<Version> versions = versionHistory.getAllVersions();
+//      if (versionHistory == null || versions.size() == 0  || versions.size() == 1 && versions.contains(versionHistory.getHeadVersion()))
         if (versionHistory == null)
         {
             // add current version
@@ -2427,6 +2461,19 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         return info;
     }
 
+    protected String getGuid(String nodeId)
+    {
+    	int idx = nodeId.lastIndexOf("/");
+    	if(idx != -1)
+    	{
+    		return nodeId.substring(idx+1);
+    	}
+    	else
+    	{
+    		return nodeId;
+    	}
+    }
+
     /**
      * Collects the {@link ObjectInfo} about an object.
      * 
@@ -2530,7 +2577,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             info.setWorkingCopyId(null);
             info.setWorkingCopyOriginalId(null);
 
-            info.setVersionSeriesId(ni.getCurrentNodeId());
+            info.setVersionSeriesId(getGuid(ni.getCurrentNodeId()));
 
             if (ni.isPWC())
             {
@@ -2544,7 +2591,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
                 if (ni.hasPWC())
                 {
-                    info.setWorkingCopyId(ni.getCurrentNodeId() + CMISConnector.ID_SEPERATOR
+                    info.setWorkingCopyId(getGuid(ni.getCurrentNodeId()) + CMISConnector.ID_SEPERATOR
                             + CMISConnector.PWC_VERSION_LABEL);
                     info.setWorkingCopyOriginalId(ni.getCurrentObjectId());
                 } else

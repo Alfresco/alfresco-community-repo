@@ -21,8 +21,9 @@ package org.alfresco.service.cmr.search;
 import java.util.Collection;
 import java.util.List;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -100,6 +101,16 @@ public interface CategoryService
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName);
+
+    /**
+     * Get a paged list of the root categories for an aspect/classification
+     * 
+     * @param storeRef
+     * @param aspectName
+     * @return
+     */
+    @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName"})
+    PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName);
 
     /**
      * Looks up a category by name under its immediate parent. Index-independent so can be used for cluster-safe

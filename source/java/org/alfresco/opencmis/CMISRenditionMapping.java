@@ -292,7 +292,7 @@ public class CMISRenditionMapping
     {
         RenditionDataImpl result = new RenditionDataImpl();
 
-        result.setStreamId(rendNodeRef.toString());
+        result.setStreamId(rendNodeRef.getId());
         result.setMimeType(mimeType);
 
         result.setTitle(title);
@@ -302,7 +302,7 @@ public class CMISRenditionMapping
         result.setBigWidth(width);
         result.setBigHeight(height);
 
-        result.setRenditionDocumentId(rendNodeRef.toString());
+        result.setRenditionDocumentId(rendNodeRef.getId());
 
         return result;
     }

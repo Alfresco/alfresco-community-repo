@@ -84,7 +84,7 @@ public class FileContentStore
      *            the root under which files will be stored. The directory will be created if it does not exist.
      * @see FileContentStore#FileContentStore(File)
      */
-    private FileContentStore(String rootDirectoryStr)
+    /*package*/ FileContentStore(String rootDirectoryStr)
     {
         this(new File(rootDirectoryStr));
     }
@@ -199,7 +199,7 @@ public class FileContentStore
      * @return Returns a new and unique file
      * @throws IOException if the file or parent directories couldn't be created
      */
-    private File createNewFile() throws IOException
+    /*package*/ File createNewFile() throws IOException
     {
         String contentUrl = FileContentStore.createNewFileStoreUrl();
         return createNewFile(contentUrl);
@@ -221,7 +221,7 @@ public class FileContentStore
      * 
      * @see #setReadOnly(boolean)
      */
-    private File createNewFile(String newContentUrl) throws IOException
+    /*package*/ File createNewFile(String newContentUrl) throws IOException
     {
         if (readOnly)
         {
@@ -299,7 +299,7 @@ public class FileContentStore
      * @return Returns the equivalent content URL
      * @throws Exception
      */
-    private String makeContentUrl(File file)
+    /*package*/ String makeContentUrl(File file)
     {
         String path = file.getAbsolutePath();
         // check if it belongs to this store
@@ -336,7 +336,7 @@ public class FileContentStore
      * 
      * @see #checkUrl(String)
      */
-    private File makeFile(String contentUrl)
+    /*package*/ File makeFile(String contentUrl)
     {
         // take just the part after the protocol
         Pair<String, String> urlParts = super.getContentUrlParts(contentUrl);

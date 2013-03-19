@@ -22,6 +22,9 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
+
 /**
  * Interface for activity feed DAO service
  */
@@ -53,4 +56,6 @@ public interface ActivityFeedDAO extends ActivitiesDAO
     public List<ActivityFeedEntity> selectUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, int maxFeedItems) throws SQLException;
 
     public List<ActivityFeedEntity> selectSiteFeedEntries(String siteUserId, String format, int maxFeedItems) throws SQLException;
+    
+    public PagingResults<ActivityFeedEntity> selectPagedUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest) throws SQLException;
 }

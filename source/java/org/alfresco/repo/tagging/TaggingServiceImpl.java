@@ -23,15 +23,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.EmptyPagingResults;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
@@ -65,6 +71,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -87,6 +94,8 @@ public class TaggingServiceImpl implements TaggingService,
     protected static final String TAGGING_AUDIT_KEY_TAGS = "tags";
     
     private static Log logger = LogFactory.getLog(TaggingServiceImpl.class);
+    
+	private static Collator collator = Collator.getInstance();
 
     private NodeService nodeService;
     private NodeService nodeServiceInternal;
@@ -414,7 +423,7 @@ public class TaggingServiceImpl implements TaggingService,
         }
     }
     
-    private String getTagName(NodeRef nodeRef)
+    public String getTagName(NodeRef nodeRef)
     {
         return (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
@@ -454,6 +463,45 @@ public class TaggingServiceImpl implements TaggingService,
         }
     }
     
+    public NodeRef changeTag(StoreRef storeRef, String existingTag, String newTag)
+    {
+    	if(existingTag == null)
+    	{
+    		throw new TaggingException("Existing tag cannot be null");
+    	}
+    	
+    	if(newTag == null)
+    	{
+    		throw new TaggingException("New tag cannot be null");
+    	}
+
+    	if(existingTag.equals(newTag))
+    	{
+    		throw new TaggingException("New and existing tags are the same");
+    	}
+    	
+    	if(getTagNodeRef(storeRef, existingTag) == null)
+    	{
+    		throw new NonExistentTagException("Tag " + existingTag + " not found");
+    	}
+    	
+    	if(getTagNodeRef(storeRef, newTag) != null)
+    	{
+    		throw new TagExistsException("Tag " + newTag + " already exists");
+    	}
+
+    	List<NodeRef> taggedNodes = findTaggedNodes(storeRef, existingTag);
+    	for(NodeRef nodeRef : taggedNodes)
+    	{
+    		removeTag(nodeRef, existingTag);
+    		addTag(nodeRef, newTag);
+    	}
+
+    	deleteTag(storeRef, existingTag);
+
+    	return getTagNodeRef(storeRef, newTag);
+    }
+
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#getTags()
      */
@@ -513,8 +561,15 @@ public class TaggingServiceImpl implements TaggingService,
      * @see org.alfresco.service.cmr.tagging.TaggingService#addTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @SuppressWarnings("unchecked")
-    public void addTag(final NodeRef nodeRef, final String tagName)
-    {        
+    public NodeRef addTag(final NodeRef nodeRef, final String tagName)
+    {
+    	NodeRef newTagNodeRef = null;
+    	
+    	if(tagName == null)
+    	{
+    		throw new IllegalArgumentException("Must provide a non-null tag");
+    	}
+
         updateTagBehaviour.disable();
         createTagBehaviour.disable();
         try
@@ -523,7 +578,7 @@ public class TaggingServiceImpl implements TaggingService,
             String tag = tagName.toLowerCase();
             
             // Get the tag node reference
-            NodeRef newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag, true);
+            newTagNodeRef = getTagNodeRef(nodeRef.getStoreRef(), tag, true);
             
             List<NodeRef> tagNodeRefs = new ArrayList<NodeRef>(5);
             if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == false)
@@ -554,17 +609,22 @@ public class TaggingServiceImpl implements TaggingService,
             updateTagBehaviour.enable();
             createTagBehaviour.enable();
         }
+        
+        return newTagNodeRef;
     }
     
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#addTags(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
      */
-    public void addTags(NodeRef nodeRef, List<String> tags)
+    public List<Pair<String, NodeRef>> addTags(NodeRef nodeRef, List<String> tags)
     {
+    	List<Pair<String, NodeRef>> ret = new ArrayList<Pair<String, NodeRef>>();
         for (String tag : tags)
         {
-            addTag(nodeRef, tag);
+            NodeRef tagNodeRef = addTag(nodeRef, tag);
+            ret.add(new Pair<String, NodeRef>(tag, tagNodeRef));
         }
+        return ret;
     }
     
     /**
@@ -653,6 +713,140 @@ public class TaggingServiceImpl implements TaggingService,
         }
     }
 
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.query.PagingRequest)
+     */
+    @SuppressWarnings("unchecked")
+    // TODO canned query
+    public PagingResults<Pair<NodeRef, String>> getTags(NodeRef nodeRef, PagingRequest pagingRequest)
+    {
+        // Check for the taggable aspect
+        if (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
+        {
+            // Get the current tags
+            List<NodeRef> currentTagNodes = (List<NodeRef>)this.nodeService.getProperty(nodeRef, ContentModel.PROP_TAGS);
+            if (currentTagNodes != null)
+            {
+                final int totalItems = currentTagNodes.size();
+                int skipCount = pagingRequest.getSkipCount();
+                int maxItems = pagingRequest.getMaxItems();
+                int end = maxItems == Integer.MAX_VALUE ? totalItems : skipCount + maxItems;
+            	int size = (maxItems == Integer.MAX_VALUE ? totalItems : maxItems);
+
+                final List<Pair<NodeRef, String>> sortedTags = new ArrayList<Pair<NodeRef, String>>(size);
+            	// grab all tags and sort (assume fairly low number of tags)
+            	for(NodeRef tagNode : currentTagNodes)
+            	{
+                    String tag = (String)this.nodeService.getProperty(tagNode, ContentModel.PROP_NAME);
+                    sortedTags.add(new Pair<NodeRef, String>(tagNode, tag));            		
+            	}
+                Collections.sort(sortedTags, new Comparator<Pair<NodeRef, String>>()
+                {
+					@Override
+					public int compare(Pair<NodeRef, String> o1, Pair<NodeRef, String> o2)
+					{
+						String tag1 = o1.getSecond();
+						String tag2 = o2.getSecond();
+						return collator.compare(tag1, tag2);
+					}
+				});
+
+                final List<Pair<NodeRef, String>> result = new ArrayList<Pair<NodeRef, String>>(size);
+            	Iterator<Pair<NodeRef, String>> it = sortedTags.iterator();
+                for(int count = 0; count < end && it.hasNext(); count++)
+                {
+                	Pair<NodeRef, String> tagPair = it.next();
+
+                	if(count < skipCount)
+                	{
+                		continue;
+                	}
+
+                    result.add(tagPair);
+                }
+                currentTagNodes = null;
+                final boolean hasMoreItems = end < totalItems;
+
+                return new PagingResults<Pair<NodeRef, String>>()
+                {
+        			@Override
+        			public List<Pair<NodeRef, String>> getPage()
+        			{
+        				return result;
+        			}
+
+        			@Override
+        			public boolean hasMoreItems()
+        			{
+        				return hasMoreItems;
+        			}
+
+        			@Override
+        			public Pair<Integer, Integer> getTotalResultCount()
+        			{
+        				Integer total = Integer.valueOf(totalItems);
+        				return new Pair<Integer, Integer>(total, total);
+        			}
+
+        			@Override
+        			public String getQueryExecutionId()
+        			{
+        				return null;
+        			}
+                };
+            }
+        }
+
+        return new EmptyPagingResults<Pair<NodeRef, String>>();
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.StoreRef, org.alfresco.query.PagingRequest)
+     */
+    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
+    {
+        ParameterCheck.mandatory("storeRef", storeRef);
+
+    	PagingResults<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true);
+        final List<Pair<NodeRef, String>> result = new ArrayList<Pair<NodeRef, String>>(rootCategories.getPage().size());
+        for (ChildAssociationRef rootCategory : rootCategories.getPage())
+        {
+            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+            result.add(new Pair<NodeRef, String>(rootCategory.getChildRef(), name));
+        }
+        final boolean hasMoreItems = rootCategories.hasMoreItems();
+        final Pair<Integer, Integer> totalResultCount = rootCategories.getTotalResultCount();
+        final String queryExecutionId = rootCategories.getQueryExecutionId();
+        rootCategories = null;
+
+        return new PagingResults<Pair<NodeRef, String>>()
+        {
+        	@Override
+        	public List<Pair<NodeRef, String>> getPage()
+        	{
+        		return result;
+        	}
+
+        	@Override
+        	public boolean hasMoreItems()
+        	{
+        		return hasMoreItems;
+        	}
+
+        	@Override
+        	public Pair<Integer, Integer> getTotalResultCount()
+        	{
+        		return totalResultCount;
+        	}
+
+        	@Override
+        	public String getQueryExecutionId()
+        	{
+        		return queryExecutionId;
+        	}
+        };
+    }
+    
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.NodeRef)
      */

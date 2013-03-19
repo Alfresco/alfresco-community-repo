@@ -36,6 +36,7 @@
         <property name="nodeDAO">
             <ref bean="nodeDAO" />
         </property>
+        <property name="alternativeDictionary" value="${solr.cmis.alternativeDictionary}" />
         <property name="permissionService">
             <ref bean="permissionService" />
         </property>

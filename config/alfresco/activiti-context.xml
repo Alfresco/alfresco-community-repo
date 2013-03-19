@@ -64,6 +64,8 @@
                 <ref bean="activitiParseListener" />
             </list>
         </property>
+        
+        <property name="idBlockSize" value="${system.workflow.engine.activiti.idblocksize}"></property>
     </bean>
 
     <bean id="activitiProcessEngine" class="org.activiti.spring.ProcessEngineFactoryBean">

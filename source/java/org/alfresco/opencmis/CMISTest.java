@@ -214,7 +214,7 @@ public class CMISTest
             ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
 
             // create simple text plain content
-            String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().toString(), contentStream, VersioningState.MAJOR, null, null);
+            String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MAJOR, null, null);
 
             Holder<String> objectIdHolder = new Holder<String>(objectId);
 

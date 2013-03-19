@@ -37,10 +37,11 @@ public class VersionSeriesIdProperty extends AbstractProperty
     {
         super(serviceRegistry, connector, PropertyIds.VERSION_SERIES_ID);
     }
-
+    
     @Override
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
-        return nodeInfo.getCurrentNodeId();
+        return getGuid(nodeInfo.getCurrentNodeId());
+    	//return nodeInfo.getCurrentObjectId();
     }
 }

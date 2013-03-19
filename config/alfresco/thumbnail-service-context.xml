@@ -46,6 +46,7 @@
         <property name="thumbnailRegistry" ref="thumbnailRegistry" />
         <property name="policyComponent" ref="policyComponent" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ruleService" ref="ruleService"/>
     </bean>
     
     <!-- This bean is responsible for the conversion of thumbnail definitions to

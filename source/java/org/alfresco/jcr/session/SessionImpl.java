@@ -86,6 +86,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
 import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterContentCache;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -829,38 +830,32 @@ public class SessionImpl implements Session
             }
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#getUUIDBinding()
-         */
+        @Override
         public UUID_BINDING getUUIDBinding()
         {
             return uuidBinding;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#getValue(java.lang.String)
-         */
+        @Override
         public String getValue(String key)
         {
             return null;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#searchWithinTransaction()
-         */
+        @Override
         public boolean allowReferenceWithinTransaction()
         {
             return false;
         }
 
-        /*
-         *  (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#getExcludedClasses()
-         */
+        @Override
         public QName[] getExcludedClasses()
+        {
+            return null;
+        }
+        
+        @Override
+        public ImporterContentCache getImportConentCache()
         {
             return null;
         }

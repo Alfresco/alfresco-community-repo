@@ -58,6 +58,19 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
         this.propertyName = propertyName;
     }
 
+    protected String getGuid(String nodeId)
+    {
+    	int idx = nodeId.lastIndexOf("/");
+    	if(idx != -1)
+    	{
+    		return nodeId.substring(idx+1);
+    	}
+    	else
+    	{
+    		return nodeId;
+    	}
+    }
+
     /**
      * @return service registry
      */

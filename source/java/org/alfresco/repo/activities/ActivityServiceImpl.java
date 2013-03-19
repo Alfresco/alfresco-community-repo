@@ -27,6 +27,8 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.feed.cleanup.FeedCleaner;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
@@ -234,6 +236,38 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
         }
         
         return activityFeedEntries;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.service.cmr.activities.ActivityService#getPagedUserFeedEntries(java.lang.String, java.lang.String, java.lang.String, boolean, boolean, java.util.Set<String>, java.util.Set<String>)
+     */
+    public PagingResults<ActivityFeedEntity> getPagedUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId, PagingRequest pagingRequest)
+    {
+    	try
+    	{
+            String currentUser = getCurrentUser();
+            if (! ((currentUser == null) || 
+                   (authorityService.isAdminAuthority(currentUser)) ||
+                   (currentUser.equals(feedUserId)) ||
+                   (AuthenticationUtil.getSystemUserName().equals(this.tenantService.getBaseNameUser(currentUser)))))
+            {
+                throw new AccessDeniedException("Unable to get user feed entries for '" + feedUserId + "' - currently logged in as '" + currentUser +"'");
+            }
+            
+            if (siteId != null)
+            {
+                siteId = tenantService.getName(siteId);
+            }
+
+	    	PagingResults<ActivityFeedEntity> activityFeedEntries = feedDAO.selectPagedUserFeedEntries(feedUserId, format, siteId, excludeThisUser, excludeOtherUsers, minFeedId, pagingRequest);
+	        return activityFeedEntries;
+        }
+        catch (SQLException se)
+        {
+            AlfrescoRuntimeException are = new AlfrescoRuntimeException("Unable to get user feed entries: " + se.getMessage());
+            logger.error(are);
+            throw are;
+        }
     }
     
     public List<ActivityFeedEntity> getUserFeedEntries(String feedUserId, String format, String siteId, boolean excludeThisUser, boolean excludeOtherUsers, long minFeedId)

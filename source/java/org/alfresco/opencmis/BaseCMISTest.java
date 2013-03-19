@@ -61,7 +61,7 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class BaseCMISTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
     protected CMISMapping cmisMapping;
     
@@ -111,6 +111,8 @@ public abstract class BaseCMISTest extends TestCase
 
     protected FullTextSearchIndexer luceneFTS;    
 
+    protected StoreRef storeRef;
+
     public void setUp() throws Exception
     {
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
@@ -152,7 +154,7 @@ public abstract class BaseCMISTest extends TestCase
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
         String storeName = "CMISTest-" + getStoreName() + "-" + (new Date().getTime());
-        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, storeName);
+        this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, storeName);
         rootNodeRef = nodeService.getRootNode(storeRef);
         
         if(authenticationDAO.userExists("cmis"))

@@ -27,8 +27,10 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
+import org.alfresco.repo.site.SiteMembership;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -44,6 +46,22 @@ public interface SiteService
 {
     static String DOCUMENT_LIBRARY = "documentLibrary";
     
+	public enum SortFields { LastName, FirstName, Role, SiteShortName, SiteTitle };
+
+    public interface SiteMembersCallback
+    {
+    	/*
+    	 * A site member along with his/her Site permission
+    	 */
+    	public void siteMember(String authority, String permission);
+    	
+    	/**
+    	 * Return true to break out of the loop early.
+    	 * @return
+    	 */
+    	public boolean isDone();
+    }
+
     /**
      * Create a new site.
      * 
@@ -57,6 +75,18 @@ public interface SiteService
      */
     @Auditable(parameters = {"sitePreset", "shortName"})
     SiteInfo createSite(String sitePreset, String shortName, String title, String description, boolean isPublic);
+    
+    /**
+     * Can the current user add the authority "authorityName" to the site "shortName" with role "role"?
+     * 
+     * @param shortName     site short name, must be unique
+     * @param authorityName authority to add
+     * @param role   		site role
+     *
+     * @return true if the current user can add the authority to the site, false otherwise
+     */
+    @NotAuditable
+    boolean canAddMember(String shortName, String authorityName, String role);
     
     /**
      * Create a new site.
@@ -167,6 +197,7 @@ public interface SiteService
      * @return a page of SiteInfo objects.
      * @since 4.0
      */
+    @NotAuditable
     PagingResults<SiteInfo> listSites(List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
     
     /**
@@ -217,6 +248,20 @@ public interface SiteService
      */
     @Auditable(parameters = {"shortName"})
     void deleteSite(String shortName);
+
+    /**
+     * List the members of the site.  This includes both users and groups.
+     * <p>
+     * Name and role filters are optional and if not specified all the members of the site are returned.
+     * 
+     * @param shortName         site short name
+     * @param nameFilter        name filter
+     * @param roleFilter        role filter
+     * @param collapseGroups    true if collapse member groups into user list, false otherwise
+     * @param callback          callback
+     */
+    @NotAuditable
+    void listMembers(String shortName, final String nameFilter, final String roleFilter, boolean collapseGroups, SiteMembersCallback callback);
     
     /**
      * List the members of the site.  This includes both users and groups.
@@ -263,14 +308,18 @@ public interface SiteService
     
     /**
      * Gets the role of the specified user.
+     * Returns a paged list of the members of the site.  This includes both users and groups if collapseGroups is set to false, otherwise all
+     * groups that are members are collapsed into their component users and listed.
      * 
-     * @param shortName     site short name
-     * @param authorityName full authority name (so if it's a group then its prefixed with 'GROUP_')
-     * @return String       site role, null if none
+     * @param shortName         site short name
+     * @param collapseGroups    true if collapse member groups into user list, false otherwise
+     * @param pagingRequest     the paging request
+     *
+     * @return Map<String, String>  the authority name and their role
      */
     @NotAuditable
-    String getMembersRole(String shortName, String authorityName);
-    
+	PagingResults<SiteMembership> listMembersPaged(String shortName, boolean collapseGroups, List<Pair<SiteService.SortFields, Boolean>> sortProps, PagingRequest pagingRequest);
+
     /**
      * Gets the extended role information of the specified user.
      * 
@@ -341,6 +390,17 @@ public interface SiteService
     NodeRef getContainer(String shortName, String componentId);
 
     /**
+     * Returns a paged list of top level containers for the site
+     *
+     * @param shortName      short name of site
+     * @param pagingRequest  paging request
+
+     * @return               paged list of top level containers
+     */
+    @NotAuditable
+    PagingResults<FileInfo> listContainers(String shortName, PagingRequest pagingRequest);
+    
+    /**
      * Determines if a "container" folder for the specified component exists.
      * 
      * @param shortName  short name of site
@@ -407,4 +467,19 @@ public interface SiteService
      * @since 3.4.2
      */
     public void cleanSitePermissions(NodeRef relocatedNode, SiteInfo containingSite);
+    
+    /**
+     * List all the sites that the specified user has a explicit membership to.
+     *
+     * @param userName          		 user name
+     * @return PagingResults<SiteInfo>   paged list of site information
+     */
+    @NotAuditable
+	PagingResults<SiteMembership> listSitesPaged(final String userName, List<Pair<SiteService.SortFields, Boolean>> sortProps, final PagingRequest pagingRequest);
+
+    @NotAuditable
+    String resolveSite(String group);
+    
+    @NotAuditable
+    String getMembersRole(String shortName, String authorityName);
 }

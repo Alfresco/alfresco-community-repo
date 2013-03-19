@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterContentCache;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -209,27 +210,35 @@ public class FileSourceImporter implements ImporterJobSPI
 
     private static ImporterBinding REPLACE_BINDING = new ImporterBinding()
     {
-
+        @Override
         public UUID_BINDING getUUIDBinding()
         {
             return UUID_BINDING.UPDATE_EXISTING;
         }
 
+        @Override
         public String getValue(String key)
         {
             return null;
         }
 
+        @Override
         public boolean allowReferenceWithinTransaction()
         {
             return false;
         }
 
+        @Override
         public QName[] getExcludedClasses()
         {
             return null;
         }
-
+        
+        @Override
+        public ImporterContentCache getImportConentCache()
+        {
+            return null;
+        }
     };
 
 }

@@ -333,4 +333,7 @@
          </bean>
       </property>
    </bean>
+   
+   <bean id="PublicAPIAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter" />
+   
 </beans>

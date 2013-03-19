@@ -46,6 +46,12 @@ public class TenantWebScriptServlet extends WebScriptServlet
     // Logger
     private static final Log logger = LogFactory.getLog(TenantWebScriptServlet.class);
     
+    protected WebScriptServletRuntime getRuntime(HttpServletRequest req, HttpServletResponse res)
+    {
+        WebScriptServletRuntime runtime = new TenantWebScriptServletRuntime(container, authenticatorFactory, req, res, serverProperties);
+        return runtime;
+    }
+
     /* (non-Javadoc) 
      * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
@@ -63,7 +69,7 @@ public class TenantWebScriptServlet extends WebScriptServlet
         
         try
         {
-            WebScriptServletRuntime runtime = new TenantWebScriptServletRuntime(container, authenticatorFactory, req, res, serverProperties);
+        	WebScriptServletRuntime runtime = getRuntime(req, res);
             runtime.executeScript();
         }
         finally

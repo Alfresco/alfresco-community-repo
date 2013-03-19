@@ -161,8 +161,8 @@ var Filters =
 
          case "editingOthers":
             filterQuery = this.constructPathQuery(parsedArgs);
-            filterQuery += " +((+ASPECT:\"workingcopy\"";
-            filterQuery += " -@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
+            filterQuery += " +ASPECT:\"workingcopy\"";
+            filterQuery += " +((-@cm\\:workingCopyOwner:\"" + person.properties.userName + '")';
             filterQuery += " OR (-@cm\\:lockOwner:\"" + person.properties.userName + '"';
             filterQuery += " +@cm\\:lockType:\"WRITE_LOCK\"))";
             filterParams.query = filterQuery;

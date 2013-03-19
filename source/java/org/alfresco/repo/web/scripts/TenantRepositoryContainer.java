@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,13 +19,13 @@
 package org.alfresco.repo.web.scripts;
 
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 import org.springframework.extensions.webscripts.Registry;
 
 
@@ -41,6 +41,7 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
 
     /** Component Dependencies */
     private TenantAdminService tenantAdminService;
+    private TransactionService transactionService;
     private ObjectFactory registryFactory;
     private SimpleCache<String, Registry> webScriptsRegistryCache;
     private boolean initialized;
@@ -68,7 +69,13 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
     {
         this.tenantAdminService = tenantAdminService;
     }
-
+    
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+        super.setTransactionService(transactionService);
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getRegistry()
      */
@@ -124,8 +131,25 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
     public void destroy()
     {
         webScriptsRegistryCache.remove(tenantAdminService.getCurrentUserDomain());
-
+        
         initialized = false;
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.web.scripts.AbstractRuntimeContainer#reset()
+     */
+    @Override
+    public void reset() 
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                destroy();
+                init();
+                
+                return null;
+            }
+        }, true, false);
+    }
 }

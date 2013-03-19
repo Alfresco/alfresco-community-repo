@@ -34,8 +34,18 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest
  */
 public class TenantWebScriptServletRequest extends WebScriptServletRequest
 {
-    private String tenant;
-    private String pathInfo;
+    protected String tenant;
+    protected String pathInfo;
+    
+    protected void parse()
+    {
+        String realPathInfo = getRealPathInfo();
+        
+        // remove tenant
+        int idx = realPathInfo.indexOf('/', 1);
+        tenant = realPathInfo.substring(1, idx == -1 ? realPathInfo.length() : idx);
+        pathInfo = realPathInfo.substring(tenant.length() + 1);
+    }
     
     /**
      * Construction
@@ -47,13 +57,7 @@ public class TenantWebScriptServletRequest extends WebScriptServletRequest
     public TenantWebScriptServletRequest(Runtime container, HttpServletRequest req, Match serviceMatch, ServerProperties serverProperties)
     {
         super(container, req, serviceMatch, serverProperties);
-        
-        String realPathInfo = getRealPathInfo();
-        
-        // remove tenant
-        int idx = realPathInfo.indexOf('/', 1);
-        tenant = realPathInfo.substring(1, idx == -1 ? realPathInfo.length() : idx);
-        pathInfo = realPathInfo.substring(tenant.length() + 1);
+        parse();
     }
 
     /* (non-Javadoc)
@@ -80,7 +84,7 @@ public class TenantWebScriptServletRequest extends WebScriptServletRequest
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptRequest#getPathInfo()
      */
-    private String getRealPathInfo()
+    protected String getRealPathInfo()
     {
         // NOTE: Don't use req.getPathInfo() - it truncates the path at first semi-colon in Tomcat
         final String requestURI = getHttpServletRequest().getRequestURI();

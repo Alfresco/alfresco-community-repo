@@ -342,7 +342,19 @@ public abstract class BaseWebScriptTest extends TestCase
         if (traceReqRes && isLogEnabled())
         {
             log("");
-            log("* Response: " + res.getStatus() + " " + req.getMethod() + " " + req.getFullUri() + "\n" + res.getContentAsString());
+            
+            log("* Response: " + res.getStatus() + " " + res.getContentType() + " " + req.getMethod() + " " + req.getFullUri() + "\n");
+//            if(res.getContentType().equals("application/json"))
+//            {
+//		    	JSONObject jsonRsp = (JSONObject)JSONValue.parse(res.getContentAsString());
+//		    	StringBuilder sb = new StringBuilder();
+//		    	toJSONString(jsonRsp, sb);
+//		    	log(sb.toString());
+//            }
+//            else
+//            {
+            	log(res.getContentAsString());
+            //}
         }
         
         if (expectedStatus > 0 && expectedStatus != res.getStatus())
@@ -352,6 +364,39 @@ public abstract class BaseWebScriptTest extends TestCase
         
         return res;
     }
+    
+//    private void toJSONString(JSONObject map, StringWriter writer) throws IOException
+//    {
+//		if(map == null)
+//		{
+//			writer.write("null");
+//			return;
+//		}
+//		
+//		boolean first = true;
+//		@SuppressWarnings("rawtypes")
+//		Iterator iter=map.entrySet().iterator();
+//		
+//		writer.write('{');
+//		while(iter.hasNext())
+//		{
+//            if(first)
+//            {
+//                first = false;
+//            }
+//            else
+//            {
+//            	writer.write(',');
+//            }
+//			Map.Entry entry=(Map.Entry)iter.next();
+//			writer.write('\"');
+//			writer.write(JSONObject.escape(String.valueOf(entry.getKey())));
+//			writer.write('\"');
+//			writer.write(':');
+//			JSONValue.writeJSONString(entry.getValue(), writer);
+//		}
+//		writer.write('}');
+//    }
 
     /**
      * Send Local Request to Test Web Script Server

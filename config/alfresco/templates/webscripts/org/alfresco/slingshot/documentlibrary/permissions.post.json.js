@@ -27,7 +27,9 @@ function main()
       }
    }
 
-   
+   var location = Common.getLocation (node);
+   var siteManagerAuthority = "GROUP_site_" + location.site + "_SiteManager";
+      
    if (json.has("permissions") == false)
    {
       status.setCode(status.STATUS_BAD_REQUEST, "Permissions value missing from request.");
@@ -50,7 +52,11 @@ function main()
       // Apply or remove permission
       if (remove)
       {
-         node.removePermission(role, authority);
+         //Prevent the removal of the SiteManager group authority
+         if (role != siteManagerAuthority)
+         {
+            node.removePermission(role, authority);
+         }
       }
       else
       {
@@ -61,7 +67,16 @@ function main()
    // Inherited permissions flag
    if (json.has("isInherited"))
    {
-      node.setInheritsPermissions(json.getBoolean("isInherited"));
+      var isInherited = json.getBoolean("isInherited");
+      if (location.site != null)
+      {
+         if (isInherited == false)
+         {
+            // Insure Site Managers can still manage content.
+            node.setPermission("SiteManager", siteManagerAuthority);
+         }
+      }
+      node.setInheritsPermissions(isInherited);
    }
 }
 

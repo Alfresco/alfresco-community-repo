@@ -2,9 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN 2.0//EN' 'http://www.springframework.org/dtd/spring-beans-2.0.dtd'>
 
 <beans>
-    <bean id="abstractBlogWebScript"
-          class="org.alfresco.repo.web.scripts.blog.AbstractBlogWebScript"
-          parent="webscript" abstract="true">
+    <bean id="abstractBlogWebScript" parent="webscript" abstract="true">
        <property name="repository" ref="repositoryHelper"/>
        <property name="blogService" ref="BlogService"/>
        <property name="nodeService" ref="NodeService"/>

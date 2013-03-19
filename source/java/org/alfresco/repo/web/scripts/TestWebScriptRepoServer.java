@@ -28,9 +28,10 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.extensions.webscripts.TestWebScriptServer;
 
 
 /**
@@ -161,7 +162,10 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
                 System.arraycopy(CONFIG_LOCATIONS, 0, configLocations, 0, CONFIG_LOCATIONS.length);
                 configLocations[CONFIG_LOCATIONS.length] = appendTestConfigLocation;
             }
-            TestWebScriptRepoServer.ctx = new ClassPathXmlApplicationContext(configLocations);
+            
+            TestWebScriptRepoServer.ctx = (ClassPathXmlApplicationContext)ApplicationContextHelper.getApplicationContext(configLocations);
+            
+//            TestWebScriptRepoServer.ctx = new ClassPathXmlApplicationContext(configLocations);
             TestWebScriptRepoServer.appendedTestConfiguration = appendTestConfigLocation;
         }
         

@@ -1,0 +1,76 @@
+/*
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.alfresco.opencmis;
+
+import javax.servlet.http.HttpServlet;
+
+import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.apache.chemistry.opencmis.server.impl.atompub.AtomPubUtils;
+import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
+/**
+ * Dispatches OpenCMIS requests to the OpenCMIS AtomPub servlet.
+ * 
+ * @author steveglover
+ *
+ */
+public class AtomPubCMISDispatcher extends CMISServletDispatcher
+{
+	private AtomPubUtils atomPubUtils;
+
+    public void setAtomPubUtils(AtomPubUtils atomPubUtils)
+    {
+		this.atomPubUtils = atomPubUtils;
+	}
+
+	public void init()
+	{
+		super.init();
+		registry.registerDispatcher(getBinding(), this);
+	}
+	
+	@Override
+	protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
+	{
+		return super.getHttpRequest(req);
+	}
+
+    @Override
+    protected Binding getBinding()
+    {
+    	return Binding.atom;
+    }
+
+	protected HttpServlet getServlet()
+	{
+		HttpServlet servlet = new CmisAtomPubServlet();
+		return servlet;
+	}
+
+	protected Object getServletAttribute(String attrName)
+	{
+		if(attrName.equals("atomPubUtils"))
+		{
+			return atomPubUtils;
+		}
+
+		return super.getServletAttribute(attrName);
+	}
+}

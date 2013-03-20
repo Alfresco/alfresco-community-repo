@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,6 +42,7 @@ import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.web.auth.WebCredentials;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -157,8 +158,9 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      * @param res
      *           the response
      */
-    protected void onValidate(ServletContext sc, HttpServletRequest req, HttpServletResponse res)
+    protected void onValidate(ServletContext sc, HttpServletRequest req, HttpServletResponse res, WebCredentials credentials)
     {
+        authenticationListener.userAuthenticated(credentials);
     }
     
     /**
@@ -169,9 +171,11 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      *  @param res HttpServletResponse
      *  @param session HttpSession
      */
-    protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session)
+    protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session, WebCredentials credentials)
         throws IOException
     {
+        authenticationListener.authenticationFailed(credentials);
+        
         // Restart the login challenge process if validation fails
         
         restartLoginChallenge(sc, req, res);

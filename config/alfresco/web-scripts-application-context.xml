@@ -236,10 +236,12 @@
    <!--                            -->
    <!--  Web Script Authenticators -->
    <!--                            -->
+   <bean id="webScriptAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
 
    <!--  HTTP Basic Authenticator (Servlet based) -->
    <bean id="webscripts.authenticator.basic" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
       <property name="authenticationService" ref="AuthenticationService" />
+      <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
    </bean>
 
    <!--  JSR-168 Authenticator (Portal based) -->
@@ -1905,6 +1907,10 @@
     <bean id="webscript.org.alfresco.repository.quickshare.metadata-noauth.get" class="org.alfresco.repo.web.scripts.quickshare.QuickShareMetaDataGet" parent="org.alfresco.repository.quickshare.abstract">
     </bean>
     
+    <!-- authenticated -->
+    <bean id="webscript.org.alfresco.repository.quickshare.read.get" class="org.alfresco.repo.web.scripts.quickshare.ReadGet" parent="org.alfresco.repository.quickshare.abstract">
+    </bean>
+
     <!-- authenticated -->
     <bean id="webscript.org.alfresco.repository.quickshare.metadata.get" class="org.alfresco.repo.web.scripts.quickshare.MetaDataGet" parent="org.alfresco.repository.quickshare.abstract">
     </bean>

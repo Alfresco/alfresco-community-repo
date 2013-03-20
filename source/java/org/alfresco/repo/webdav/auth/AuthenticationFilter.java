@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -40,6 +40,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.web.auth.BasicAuthCredentials;
+import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.alfresco.repo.webdav.WebDAV;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
@@ -142,8 +144,9 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                             // Already tried - no need to try again
                             continue;
                         }
-                        String username;
-                        String password;
+                        
+                        String username = null;
+                        String password = null;
     
                         // Split the username and password
                         int pos = basicAuth.indexOf(":");
@@ -159,7 +162,9 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                         }
     
                         // Authenticate the user
+
                         authenticationService.authenticate(username, password.toCharArray());
+                        authenticationListener.userAuthenticated(new BasicAuthCredentials(username, password));
                         user = createUserEnvironment(httpReq.getSession(), authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), false);
                         
                         // Success so break out
@@ -205,6 +210,7 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                     // Validate the ticket
 
                     authenticationService.validate(ticket);
+                    authenticationListener.userAuthenticated(new TicketCredentials(ticket));
 
                     // Need to create the User instance if not already available
 
@@ -227,6 +233,10 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                 httpResp.flushBuffer();
                 return;
             }
+        }
+        else
+        {
+            authenticationListener.userAuthenticated(new TicketCredentials(user.getTicket()));
         }
 
         // Chain other filters

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,6 +34,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -79,6 +80,9 @@ public abstract class BaseAuthenticationFilter
     
     /** The remote user mapper. */
     protected RemoteUserMapper remoteUserMapper;
+    
+    /** The authentication listener. */
+    protected AuthenticationListener authenticationListener;
 
     /** The configured user attribute name. */
     private String userAttributeName = AUTHENTICATION_USER;
@@ -138,6 +142,16 @@ public abstract class BaseAuthenticationFilter
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
+    }
+    
+    /**
+     * Sets the authentication listener.
+     * 
+     * @param
+     */
+    public void setAuthenticationListener(AuthenticationListener authenticationListener)
+    {
+        this.authenticationListener = authenticationListener;
     }
 
     /**
@@ -201,6 +215,7 @@ public abstract class BaseAuthenticationFilter
         SessionUser sessionUser = (SessionUser) session.getAttribute(sessionAttrib);
         if (sessionUser != null)
         {
+            String ticket = sessionUser.getTicket();
             try
             {
                 if (getLogger().isDebugEnabled())

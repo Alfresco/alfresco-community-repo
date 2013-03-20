@@ -53,7 +53,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.apache.commons.logging.Log;
@@ -776,18 +775,14 @@ public class WebDAVHelper
     public String determineSiteId(WebDAVMethod method)
     {
         SiteService siteService = getServiceRegistry().getSiteService();
-        String siteId;
+        String siteId = null;
         try
         {
             FileInfo fileInfo = getNodeForPath(method.getRootNodeRef(), method.getPath());
-            SiteInfo siteInfo = siteService.getSite(fileInfo.getNodeRef());
-            if (siteInfo != null)
+            siteId = siteService.getSiteShortName(fileInfo.getNodeRef());
+            if (siteId == null)
             {
-                siteId = siteInfo.getShortName();
-            }
-            else
-            {
-                throw new RuntimeException("Node is not contained by a site: " + method.getPath());                
+                throw new RuntimeException("Node is not contained by a site: " + method.getPath());
             }
         }
         catch (Exception error)

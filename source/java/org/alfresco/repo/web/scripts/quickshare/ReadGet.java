@@ -23,10 +23,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -38,26 +36,16 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 /**
  * QuickShare/PublicView
  * 
- * GET web script to lookup some context (nodeRef, tenantDomain, siteId) for a given "Share"
+ * GET web script that returns whether or not a user can read the shared content.
  * 
- * Note: authenticated web script
- * 
- * @author janv
- * @since Cloud/4.2
+ * @author Alex Miller
  */
-public class ShareContentGet extends AbstractQuickShareContent
+public class ReadGet extends AbstractQuickShareContent
 {
-    private static final Log logger = LogFactory.getLog(ShareContentPost.class);
-    
-    protected SiteService siteService;
-    
-    public void setSiteService(SiteService siteService)
-    {
-        this.siteService = siteService;
-    }
+    private static final Log logger = LogFactory.getLog(ReadGet.class);
     
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    protected Map<String, Object> executeImpl(final WebScriptRequest req, Status status, Cache cache)
     {
         if (! isEnabled())
         {
@@ -74,24 +62,15 @@ public class ShareContentGet extends AbstractQuickShareContent
         
         try
         {
-            Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
-            final String tenantDomain = pair.getFirst();
-            final NodeRef nodeRef = pair.getSecond();
-            
-            String siteId = siteService.getSiteShortName(nodeRef);
-            
-            Map<String, Object> model = new HashMap<String, Object>(3);
-            model.put("sharedId", sharedId);
-            model.put("nodeRef", nodeRef.toString());
-            model.put("siteId", siteId);
-            model.put("tenantDomain", tenantDomain);
-            
-            if (logger.isInfoEnabled())
-            {
-                logger.info("QuickShare - get shared context: "+sharedId+" ["+model+"]");
-            }
-            
-            return model;
+            boolean canRead = quickShareService.canRead(sharedId);
+            Map<String, Object> result = new HashMap<String, Object>();
+            result.put("canRead", canRead);
+            return result;            
+        }
+        catch (InvalidSharedIdException ex)
+        {
+            logger.error("Unable to find: "+sharedId);
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: "+sharedId);
         }
         catch (InvalidNodeRefException inre)
         {

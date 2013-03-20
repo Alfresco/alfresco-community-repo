@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.alfresco.repo.web.auth.WebCredentials;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -39,6 +40,18 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     
     private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);    
 
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
+     */
+    @Override
+    protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session, WebCredentials credentials)
+        throws IOException
+    {
+        super.onValidateFailed(sc, req, res, session, credentials);
+        // Restart the login challenge process if validation fails
+        restartLoginChallenge(sc, req, res);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#getLogger()
 	 */

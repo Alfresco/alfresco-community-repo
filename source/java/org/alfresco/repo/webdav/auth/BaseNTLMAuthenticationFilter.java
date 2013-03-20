@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -55,6 +55,11 @@ import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 import org.alfresco.repo.security.authentication.NTLMMode;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken;
+import org.alfresco.repo.web.auth.GuestCredentials;
+import org.alfresco.repo.web.auth.NTLMCredentials;
+import org.alfresco.repo.web.auth.TicketCredentials;
+import org.alfresco.repo.web.auth.UnknownCredentials;
+import org.alfresco.repo.web.auth.WebCredentials;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 
@@ -205,7 +210,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         if (user != null && reqAuth == false)
         {
             // Filter validate hook
-            onValidate( context, sreq, sresp);
+            onValidate( context, sreq, sresp, new TicketCredentials(user.getTicket()));
 
             if (getLogger().isDebugEnabled())
                 getLogger().debug("Authentication not required (user), chaining ...");
@@ -471,19 +476,21 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             if (logger.isDebugEnabled())
                 logger.debug("Using cached NTLM hash, authenticated = " + authenticated);
             
-            onValidate(context, req, res);
+            onValidate(context, req, res, new NTLMCredentials(userName, ntlmPwd));
             
             // Allow the user to access the requested page
             return true;
         }
         else
         {
+            WebCredentials credentials;
             // Check if we are using local MD4 password hashes or passthru authentication
             if (nltmAuthenticator.getNTLMMode() == NTLMMode.MD4_PROVIDER)
             {
                 // Check if guest logons are allowed and this is a guest logon
                 if (m_allowGuest && userName.equalsIgnoreCase(authenticationComponent.getGuestUserName()))
                 {
+                    credentials = new GuestCredentials();
                     // Indicate that the user has been authenticated
                     authenticated = true;
                     
@@ -498,6 +505,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     if (md4hash != null)
                     {
                         authenticated = validateLocalHashedPassword(type3Msg, ntlmDetails, authenticated, md4hash);
+                        credentials = new NTLMCredentials(ntlmDetails.getUserName(), ntlmDetails.getNTLMHashedPassword());
                     }
                     else
                     {
@@ -507,6 +515,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                             // Reset the user name to be the guest user
                             userName = authenticationComponent.getGuestUserName();
                             authenticated = true;
+                            credentials = new GuestCredentials();
                             
                             if (logger.isDebugEnabled())
                                 logger.debug("User " + userName + " logged on as guest, no Alfresco account");
@@ -518,6 +527,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                             
                             // Bypass NTLM authentication and display the logon screen,
                             // as user account does not exist in Alfresco
+                            credentials = new UnknownCredentials();
                             authenticated = false;
                         }
                     }
@@ -525,6 +535,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             }
             else
             {
+                credentials = new NTLMCredentials(type3Msg.getUserName(), type3Msg.getNTLMHash());
                 //  Determine if the client sent us NTLMv1 or NTLMv2
                 if (type3Msg.hasFlag(NTLM.Flag128Bit) && type3Msg.hasFlag(NTLM.FlagNTLM2Key) ||
                     (type3Msg.getNTLMHash() != null && type3Msg.getNTLMHash().length > 24))
@@ -538,7 +549,6 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                     // Passthru mode, send the hashed password details to the passthru authentication server
                     NTLMPassthruToken authToken = (NTLMPassthruToken) ntlmDetails.getAuthenticationToken();
                     authToken.setUserAndPassword(type3Msg.getUserName(), type3Msg.getNTLMHash(), PasswordEncryptor.NTLM1);
-                    
                     try
                     {
                         // Run the second stage of the passthru authentication
@@ -588,12 +598,12 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                         if (logger.isDebugEnabled())
                             logger.debug("Failed to validate user " + userName, ex);
 
-                        onValidateFailed(context, req, res, session);
+                        onValidateFailed(context, req, res, session, credentials);
                         return false;
                     }
                 }
                 
-                onValidate(context, req, res);
+                onValidate(context, req, res, credentials);
                 
                 // Update the NTLM logon details in the session
                 String srvName = getServerName();

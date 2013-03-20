@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,8 +23,10 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.person.UserNameMatcherImpl;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
 import org.springframework.extensions.webscripts.Status;
@@ -46,7 +48,8 @@ public class PersonServiceTest extends BaseWebScriptTest
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
-    
+    private UserNameMatcherImpl userNameMatcherImpl;
+       
     private static final String USER_ONE = "User.One";
     private static final String USER_TWO = "User.Two";
     private static final String USER_THREE = "User.Three";
@@ -63,6 +66,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
+        this.userNameMatcherImpl = (UserNameMatcherImpl)getServer().getApplicationContext().getBean("userNameMatcher");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
@@ -288,4 +292,66 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
                         Status.STATUS_BAD_REQUEST);        
     }  
+    
+    /**
+     * 
+     * @throws Exception
+     */
+    public void testUserNameCaseSensitivity() throws Exception
+    {
+        String upperCaseUserName = "PersonServiceTest.MixedCaseUser";
+        String lowerCaseUserName = upperCaseUserName.toLowerCase();
+        
+        String currentUser = this.authenticationComponent.getCurrentUserName();
+        boolean existingValue = userNameMatcherImpl.getUserNamesAreCaseSensitive();
+        try
+        {
+            /**
+             *  simulate cloud with lower case user names   
+             */
+            createPerson(lowerCaseUserName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                    "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg",
+                    Status.STATUS_OK); 
+            
+            String adminUser = this.authenticationComponent.getSystemUserName();
+            this.authenticationComponent.setCurrentUser(adminUser);
+            
+            personService.setCreateMissingPeople(false);
+            //personServiceImpl.setUserNameCaseSensitive(true); 
+            userNameMatcherImpl.setUserNamesAreCaseSensitive(true);
+            
+            assertTrue("case sensitive exists by matching case", personService.personExists(lowerCaseUserName));
+            assertFalse("case sensitive exists by non matching case", personService.personExists(upperCaseUserName));
+            assertNotNull("case sensitive lookup by matching case", personService.getPerson(lowerCaseUserName));
+            try
+            {
+                personService.getPerson(upperCaseUserName);
+                fail("case sensitive lookup by non matching case");
+            }
+            catch (NoSuchPersonException e)
+            {
+                // expect to go here
+            }
+            
+            //personServiceImpl.setUserNameCaseSensitive(false);
+            userNameMatcherImpl.setUserNamesAreCaseSensitive(false);
+            assertNotNull("case insensitive lookup by matching case", personService.getPerson(lowerCaseUserName));
+            assertNotNull("case insensitive lookup by non matching case", personService.getPerson(upperCaseUserName));
+            assertTrue("case insensitive exists by matching case", personService.personExists(lowerCaseUserName));
+            assertTrue("case insensitive exists by non matching case", personService.personExists(upperCaseUserName));
+            
+            /**
+             * Delete by non matching case
+             */
+            personService.deletePerson(upperCaseUserName);
+            
+            
+        }
+        finally
+        {
+//            personServiceImpl.setUserNameCaseSensitive(existingValue);
+            userNameMatcherImpl.setUserNamesAreCaseSensitive(existingValue);
+            this.authenticationComponent.setCurrentUser(currentUser);
+        }
+    }    
 }

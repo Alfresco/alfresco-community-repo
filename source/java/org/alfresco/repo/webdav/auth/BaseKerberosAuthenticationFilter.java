@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -48,6 +48,8 @@ import org.alfresco.jlan.server.auth.spnego.OID;
 import org.alfresco.jlan.server.auth.spnego.SPNEGO;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.web.auth.KerberosCredentials;
+import org.alfresco.repo.web.auth.TicketCredentials;
 import org.apache.commons.codec.binary.Base64;
 import org.ietf.jgss.Oid;
 
@@ -283,7 +285,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         if ( user != null && reqAuth == false)
         {
             // Filter validate hook
-            onValidate( context, req, resp);
+            onValidate( context, req, resp, new TicketCredentials(user.getTicket()));
 
             // Debug
             
@@ -321,7 +323,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                     // Filter validate hook
                     if (getLogger().isDebugEnabled())
                         getLogger().debug("Authenticated with a ticket parameter.");
-                    onValidate( context, req, resp);
+                    onValidate( context, req, resp, new TicketCredentials(user.getTicket()));
 
                     // Chain to the next filter
                     
@@ -396,10 +398,11 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                         
                         try
                         {
-                            if ( doKerberosLogon( negToken, req, resp, httpSess) != null)
+                            NegTokenTarg negTokenTarg = doKerberosLogon( negToken, req, resp, httpSess);
+                            if ( negTokenTarg != null)
                             {
                                 // Allow the user to access the requested page
-                                onValidate(context, req, resp);
+                                onValidate(context, req, resp, new KerberosCredentials(negToken, negTokenTarg));
                                 if (getLogger().isDebugEnabled())
                                     getLogger().debug("Authenticated through Kerberos.");
                                 return true;
@@ -419,9 +422,9 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                             // max user limit
                             if (getLogger().isDebugEnabled())
                                 getLogger().debug("Validate failed.", ex);
-                            onValidateFailed(context, req, resp, httpSess);
+                            onValidateFailed(context, req, resp, httpSess, new TicketCredentials(user.getTicket()));
                             return false;
-                        }                        
+                        }
                     }
                     else
                     {

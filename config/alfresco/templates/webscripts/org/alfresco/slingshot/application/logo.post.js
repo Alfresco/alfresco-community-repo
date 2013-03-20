@@ -41,10 +41,20 @@ function main()
          return;
       }
       
+      var logoConfig = new XML(config.script);
+      
+      var transformationOptions = "-resize " + logoConfig.width + "x" + logoConfig.height +"!";
+      
       // create the new image node
-      logoNode = sitesNode.createNode(new Date().getTime() + "_" + filename, "cm:content");
+      var nodeName = new Date().getTime() + "_" + filename;
+      var tmpFolder = sitesNode.createFolder(nodeName + "_tmp");
+      logoNode = sitesNode.createNode(nodeName, "cm:content");
       logoNode.properties.content.write(content);
       logoNode.properties.content.guessMimetype(filename);
+      var resizedImage = logoNode.transformImage(logoNode.properties.content.mimetype, transformationOptions, tmpFolder);
+      logoNode.properties.content.write(resizedImage.properties.content);
+      resizedImage.remove();
+      tmpFolder.remove();
       logoNode.save();
       
       // save ref to be returned

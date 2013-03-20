@@ -29,6 +29,7 @@ import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVa
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRole;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarServerPath;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -68,6 +69,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.extensions.surf.util.URLEncoder;
@@ -111,18 +113,28 @@ public class InviteSenderTest extends TestCase
         String subjectPropertyName = "invitation.invitesender.email.subject";
 
         String subjectMsg = "Subject message";
-        when(messageService.getMessage(eq(subjectPropertyName), eq("Share"), eq(siteShortName))).thenReturn(subjectMsg);
 
         Map<String, String> properties = buildDefaultProperties();
         sender.sendMail(properties);
 
-        verify(messageService).getMessage(eq(subjectPropertyName), eq("Share"), eq(siteShortName));
         verify(messageService).getMessage(eq(rolePropertyName));
 
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_FROM), eq(inviter.email));
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TO), eq(invitee.email));
-        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_SUBJECT),
-                    eq(subjectMsg));
+        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_SUBJECT), eq(subjectPropertyName));
+        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_SUBJECT_PARAMS), argThat(new ArgumentMatcher<Object[]>(){
+
+            @Override
+            public boolean matches(Object arg)
+            {
+                if ((arg instanceof Object[]) == false) return false;
+                Object[] params = (Object[])arg;
+                return params.length == 2 &&
+                       "Share".equals(params[0]) &&
+                       siteShortName.equals(params[1]);
+            }
+            
+        })); 
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE), (Serializable)any());
 
         ArgumentCaptor<Map> modelC = ArgumentCaptor.forClass(Map.class);

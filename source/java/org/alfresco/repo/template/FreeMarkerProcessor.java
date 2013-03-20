@@ -23,6 +23,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.processor.ProcessorExtension;
@@ -64,6 +65,8 @@ import freemarker.template.TemplateExceptionHandler;
  */
 public class FreeMarkerProcessor extends BaseProcessor implements TemplateProcessor, TemplateValueConverter
 {
+	private final static boolean DEFAULT_LOCALIZED_LOOKUP_VALUE = false;
+	
     private final static String MSG_ERROR_NO_TEMPLATE   = "error_no_template";
     private final static String MSG_ERROR_TEMPLATE_FAIL = "error_template_fail";
     private final static String MSG_ERROR_TEMPLATE_IO   = "error_template_io";
@@ -79,6 +82,9 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
     /** Template encoding */
     private String defaultEncoding;
     
+    /** Enable/disable Freemarker's localized lookup feature*/
+    private boolean localizedLookup = DEFAULT_LOCALIZED_LOOKUP_VALUE;
+    
     /**
      * Set the default template encoding
      * 
@@ -87,6 +93,14 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
     public void setDefaultEncoding(String defaultEncoding)
     {
         this.defaultEncoding = defaultEncoding;
+    }
+    
+    /**
+     * Enable or disable Freemarker's localized lookup feature
+     */
+    public void setLocalizedLookup(boolean localizedLookup)
+    {
+    	this.localizedLookup = localizedLookup;
     }
     
     /**
@@ -115,7 +129,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
             
             // localized template lookups off by default - as they create strange noderef lookups
             // such as workspace://SpacesStore/01234_en_GB - causes problems for ns.exists() on DB2
-            config.setLocalizedLookup(false);
+            config.setLocalizedLookup(localizedLookup);
             
             // set default template encoding
             if (defaultEncoding != null)
@@ -199,6 +213,71 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
                     Environment env = t.createProcessingEnvironment(freeMarkerModel, out);
                     // set the locale to ensure dates etc. are appropriate localised
                     env.setLocale(I18NUtil.getLocale());
+                    env.process();
+                }
+                catch (Throwable err)
+                {
+                    throw new TemplateException(MSG_ERROR_TEMPLATE_FAIL, new Object[] {err.getMessage()}, err);
+                }
+            }
+            else
+            {
+                throw new TemplateException(MSG_ERROR_NO_TEMPLATE, new Object[] {template});
+            }
+            
+            if (logger.isDebugEnabled())
+            {
+                long endTime = System.currentTimeMillis();
+                logger.debug("Time to execute template: " + (endTime - startTime) + "ms");
+            }
+        }
+        catch (IOException ioerr)
+        {
+            throw new TemplateException(MSG_ERROR_TEMPLATE_IO, new Object[] {template}, ioerr);
+        }
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.TemplateProcessor#process(java.lang.String, java.lang.Object, java.io.Writer, java.util.Locale)
+     */
+    public void process(String template, Object model, Writer out, Locale locale)
+    {
+        if (template == null || template.length() == 0)
+        {
+            throw new IllegalArgumentException("Template name is mandatory.");
+        }
+        if (model == null)
+        {
+            throw new IllegalArgumentException("Model is mandatory.");
+        }
+        if (out == null)
+        {
+            throw new IllegalArgumentException("Output Writer is mandatory.");
+        }
+        if (locale == null)
+        {
+            throw new IllegalArgumentException("Locale is mandatory.");
+        }
+        
+        try
+        {
+            long startTime = 0;
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Executing template: " + template);// + " on model: " + model);
+                startTime = System.currentTimeMillis();
+            }
+            
+            Template t = getConfig().getTemplate(template, locale);
+            if (t != null)
+            {
+                try
+                {
+                    // perform the template processing against supplied data model
+                    Object freeMarkerModel = convertToFreeMarkerModel(model);
+                    Environment env = t.createProcessingEnvironment(freeMarkerModel, out);
+                    // set the locale to ensure dates etc. are appropriate localised
+                    env.setLocale(locale);
                     env.process();
                 }
                 catch (Throwable err)

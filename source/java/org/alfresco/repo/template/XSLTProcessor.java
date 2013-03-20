@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,6 +43,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.repo.processor.BaseProcessor;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.namespace.QName;
@@ -60,7 +62,10 @@ import freemarker.cache.TemplateLoader;
 public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
 {
     private static final Log log = LogFactory.getLog(XSLTProcessor.class);
+    
+    private static final String LOCALE_SEPARATOR = "_";
 
+    private final static String MSG_ERROR_NO_TEMPLATE   = "error_no_template";
     private static final String MSG_UNABLE_TO_READ_TEMPLATE = "template.xslt.read_error";
     private static final String MSG_UNABLE_TO_PARSE_TEMPLATE = "template.xslt.parse_error";
 
@@ -413,5 +418,53 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         }
         return new DOMSource((Document) o);
     }
+
+	@Override
+	public void process(String template, Object model, Writer out, Locale locale) 
+	{
+        if (template.indexOf(StoreRef.URI_FILLER) != -1)
+        {
+    		// If template is a node ref, ignore locale
+        	process(template, model, out);
+        }
+	    else {
+	    	//Otherwise try and locate a locale specific resource.
+            TemplateSource templateSource = null;
+            int lastDot = template.lastIndexOf('.');
+            String prefix = lastDot == -1 ? template : template.substring(0, lastDot);
+            String suffix = lastDot == -1 ? "" : template.substring(lastDot);
+            String localeName = LOCALE_SEPARATOR + locale.toString();
+            StringBuffer buf = new StringBuffer(template.length() + localeName.length());
+            buf.append(prefix);
+			for (;;)
+            {
+                buf.setLength(prefix.length());
+                String path = buf.append(localeName).append(suffix).toString();
+                try
+                {
+                	templateSource = (TemplateSource) templateLoader.findTemplateSource(path);
+                }
+                catch (IOException ex)
+                {
+                    throw new TemplateException(MSG_UNABLE_TO_READ_TEMPLATE, new Object[] { ex.getMessage() }, ex);
+                }
+                if (templateSource != null)
+                {
+                    break;
+                }
+                int lastUnderscore = localeName.lastIndexOf('_');
+                if (lastUnderscore == -1)
+                {
+                    break;
+                }
+                localeName = localeName.substring(0, lastUnderscore);
+            }
+	        if (templateSource == null)
+	        {
+	            throw new TemplateException(MSG_ERROR_NO_TEMPLATE, new Object[] {template});
+	        }
+	        process(templateSource, model, out);
+	    }
+	}
 
 }

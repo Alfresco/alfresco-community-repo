@@ -160,7 +160,7 @@ public class EmailUserNotifier extends AbstractUserNotifier implements Initializ
 		return emailFeedDBID;
 	}
     
-	protected void notifyUser(NodeRef personNodeRef, String subjectText, Map<String, Object> model, String templateNodeRef)
+	protected void notifyUser(NodeRef personNodeRef, String subjectText,  Object[] subjectParams, Map<String, Object> model, String templateNodeRef)
     {
         ParameterCheck.mandatory("personNodeRef", personNodeRef);
 
@@ -171,6 +171,7 @@ public class EmailUserNotifier extends AbstractUserNotifier implements Initializ
         
         mail.setParameterValue(MailActionExecuter.PARAM_TO, emailAddress);
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, subjectText);
+        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, subjectParams);
         
         //mail.setParameterValue(MailActionExecuter.PARAM_TEXT, buildMailText(emailTemplateRef, model));
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, templateNodeRef);

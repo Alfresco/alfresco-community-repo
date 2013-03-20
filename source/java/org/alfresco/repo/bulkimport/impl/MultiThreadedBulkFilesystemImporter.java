@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,6 +34,8 @@ import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.NodeImporter;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,6 +75,7 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
         final int batchSize = bulkImportParameters.getBatchSize() != null ? bulkImportParameters.getBatchSize() : defaultBatchSize;
         final boolean rulesEnabled = ruleService.isEnabled();
         final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        final String currentDomain = TenantUtil.getCurrentDomain();
 
         BatchProcessor.BatchProcessWorker<ImportableItem> worker = new BatchProcessor.BatchProcessWorker<ImportableItem>()
         {
@@ -112,18 +115,27 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
             		// bail out early if an exception occurs
             		return;
             	}
-
-                try
+            	
+                TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
                 {
-                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+					@Override
+					public Void doWork() throws Exception
+					{
+		                try
+		                {
+		                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
 
-                    NodeRef nodeRef = nodeImporter.importImportableItem(importableItem, bulkImportParameters.isReplaceExisting());
-                    filesystemTracker.itemImported(nodeRef, importableItem);
-                }
-                finally
-                {
-                    behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-                }
+		                    NodeRef nodeRef = nodeImporter.importImportableItem(importableItem, bulkImportParameters.isReplaceExisting());
+		                    filesystemTracker.itemImported(nodeRef, importableItem);
+		                }
+		                finally
+		                {
+		                    behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+		                }
+
+						return null;
+					}
+				}, currentUser, currentDomain);
             }
         };
 

@@ -33,7 +33,7 @@ import org.alfresco.repo.workflow.WorkflowNotificationUtils;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -46,16 +46,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class TaskCreateListener implements TaskListener
 {
     private ActivitiPropertyConverter propertyConverter;
-    
-    /** Service Registry */
-    private ServiceRegistry services;
+    private WorkflowNotificationUtils workflowNotificationUtils;
     
     /**
      * @param services  the service registry
      */
-    public void setServices(ServiceRegistry services)
+    public void setWorkflowNotification(WorkflowNotificationUtils service)
     {
-        this.services = services;
+        this.workflowNotificationUtils = service;
     }
     
     @Override
@@ -118,10 +116,12 @@ public class TaskCreateListener implements TaskListener
             }
             
             // Send email notification
-            WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
-                    services,
+            String workflowDefId = task.getProcessDefinitionId().split(":")[0];
+            String taskType = workflowDefId + ".task." + taskFormKey.replace(":", "_") + ".title";
+            
+            workflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
                     ActivitiConstants.ENGINE_ID + "$" + task.getId(),
-                    task.getName(),
+                    taskType,
                     task.getDescription(),
                     task.getDueDate(),
                     Integer.valueOf(task.getPriority()),

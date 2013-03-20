@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -17,6 +17,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.security.person;
+
+import java.util.List;
 
 
 /**
@@ -41,6 +43,9 @@ public class FilterSortPersonEntity
     private Boolean sort3asc = null;
     
     private String pattern;
+    
+    private List<Long> includeAspectIds;
+    private List<Long> excludeAspectIds;
     
     
     /**
@@ -156,5 +161,38 @@ public class FilterSortPersonEntity
     public void setSort3asc(Boolean sort3asc)
     {
         this.sort3asc = sort3asc;
+    }
+    
+    /**
+     * @since 4.2
+     */
+    public List<Long> getIncludeAspectIds()
+    {
+        return includeAspectIds;
+    }
+    
+    /**
+     * @since 4.2
+     */
+    public void setIncludeAspectIds(List<Long> includeAspectIds)
+    {
+        this.includeAspectIds = includeAspectIds;
+    }
+    
+    
+    /**
+     * @since 4.2
+     */
+    public List<Long> getExcludeAspectIds()
+    {
+        return excludeAspectIds;
+    }
+    
+    /**
+     * @since 4.2
+     */
+    public void setExcludeAspectIds(List<Long> excludeAspectIds)
+    {
+        this.excludeAspectIds = excludeAspectIds;
     }
 }

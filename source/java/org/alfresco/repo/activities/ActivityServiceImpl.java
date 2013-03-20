@@ -392,7 +392,7 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                     {
                         if (logger.isDebugEnabled())
                         {
-                            logger.warn("getUserFeedEntries: person no longer exists: "+postUserId);
+                            logger.debug("getUserFeedEntries: person no longer exists: "+postUserId);
                         }
                     }
                     

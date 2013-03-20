@@ -18,7 +18,6 @@
  */
 package org.alfresco.util;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,8 +29,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Stores a set of expected and excluded types, by full type name. For excluded types, the localName can be a wildcard (*) to indicate that the
- * whole namespace should be excluded.
+ * Stores a set of expected and excluded types, by full type name. The localName can be a wildcard (*) to indicate that the
+ * whole namespace should be expected/excluded.
  * 
  * A node is tested to ensure that its type is in the expected list and not in the excluded list. Its aspects are also
  * tested to ensure that they are in the expected list and not in the excluded list.
@@ -45,24 +44,29 @@ public class TypeConstraint
 {
     public static final String WILDCARD = "*";
 
-	private List<QName> expectedTypes;
+	private Set<String> expectedModels;
+	private Set<QName> expectedQNames;
+	private List<String> expectedTypes;
+
     private Set<QName> excludedQNames;
     private Set<String> excludedModels;
     private List<String> excludedTypes;
+
     private NodeService nodeService;
 
     public void setExpectedTypes(List<String> expectedTypes)
     {
-        if(expectedTypes != null && expectedTypes.size() > 0)
-        {
-        	this.expectedTypes = new ArrayList<QName>(expectedTypes.size());
-
-	    	for(String type : expectedTypes)
-	    	{
-	            final QName typeDef = QName.createQName(type);
-	    		this.expectedTypes.add(typeDef);
-	    	}
-        }
+//        if(expectedTypes != null && expectedTypes.size() > 0)
+//        {
+//        	this.expectedTypes = new ArrayList<QName>(expectedTypes.size());
+//
+//	    	for(String type : expectedTypes)
+//	    	{
+//	            final QName typeDef = QName.createQName(type);
+//	    		this.expectedTypes.add(typeDef);
+//	    	}
+//        }
+    	this.expectedTypes = expectedTypes;
 	}
 
 	public void setNodeService(NodeService nodeService)
@@ -77,6 +81,10 @@ public class TypeConstraint
 
     public void init()
     {
+        if(expectedTypes != null && !expectedTypes.isEmpty())
+        {
+        	preprocessExpectedTypes(expectedTypes);
+        }
         if(excludedTypes != null && !excludedTypes.isEmpty())
         {
         	preprocessExcludedTypes(excludedTypes);
@@ -89,14 +97,12 @@ public class TypeConstraint
      * @param excludeTypeNames
      * @return Set<QName> Valid type QNames
      */
-    protected void preprocessExcludedTypes(List<String> excludeTypeNames)
+    protected void preprocessExcludedTypes(List<String> typeNames)
     {
-        if (excludeTypeNames == null || excludeTypeNames.isEmpty()) return;
-
-        Set<QName> qNamesToExclude = new HashSet<QName>(excludeTypeNames.size());
+        Set<QName> qNamesToExclude = new HashSet<QName>(typeNames.size());
         Set<String> modelsToExclude = new HashSet<String>();
         
-        for (String typeDefinition : excludeTypeNames)
+        for (String typeDefinition : typeNames)
         {
             final QName typeDef = QName.createQName(typeDefinition);
             if (WILDCARD.equals(typeDef.getLocalName()))
@@ -108,11 +114,39 @@ public class TypeConstraint
             	qNamesToExclude.add(typeDef); // valid so add it to the list
             }
         }
-        
+
         this.excludedModels = modelsToExclude;
         this.excludedQNames = qNamesToExclude;
     }
 
+    /**
+     * Processes the user-defined list of types into valid QNames & models, it validates them
+     * against the dictionary and also supports wildcards
+     * @param excludeTypeNames
+     * @return Set<QName> Valid type QNames
+     */
+    protected void preprocessExpectedTypes(List<String> typeNames)
+    {
+        Set<QName> qNames = new HashSet<QName>(typeNames.size());
+        Set<String> models = new HashSet<String>();
+        
+        for (String typeDefinition : typeNames)
+        {
+            final QName typeDef = QName.createQName(typeDefinition);
+            if (WILDCARD.equals(typeDef.getLocalName()))
+            {
+            	models.add(typeDef.getNamespaceURI());
+            }
+            else
+            {
+            	qNames.add(typeDef); // valid so add it to the list
+            }
+        }
+
+        this.expectedModels = models;
+        this.expectedQNames = qNames;
+    }
+    
     private boolean isExcluded(QName typeQName)
     {
         return excludedQNames != null && excludedQNames.contains(typeQName) || excludedModels != null && excludedModels.contains(typeQName.getNamespaceURI());
@@ -120,7 +154,14 @@ public class TypeConstraint
     
     private boolean matchesExpected(QName typeQName)
     {
-        return expectedTypes == null || expectedTypes.contains(typeQName);
+    	boolean ret = false;
+
+    	if(expectedQNames == null || expectedQNames.contains(typeQName) || expectedModels == null || expectedModels.contains(typeQName.getNamespaceURI()))
+    	{
+    		ret = true;
+    	}
+
+        return ret;
     }
 
     /**

@@ -99,7 +99,6 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 public class PersonServiceImpl extends TransactionListenerAdapter implements PersonService,
                                                                              NodeServicePolicies.BeforeCreateNodePolicy,
@@ -1032,8 +1031,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         actionParams.put(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable)model);
         actionParams.put(MailActionExecuter.PARAM_TO, email);
         actionParams.put(MailActionExecuter.PARAM_FROM, creatorProps.get(ContentModel.PROP_EMAIL));
-        actionParams.put(MailActionExecuter.PARAM_SUBJECT, 
-                    I18NUtil.getMessage("invitation.notification.person.email.subject", productName));
+        actionParams.put(MailActionExecuter.PARAM_SUBJECT, "invitation.notification.person.email.subject");
+        actionParams.put(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] {productName});
         
         // Pick the appropriate localised template
         actionParams.put(MailActionExecuter.PARAM_TEMPLATE, getNotifyEmailTemplateNodeRef());
@@ -1264,6 +1263,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public PagingResults<PersonInfo> getPeople(String pattern, List<QName> filterStringProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
+        return getPeople(pattern, filterStringProps, null, null, true, sortProps, pagingRequest);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public PagingResults<PersonInfo> getPeople(String pattern, List<QName> filterStringProps, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects, boolean includeAdministraotrs, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
@@ -1275,7 +1282,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         // get canned query
         GetPeopleCannedQueryFactory getPeopleCannedQueryFactory = (GetPeopleCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_PEOPLE_LIST);
         
-        GetPeopleCannedQuery cq = (GetPeopleCannedQuery)getPeopleCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, filterStringProps, sortProps, pagingRequest);
+        GetPeopleCannedQuery cq = (GetPeopleCannedQuery)getPeopleCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, filterStringProps, inclusiveAspects, exclusiveAspects, includeAdministraotrs, sortProps, pagingRequest);
         
         // execute canned query
         cqResults = cq.execute();
@@ -1375,7 +1382,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public PagingResults<PersonInfo> getPeople(List<Pair<QName, String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-
+        
         if (stringPropFilters == null)
         {
             return getPeople(null, null, sortProps, pagingRequest);
@@ -1418,7 +1425,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             searchStr = userName;
             useCQ = searchStr.split(" ").length == 1;
         }
-
+        
         PagingResults<PersonInfo> result = null;
         if (useCQ)
         {
@@ -1429,19 +1436,19 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             sortProps = sortProps == null ? new ArrayList<Pair<QName, Boolean>>(1) : new ArrayList<Pair<QName, Boolean>>(sortProps);
             sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true)); 
             result = getPeople(searchStr, filterProps, sortProps, pagingRequest);
-
+            
             // Fall back to FTS if no results. For case:  First Name: Gerard, Last Name: Perez Winkler
             if (result.getPage().size() == 0)
             {
                 result = null;
             }
         }
-
+        
         if (result == null)
         {
             result = getPeopleFts(searchStr, pagingRequest);
         }
-
+        
         return result;
     }
     
@@ -2075,7 +2082,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         return username;
     }
-
+    
     @Override
     public boolean isEnabled(String userName)
     {
@@ -2091,6 +2098,5 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             return DefaultTypeConverter.INSTANCE.booleanValue(ser);
         }
-
     }
 }

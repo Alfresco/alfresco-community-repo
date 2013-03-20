@@ -212,6 +212,12 @@ function testPermissions()
     var container = site.createContainer("test.permissions");
     test.assertNotNull(container);
     
+    var node = container.createNode("test.permissions.node", "cm:content");
+    test.assertNotNull(node);
+    
+    var membersRole = site.getMembersRole("UserOne_SiteServiceImplTest");
+    test.assertEquals(membersRole, "SiteManager");
+    
     // check the current permissions
     var setPerms = container.getPermissions();
     test.assertNotNull(setPerms);
@@ -228,8 +234,24 @@ function testPermissions()
        test.fail("Managers where not assigned to the site group successfully");
     }
     
+
+    setPerms = node.getPermissions();
+    test.assertNotNull(setPerms);
+    bManagers = false;
+    for (index in setPerms)
+    {
+      if (setPerms[index] == "ALLOWED;GROUP_site_siteShortNameToo_SiteManager;SiteManager")
+      {
+         bManagers = true;
+      }
+    }
+    if (bManagers == false)
+    {
+       test.fail("Managers where not assigned to the site group successfully");
+    }
+
     // reset permissions    
-    site.resetAllPermissions(container);    
+    site.resetAllPermissions(node);    
 }
 
 function testRolesAndGroups()

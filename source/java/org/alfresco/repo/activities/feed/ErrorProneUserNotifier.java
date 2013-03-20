@@ -64,7 +64,7 @@ public class ErrorProneUserNotifier extends AbstractUserNotifier
 //	}
 
 	@Override
-	protected void notifyUser(NodeRef personNodeRef, String subjectText,
+	protected void notifyUser(NodeRef personNodeRef, String subjectText, Object[] subjectParams,
 			Map<String, Object> model, String templateNodeRef)
 	{
 //		super.notifyUser(personNodeRef, subjectText, model, templateNodeRef);

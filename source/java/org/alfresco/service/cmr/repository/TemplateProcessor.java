@@ -19,6 +19,7 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Writer;
+import java.util.Locale;
 
 import org.alfresco.processor.Processor;
 
@@ -40,6 +41,16 @@ public interface TemplateProcessor extends Processor
      */
     public void process(String template, Object model, Writer out);
     
+    /**
+     * Process a template in the given locale against the supplied data model and write to the out.
+     * 
+     * @param template       Template name/path
+     * @param model          Object model to process template against
+     * @param out            Writer object to send output too
+     * @param locale		 The Locale to process the template in
+     */
+    public void process(String template, Object model, Writer out, Locale locale);
+
     /**
      * Process a string template against the supplied data model and write to the out.
      * 

@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="mailTemplateService" class="org.alfresco.repo.processor.TemplateServiceImpl">
+        <property name="defaultTemplateEngine">
+            <value>freemarker</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>
+    </bean>
+    
+    <bean id="mailBaseTemplateProcessor" abstract="true" init-method="register">
+        <property name="templateService">
+            <ref bean="mailTemplateService"/>
+        </property>     
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>  
+    </bean>
+    
+    <!-- The beans are not thread safe and therefore we create one per request -->
+    <bean id="mailFreeMarkerProcessor" parent="mailBaseTemplateProcessor" class="org.alfresco.repo.template.FreeMarkerProcessor">
+        <property name="name">
+            <value>freemarker</value>
+        </property>
+        <property name="extension">
+            <value>ftl</value>
+        </property>
+        <property name="localizedLookup">
+            <value>true</value>
+        </property>
+        <property name="defaultEncoding">
+            <value>UTF-8</value>
+        </property>
+    </bean>
+    
+    <!-- base config implementation that template extension beans extend from - for auto registration
+         as a global template helper with the TemplateService -->
+    <bean id="mailBaseTemplateImplementation" abstract="true" init-method="register">
+        <property name="processor">
+            <ref bean="mailFreeMarkerProcessor"/>
+        </property>
+    </bean>
+    
+    <bean id="mailAvmExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.AVM">
+        <property name="extensionName">
+            <value>avm</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="mailSessionTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.Session">
+        <property name="extensionName">
+            <value>session</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="mailClassificationTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.Classification">
+        <property name="extensionName">
+            <value>classification</value>
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="mailWorkflowTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.Workflow">
+        <property name="extensionName">
+            <value>workflow</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+    <bean id="mailPeopleTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.People">
+        <property name="extensionName">
+            <value>people</value>
+        </property>
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="authorityDAO">
+            <ref bean="authorityDAO"/>
+        </property>
+        <property name="authorityService">
+            <ref bean="AuthorityService"/>
+        </property>
+        <property name="personService">
+            <ref bean="PersonService"/>
+        </property>
+        <property name="authenticationService">
+            <ref bean="AuthenticationService"/>
+        </property>
+    </bean>
+    
+    <bean id="mailSiteTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.Site">
+        <property name="extensionName">
+            <value>site</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+        <property name="siteService">
+            <ref bean="SiteService"/>
+        </property>
+    </bean>
+    
+    <bean id="mailHasAspectTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.HasAspectMethod">
+        <property name="extensionName">
+            <value>hasAspect</value>
+        </property>
+    </bean>
+    
+    <bean id="mailHasPermissionTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.HasPermissionMethod">
+        <property name="extensionName">
+            <value>hasPermission</value>
+        </property>
+    </bean>
+    
+    <bean id="messageTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.I18NMessageMethod">
+        <property name="extensionName">
+            <value>message</value>
+        </property>
+    </bean>
+    
+    <bean id="dateCompareTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.DateCompareMethod">
+        <property name="extensionName">
+            <value>dateCompare</value>
+        </property>
+    </bean>
+    
+    <bean id="incrementDateTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.DateIncrementMethod">
+        <property name="extensionName">
+            <value>incrementDate</value>
+        </property>
+    </bean>
+    
+    <bean id="xmlDateTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.ISO8601DateFormatMethod">
+        <property name="extensionName">
+            <value>xmldate</value>
+        </property>
+    </bean>
+    
+    <bean id="cropContentTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.CropContentMethod">
+        <property name="extensionName">
+            <value>cropContent</value>
+        </property>
+    </bean>
+
+    <bean id="shortQNameTemplateExtension" parent="mailBaseTemplateImplementation" class="org.alfresco.repo.template.ShortQNameMethod">
+        <property name="extensionName">
+            <value>shortQName</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry"/>
+        </property>
+    </bean>
+    
+</beans>

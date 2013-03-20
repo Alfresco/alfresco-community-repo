@@ -57,6 +57,7 @@
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="enabled" value="${system.quickshare.enabled}" />
         <property name="nodeService" ref="NodeService"/>
+        <property name="permissionService" ref="permissionService"/>
         <property name="personService" ref="PersonService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="tenantService" ref="tenantService"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,7 +27,6 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.domain.node.NodePropertyHelper;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
@@ -42,13 +41,6 @@ public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchi
 {
     private HiddenAspect hiddenAspect;
     private Set<QName> ignoreAspectQNames;
-    
-    protected NodeService nodeService;
-    
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
     
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
@@ -67,6 +59,6 @@ public class GetChildrenCannedQueryFactory extends org.alfresco.repo.node.getchi
     {
         NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
         
-        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurity, parameters, hiddenAspect, dictionaryService, nodeService, ignoreAspectQNames);
+        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, parameters, hiddenAspect, dictionaryService, ignoreAspectQNames);
     }
 }

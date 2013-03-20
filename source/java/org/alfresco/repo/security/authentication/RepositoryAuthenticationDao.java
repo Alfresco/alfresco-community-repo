@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -175,23 +175,26 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                 userDetails.isAccountNonExpired(), false,
                 userDetails.isAccountNonLocked(), userDetails.getAuthorities());
     }
-
-
-    public NodeRef getUserOrNull(String searchUserName)
+    
+    /**
+     * @param caseSensitiveSearchUserName case sensitive user name
+     * @return the user's authentication node ref or null
+     */
+    public NodeRef getUserOrNull(String caseSensitiveSearchUserName)
     {
-        CacheEntry userEntry = getUserEntryOrNull(searchUserName);
+        CacheEntry userEntry = getUserEntryOrNull(caseSensitiveSearchUserName);
         return userEntry == null ? null: userEntry.nodeRef;
     }
-
-    private CacheEntry getUserEntryOrNull(final String searchUserName)
+    
+    private CacheEntry getUserEntryOrNull(final String caseSensitiveSearchUserName)
     {
         class SearchUserNameCallback implements RetryingTransactionCallback<CacheEntry>
         {
             @Override
             public CacheEntry execute() throws Throwable
             {
-                List<ChildAssociationRef> results = nodeService.getChildAssocs(getUserFolderLocation(searchUserName),
-                        ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, searchUserName));
+                List<ChildAssociationRef> results = nodeService.getChildAssocs(getUserFolderLocation(caseSensitiveSearchUserName),
+                        ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI, caseSensitiveSearchUserName));
                 if (!results.isEmpty())
                 {
                     NodeRef userRef = tenantService.getName(results.get(0).getChildRef());
@@ -225,13 +228,13 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                 return null;
             }
         }
-
-        if (searchUserName == null || searchUserName.length() == 0)
+        
+        if (caseSensitiveSearchUserName == null || caseSensitiveSearchUserName.length() == 0)
         {
             return null;
         }
         
-        CacheEntry result = authenticationCache.get(searchUserName);
+        CacheEntry result = authenticationCache.get(caseSensitiveSearchUserName);
         if (result == null)
         {
             if (AlfrescoTransactionSupport.getTransactionId() == null)
@@ -251,7 +254,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             }
             if (result != null)
             {
-                authenticationCache.put(searchUserName, result);
+                authenticationCache.put(caseSensitiveSearchUserName, result);
             }
         }
         return result;
@@ -562,6 +565,19 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     public boolean getCredentialsHaveExpired(String userName)
     {
         return !loadUserByUsername(userName).isCredentialsNonExpired();
+    }
+    
+    /**
+     * @param userName              the username (never <tt>null</tt>
+     * @param properties            the properties associated with the user or <tt>null</tt> to get them
+     * @param isAdminAuthority      is admin authority
+     * @return                      <tt>true</tt> if the user account has expired
+     */
+    protected boolean getCredentialsHaveExpired(String userName, Map<QName, Serializable> properties, Boolean isAdminAuthority)
+    {
+        Date credentialsExpiryDate = getCredentialsExpiryDate(userName, properties, isAdminAuthority);
+        boolean credentialsHaveNotExpired = (credentialsExpiryDate == null || credentialsExpiryDate.compareTo(new Date()) >= 0);
+        return (! credentialsHaveNotExpired);
     }
     
     /**

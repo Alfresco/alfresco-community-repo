@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -32,6 +33,7 @@ import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateService;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of the TemplateService using Spring configured script engines.
@@ -181,6 +183,50 @@ public class TemplateServiceImpl implements TemplateService
         catch (Throwable err)
         {
            throw new TemplateException(err.getMessage(), err);
+        }
+    }
+
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.TemplateService#processTemplate(java.lang.String, java.lang.String, java.lang.Object, Locale locale)
+     */
+    public String processTemplate(String engine, String template, Object model, Locale locale)
+        throws TemplateException
+    {
+        Writer out = new StringWriter(1024);
+        processTemplate(engine, template, model, out, locale);
+        return out.toString();
+    }
+    
+    /**
+     * @see org.alfresco.service.cmr.repository.TemplateService#processTemplate(java.lang.String, java.lang.String, java.lang.Object, java.util.Locale)
+     */
+    private void processTemplate(String engine, String template, Object model, Writer out, Locale locale)
+        throws TemplateException
+    {
+        Locale currentLocale = I18NUtil.getLocaleOrNull();
+        Locale currentContentLocale = I18NUtil.getContentLocaleOrNull();
+        
+        try
+        {
+           // set locale for cases where message method is used inside of template
+           I18NUtil.setLocale(locale);
+           // execute template processor
+           TemplateProcessor processor = getTemplateProcessor(engine);
+           processor.process(template, model, out, locale);
+        }
+        catch (TemplateException terr)
+        {
+           throw terr;
+        }
+        catch (Throwable err)
+        {
+           throw new TemplateException(err.getMessage(), err);
+        }
+        finally
+        {
+            I18NUtil.setLocale(currentLocale);
+            I18NUtil.setContentLocale(currentContentLocale);
         }
     }
 

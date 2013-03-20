@@ -63,7 +63,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of the Activity Feed Notifier component
@@ -323,14 +322,13 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         final AtomicInteger userCnt = new AtomicInteger(0);
         final AtomicInteger feedEntryCnt = new AtomicInteger(0);
 
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
 
         // local cache for this execution
         final Map<String, String> siteNames = new ConcurrentHashMap<String, String>(10);
 
         try
         {
-            final String subjectText = buildSubjectText(startTime);
             final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
 
             // process the feeds using the batch processor {@link BatchProcessor}
@@ -367,17 +365,16 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                     }, false, true);
 	            }
 	            
-		        private void processInternal(final PersonInfo person) throws Throwable
-		        {
-	            	final NodeRef personNodeRef = person.getNodeRef();
-
-	                try
-	                {
-	                    Pair<Integer, Long> result = userNotifier.notifyUser(personNodeRef, subjectText, siteNames, shareUrl, repeatIntervalMins, emailTemplateRef);
-	                    if (result != null)
-	                    {
-	                        int entryCnt = result.getFirst();
-	                        final long maxFeedId = result.getSecond();
+                private void processInternal(final PersonInfo person) throws Exception
+                {
+                    final NodeRef personNodeRef = person.getNodeRef();
+                    try
+                    {
+                        Pair<Integer, Long> result = userNotifier.notifyUser(personNodeRef, MSG_EMAIL_SUBJECT, new Object[] {ModelUtil.getProductName(repoAdminService)}, siteNames, shareUrl, repeatIntervalMins, emailTemplateRef);
+                        if (result != null)
+                        {
+                            int entryCnt = result.getFirst();
+                            final long maxFeedId = result.getSecond();
 
 	                        Long currentMaxFeedId = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL_FEED_ID);
 	                        if ((currentMaxFeedId == null) || (currentMaxFeedId < maxFeedId))
@@ -402,7 +399,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 			{
 	        	private int skip = 0;
 	        	private int maxItems = batchSize;
-                        private boolean hasMore = true;
+                private boolean hasMore = true;
 
 				@Override
 				public int getTotalEstimatedWorkSize()
@@ -474,11 +471,6 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                 }
             }
         }
-    }
-    
-    protected String buildSubjectText(long currentTime)
-    {
-        return I18NUtil.getMessage(MSG_EMAIL_SUBJECT, ModelUtil.getProductName(repoAdminService));
     }
     
 	@Override

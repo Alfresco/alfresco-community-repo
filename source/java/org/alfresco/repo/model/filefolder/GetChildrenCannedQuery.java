@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,6 +32,7 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.node.getchildren.FilterProp;
+import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryParams;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
@@ -68,14 +69,14 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
             CannedQueryDAO cannedQueryDAO,
             NodePropertyHelper nodePropertyHelper,
             TenantService tenantService,
+            NodeService nodeService,
             MethodSecurityBean<NodeRef> methodSecurity,
             CannedQueryParameters params,
             HiddenAspect hiddenAspect,
             DictionaryService dictionaryService,
-            NodeService nodeService,
             Set<QName> ignoreAspectQNames)
     {
-        super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurity, params);
+        super(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, params);
         
         this.hiddenAspect = hiddenAspect;
         this.dictionaryService = dictionaryService;
@@ -85,14 +86,17 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
     }
     
     @Override
-    protected UnsortedChildQueryCallback getUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount)
+    protected UnsortedChildQueryCallback getUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount, GetChildrenCannedQueryParams paramBean)
     {
-        UnsortedChildQueryCallback callback = new FileFolderUnsortedChildQueryCallback(rawResult, requestedCount);
+        Set<QName> inclusiveAspects = paramBean.getInclusiveAspects();
+        Set<QName> exclusiveAspects = paramBean.getExclusiveAspects();
+        
+        UnsortedChildQueryCallback callback = new FileFolderUnsortedChildQueryCallback(rawResult, requestedCount, inclusiveAspects, exclusiveAspects);
         return callback;
     }
     
     @Override
-    protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps)
+    protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps, GetChildrenCannedQueryParams paramBean)
     {
     	FilterSortChildQueryCallback callback = new FileFolderFilterSortChildQueryCallback(children, filterProps);
     	return callback;
@@ -141,11 +145,11 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
 
     private class FileFolderUnsortedChildQueryCallback extends DefaultUnsortedChildQueryCallback
     {
-		public FileFolderUnsortedChildQueryCallback(List<NodeRef> rawResult,int requestedCount)
+		public FileFolderUnsortedChildQueryCallback(List<NodeRef> rawResult,int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
 		{
-			super(rawResult, requestedCount);
+			super(rawResult, requestedCount, inclusiveAspects, exclusiveAspects);
 		}
-
+		
 		@Override
 		protected boolean include(NodeRef nodeRef)
 		{

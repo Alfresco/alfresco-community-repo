@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,11 +22,9 @@ package org.alfresco.repo.avm.locking;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.domain.avm.AVMLockDAO;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.attributes.DuplicateAttributeException;
 import org.alfresco.service.cmr.avm.AVMBadArgumentException;

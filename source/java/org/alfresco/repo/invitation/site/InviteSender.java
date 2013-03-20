@@ -126,7 +126,8 @@ public class InviteSender
         Action mail = actionService.createAction(MailActionExecuter.NAME);
         mail.setParameterValue(MailActionExecuter.PARAM_FROM, getEmail(inviter));
         mail.setParameterValue(MailActionExecuter.PARAM_TO, getEmail(invitee));
-        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, buildSubject(properties));
+        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "invitation.invitesender.email.subject");
+        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] {ModelUtil.getProductName(repoAdminService), getSiteName(properties)});
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, getEmailTemplateNodeRef());
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, 
                 (Serializable)buildMailTextModel(properties, inviter, invitee));
@@ -146,12 +147,6 @@ public class InviteSender
             missingProperties.removeAll(keys);
             throw new InvitationException("The following mandatory properties are missing:\n" + missingProperties);
         }
-    }
-
-    private String buildSubject(Map<String, String> properties)
-    {
-        return messageService.getMessage("invitation.invitesender.email.subject", 
-                    ModelUtil.getProductName(repoAdminService), getSiteName(properties));
     }
 
     private Map<String, Serializable> buildMailTextModel(Map<String, String> properties, NodeRef inviter, NodeRef invitee)

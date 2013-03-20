@@ -406,6 +406,7 @@
                 <prop key="system.remote_credentials_container.childname">${system.remote_credentials_container.childname}</prop>
                 <prop key="system.syncset_definition_container.childname">${system.syncset_definition_container.childname}</prop>
                 <prop key="system.downloads_container.childname">${system.downloads_container.childname}</prop>
+                <prop key="system.certificate_container.childname">${system.certificate_container.childname}</prop>
             </props>
         </property>
     </bean>

@@ -1235,6 +1235,20 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     }
     
     /**
+     * @see org.alfresco.service.cmr.site.SiteService#getSiteShortName(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public String getSiteShortName(NodeRef nodeRef)
+    {
+        String shortName = null;
+        NodeRef siteNodeRef = getSiteNodeRef(nodeRef);
+        if (siteNodeRef != null)
+        {
+            shortName = (String)this.directNodeService.getProperty(siteNodeRef, ContentModel.PROP_NAME);
+        }
+        return shortName;
+    }
+    
+    /**
      * This method gets the <code>st:site</code> NodeRef for the Share Site which contains the given NodeRef.
      * If the given NodeRef is not contained within a Share Site, then <code>null</code> is returned.
      * 
@@ -1751,8 +1765,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             return listMembersInfoImpl(shortName, nameFilter, roleFilter, size, collapseGroups);
         }
     }
-
-    private Map<String, String> listMembersImpl(String shortName, String nameFilter, String roleFilter, int size, boolean collapseGroups)
+    
+    protected Map<String, String> listMembersImpl(String shortName, String nameFilter, String roleFilter, int size, boolean collapseGroups)
     {
         Map<String, String> members = new HashMap<String, String>(32);
 
@@ -2429,6 +2443,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             {
                 setModeratedPermissions(shortName, containerNodeRef);
             }
+            else if (SiteVisibility.PRIVATE.equals(siteVisibility))
+            {
+                setPrivatePermissions(shortName, containerNodeRef);
+            }
             
             // Make the container a tag scope
             this.taggingService.addTagScope(containerNodeRef);
@@ -2460,25 +2478,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */    
     private void setModeratedPermissions(String shortName, NodeRef containerNodeRef)   
     {
-        NodeRef siteNodeRef = getSiteNodeRef(shortName);
-        if (siteNodeRef == null) 
-        { 
-           throw new SiteDoesNotExistException(shortName);
-        }
-        
-        QName siteType = directNodeService.getType(siteNodeRef);
-        Set<String> permissions = permissionService.getSettablePermissions(siteType);
-        for (String permission : permissions)
-        {
-            String permissionGroup = getSiteRoleGroup(shortName, permission, true);
-            // Assign the group the relevant permission on the site
-            permissionService.setPermission(containerNodeRef, permissionGroup, permission, true);
-        }  
-        permissionService.setPermission(containerNodeRef,
-            PermissionService.ALL_AUTHORITIES,
-            PermissionService.READ_PERMISSIONS, true);
-        
-        this.permissionService.setInheritParentPermissions(containerNodeRef, false);
+        setNonPublicSitePermissions(shortName, containerNodeRef);
     }
 
 
@@ -2925,4 +2925,33 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
 	        }
 	    };
 	}
+
+    /**
+     * Private sites have separate ACLs on each component and don't inherit from the
+     * site which has consumer role for everyone.
+     */    
+    private void setPrivatePermissions(String shortName, NodeRef containerNodeRef)   
+    {
+        setNonPublicSitePermissions(shortName, containerNodeRef);
+    }
+
+    private void setNonPublicSitePermissions(String shortName, NodeRef containerNodeRef)
+    {
+        NodeRef siteNodeRef = getSiteNodeRef(shortName);
+        if (siteNodeRef == null) 
+        { 
+           throw new SiteDoesNotExistException(shortName);
+        }
+        
+        QName siteType = directNodeService.getType(siteNodeRef);
+        Set<String> permissions = permissionService.getSettablePermissions(siteType);
+        for (String permission : permissions)
+        {
+            String permissionGroup = getSiteRoleGroup(shortName, permission, true);
+            // Assign the group the relevant permission on the site
+            permissionService.setPermission(containerNodeRef, permissionGroup, permission, true);
+        }  
+        
+        this.permissionService.setInheritParentPermissions(containerNodeRef, false);
+    }
 }

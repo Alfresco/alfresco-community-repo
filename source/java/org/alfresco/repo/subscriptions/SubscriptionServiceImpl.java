@@ -55,7 +55,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 public class SubscriptionServiceImpl implements SubscriptionService
 {
@@ -494,7 +493,6 @@ public class SubscriptionServiceImpl implements SubscriptionService
         // compile the mail subject
         String followerFullName = (nodeService.getProperty(followerNode, ContentModel.PROP_FIRSTNAME) + " " + nodeService
                 .getProperty(followerNode, ContentModel.PROP_LASTNAME)).trim();
-        String subjectText = I18NUtil.getMessage("subscription.notification.email.subject", followerFullName);
 
         Map<String, Object> model = new HashMap<String, Object>();
 
@@ -530,7 +528,8 @@ public class SubscriptionServiceImpl implements SubscriptionService
         Action mail = actionService.createAction(MailActionExecuter.NAME);
         
         mail.setParameterValue(MailActionExecuter.PARAM_TO, emailAddress);
-        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, subjectText);
+        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "subscription.notification.email.subject");
+        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] {followerFullName});
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, templateNodeRef);
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) model);
         mail.setParameterValue(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, true);

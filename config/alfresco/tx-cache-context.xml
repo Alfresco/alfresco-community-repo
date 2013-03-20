@@ -612,4 +612,19 @@
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
    
+   <!-- The transactional cache for SAML TrustEngines  -->
+   
+   <bean name="samlTrustEngineCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="samlTrustEngineSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.samlTrustEngineTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="5000" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+   </bean>
+   
 </beans>
+

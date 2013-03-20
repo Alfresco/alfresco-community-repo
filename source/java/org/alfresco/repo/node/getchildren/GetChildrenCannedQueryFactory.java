@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,6 +39,7 @@ import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -59,6 +60,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     protected ContentDataDAO contentDataDAO;
     protected CannedQueryDAO cannedQueryDAO;
     protected TenantService tenantService;
+    protected NodeService nodeService;
     
     protected MethodSecurityBean<NodeRef> methodSecurity;
     
@@ -95,7 +97,12 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
-    }    
+    }
+    
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
     
     public void setMethodSecurity(MethodSecurityBean<NodeRef> methodSecurity)
     {
@@ -107,7 +114,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
     {
         NodePropertyHelper nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
         
-        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, methodSecurity, parameters);
+        return (CannedQuery<NodeRef>) new GetChildrenCannedQuery(nodeDAO, qnameDAO, cannedQueryDAO, nodePropertyHelper, tenantService, nodeService, methodSecurity, parameters);
     }
     
     /**
@@ -127,13 +134,35 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
      */
     public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
+        return getCannedQuery(parentRef, pattern, assocTypeQNames, childTypeQNames, null, null, filterProps, sortProps, pagingRequest);
+    }
+
+    /**
+     * Retrieve an optionally filtered/sorted instance of a {@link CannedQuery} based on parameters including request for a total count (up to a given max)
+     * 
+     * Note: if both filtering and sorting is required then the combined total of unique QName properties should be the 0 to 3.
+     *
+     * @param parentRef             parent node ref
+     * @param pattern			    the pattern to use to filter children (wildcard character is '*')
+     * @param assocTypeQNames	    qnames of assocs to include (may be null)
+     * @param childTypeQNames       type qnames of children nodes (pre-filter)
+     * @param inclusiveAspects      If not null, only child nodes with any aspect in this collection will be included in the results.
+     * @param exclusiveAspects      If not null, any child nodes with any aspect in this collection will be excluded in the results.
+     * @param filterProps           filter properties
+     * @param sortProps             sort property pairs (QName and Boolean - true if ascending)
+     * @param pagingRequest         skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax
+     * 
+     * @return                      an implementation that will execute the query
+     */
+    public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    {
         ParameterCheck.mandatory("parentRef", parentRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
         
         // specific query params - context (parent) and inclusive filters (child types, property values)
-        GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(tenantService.getName(parentRef), assocTypeQNames, childTypeQNames, filterProps, pattern);
+        GetChildrenCannedQueryParams paramBean = new GetChildrenCannedQueryParams(tenantService.getName(parentRef), assocTypeQNames, childTypeQNames, inclusiveAspects, exclusiveAspects, filterProps, pattern);
 
         // page details
         CannedQueryPageDetails cqpd = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
@@ -171,7 +200,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
      */
     public CannedQuery<NodeRef> getCannedQuery(NodeRef parentRef, String pattern, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, PagingRequest pagingRequest)
     {
-        return getCannedQuery(parentRef, pattern, assocTypeQNames, childTypeQNames, null, null, pagingRequest);
+        return getCannedQuery(parentRef, pattern, assocTypeQNames, childTypeQNames, null, null, null, null, pagingRequest);
     }
     
     @Override
@@ -182,6 +211,7 @@ public class GetChildrenCannedQueryFactory extends AbstractCannedQueryFactory<No
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
         PropertyCheck.mandatory(this, "localeDAO", localeDAO);
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,6 +33,7 @@ import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
@@ -45,7 +46,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -248,13 +248,7 @@ public class CommentServiceImpl implements CommentService
 			@Override
 			public String doWork() throws Exception
 			{
-				String siteId = null;
-		        SiteInfo siteInfo = siteService.getSite(nodeRef);
-		        if(siteInfo != null)
-		        {
-		        	siteId = siteInfo.getShortName();
-		        }
-				return siteId;
+				return siteService.getSiteShortName(nodeRef);
 			}
         });
 
@@ -343,7 +337,7 @@ public class CommentServiceImpl implements CommentService
         String siteId = getSiteId(discussableNode);
         JSONObject activityData = getActivityData(siteId, discussableNode);
 
-        postActivity(siteId, "org.alfresco.comments.comment-created", activityData);
+        postActivity(siteId, ActivityType.COMMENT_CREATED, activityData);
 
         return postNode;
     }

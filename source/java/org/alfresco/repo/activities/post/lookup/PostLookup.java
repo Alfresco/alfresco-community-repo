@@ -184,9 +184,13 @@ public class PostLookup
     public void execute() throws JobExecutionException
     {
         checkProperties();
+        
         if (busy)
         {
-            logger.warn("Still busy ...");
+            if (logger.isInfoEnabled())
+            {
+                logger.info("Still busy ...");
+            }
             return;
         }
         
@@ -202,11 +206,13 @@ public class PostLookup
             
             ActivityPostEntity params = new ActivityPostEntity();
             params.setStatus(ActivityPostEntity.STATUS.PENDING.toString());
-
+            
             if (logger.isDebugEnabled())
             {
                 logger.debug("Selecting activity posts with status: " + ActivityPostEntity.STATUS.PENDING.toString());
             }
+
+            // get all pending post (for this job run) 
             final List<ActivityPostEntity> activityPosts = postDAO.selectPosts(params, maxItemsPerCycle);
             
             if (activityPosts.size() > 0)
@@ -216,8 +222,7 @@ public class PostLookup
                     logger.debug("Update: " + activityPosts.size() + " activity post"+(activityPosts.size() == 1 ? "s" : ""));
                 }
                 
-                // execute in READ txn
-                
+                // execute in WRITE txn
                 transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() 
                 {
                     public Object execute() throws Throwable
@@ -240,6 +245,12 @@ public class PostLookup
                 
                 // update posts + status (note: will also add any new rolled-up posts)
                 updatePosts(activityPostsToUpdate);
+                
+                if (logger.isInfoEnabled())
+                {
+                    int cnt = activityPostsToUpdate.size();
+                    logger.info("Updated: " + cnt + " activity post"+(cnt == 1 ? "" : "s")+" (in "+(System.currentTimeMillis()-start)+" msecs)");
+                }
             }
         }
         catch (LockAcquisitionException e)
@@ -271,7 +282,6 @@ public class PostLookup
         {
             releaseLock(lockToken);
         }
-        
     }
     
     private class UserRollupActivity
@@ -662,11 +672,7 @@ public class PostLookup
         String siteId = null;
         if (nodeService.exists(nodeRef))
         {
-            SiteInfo siteInfo = siteService.getSite(nodeRef);
-            if (siteInfo != null)
-            {
-                siteId = siteInfo.getShortName();
-            }
+            siteId = siteService.getSiteShortName(nodeRef);
         }
         return siteId;
     }

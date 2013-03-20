@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,7 +45,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
@@ -666,8 +665,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         // TODO URLs for the repo server.
         // TODO URLs for folders
         
-        SiteInfo siteInfo = services.getSiteService().getSite(getNodeRef());
-        String siteShortName = siteInfo == null ? null : siteInfo.getShortName();
+        String siteShortName = services.getSiteService().getSiteShortName(getNodeRef());
         
         String baseUrl = UrlUtil.getShareUrl(services.getSysAdminParams());
         

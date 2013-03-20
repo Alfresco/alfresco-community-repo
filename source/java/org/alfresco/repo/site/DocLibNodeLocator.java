@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,7 +26,6 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.nodelocator.AbstractNodeLocator;
 import org.alfresco.repo.nodelocator.NodeLocator;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 
 /**
@@ -57,10 +56,9 @@ public class DocLibNodeLocator extends AbstractNodeLocator
         NodeRef docLib = null;
         if (source != null)
         {
-            SiteInfo siteInfo = siteService.getSite(source);
-            if (siteInfo != null)
+            String siteName = siteService.getSiteShortName(source);
+            if (siteName != null)
             {
-                String siteName = siteInfo.getShortName();
                 String containerId = SiteService.DOCUMENT_LIBRARY;
                 docLib = siteService.getContainer(siteName, containerId);
             }

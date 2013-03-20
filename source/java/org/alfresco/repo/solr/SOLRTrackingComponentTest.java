@@ -826,7 +826,14 @@ public class SOLRTrackingComponentTest extends TestCase
             {
                 expectedNumMetaDataNodes++;
             }
-
+            
+            /*
+            if(nodeStatus == NodeStatus.DELETED)
+            {
+                expectedNumMetaDataNodes++;
+            }
+            */
+            
             if(doChecks)
             {
                 NodeAssertions nodeAssertions = getNodeAssertions(nodeRef);

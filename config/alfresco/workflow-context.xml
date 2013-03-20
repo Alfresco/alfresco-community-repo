@@ -26,11 +26,11 @@
       <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="contentService" ref="contentService"/>
-         <property name="avmSyncService" ref="AVMSyncService"/>
-         <property name="dictionaryService" ref="dictionaryService"/>
-         <property name="protectedNodeService" ref="NodeService"/>
-         <property name="services" ref="ServiceRegistry"/>
-         <property name="workflowAdminService" ref="workflowAdminService"/>
+      <property name="avmSyncService" ref="AVMSyncService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="protectedNodeService" ref="NodeService"/>
+      <property name="workflowAdminService" ref="workflowAdminService"/>
+      <property name="workflowNotification" ref="workflowNotification"/>
       <property name="maxAuthoritiesForPooledTasks">
          <value>${system.workflow.maxAuthoritiesForPooledTasks}</value>
       </property>
@@ -48,6 +48,12 @@
       <property name="tenantService" ref="tenantService"/>
       <property name="messageService" ref="messageService"/>
       <property name="policyBehaviourFilter" ref="policyBehaviourFilter"/>
+   </bean>
+
+   <bean id="workflowNotification" class="org.alfresco.repo.workflow.WorkflowNotificationUtils">
+      <property name="workflowService" ref="workflowServiceImpl"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="notificationService" ref="NotificationService"/>
    </bean>
 
    <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter" parent="interpreterBase">

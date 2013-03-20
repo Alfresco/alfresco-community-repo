@@ -19,10 +19,10 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Writer;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 
 /**
  * Template Service.
@@ -105,6 +105,19 @@ public interface TemplateService
         throws TemplateException;
     
     /**
+     * Process a template using the supplied locale against the supplied data model and write to the out.
+     * 
+     * @param engine       Name of the template engine to use
+     * @param template     Template (qualified classpath name or noderef)
+     * @param model        Object model to process template against
+     * @param out          Writer object to send output too
+     * @param locale	   Locale to process the template as
+     */
+    @Auditable(parameters = {"engine", "template", "model", "out", "locale"})
+	public String processTemplate(String engine, String templateRef, Object model, Locale locale)
+		throws TemplateException;
+
+    /**
      * Process a given template, provided as a string, against the supplied data model and return the result as a String
      * 
      * @param engine       Name of the template engine to use
@@ -133,7 +146,8 @@ public interface TemplateService
     @Auditable(parameters = {"engine", "template", "model", "out"})
     public void processTemplateString(String engine, String template, Object model, Writer out)
         throws TemplateException;
-        
+
+
     /**
      * Return a TemplateProcessor instance for the specified engine name.
      * Note that the processor instance is NOT thread safe!

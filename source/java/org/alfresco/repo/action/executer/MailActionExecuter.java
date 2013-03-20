@@ -19,15 +19,19 @@
 package org.alfresco.repo.action.executer;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -38,6 +42,9 @@ import org.alfresco.repo.template.DateCompareMethod;
 import org.alfresco.repo.template.HasAspectMethod;
 import org.alfresco.repo.template.I18NMessageMethod;
 import org.alfresco.repo.template.TemplateNode;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -46,6 +53,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TemplateService;
@@ -53,16 +61,19 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.UrlUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailPreparationException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
+import org.springframework.util.StringUtils;
 
 /**
  * Mail action executor implementation.
@@ -78,12 +89,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      * Action executor constants
      */
     public static final String NAME = "mail";
+    public static final String PARAM_LOCALE = "locale";
     public static final String PARAM_TO = "to";
     public static final String PARAM_TO_MANY = "to_many";
     public static final String PARAM_SUBJECT = "subject";
+    public static final String PARAM_SUBJECT_PARAMS = "subjectParams";
     public static final String PARAM_TEXT = "text";
     public static final String PARAM_HTML = "html";
     public static final String PARAM_FROM = "from";
+    public static final String PARAM_FROM_PERSONAL_NAME = "fromPersonalName";
     public static final String PARAM_TEMPLATE = "template";
     public static final String PARAM_TEMPLATE_MODEL = "template_model";
     public static final String PARAM_IGNORE_SEND_FAILURE = "ignore_send_failure";
@@ -97,7 +111,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     /**
      * The java mail sender
      */
-    private JavaMailSender mailService;
+    private JavaMailSender javaMailSender;
     
     /**
      * The Template service
@@ -133,6 +147,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      * System Administration parameters, including URL information
      */
     private SysAdminParams sysAdminParams;
+    
+    /**
+     * The Preference Service
+     */
+    private PreferenceService preferenceService;
+    
+    /**
+     * The Tenant Service
+     */
+    private TenantService tenantService;
     
     /**
      * Mail header encoding scheme
@@ -172,7 +196,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     public void setMailService(JavaMailSender javaMailSender) 
     {
-        this.mailService = javaMailSender;
+        this.javaMailSender = javaMailSender;
     }
     
     /**
@@ -189,6 +213,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    public void setPreferenceService(PreferenceService preferenceService)
+    {
+    	this.preferenceService = preferenceService;
     }
     
     /**
@@ -222,7 +251,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.nodeService = nodeService;
     }
-    
+
+    /**
+     * @param tenantService       the TenantService to set.
+     */
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+
     /**
      * @param headerEncoding     The mail header encoding to set.
      */
@@ -297,6 +334,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         
         Action ruleAction = serviceRegistry.getActionService().createAction(NAME, params);
         
+        // TODO review & test converged code (and remove comment below) !!
+        prepareAndSendEmail(ruleAction, null);
+        
+        /*
         MimeMessageHelper message = prepareEmail(ruleAction, null);
         try
         {
@@ -321,6 +362,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             Object[] args = {testMessageTo, txt.toString()};
             throw new AlfrescoRuntimeException("email.outbound.err.send.failed", args, me);
         }
+        */
         
         return true;
     }
@@ -383,41 +425,35 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             final Action ruleAction,
             final NodeRef actionedUponNodeRef) 
     {
-        MimeMessageHelper message = null;
-        if (validNodeRefIfPresent(actionedUponNodeRef))
-        {
-            message = prepareEmail(ruleAction, actionedUponNodeRef);
-        }
-        final MimeMessageHelper finalMessage = message;
-        
+        // TODO review & test converged code !!
         if (sendAfterCommit(ruleAction))
         {
             AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
             {
                 @Override
                 public void afterCommit()
-                {                                    
+                {
                     RetryingTransactionHelper helper = serviceRegistry.getRetryingTransactionHelper();
                     helper.doInTransaction(new RetryingTransactionCallback<Void>()
                     {
                         @Override
                         public Void execute() throws Throwable
                         {
-                        	if (finalMessage != null)
+                            if (validNodeRefIfPresent(actionedUponNodeRef))
                             {
-                                   sendEmail(ruleAction,  finalMessage);
+                                prepareAndSendEmail(ruleAction, actionedUponNodeRef);
                             }
                             return null;
                         }
-                    }, false, true);          
+                    }, false, true);
                 }
-            });            
+            });
         }
         else
         {
             if (validNodeRefIfPresent(actionedUponNodeRef))
             {
-                sendEmail(ruleAction, finalMessage);
+                prepareAndSendEmail(ruleAction, actionedUponNodeRef);
             }
         }
     }
@@ -445,14 +481,30 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         return sendAfterCommit == null ? false : sendAfterCommit.booleanValue();
     }
     
-    public MimeMessageHelper prepareEmail(final Action ruleAction , final NodeRef actionedUponNodeRef)
+    private void prepareAndSendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {
-        // Create the mime mail message.
-        // Hack: using an array here to get around the fact that inner classes aren't closures.
-        // The MimeMessagePreparator.prepare() signature does not allow us to return a value and yet
-        // we can't set a result on a bare, non-final object reference due to Java language restrictions.
-        final MimeMessageHelper[] messageRef = new MimeMessageHelper[1];
+        List<Pair<String, Locale>> recipients = getRecipients(ruleAction);
         
+        Pair<InternetAddress, Locale> from = getFrom(ruleAction);
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("From: address=" + from.getFirst() + " ,locale=" + from.getSecond());
+        }
+        
+        for (Pair<String, Locale> recipient : recipients)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Recipient: address=" + recipient.getFirst() + " ,locale=" + recipient.getSecond());
+            }
+            
+            prepareAndSendEmail(ruleAction, actionedUponNodeRef, recipient, from);
+        }
+    }
+    
+    private void prepareAndSendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef, final Pair<String, Locale> recipient, final Pair<InternetAddress, Locale> sender)
+    {
         MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
         {
             @SuppressWarnings("unchecked")
@@ -463,7 +515,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                    logger.debug(ruleAction.getParameterValues());
                 }
                 
-                messageRef[0] = new MimeMessageHelper(mimeMessage);
+                MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
                 
                 // set header encoding if one has been supplied
                 if (headerEncoding != null && headerEncoding.length() != 0)
@@ -475,7 +527,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 String to = (String)ruleAction.getParameterValue(PARAM_TO);
                 if (to != null && to.length() != 0)
                 {
-                    messageRef[0].setTo(to);
+                    message.setTo(to);
                 }
                 else
                 {
@@ -543,7 +595,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         
                         if(recipients.size() > 0)
                         {
-                            messageRef[0].setTo(recipients.toArray(new String[recipients.size()]));
+                            message.setTo(recipients.toArray(new String[recipients.size()]));
                         }
                         else
                         {
@@ -568,7 +620,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 // from is enabled
                 if (! authService.isCurrentUserTheSystemUser())
                 {
-                    fromPerson = personService.getPerson(authService.getCurrentUserName());
+                    String currentUserName = authService.getCurrentUserName();
+                    fromPerson = getPerson(currentUserName);
                 }
                 
                 if(isFromEnabled())
@@ -581,7 +634,25 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         {
                             logger.debug("from specified as a parameter, from:" + from);
                         }
-                        messageRef[0].setFrom(from);
+                        
+                        // Check whether or not to use a personal name for the email (will be RFC 2047 encoded)
+                        String fromPersonalName = (String)ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
+                        if(fromPersonalName != null && fromPersonalName.length() > 0) 
+                        {
+                            try
+                            {
+                                message.setFrom(from, fromPersonalName);
+                            }
+                            catch (UnsupportedEncodingException error)
+                            {
+                                // Uses the JVM's default encoding, can never be unsupported. Just in case, revert to simple email
+                                message.setFrom(from);
+                            }
+                        }
+                        else
+                        {
+                            message.setFrom(from);
+                        }
                     }
                     else
                     {
@@ -598,15 +669,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                             {
                                 logger.debug("looked up email address for :" + fromPerson + " email from " + fromActualUser);
                             }
-                            messageRef[0].setFrom(fromActualUser);
+                            message.setFrom(fromActualUser);
                         }
                         else
                         {
                             // from system or user does not have email address
-                            messageRef[0].setFrom(fromDefaultAddress);
+                            message.setFrom(fromDefaultAddress);
                         }
                     }
-
                 }
                 else
                 {
@@ -615,17 +685,17 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         logger.debug("from not enabled - sending from default address:" + fromDefaultAddress);
                     }
                     // from is not enabled.
-                    messageRef[0].setFrom(fromDefaultAddress);
+                    message.setFrom(fromDefaultAddress);
                 }
                 
                 // set subject line
-                messageRef[0].setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
+                message.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
                 
                 if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
                 {
                     // If we have an override for the email recipient, we'll send the email to that address instead.
                     // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
-                    messageRef[0].setTo(testModeRecipient);
+                    message.setTo(testModeRecipient);
                     
                     String emailRecipient = (String)ruleAction.getParameterValue(PARAM_TO);
                     if (emailRecipient == null)
@@ -639,7 +709,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     
                     String recipientPrefixedSubject = "(" + emailRecipient + ") " + (String)ruleAction.getParameterValue(PARAM_SUBJECT);
                     
-                    messageRef[0].setSubject(recipientPrefixedSubject);
+                    message.setSubject(recipientPrefixedSubject);
                 }
                 
                 // See if an email template has been specified
@@ -667,9 +737,49 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     
                     // build the email template model
                     Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef, suppliedModel, fromPerson);
+
+                    // Determine the locale to use to send the email.
+                    Locale locale = recipient.getSecond();
+                    if (locale == null)
+                    {
+                        locale = (Locale)ruleAction.getParameterValue(PARAM_LOCALE);
+                    }
+                    if (locale == null)
+                    {
+                    	locale = sender.getSecond();
+                    }
                     
-                    // process the template against the model
-                    text = templateService.processTemplate("freemarker", templateRef, model);
+                    // set subject line
+                    String subject = (String)ruleAction.getParameterValue(PARAM_SUBJECT);
+                    Object[] subjectParams = (Object[])ruleAction.getParameterValue(PARAM_SUBJECT_PARAMS);
+                    String localizedSubject = getLocalizedSubject(subject, subjectParams, locale);
+                    if (locale == null)
+                    {
+    					// process the template against the model
+                        text = templateService.processTemplate("freemarker", templateRef, model);
+                    }
+                    else
+                    {
+						// process the template against the model
+	                    text = templateService.processTemplate("freemarker", templateRef, model, locale);
+                    }
+                    if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
+                    {
+                        // If we have an override for the email recipient, we'll send the email to that address instead.
+                        // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
+                        message.setTo(testModeRecipient);
+                        
+                        String emailRecipient = recipient.getFirst();
+                        
+                        String recipientPrefixedSubject = "(" + emailRecipient + ") " + localizedSubject;
+                        
+                        message.setSubject(recipientPrefixedSubject);
+                    }
+                    else 
+                    {
+                        message.setTo(recipient.getFirst());
+                    	message.setSubject(localizedSubject);
+                    }
                 }
                 
                 // set the text body of the message
@@ -684,8 +794,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 {
                     // Note: only simplistic match here - expects <html tag at the start of the text
                     String htmlPrefix = "<html";
-                    if (text.length() >= htmlPrefix.length() &&
-                            text.substring(0, htmlPrefix.length()).equalsIgnoreCase(htmlPrefix))
+                    String trimmedText = text.trim();
+                    if (trimmedText.length() >= htmlPrefix.length() &&
+                            trimmedText.substring(0, htmlPrefix.length()).equalsIgnoreCase(htmlPrefix))
                     {
                         isHTML = true;
                     }
@@ -699,51 +810,39 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         isHTML = true;
                     }
                 }
-                
+
                 if (text != null)
                 {
-                    messageRef[0].setText(text, isHTML);
+                    message.setText(text, isHTML);
                 }
                 
             }
         };
-        MimeMessage mimeMessage = mailService.createMimeMessage(); 
-        try
-        {
-            mailPreparer.prepare(mimeMessage);
-        } catch (Exception e)
-        {
-            // We're forced to catch java.lang.Exception here. Urgh.
-            if (logger.isInfoEnabled())
-            {
-                logger.warn("Unable to prepare mail message. Skipping.", e);
-            }
-        }
-        
-        return messageRef[0];
-    }
-    
-    private void sendEmail(final Action ruleAction, MimeMessageHelper preparedMessage)
-    {
+
         try
         {
             // Send the message unless we are in "testMode"
-            if (preparedMessage != null)
+            if(!testMode)
             {
-                if (!testMode)
-                {
-                    mailService.send(preparedMessage.getMimeMessage());
-                    onSend();
-                }
-                else
-                {
-                    lastTestMessage = preparedMessage.getMimeMessage();
-                }
+                javaMailSender.send(mailPreparer);
+            }
+            else
+            {
+               try {
+                  MimeMessage mimeMessage = javaMailSender.createMimeMessage(); 
+                  mailPreparer.prepare(mimeMessage);
+                  lastTestMessage = mimeMessage;
+               } catch(Exception e) {
+                   // We're forced to catch java.lang.Exception here. Urgh.
+                   if (logger.isInfoEnabled())
+                   {
+                       logger.warn("Unable to prepare mail message. Skipping.", e);
+                   }
+               }
             }
         }
         catch (MailException e)
         {
-            onFail();
             String to = (String)ruleAction.getParameterValue(PARAM_TO);
             if (to == null)
             {
@@ -761,14 +860,279 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             Boolean ignoreError = (Boolean)ruleAction.getParameterValue(PARAM_IGNORE_SEND_FAILURE);
             if (ignoreError == null || ignoreError.booleanValue() == false)
             {
-                Object[] args = {to, e.toString()};
-                throw new AlfrescoRuntimeException("email.outbound.err.send.failed", args, e);
+                throw new AlfrescoRuntimeException("Failed to send email to:" + to, e);
             }   
         }
     }
     
-    
     /**
+     * Attempt to localize the subject, using the subject parameter as the message key.
+     * 
+     * @param subject Message key for subject lookup
+     * @param params Parameters for the message
+     * @param locale Locale to use
+     * @return The localized message, or subject if the message format could not be found
+     */
+    private String getLocalizedSubject(String subject, Object[] params, Locale locale)
+    {
+    	String localizedSubject = null;
+        if (locale == null)
+        {
+        	localizedSubject = I18NUtil.getMessage(subject, params);
+        }
+        else 
+        {
+        	localizedSubject = I18NUtil.getMessage(subject, locale, params);
+        }
+        
+        if (localizedSubject == null)
+        {
+        	return subject;
+        }
+        else
+        {
+        	return localizedSubject;
+        }
+        
+    }
+    
+    private Pair<InternetAddress, Locale> getFrom(Action ruleAction)
+    {
+        try 
+        {
+            InternetAddress address;
+            Locale locale = null;
+            // from person
+            String fromPersonName = null;
+        
+            // from is enabled
+            if (! authService.isCurrentUserTheSystemUser())
+            {
+                String currentUserName = authService.getCurrentUserName();
+                if (personExists(currentUserName))
+                {
+                    fromPersonName = currentUserName;
+                    locale = getLocaleForUser(fromPersonName);
+                }
+            }
+
+            // Use the FROM parameter in preference to calculating values.
+            String from = (String)ruleAction.getParameterValue(PARAM_FROM);
+            if (from != null && from.length() > 0)
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("from specified as a parameter, from:" + from);
+                }
+                
+                // Check whether or not to use a personal name for the email (will be RFC 2047 encoded)
+                String fromPersonalName = (String)ruleAction.getParameterValue(PARAM_FROM_PERSONAL_NAME);
+                if(fromPersonalName != null && fromPersonalName.length() > 0) 
+                {
+                    try
+                    {
+                    	address = new InternetAddress(from, fromPersonalName);
+                    }
+                    catch (UnsupportedEncodingException error)
+                    {
+                    	address = new InternetAddress(from);
+                    }
+                }
+                else
+                {
+                    address = new InternetAddress(from);
+                }
+                if (locale == null)
+                {
+                    if (personExists(from))
+                    {
+                        locale = getLocaleForUser(from);
+                    }
+                }
+            }
+            else
+            {
+                if (fromPersonName != null && fromPersonName.length() != 0)
+                {
+                    address = new InternetAddress(fromPersonName);
+                }
+                else
+                {
+                    // from system or user does not have email address
+                    address = new InternetAddress(fromDefaultAddress);
+                }
+            }
+            
+            return new Pair<InternetAddress, Locale>(address, locale);
+        }
+        catch (MessagingException ex)
+        {
+            throw new AlfrescoRuntimeException("Failed to resolve sender mail address");
+        }
+    }
+    
+    private List<Pair<String, Locale>> getRecipients(Action ruleAction) 
+    {
+    	
+    	List<Pair<String, Locale>> recipients = new LinkedList<Pair<String,Locale>>();
+    	
+        // set recipient
+        String to = (String)ruleAction.getParameterValue(PARAM_TO);
+        if (to != null && to.length() != 0)
+        {
+        	Locale locale = null;
+        	if (personExists(to))
+        	{
+        		locale = getLocaleForUser(to);
+        	}
+        	recipients.add(new Pair<String, Locale>(to, locale));
+        }
+        else
+        {
+            // see if multiple recipients have been supplied - as a list of authorities
+            Serializable authoritiesValue = ruleAction.getParameterValue(PARAM_TO_MANY);
+            List<String> authorities = null;
+            if (authoritiesValue != null)
+            {
+                if (authoritiesValue instanceof String)
+                {
+                    authorities = new ArrayList<String>(1);
+                    authorities.add((String)authoritiesValue);
+                }
+                else
+                {
+                    authorities = (List<String>)authoritiesValue;
+                }
+            }
+            
+            if (authorities != null && authorities.size() != 0)
+            {
+                for (String authority : authorities)
+                {
+                    AuthorityType authType = AuthorityType.getAuthorityType(authority);
+                    if (authType.equals(AuthorityType.USER))
+                    {
+                        if (personExists(authority))
+                        {
+                            if (authority != null && authority.length() != 0 && validateAddress(authority))
+                            {
+                            	Locale locale = getLocaleForUser(authority);
+                                recipients.add(new Pair<String, Locale>(authority, locale));
+                            }
+                        }
+                    }
+                    else if (authType.equals(AuthorityType.GROUP) || authType.equals(AuthorityType.EVERYONE))
+                    {
+                        // Notify all members of the group
+                        Set<String> users;
+                        if (authType.equals(AuthorityType.GROUP))
+                        {        
+                            users = authorityService.getContainedAuthorities(AuthorityType.USER, authority, false);
+                        }
+                        else
+                        {
+                            users = authorityService.getAllAuthorities(AuthorityType.USER);
+                        }
+                        
+                        for (String userAuth : users)
+                        {
+                            if (personExists(userAuth))
+                            {
+                                if (userAuth != null && userAuth.length() != 0  && validateAddress(userAuth))
+                                {
+                                	Locale locale = getLocaleForUser(userAuth);
+                                    recipients.add(new Pair<String, Locale>(userAuth, locale));
+                                }
+                            }
+                        }
+                    }
+                }
+                if(recipients.size() <= 0)
+                {
+                    // All recipients were invalid
+                    throw new MailPreparationException(
+                            "All recipients for the mail action were invalid"
+                    );
+                }
+            }
+            else
+            {
+                // No recipients have been specified
+                throw new MailPreparationException(
+                        "No recipient has been specified for the mail action"
+                );
+            }
+        }
+    	return recipients;
+	}
+
+    @SuppressWarnings("deprecation")
+    public boolean personExists(final String user)
+    {
+        boolean exists = false;
+        String domain = getDomain(user);
+        if (tenantService.getTenant(domain) != null)
+        {
+            exists = TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>()
+            {
+                public Boolean doWork() throws Exception
+                {
+                    return personService.personExists(user);
+                }
+            }, domain);
+        }
+        return exists;
+    }
+    
+    @SuppressWarnings("deprecation")
+    public NodeRef getPerson(final String user)
+    {
+        NodeRef person = null;
+        String domain = getDomain(user);
+        if (tenantService.getTenant(domain) != null)
+        {
+            person = TenantUtil.runAsTenant(new TenantRunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return personService.getPerson(user);
+                }
+            }, domain);
+        }
+        return person;
+    }
+    
+    @SuppressWarnings("deprecation")
+    private Locale getLocaleForUser(final String user)
+    {
+        Locale locale = null;
+        String domain = getDomain(user);
+        if (tenantService.getTenant(domain) != null)
+        {
+            locale = TenantUtil.runAsTenant(new TenantRunAsWork<Locale>()
+            {
+                public Locale doWork() throws Exception
+                {
+                    Locale locale = null;
+                    String localeString = (String)preferenceService.getPreference(user, "locale");
+                    if (localeString != null)
+                    {
+                        locale = StringUtils.parseLocaleString(localeString);
+                    }
+                    return locale;
+                }
+            }, domain);
+        }
+        return locale;
+    }
+
+    private String getDomain(String user)
+    {
+        String[] parts = user.split("@");
+        return parts.length == 1 ? "" : parts[1];
+    }
+
+	/**
      * Return true if address has valid format
      * @param address
      * @return

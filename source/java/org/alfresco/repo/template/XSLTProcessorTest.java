@@ -20,6 +20,7 @@
 package org.alfresco.repo.template;
 
 import java.io.StringWriter;
+import java.util.Locale;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rendition.executer.XSLTFunctions;
@@ -122,6 +123,31 @@ public class XSLTProcessorTest extends BaseAlfrescoSpringTest
         }
     }
 
+    public void testLocalisedNodeTemplate() throws Exception
+    {
+    	// This should have the same result as testSimplestNodeTemplate as the localization should be ignored for node templates. 
+        try
+        {
+            FileInfo xmlFile = createXmlFile(companyHome);
+            FileInfo xslFile = createXmlFile(companyHome, verySimpleXSLT);
+            XSLTemplateModel model = new XSLTemplateModel();
+            model.put(XSLTProcessor.ROOT_NAMESPACE, XMLUtil.parse(xmlFile.getNodeRef(), contentService));
+
+            StringWriter writer = new StringWriter();
+            xsltProcessor.process(xslFile.getNodeRef().toString(), model, writer, Locale.FRANCE);
+
+            String output = writer.toString();
+            
+            log.debug("XSLT Processor output: " + output);
+            assertEquals("Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate", output);
+        }
+        catch (Exception ex)
+        {
+            log.error("Error!", ex);
+            fail();
+        }
+    }
+
     public void testSimplestClasspathTemplate() throws Exception
     {
         try
@@ -144,6 +170,46 @@ public class XSLTProcessorTest extends BaseAlfrescoSpringTest
             fail();
         }
     }
+    
+    public void testLocalisedClasspathTemplate() throws Exception
+    {
+        try
+        {
+            FileInfo xmlFile = createXmlFile(companyHome);
+            XSLTemplateModel model = new XSLTemplateModel();
+            model.put(XSLTProcessor.ROOT_NAMESPACE, XMLUtil.parse(xmlFile.getNodeRef(), contentService));
+
+            StringWriter writer = new StringWriter();
+            xsltProcessor.process("org/alfresco/repo/template/test_template1.xsl", model, writer, new Locale("en", "AU"));
+
+            String output = writer.toString();
+            
+            log.debug("XSLT Processor output: " + output);
+            assertEquals("G'day, Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate", output);
+
+            writer = new StringWriter();
+            xsltProcessor.process("org/alfresco/repo/template/test_template1.xsl", model, writer, new Locale("en", "GB"));
+
+            output = writer.toString();
+            
+            log.debug("XSLT Processor output: " + output);
+            assertEquals("Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate", output);
+
+            writer = new StringWriter();
+            xsltProcessor.process("org/alfresco/repo/template/test_template1.xsl", model, writer, new Locale("fr", "FR"));
+
+            output = writer.toString();
+            
+            log.debug("XSLT Processor output: " + output);
+            assertEquals("Bonjour, Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate", output);
+        }
+        catch (Exception ex)
+        {
+            log.error("Error!", ex);
+            fail();
+        }
+    }
+
     
     public void testTemplateServiceBinding() throws Exception
     {

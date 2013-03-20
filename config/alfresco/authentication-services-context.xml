@@ -343,25 +343,14 @@
         <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
     </bean>
     
-    <!-- deprecated (see getPeopleCannedQueryFactory) -->
-    <bean name="peopleGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
-        <property name="registry" ref="personServiceCannedQueryRegistry"/>
-        <property name="dictionaryService" ref="dictionaryService"/>
-        <property name="tenantService" ref="tenantService"/>
-        <property name="nodeDAO" ref="nodeDAO"/>
-        <property name="qnameDAO" ref="qnameDAO"/>
-        <property name="localeDAO" ref="localeDAO"/>
-        <property name="contentDataDAO" ref="contentDataDAO"/>
-        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
-        <property name="methodSecurity" ref="PersonService_security_getPeople"/>
-    </bean>
-    
     <bean name="getPeopleCannedQueryFactory" class="org.alfresco.repo.security.person.GetPeopleCannedQueryFactory">
         <property name="registry" ref="personServiceCannedQueryRegistry"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="authorityService" ref="authorityService"/>
     </bean>
    
     <bean name="personServicePermissionsManager" class="org.alfresco.repo.security.person.PermissionsManagerImpl" >

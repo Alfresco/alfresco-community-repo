@@ -26,14 +26,15 @@ import java.util.Map;
 
 import org.alfresco.repo.notification.EMailNotificationProvider;
 import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.notification.NotificationContext;
+import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Utility class containing methods to help when sending workflow notifications.
@@ -41,7 +42,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 4.0
  */
-public abstract class WorkflowNotificationUtils
+public class WorkflowNotificationUtils
 {
     /** Send EMail notifications property */
     public static final String PROP_SEND_EMAIL_NOTIFICATIONS = "bpm_sendEMailNotifications";
@@ -60,9 +61,31 @@ public abstract class WorkflowNotificationUtils
     public static final String ARG_WF_POOLED = "workflowPooled";
     public static final String ARG_WF_DOCUMENTS = "workflowDocuments";
     public static final String ARG_WF_TENANT = "workflowTenant";
-
+    
     /** Standard workflow assigned template */
     public static String WF_ASSIGNED_TEMPLATE = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "wf-email-html-ftl").toString();
+    
+    
+    // service dependencies
+    private WorkflowService workflowService;
+    private NodeService nodeService;
+    private NotificationService notificationService;
+    
+    public void setWorkflowService(WorkflowService service)
+    {
+        workflowService = service;
+    }
+    
+    public void setNodeService(NodeService service)
+    {
+        nodeService = service;
+    }
+
+    public void setNotificationService(NotificationService service)
+    {
+        notificationService = service;
+    }
+
     
     /**
      * 
@@ -76,9 +99,9 @@ public abstract class WorkflowNotificationUtils
      * @param assignedAuthorites
      * @param pooled
      */
-    public static void sendWorkflowAssignedNotificationEMail(ServiceRegistry services,
+    public void sendWorkflowAssignedNotificationEMail(
             String taskId,
-            String title,
+            String taskType,
             String description,
             Date dueDate,
             Integer priority,
@@ -92,11 +115,11 @@ public abstract class WorkflowNotificationUtils
         String subject = null;
         if (pooled == false)
         {            
-            subject = I18NUtil.getMessage(MSG_ASSIGNED_TASK);
+            subject = MSG_ASSIGNED_TASK;
         }
         else
         {
-            subject = I18NUtil.getMessage(MSG_NEW_POOLED_TASK);
+            subject = MSG_NEW_POOLED_TASK;
         }
         notificationContext.setSubject(subject);
         
@@ -106,7 +129,7 @@ public abstract class WorkflowNotificationUtils
         // Build the template args
         Map<String, Serializable>templateArgs = new HashMap<String, Serializable>(7);
         templateArgs.put(ARG_WF_ID, taskId);
-        templateArgs.put(ARG_WF_TITLE, title);
+        templateArgs.put(ARG_WF_TITLE, taskType);
         templateArgs.put(ARG_WF_DESCRIPTION, description);
         if (dueDate != null)
         {
@@ -123,7 +146,7 @@ public abstract class WorkflowNotificationUtils
         if (workflowPackage != null)
         {
             // Add details of associated content
-            List<ChildAssociationRef> assocs = services.getNodeService().getChildAssocs(workflowPackage);
+            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(workflowPackage);
             NodeRef[] docs = new NodeRef[assocs.size()];
             if (assocs.size() != 0)
             {
@@ -157,7 +180,7 @@ public abstract class WorkflowNotificationUtils
        notificationContext.setAsyncNotification(true);
         
         // Send email notification
-        services.getNotificationService().sendNotification(EMailNotificationProvider.NAME, notificationContext);
+        notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
     }
     
     /**
@@ -168,20 +191,17 @@ public abstract class WorkflowNotificationUtils
      * @param assignedAuthorites    assigned authorities
      * @param pooled                true if pooled task, false otherwise
      */
-    public static void sendWorkflowAssignedNotificationEMail(ServiceRegistry services,
-                                                             String taskId,
-                                                             String[] assignedAuthorites,
-                                                             boolean pooled)
+    public void sendWorkflowAssignedNotificationEMail(String taskId, String taskType, String[] assignedAuthorites, boolean pooled)
     {                
         // Get the workflow task
-        WorkflowTask workflowTask = services.getWorkflowService().getTaskById(taskId);
+        WorkflowTask workflowTask = workflowService.getTaskById(taskId);
         
         // Get the workflow properties
         Map<QName, Serializable> props = workflowTask.getProperties();
         
         // Get the title and description
-        String title = workflowTask.getTitle();
-        String description = (String)props.get(WorkflowModel.PROP_DESCRIPTION);        
+        String title = taskType == null ? workflowTask.getTitle() : taskType + ".title";
+        String description = (String)props.get(WorkflowModel.PROP_DESCRIPTION);
         
         // Get the duedate, priority and workflow package
         Date dueDate = (Date)props.get(WorkflowModel.PROP_DUE_DATE);
@@ -189,7 +209,7 @@ public abstract class WorkflowNotificationUtils
         NodeRef workflowPackage = workflowTask.getPath().getInstance().getWorkflowPackage();
 
         // Send notification
-        sendWorkflowAssignedNotificationEMail(services, taskId, title, description, dueDate, priority, workflowPackage, assignedAuthorites, pooled);
+        sendWorkflowAssignedNotificationEMail(taskId, title, description, dueDate, priority, workflowPackage, assignedAuthorites, pooled);
     }
     
     /**
@@ -200,11 +220,8 @@ public abstract class WorkflowNotificationUtils
      * @param assignedAuthority     assigned authority
      * @param pooled                true if pooled task, false otherwise
      */
-    public static void sendWorkflowAssignedNotificationEMail(ServiceRegistry services,
-                                                             String taskId,
-                                                             String assignedAuthority,
-                                                             boolean pooled)
+    public void sendWorkflowAssignedNotificationEMail(String taskId, String taskType, String assignedAuthority, boolean pooled)
     {
-        sendWorkflowAssignedNotificationEMail(services, taskId, new String[]{assignedAuthority}, pooled);
+        sendWorkflowAssignedNotificationEMail(taskId, taskType, new String[]{assignedAuthority}, pooled);
     }
 }

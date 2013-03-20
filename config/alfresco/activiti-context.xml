@@ -14,6 +14,32 @@
         class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
         <property name="targetDataSource" ref="dataSource" />
     </bean>
+    
+    <!-- Additional datasource to use for Activit's ID-generator -->
+    <bean id="activitiIdGeneratorDataSource" class="org.alfresco.config.JndiObjectFactoryBean">
+        <property name="jndiName">
+            <value>java:comp/env/jdbc/activitiIdGeneratorDataSource</value>
+        </property>
+        <property name="defaultObject">
+            <ref bean="defaultActivitiIdGeneratorDataSource" />
+        </property>
+    </bean>
+    
+    <!-- Reverting to baseDefaultDataSource, with max 1 connection available -->
+    <bean id="defaultActivitiIdGeneratorDataSource" parent="baseDefaultDataSource">
+    	<property name="initialSize">
+    		<value>0</value>
+    	</property>
+    	<property name="maxActive">
+    		<value>1</value>
+    	</property>
+    	<property name="maxIdle">
+    		<value>1</value>
+    	</property>
+    	<property name="minIdle">
+    		<value>0</value>
+    	</property>
+    </bean>
 
     <!-- Custom variable types added to activiti -->
     <bean id="activitiScriptNodeType"
@@ -66,6 +92,11 @@
         </property>
         
         <property name="idBlockSize" value="${system.workflow.engine.activiti.idblocksize}"></property>
+        
+        <!-- Custom datasource for ID-generator block-acquiring to prevent lock when all -->
+        <property name="idGeneratorDataSource">
+        	<ref bean="activitiIdGeneratorDataSource" />
+        </property>
     </bean>
 
     <bean id="activitiProcessEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
@@ -181,7 +212,7 @@
         class="org.alfresco.repo.workflow.activiti.tasklistener.TaskCreateListener"
         depends-on="activitiWorkflowManager">
         <property name="propertyConverter" ref="activitiPropertyConverter" />
-        <property name="services" ref="ServiceRegistry" />
+        <property name="workflowNotification" ref="workflowNotification" />
     </bean>
 
     <bean id="activitiProcessCreateListener"

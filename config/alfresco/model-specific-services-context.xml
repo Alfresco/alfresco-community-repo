@@ -85,13 +85,13 @@
       <property name="dictionaryService" ref="dictionaryService"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="nodeService" ref="nodeService"/>
       <property name="qnameDAO" ref="qnameDAO"/>
       <property name="localeDAO" ref="localeDAO"/>
       <property name="contentDataDAO" ref="contentDataDAO"/>
       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
       <property name="methodSecurity" ref="FileFolderService_security_list"/>
       <property name="hiddenAspect" ref="hiddenAspect"/>
-      <property name="nodeService" ref="nodeService"/>
    </bean>
 
    <bean id="mlTranslationInterceptor" class="org.alfresco.repo.model.filefolder.MLTranslationInterceptor" >

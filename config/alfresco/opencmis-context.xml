@@ -113,9 +113,12 @@
         <property name="activityPoster"         ref="cmisActivityPoster" />
         <property name="hiddenAspect"           ref="hiddenAspect" />
         <property name="siteService"            ref="SiteService" />
+        <property name="actionService"          ref="ActionService" />
         <property name="objectFilter"           ref="objectFilter" />
         <property name="descriptorService"      ref="DescriptorService" />
         <property name="nodeService"            ref="NodeService" />
+        <property name="thumbnailService"       ref="ThumbnailService" />
+        <property name="serviceRegistry"        ref="ServiceRegistry" />
         <property name="fileFolderService"      ref="FileFolderService" />
         <property name="versionService"         ref="VersionService" />
         <property name="checkOutCheckInService" ref="CheckoutCheckinService" />

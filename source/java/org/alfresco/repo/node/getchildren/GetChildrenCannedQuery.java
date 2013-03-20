@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -94,6 +96,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     private CannedQueryDAO cannedQueryDAO;
     private NodePropertyHelper nodePropertyHelper;
     private TenantService tenantService;
+    protected NodeService nodeService;
     
     private boolean applyPostQueryPermissions = false; // if true, the permissions will be applied post-query (else should be applied as part of the "queryAndFilter")
     
@@ -103,6 +106,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             CannedQueryDAO cannedQueryDAO,
             NodePropertyHelper nodePropertyHelper,
             TenantService tenantService,
+            NodeService nodeService,
             MethodSecurityBean<NodeRef> methodSecurity,
             CannedQueryParameters params)
     {
@@ -113,6 +117,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         this.cannedQueryDAO = cannedQueryDAO;
         this.nodePropertyHelper = nodePropertyHelper;
         this.tenantService = tenantService;
+        this.nodeService = nodeService;
         
         if ((params.getSortDetails() != null) && (params.getSortDetails().getSortPairs().size() > 0))
         {
@@ -127,16 +132,19 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
     }
     
-    protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps)
+    protected FilterSortChildQueryCallback getFilterSortChildQuery(final List<FilterSortNode> children, final List<FilterProp> filterProps, GetChildrenCannedQueryParams paramBean)
     {
-        FilterSortChildQueryCallback callback = new DefaultFilterSortChildQueryCallback(children, filterProps);
-        return callback;
+        Set<QName> inclusiveAspects = paramBean.getInclusiveAspects();
+        Set<QName> exclusiveAspects = paramBean.getExclusiveAspects();
+        
+        return new DefaultFilterSortChildQueryCallback(children, filterProps, inclusiveAspects, exclusiveAspects);
     }
     
-    protected UnsortedChildQueryCallback getUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount)
+    protected UnsortedChildQueryCallback getUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount, GetChildrenCannedQueryParams paramBean)
     {
-        UnsortedChildQueryCallback callback = new DefaultUnsortedChildQueryCallback(rawResult, requestedCount);
-        return callback;
+        Set<QName> inclusiveAspects = paramBean.getInclusiveAspects();
+        Set<QName> exclusiveAspects = paramBean.getExclusiveAspects();
+        return new DefaultUnsortedChildQueryCallback(rawResult, requestedCount, inclusiveAspects, exclusiveAspects);
     }
 
     @Override
@@ -242,7 +250,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         {
             // filtered and/or sorted - note: permissions will be applied post query
             final List<FilterSortNode> children = new ArrayList<FilterSortNode>(100);
-            final FilterSortChildQueryCallback c = getFilterSortChildQuery(children, filterProps);
+            final FilterSortChildQueryCallback c = getFilterSortChildQuery(children, filterProps, paramBean);
             FilterSortResultHandler resultHandler = new FilterSortResultHandler(c);
             cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
             resultHandler.done();
@@ -266,7 +274,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             final int requestedCount = parameters.getResultsRequired();
             
             final List<NodeRef> rawResult = new ArrayList<NodeRef>(Math.min(1000, requestedCount));
-            UnsortedChildQueryCallback callback = getUnsortedChildQueryCallback(rawResult, requestedCount);
+            UnsortedChildQueryCallback callback = getUnsortedChildQueryCallback(rawResult, requestedCount, paramBean);
             UnsortedResultHandler resultHandler = new UnsortedResultHandler(callback);
             cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITHOUT_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
             resultHandler.done();
@@ -441,6 +449,36 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         }
     }
     
+    private boolean includeAspects(NodeRef nodeRef, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
+    {
+        if (inclusiveAspects == null && exclusiveAspects == null)
+        {
+            return true;
+        }
+
+        Set<QName> nodeAspects = nodeService.getAspects(nodeRef);
+        if (inclusiveAspects != null) 
+        {
+            Set<QName> includedIntersect = new HashSet<QName>(nodeAspects);
+            includedIntersect.retainAll(inclusiveAspects);
+            if (includedIntersect.isEmpty()) 
+            {
+                return false;
+            }
+        }
+        if (exclusiveAspects != null)
+        {
+            Set<QName> excludedIntersect = new HashSet<QName>(nodeAspects);
+            excludedIntersect.retainAll(exclusiveAspects);
+            if (excludedIntersect.isEmpty() == false)
+            {
+                return false;
+            }
+        }
+        return true;
+        
+    }
+    
     // note: currently inclusive and OR-based
     private boolean includeFilter(Map<QName, Serializable> propVals, List<FilterProp> filterProps)
     {
@@ -549,12 +587,21 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     	private List<FilterSortNode> children;
     	private List<FilterProp> filterProps;
     	private boolean applyFilter;
+        private Set<QName> inclusiveAspects;
+        private Set<QName> exclusiveAspects;
 
     	public DefaultFilterSortChildQueryCallback(final List<FilterSortNode> children, final List<FilterProp> filterProps)
+    	{
+    	    this(children, filterProps, null, null);
+    	}
+
+    	public DefaultFilterSortChildQueryCallback(final List<FilterSortNode> children, final List<FilterProp> filterProps, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
     	{
     		this.children = children;
     		this.filterProps = filterProps;
             this.applyFilter = (filterProps.size() > 0);
+            this.inclusiveAspects = inclusiveAspects;
+            this.exclusiveAspects = exclusiveAspects;
 		}
 
 		@Override
@@ -572,7 +619,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 		protected boolean include(FilterSortNode node)
 		{
             // filter, if needed
-        	return(!applyFilter || includeFilter(node.getPropVals(), filterProps));
+        	return(!applyFilter || includeFilter(node.getPropVals(), filterProps)) && includeAspects(node.getNodeRef(), inclusiveAspects, exclusiveAspects);
 		}
     }
     
@@ -580,11 +627,15 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     {
     	private List<NodeRef> rawResult;
     	private int requestedCount;
-
-    	public DefaultUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount)
+        private Set<QName> inclusiveAspects;
+        private Set<QName> exclusiveAspects;
+        
+    	public DefaultUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
     	{
     		this.rawResult = rawResult;
     		this.requestedCount = requestedCount;
+    		this.inclusiveAspects = inclusiveAspects;
+    		this.exclusiveAspects = exclusiveAspects;
     	}
 
 		@Override
@@ -601,7 +652,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
 		protected boolean include(NodeRef nodeRef)
         {
-        	return true;
+            return includeAspects(nodeRef, inclusiveAspects, exclusiveAspects);
         }
     }
     

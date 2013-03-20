@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -44,6 +44,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
+import org.alfresco.repo.security.person.UserNameMatcherImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -107,6 +108,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private NodeArchiveService nodeArchiveService;
     private PermissionService permissionService;
     private SiteService siteService;
+    private UserNameMatcherImpl userNameMatcherImpl;
 
     /**
      * There are some tests which need access to the unproxied SiteServiceImpl
@@ -123,7 +125,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * Called during the transaction setup
      */
     @SuppressWarnings("deprecation")
-	protected void onSetUpInTransaction() throws Exception
+    protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
         
@@ -143,6 +145,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService = (SiteService)this.applicationContext.getBean("SiteService"); // Big 'S'
         this.siteServiceImpl = (SiteServiceImpl) applicationContext.getBean("siteService"); // Small 's'
         this.sysAdminParams = (SysAdminParams)this.applicationContext.getBean("sysAdminParams");
+        this.userNameMatcherImpl = (UserNameMatcherImpl)this.applicationContext.getBean("userNameMatcher");
 
         // Create the test users
         createUser(USER_ONE, "UserOne");
@@ -195,7 +198,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             this.personService.createPerson(ppOne);
         }        
     }
-	
+    
     /**
      * This test method ensures that public sites can be created and that their site info is correct.
      * It also tests that a duplicate site cannot be created.
@@ -237,9 +240,9 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
-	public void testETHREEOH_2133() throws Exception
-	{
-	       
+    public void testETHREEOH_2133() throws Exception
+    {
+           
         // Test for duplicate site error with a private site
         
         this.siteService.createSite(TEST_SITE_PRESET, "wibble", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
@@ -255,108 +258,108 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         {
             // Expected
         }
-	}
+    }
 
-	/**
-	 * This method tests https://issues.alfresco.com/jira/browse/ALF-3785 which allows 'public' sites
-	 * to be only visible to members of a configured group, by default EVERYONE.
-	 * 
-	 * @author Neil McErlean
-	 * @since 3.4
-	 */
-	@SuppressWarnings("deprecation")
-	public void testConfigurableSitePublicGroup() throws Exception
-	{
-		AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-		
-		// We'll be configuring a JMX managed bean (in this test method only).
-		ChildApplicationContextFactory sysAdminSubsystem = (ChildApplicationContextFactory) applicationContext.getBean("sysAdmin");
-		final String sitePublicGroupPropName = "site.public.group";
-		final String originalSitePublicGroup = "GROUP_EVERYONE";
-		
-		try
-		{
-			// Firstly we'll ensure that the site.public.group has the correct (pristine) value.
-			String groupName = sysAdminSubsystem.getProperty(sitePublicGroupPropName);
-			assertEquals(sitePublicGroupPropName + " was not the pristine value",
-					originalSitePublicGroup, groupName);
-			
-			// Create a 'normal', unconfigured site.
-	        SiteInfo unconfiguredSite = siteService.createSite(TEST_SITE_PRESET, "unconfigured",
-	        		                                           TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-	        assertTrue(containsConsumerPermission(originalSitePublicGroup, unconfiguredSite));
+    /**
+     * This method tests https://issues.alfresco.com/jira/browse/ALF-3785 which allows 'public' sites
+     * to be only visible to members of a configured group, by default EVERYONE.
+     * 
+     * @author Neil McErlean
+     * @since 3.4
+     */
+    @SuppressWarnings("deprecation")
+    public void testConfigurableSitePublicGroup() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        // We'll be configuring a JMX managed bean (in this test method only).
+        ChildApplicationContextFactory sysAdminSubsystem = (ChildApplicationContextFactory) applicationContext.getBean("sysAdmin");
+        final String sitePublicGroupPropName = "site.public.group";
+        final String originalSitePublicGroup = "GROUP_EVERYONE";
+        
+        try
+        {
+            // Firstly we'll ensure that the site.public.group has the correct (pristine) value.
+            String groupName = sysAdminSubsystem.getProperty(sitePublicGroupPropName);
+            assertEquals(sitePublicGroupPropName + " was not the pristine value",
+                    originalSitePublicGroup, groupName);
+            
+            // Create a 'normal', unconfigured site.
+            SiteInfo unconfiguredSite = siteService.createSite(TEST_SITE_PRESET, "unconfigured",
+                                                               TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+            assertTrue(containsConsumerPermission(originalSitePublicGroup, unconfiguredSite));
 
-	        
-			// Now set the managed bean's visibility group to something other than GROUP_EVERYONE.
-	        // This is the group that will have visibility of subsequently created sites.
-	        //
-	        // We'll intentionally set it to a group that DOES NOT EXIST YET.
-	        String newGroupName = this.getClass().getSimpleName() + System.currentTimeMillis();
-	        String prefixedNewGroupName = PermissionService.GROUP_PREFIX + newGroupName;
-	        
-	        sysAdminSubsystem.stop();
-	        sysAdminSubsystem.setProperty(sitePublicGroupPropName, prefixedNewGroupName);
-	        sysAdminSubsystem.start();
+            
+            // Now set the managed bean's visibility group to something other than GROUP_EVERYONE.
+            // This is the group that will have visibility of subsequently created sites.
+            //
+            // We'll intentionally set it to a group that DOES NOT EXIST YET.
+            String newGroupName = this.getClass().getSimpleName() + System.currentTimeMillis();
+            String prefixedNewGroupName = PermissionService.GROUP_PREFIX + newGroupName;
+            
+            sysAdminSubsystem.stop();
+            sysAdminSubsystem.setProperty(sitePublicGroupPropName, prefixedNewGroupName);
+            sysAdminSubsystem.start();
 
-	        // Now create a site as before. It should fail as we're using a group that doesn't exist.
-	        boolean expectedExceptionThrown = false;
-	        try
-	        {
-		        siteService.createSite(TEST_SITE_PRESET, "thisShouldFail",
+            // Now create a site as before. It should fail as we're using a group that doesn't exist.
+            boolean expectedExceptionThrown = false;
+            try
+            {
+                siteService.createSite(TEST_SITE_PRESET, "thisShouldFail",
                         TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-	        }
-	        catch (SiteServiceException expected)
-	        {
-	        	expectedExceptionThrown = true;
-	        }
-	        if (!expectedExceptionThrown)
-	        {
-	        	fail("Expected exception on createSite with non-existent group was not thrown.");
-	        }
-	        
-	        
-	        // Now we'll create the group used above.
-	        authorityService.createAuthority(AuthorityType.GROUP, newGroupName);
-	        
-	        
-	        // And create the site as before. This time it should succeed.
-	        SiteInfo configuredSite = siteService.createSite(TEST_SITE_PRESET, "configured",
+            }
+            catch (SiteServiceException expected)
+            {
+                expectedExceptionThrown = true;
+            }
+            if (!expectedExceptionThrown)
+            {
+                fail("Expected exception on createSite with non-existent group was not thrown.");
+            }
+            
+            
+            // Now we'll create the group used above.
+            authorityService.createAuthority(AuthorityType.GROUP, newGroupName);
+            
+            
+            // And create the site as before. This time it should succeed.
+            SiteInfo configuredSite = siteService.createSite(TEST_SITE_PRESET, "configured",
                     TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-	        
-	        // And check the permissions on the site.
-	        assertTrue("The configured site should not have " + originalSitePublicGroup + " as SiteContributor",
-	        		!containsConsumerPermission(originalSitePublicGroup, configuredSite));
-	        assertTrue("The configured site should have (newGroupName) as SiteContributor",
-	        		containsConsumerPermission(prefixedNewGroupName, configuredSite));
-		}
-		finally
-		{
-			// Reset the JMX bean to its out-of-the-box values.
-			sysAdminSubsystem.stop();
-			sysAdminSubsystem.setProperty(sitePublicGroupPropName, originalSitePublicGroup);
-			sysAdminSubsystem.start();
-		}
-	}
+            
+            // And check the permissions on the site.
+            assertTrue("The configured site should not have " + originalSitePublicGroup + " as SiteContributor",
+                    !containsConsumerPermission(originalSitePublicGroup, configuredSite));
+            assertTrue("The configured site should have (newGroupName) as SiteContributor",
+                    containsConsumerPermission(prefixedNewGroupName, configuredSite));
+        }
+        finally
+        {
+            // Reset the JMX bean to its out-of-the-box values.
+            sysAdminSubsystem.stop();
+            sysAdminSubsystem.setProperty(sitePublicGroupPropName, originalSitePublicGroup);
+            sysAdminSubsystem.start();
+        }
+    }
 
-	private boolean containsConsumerPermission(final String groupName,
-			SiteInfo unconfiguredSite)
-	{
-		boolean result = false;
-		Set<AccessPermission> perms = permissionService.getAllSetPermissions(unconfiguredSite.getNodeRef());
-		for (AccessPermission p : perms)
-		{
-			if (p.getAuthority().equals(groupName) &&
-					p.getPermission().equals(SiteModel.SITE_CONSUMER))
-			{
-				result = true;
-			}
-		}
-		return result;
-	}
-	
-	/**
-	 * This method tests that admin and system users can set site membership for a site of which they are not SiteManagers.
-	 */
+    private boolean containsConsumerPermission(final String groupName,
+            SiteInfo unconfiguredSite)
+    {
+        boolean result = false;
+        Set<AccessPermission> perms = permissionService.getAllSetPermissions(unconfiguredSite.getNodeRef());
+        for (AccessPermission p : perms)
+        {
+            if (p.getAuthority().equals(groupName) &&
+                    p.getPermission().equals(SiteModel.SITE_CONSUMER))
+            {
+                result = true;
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * This method tests that admin and system users can set site membership for a site of which they are not SiteManagers.
+     */
     public void testETHREEOH_15() throws Exception
     {
         SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
@@ -515,7 +518,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.siteService.setMembership("mySiteOne", USER_TWO, SiteModel.SITE_CONSUMER);
         this.siteService.setMembership("mySiteTwo", USER_TWO, SiteModel.SITE_CONSUMER);
         
-		sites = this.siteService.listSites(USER_TWO);
+        sites = this.siteService.listSites(USER_TWO);
         assertNotNull(sites);
         assertEquals(2, sites.size());
         
@@ -554,34 +557,34 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(4, sitesFromFind.size());
         for (SiteInfo site : sites)
         {
-        	String shortName = site.getShortName();
-        	if (shortName.equals("mySiteOne") == true)
-        	{
-        		checkSiteInfo(site, TEST_SITE_PRESET, "mySiteOne", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        	}
-        	else if (shortName.equals("mySiteTwo") == true)
-        	{
-        		// User Two is a member of this private site
-        		checkSiteInfo(site, TEST_SITE_PRESET, "mySiteTwo", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
-        	}
-        	else if (shortName.equals("mySiteThree") == true)
-        	{
-        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteThree", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        	}
-        	else if (shortName.equals("mySiteFour") == true)
-        	{
-        		// User two is not a member of this site
-        		fail("Can see private site mySiteFour");             
-        	}
-        	else if (shortName.equals("mySiteFive") == true)
-        	{
-        		// User Two should be able to see this moderated site.
-        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);                
-        	}
-        	else
-        	{
-        		fail("The shortname " + shortName + " is not recognised");
-        	}
+            String shortName = site.getShortName();
+            if (shortName.equals("mySiteOne") == true)
+            {
+                checkSiteInfo(site, TEST_SITE_PRESET, "mySiteOne", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+            }
+            else if (shortName.equals("mySiteTwo") == true)
+            {
+                // User Two is a member of this private site
+                checkSiteInfo(site, TEST_SITE_PRESET, "mySiteTwo", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+            }
+            else if (shortName.equals("mySiteThree") == true)
+            {
+                checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteThree", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+            }
+            else if (shortName.equals("mySiteFour") == true)
+            {
+                // User two is not a member of this site
+                fail("Can see private site mySiteFour");             
+            }
+            else if (shortName.equals("mySiteFive") == true)
+            {
+                // User Two should be able to see this moderated site.
+                checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);                
+            }
+            else
+            {
+                fail("The shortname " + shortName + " is not recognised");
+            }
         }
         
         authenticationComponent.setCurrentUser(USER_THREE);
@@ -592,33 +595,64 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(3, sitesFromFind.size());
         for (SiteInfo site : sites)
         {
-        	String shortName = site.getShortName();
-        	if (shortName.equals("mySiteOne") == true)
-        	{
-        		checkSiteInfo(site, TEST_SITE_PRESET, "mySiteOne", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        	}
-        	else if (shortName.equals("mySiteTwo") == true)
-        	{
-        		fail("Can see private site mySiteTwo");
-        	}
-        	else if (shortName.equals("mySiteThree") == true)
-        	{
-        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteThree", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        	}
-        	else if (shortName.equals("mySiteFour") == true)
-        	{
-        		fail("Can see private site mySiteFour");             
-        	}
-        	else if (shortName.equals("mySiteFive") == true)
-        	{
-        		checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
-        	}
-        	else
-        	{
-        		fail("The shortname " + shortName + " is not recognised");
-        	}
+            String shortName = site.getShortName();
+            if (shortName.equals("mySiteOne") == true)
+            {
+                checkSiteInfo(site, TEST_SITE_PRESET, "mySiteOne", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+            }
+            else if (shortName.equals("mySiteTwo") == true)
+            {
+                fail("Can see private site mySiteTwo");
+            }
+            else if (shortName.equals("mySiteThree") == true)
+            {
+                checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteThree", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+            }
+            else if (shortName.equals("mySiteFour") == true)
+            {
+                fail("Can see private site mySiteFour");             
+            }
+            else if (shortName.equals("mySiteFive") == true)
+            {
+                checkSiteInfo(site, TEST_SITE_PRESET_2, "mySiteFive", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
+            }
+            else
+            {
+                fail("The shortname " + shortName + " is not recognised");
+            }
         }        
     }
+    
+    /**
+     * Test listSite case sensitivity
+     */
+    public void testListSitesCaseSensitivity() throws Exception
+    {
+        // RUN AS USER_ONE
+        // We'll match against the first few letter of TEST_TITLE in various listSites() tests below.
+        final String testTitlePrefix = TEST_TITLE.substring(0, 9);
+          
+        // Create at least one site as user_one
+        siteService.createSite("testCaseSensitive", "mySiteCaseSensitive", "Case Sensitive Title", "Test of case sensitivity", SiteVisibility.PUBLIC);
+        
+        boolean existingValue = userNameMatcherImpl.getUserNamesAreCaseSensitive();
+        try
+        {
+            userNameMatcherImpl.setUserNamesAreCaseSensitive(true);
+            assertTrue("Case Sensitive - non matching case", (siteService.listSites(USER_ONE.toLowerCase())).size() == 0);  // odd one out
+            assertTrue("Case Sensitive - matching case", (siteService.listSites(USER_ONE)).size() > 0);
+            
+            userNameMatcherImpl.setUserNamesAreCaseSensitive(false);
+            assertTrue("Not Case Sensitive - non matching case", (siteService.listSites(USER_ONE.toLowerCase())).size() > 0);
+            assertTrue("Not Case Sensitive - matching case", (siteService.listSites(USER_ONE)).size() > 0);
+
+        }
+        finally
+        {
+            userNameMatcherImpl.setUserNamesAreCaseSensitive(existingValue);
+        }
+    }
+ 
     
     /**
      * This test method ensures that searches with wildcards work as they should
@@ -1531,8 +1565,17 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      */
     private Map<String,String> getAllowedPermissionsMap(SiteInfo site)
     {
+       NodeRef nodeRef = site.getNodeRef();
+       return getAllowedPermissionsMap(nodeRef);
+    }
+
+    /**
+     * Gets the authorities and their allowed permissions for a node
+     */
+    private Map<String, String> getAllowedPermissionsMap(NodeRef nodeRef)
+    {
        Map<String,String> perms = new HashMap<String, String>();
-       for (AccessPermission ap : permissionService.getAllSetPermissions(site.getNodeRef()))
+       for (AccessPermission ap : permissionService.getAllSetPermissions(nodeRef))
        {
           if (ap.getAccessStatus() == AccessStatus.ALLOWED)
           {
@@ -1753,8 +1796,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     {
         // USER_ONE - SiteManager
         // GROUP_TWO - Manager
-    	
-    	String siteName = "testALFCOM_3019";
+        
+        String siteName = "testALFCOM_3019";
         
         // Create a site as user one
         this.siteService.createSite(TEST_SITE_PRESET, siteName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
@@ -1775,12 +1818,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
          */
         try
         {
-        	this.siteService.setMembership(siteName, this.groupTwo, SiteModel.SITE_CONTRIBUTOR); 
-        	fail();
+            this.siteService.setMembership(siteName, this.groupTwo, SiteModel.SITE_CONTRIBUTOR); 
+            fail();
         }
         catch (Exception e)
         {
-        	// Should go here	
+            // Should go here   
         }
         
         this.siteService.setMembership(siteName, managerName, SiteModel.SITE_MANAGER); 
@@ -1792,12 +1835,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
          */
         try
         {
-        	this.siteService.setMembership(siteName, managerName, SiteModel.SITE_CONTRIBUTOR); 
-        	fail();
+            this.siteService.setMembership(siteName, managerName, SiteModel.SITE_CONTRIBUTOR); 
+            fail();
         }
         catch (Exception e)
         {
-        	// Should go here
+            // Should go here
         }  
     }
     
@@ -1818,8 +1861,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     {
         // USER_ONE - SiteManager
         // GROUP_TWO - Manager
-    	
-    	String siteName = "testALFCOM_3019";
+        
+        String siteName = "testALFCOM_3019";
         
         // Create a site as user one
         this.siteService.createSite(TEST_SITE_PRESET, siteName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
@@ -1840,12 +1883,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
          */
         try
         {
-        	this.siteService.removeMembership(siteName, this.groupTwo); 
-        	fail();
+            this.siteService.removeMembership(siteName, this.groupTwo); 
+            fail();
         }
         catch (Exception e)
         {
-        	// Should go here	
+            // Should go here   
         }
         
         this.siteService.setMembership(siteName, managerName, SiteModel.SITE_MANAGER); 
@@ -1857,12 +1900,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
          */
         try
         {
-        	this.siteService.removeMembership(siteName, managerName); 
-        	fail();
+            this.siteService.removeMembership(siteName, managerName); 
+            fail();
         }
         catch (Exception e)
         {
-        	// Should go here
+            // Should go here
         }  
     }
 
@@ -2085,38 +2128,38 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     
     private SiteInfo createSite(String siteShortName, String componentId, SiteVisibility visibility)
     {
-    	// Create a public site
-    	SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, 
-    			siteShortName, 
-    			TEST_TITLE, 
-    			TEST_DESCRIPTION, 
-    			visibility);
+        // Create a public site
+        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, 
+                siteShortName, 
+                TEST_TITLE, 
+                TEST_DESCRIPTION, 
+                visibility);
         this.siteService.createContainer(siteShortName, componentId, ContentModel.TYPE_FOLDER, null);
         return siteInfo;
     }
 
     public void testRenameSite()
     {
-    	// test that changing the name of a site generates an appropriate exception
+        // test that changing the name of a site generates an appropriate exception
 
-    	try
-    	{
-    		String siteName = GUID.generate();
+        try
+        {
+            String siteName = GUID.generate();
 
-    		SiteInfo siteInfo = createSite(siteName, "doclib", SiteVisibility.PUBLIC);
-    		NodeRef childRef = siteInfo.getNodeRef();
+            SiteInfo siteInfo = createSite(siteName, "doclib", SiteVisibility.PUBLIC);
+            NodeRef childRef = siteInfo.getNodeRef();
 
-			Map<QName, Serializable> props = new HashMap<QName, Serializable>(); 
-			props.put(ContentModel.PROP_NAME, siteName + "Renamed"); 
-	
-			nodeService.addProperties(childRef, props);
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(); 
+            props.put(ContentModel.PROP_NAME, siteName + "Renamed"); 
+    
+            nodeService.addProperties(childRef, props);
 
-			fail("Should have caught rename");
-    	}
-    	catch(SiteServiceException e)
-    	{
-    		assertTrue(e.getMessage().contains("can not be renamed"));
-    	}
+            fail("Should have caught rename");
+        }
+        catch(SiteServiceException e)
+        {
+            assertTrue(e.getMessage().contains("can not be renamed"));
+        }
     }
     
     private void validatePermissionsOnRelocatedNode(SiteInfo fromSite,
@@ -2238,4 +2281,36 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         return null;
     }
 
+    
+    /**
+     * From CLOUD-957, insure that GROUP_EVERYONE does not have read access to private sites' containers.
+     */
+    public void testPrivateSite() throws Exception
+    {
+        String siteName = GUID.generate();
+
+        SiteInfo siteInfo = createSite(siteName, "doclib", SiteVisibility.PRIVATE);
+
+        NodeRef container = this.siteService.getContainer(siteInfo.getShortName(), "doclib");
+        
+        assertNull("GROUP_EVERYONE shouldn't have any permissions on a private site's containers", getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES));
+
+        
+    }
+
+    /**
+     * From CLOUD-957, insure that GROUP_EVERYONE does not have read access to moderated sites' containers.
+     */
+    public void testModeratedSite() throws Exception
+    {
+        String siteName = GUID.generate();
+
+        SiteInfo siteInfo = createSite(siteName, "doclib", SiteVisibility.MODERATED);
+
+        NodeRef container = this.siteService.getContainer(siteInfo.getShortName(), "doclib");
+        
+        assertNull("GROUP_EVERYONE shouldn't have any permissions on a moderated site's containers", getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES));
+
+        
+    }
 }

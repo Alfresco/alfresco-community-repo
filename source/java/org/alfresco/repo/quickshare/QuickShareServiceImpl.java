@@ -35,6 +35,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -49,7 +50,9 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -82,6 +85,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     private AttributeService attributeService;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
+    private PermissionService permissionService;
     private PersonService personService;
     private PolicyComponent policyComponent;
     private TenantService tenantService;
@@ -119,6 +123,14 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         this.nodeService = nodeService;
     }
 
+    /**
+     * Set the Permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+    
     /**
      * Set the person service 
      */
@@ -400,17 +412,24 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
                 String sharedId = (String)nodeService.getProperty(beforeDeleteNodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
                 if (sharedId != null)
                 {
-                    Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(sharedId);
-                    
-                    @SuppressWarnings("unused")
-                    final String tenantDomain = pair.getFirst();
-                    final NodeRef nodeRef = pair.getSecond();
-                    
-                    // note: deleted nodeRef might not match, eg. for upload new version -> checkin -> delete working copy
-                    if (nodeRef.equals(beforeDeleteNodeRef))
-                    {
-                        removeSharedId(sharedId);
-                    }
+                	try 
+                	{
+	                    Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(sharedId);
+	                    
+	                    @SuppressWarnings("unused")
+	                    final String tenantDomain = pair.getFirst();
+	                    final NodeRef nodeRef = pair.getSecond();
+	                    
+	                    // note: deleted nodeRef might not match, eg. for upload new version -> checkin -> delete working copy
+	                    if (nodeRef.equals(beforeDeleteNodeRef))
+	                    {
+	                        removeSharedId(sharedId);
+	                    }
+                	}
+                	catch (InvalidSharedIdException ex)
+                	{
+                		logger.warn("Couldn't find shareId, " + sharedId + ", attributes for node " + beforeDeleteNodeRef);
+                	}
                 }
                 return null;
             }
@@ -476,5 +495,30 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return DoNothingCopyBehaviourCallback.getInstance();
+    }
+
+    @Override
+    public boolean canRead(String sharedId)
+    {
+        Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(sharedId);
+        final String tenantDomain = pair.getFirst();
+        final NodeRef nodeRef = pair.getSecond();
+        
+        return TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>()
+        {
+            public Boolean doWork() throws Exception
+            {
+                try
+                {
+                    checkQuickShareNode(nodeRef);
+                    return permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.ALLOWED;
+                }
+                catch (AccessDeniedException ex)
+                {
+                    return false;
+                }
+            }
+        }, tenantDomain);
+        
     }
 }

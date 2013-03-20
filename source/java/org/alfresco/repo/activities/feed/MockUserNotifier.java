@@ -67,7 +67,7 @@ public class MockUserNotifier extends AbstractUserNotifier
 	}
 
 	@Override
-	protected void notifyUser(NodeRef personNodeRef, String subjectText, Map<String, Object> model, String templateNodeRef)
+	protected void notifyUser(NodeRef personNodeRef, String subjectText, Object[] subjectParams, Map<String, Object> model, String templateNodeRef)
 	{
 		String username = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
 		if(username.startsWith("user"))

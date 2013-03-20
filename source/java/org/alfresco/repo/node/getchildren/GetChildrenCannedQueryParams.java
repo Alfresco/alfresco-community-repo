@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,11 +39,15 @@ public class GetChildrenCannedQueryParams
     private List<FilterProp> filterProps = Collections.emptyList();
     private Set<QName> assocTypeQNames = null;
     private String pattern = null;
+    private Set<QName> inclusiveAspects = null;
+    private Set<QName> exclusiveAspects = null;
     
     public GetChildrenCannedQueryParams(
             NodeRef parentRef,
             Set<QName> assocTypeQNames,
             Set<QName> childTypeQNames,
+            Set<QName> inclusiveAspects,
+            Set<QName> exclusiveAspects,
             List<FilterProp> filterProps,
             String pattern)
     {
@@ -51,6 +55,8 @@ public class GetChildrenCannedQueryParams
         this.assocTypeQNames = assocTypeQNames;
 
         if (childTypeQNames != null) { this.childTypeQNames = childTypeQNames; }
+        this.inclusiveAspects = inclusiveAspects;
+        this.exclusiveAspects = exclusiveAspects;
         if (filterProps != null) { this.filterProps = filterProps; }
         if (pattern != null)
         {
@@ -82,4 +88,14 @@ public class GetChildrenCannedQueryParams
 	{
 		return pattern;
 	}
+	
+	public Set<QName> getInclusiveAspects()
+	{
+	    return inclusiveAspects;
+	}
+
+	public Set<QName> getExclusiveAspects()
+    {
+        return exclusiveAspects;
+    }
 }

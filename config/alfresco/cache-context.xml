@@ -478,4 +478,15 @@
       <property name="maxItems" value="${cache.siteNodeRefSharedCache.maxItems}"/>
    </bean>
    
+   
+   <!-- ===================================== -->
+   <!-- SAML TrustEngine cache     			  -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for SAML TrustEngines -->
+   
+   <bean name="samlTrustEngineSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
+      <property name="maxItems" value="${cache.samlTrustEngineSharedCache.maxItems}"/>
+   </bean>
+   
 </beans>

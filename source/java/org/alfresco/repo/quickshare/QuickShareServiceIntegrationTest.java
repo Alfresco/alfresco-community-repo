@@ -34,6 +34,7 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareDTO;
@@ -105,6 +106,7 @@ public class QuickShareServiceIntegrationTest
     private static QuickShareService quickShareService;
     private static DictionaryService dictionaryService;
     private static Repository repository;
+    private static AttributeService attributeService;
     
     private static AlfrescoPerson user1 = new AlfrescoPerson(testContext, "UserOne");
     private static AlfrescoPerson user2 = new AlfrescoPerson(testContext, "UserTwo");
@@ -136,7 +138,8 @@ public class QuickShareServiceIntegrationTest
         dictionaryService = ctx.getBean("dictionaryService", DictionaryService.class);
         nodeService = ctx.getBean("NodeService", NodeService.class);
         quickShareService = ctx.getBean("QuickShareService", QuickShareService.class);
-        repository = ctx.getBean("repositoryHelper", Repository.class);        
+        repository = ctx.getBean("repositoryHelper", Repository.class);
+        attributeService = ctx.getBean("AttributeService", AttributeService.class);
     }
     
     @Before public void createTestData()
@@ -359,5 +362,29 @@ public class QuickShareServiceIntegrationTest
         }, user.getUsername());
 		return (Map<String, Object>)container.get("item");
 	}
-    
+	
+    @Test public void cloud928()
+    {
+        final NodeRef node = testNodes.createNodeWithTextContent(userHome,
+                "CLOUD-928 Test Node",
+                ContentModel.TYPE_CONTENT, 
+                user1.getUsername(),
+                "Quick Share Test Node Content");
+        
+        QuickShareDTO dto = share(node, user1.getUsername());
+
+        attributeService.removeAttribute(QuickShareServiceImpl.ATTR_KEY_SHAREDIDS_ROOT, dto.getId());
+        
+        AuthenticationUtil.runAs(new RunAsWork<Object>(){
+
+            @Override
+            public Object doWork() throws Exception {
+                nodeService.deleteNode(node);
+                return null;
+            }
+        }, user1.getUsername());
+ 
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        Assert.assertFalse(nodeService.exists(node));
+    }
 }

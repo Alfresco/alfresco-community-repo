@@ -72,4 +72,9 @@ public interface QuickShareService
      * @param sharedId The shared id of the content to unshare.
      */
     public void unshareContent(String sharedId) throws QuickShareDisabledException, InvalidSharedIdException;
+
+    /**
+     * Determine if the current user has permission to read the shared content.
+     */
+    public boolean canRead(String sharedId);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -96,6 +96,8 @@ public class SubscriptionServiceActivitiesTest extends TestCase
         templateSearchPaths.add(TEST_TEMPLATES_LOCATION);
         feedProcessor.setTemplateSearchPaths(templateSearchPaths);
         feedProcessor.setUseRemoteCallbacks(false);
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     }
     
     protected void deletePerson(String userId)

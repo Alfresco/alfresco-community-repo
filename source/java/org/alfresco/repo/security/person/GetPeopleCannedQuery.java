@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.AbstractCannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
@@ -34,7 +36,9 @@ import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -63,12 +67,16 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
     private QNameDAO qnameDAO;
     private CannedQueryDAO cannedQueryDAO;
     private TenantService tenantService;
+    private NodeService nodeService;
+    private AuthorityService authorityService;
     
     public GetPeopleCannedQuery(
             NodeDAO nodeDAO,
             QNameDAO qnameDAO,
             CannedQueryDAO cannedQueryDAO,
             TenantService tenantService,
+            NodeService nodeService,
+            AuthorityService authorityService,
             CannedQueryParameters params)
     {
         super(params);
@@ -77,6 +85,9 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
         this.qnameDAO = qnameDAO;
         this.cannedQueryDAO = cannedQueryDAO;
         this.tenantService = tenantService;
+        this.nodeService = nodeService;
+        this.authorityService = authorityService;
+        
     }
     
     @Override
@@ -126,6 +137,18 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
         // Set filter pattern (should not be null)
         params.setPattern(pattern);
         
+        if (paramBean.getExclusiveAspects() != null)
+        {
+            Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(paramBean.getExclusiveAspects(), false);
+            params.setExcludeAspectIds(new ArrayList<Long>(qnamesIds));
+        }
+        
+        if (paramBean.getInclusiveAspects() != null)
+        {
+            Set<Long> qnamesIds = qnameDAO.convertQNamesToIds(paramBean.getInclusiveAspects(), false);
+            params.setIncludeAspectIds(new ArrayList<Long>(qnamesIds));
+        }
+        
         // Set sort / filter params
         // Note - need to keep the sort properties in their requested order
         List<QName> sortFilterProps = new ArrayList<QName>(MAX_FILTER_SORT_PROPS);
@@ -168,7 +191,7 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
         
         // filtered and/or sorted - note: permissions not applicable for getPeople
         final List<NodeRef> result = new ArrayList<NodeRef>(100);
-        final PersonQueryCallback c = new DefaultPersonQueryCallback(result);
+        final PersonQueryCallback c = new DefaultPersonQueryCallback(result, paramBean.getIncludeAdministrators());
         PersonResultHandler resultHandler = new PersonResultHandler(c);
         
         int offset = parameters.getPageDetails().getSkipResults();
@@ -178,6 +201,12 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
         {
             // to enable hasMore flag
             limit++;
+            
+            if ((! paramBean.getIncludeAdministrators()) && (limit != Integer.MAX_VALUE))
+            {
+                // TODO - only works in case where there is only 1 default admin
+                limit++;
+            }
         }
         
         cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_PEOPLE, params, offset, limit, resultHandler);
@@ -278,15 +307,29 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
     protected class DefaultPersonQueryCallback implements PersonQueryCallback
     {
         private List<NodeRef> children;
+        private boolean includeAdministrators;
         
-        public DefaultPersonQueryCallback(final List<NodeRef> children)
+        public DefaultPersonQueryCallback(final List<NodeRef> children, boolean includeAdministrators)
         {
             this.children = children;
+            this.includeAdministrators = includeAdministrators;
         }
         
         @Override
         public boolean handle(NodeRef personRef)
         {
+            // TODO refine
+            // - return username as part of query
+            // - can break paging if more than one admin
+            if (includeAdministrators == false)
+            {
+                String userName = (String) nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+                if (authorityService.isAdminAuthority(userName))
+                {
+                    return true;
+                }
+            }
+            
             children.add(tenantService.getBaseName(personRef));
             
             // More results

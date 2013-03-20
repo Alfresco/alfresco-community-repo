@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -51,4 +51,6 @@ public interface ActivityType
     
     public static final String FILE_LIKED = "org.alfresco.documentlibrary.file-liked";
     public static final String FOLDER_LIKED = "org.alfresco.documentlibrary.folder-liked";
+
+    public static final String COMMENT_CREATED = "org.alfresco.comments.comment-created";
 }

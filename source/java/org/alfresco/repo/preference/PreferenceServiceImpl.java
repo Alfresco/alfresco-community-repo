@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -64,96 +64,52 @@ public class PreferenceServiceImpl implements PreferenceService
 {
     private static final String FAVOURITE_SITES_PREFIX = "org.alfresco.share.sites.favourites.";
     private static final int FAVOURITE_SITES_PREFIX_LENGTH = FAVOURITE_SITES_PREFIX.length();
-
-    /** Node service */
-    private NodeService nodeService;
-
-    /** Content service */
-    private ContentService contentService;
-
-    /** Person service */
-    private PersonService personService;
-
-    /** Site service */
-    private SiteService siteService;
     
-    /** Permission Service */
+    private NodeService nodeService;
+    private ContentService contentService;
+    private PersonService personService;
+    private SiteService siteService;
     private PermissionService permissionService;
-
-    /** Authentication Service */
     private AuthenticationContext authenticationContext;
     
-    /** Authority Service */
     private AuthorityService authorityService;
-
-    /**
-     * Set the node service
-     * 
-     * @param nodeService the node service
-     */
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-
-    /**
-     * Set the content service
-     * 
-     * @param contentService the content service
-     */
+    
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-
-    /**
-     * Set the site service
-     * 
-     * @param siteService    the site service
-     */
+    
     public void setSiteService(SiteService siteService)
     {
-		this.siteService = siteService;
-	}
-
-	/**
-     * Set the person service
-     * 
-     * @param personService the person service
-     */
+        this.siteService = siteService;
+    }
+    
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-
-    /**
-     * Set the permission service
-     * 
-     * @param permissionService the permission service
-     */
+    
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
-
-    /**
-     * Set the authentication component
-     * 
-     * @param authenticationContext the authentication component
-     */
+    
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
         this.authenticationContext = authenticationContext;
     }
     
-    /**
-     * @param authorityService the authorityService to set
-     */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-
+    
+    
     /**
      * @see org.alfresco.service.cmr.preference.PreferenceService#getPreferences(java.lang.String)
      */
@@ -223,7 +179,8 @@ public class PreferenceServiceImpl implements PreferenceService
         NodeRef personNodeRef = this.personService.getPerson(userName);
         if (personNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Could not get preferences for " + userName + " because they do not exist.");
+            throw new AlfrescoRuntimeException("Cannot get preferences for " + userName
+                + " because he/she does not exist."); 
         }
 
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -378,7 +335,8 @@ public class PreferenceServiceImpl implements PreferenceService
         final NodeRef personNodeRef = this.personService.getPerson(userName);
         if (personNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Could not update preferences for " + userName + " because they do not exist.");
+            throw new AlfrescoRuntimeException("Cannot update preferences for " + userName
+                + " because he/she does not exist.");
         }
         
         if (userCanWritePreferences(userName, personNodeRef))
@@ -456,7 +414,8 @@ public class PreferenceServiceImpl implements PreferenceService
         final NodeRef personNodeRef = this.personService.getPerson(userName);
         if (personNodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Could not update preferences for " + userName + " because they do not exist.");
+            throw new AlfrescoRuntimeException("Cannot update preferences for " + userName
+                + " because he/she does not exist.");
         }
         
         if (userCanWritePreferences(userName, personNodeRef))

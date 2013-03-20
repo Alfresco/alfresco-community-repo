@@ -34,7 +34,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.WCMModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.avmsync.AVMDifference;
 import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -85,7 +85,7 @@ public class WorkflowServiceImpl implements WorkflowService
     private AVMSyncService avmSyncService;
     private DictionaryService dictionaryService;
     private NodeService protectedNodeService;
-    private ServiceRegistry services;
+    private WorkflowNotificationUtils workflowNotificationUtils;
     private WorkflowAdminService workflowAdminService;
     private int maxAuthoritiesForPooledTasks = 100;
     private int maxPooledTasks = -1;
@@ -179,13 +179,13 @@ public class WorkflowServiceImpl implements WorkflowService
     }
     
     /**
-     * Set the service registry
+     * Set the workflow notification utils
      * 
-     * @param services  service registry
+     * @param service  workflow notification utils
      */
-    public void setServices(ServiceRegistry services)
+    public void setWorkflowNotification(WorkflowNotificationUtils service)
     {
-        this.services = services;
+        this.workflowNotificationUtils = service;
     }
 
     /**
@@ -919,10 +919,19 @@ public class WorkflowServiceImpl implements WorkflowService
                     Boolean sendEMailNotification = (Boolean) startTask.getProperties().get(WorkflowModel.PROP_SEND_EMAIL_NOTIFICATIONS);
                     if (Boolean.TRUE.equals(sendEMailNotification) == true)
                     {
+                        // calculate task type label
+                        String workflowDefId = task.getPath().getInstance().getDefinition().getName();
+                        if (workflowDefId.indexOf('$') != -1 && (workflowDefId.indexOf('$') < workflowDefId.length() -1))
+                        {
+                            workflowDefId = workflowDefId.substring(workflowDefId.indexOf('$') + 1);
+                        }
+                        String taskDefId = task.getDefinition().getId().replace(":", "_");
+                        String taskType = workflowDefId + "." + (engineId.equals(JBPMEngine.ENGINE_ID) ? "type" : "task") + "." + taskDefId;
+                        
                         // Send the notification
-                        WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
-                                    services, 
+                        workflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
                                     taskId,
+                                    taskType,
                                     assignee,
                                     false);
                     }

@@ -340,6 +340,22 @@ public interface PersonService
     public PagingResults<PersonInfo> getPeople(List<Pair<QName,String>> stringPropFilters, boolean filterIgnoreCase, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
     
     /**
+     * Get paged list of people optionally filtered and/or sorted
+     *
+     * @param filterProps            list of filter properties (with "startsWith" values), eg. cm:username "al" might match "alex", "alice", ...
+     * @param filterIgnoreCase       true to ignore case when filtering, false to be case-sensitive when filtering
+     * @param inclusiveAspects       if set, filter out any people that don't have one of these aspects
+     * @param exclusiveAspects       if set, filter out any people that do have one of these aspects
+     * @param includeAdministrators  true to include administrators in the results.
+     * @param sortProps              sort property, eg. cm:username ascending
+     * @param pagingRequest          skip, max + optional query execution id
+     * 
+     * @author Alex Miller
+     * @since 4.0
+     */
+    @Auditable(parameters = {"stringPropFilters", "filterIgnoreCase", "inclusiveAspect", "exclusiveAspects", "sortProps", "pagingRequest"})
+    public PagingResults<PersonInfo> getPeople(String pattern, List<QName> filterStringProps, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects, boolean includeAdministraotrs, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
+    /**
      * Get people filtered by the given property name/value pair.
      * <p/>
      * In order to get paging, use {@link #getPeople(List, boolean, List, PagingRequest)}

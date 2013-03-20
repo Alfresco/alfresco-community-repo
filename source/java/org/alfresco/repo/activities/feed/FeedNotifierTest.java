@@ -49,6 +49,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.quartz.Scheduler;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.JobDetailBean;
 
@@ -103,7 +104,8 @@ public class FeedNotifierTest
 		this.activityService = (ActivityService)activitiesFeedCtx.getBean("activityService");
         this.postLookup = (PostLookup)activitiesFeedCtx.getBean("postLookup");
         this.feedGenerator = (FeedGenerator)activitiesFeedCtx.getBean("feedGenerator");
-
+        ObjectFactory<ActivitiesFeedModelBuilder> feedModelBuilderFactory = (ObjectFactory<ActivitiesFeedModelBuilder>)activitiesFeedCtx.getBean("feedModelBuilderFactory");
+        
 		Scheduler scheduler = (Scheduler)ctx.getBean("schedulerFactory");
 
 	    JobDetailBean feedGeneratorJobDetail = (JobDetailBean)activitiesFeedCtx.getBean("feedGeneratorJobDetail");
@@ -218,6 +220,8 @@ public class FeedNotifierTest
 		userNotifier.setActivityService(activityService);
 		userNotifier.setRepoAdminService(repoAdminService);
 		userNotifier.setActionService(actionService);
+		userNotifier.setActivitiesFeedModdelBuilderFactory(feedModelBuilderFactory);
+		
 		feedNotifier.setUserNotifier(userNotifier);
 	}
 

@@ -301,9 +301,9 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             
             for (Tenant tenant : tenants)
             {
-                if ((! (tenantFileContentStore instanceof AbstractTenantRoutingContentStore)) && (! tenantFileContentStore.getRootLocation().equals(tenant.getRootContentStoreDir())))
+                if ((! (tenantFileContentStore instanceof TenantRoutingContentStore)) && (! tenantFileContentStore.getRootLocation().equals(tenant.getRootContentStoreDir())))
                 {
-                    // eg. MT will not work with replicating-content-services-context.sample if tenants are not co-mingled
+                    // eg. ALF-14121 - MT will not work with replicating-content-services-context.sample if tenants are not co-mingled
                     throw new AlfrescoRuntimeException("MT: cannot start tenants - TenantRoutingContentStore is not configured AND not all tenants use co-mingled content store");
                 }
                 
@@ -1283,11 +1283,15 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             throw new AlfrescoRuntimeException("Tenant already exists: " + tenantDomain);
         }
         
-        if (contentRoot != null)
+        if (contentRoot == null)
         {
-            if (! (tenantFileContentStore instanceof AbstractTenantRoutingContentStore))
+            contentRoot = tenantFileContentStore.getRootLocation();
+        }
+        else
+        {
+            if (! (tenantFileContentStore instanceof TenantRoutingContentStore))
             {
-                // eg. MT will not work with replicating-content-services-context.sample
+                // eg. ALF-14121 - MT will not work with replicating-content-services-context.sample
                 throw new AlfrescoRuntimeException("MT: cannot initialse tenant - TenantRoutingContentStore is not configured AND tenant is not using co-mingled content store (ie. default root location)");
             }
             
@@ -1296,11 +1300,6 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             {
                 logger.warn("Tenant root directory is not empty: " + contentRoot);
             }
-        }
-        
-        if (contentRoot == null)
-        {
-            contentRoot = tenantFileContentStore.getRootLocation();
         }
         
         // init - need to enable tenant (including tenant service) before stores bootstrap

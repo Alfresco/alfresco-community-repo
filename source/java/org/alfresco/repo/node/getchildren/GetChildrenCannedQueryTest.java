@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,6 +24,8 @@ import java.io.Serializable;
 import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +38,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
@@ -165,6 +168,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         getChildrenCannedQueryFactory.setTenantService((TenantService)ctx.getBean("tenantService"));
         getChildrenCannedQueryFactory.setLocaleDAO((LocaleDAO)ctx.getBean("localeDAO"));
         getChildrenCannedQueryFactory.setNodeDAO((NodeDAO)ctx.getBean("nodeDAO"));
+        getChildrenCannedQueryFactory.setNodeService(nodeService);
         getChildrenCannedQueryFactory.setQnameDAO((QNameDAO)ctx.getBean("qnameDAO"));
         getChildrenCannedQueryFactory.setHiddenAspect((HiddenAspect)ctx.getBean("hiddenAspect"));
         
@@ -810,6 +814,78 @@ public class GetChildrenCannedQueryTest extends TestCase
         children = filterByAssocTypeAndCheck(parentNodeRef, assocTypeQNames, childTypeQNames);
         assertEquals(2, children.size());
     }
+    
+    public void testAspectFiltering() throws Exception
+    {
+        NodeRef parentNodeRef = repositoryHelper.getCompanyHome();
+        NodeRef nodeRef1 = null;
+        NodeRef nodeRef2 = null;
+        NodeRef nodeRef3 = null;
+        NodeRef nodeRef4 = null;
+        NodeRef nodeRef5 = null;
+        NodeRef nodeRef6 = null;
+        NodeRef nodeRef7 = null;
+        NodeRef nodeRef8 = null;
+        NodeRef nodeRef9 = null;
+        NodeRef nodeRef10 = null;
+        
+        // Create some nodes with integer properties on which to sort, in this case cm:fiveStarRatingScheme and cm:likesRatingScheme
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        try
+        {
+            nodeRef1 = createContent(parentNodeRef, "node1", ContentModel.TYPE_CONTENT);
+            nodeRef2 = createContent(parentNodeRef, "node2", ContentModel.TYPE_CONTENT);
+            nodeRef3 = createContent(parentNodeRef, "node3", ContentModel.TYPE_CONTENT);
+            nodeRef4 = createContent(parentNodeRef, "node4", ContentModel.TYPE_CONTENT);
+            nodeRef5 = createContent(parentNodeRef, "node5", ContentModel.TYPE_CONTENT);
+            
+            nodeRef6 = createContent(parentNodeRef, "node6", ContentModel.TYPE_CONTENT);
+            nodeRef7 = createContent(parentNodeRef, "node7", ContentModel.TYPE_CONTENT);
+            nodeRef8 = createContent(parentNodeRef, "node8", ContentModel.TYPE_CONTENT);
+            nodeRef9 = createContent(parentNodeRef, "node9", ContentModel.TYPE_CONTENT);
+            nodeRef10 = createContent(parentNodeRef, "node10", ContentModel.TYPE_CONTENT);
+            
+            Map<QName, Serializable> props = Collections.emptyMap();
+            
+            nodeService.addAspect(nodeRef2, ContentModel.ASPECT_CLASSIFIABLE, props);
+            nodeService.addAspect(nodeRef4, ContentModel.ASPECT_CLASSIFIABLE, props);
+            nodeService.addAspect(nodeRef4, RenditionModel.ASPECT_RENDITION, props);
+            nodeService.addAspect(nodeRef8, ContentModel.ASPECT_CLASSIFIABLE, props);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+        
+        // do children canned query
+        PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0);
+        List<NodeRef> nodeRefs = results.getPage();
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            System.out.print(nodeRef);
+            Set<QName> aspects = nodeService.getAspects(nodeRef);
+            for (QName aspect : aspects)
+            {
+                System.out.print(" " + aspect);
+            }
+            System.out.println();
+        }
+        Set<QName> includedAspects = new HashSet<QName>(Arrays.asList(new QName[] {ContentModel.ASPECT_CLASSIFIABLE}));
+        results = list(parentNodeRef, includedAspects, null, -1, -1, 0);
+        assertEquals(3, results.getPage().size());
+
+        Set<QName> excludedAspects = new HashSet<QName>(Arrays.asList(new QName[] {RenditionModel.ASPECT_RENDITION}));
+        results = list(parentNodeRef, null, excludedAspects, -1, -1, 0);
+        for (NodeRef result : results.getPage())
+        {
+            assertFalse(nodeService.getAspects(result).contains(RenditionModel.ASPECT_RENDITION));
+        }
+
+        results = list(parentNodeRef, includedAspects, excludedAspects, -1, -1, 0);
+        assertEquals(2, results.getPage().size());
+    }
+
 
     // test helper method - optional filtering/sorting
     private PagingResults<NodeRef> list(NodeRef parentNodeRef, final int skipCount, final int maxItems, final int requestTotalCountMax, String pattern, List<Pair<QName, Boolean>> sortProps)
@@ -819,7 +895,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CQ_FACTORY_NAME);
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, pattern, null, null, null, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, pattern, null, null, null, null,  null, sortProps, pagingRequest);
         
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();
@@ -872,7 +948,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     
     private List<NodeRef> filterByAssocTypeAndCheck(NodeRef parentNodeRef, Set<QName> assocTypeQNames, Set<QName> childTypeQNames)
     {
-        PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0, assocTypeQNames, childTypeQNames, null, null);
+        PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0, assocTypeQNames, childTypeQNames, null, null, null, null);
         assertTrue(results.getPage().size() > 0);
         
         List<NodeRef> childNodeRefs = results.getPage();
@@ -1084,9 +1160,15 @@ public class GetChildrenCannedQueryTest extends TestCase
     }
     
     // test helper method - no filtering/sorting
+    private PagingResults<NodeRef> list(NodeRef parentNodeRef, Set<QName> inclusiveAspects, Set<QName> exclusiveAscpects, final int skipCount, final int maxItems, final int requestTotalCountMax)
+    {
+        return list(parentNodeRef, skipCount, maxItems, requestTotalCountMax, null, null, null, null, inclusiveAspects, exclusiveAscpects);
+    }
+
+    // test helper method - no filtering/sorting
     private PagingResults<NodeRef> list(NodeRef parentNodeRef, final int skipCount, final int maxItems, final int requestTotalCountMax)
     {
-        return list(parentNodeRef, skipCount, maxItems, requestTotalCountMax, null, null, null);
+        return list(parentNodeRef, skipCount, maxItems, requestTotalCountMax, null, null, null, null, null, null);
     }
     
     // test helper method - optional filtering/sorting
@@ -1097,7 +1179,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         
         // get canned query (note: test the fileFolder extension - including support for sorting folders first)
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CQ_FACTORY_NAME);
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, null, childTypeQNames, filterProps, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, null, childTypeQNames, null, null, filterProps, sortProps, pagingRequest);
         
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();
@@ -1114,14 +1196,14 @@ public class GetChildrenCannedQueryTest extends TestCase
     }
     
     // test helper method - optional filtering/sorting
-    private PagingResults<NodeRef> list(NodeRef parentNodeRef, final int skipCount, final int maxItems, final int requestTotalCountMax, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps)
+    private PagingResults<NodeRef> list(NodeRef parentNodeRef, final int skipCount, final int maxItems, final int requestTotalCountMax, Set<QName> assocTypeQNames, Set<QName> childTypeQNames, List<FilterProp> filterProps, List<Pair<QName, Boolean>> sortProps, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
     {
         PagingRequest pagingRequest = new PagingRequest(skipCount, maxItems, null);
         pagingRequest.setRequestTotalCountMax(requestTotalCountMax);
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CQ_FACTORY_NAME);
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, assocTypeQNames, childTypeQNames, filterProps, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(parentNodeRef, null, assocTypeQNames, childTypeQNames, inclusiveAspects, exclusiveAspects, filterProps, sortProps, pagingRequest);
         
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();

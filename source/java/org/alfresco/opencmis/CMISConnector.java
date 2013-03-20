@@ -58,6 +58,7 @@ import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.opencmis.search.CMISResultSet;
 import org.alfresco.opencmis.search.CMISResultSetColumn;
 import org.alfresco.opencmis.search.CMISResultSetRow;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
@@ -70,9 +71,15 @@ import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
+import org.alfresco.repo.thumbnail.ThumbnailHelper;
+import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
@@ -87,6 +94,7 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -104,6 +112,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
@@ -186,6 +195,8 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.RepositoryCapabili
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.RepositoryInfoImpl;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -205,6 +216,8 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  */
 public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer
 {
+    private static Log logger = LogFactory.getLog(CMISConnector.class);
+
     public static final char ID_SEPERATOR = ';';
     public static final String ASSOC_ID_PREFIX = "assoc:";
     public static final String PWC_VERSION_LABEL = "pwc";
@@ -247,6 +260,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private RenditionService renditionService;
     private FileFolderService fileFolderService;
     private TenantAdminService tenantAdminService;
+    private TenantService tenantService;
     private TransactionService transactionService;
     private AuthenticationService authenticationService;
     private PermissionService permissionService;
@@ -259,6 +273,9 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private SearchService searchService;
     private DictionaryService dictionaryService;
     private SiteService siteService;
+    private ActionService actionService;
+    private ThumbnailService thumbnailService;
+    private ServiceRegistry serviceRegistry;
 
     private ActivityPoster activityPoster;
 
@@ -323,6 +340,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 	public ActivityPoster getActivityPoster()
 	{
 		return activityPoster;
+	}
+
+	public void setTenantService(TenantService tenantService)
+	{
+		this.tenantService = tenantService;
 	}
 
 	public void setHiddenAspect(HiddenAspect hiddenAspect)
@@ -405,7 +427,17 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return openHttpSession;
     }
 
-    /**
+    public void setThumbnailService(ThumbnailService thumbnailService)
+    {
+		this.thumbnailService = thumbnailService;
+	}
+    
+	public void setServiceRegistry(ServiceRegistry serviceRegistry)
+	{
+		this.serviceRegistry = serviceRegistry;
+	}
+
+	/**
      * Sets the descriptor service.
      */
     public void setDescriptorService(DescriptorService descriptorService)
@@ -435,6 +467,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         return nodeService;
     }
+
+	public void setActionService(ActionService actionService)
+	{
+		this.actionService = actionService;
+	}
 
 	/**
      * Sets the version service.
@@ -716,6 +753,72 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     // Alfresco methods
     // --------------------------------------------------------------
     
+    /**
+     * Asynchronously generates thumbnails for the given node.
+     *  
+     * @param nodeRef
+     */
+    public void createThumbnails(NodeRef nodeRef, Set<String> thumbnailNames)
+    {
+    	if(thumbnailNames == null || thumbnailNames.size() == 0)
+    	{
+    		return;
+    	}
+
+        ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
+
+        // If there's nothing currently registered to generate thumbnails for the
+        //  specified mimetype, then log a message and bail out
+        Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+        if (contentData == null)
+        {
+        	logger.info("Unable to create thumbnails as there is no content");
+        	return;
+        }
+
+    	long size = contentData.getSize();
+    	String mimeType = contentData.getMimetype();
+
+    	for(String thumbnailName : thumbnailNames)
+    	{
+	        // Use the thumbnail registy to get the details of the thumbail
+	        ThumbnailDefinition details = registry.getThumbnailDefinition(thumbnailName);
+	        if(details == null)
+	        {
+	            // Throw exception 
+	            logger.warn("The thumbnail name '" + thumbnailName + "' is not registered");
+	            continue;
+	        }
+	        else
+	        {
+		        if(registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), mimeType, size, nodeRef, details))
+		        {
+		            org.alfresco.service.cmr.action.Action action = ThumbnailHelper.createCreateThumbnailAction(details, serviceRegistry);
+		            
+		            // Queue async creation of thumbnail
+		            actionService.executeAction(action, nodeRef, true, true);
+		        }
+		        else
+		        {
+		        	logger.info("Unable to create thumbnail '" + details.getName() + "' for " +
+		        			mimeType + " as no transformer is currently available");
+		        }
+	        }
+    	}
+    }
+
+    /**
+     * Extracts metadata for the node.
+     *  
+     * @param nodeRef
+     */
+    public void extractMetadata(NodeRef nodeRef)
+    {
+    	org.alfresco.service.cmr.action.Action action = actionService.createAction(ContentMetadataExtracter.EXECUTOR_NAME);
+    	actionService.executeAction(action, nodeRef, true, false);
+    }
+
     public SiteInfo getSite(NodeRef nodeRef)
     {
     	return siteService.getSite(nodeRef);

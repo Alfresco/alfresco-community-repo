@@ -19,8 +19,6 @@
 package org.alfresco.opencmis;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -71,7 +69,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
-import org.alfresco.util.TempFileProvider;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Acl;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
@@ -1200,10 +1197,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisConstraintException("This document type is not versionable!");
         }
 
-        // copy stream to temp file
-        // OpenCMIS does this for us ....
-        final File tempFile = copyToTempFile(contentStream);
-        final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
+        final Charset encoding = getEncoding(contentStream);
 
         FileInfo fileInfo = connector.getFileFolderService().create(
                 parentInfo.getNodeRef(), name, type.getAlfrescoClass());
@@ -1217,14 +1211,18 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             // write content
             ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            writer.setMimetype(stripEncoding(contentStream.getMimeType()));
+            String mimeType = stripEncoding(contentStream.getMimeType());
+            writer.setMimetype(mimeType);
             writer.setEncoding(encoding.name());
-            writer.putContent(tempFile);
+            writer.putContent(contentStream.getStream());
         }
 
-        connector.applyVersioningState(nodeRef, versioningState);
+        connector.extractMetadata(nodeRef);
 
-        removeTempFile(tempFile);
+        // generate "doclib" thumbnail asynchronously
+        connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
+
+        connector.applyVersioningState(nodeRef, versioningState);
 
         String objectId = connector.createObjectId(nodeRef);
 
@@ -1274,6 +1272,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     PropertyIds.NAME, PropertyIds.OBJECT_TYPE_ID });
             connector.applyPolicies(nodeRef, type, policies);
             connector.applyACL(nodeRef, type, addAces, removeAces);
+            
+            connector.extractMetadata(nodeRef);
+            connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
+
             connector.applyVersioningState(nodeRef, versioningState);
 
             connector.getActivityPoster().postFileFolderAdded(fileInfo);
@@ -1404,21 +1406,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisInvalidArgumentException("No content!");
         }
 
-        // copy stream to temp file
-        final File tempFile = copyToTempFile(contentStream);
-        final Charset encoding = getEncoding(tempFile, contentStream.getMimeType());
+        final Charset encoding = getEncoding(contentStream);
 
-        try
-        {
-            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            writer.setMimetype(contentStream.getMimeType());
-            writer.setEncoding(encoding.name());
-            writer.putContent(tempFile);
-        }
-        finally
-        {
-            removeTempFile(tempFile);
-        }
+        ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
+        writer.setMimetype(contentStream.getMimeType());
+        writer.setEncoding(encoding.name());
+        writer.putContent(contentStream.getStream());
 
         objectId.setValue(connector.createObjectId(nodeRef));
 
@@ -1584,7 +1577,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                             "Could not delete folder with at least one child!");
                 }
 
-                connector.deleteNode(nodeRef, false);
+                connector.deleteNode(nodeRef, true);
                 break;      // Reason for do-while
             }
 
@@ -1703,7 +1696,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
 
             // attempt to delete the node
-            connector.deleteNode(nodeRef, false);
+            connector.deleteNode(nodeRef, true);
         }
         catch (Exception e)
         {
@@ -1943,9 +1936,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         final NodeRef nodeRef = info.getNodeRef();
         final TypeDefinitionWrapper type = info.getType();
 
-        // copy stream to temp file
-        final File tempFile = copyToTempFile(contentStream);
-        final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
+        final Charset encoding = getEncoding(contentStream);
 
         // check in
         // update PWC
@@ -1961,7 +1952,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
             writer.setMimetype(contentStream.getMimeType());
             writer.setEncoding(encoding.name());
-            writer.putContent(tempFile);
+            writer.putContent(contentStream.getStream());
         }
 
         // check aspect
@@ -1985,9 +1976,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         // check in
         NodeRef newNodeRef = connector.getCheckOutCheckInService().checkin(nodeRef, versionProperties);
 
-        objectId.setValue(connector.createObjectId(newNodeRef));
+        connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), newNodeRef);
 
-        removeTempFile(tempFile);
+        objectId.setValue(connector.createObjectId(newNodeRef));
     }
 
     @Override
@@ -2702,65 +2693,25 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
     }
 
-    private Charset getEncoding(File tempFile, String mimeType)
+    private Charset getEncoding(ContentStream stream)
     {
         Charset encoding = null;
 
-        try
+        if(stream != null)
         {
-            InputStream tfis = new BufferedInputStream(new FileInputStream(tempFile));
-            ContentCharsetFinder charsetFinder = connector.getMimetypeService().getContentCharsetFinder();
-            encoding = charsetFinder.getCharset(tfis, mimeType);
-            tfis.close();
-        } catch (Exception e)
-        {
-            throw new CmisStorageException("Unable to read content: " + e.getMessage(), e);
+	        try
+	        {
+	        	String mimeType = stream.getMimeType();
+	            InputStream tfis = new BufferedInputStream(stream.getStream());
+	            ContentCharsetFinder charsetFinder = connector.getMimetypeService().getContentCharsetFinder();
+	            encoding = charsetFinder.getCharset(tfis, mimeType);
+	            tfis.close();
+	        } catch (Exception e)
+	        {
+	            throw new CmisStorageException("Unable to read content: " + e.getMessage(), e);
+	        }
         }
 
         return encoding;
-    }
-
-    private File copyToTempFile(ContentStream contentStream)
-    {
-        if (contentStream == null)
-        {
-            return null;
-        }
-
-        File result = null;
-        try
-        {
-            result = TempFileProvider.createTempFile(contentStream.getStream(), "cmis", "content");
-        }
-        catch (Exception e)
-        {
-            throw new CmisStorageException("Unable to store content: " + e.getMessage(), e);
-        }
-
-        if ((contentStream.getLength() > -1) && (result == null || contentStream.getLength() != result.length()))
-        {
-            removeTempFile(result);
-            throw new CmisStorageException("Expected " + contentStream.getLength() + " bytes but retrieved " +
-                    (result == null ? -1 :result.length()) + " bytes!");
-        }
-
-        return result;
-    }
-
-    private void removeTempFile(File tempFile)
-    {
-        if (tempFile == null)
-        {
-            return;
-        }
-
-        try
-        {
-            tempFile.delete();
-        }
-        catch (Exception e)
-        {
-            // ignore - file will be removed by TempFileProvider
-        }
     }
 }

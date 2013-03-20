@@ -584,6 +584,9 @@ public class PersonTest extends TestCase
         
         PagingRequest pr = new PagingRequest(100, null);
         
+        PagingResults<PersonInfo> people = personService.getPeople(null, null, null, null, false, null, pr);
+        assertEquals("Administrators not filtered", 5, people.getPage().size());
+
         List<QName> filters = new ArrayList<QName>(4);
         
         filters.clear();
@@ -642,7 +645,7 @@ public class PersonTest extends TestCase
         
         // page 1
         PagingRequest pr = new PagingRequest(0, 2, null);
-        PagingResults<PersonInfo> ppr = personService.getPeople(null, null, sort, pr);
+        PagingResults<PersonInfo> ppr = personService.getPeople(null, true, sort, pr);
         List<PersonInfo> results = ppr.getPage();
         assertEquals(2, results.size());
         assertEquals(p3, results.get(0).getNodeRef());
@@ -650,7 +653,7 @@ public class PersonTest extends TestCase
         
         // page 2
         pr = new PagingRequest(2, 2, null);
-        ppr = personService.getPeople(null, null, sort, pr);
+        ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(2, results.size());
         assertEquals(p6, results.get(0).getNodeRef());
@@ -658,7 +661,7 @@ public class PersonTest extends TestCase
         
         // page 3
         pr = new PagingRequest(4, 2, null);
-        ppr = personService.getPeople(null, null, sort, pr);
+        ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(2, results.size());
         assertEquals(p7, results.get(0).getNodeRef());
@@ -666,66 +669,10 @@ public class PersonTest extends TestCase
         
         // page 4
         pr = new PagingRequest(6, 2, null);
-        ppr = personService.getPeople(null, null, sort, pr);
+        ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(1, results.size());
         assertEquals(p5, results.get(0).getNodeRef());
-    }
-    
-    // note: this test can be removed as and when we remove the deprecated "getPeople" impl
-    public void testPeopleFiltering_deprecatedCQ_via_getChildren()
-    {
-        personService.setCreateMissingPeople(false);
-        
-        assertEquals(2, getPeopleCount());
-        
-        checkPeopleContain(AuthenticationUtil.getAdminUserName());
-        checkPeopleContain(AuthenticationUtil.getGuestUserName());
-        
-        personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
-        personService.createPerson(createDefaultProperties("bc", "c", "C", "bc@bc", "alfresco", rootNodeRef));
-        personService.createPerson(createDefaultProperties("yy", "B", "D", "yy@yy", "alfresco", rootNodeRef));
-        personService.createPerson(createDefaultProperties("Yz", "yz", "B", "yz@yz", "alfresco", rootNodeRef));
-        
-        assertEquals(6, getPeopleCount());
-        
-        PagingRequest pr = new PagingRequest(100, null);
-        
-        List<Pair<QName, String>> filters = new ArrayList<Pair<QName, String>>(4);
-        
-        filters.clear();
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "y"));
-        assertEquals(2, personService.getPeople(filters, true, null, pr).getPage().size());
-//        assertEquals(1, personService.getPeople(filters, false, null, pr).getPage().size()); filterIgnoreCase is now ignored
-        
-        filters.clear();
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "b"));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, "b"));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, "b"));
-        assertEquals(3, personService.getPeople(filters, true, null, pr).getPage().size());
-//        assertEquals(1, personService.getPeople(filters, false, null, pr).getPage().size()); filterIgnoreCase is now ignored
-        
-        filters.clear();
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "A"));
-        assertEquals(2, personService.getPeople(filters, true, null, pr).getPage().size()); // includes "admin"
-//        assertEquals(0, personService.getPeople(filters, false, null, pr).getPage().size()); filterIgnoreCase is now ignored
-        
-        personService.deletePerson("aa");
-        
-        filters.clear();
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "a"));
-        assertEquals(1, personService.getPeople(filters, true, null, pr).getPage().size()); // includes "admin"
-        
-        // a* is the same as a
-        filters.clear();
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "a*"));
-        assertEquals(1, personService.getPeople(filters, true, null, pr).getPage().size()); // includes "admin"
-        
-        // * means everyone
-        filters.clear();
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, "*"));
-        assertEquals(5, getPeopleCount());
-        assertEquals(5, personService.getPeople(filters, true, null, pr).getPage().size());
     }
     
     // note: this test can be removed as and when we remove the deprecated "getPeople" impl

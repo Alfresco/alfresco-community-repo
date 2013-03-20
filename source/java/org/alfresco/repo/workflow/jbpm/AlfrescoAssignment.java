@@ -48,6 +48,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
     private ServiceRegistry services;
     private DictionaryService dictionaryService;
     private AuthorityDAO authorityDAO;
+    private WorkflowNotificationUtils workflowNotificationUtils; 
 
     private Element actor;
     private Element pooledactors;
@@ -62,6 +63,7 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
         services = (ServiceRegistry)factory.getBean(ServiceRegistry.SERVICE_REGISTRY);
         dictionaryService = services.getDictionaryService();
         authorityDAO = (AuthorityDAO)factory.getBean("authorityDAO");
+        workflowNotificationUtils = (WorkflowNotificationUtils)factory.getBean("workflowNotification");
     }
 
     
@@ -209,9 +211,8 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
             if (Boolean.TRUE.equals(sendEMailNotification) == true)
             {
                 // Send the notification
-                WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
-                            services, 
-                            JBPMEngine.ENGINE_ID + "$" + executionContext.getTaskInstance().getId(),
+                workflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
+                            JBPMEngine.ENGINE_ID + "$" + executionContext.getTaskInstance().getId(), null, 
                             assignedActor,
                             false);
             }
@@ -224,9 +225,8 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
             if (Boolean.TRUE.equals(sendEMailNotification) == true)
             {
                 // Send the notification
-                WorkflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
-                        services, 
-                        JBPMEngine.ENGINE_ID + "$" + executionContext.getTaskInstance().getId(),
+                workflowNotificationUtils.sendWorkflowAssignedNotificationEMail(
+                        JBPMEngine.ENGINE_ID + "$" + executionContext.getTaskInstance().getId(), null, 
                         assignedPooledActors,
                         true);
             }

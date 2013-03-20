@@ -62,6 +62,7 @@
        <property name="dictionaryService" ref="dictionaryService"/>
        <property name="tenantService" ref="tenantService"/>
        <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="nodeService" ref="nodeService"/>
        <property name="qnameDAO" ref="qnameDAO"/>
        <property name="localeDAO" ref="localeDAO"/>
        <property name="contentDataDAO" ref="contentDataDAO"/>

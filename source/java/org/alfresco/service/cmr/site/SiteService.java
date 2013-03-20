@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -230,6 +230,16 @@ public interface SiteService
      */
     @NotAuditable
     SiteInfo getSite(NodeRef nodeRef);
+    
+    /**
+     * This method gets the shortName for the Share Site which contains the given NodeRef.
+     * If the given NodeRef is not contained within a Share Site, then <code>null</code> is returned.
+     * 
+     * @param nodeRef   the node whose containing site's info is to be found.
+     * @return String   site short name for the containing site or <code>null</code> if node is not in a site.
+     */
+    @NotAuditable
+    String getSiteShortName(NodeRef nodeRef);
     
     /**
      * Update the site information.

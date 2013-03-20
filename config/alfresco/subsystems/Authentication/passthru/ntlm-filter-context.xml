@@ -24,6 +24,9 @@
       <property name="authenticationComponent">
          <ref bean="AuthenticationComponent" />
       </property>
+      <property name="authenticationListener">
+        <ref bean="globalAuthenticationListener"/>
+      </property>
       <property name="personService">
          <ref bean="personService" />
       </property>
@@ -84,6 +87,9 @@
       <property name="authenticationComponent">
          <ref bean="AuthenticationComponent" />
       </property>
+      <property name="authenticationListener">
+         <ref bean="webDavAuthenticationListener"/>
+      </property>
       <property name="personService">
          <ref bean="personService" />
       </property>
@@ -110,6 +116,9 @@
       </property>
       <property name="authenticationComponent">
          <ref bean="AuthenticationComponent" />
+      </property>
+      <property name="authenticationListener">
+         <ref bean="sharepointAuthenticationListener"/>
       </property>
       <property name="personService">
          <ref bean="personService" />

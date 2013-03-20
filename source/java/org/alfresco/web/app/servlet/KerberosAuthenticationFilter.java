@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,8 +25,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.SessionUser;
+import org.alfresco.repo.web.auth.WebCredentials;
 import org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.app.Application;
@@ -103,10 +105,25 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
      * javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
     @Override
-   protected void onValidate(ServletContext sc, HttpServletRequest req, HttpServletResponse res)
+   protected void onValidate(ServletContext sc, HttpServletRequest req, HttpServletResponse res, WebCredentials credentials)
    {
+        super.onValidate(sc, req, res, credentials);
+        
         // Set the locale using the session
         AuthenticationHelper.setupThread(sc, req, res, !req.getServletPath().equals("/wcs") && !req.getServletPath().equals("/wcservice"));
+    }
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
+     */
+    @Override
+    protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session, WebCredentials credentials)
+        throws IOException
+    {
+        super.onValidateFailed(sc, req, res, session, credentials);
+        
+        // Redirect to the login page if user validation fails
+    	redirectToLoginPage(req, res);
     }
     
     /* (non-Javadoc)

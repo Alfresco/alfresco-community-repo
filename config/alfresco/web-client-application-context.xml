@@ -195,6 +195,8 @@
       </property>
    </bean>
     
+   <bean id="globalAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
+    
    <bean id="GlobalAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
       <property name="applicationContextManager">
          <ref bean="Authentication" />
@@ -271,6 +273,8 @@
          <bean class="org.alfresco.repo.web.filter.beans.NullFilter" />
       </property>
    </bean>
+   
+   <bean id="webDavAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
 
    <bean id="WebDavAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
       <property name="applicationContextManager">
@@ -287,6 +291,9 @@
       <!-- Fall back to the default alfresco implementation -->
       <property name="defaultTarget">
          <bean class="org.alfresco.repo.webdav.auth.AuthenticationFilter">
+            <property name="authenticationListener">
+               <ref bean="webDavAuthenticationListener"/>
+            </property>
             <property name="authenticationService">
                <ref bean="AuthenticationService" />
             </property>
@@ -309,6 +316,8 @@
       </property>
    </bean>
    
+   <bean id="sharepointAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
+   
    <bean id="SharepointAuthenticationHandler" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
       <property name="applicationContextManager">
          <ref bean="Authentication" />
@@ -326,6 +335,9 @@
          <bean class="org.alfresco.web.sharepoint.auth.BasicAuthenticationHandler">
             <property name="authenticationService">
                <ref bean="AuthenticationService" />
+            </property>
+            <property name="authenticationListener">
+               <ref bean="sharepointAuthenticationListener" />
             </property>
             <property name="personService">
                <ref bean="PersonService" />

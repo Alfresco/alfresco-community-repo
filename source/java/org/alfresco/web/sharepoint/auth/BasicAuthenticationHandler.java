@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,6 +28,9 @@ import javax.servlet.http.HttpSession;
 
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.web.auth.AuthenticationListener;
+import org.alfresco.repo.web.auth.BasicAuthCredentials;
+import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.webdav.auth.SharepointConstants;
 import org.alfresco.web.bean.repository.User;
 import org.apache.commons.codec.binary.Base64;
@@ -44,6 +47,16 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
     private final static String HEADER_AUTHORIZATION = "Authorization";
 
     private final static String BASIC_START = "Basic";
+    
+    private AuthenticationListener authenticationListener;
+    
+    /**
+     * Set the authentication listener
+     */
+    public void setAuthenticationListener(AuthenticationListener authenticationListener)
+    {
+        this.authenticationListener = authenticationListener;
+    }
 
     /*
      * (non-Javadoc)
@@ -118,6 +131,8 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
     
                     if (logger.isDebugEnabled())
                         logger.debug("Authenticated user '" + username + "'");
+                    
+                    authenticationListener.userAuthenticated(new BasicAuthCredentials(username, password));
     
                     request.getSession()
                             .setAttribute(
@@ -129,7 +144,7 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
                 }
                 catch (AuthenticationException ex)
                 {
-                    // Do nothing, user object will be null
+                    authenticationListener.authenticationFailed(new BasicAuthCredentials(username, password), ex);
                 }
             }
         }
@@ -138,10 +153,12 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
             try
             {
                 authenticationService.validate(user.getTicket());
+                authenticationListener.userAuthenticated(new TicketCredentials(user.getTicket()));
                 return true;
             }
             catch (AuthenticationException ex)
             {
+                authenticationListener.authenticationFailed(new TicketCredentials(user.getTicket()), ex);
                 session.invalidate();
             }
         }

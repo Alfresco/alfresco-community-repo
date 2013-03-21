@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -65,9 +65,9 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
 
     /** Namespace service */
     private NamespaceService namespaceService;
-
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
+    
+    /** File plan service */
+    private FilePlanService filePlanService;
 
     /** Map of protected properties keyed by name */
     private Map<QName, ProtectedProperty> protectedProperties = new HashMap<QName, ProtectedProperty>(21);
@@ -127,11 +127,11 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     }
 
     /**
-     * @param recordsManagementService  records management service
+     * @param filePlanService   file plan service
      */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-        this.recordsManagementService = recordsManagementService;
+        this.filePlanService = filePlanService;
     }
 
     /**
@@ -232,7 +232,7 @@ public class ModelSecurityServiceImpl implements ModelSecurityService,
     {
         boolean result = false;
 
-        NodeRef filePlan = recordsManagementService.getFilePlan(nodeRef);
+        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
         if (filePlan != null)
         {            
             for (Capability capability : artifact.getCapabilities())

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -36,12 +37,23 @@ public class FileToAction extends RMActionExecuterAbstractBase
     /** file folder service */
     private FileFolderService fileFolderService;
     
+    /** file plan service */
+    private FilePlanService filePlanService;
+    
     /**
      * @param fileFolderService file folder service
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
+    }
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
     
     /**
@@ -113,7 +125,7 @@ public class FileToAction extends RMActionExecuterAbstractBase
     {
         // TODO check the action for a context node reference
         // the file plan node always provides the context 
-        NodeRef context = recordsManagementService.getFilePlan(actionedUponNodeRef);        
+        NodeRef context = filePlanService.getFilePlan(actionedUponNodeRef);        
         if (context == null)
         {
             throw new AlfrescoRuntimeException("Unable to execute fileTo action, because the path resolution context could not be found.");

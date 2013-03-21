@@ -227,6 +227,7 @@
       <property name="importerService" ref="ImporterService" />
       <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
+      <property name="filePlanService" ref="FilePlanService" />
    </bean>
 
    <!-- Base bean for transfer web scripts -->

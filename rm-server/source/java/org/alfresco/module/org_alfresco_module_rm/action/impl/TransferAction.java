@@ -28,6 +28,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -55,6 +56,17 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
     
     /** Indicates whether the transfer is an accession or not */
     private boolean isAccession = false;
+    
+    /** File plan service */
+    private FilePlanService filePlanService;
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
     
     /**
      * Indicates whether this transfer is an accession or not
@@ -103,7 +115,7 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
     private void doTransfer(Action action, NodeRef dispositionLifeCycleNodeRef)
     {
         // Get the root rm node
-        NodeRef root = this.recordsManagementService.getFilePlan(dispositionLifeCycleNodeRef);
+        NodeRef root = filePlanService.getFilePlan(dispositionLifeCycleNodeRef);
         
         // Get the transfer object
         NodeRef transferNodeRef = (NodeRef)AlfrescoTransactionSupport.getResource(KEY_TRANSFER_NODEREF);            

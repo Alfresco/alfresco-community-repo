@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.repo.exporter.ACPExportPackageHandler;
@@ -73,6 +74,7 @@ public class ImportPost extends DeclarativeWebScript
     protected ImporterService importerService;
     protected RecordsManagementService rmService;
     protected FilePlanRoleService filePlanRoleService;
+    protected FilePlanService filePlanService;
     
     /**
      * @param nodeService
@@ -118,6 +120,14 @@ public class ImportPost extends DeclarativeWebScript
     public void setRecordsManagementService(RecordsManagementService rmService)
     {
         this.rmService = rmService;
+    }
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
     
     @Override
@@ -178,7 +188,7 @@ public class ImportPost extends DeclarativeWebScript
             // the DM admin user (meaning the webscript 'admin' authentication can't be used)
             // perform a manual check here to ensure the current user has the RM admin role.
             boolean isAdmin = filePlanRoleService.hasRMAdminRole(
-                        this.rmService.getFilePlan(destination), 
+                        filePlanService.getFilePlan(destination), 
                         AuthenticationUtil.getRunAsUser());
             if (!isAdmin)
             {

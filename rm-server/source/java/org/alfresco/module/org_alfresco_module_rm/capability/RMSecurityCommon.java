@@ -23,7 +23,6 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.NodeRef;

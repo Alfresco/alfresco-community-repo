@@ -666,7 +666,7 @@
     	<property name="policyComponent" ref="policyComponent" />
     	<property name="nodeService" ref="NodeService" />
     	<property name="namespaceService" ref="namespaceService" />
-    	<property name="recordsManagementService" ref="RecordsManagementService" />
+    	<property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="ModelSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -947,6 +947,7 @@
         <property name="nodeService" ref="nodeService" />
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="recordService" ref="RecordService" />
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="FreezeService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1271,7 +1272,7 @@
     <bean id="recordsManagementNotificationHelper" class="org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper" >
         <property name="filePlanRoleService" ref="FilePlanRoleService"/>
     	<property name="notificationService" ref="NotificationService"/>
-    	<property name="recordsManagementService" ref="RecordsManagementService"/>
+    	<property name="filePlanService" ref="FilePlanService"/>
   		<property name="nodeService" ref="nodeService"/>
   		<property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="namespaceService" ref="namespaceService"/>

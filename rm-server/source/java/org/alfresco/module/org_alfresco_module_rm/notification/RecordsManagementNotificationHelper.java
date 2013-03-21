@@ -27,7 +27,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
@@ -74,7 +74,6 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
 
     /** Services */
     private NotificationService notificationService;
-    private RecordsManagementService recordsManagementService;
     private FilePlanRoleService filePlanRoleService;
     private SearchService searchService;
     private NamespaceService namespaceService;
@@ -82,6 +81,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     private AuthorityService authorityService;
     private TenantAdminService tenantAdminService;
     private NodeService nodeService;
+    private FilePlanService filePlanService;
 
     /** Notification role */
     private String notificationRole;
@@ -100,11 +100,11 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
     }
 
     /**
-     * @param recordsManagementService  rm service
+     * @param filePlanService   file plan service
      */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-        this.recordsManagementService = recordsManagementService;
+        this.filePlanService = filePlanService;
     }
 
     /**
@@ -398,7 +398,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             @Override
             public NodeRef doWork() throws Exception
             {
-                return recordsManagementService.getFilePlan(context);
+                return filePlanService.getFilePlan(context);
 
             }
         }, AuthenticationUtil.getSystemUserName());

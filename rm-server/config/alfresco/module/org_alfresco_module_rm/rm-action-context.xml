@@ -574,6 +574,7 @@
    </bean>
 
    <bean id="transfer" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction">
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="isAccession" value="false"/>
    </bean>
 
@@ -617,6 +618,7 @@
    </bean>
 
    <bean id="accession" class="org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction" parent="rmAction">
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="isAccession" value="true"/>
    </bean>
 
@@ -698,6 +700,7 @@
 
    <bean id="fileTo" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction" parent="rmAction">
       <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>

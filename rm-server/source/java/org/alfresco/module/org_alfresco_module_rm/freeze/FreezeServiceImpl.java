@@ -29,6 +29,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -86,6 +87,9 @@ public class FreezeServiceImpl implements FreezeService,
 
     /** Record service */
     private RecordService recordService;
+    
+    /** File Plan Service */
+    private FilePlanService filePlanService;
 
     /**
      * @param policyComponent policy component
@@ -125,6 +129,14 @@ public class FreezeServiceImpl implements FreezeService,
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
+    }
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
 
     /**
@@ -588,7 +600,7 @@ public class FreezeServiceImpl implements FreezeService,
         holdProps.put(PROP_HOLD_REASON, reason);
 
         // Get the root rm node and create the hold object
-        NodeRef root = recordsManagementService.getFilePlan(nodeRef);
+        NodeRef root = filePlanService.getFilePlan(nodeRef);
         QName transferQName = QName.createQName(RM_URI, transferName);
         holdNodeRef = nodeService.createNode(root, ASSOC_HOLDS, transferQName, TYPE_HOLD, holdProps).getChildRef();
 

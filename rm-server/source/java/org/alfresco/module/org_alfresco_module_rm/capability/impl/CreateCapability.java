@@ -122,7 +122,7 @@ public class CreateCapability extends DeclarativeCapability
             {
                 if (rmService.isRecordFolder(destination))
                 {
-                    if (permissionService.hasPermission(rmService.getFilePlan(destination), RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS) == AccessStatus.ALLOWED)
+                    if (permissionService.hasPermission(filePlanService.getFilePlan(destination), RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS) == AccessStatus.ALLOWED)
                     {
                         return AccessDecisionVoter.ACCESS_GRANTED;
                     }
@@ -135,7 +135,7 @@ public class CreateCapability extends DeclarativeCapability
             {
                 if (rmService.isRecordFolder(destination))
                 {
-                    if (permissionService.hasPermission(rmService.getFilePlan(destination), RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS) == AccessStatus.ALLOWED)
+                    if (permissionService.hasPermission(filePlanService.getFilePlan(destination), RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS) == AccessStatus.ALLOWED)
                     {
                         return AccessDecisionVoter.ACCESS_GRANTED;
                     }

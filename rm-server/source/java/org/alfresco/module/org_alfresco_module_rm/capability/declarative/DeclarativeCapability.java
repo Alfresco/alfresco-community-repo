@@ -170,7 +170,7 @@ public class DeclarativeCapability extends AbstractCapability
     protected boolean checkPermissionsImpl(NodeRef nodeRef, String ... permissions)
     {
         boolean result = true;        
-        NodeRef filePlan = rmService.getFilePlan(nodeRef);
+        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
         
         for (String permission : permissions)
         {

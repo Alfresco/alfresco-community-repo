@@ -22,6 +22,8 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -32,6 +34,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * Common security functions.
+ * 
+ * TODO move methods to the appropriate services
+ * 
  * @author Roy Wetherall
  * @since 2.0
  */
@@ -41,10 +47,12 @@ public class RMSecurityCommon
     
     private static Log logger = LogFactory.getLog(RMSecurityCommon.class);
     
+    /** Services */
     protected NodeService nodeService;
     protected PermissionService permissionService;
     protected RecordsManagementService rmService;
     protected RMCaveatConfigComponent caveatConfigComponent;
+    protected FilePlanService filePlanService;
     
     public void setNodeService(NodeService nodeService)
     {
@@ -64,6 +72,11 @@ public class RMSecurityCommon
     public void setCaveatConfigComponent(RMCaveatConfigComponent caveatConfigComponent)
     {
         this.caveatConfigComponent = caveatConfigComponent;
+    }
+    
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
     
     /**
@@ -165,7 +178,7 @@ public class RMSecurityCommon
         }
         
         // Get the file plan for the node
-        NodeRef filePlan = rmService.getFilePlan(nodeRef);
+        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
         
         // Admin role
         if (permissionService.hasPermission(filePlan, RMPermissionModel.ROLE_ADMINISTRATOR) == AccessStatus.ALLOWED)
@@ -208,5 +221,4 @@ public class RMSecurityCommon
         }
 
     }
-
 }

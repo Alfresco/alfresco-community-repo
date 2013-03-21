@@ -48,7 +48,7 @@
    <bean id="org_alfresco_module_rm_userRolesExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.AuthenticatedUserRolesDataExtractor">
       <property name="registry" ref="auditModel.extractorRegistry" />
       <property name="nodeService" ref="nodeService" />
-      <property name="rmService" ref="recordsManagementService" />
+      <property name="filePlanService" ref="filePlanService" />
       <property name="filePlanRoleService" ref="filePlanRoleService" />
    </bean>
 

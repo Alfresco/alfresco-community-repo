@@ -21,7 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.copy.AbstractCopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
@@ -50,11 +50,11 @@ public class FilePlanComponentAspect implements RecordsManagementModel,
     /** Policy component */
     private PolicyComponent policyComponent;
     
-    /** Records Management Service */
-    private RecordsManagementService recordsManagementService;
-    
     /** Node service */
     private NodeService nodeService;
+    
+    /** File plan service */
+    private FilePlanService filePlanService;
     
     /**
      * Set the policy component
@@ -66,21 +66,20 @@ public class FilePlanComponentAspect implements RecordsManagementModel,
     }
     
     /**
-     * Set the records management service
-     * @param recordsManagementService  records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }
-    
-    /**
      * Set node service
      * @param nodeService   node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+    
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
     
     /**
@@ -116,7 +115,7 @@ public class FilePlanComponentAspect implements RecordsManagementModel,
                 if (nodeService.exists(nodeRef) == true)
                 {                   
                     // Look up the root and set on the aspect if found
-                    NodeRef root = recordsManagementService.getFilePlan(nodeRef);
+                    NodeRef root = filePlanService.getFilePlan(nodeRef);
                     if (root != null)
                     {
                         nodeService.setProperty(nodeRef, PROP_ROOT_NODEREF, root);
@@ -143,7 +142,7 @@ public class FilePlanComponentAspect implements RecordsManagementModel,
                     nodeService.exists(newChildAssocRef.getChildRef()) == true)
                 {
                     // Look up the root and re-set the value currently stored on the aspect
-                    NodeRef root = recordsManagementService.getFilePlan(newChildAssocRef.getParentRef());
+                    NodeRef root = filePlanService.getFilePlan(newChildAssocRef.getParentRef());
                     // NOTE: set the null value if no root found
                     nodeService.setProperty(newChildAssocRef.getChildRef(), PROP_ROOT_NODEREF, root);
                 }
@@ -185,7 +184,7 @@ public class FilePlanComponentAspect implements RecordsManagementModel,
                     Map<QName, Serializable> properties)
             {
                 // Only copy the root node reference if the new value can be looked up via the parent
-                NodeRef root = recordsManagementService.getFilePlan(copyDetails.getTargetParentNodeRef());
+                NodeRef root = filePlanService.getFilePlan(copyDetails.getTargetParentNodeRef());
                 if (root != null)
                 {
                     properties.put(PROP_ROOT_NODEREF, root);

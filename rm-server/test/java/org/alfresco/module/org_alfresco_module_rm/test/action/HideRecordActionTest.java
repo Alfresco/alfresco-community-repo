@@ -83,6 +83,7 @@ public class HideRecordActionTest extends BaseRMTestCase
 
                 // Create a record from that document
                 Action createAction = dmActionService.createAction(CreateRecordAction.NAME);
+                createAction.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
                 dmActionService.executeAction(createAction, doc);
 
                 // Check if the document is a record now

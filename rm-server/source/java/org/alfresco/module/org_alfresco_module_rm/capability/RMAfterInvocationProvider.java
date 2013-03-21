@@ -959,7 +959,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             String uuid = DefaultTypeConverter.INSTANCE.convert(String.class, filtered.get(ContentModel.PROP_NODE_UUID));
             StoreRef storeRef = new StoreRef(protocol, identifier);
             NodeRef nodeRef = new NodeRef(storeRef, uuid);
-            if ((nodeRef == null) || (permissionService.hasPermission(rmService.getFilePlan(nodeRef), RMPermissionModel.VIEW_UPDATE_REASONS_FOR_FREEZE) != AccessStatus.ALLOWED))
+            if ((nodeRef == null) || (permissionService.hasPermission(filePlanService.getFilePlan(nodeRef), RMPermissionModel.VIEW_UPDATE_REASONS_FOR_FREEZE) != AccessStatus.ALLOWED))
             {
                 filtered.remove(RecordsManagementModel.PROP_HOLD_REASON);
             }

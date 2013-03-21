@@ -21,7 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.audit;
 import java.io.Serializable;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
@@ -41,7 +41,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtractor
 {
     private NodeService nodeService;
-    private RecordsManagementService rmService;
+    private FilePlanService filePlanService;
     private FilePlanRoleService filePlanRoleService;
 
     /**
@@ -53,11 +53,11 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
     }
 
     /**
-     * Used to find the RM root
+     * @param filePlanService   file plan service
      */
-    public void setRmService(RecordsManagementService rmService)
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-        this.rmService = rmService;
+        this.filePlanService = filePlanService;
     }
 
     /**
@@ -81,6 +81,9 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
         return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
     }
 
+    /**
+     * @see org.alfresco.repo.audit.extractor.DataExtractor#extractData(java.io.Serializable)
+     */
     public Serializable extractData(Serializable value) throws Throwable
     {
         NodeRef nodeRef = (NodeRef) value;
@@ -92,7 +95,7 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
         }
         
         // Get the rm root
-        NodeRef rmRootNodeRef = rmService.getFilePlan(nodeRef);
+        NodeRef rmRootNodeRef = filePlanService.getFilePlan(nodeRef);
         
         Set<Role> roles = filePlanRoleService.getRolesByUser(rmRootNodeRef, user);
         StringBuilder sb = new StringBuilder(100);

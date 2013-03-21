@@ -439,10 +439,11 @@
 	<bean id="filePlanService"
 	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
-        <property name="permissionService" ref="PermissionService"/>        
-        <property name="nodeDAO" ref="nodeDAO"/>
-        <property name="internalNodeService" ref="nodeService"/>
-        <property name="siteService" ref="SiteService" />
+        <!--  NOTE:  for some reason we need to grab these references within the class to avoid cyclic Spring issues! -->
+        <!-- <property name="permissionService" ref="permissionService"/> -->        
+        <!-- <property name="nodeDAO" ref="nodeDAO"/> -->
+        <!-- <property name="internalNodeService" ref="nodeService"/> -->
+        <!-- <property name="siteService" ref="SiteService" />  -->
     </bean>
 
     <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -66,20 +66,8 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     /** RM site file plan container */
     private static final String FILE_PLAN_CONTAINER = "documentLibrary";
     
-    /** Services */
-    private PermissionService permissionService;    
-
     /** Application context */
     private ApplicationContext applicationContext;
-    
-    /** Node DAO */
-    private NodeDAO nodeDAO;
-    
-    /** Internal node service */
-    private NodeService internalNodeService;
-    
-    /** Site service */
-    private SiteService siteService;
     
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -96,41 +84,29 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      * 
      * @return  file plan role service
      */
-    public FilePlanRoleService getFilePlanRoleService()
+    protected FilePlanRoleService getFilePlanRoleService()
     {
         return (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");        
     }
     
-    /**
-     * @param permissionService permission service
-     */
-    public void setPermissionService(PermissionService permissionService)
+    protected PermissionService getPermissionService()
     {
-        this.permissionService = permissionService;
+        return (PermissionService)applicationContext.getBean("permissionService"); 
     }
     
-    /**
-     * @param nodeDAO   node DAO
-     */
-    public void setNodeDAO(NodeDAO nodeDAO)
+    protected NodeDAO getNodeDAO()
     {
-        this.nodeDAO = nodeDAO;
+        return (NodeDAO)applicationContext.getBean("nodeDAO"); 
     }
     
-    /**
-     * @param internalNodeService   node service (internal bean)
-     */
-    public void setInternalNodeService(NodeService internalNodeService)
+    protected NodeService getInternalNodeService()
     {
-        this.internalNodeService = internalNodeService;
+        return (NodeService)applicationContext.getBean("nodeService"); 
     }
     
-    /**
-     * @param siteService   site service
-     */
-    public void setSiteService(SiteService siteService)
+    protected SiteService getSiteService()
     {
-        this.siteService = siteService;
+        return (SiteService)applicationContext.getBean("SiteService"); 
     }
     
     /**
@@ -161,7 +137,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         final Set<NodeRef> results = new HashSet<NodeRef>();
         Set<QName> aspects = new HashSet<QName>(1);
         aspects.add(ASPECT_RECORDS_MANAGEMENT_ROOT);
-        nodeDAO.getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
+        getNodeDAO().getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
         {            
             @Override
             public boolean handle(Pair<Long, NodeRef> nodePair)
@@ -187,7 +163,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         NodeRef result = null;        
         if (nodeRef != null)
         {
-             result = (NodeRef)internalNodeService.getProperty(nodeRef, PROP_ROOT_NODEREF);
+             result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
              if (result == null)
              {
                  if (instanceOf(nodeRef, TYPE_FILE_PLAN) == true)
@@ -196,7 +172,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                  }
                  else
                  {
-                     ChildAssociationRef parentAssocRef = internalNodeService.getPrimaryParent(nodeRef);
+                     ChildAssociationRef parentAssocRef = getInternalNodeService().getPrimaryParent(nodeRef);
                      if (parentAssocRef != null)
                      {
                          result = getFilePlan(parentAssocRef.getParentRef());
@@ -216,12 +192,12 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     {
         NodeRef filePlan = null;    
         
-        SiteInfo siteInfo = siteService.getSite(siteId);
+        SiteInfo siteInfo = getSiteService().getSite(siteId);
         if (siteInfo != null)
         {
-            if (siteService.hasContainer(siteId, FILE_PLAN_CONTAINER) == true)
+            if (getSiteService().hasContainer(siteId, FILE_PLAN_CONTAINER) == true)
             {
-                NodeRef nodeRef = siteService.getContainer(siteId, FILE_PLAN_CONTAINER);
+                NodeRef nodeRef = getSiteService().getContainer(siteId, FILE_PLAN_CONTAINER);
                 if (instanceOf(nodeRef, TYPE_FILE_PLAN) == true)
                 {
                     filePlan = nodeRef;
@@ -295,10 +271,10 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         properties).getChildRef();
 
         // set inheritance to false
-        permissionService.setInheritParentPermissions(container, false);
-        permissionService.setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-        permissionService.setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-        permissionService.setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+        getPermissionService().setInheritParentPermissions(container, false);
+        getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
+        getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+        getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
         
         // TODO set the admin users to have filing permissions on the unfiled container!!!
         // TODO we will need to be able to get a list of the admin roles from the service

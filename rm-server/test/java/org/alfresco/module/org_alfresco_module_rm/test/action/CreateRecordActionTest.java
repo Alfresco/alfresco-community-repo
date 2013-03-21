@@ -69,6 +69,7 @@ public class CreateRecordActionTest extends BaseRMTestCase
                 
                 Action action = dmActionService.createAction(CreateRecordAction.NAME);
                 action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
+                action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
                 dmActionService.executeAction(action, dmDocument);
                 
                 return null;
@@ -76,10 +77,10 @@ public class CreateRecordActionTest extends BaseRMTestCase
             
             public void test(Void result) throws Exception 
             {
-                assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
+                assertTrue(recordService.isRecord(dmDocument)); 
                 
-                assertTrue(recordService.isRecord(dmDocument));                  
+                assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));                                
             };
         }, 
         dmCollaborator);  

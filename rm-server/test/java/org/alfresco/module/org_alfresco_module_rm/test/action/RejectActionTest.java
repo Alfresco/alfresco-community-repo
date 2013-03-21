@@ -69,6 +69,7 @@ public class RejectActionTest extends BaseRMTestCase
             {
                 // Create a record from the document
                 Action createAction = rmActionService.createAction(CreateRecordAction.NAME);
+                createAction.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
                 rmActionService.executeAction(createAction, dmDocument);
 
                 // Check if the document is a record now

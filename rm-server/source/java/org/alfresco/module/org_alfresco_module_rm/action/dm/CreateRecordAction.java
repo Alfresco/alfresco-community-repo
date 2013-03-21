@@ -22,12 +22,13 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -57,9 +58,6 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     public static final String PARAM_FILE_PLAN = "file-plan";
     public static final String PARAM_HIDE_RECORD = "hide-record";
     
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
-    
     /** Record service */
     private RecordService recordService;
     
@@ -72,13 +70,8 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
     /** Dictionary service */
     private DictionaryService dictionaryService;
     
-    /**
-     * @param recordsManagementService  records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
-    }
+    /** File plan authentication service */
+    private FilePlanAuthenticationService filePlanAuthenticationService;
     
     /**
      * @param recordService record service
@@ -104,10 +97,20 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
         this.filePlanService = filePlanService;
     }
     
-    @Override
+    /**
+     * @param dictionaryService dictionary service
+     */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * @param filePlanAuthenticationService file plan authentication service
+     */
+    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
+    {
+        this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
     
     /**
@@ -162,17 +165,23 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
         {
             NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);
             if (filePlan == null)
-            {
-                List<NodeRef> filePlans = recordsManagementService.getFilePlans();
-                if (filePlans.size() == 1)
+            {                
+                // TODO .. eventually make the file plan parameter required
+                filePlan = filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<NodeRef>()
                 {
-                    filePlan = filePlans.get(0);
-                }
-                else
+                    @Override
+                    public NodeRef doWork() throws Exception
+                    {
+                        return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                    }
+                });
+                
+                // if the file plan is still null, raise an exception
+                if (filePlan == null)
                 {
                     if (logger.isDebugEnabled() == true)
                     {
-                        logger.debug("Can not create record, because the default file plan can not be determined.");
+                        logger.debug("Can not create record, because the default file plan can not be determined.  Make sure at least one file plan has been created.");
                     }
                     throw new AlfrescoRuntimeException("Can not create record, because the default file plan can not be determined.");
                 } 

@@ -113,13 +113,14 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
         if (filePlan == null)
         {
             // Assume we are in a legacy repository and we will grab the default file plan
-            filePlan = filePlanService.getFilePlanBySiteId("rm");
+            filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
         }
 
         return filePlan;
     }
     
     /**
+     * Create role items
      * 
      * @param filePlan
      * @param roles
@@ -131,6 +132,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     }
     
     /**
+     * Create role items
      * 
      * @param filePlan
      * @param roles
@@ -159,6 +161,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     }
     
     /**
+     * Create authority items
      * 
      * @param authorities
      * @return
@@ -177,7 +180,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     }
     
     /**
-     * Role item utility class
+     * Role Item Helper Class
      * 
      * @author Roy Wetherall
      * @since 2.1
@@ -239,6 +242,12 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
         }
     }
     
+    /**
+     * Authority Item Helper Class
+     * 
+     * @author Roy Wetherall
+     * @since 2.1
+     */
     public class AuthorityItem
     {
         private String name;

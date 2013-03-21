@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -686,18 +687,100 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             }
         }, AuthenticationUtil.getSystemUserName());
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getUsersAssignedToRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    @Override
+    public Set<String> getUsersAssignedToRole(final NodeRef filePlan, final String roleName)
+    {
+        ParameterCheck.mandatory("filePlan", filePlan);
+        ParameterCheck.mandatory("roleName", roleName);
+        
+        return getAuthoritiesAssignedToRole(filePlan, roleName, AuthorityType.USER);
+    }
+    
+    /**
+     * Gets all the authorities of a given type directly assigned to the given role in the file plan.
+     * 
+     * @param filePlan          file plan
+     * @param roleName          role name
+     * @param authorityType     authority type
+     * @return Set<String>      directly assigned authorities
+     */
+    private Set<String> getAuthoritiesAssignedToRole(final NodeRef filePlan, final String roleName, final AuthorityType authorityType)
+    {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<String>>()
+        {
+            public Set<String> doWork() throws Exception
+            {
+                Role role = getRole(filePlan, roleName);      
+                if (role == null)
+                {
+                    throw new AlfrescoRuntimeException("Can not get authorities for role " + roleName + ", because it does not exist. (filePlan=" + filePlan.toString() + ")");
+                }
+                return authorityService.getContainedAuthorities(authorityType, role.getRoleGroupName(), false);                
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getGroupsAssignedToRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    @Override
+    public Set<String> getGroupsAssignedToRole(final NodeRef filePlan, final String roleName)
+    {
+        ParameterCheck.mandatory("filePlan", filePlan);
+        ParameterCheck.mandatory("roleName", roleName);
+        
+        return getAuthoritiesAssignedToRole(filePlan, roleName, AuthorityType.GROUP);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getAllAssignedToRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    @Override
+    public Set<String> getAllAssignedToRole(NodeRef filePlan, String role)
+    {
+        ParameterCheck.mandatory("filePlan", filePlan);
+        ParameterCheck.mandatory("roleName", role);
+        
+        Set<String> result = new HashSet<String>(21);
+        result.addAll(getUsersAssignedToRole(filePlan, role));
+        result.addAll(getGroupsAssignedToRole(filePlan, role));
+        return result;
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#assignRoleToAuthority(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
      */
-    public void assignRoleToAuthority(final NodeRef rmRootNode, final String role, final String authorityName)
+    public void assignRoleToAuthority(final NodeRef filePlan, final String role, final String authorityName)
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
         {
-            public Boolean doWork() throws Exception
+            public Void doWork() throws Exception
             {
-                String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, rmRootNode));
+                String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));
                 authorityService.addAuthority(roleAuthority, authorityName);
+                return null;
+
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#unassignRoleFromAuthority(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
+     */
+    @Override
+    public void unassignRoleFromAuthority(final NodeRef filePlan, final String role, final String authorityName)
+    {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));
+                authorityService.removeAuthority(roleAuthority, authorityName);
                 return null;
 
             }

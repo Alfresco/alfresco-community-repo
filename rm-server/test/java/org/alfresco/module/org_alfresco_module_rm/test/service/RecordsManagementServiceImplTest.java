@@ -155,6 +155,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
     {
         doTestInTransaction(new Test<NodeRef>()
         {
+            @SuppressWarnings("deprecation")
             @Override
             public NodeRef run()
             {
@@ -176,17 +177,10 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
     {
         doTestInTransaction(new Test<NodeRef>()
         {
+            @SuppressWarnings("deprecation")
             @Override
             public NodeRef run()
             {
-//                List<NodeRef> roots = rmService.getRecordsManagementRoots(storeRef);
-//                assertNotNull(roots);
-//                assertTrue(roots.size() != 0);
-//                assertTrue(roots.contains(rmRootContainer));
-//                
-//                RecordsManagementServiceImpl temp = (RecordsManagementServiceImpl)applicationContext.getBean("recordsManagementService");
-//                temp.setDefaultStoreRef(storeRef);
-                
                 List<NodeRef> roots = rmService.getFilePlans();
                 assertNotNull(roots);
                 assertTrue(roots.size() != 0);

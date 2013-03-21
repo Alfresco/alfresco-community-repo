@@ -154,8 +154,11 @@ public interface RecordsManagementService
     /**
      * Gets the file plan the node is in.
      * 
-     * @return  {@link NodeRef} file node reference, null if none 
+     * @return  {@link NodeRef} file node reference, null if none
+     * 
+     * @deprecated As of 2.1, see {@link FilePlanService#getFilePlan(NodeRef)}
      */
+    @Deprecated
     NodeRef getFilePlan(NodeRef nodeRef);
     
     /********** File Plan Methods **********/
@@ -165,10 +168,10 @@ public interface RecordsManagementService
      * Searches the SpacesStore by default. 
      * 
      * @return  List<NodeRef>    list of file plan nodes
+     * @deprecated As of 2.1, see {@link FilePlanService#getFilePlans()}
      */
+    @Deprecated
     List<NodeRef> getFilePlans();
-    
-    // TODO NodeRef getFilePlanById(String id);
     
     /**
      * Creates a file plan as a child of the given parent node, with the name

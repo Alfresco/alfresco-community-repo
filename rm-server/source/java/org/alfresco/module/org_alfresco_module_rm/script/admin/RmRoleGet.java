@@ -19,42 +19,25 @@
 package org.alfresco.module.org_alfresco_module_rm.script.admin;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * 
+ * Role GET web script API
  * 
  * @author Roy Wetherall
  */
-public class RmRoleGet extends DeclarativeWebScript
+public class RmRoleGet extends RoleDeclarativeWebScript
 {
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(RmRoleGet.class);
-    
-    private RecordsManagementService rmService;
-    private FilePlanRoleService filePlanRoleService;
-    
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-    
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
 
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -69,18 +52,22 @@ public class RmRoleGet extends DeclarativeWebScript
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "No role name was provided on the URL.");
         }
         
-        // Get the root records management node
-        // TODO this should be passed
-        List<NodeRef> roots = rmService.getFilePlans();
-        NodeRef root = roots.get(0);
-        
-        // Check that the role exists
-        if (filePlanRoleService.existsRole(root, roleParam) == false)
+        // get the file plan
+        NodeRef filePlan = getFilePlan(req);
+        if (filePlan == null)
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "The role " + roleParam + " does not exist on the records managment root " + root);
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "File plan does not exist.");
         }
         
-        model.put("role", filePlanRoleService.getRole(root, roleParam));
+        // Check that the role exists
+        if (filePlanRoleService.existsRole(filePlan, roleParam) == false)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, 
+                                         "The role " + roleParam + " does not exist on the records managment root " + filePlan);
+        }
+        
+        RoleItem item = new RoleItem(filePlanRoleService.getRole(filePlan, roleParam));
+        model.put("role", item);
         
         return model;
     }

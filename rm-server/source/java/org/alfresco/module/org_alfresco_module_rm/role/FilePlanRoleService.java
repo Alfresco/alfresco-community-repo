@@ -121,6 +121,33 @@ public interface FilePlanRoleService
     void deleteRole(NodeRef filePlan, String role);
     
     /**
+     * Gets all the users that have been directly assigned to a role.
+     * 
+     * @param filePlan  file plan
+     * @param role      role
+     * @return {@link Set}<{@link String}>  set of users
+     */
+    Set<String> getUsersAssignedToRole(NodeRef filePlan, String role);
+    
+    /**
+     * Gets all the groups that have been directly assigned to a role.
+     * 
+     * @param filePlan  file plan
+     * @param role      role
+     * @return {@link Set}<{@link String}>  set of groups
+     */
+    Set<String> getGroupsAssignedToRole(NodeRef filePlan, String role);
+    
+    /**
+     * Gets all the groups and users that have been directly assigned to a role.
+     * 
+     * @param filePlan  file plan
+     * @param role      role
+     * @return {@link Set}<{@link String}>  set of groups and users
+     */
+    Set<String> getAllAssignedToRole(NodeRef filePlan, String role);
+    
+    /**
      * Assign a role to an authority
      * 
      * @param filePlan      file plan
@@ -128,4 +155,14 @@ public interface FilePlanRoleService
      * @param authorityName authority name
      */
     void assignRoleToAuthority(NodeRef filePlan, String role, String authorityName);
+    
+    
+    /**
+     * Unassign a role from an authority
+     * 
+     * @param filePlan      file plan
+     * @param role          role
+     * @param authorityName authority name
+     */
+    void unassignRoleFromAuthority(NodeRef filePlan, String role, String authorityName);        
 }

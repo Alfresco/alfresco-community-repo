@@ -268,38 +268,43 @@
    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmroles.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolesGet"
       parent="webscript">
-      <property name="recordsManagementService" ref="RecordsManagementService" />
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
+      <property name="authorityService" ref="AuthorityService" />
    </bean>
 
    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmroles.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolesPost"
       parent="webscript">
-      <property name="recordsManagementService" ref="RecordsManagementService" />
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="capabilityService" ref="CapabilityService" />
+      <property name="authorityService" ref="AuthorityService" />
    </bean>
 
    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRoleGet"
       parent="webscript">
-      <property name="recordsManagementService" ref="RecordsManagementService" />
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
+      <property name="authorityService" ref="AuthorityService" />
    </bean>
 
    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.put"
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRolePut"
       parent="webscript">
-      <property name="recordsManagementService" ref="RecordsManagementService" />
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="capabilityService" ref="CapabilityService" />
+      <property name="authorityService" ref="AuthorityService" />
    </bean>
 
    <bean id="webscript.org.alfresco.rma.admin.rmrole.rmrole.delete"
       class="org.alfresco.module.org_alfresco_module_rm.script.admin.RmRoleDelete"
       parent="webscript">
-      <property name="recordsManagementService" ref="RecordsManagementService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="authorityService" ref="AuthorityService" />
    </bean>
 
    <!--  Capability API -->

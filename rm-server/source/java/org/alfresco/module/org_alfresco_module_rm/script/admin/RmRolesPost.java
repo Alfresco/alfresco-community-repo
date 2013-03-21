@@ -21,14 +21,11 @@ package org.alfresco.module.org_alfresco_module_rm.script.admin;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
@@ -38,7 +35,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -48,24 +44,12 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * 
  * @author Roy Wetherall
  */
-public class RmRolesPost extends DeclarativeWebScript
+public class RmRolesPost extends RoleDeclarativeWebScript
 {
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(RmRolesPost.class);
     
-    private RecordsManagementService rmService;
-    private FilePlanRoleService filePlanRoleService;
     private CapabilityService capabilityService;
-    
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-    
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
     
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -93,13 +77,15 @@ public class RmRolesPost extends DeclarativeWebScript
                 capabilites.add(capability);
             }
             
-            List<NodeRef> roots = rmService.getFilePlans();
-            NodeRef root = roots.get(0);
+            // get the file plan
+            NodeRef filePlan = getFilePlan(req);
+            if (filePlan == null)
+            {
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "File plan does not exist.");
+            }
             
-            Role role = filePlanRoleService.createRole(root, name, displayString, capabilites);            
-            
-            //Set<Role> roles = rmSecurityService.getRoles(root);
-            model.put("role", role);
+            Role role = filePlanRoleService.createRole(filePlan, name, displayString, capabilites);            
+            model.put("role", new RoleItem(role));
             
         }
         catch (IOException iox)

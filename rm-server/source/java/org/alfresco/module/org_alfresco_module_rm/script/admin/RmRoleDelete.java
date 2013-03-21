@@ -19,43 +19,30 @@
 package org.alfresco.module.org_alfresco_module_rm.script.admin;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * 
+ * Delete role web script
  * 
  * @author Roy Wetherall
  */
-public class RmRoleDelete extends DeclarativeWebScript
+public class RmRoleDelete extends RoleDeclarativeWebScript
 {
+    /** Logger */
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(RmRoleDelete.class);
-    
-    private RecordsManagementService rmService;
-    private FilePlanRoleService filePlanRoleService;
-    
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-    
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
 
+    /**
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     */
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -69,16 +56,21 @@ public class RmRoleDelete extends DeclarativeWebScript
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "No role name was provided on the URL.");
         }
         
-        List<NodeRef> roots = rmService.getFilePlans();
-        NodeRef root = roots.get(0);
+        // get the file plan
+        NodeRef filePlan = getFilePlan(req);
+        if (filePlan == null)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "File plan does not exist.");
+        }
      
         // Check that the role exists
-        if (filePlanRoleService.existsRole(root, roleParam) == false)
+        if (filePlanRoleService.existsRole(filePlan, roleParam) == false)
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "The role " + roleParam + " does not exist on the records managment root " + root);
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, 
+                                         "The role " + roleParam + " does not exist on the records managment root " + filePlan.toString());
         }
         
-        filePlanRoleService.deleteRole(root, roleParam);
+        filePlanRoleService.deleteRole(filePlan, roleParam);
         
         return model;
     }

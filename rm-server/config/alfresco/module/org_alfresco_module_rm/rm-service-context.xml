@@ -50,7 +50,6 @@
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
-        <property name="nodeDAO" ref="nodeDAO"/>
     </bean>
 
     <bean id="RecordsManagementService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -440,7 +439,10 @@
 	<bean id="filePlanService"
 	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
-        <property name="permissionService" ref="PermissionService"/>
+        <property name="permissionService" ref="PermissionService"/>        
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="internalNodeService" ref="nodeService"/>
+        <property name="siteService" ref="SiteService" />
     </bean>
 
     <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -466,10 +468,13 @@
             <value>
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlan=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlans=RM_ALLOW,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlan=RM_ALLOW,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlanBySiteId=RM_ALLOW,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.existsUnfiledContainer=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getUnfiledContainer=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getUnfiledContainer=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createUnfiledContainer=RM.Write.0
-    			org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.*=RM_DENY
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.*=RM_DENY
                 ]]>
             </value>
         </property>
@@ -597,7 +602,11 @@
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.createRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.updateRole=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.deleteRole=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getUsersAssignedToRole=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getGroupsAssignedToRole=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getAllAssignedToRole=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.assignRoleToAuthority=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.unassignRoleFromAuthority=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getAllRolesContainerGroup=RM_ALLOW
     			org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.*=RM_DENY
                 ]]>

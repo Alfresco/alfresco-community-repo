@@ -1,12 +1,19 @@
 <webscript>
-  <shortname>Get list of records management roles</shortname>
+  <shortname>Get list of records management roles and their details, for a file plan.</shortname>
   <description>
   <![CDATA[
-
-
+  The file plan should be specified in the URL parmeters.  If not the default file plan will be used.
+  
+  Parameters:
+     store_type, store_id, id - file plan node reference
+     siteid - id of a RM site to take the file plan from
+     user - only returns roles that this user is assigned to
+     auths - if true, returns details of authorites directly assigned to the role.  false by default.	
   ]]>
   </description>
-  <url>/api/rma/admin/rmroles?user={user?}</url>
+  <url>/api/rma/admin/rmroles?user={user?}&amp;auths={auths?}</url>  <!--  NOTE: this URL should be considered as deprecated -->
+  <url>/api/rma/admin/{store_type}/{store_id}/{id}/rmroles?user={user?}&amp;auths={auths?}</url>
+  <url>/api/rma/admin/{siteid}/rmroles?user={user?}&amp;auths={auths?}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>

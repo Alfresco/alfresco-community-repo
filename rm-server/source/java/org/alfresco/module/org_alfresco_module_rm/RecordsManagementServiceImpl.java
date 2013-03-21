@@ -35,7 +35,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomM
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
-import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -47,8 +46,10 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -60,7 +61,8 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                                           implements RecordsManagementService,
                                                      RecordsManagementModel,
                                                      RecordsManagementPolicies.OnCreateReference,
-                                                     RecordsManagementPolicies.OnRemoveReference
+                                                     RecordsManagementPolicies.OnRemoveReference,
+                                                     ApplicationContextAware
 {
     /** I18N */
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
@@ -86,9 +88,6 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
 
     /** Service registry */
     private RecordsManagementServiceRegistry serviceRegistry;
-    
-    /** Node DAO */
-    private NodeDAO nodeDAO;
 
     /** Policy component */
     private PolicyComponent policyComponent;
@@ -98,6 +97,18 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     
     /** Java behaviour */
     private JavaBehaviour onChangeToDispositionActionDefinition;
+    
+    /** Application context */
+    private ApplicationContext applicationContext;
+    
+    /**
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+    }
     
     /**
      * Set the service registry service
@@ -119,16 +130,6 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
-    }
-
-    /**
-     * Set the node DAO object
-     * 
-     * @param nodeDAO   node DAO
-     */
-    public void setNodeDAO(NodeDAO nodeDAO)
-    {
-        this.nodeDAO = nodeDAO;
     }
     
     /**
@@ -571,32 +572,13 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getFilePlan(org.alfresco.service.cmr.repository.NodeRef)
+     * @deprecated As of 2.1, see {@link FilePlanService#getFilePlan(NodeRef)}
      */
+    @Deprecated
     public NodeRef getFilePlan(NodeRef nodeRef)
     {
-       NodeRef result = null;
-               
-       if (nodeRef != null)
-       {
-            result = (NodeRef)nodeService.getProperty(nodeRef, PROP_ROOT_NODEREF);
-            if (result == null)
-            {
-                if (instanceOf(nodeRef, TYPE_FILE_PLAN) == true)
-                {
-                    result = nodeRef;
-                }
-                else
-                {
-                    ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
-                    if (parentAssocRef != null)
-                    {
-                        result = getFilePlan(parentAssocRef.getParentRef());
-                    }
-                }
-            }
-       }      
-        
-       return result;
+        FilePlanService filePlanService = (FilePlanService)applicationContext.getBean("filePlanService");
+        return filePlanService.getFilePlan(nodeRef);
     }
 
     /**
@@ -648,27 +630,13 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getRecordsManagementRoots(org.alfresco.service.cmr.repository.StoreRef)
+     * 
+     * @deprecated As of 2.1, see {@link FilePlanService#getFilePlans()}
      */
+    @Deprecated
     public List<NodeRef> getFilePlans()
     {
-        final List<NodeRef> results = new ArrayList<NodeRef>();
-        Set<QName> aspects = new HashSet<QName>(1);
-        aspects.add(ASPECT_RECORDS_MANAGEMENT_ROOT);
-        nodeDAO.getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
-        {            
-            @Override
-            public boolean handle(Pair<Long, NodeRef> nodePair)
-            {
-                NodeRef nodeRef = nodePair.getSecond();
-                if (StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.equals(nodeRef.getStoreRef()) == false)
-                {                
-                    results.add(nodeRef);
-                }
-                
-                return true;
-            }
-        });
-        return results;
+        return new ArrayList<NodeRef>(serviceRegistry.getFilePlanService().getFilePlans());
     }
     
     /**

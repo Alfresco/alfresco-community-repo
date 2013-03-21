@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -158,7 +159,11 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
         });
     }
     
-    public void testAssignRoleToAuthority() throws Exception
+    /**
+     * {@link FilePlanRoleService#assignRoleToAuthority(org.alfresco.service.cmr.repository.NodeRef, String, String)}
+     * {@link FilePlanRoleService#getAuthorities(org.alfresco.service.cmr.repository.NodeRef, String)
+     */
+    public void testAuthorityAssignment() throws Exception
     {
         doTestInTransaction(new Test<Void>()
         {
@@ -168,11 +173,36 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
                 assertNotNull(roles);
                 assertEquals(1, roles.size());
                 
+                Set<String> authorities = filePlanRoleService.getUsersAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                assertNotNull(authorities);
+                assertEquals(1, authorities.size());
+                
+                authorities = filePlanRoleService.getGroupsAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                assertNotNull(authorities);
+                assertEquals(0, authorities.size());
+                
+                authorities = filePlanRoleService.getAllAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                assertNotNull(authorities);
+                assertEquals(1, authorities.size());
+                
                 filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NAME_RECORDS_MANAGER, rmUserName);
                 
                 roles = filePlanRoleService.getRolesByUser(filePlan, rmUserName);
                 assertNotNull(roles);
                 assertEquals(2, roles.size());
+                
+                authorities = filePlanRoleService.getUsersAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                assertNotNull(authorities);
+                assertEquals(2, authorities.size());
+                
+                authorities = filePlanRoleService.getGroupsAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                assertNotNull(authorities);
+                assertEquals(0, authorities.size());
+                
+                authorities = filePlanRoleService.getAllAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                assertNotNull(authorities);
+                assertEquals(2, authorities.size());
+                
                 
                 return null;
             }

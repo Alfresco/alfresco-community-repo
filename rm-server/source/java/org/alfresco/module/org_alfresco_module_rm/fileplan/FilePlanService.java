@@ -18,7 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.fileplan;
 
+import java.util.Set;
+
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 import com.hazelcast.impl.Node;
 
@@ -37,6 +40,38 @@ public interface FilePlanService
      * @return boolean  true if node is a file plan node
      */
     boolean isFilePlan(NodeRef nodeRef);
+    
+    /**
+     * Gets all the file plan nodes.
+     * Looks in the SpacesStore by default. 
+     * 
+     * @return  Set<NodeRef>    set of file plan nodes
+     */
+    Set<NodeRef> getFilePlans();
+    
+    /**
+     * Getse all the file plan nodes in a store.
+     * 
+     * @param  storeRef     store reference
+     * @return Set<NodeRef> set of file plan nodes
+     */
+    Set<NodeRef> getFilePlans(StoreRef storeRef);
+    
+    /**
+     * Gets the file plan the node is in.
+     * 
+     * @return  {@link NodeRef} file node reference, null if none 
+     */
+    NodeRef getFilePlan(NodeRef nodeRef);
+    
+    /**
+     * Gets a file plan by site id.  Assumes the site is a RM site and that the file plan node, ie
+     * the document library container, has been already created.  Otherwise returns null.
+     * 
+     * @param siteId    records management site id
+     * @return NodeRef  file plan, null if can't be found
+     */
+    NodeRef getFilePlanBySiteId(String siteId);
     
     /**
      * Indicates whether the unfiled container exists for a given file plan or not.

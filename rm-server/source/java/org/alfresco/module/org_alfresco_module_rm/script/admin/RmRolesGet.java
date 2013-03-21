@@ -19,20 +19,16 @@
 package org.alfresco.module.org_alfresco_module_rm.script.admin;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -40,55 +36,49 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * 
  * @author Roy Wetherall
  */
-public class RmRolesGet extends DeclarativeWebScript
+public class RmRolesGet extends RoleDeclarativeWebScript
 {
+    /** Logger */
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(RmRolesGet.class);
 
-    private RecordsManagementService rmService;
-
-    private FilePlanRoleService filePlanRoleService;
-
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-
-    public void setRecordsManagementService(RecordsManagementService rmService)
-    {
-        this.rmService = rmService;
-    }
-
+    /**
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     */
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
         Set<Role> roles = null;
 
-        // TODO should be passed
-        List<NodeRef> roots = rmService.getFilePlans();
-        if (roots != null && roots.size() > 0)
+        // get the file plan
+        NodeRef filePlan = getFilePlan(req);
+        if (filePlan == null)
         {
-            NodeRef root = roots.get(0);
+            throw new WebScriptException(Status.STATUS_FOUND, "File plan does not exist.");
+        }
 
-            // Get the user filter
-            String user = req.getParameter("user");
-            if (user != null && user.length() != 0)
-            {
-                roles = filePlanRoleService.getRolesByUser(root, user);
-            }
-            else
-            {
-                roles = filePlanRoleService.getRoles(root);
-            }
+        // get the user filter
+        String user = req.getParameter("user");
+        if (user != null && user.length() != 0)
+        {
+            roles = filePlanRoleService.getRolesByUser(filePlan, user);
         }
         else
         {
-            roles = new HashSet<Role>(1);
+            roles = filePlanRoleService.getRoles(filePlan);
         }
-
-        model.put("roles", roles);
-
+        
+        // get the auths parameter
+        boolean showAuths = false;
+        String auths = req.getParameter("auths");
+        if (auths != null && auths.length() != 0)
+        {
+            showAuths = Boolean.parseBoolean(auths);
+        }
+  
+        Set<RoleItem> items = createRoleItems(filePlan, roles, showAuths);
+        model.put("roles", items);
         return model;
     }
 }

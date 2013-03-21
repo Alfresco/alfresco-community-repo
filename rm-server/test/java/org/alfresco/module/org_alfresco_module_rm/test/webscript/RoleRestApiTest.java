@@ -18,14 +18,18 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 
+import java.text.MessageFormat;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.GUID;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
@@ -41,9 +45,20 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 public class RoleRestApiTest extends BaseRMWebScriptTestCase 
                              implements RecordsManagementModel
 {
-    protected static final String GET_ROLES_URL = "/api/rma/admin/rmroles";
+    protected static final String GET_ROLES_URL_BY_SITE = "/api/rma/admin/{0}/rmroles";
+    protected static final String GET_ROLES_URL_BY_FILEPLAN = "/api/rma/admin/{0}/{1}/{2}/rmroles";
     protected static final String SERVICE_URL_PREFIX = "/alfresco/service";
-    protected static final String APPLICATION_JSON = "application/json";    
+    protected static final String APPLICATION_JSON = "application/json";   
+    
+    private String getRolesUrlBySite()
+    {
+        return MessageFormat.format(GET_ROLES_URL_BY_SITE, SITE_ID);
+    }
+    
+    private String getRoleUrlByFilePlan()
+    {
+        return MessageFormat.format(GET_ROLES_URL_BY_FILEPLAN, filePlan.getStoreRef().getProtocol(), filePlan.getStoreRef().getIdentifier(), filePlan.getId()); 
+    }
 
     public void testGetRoles() throws Exception
     {
@@ -54,13 +69,18 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
         filePlanRoleService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));
         filePlanRoleService.createRole(filePlan, role2, "My Test Role Too", getListOfCapabilities(5));
         
+        // create test group
+        String groupName = GUID.generate();
+        String group = authorityService.createAuthority(AuthorityType.GROUP, groupName, "monkey", null);        
+        
         // Add the admin user to one of the roles
         filePlanRoleService.assignRoleToAuthority(filePlan, role1, "admin");
+        filePlanRoleService.assignRoleToAuthority(filePlan, role1, group);
         
         try
         {
-            // Get the roles
-            Response rsp = sendRequest(new GetRequest(GET_ROLES_URL),200);
+            // Get the roles (for the default file plan)
+            Response rsp = sendRequest(new GetRequest(getRolesUrlBySite()),200);
             String rspContent = rsp.getContentAsString();
             
             JSONObject obj = new JSONObject(rspContent);
@@ -71,20 +91,16 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
             assertNotNull(roleObj);
             assertEquals(role1, roleObj.get("name"));
             assertEquals("My Test Role", roleObj.get("displayLabel"));
-            JSONArray caps = roleObj.getJSONArray("capabilities");
-            assertNotNull(caps);
-            assertEquals(5, caps.length());
+            checkCapabilities(roleObj, 5);
             
             roleObj = roles.getJSONObject(role2);
             assertNotNull(roleObj);
             assertEquals(role2, roleObj.get("name"));
             assertEquals("My Test Role Too", roleObj.get("displayLabel"));
-            caps = roleObj.getJSONArray("capabilities");
-            assertNotNull(caps);
-            assertEquals(5, caps.length());   
+            checkCapabilities(roleObj, 5);   
             
-            // Get the roles for "admin"
-            rsp = sendRequest(new GetRequest(GET_ROLES_URL + "?user=admin"),200);
+            // Get the roles, specifying the file plan
+            rsp = sendRequest(new GetRequest(getRoleUrlByFilePlan()),200);
             rspContent = rsp.getContentAsString();
             
             obj = new JSONObject(rspContent);
@@ -95,11 +111,67 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
             assertNotNull(roleObj);
             assertEquals(role1, roleObj.get("name"));
             assertEquals("My Test Role", roleObj.get("displayLabel"));
-            caps = roleObj.getJSONArray("capabilities");
-            assertNotNull(caps);
-            assertEquals(5, caps.length());
+            checkCapabilities(roleObj, 5);
+            
+            roleObj = roles.getJSONObject(role2);
+            assertNotNull(roleObj);
+            assertEquals(role2, roleObj.get("name"));
+            assertEquals("My Test Role Too", roleObj.get("displayLabel"));
+            checkCapabilities(roleObj, 5);  
+            
+            // Get the roles for "admin"
+            rsp = sendRequest(new GetRequest(getRolesUrlBySite() + "?user=admin"),200);
+            rspContent = rsp.getContentAsString();
+            
+            obj = new JSONObject(rspContent);
+            roles = obj.getJSONObject("data");
+            assertNotNull(roles);
+            
+            roleObj = roles.getJSONObject(role1);
+            assertNotNull(roleObj);
+            assertEquals(role1, roleObj.get("name"));
+            assertEquals("My Test Role", roleObj.get("displayLabel"));
+            checkCapabilities(roleObj, 5);
             
             assertFalse(roles.has(role2));
+            
+            // Get the roles including assigned authorities
+            rsp = sendRequest(new GetRequest(getRoleUrlByFilePlan() + "?auths=true"),200);
+            rspContent = rsp.getContentAsString();
+            
+            System.out.println(rspContent);
+            
+            obj = new JSONObject(rspContent);
+            roles = obj.getJSONObject("data");
+            assertNotNull(roles);
+            
+            roleObj = roles.getJSONObject(role1);
+            assertNotNull(roleObj);
+            assertEquals(role1, roleObj.get("name"));
+            assertEquals("My Test Role", roleObj.get("displayLabel"));
+            checkCapabilities(roleObj, 5);
+            
+            JSONArray users = roleObj.getJSONArray("assignedUsers");
+            assertNotNull(users);
+            assertEquals(1, users.length());
+            
+            JSONArray groups = roleObj.getJSONArray("assignedGroups");
+            assertNotNull(groups);
+            assertEquals(1, groups.length());            
+            
+            roleObj = roles.getJSONObject(role2);
+            assertNotNull(roleObj);
+            assertEquals(role2, roleObj.get("name"));
+            assertEquals("My Test Role Too", roleObj.get("displayLabel"));
+            checkCapabilities(roleObj, 5);  
+            
+            users = roleObj.getJSONArray("assignedUsers");
+            assertNotNull(users);
+            assertEquals(0, users.length());
+            
+            groups = roleObj.getJSONArray("assignedGroups");
+            assertNotNull(groups);
+            assertEquals(0, groups.length());
         }
         finally
         {
@@ -108,6 +180,25 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
             filePlanRoleService.deleteRole(filePlan, role2);
         }
         
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void checkCapabilities(JSONObject role, int expectedCount) throws JSONException
+    {
+        JSONObject capabilities = role.getJSONObject("capabilities");
+        assertNotNull(capabilities);
+        
+        int count = 0;
+        Iterator it = capabilities.keys();
+        while (it.hasNext())
+        {
+            String key = (String)it.next();
+            assertNotNull(key);
+            assertNotNull(capabilities.getString(key));
+            count ++;            
+        }
+        
+        assertEquals(expectedCount, count);       
     }
     
     public void testPostRoles() throws Exception
@@ -126,7 +217,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
         obj.put("displayLabel", "Display Label");
         obj.put("capabilities", arrCaps);
         
-        Response rsp = sendRequest(new PostRequest(GET_ROLES_URL, obj.toString(), APPLICATION_JSON),200);
+        Response rsp = sendRequest(new PostRequest(getRolesUrlBySite(), obj.toString(), APPLICATION_JSON),200);
         try
         {
             String rspContent = rsp.getContentAsString();
@@ -138,9 +229,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
             assertNotNull(roleObj);
             assertEquals(roleName, roleObj.get("name"));
             assertEquals("Display Label", roleObj.get("displayLabel"));
-            JSONArray resultCaps = roleObj.getJSONArray("capabilities");
-            assertNotNull(resultCaps);
-            assertEquals(5, resultCaps.length());
+            checkCapabilities(roleObj, 5);
         }
         finally
         {
@@ -170,7 +259,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
             obj.put("capabilities", arrCaps);
             
             // Get the roles
-            Response rsp = sendRequest(new PutRequest(GET_ROLES_URL + "/" + role1, obj.toString(), APPLICATION_JSON),200);
+            Response rsp = sendRequest(new PutRequest(getRolesUrlBySite() + "/" + role1, obj.toString(), APPLICATION_JSON),200);
             String rspContent = rsp.getContentAsString();
             
             JSONObject result = new JSONObject(rspContent);
@@ -180,12 +269,10 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
             assertNotNull(roleObj);
             assertEquals(role1, roleObj.get("name"));
             assertEquals("Changed", roleObj.get("displayLabel"));
-            JSONArray bob = roleObj.getJSONArray("capabilities");
-            assertNotNull(bob);
-            assertEquals(4, bob.length());      
+            checkCapabilities(roleObj, 4);      
             
             // Bad requests
-            sendRequest(new PutRequest(GET_ROLES_URL + "/cheese", obj.toString(), APPLICATION_JSON), 404);   
+            sendRequest(new PutRequest(getRolesUrlBySite() + "/cheese", obj.toString(), APPLICATION_JSON), 404);   
         }
         finally
         {
@@ -203,7 +290,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
         try
         {
             // Get the roles
-            Response rsp = sendRequest(new GetRequest(GET_ROLES_URL + "/" + role1),200);
+            Response rsp = sendRequest(new GetRequest(getRolesUrlBySite() + "/" + role1),200);
             String rspContent = rsp.getContentAsString();
             
             JSONObject obj = new JSONObject(rspContent);
@@ -213,12 +300,10 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
             assertNotNull(roleObj);
             assertEquals(role1, roleObj.get("name"));
             assertEquals("My Test Role", roleObj.get("displayLabel"));
-            JSONArray caps = roleObj.getJSONArray("capabilities");
-            assertNotNull(caps);
-            assertEquals(5, caps.length());       
+            checkCapabilities(roleObj, 5);       
             
             // Bad requests
-            sendRequest(new GetRequest(GET_ROLES_URL + "/cheese"), 404);
+            sendRequest(new GetRequest(getRolesUrlBySite() + "/cheese"), 404);
         }
         finally
         {
@@ -234,11 +319,11 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
         assertFalse(filePlanRoleService.existsRole(filePlan, role1));        
         filePlanRoleService.createRole(filePlan, role1, "My Test Role", getListOfCapabilities(5));        
         assertTrue(filePlanRoleService.existsRole(filePlan, role1));        
-        sendRequest(new DeleteRequest(GET_ROLES_URL + "/" + role1),200);        
+        sendRequest(new DeleteRequest(getRolesUrlBySite() + "/" + role1),200);        
         assertFalse(filePlanRoleService.existsRole(filePlan, role1));     
         
         // Bad request
-        sendRequest(new DeleteRequest(GET_ROLES_URL + "/cheese"), 404);  
+        sendRequest(new DeleteRequest(getRolesUrlBySite() + "/cheese"), 404);  
     }
     
     private Set<Capability> getListOfCapabilities(int size)

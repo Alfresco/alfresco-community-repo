@@ -18,14 +18,7 @@
  */
 package org.alfresco.repo.webdav;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.NetworkInterface;
-import java.net.URL;
-
 import javax.servlet.http.HttpServletResponse;
-
-import org.alfresco.jlan.util.IPAddress;
 
 /**
  * Abstract base class for the hierarchical methods COPY and MOVE
@@ -83,6 +76,7 @@ public abstract class HierarchicalMethod extends WebDAVMethod
         // Check that the URL is on this server and refers to the WebDAV
         // path, if not then return an error
         getDAVHelper().checkDestinationURL(m_request, destURL);
+
         
         m_strDestinationPath = getDAVHelper().getDestinationPath(getContextPath(), getServletPath(), destURL);
         

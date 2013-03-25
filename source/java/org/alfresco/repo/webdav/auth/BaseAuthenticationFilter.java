@@ -215,7 +215,6 @@ public abstract class BaseAuthenticationFilter
         SessionUser sessionUser = (SessionUser) session.getAttribute(sessionAttrib);
         if (sessionUser != null)
         {
-            String ticket = sessionUser.getTicket();
             try
             {
                 if (getLogger().isDebugEnabled())

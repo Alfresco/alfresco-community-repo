@@ -386,8 +386,9 @@ public class GetMethod extends WebDAVMethod
                 fileInfo = getFileFolderService().getFileInfo(fileInfo.getLinkNodeRef());
                 wasLink = true;
             }
+            
             // Get the list of child nodes for the parent node
-            List<FileInfo> childNodeInfos = fileFolderService.list(fileInfo.getNodeRef());
+            List<FileInfo> childNodeInfos = getDAVHelper().getChildren(fileInfo);
 
             // Send back the start of the HTML
             writer.write("<html><head><title>");

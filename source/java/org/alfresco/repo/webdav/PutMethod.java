@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
@@ -182,14 +183,14 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             {
                 FileInfo parentNodeInfo = getNodeForPath(getRootNodeRef(), paths[0]);
                 // create file
-                contentNodeInfo = fileFolderService.create(parentNodeInfo.getNodeRef(), paths[1], ContentModel.TYPE_CONTENT);
+                contentNodeInfo = getDAVHelper().createFile(parentNodeInfo, paths[1]);  
                 created = true;
                 
             }
             catch (FileNotFoundException ee)
             {
                 // bad path
-                throw new WebDAVServerException(HttpServletResponse.SC_BAD_REQUEST);
+                throw new WebDAVServerException(HttpServletResponse.SC_CONFLICT);
             }
             catch (FileExistsException ee)
             {
@@ -282,6 +283,10 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             
             // Set the response status, depending if the node existed or not
             m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);
+        }
+        catch (AccessDeniedException e)
+        {
+            throw new WebDAVServerException(HttpServletResponse.SC_FORBIDDEN, e);
         }
         catch (Throwable e) 
         {

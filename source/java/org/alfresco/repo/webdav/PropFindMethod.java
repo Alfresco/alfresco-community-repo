@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,7 +32,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.webdav.auth.AuthenticationFilter;
-import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -182,9 +181,7 @@ public class PropFindMethod extends WebDAVMethod
     protected void executeImpl() throws WebDAVServerException, Exception
     {
         m_response.setStatus(WebDAV.WEBDAV_SC_MULTI_STATUS);
-
-        FileFolderService fileFolderService = getFileFolderService();
-
+        
         FileInfo pathNodeInfo = null;
         try
         {
@@ -268,8 +265,8 @@ public class PropFindMethod extends WebDAVMethod
                 for (FileInfo curNodeInfo : nodeInfos)
                 {
                     // Get the list of child nodes for the current node
-                    List<FileInfo> childNodeInfos = fileFolderService.list(curNodeInfo.getNodeRef());
-
+                    List<FileInfo> childNodeInfos = getDAVHelper().getChildren(curNodeInfo);
+                    
                     // can skip the current node if it doesn't have children
                     if (childNodeInfos.size() == 0)
                     {
@@ -282,7 +279,17 @@ public class PropFindMethod extends WebDAVMethod
                     baseBuild.setLength(baseLen);
                     try
                     {
-                        String pathSnippet = getDAVHelper().getPathFromNode(pathNodeInfo.getNodeRef(), curNodeInfo.getNodeRef());
+                        String pathSnippet = null;
+                        if ((pathNodeInfo.getNodeRef() == null) && (curNodeInfo.getNodeRef() == null))
+                        {
+                            // TODO review - note: can be null in case of Thor
+                            pathSnippet = "/";
+                        }
+                        else
+                        {
+                            pathSnippet = getDAVHelper().getPathFromNode(pathNodeInfo.getNodeRef(), curNodeInfo.getNodeRef());
+                        }
+                        
                         baseBuild.append(pathSnippet);
                     }
                     catch (FileNotFoundException e)

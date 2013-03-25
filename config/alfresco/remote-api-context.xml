@@ -24,8 +24,8 @@
       </property>
       <property name="lockStoreFactory" ref="webdavLockStoreFactory"/>
    </bean>
-
-   <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper">
+   
+   <bean id="baseWebDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper" abstract="true">
       <property name="serviceRegistry">
          <ref bean="ServiceRegistry" />
       </property>
@@ -74,14 +74,8 @@
       <property name="urlPathPrefix">
          <value>${system.webdav.url.path.prefix}</value>
       </property>
-   </bean>
+    </bean>   
 
-    <bean id="surfConfigCleaner" parent="webscript.org.alfresco.repository.store.remoteadm.get" class="org.alfresco.repo.surf.policy.SurfConfigCleaner" init-method="init">
-        <property name="fileFolderService" ref="fileFolderService" />
-        <property name="nodeService" ref="nodeService" />
-        <property name="policyComponent" ref="policyComponent" />
-        <property name="siteService" ref="siteService" />
-    </bean>
-
+    <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper" parent="baseWebDAVHelper" />
 
 </beans>

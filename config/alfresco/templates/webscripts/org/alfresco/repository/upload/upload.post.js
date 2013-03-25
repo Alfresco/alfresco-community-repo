@@ -61,10 +61,14 @@ function main()
       {
          switch (String(field.name).toLowerCase())
          {
+            case "filename":
+               filename = fnFieldValue(field);
+               break;
+            
             case "filedata":
                if (field.isFile)
                {
-                  filename = field.filename;
+                  filename = filename ? filename : field.filename;
                   content = field.content;
                   mimetype = field.mimetype;
                }
@@ -345,7 +349,6 @@ function main()
          // Also perform the encoding guess step in the write() method to save an additional Writer operation.
          newFile.properties.content.write(content, false, true);
          newFile.save();
-         
          
          // TODO (THOR-175) - review
          // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)

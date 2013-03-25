@@ -667,7 +667,13 @@ public abstract class WebDAVMethod
                     if (index != -1)
             {
                         // TODO: implement parsing of weak ETags: W/"123..".
-                        eTag = conditions[j].substring(index + 1, conditions[j].indexOf("]"));
+                        int index2 = conditions[j].indexOf("]");
+                        if (index2 == -1)
+                        {
+                            logger.warn("No closing ']': "+conditions[j]);
+                            index2 = conditions[j].length();
+                        }
+                        eTag = conditions[j].substring(index + 1, index2);
                         c.addETag(eTag, fNot);
             }
 
@@ -1216,6 +1222,12 @@ public abstract class WebDAVMethod
      */
     protected LockInfo getNodeLockInfo(final FileInfo nodeInfo)
     {
+        if (nodeInfo.getNodeRef() == null)
+        {
+            // TODO review - note: can be null in case of Thor root
+            return new LockInfoImpl();
+        }
+        
         // perf optimisation - effectively run against unprotected nodeService (to bypass repeated permission checks)
         return AuthenticationUtil.runAs(new RunAsWork<LockInfo>()
         {
@@ -1366,30 +1378,15 @@ public abstract class WebDAVMethod
 
         parentLock.getRWLock().readLock().lock();
         try
-                {
-                    // In this case node is locked indirectly.
+        {
+            // now check for lock status ...
             if (parentLock.isLocked() && WebDAV.INFINITY.equals(parentLock.getDepth()))
             {
                 // In this case node is locked indirectly.
-                //Get lock scope
-                // Get shared lock tokens
-                
-                // Store lock information to the lockInfo object
-                
-                // Get lock token of the locked node - this is indirect lock token.
-                
                 return parentLock;
-                }
-            return null;
             }
-                // No has no exclusive lock but can be locked with shared lock
-                    // Check node lock depth.
-                    // If depth is WebDAV.INFINITY then return this node's Lock token.
-                        // In this case node is locked indirectly.
-
-                        //Get lock scope
-        
-                        // Node has it's own Lock token.
+            return null;
+        }
         finally
         {
             parentLock.getRWLock().readLock().unlock();

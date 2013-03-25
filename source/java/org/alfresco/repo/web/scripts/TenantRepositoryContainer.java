@@ -70,11 +70,15 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
         this.tenantAdminService = tenantAdminService;
     }
     
+    /**
+     * @param transactionService the transactionService to set
+     */
     public void setTransactionService(TransactionService transactionService)
     {
-        this.transactionService = transactionService;
         super.setTransactionService(transactionService);
+        this.transactionService = transactionService;
     }
+
     
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.AbstractRuntimeContainer#getRegistry()
@@ -139,7 +143,7 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
      * @see org.alfresco.web.scripts.AbstractRuntimeContainer#reset()
      */
     @Override
-    public void reset() 
+    public void reset()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
@@ -147,7 +151,7 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
             {
                 destroy();
                 init();
-                
+
                 return null;
             }
         }, true, false);

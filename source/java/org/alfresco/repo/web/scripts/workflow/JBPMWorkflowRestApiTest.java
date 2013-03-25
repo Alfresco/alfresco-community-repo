@@ -118,6 +118,11 @@ public class JBPMWorkflowRestApiTest extends AbstractWorkflowRestApiTest
         assertTrue("Transition 'Approve' not found", found);
     }
     
+    public void testNothing() throws Exception
+    {
+        //NOOP
+    }
+    
     @Override
     protected String getEngine()
     {

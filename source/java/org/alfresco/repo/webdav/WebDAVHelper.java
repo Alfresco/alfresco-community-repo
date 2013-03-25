@@ -72,7 +72,6 @@ import org.xml.sax.helpers.AttributesImpl;
 public class WebDAVHelper
 {
     // Constants
- 
     public static final String BEAN_NAME = "webDAVHelper";
 
     private static final String HTTPS_SCHEME = "https://";
@@ -85,7 +84,7 @@ public class WebDAVHelper
     public static final String EMPTY_SITE_ID = "";
     
     // Logging
-    private static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
+    protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
     
     // Service registry TODO: eliminate this - not dependency injection!
     private ServiceRegistry m_serviceRegistry;
@@ -553,6 +552,11 @@ public class WebDAVHelper
         }
         return sb.toString();
     }
+        
+    public FileInfo createFile(FileInfo parentNodeInfo, String path) throws WebDAVServerException
+    {
+        return m_fileFolderService.create(parentNodeInfo.getNodeRef(), path, ContentModel.TYPE_CONTENT);
+    }
 
     public List<FileInfo> getChildren(FileInfo fileInfo) throws WebDAVServerException
     {
@@ -775,7 +779,7 @@ public class WebDAVHelper
     public String determineSiteId(WebDAVMethod method)
     {
         SiteService siteService = getServiceRegistry().getSiteService();
-        String siteId = null;
+        String siteId;
         try
         {
             FileInfo fileInfo = getNodeForPath(method.getRootNodeRef(), method.getPath());

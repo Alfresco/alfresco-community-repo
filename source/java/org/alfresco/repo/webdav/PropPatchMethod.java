@@ -318,7 +318,6 @@ public class PropPatchMethod extends PropFindMethod
 
             propertyAction.setResult(statusCode, statusCodeDescription);
         }
-
         if (deadProperties != null)
         {
             persistDeadProperties(nodeInfo.getNodeRef(), deadProperties);

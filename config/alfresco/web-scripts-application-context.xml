@@ -244,6 +244,12 @@
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
    </bean>
 
+   <!--  HTTP Basic Authenticator (Servlet based) for MT -->
+   <bean id="webscripts.authenticator.basic.tenant" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
+      <property name="authenticationService" ref="AuthenticationService" />
+      <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
+   </bean>
+
    <!--  JSR-168 Authenticator (Portal based) -->
    <bean id="webscripts.authenticator.jsr168" class="org.alfresco.repo.web.scripts.portlet.JSR168PortletAuthenticatorFactory" lazy-init="true">
       <property name="unprotAuthenticationService" ref="authenticationService" />
@@ -496,6 +502,13 @@
       <property name="hiddenAspect" ref="hiddenAspect" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
+   <bean id="surfConfigCleaner" parent="webscript.org.alfresco.repository.store.remoteadm.get" class="org.alfresco.repo.surf.policy.SurfConfigCleaner"
+      init-method="init">
+      <property name="fileFolderService" ref="fileFolderService" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="siteService" ref="siteService" />
+   </bean>
    <bean id="webscript.org.alfresco.repository.store.remoteadm.post" class="org.alfresco.repo.web.scripts.bean.ADMRemoteStore" parent="webscript">
       <property name="nodeService" ref="NodeService" />
       <property name="unprotectedNodeService" ref="nodeService" />
@@ -747,9 +760,7 @@
    <!--                         -->
    
    <!-- abstract site web script -->
-   <bean id="abstractSiteWebScript"
-          class="org.alfresco.repo.web.scripts.site.AbstractSiteWebscript"
-          parent="webscript" abstract="true">
+   <bean id="abstractSiteWebScript" parent="webscript" abstract="true">
       <property name="siteService" ref="SiteService"/>
       <property name="authorityService" ref="AuthorityService"/>
    </bean>
@@ -1272,9 +1283,7 @@
     <!--                                   -->
 
     <!-- abstract audit web script -->
-    <bean id="abstractAuditWebScript"
-          class="org.alfresco.repo.web.scripts.audit.AbstractAuditWebscript"
-          parent="webscript" abstract="true">
+    <bean id="abstractAuditWebScript" parent="webscript" abstract="true">
         <property name="auditService" ref="AuditService" />
     </bean>
 
@@ -1307,9 +1316,7 @@
     <!--                                   -->
 
     <!-- abstract admin web script -->
-    <bean id="abstractAdminWebScript"
-          class="org.alfresco.repo.web.scripts.admin.AbstractAdminWebscript"
-          parent="webscript" abstract="true">
+    <bean id="abstractAdminWebScript" parent="webscript" abstract="true">
         <property name="repoAdminService" ref="RepoAdminService" />
     </bean>
 
@@ -1588,9 +1595,7 @@
    <!--                                        -->
    
    <!-- abstract links web script -->
-   <bean id="abstractLinksWebScript"
-          class="org.alfresco.repo.web.scripts.calendar.AbstractLinksWebscript"
-          parent="webscript" abstract="true">
+   <bean id="abstractLinksWebScript" parent="webscript" abstract="true">
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="linksService" ref="LinksService"/>
@@ -1640,9 +1645,7 @@
    <!--                                        -->
    
    <!-- abstract wiki web script -->
-   <bean id="abstractWikiWebScript"
-          class="org.alfresco.repo.web.scripts.wiki.AbstractWikiWebscript"
-          parent="webscript" abstract="true">
+   <bean id="abstractWikiWebScript" parent="webscript" abstract="true">
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="wikiService" ref="WikiService"/>
@@ -1696,9 +1699,7 @@
    <!--                                        -->
    
    <!-- abstract discussions web script -->
-   <bean id="abstractDiscussionWebScript"
-          class="org.alfresco.repo.web.scripts.discussion.AbstractDiscussionWebscript"
-          parent="webscript" abstract="true">
+   <bean id="abstractDiscussionWebScript" parent="webscript" abstract="true">
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="personService" ref="PersonService"/>
@@ -1781,9 +1782,7 @@
    <!--                                        -->
    
    <!-- abstract calendar web script -->
-   <bean id="abstractCalendarWebScript"
-          class="org.alfresco.repo.web.scripts.calendar.AbstractCalendarWebscript"
-          parent="webscript" abstract="true">
+   <bean id="abstractCalendarWebScript" parent="webscript" abstract="true">
         <property name="nodeService" ref="NodeService"/>
         <property name="siteService" ref="SiteService"/>
         <property name="activityService" ref="activityService"/>
@@ -1875,7 +1874,32 @@
       </list>
     </property>
   </bean>
-  
+   
+   
+   <!--                                                                                                       -->
+   <!-- Multi-Tenant Admin                                                                                    -->
+   <!--                                                                                                       -->
+   <!--                                                                                                       -->
+   
+   <bean id="abstractTenantAdminWebScript" parent="webscript" abstract="true">
+        <property name="tenantAdminService" ref="tenantAdminService"/>
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.tenant.tenants.get"
+         class="org.alfresco.repo.web.scripts.tenant.TenantsGet"
+         parent="abstractTenantAdminWebScript">
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.tenant.tenants.post"
+         class="org.alfresco.repo.web.scripts.tenant.TenantPost"
+         parent="abstractTenantAdminWebScript">
+   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.tenant.tenants.delete"
+         class="org.alfresco.repo.web.scripts.tenant.TenantDelete"
+         parent="abstractTenantAdminWebScript">
+   </bean>
+
     <!-- BEGIN: QuickShare (aka PublicView) -->
     
     <!-- unauthenticated (note: equivalent to authenticated "content.get") -->
@@ -1908,10 +1932,6 @@
     </bean>
     
     <!-- authenticated -->
-    <bean id="webscript.org.alfresco.repository.quickshare.read.get" class="org.alfresco.repo.web.scripts.quickshare.ReadGet" parent="org.alfresco.repository.quickshare.abstract">
-    </bean>
-
-    <!-- authenticated -->
     <bean id="webscript.org.alfresco.repository.quickshare.metadata.get" class="org.alfresco.repo.web.scripts.quickshare.MetaDataGet" parent="org.alfresco.repository.quickshare.abstract">
     </bean>
     
@@ -1928,6 +1948,10 @@
     <bean id="webscript.org.alfresco.repository.quickshare.unshare.delete" class="org.alfresco.repo.web.scripts.quickshare.UnshareContentDelete" parent="org.alfresco.repository.quickshare.abstract">
     </bean>
     
+    <!-- authenticated -->
+    <bean id="webscript.org.alfresco.repository.quickshare.read.get" class="org.alfresco.repo.web.scripts.quickshare.ReadGet" parent="org.alfresco.repository.quickshare.abstract">
+    </bean>
+
     <!-- END: QuickShare (aka PublicView) -->
 
     <!-- BEGIN: Download -->
@@ -1953,34 +1977,5 @@
           parent="org.alfresco.repository.download.abstract"> 
         <property name="nodeService" ref="NodeService"/>   
     </bean>
-
     <!-- END: Download -->
-
-    
-   <!--                                                                                                       -->
-   <!-- Multi-Tenant Admin                                                                                    -->
-   <!--                                                                                                       -->
-   <!--                                                                                                       -->
-   
-   <bean id="abstractTenantAdminWebScript"
-          class="org.alfresco.repo.web.scripts.tenant.AbstractTenantAdminWebscript"
-          parent="webscript" abstract="true">
-        <property name="tenantAdminService" ref="tenantAdminService"/>
-   </bean>
-   
-   <bean id="webscript.org.alfresco.repository.tenant.tenants.get"
-         class="org.alfresco.repo.web.scripts.tenant.TenantsGet"
-         parent="abstractTenantAdminWebScript">
-   </bean>
-   
-   <bean id="webscript.org.alfresco.repository.tenant.tenants.post"
-         class="org.alfresco.repo.web.scripts.tenant.TenantPost"
-         parent="abstractTenantAdminWebScript">
-   </bean>
-   
-   <bean id="webscript.org.alfresco.repository.tenant.tenants.delete"
-         class="org.alfresco.repo.web.scripts.tenant.TenantDelete"
-         parent="abstractTenantAdminWebScript">
-   </bean>
-   
 </beans>

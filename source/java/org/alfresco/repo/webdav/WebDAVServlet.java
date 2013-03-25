@@ -19,8 +19,6 @@
 package org.alfresco.repo.webdav;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -141,57 +139,8 @@ public class WebDAVServlet extends HttpServlet
         }
         catch (Throwable e)
         {
-            if (!(e instanceof WebDAVServerException) && e.getCause() != null)
-            {
-                if (e.getCause() instanceof WebDAVServerException)
-                {
-                    e = e.getCause();
-                }
-            }
-            // Work out how to handle the error
-            if (e instanceof WebDAVServerException)
-            {
-                WebDAVServerException error = (WebDAVServerException) e;
-                if (error.getCause() != null)
-                {
-                    StringWriter writer = new StringWriter();
-                    PrintWriter print = new PrintWriter(writer);
-                    error.printStackTrace(print);
-                    logger.error(print.toString(), e);
-                }
-
-                if (logger.isDebugEnabled())
-                {
-                    // Show what status code the method sent back
-                    
-                    logger.debug(request.getMethod() + " is returning status code: " + error.getHttpStatusCode());
-                }
-
-                if (response.isCommitted())
-                {
-                    logger.warn("Could not return the status code to the client as the response has already been committed!");
-                }
-                else
-                {
-                    response.sendError(error.getHttpStatusCode());
-                }
-            }
-            else
-            {
-                StringWriter writer = new StringWriter();
-                PrintWriter print = new PrintWriter(writer);
-                e.printStackTrace(print);
-                logger.error(print.toString(), e);
-
-                if (response.isCommitted())
-                {
-                    logger.warn("Could not return the internal server error code to the client as the response has already been committed!");
-                }
-                else
-                {
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                }
-            }
+            ExceptionHandler exHandler = new ExceptionHandler(e, request, response);
+            exHandler.handle();
         }
         finally
         {
@@ -315,10 +264,12 @@ public class WebDAVServlet extends HttpServlet
         ActivityService activityService = (ActivityService) context.getBean("activityService");
         singletonCache = (SimpleCache<String, NodeRef>)context.getBean("immutableSingletonCache");
         
+        
+        
         // Collaborator used by WebDAV methods to create activity posts.
         activityPoster = new ActivityPosterImpl("WebDAV", activityService);
         
-        // Get the WebDAV helper
+        // Create the WebDAV helper
         m_davHelper = (WebDAVHelper) context.getBean("webDAVHelper");
         
         // Initialize the root node
@@ -347,6 +298,7 @@ public class WebDAVServlet extends HttpServlet
     {
         return m_davHelper;
     }
+    
     
     /**
      * @param storeValue

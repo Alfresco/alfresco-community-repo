@@ -350,7 +350,7 @@ public class WebDAV
         }
         return value;
     }
-
+    /**
     /**
      * Returns a context-relative path, beginning with a "/", that represents the canonical version
      * of the specified path after ".." and "." elements are resolved out. If the specified path

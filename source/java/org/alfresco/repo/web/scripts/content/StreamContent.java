@@ -493,6 +493,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
     {
         streamContent(req, res, resourcePath, attach, attachFileName, null);
     }
+    
     /**
      * Streams content back to client from a given resource path.
      * 
@@ -635,6 +636,7 @@ public class StreamContent extends AbstractWebScript implements ResourceLoaderAw
     {
         streamContent(req, res, file, modifiedTime, attach, attachFileName, null);
     }
+
     /**
      * Streams content back to client from a given File.
      * 

@@ -25,38 +25,7 @@
         <property name="activitiesEnabled" value="${system.webdav.activities.enabled}"/>
     </bean>
     
-    <bean id="webdavLockStoreFactory" class="org.alfresco.repo.webdav.LockStoreFactoryImpl">
-        <property name="clusterName" value="${alfresco.cluster.name}"/>
-        <property name="hazelcastInstanceFactory" ref="hazelcastInstanceFactory"/>
-    </bean>
-
-    <bean id="hazelcastConfig" class="org.alfresco.repo.cluster.HazelcastConfigFactoryBean">
-        <property name="configFile" value="${alfresco.hazelcast.configLocation}"/>
-        <property name="properties">
-             <props>
-                 <!-- Common options -->
-                 <prop key="alfresco.cluster.name">${alfresco.cluster.name}</prop>
-                 <prop key="alfresco.hazelcast.password">${alfresco.hazelcast.password}</prop>
-                 <prop key="alfresco.hazelcast.specify.interface">${alfresco.hazelcast.specify.interface}</prop>
-                 <prop key="alfresco.hazelcast.bind.interface">${alfresco.hazelcast.bind.interface}</prop>
-                 <!-- TCP/IP discovery options -->
-                 <prop key="alfresco.hazelcast.tcp.config">${alfresco.hazelcast.tcp.config}</prop>
-                 <!-- AWS discovery options -->
-                 <prop key="alfresco.hazelcast.ec2.accesskey">${alfresco.hazelcast.ec2.accesskey}</prop>
-                 <prop key="alfresco.hazelcast.ec2.secretkey">${alfresco.hazelcast.ec2.secretkey}</prop>
-                 <prop key="alfresco.hazelcast.ec2.region">${alfresco.hazelcast.ec2.region}</prop>
-                 <prop key="alfresco.hazelcast.ec2.securitygroup">${alfresco.hazelcast.ec2.securitygroup}</prop>
-                 <prop key="alfresco.hazelcast.ec2.tagkey">${alfresco.hazelcast.ec2.tagkey}</prop>
-                 <prop key="alfresco.hazelcast.ec2.tagvalue">${alfresco.hazelcast.ec2.tagvalue}</prop>
-                 <!--  Map specific options -->
-                 <prop key="alfresco.hazelcast.conccurrentuser.timeToLive">${alfresco.conccurrentusers.timeToLive}</prop>
-             </props>
-        </property>
-    </bean>
-    
-    <bean id="hazelcastInstanceFactory" class="org.alfresco.repo.cluster.HazelcastInstanceFactory">
-        <property name="config" ref="hazelcastConfig"/>
-    </bean>
+    <bean id="webdavLockStoreFactory" class="org.alfresco.repo.webdav.SimpleLockStoreFactory"/>
 
     <!-- Configure remote-api source related beans in remote-api-context.xml to ensure no dependency problems -->
 </beans>

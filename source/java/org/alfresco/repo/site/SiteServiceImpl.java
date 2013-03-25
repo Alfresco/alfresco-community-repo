@@ -118,7 +118,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServiceInternal, SiteModel, NodeServicePolicies.OnRestoreNodePolicy
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(SiteServiceImpl.class);
+    protected static Log logger = LogFactory.getLog(SiteServiceImpl.class);
 
     /** The DM store where site's are kept */
     public static final StoreRef SITE_STORE = new StoreRef("workspace://SpacesStore");
@@ -938,8 +938,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */
     public List<SiteInfo> listSites(final String userName, final int size)
     {
-        // MT share - for activity service system callback
-        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantUser(userName))
+        // MT share - for activity service remote system callback (deprecated)
+        if (tenantService.isEnabled() &&
+            TenantUtil.isCurrentDomainDefault() &&
+            (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && 
+            tenantService.isTenantUser(userName))
         {
             final String tenantDomain = tenantService.getUserDomain(userName);
             
@@ -1177,8 +1180,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */
     public SiteInfo getSite(final String shortName)
     {
-        // MT share - for activity service system callback
-        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantName(shortName))
+        // MT share - for activity service remote system callback (deprecated)
+        if (tenantService.isEnabled() &&
+            TenantUtil.isCurrentDomainDefault() &&
+            (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) &&
+            tenantService.isTenantName(shortName))
         {
             final String tenantDomain = tenantService.getDomain(shortName);
             final String sName = tenantService.getBaseName(shortName, true);
@@ -1715,8 +1721,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     
     public Map<String, String> listMembers(String shortName, final String nameFilter, final String roleFilter, final int size, final boolean collapseGroups)
     {
-        // MT share - for activity service system callback
-        if (tenantService.isEnabled() && (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) && tenantService.isTenantName(shortName))
+        // MT share - for activity service remote system callback (deprecated)
+        if (tenantService.isEnabled() &&
+            TenantUtil.isCurrentDomainDefault() &&
+            (AuthenticationUtil.SYSTEM_USER_NAME.equals(AuthenticationUtil.getRunAsUser())) &&
+            tenantService.isTenantName(shortName))
         {
             final String tenantDomain = tenantService.getDomain(shortName);
             final String sName = tenantService.getBaseName(shortName, true);

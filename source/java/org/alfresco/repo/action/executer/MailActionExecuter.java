@@ -111,7 +111,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     /**
      * The java mail sender
      */
-    private JavaMailSender javaMailSender;
+    private JavaMailSender mailService;
     
     /**
      * The Template service
@@ -196,7 +196,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     public void setMailService(JavaMailSender javaMailSender) 
     {
-        this.javaMailSender = javaMailSender;
+        this.mailService = javaMailSender;
     }
     
     /**
@@ -243,7 +243,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.authorityService = authorityService;
     }
-
+    
     /**
      * @param nodeService       the NodeService to set.
      */
@@ -251,7 +251,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.nodeService = nodeService;
     }
-
+    
     /**
      * @param tenantService       the TenantService to set.
      */
@@ -259,7 +259,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.tenantService = tenantService;
     }
-
+    
     /**
      * @param headerEncoding     The mail header encoding to set.
      */
@@ -267,7 +267,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     {
         this.headerEncoding = headerEncoding;
     }
-
+    
     /**
      * @param fromAddress   The default mail address.
      */
@@ -308,6 +308,12 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     }
     
     /**
+     * This stores an email address which, if it is set, overrides ALL email recipients sent from
+     * this class. It is intended for dev/test usage only !!
+     */
+    private String testModeRecipient;
+
+    /**
      * Send a test message
      * 
      * @return true, message sent 
@@ -334,11 +340,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         
         Action ruleAction = serviceRegistry.getActionService().createAction(NAME, params);
         
-        // TODO review & test converged code (and remove comment below) !!
-        prepareAndSendEmail(ruleAction, null);
-        
-        /*
-        MimeMessageHelper message = prepareEmail(ruleAction, null);
+        MimeMessageHelper message = prepareEmail(ruleAction, null,
+                new Pair<String, Locale>(testMessageTo, getLocaleForUser(testMessageTo)), getFrom(ruleAction));
         try
         {
             mailService.send(message.getMimeMessage());
@@ -362,16 +365,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             Object[] args = {testMessageTo, txt.toString()};
             throw new AlfrescoRuntimeException("email.outbound.err.send.failed", args, me);
         }
-        */
         
         return true;
     }
-    
-    /**
-     * This stores an email address which, if it is set, overrides ALL email recipients sent from
-     * this class. It is intended for dev/test usage only !!
-     */
-    private String testModeRecipient;
     
     public void setTestModeRecipient(String testModeRecipient)
     {
@@ -503,8 +499,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         }
     }
     
-    private void prepareAndSendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef, final Pair<String, Locale> recipient, final Pair<InternetAddress, Locale> sender)
+    public MimeMessageHelper prepareEmail(final Action ruleAction , final NodeRef actionedUponNodeRef, final Pair<String, Locale> recipient, final Pair<InternetAddress, Locale> sender)
     {
+        // Create the mime mail message.
+        // Hack: using an array here to get around the fact that inner classes aren't closures.
+        // The MimeMessagePreparator.prepare() signature does not allow us to return a value and yet
+        // we can't set a result on a bare, non-final object reference due to Java language restrictions.
+        final MimeMessageHelper[] messageRef = new MimeMessageHelper[1];
         MimeMessagePreparator mailPreparer = new MimeMessagePreparator()
         {
             @SuppressWarnings("unchecked")
@@ -515,7 +516,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                    logger.debug(ruleAction.getParameterValues());
                 }
                 
-                MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
+                messageRef[0] = new MimeMessageHelper(mimeMessage);
                 
                 // set header encoding if one has been supplied
                 if (headerEncoding != null && headerEncoding.length() != 0)
@@ -527,7 +528,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 String to = (String)ruleAction.getParameterValue(PARAM_TO);
                 if (to != null && to.length() != 0)
                 {
-                    message.setTo(to);
+                    messageRef[0].setTo(to);
                 }
                 else
                 {
@@ -595,7 +596,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         
                         if(recipients.size() > 0)
                         {
-                            message.setTo(recipients.toArray(new String[recipients.size()]));
+                            messageRef[0].setTo(recipients.toArray(new String[recipients.size()]));
                         }
                         else
                         {
@@ -620,8 +621,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 // from is enabled
                 if (! authService.isCurrentUserTheSystemUser())
                 {
-                    String currentUserName = authService.getCurrentUserName();
-                    fromPerson = getPerson(currentUserName);
+                    fromPerson = personService.getPerson(authService.getCurrentUserName());
                 }
                 
                 if(isFromEnabled())
@@ -641,17 +641,17 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         {
                             try
                             {
-                                message.setFrom(from, fromPersonalName);
+                                messageRef[0].setFrom(from, fromPersonalName);
                             }
                             catch (UnsupportedEncodingException error)
                             {
                                 // Uses the JVM's default encoding, can never be unsupported. Just in case, revert to simple email
-                                message.setFrom(from);
+                                messageRef[0].setFrom(from);
                             }
                         }
                         else
                         {
-                            message.setFrom(from);
+                            messageRef[0].setFrom(from);
                         }
                     }
                     else
@@ -669,14 +669,15 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                             {
                                 logger.debug("looked up email address for :" + fromPerson + " email from " + fromActualUser);
                             }
-                            message.setFrom(fromActualUser);
+                            messageRef[0].setFrom(fromActualUser);
                         }
                         else
                         {
                             // from system or user does not have email address
-                            message.setFrom(fromDefaultAddress);
+                            messageRef[0].setFrom(fromDefaultAddress);
                         }
                     }
+
                 }
                 else
                 {
@@ -685,17 +686,20 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         logger.debug("from not enabled - sending from default address:" + fromDefaultAddress);
                     }
                     // from is not enabled.
-                    message.setFrom(fromDefaultAddress);
+                    messageRef[0].setFrom(fromDefaultAddress);
                 }
                 
+
+
+                
                 // set subject line
-                message.setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
+                messageRef[0].setSubject((String)ruleAction.getParameterValue(PARAM_SUBJECT));
                 
                 if ((testModeRecipient != null) && (testModeRecipient.length() > 0) && (! testModeRecipient.equals("${dev.email.recipient.address}")))
                 {
                     // If we have an override for the email recipient, we'll send the email to that address instead.
                     // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
-                    message.setTo(testModeRecipient);
+                    messageRef[0].setTo(testModeRecipient);
                     
                     String emailRecipient = (String)ruleAction.getParameterValue(PARAM_TO);
                     if (emailRecipient == null)
@@ -709,8 +713,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     
                     String recipientPrefixedSubject = "(" + emailRecipient + ") " + (String)ruleAction.getParameterValue(PARAM_SUBJECT);
                     
-                    message.setSubject(recipientPrefixedSubject);
+                    messageRef[0].setSubject(recipientPrefixedSubject);
                 }
+                
                 
                 // See if an email template has been specified
                 String text = null;
@@ -767,18 +772,18 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     {
                         // If we have an override for the email recipient, we'll send the email to that address instead.
                         // We'll prefix the subject with the original recipient, but leave the email message unchanged in every other way.
-                        message.setTo(testModeRecipient);
+                        messageRef[0].setTo(testModeRecipient);
                         
                         String emailRecipient = recipient.getFirst();
                         
                         String recipientPrefixedSubject = "(" + emailRecipient + ") " + localizedSubject;
                         
-                        message.setSubject(recipientPrefixedSubject);
+                        messageRef[0].setSubject(recipientPrefixedSubject);
                     }
                     else 
                     {
-                        message.setTo(recipient.getFirst());
-                    	message.setSubject(localizedSubject);
+                        messageRef[0].setTo(recipient.getFirst());
+                        messageRef[0].setSubject(localizedSubject);
                     }
                 }
                 
@@ -810,39 +815,50 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         isHTML = true;
                     }
                 }
-
+                
                 if (text != null)
                 {
-                    message.setText(text, isHTML);
+                    messageRef[0].setText(text, isHTML);
                 }
                 
             }
         };
+        MimeMessage mimeMessage = mailService.createMimeMessage(); 
+        try
+        {
+            mailPreparer.prepare(mimeMessage);
+        } catch (Exception e)
+        {
+            // We're forced to catch java.lang.Exception here. Urgh.
+            if (logger.isInfoEnabled())
+            {
+                logger.warn("Unable to prepare mail message. Skipping.", e);
+            }
+        }
+        
+        return messageRef[0];
+    }
+    
+    private void prepareAndSendEmail(final Action ruleAction, final NodeRef actionedUponNodeRef, final Pair<String, Locale> recipient, final Pair<InternetAddress, Locale> sender)
+    {
+        MimeMessageHelper preparedMessage = prepareEmail(ruleAction, actionedUponNodeRef, recipient, sender);
 
         try
         {
             // Send the message unless we are in "testMode"
-            if(!testMode)
+            if (!testMode)
             {
-                javaMailSender.send(mailPreparer);
+                mailService.send(preparedMessage.getMimeMessage());
+                onSend();
             }
             else
             {
-               try {
-                  MimeMessage mimeMessage = javaMailSender.createMimeMessage(); 
-                  mailPreparer.prepare(mimeMessage);
-                  lastTestMessage = mimeMessage;
-               } catch(Exception e) {
-                   // We're forced to catch java.lang.Exception here. Urgh.
-                   if (logger.isInfoEnabled())
-                   {
-                       logger.warn("Unable to prepare mail message. Skipping.", e);
-                   }
-               }
+                lastTestMessage = preparedMessage.getMimeMessage();
             }
         }
         catch (MailException e)
         {
+            onFail();
             String to = (String)ruleAction.getParameterValue(PARAM_TO);
             if (to == null)
             {
@@ -860,7 +876,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             Boolean ignoreError = (Boolean)ruleAction.getParameterValue(PARAM_IGNORE_SEND_FAILURE);
             if (ignoreError == null || ignoreError.booleanValue() == false)
             {
-                throw new AlfrescoRuntimeException("Failed to send email to:" + to, e);
+                Object[] args = {to, e.toString()};
+                throw new AlfrescoRuntimeException("email.outbound.err.send.failed", args, e);
             }   
         }
     }
@@ -1063,9 +1080,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 );
             }
         }
-    	return recipients;
-	}
-
+        return recipients;
+    }
+    
     @SuppressWarnings("deprecation")
     public boolean personExists(final String user)
     {
@@ -1080,6 +1097,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     return personService.personExists(user);
                 }
             }, domain);
+        }
+        else
+        {
+            exists = personService.personExists(user);
         }
         return exists;
     }
@@ -1099,6 +1120,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 }
             }, domain);
         }
+        else
+        {
+            person = personService.getPerson(user);
+        }
         return person;
     }
     
@@ -1113,15 +1138,24 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             {
                 public Locale doWork() throws Exception
                 {
-                    Locale locale = null;
-                    String localeString = (String)preferenceService.getPreference(user, "locale");
-                    if (localeString != null)
-                    {
-                        locale = StringUtils.parseLocaleString(localeString);
-                    }
-                    return locale;
+                    return getLocaleForUserImpl(user);
                 }
             }, domain);
+        }
+        else
+        {
+            return getLocaleForUserImpl(user);
+        }
+        return locale;
+    }
+
+    private Locale getLocaleForUserImpl(String user)
+    {
+        Locale locale = null;
+        String localeString = (String)preferenceService.getPreference(user, "locale");
+        if (localeString != null)
+        {
+            locale = StringUtils.parseLocaleString(localeString);
         }
         return locale;
     }
@@ -1129,10 +1163,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     private String getDomain(String user)
     {
         String[] parts = user.split("@");
-        return parts.length == 1 ? "" : parts[1];
+        return parts.length == 1 ? "" : parts[1].toLowerCase(I18NUtil.getLocale());
     }
-
-	/**
+    
+    /**
      * Return true if address has valid format
      * @param address
      * @return

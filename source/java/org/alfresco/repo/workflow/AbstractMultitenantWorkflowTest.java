@@ -29,6 +29,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -81,6 +82,7 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
     {
         // Run as User1 so tenant domain 1
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        TenantContextHolder.setTenantDomain(tenant1);
         
         List<WorkflowDefinition> allDefs = workflowService.getAllDefinitions();
         int allDefsSize = allDefs.size();
@@ -104,6 +106,7 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
         
         // Switch to tenant2.
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
+        TenantContextHolder.setTenantDomain(tenant2);
 
         // Check definition not visible on tenant2.
         try
@@ -125,13 +128,14 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
         
         // Switch back to tenant1.
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        TenantContextHolder.setTenantDomain(tenant1);
         
         // Check the definition hasn't changed
         WorkflowDefinition definitionByName = workflowService.getDefinitionByName(definitionKey);
         assertEquals(definition.getId(), definitionByName.getId());
     }
     
-    public void xtestQueryTasks() throws Exception
+    public void testQueryTasks() throws Exception
     {
         WorkflowTaskQuery query = new WorkflowTaskQuery();
         
@@ -139,6 +143,7 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
         
         // Run as User1 so tenant domain 1
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        TenantContextHolder.setTenantDomain(tenant1);
         
         // Check no tasks to start with
         List<WorkflowTask> tasks = workflowService.queryTasks(query);
@@ -168,6 +173,7 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
         
         //Switch to tenant2
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
+        TenantContextHolder.setTenantDomain(tenant2);
 
         // Tenant2 should not find the task
         tasks = workflowService.queryTasks(query);
@@ -224,7 +230,6 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
             {
                 if (! tenantAdminService.existsTenant(tenantDomain))
                 {
-                    //tenantAdminService.createTenant(tenantDomain, DEFAULT_ADMIN_PW.toCharArray(), ROOT_DIR + "/" + tenantDomain);
                     tenantAdminService.createTenant(tenantDomain, (DEFAULT_ADMIN_PW+" "+tenantDomain).toCharArray(), null); // use default root dir
                 }
                 return tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);

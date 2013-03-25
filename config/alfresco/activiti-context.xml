@@ -60,6 +60,9 @@
         <property name="completeTaskListener" ref="activitiCompleteTaskListener" />
         <property name="processCreateListener" ref="activitiProcessCreateListener" />
         <property name="tenantService" ref="tenantService" />
+        <property name="deployWorkflowsInTenant">
+        	<value>${system.workflow.deployWorkflowsInTenant}</value>
+        </property>
     </bean>
 
     <!-- -->
@@ -90,7 +93,7 @@
                 <ref bean="activitiParseListener" />
             </list>
         </property>
-        
+        <property name="unprotectedNodeService" ref="nodeService" />
         <property name="idBlockSize" value="${system.workflow.engine.activiti.idblocksize}"></property>
         
         <!-- Custom datasource for ID-generator block-acquiring to prevent lock when all -->
@@ -123,13 +126,12 @@
         <property name="tenantService" ref="tenantService" />
         <property name="messageService" ref="messageService" />
         <property name="serviceRegistry" ref="ServiceRegistry" />
-        <property name="unprotectedSearchService" ref="searchService" />
         <property name="BPMEngineRegistry" ref="bpm_engineRegistry" />
         <property name="authorityDAO" ref="authorityDAO" />
         <property name="processEngine" ref="activitiProcessEngine" />
+        <property name="repositoryHelper" ref="repositoryHelper" />
         <property name="engineId" value="activiti" />
-        <property name="companyHomePath" value="/${spaces.company_home.childname}" />
-        <property name="companyHomeStore" value="${spaces.store}" />
+        <property name="deployWorkflowsInTenant" value="${system.workflow.deployWorkflowsInTenant}" />
     </bean>
 
     <!-- Activiti Workflow Engine -->
@@ -228,12 +230,6 @@
         factory-method="getManagementService" />
     <bean id="activitiHistoryService" factory-bean="activitiProcessEngine"
         factory-method="getHistoryService" />
-
-    <!-- Starting job-executor, after SchemaAvailableEvent has been broadcasted -->
-    <bean id="activitiEngineInitializer"
-        class="org.alfresco.repo.workflow.activiti.ActivitiEngineInitializer">
-        <property name="processEngine" ref="activitiProcessEngine" />
-        <property name="workflowAdminService" ref="workflowAdminService" />
-    </bean>
+        
 
 </beans>

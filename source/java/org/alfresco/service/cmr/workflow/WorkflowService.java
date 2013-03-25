@@ -633,4 +633,11 @@ public interface WorkflowService
      */
     @Auditable(parameters = {"packageItem", "active"})
     public List<NodeRef> getPackageContents(String taskId);
+    
+    /**
+     * @return true, if all workflows (in workflowDeployers) have a copy deployed per tenant and workflows
+     * can be deployed in tenant. False when workflows are shared system-wide, regardless of the tenant context.
+     */
+    @Auditable
+    public boolean isMultiTenantWorkflowDeploymentEnabled();
 }

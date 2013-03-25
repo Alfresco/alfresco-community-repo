@@ -31,8 +31,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.webdav.WebDavService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLEncoder;
 
 /**
@@ -46,8 +44,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
  */
 public class WebDavServiceImpl implements WebDavService
 {
-    public static final String WEBDAV_PREFIX = "webdav";    
-    private static Log logger = LogFactory.getLog(WebDavServiceImpl.class);
+    public static final String WEBDAV_PREFIX = "webdav"; 
     private boolean enabled = false;
     private NodeService nodeService;
     private DictionaryService dictionaryService;

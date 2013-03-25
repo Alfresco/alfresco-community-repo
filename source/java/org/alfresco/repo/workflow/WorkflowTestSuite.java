@@ -69,6 +69,7 @@ public class WorkflowTestSuite extends TestSuite
 
         // These tests use a different Spring config.
         suite.addTestSuite( ActivitiMultitenantWorkflowTest.class );
+        
         suite.addTestSuite( JbpmMultitenantWorkflowTest.class );
         
         // Note the following workflow tests are not included in this sutie:

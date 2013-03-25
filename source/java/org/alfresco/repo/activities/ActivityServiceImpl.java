@@ -320,6 +320,9 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
             // is local to the method because we only want to cache per request - there is not point in keeping
             // an instance cache because the data will become stale if a user changes their avatar.
             Map<String, NodeRef> userIdToAvatarNodeRefCache = new HashMap<String, NodeRef>();
+
+            String currentTenantDomain = tenantService.getCurrentUserDomain();
+
             
             
             if (logger.isDebugEnabled())
@@ -329,12 +332,9 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                         + maxFeedItems);
             }
             
-            String currentTenantDomain = tenantService.getCurrentUserDomain();
-            
             for (ActivityFeedEntity activityFeed : activityFeeds)
             {
-                if (actvityFilter != null && !actvityFilter.contains(activityFeed.getActivityType()))
-                {
+                if (actvityFilter != null && !actvityFilter.contains(activityFeed.getActivityType())) {
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Filtering " + activityFeed.toString() + " \n by the activity filter.");
@@ -342,8 +342,7 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                     continue;
                 }
                 
-                if (userFilter != null && !userFilter.contains(activityFeed.getPostUserId()))
-                {
+                if (userFilter != null && !userFilter.contains(activityFeed.getPostUserId())) {
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Filtering " + activityFeed.toString() + " \n by the user filter.");
@@ -356,10 +355,6 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                     // note: pending requirements for THOR-224, for now assume all activities are within context of site and filter by current tenant
                     if (! currentTenantDomain.equals(tenantService.getDomain(activityFeed.getSiteNetwork())))
                     {
-                        if (logger.isTraceEnabled())
-                        {
-                            logger.trace("Filtering " + activityFeed.toString() + " \n by the site/tenant filter.");
-                        }
                         continue;
                     }
                 }
@@ -392,7 +387,7 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
                     {
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("getUserFeedEntries: person no longer exists: "+postUserId);
+                            logger.warn("getUserFeedEntries: person no longer exists: "+postUserId);
                         }
                     }
                     

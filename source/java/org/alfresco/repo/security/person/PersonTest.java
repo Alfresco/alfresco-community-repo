@@ -636,9 +636,10 @@ public class PersonTest extends TestCase
         NodeRef p6 = personService.createPerson(createDefaultProperties("bb", "Bb", "Bb", "bb@bb", "alfresco", rootNodeRef));
         NodeRef p7 = personService.createPerson(createDefaultProperties("dd", "Dd", "Dd", "dd@dd", "alfresco", rootNodeRef));
         
+        int expectedTotalCount = 7;
+        assertEquals(expectedTotalCount, getPeopleCount());
         
-        
-        assertEquals(7, getPeopleCount());
+        Pair<Integer,Integer> expectedResultCount = new Pair<Integer,Integer>(expectedTotalCount,expectedTotalCount);
         
         List<Pair<QName, Boolean>> sort = new ArrayList<Pair<QName, Boolean>>(1);
         sort.add(new Pair<QName,Boolean>(ContentModel.PROP_USERNAME, true));
@@ -651,13 +652,16 @@ public class PersonTest extends TestCase
         assertEquals(p3, results.get(0).getNodeRef());
         assertEquals(p1, results.get(1).getNodeRef());
         
-        // page 2
+        // page 2 (with total count)
         pr = new PagingRequest(2, 2, null);
+        pr.setRequestTotalCountMax(Integer.MAX_VALUE);
+        
         ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(2, results.size());
         assertEquals(p6, results.get(0).getNodeRef());
         assertEquals(p4, results.get(1).getNodeRef());
+        assertEquals(expectedResultCount, ppr.getTotalResultCount());
         
         // page 3
         pr = new PagingRequest(4, 2, null);
@@ -667,12 +671,76 @@ public class PersonTest extends TestCase
         assertEquals(p7, results.get(0).getNodeRef());
         assertEquals(p2, results.get(1).getNodeRef());
         
-        // page 4
+        // page 4 (with total count)
         pr = new PagingRequest(6, 2, null);
+        pr.setRequestTotalCountMax(Integer.MAX_VALUE);
+        
         ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(1, results.size());
         assertEquals(p5, results.get(0).getNodeRef());
+        assertEquals(expectedResultCount, ppr.getTotalResultCount());
+    }
+    
+    public void testPeopleSortingPaging_NoAdmin()
+    {
+        personService.setCreateMissingPeople(false);
+        
+        assertEquals(2, getPeopleCount());
+        
+        NodeRef p1 = personService.getPerson(AuthenticationUtil.getAdminUserName()); // admin - by default
+        NodeRef p2 = personService.getPerson(AuthenticationUtil.getGuestUserName()); // guest - by default
+        
+        NodeRef p3 = personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
+        NodeRef p4 = personService.createPerson(createDefaultProperties("cc", "Cc", "Cc", "cc@cc", "alfresco", rootNodeRef));
+        NodeRef p5 = personService.createPerson(createDefaultProperties("hh", "Hh", "Hh", "hh@hh", "alfresco", rootNodeRef));
+        NodeRef p6 = personService.createPerson(createDefaultProperties("bb", "Bb", "Bb", "bb@bb", "alfresco", rootNodeRef));
+        NodeRef p7 = personService.createPerson(createDefaultProperties("dd", "Dd", "Dd", "dd@dd", "alfresco", rootNodeRef));
+        
+        int expectedTotalCount = 7;
+        assertEquals(expectedTotalCount, getPeopleCount());
+        
+        int expectedTotalCountWithAdmin = expectedTotalCount - 1;
+        Pair<Integer,Integer> expectedResultCount = new Pair<Integer,Integer>(expectedTotalCountWithAdmin,expectedTotalCountWithAdmin);
+        
+        List<Pair<QName, Boolean>> sort = new ArrayList<Pair<QName, Boolean>>(1);
+        sort.add(new Pair<QName,Boolean>(ContentModel.PROP_USERNAME, true));
+        
+        // page 1
+        PagingRequest pr = new PagingRequest(0, 2, null);
+        PagingResults<PersonInfo> ppr = personService.getPeople(null, null, null, null, false, sort, pr);
+        List<PersonInfo> results = ppr.getPage();
+        assertEquals(2, results.size());
+        assertEquals(p3, results.get(0).getNodeRef());
+        assertEquals(p6, results.get(1).getNodeRef());
+        
+        // page 2 (with total count)
+        pr = new PagingRequest(2, 2, null);
+        pr.setRequestTotalCountMax(Integer.MAX_VALUE);
+        
+        ppr = personService.getPeople(null, null, null, null, false, sort, pr);
+        results = ppr.getPage();
+        assertEquals(2, results.size());
+        assertEquals(p4, results.get(0).getNodeRef());
+        assertEquals(p7, results.get(1).getNodeRef());
+        assertEquals(expectedResultCount, ppr.getTotalResultCount());
+        
+        // page 3
+        pr = new PagingRequest(4, 2, null);
+        ppr = personService.getPeople(null, null, null, null, false, sort, pr);
+        results = ppr.getPage();
+        assertEquals(2, results.size());
+        assertEquals(p2, results.get(0).getNodeRef());
+        assertEquals(p5, results.get(1).getNodeRef());
+        
+        // page 4 (with total count)
+        pr = new PagingRequest(6, 2, null);
+        pr.setRequestTotalCountMax(Integer.MAX_VALUE);
+        
+        ppr = personService.getPeople(null, null, null, null, false, sort, pr);
+        results = ppr.getPage();
+        assertEquals(0, results.size());
+        assertEquals(expectedResultCount, ppr.getTotalResultCount());
     }
     
     // note: this test can be removed as and when we remove the deprecated "getPeople" impl

@@ -44,9 +44,9 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.variable.ScriptNodeVariableType;
 import org.alfresco.service.ServiceRegistry;
@@ -123,9 +123,6 @@ public class AbstractActivitiComponentTest
     @Resource
     protected MessageService messageService;
 
-    @Resource
-    protected TenantService tenantService;
-    
     @Resource(name="NamespaceService")
     protected NamespaceService namespaceService;
 
@@ -203,7 +200,6 @@ public class AbstractActivitiComponentTest
     @Before
     public void setUp() throws Exception
     {
-        mockTenantService();
         mockNamespaceService();
         mockDictionaryService();
         mockNodeService();
@@ -213,8 +209,9 @@ public class AbstractActivitiComponentTest
         mockAuthorityDAO();
         mockServiceRegistry();
 
-        workflowEngine.setCompanyHomeStore("workspace://SpacesStore");
-        workflowEngine.setCompanyHomePath("spaces.company_home.childname");
+        Repository repoHelper = mock(Repository.class);
+        when(repoHelper.getCompanyHome()).thenReturn(companyHomeNode);
+        workflowEngine.setRepositoryHelper(repoHelper);
         
         // Also add custom type
         // TODO: Should come from configuration
@@ -379,29 +376,6 @@ public class AbstractActivitiComponentTest
         namespaceService.registerNamespace("test", "http://test");
     }
 
-    private void mockTenantService()
-    {
-        when(tenantService.getBaseName(anyString())).thenAnswer(new Answer<String>()
-        {
-            public String answer(InvocationOnMock invocation) throws Throwable
-            {
-                Object arg= invocation.getArguments()[0];
-                return (String) arg;
-            }
-        });
-        
-        when(tenantService.getName(anyString())).thenAnswer(new Answer<String>()
-                {
-                    public String answer(InvocationOnMock invocation) throws Throwable
-                    {
-                        Object arg= invocation.getArguments()[0];
-                        return (String) arg;
-                    }
-                });
-        
-        when(tenantService.getCurrentUserDomain()).thenReturn("");
-    }
-    
     @After
     public void tearDown()
     {

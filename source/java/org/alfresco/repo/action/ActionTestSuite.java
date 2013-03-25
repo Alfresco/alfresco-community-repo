@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,9 +18,6 @@
  */
 package org.alfresco.repo.action;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluatorTest;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluatorTest;
 import org.alfresco.repo.action.evaluator.HasAspectEvaluatorTest;
@@ -28,50 +25,48 @@ import org.alfresco.repo.action.evaluator.IsSubTypeEvaluatorTest;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuterTest;
 import org.alfresco.repo.action.executer.ContentMetadataEmbedderTest;
 import org.alfresco.repo.action.executer.ContentMetadataExtracterTest;
+import org.alfresco.repo.action.executer.MailActionExecuterTest;
 import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuterTest;
 import org.alfresco.repo.action.executer.SetPropertyValueActionExecuterTest;
 import org.alfresco.repo.action.executer.SpecialiseTypeActionExecuterTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 
 /**
- * Version test suite
+ * Action test suite
  * 
  * @author Roy Wetherall
+ * @author Alex Miller
  */
-public class ActionTestSuite extends TestSuite
+@RunWith(Suite.class)
+@SuiteClasses({
+    ParameterDefinitionImplTest.class,
+    ActionDefinitionImplTest.class,
+    ActionConditionDefinitionImplTest.class,
+    ActionImplTest.class,
+    ActionConditionImplTest.class,
+    CompositeActionImplTest.class,
+    ActionServiceImplTest.class,
+    CompositeActionConditionImplTest.class,
+    
+    // Test evaluators
+    IsSubTypeEvaluatorTest.class,
+    ComparePropertyValueEvaluatorTest.class,
+    CompareMimeTypeEvaluatorTest.class,
+    HasAspectEvaluatorTest.class,
+    
+    // Test executors
+    SetPropertyValueActionExecuterTest.class,
+    AddFeaturesActionExecuterTest.class,
+    ContentMetadataExtracterTest.class,
+    ContentMetadataEmbedderTest.class,
+    SpecialiseTypeActionExecuterTest.class,
+    RemoveFeaturesActionExecuterTest.class,
+    ActionTrackingServiceImplTest.class, // intermittent - pending ALF-9773 & ALF-9774
+	MailActionExecuterTest.class	
+})
+public class ActionTestSuite
 {
-    /**
-     * Creates the test suite
-     * 
-     * @return  the test suite
-     */
-    public static Test suite() 
-    {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(ParameterDefinitionImplTest.class);
-        suite.addTestSuite(ActionDefinitionImplTest.class);
-        suite.addTestSuite(ActionConditionDefinitionImplTest.class);
-        suite.addTestSuite(ActionImplTest.class);
-        suite.addTestSuite(ActionConditionImplTest.class);
-        suite.addTestSuite(CompositeActionImplTest.class);
-        suite.addTestSuite(ActionServiceImplTest.class);
-        suite.addTestSuite(CompositeActionConditionImplTest.class);
-        
-        // Test evaluators
-        suite.addTestSuite(IsSubTypeEvaluatorTest.class);
-        suite.addTestSuite(ComparePropertyValueEvaluatorTest.class);
-        suite.addTestSuite(CompareMimeTypeEvaluatorTest.class);
-        suite.addTestSuite(HasAspectEvaluatorTest.class);
-        
-        // Test executors
-        suite.addTestSuite(SetPropertyValueActionExecuterTest.class);
-        suite.addTestSuite(AddFeaturesActionExecuterTest.class);
-        suite.addTestSuite(ContentMetadataExtracterTest.class);
-        suite.addTestSuite(ContentMetadataEmbedderTest.class);
-        suite.addTestSuite(SpecialiseTypeActionExecuterTest.class);
-        suite.addTestSuite(RemoveFeaturesActionExecuterTest.class);
-        suite.addTestSuite(ActionTrackingServiceImplTest.class);
-        
-        return suite;
-    }
 }

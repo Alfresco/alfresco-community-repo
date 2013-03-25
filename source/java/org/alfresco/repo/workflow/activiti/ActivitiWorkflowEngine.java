@@ -59,6 +59,7 @@ import org.activiti.engine.impl.pvm.ReadOnlyProcessDefinition;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
+import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.Job;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -66,8 +67,10 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.workflow.BPMEngine;
 import org.alfresco.repo.workflow.WorkflowAuthorityManager;
 import org.alfresco.repo.workflow.WorkflowConstants;
@@ -81,9 +84,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.LazyActivitiWorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -130,53 +131,34 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private static final String ERR_GET_ALL_DEFS_BY_NAME = "activiti.engine.get.all.workflow.definitions.by.name.error";
     private static final String ERR_GET_DEF_IMAGE = "activiti.engine.get.workflow.definition.image.error";
     private static final String ERR_GET_DEF_UNEXISTING_IMAGE = "activiti.engine.get.workflow.definition.unexisting.image.error";
-//    private static final String ERR_GET_TASK_DEFS = "activiti.engine.get.task.definitions.error";
-//    private static final String ERR_GET_PROCESS_DEF = "activiti.engine.get.process.definition.error";
     private static final String ERR_START_WORKFLOW = "activiti.engine.start.workflow.error";
     private static final String ERR_GET_WORKFLOW_INSTS = "activiti.engine.get.workflows.error";
     private static final String ERR_GET_ACTIVE_WORKFLOW_INSTS = "activiti.engine.get.active.workflows.error";
     private static final String ERR_GET_COMPLETED_WORKFLOW_INSTS = "activiti.engine.get.completed.workflows.error";
-//    private static final String ERR_GET_WORKFLOW_INST_BY_ID = "activiti.engine.get.workflow.instance.by.id.error";
-//    private static final String ERR_GET_PROCESS_INSTANCE = "activiti.engine.get.process.instance.error";
     private static final String ERR_GET_WORKFLOW_PATHS = "activiti.engine.get.workflow.paths.error";
-//    private static final String ERR_GET_PATH_PROPERTIES = "activiti.engine.get.path.properties.error";
     private static final String ERR_CANCEL_WORKFLOW = "activiti.engine.cancel.workflow.error";
     private static final String ERR_CANCEL_UNEXISTING_WORKFLOW = "activiti.engine.cancel.unexisting.workflow.error";
     private static final String ERR_DELETE_WORKFLOW = "activiti.engine.delete.workflow.error";
     private static final String ERR_DELETE_UNEXISTING_WORKFLOW = "activiti.engine.delete.unexisting.workflow.error";
-//    private static final String ERR_SIGNAL_TRANSITION = "activiti.engine.signal.transition.error";
     protected static final String ERR_FIRE_EVENT_NOT_SUPPORTED = "activiti.engine.event.unsupported";
-//    private static final String ERR_FIRE_EVENT = "activiti.engine.fire.event.error";
     private static final String ERR_GET_TASKS_FOR_PATH = "activiti.engine.get.tasks.for.path.error";
-//    private static final String ERR_GET_TASKS_FOR_UNEXISTING_PATH = "activiti.engine.get.tasks.for.unexisting.path.error";
     private static final String ERR_GET_TIMERS = "activiti.engine.get.timers.error";
     protected static final String ERR_FIND_COMPLETED_TASK_INSTS = "activiti.engine.find.completed.task.instances.error";
-//    private static final String ERR_COMPILE_PROCESS_DEF_zip = "activiti.engine.compile.process.definition.zip.error";
-//    private static final String ERR_COMPILE_PROCESS_DEF_XML = "activiti.engine.compile.process.definition.xml.error";
-//    private static final String ERR_COMPILE_PROCESS_DEF_UNSUPPORTED = "activiti.engine.compile.process.definition.unsupported.error";
-//    private static final String ERR_GET_activiti_ID = "activiti.engine.get.activiti.id.error";
     private static final String ERR_GET_WORKFLOW_TOKEN_INVALID = "activiti.engine.get.workflow.token.invalid";
     private static final String ERR_GET_WORKFLOW_TOKEN_NULL = "activiti.engine.get.workflow.token.is.null";
-    private static final String ERR_GET_COMPANY_HOME_INVALID = "activiti.engine.get.company.home.invalid";
-    private static final String ERR_GET_COMPANY_HOME_MULTIPLE = "activiti.engine.get.company.home.multiple";
     
     // Task Component Messages
     private static final String ERR_GET_ASSIGNED_TASKS = "activiti.engine.get.assigned.tasks.error";
     private static final String ERR_GET_POOLED_TASKS = "activiti.engine.get.pooled.tasks.error";
-//    private static final String ERR_QUERY_TASKS = "activiti.engine.query.tasks.error";
-//    private static final String ERR_GET_TASK_INST = "activiti.engine.get.task.instance.error";
     private static final String ERR_UPDATE_TASK = "activiti.engine.update.task.error";
     private static final String ERR_UPDATE_TASK_UNEXISTING = "activiti.engine.update.task.unexisting.error";
     private static final String ERR_UPDATE_START_TASK = "activiti.engine.update.starttask.illegal.error";
-//    private static final String ERR_END_TASK = "activiti.engine.end.task.error";
     private static final String ERR_END_UNEXISTING_TASK = "activiti.engine.end.task.unexisting.error";
     private static final String ERR_GET_TASK_BY_ID = "activiti.engine.get.task.by.id.error";
     private static final String ERR_END_TASK_INVALID_TRANSITION = "activiti.engine.end.task.invalid.transition";
+    
+    
     public static final QName QNAME_INITIATOR = QName.createQName(NamespaceService.DEFAULT_URI, WorkflowConstants.PROP_INITIATOR);
-    
-    private final static String WORKFLOW_TOKEN_SEPERATOR = "\\$";
-    
-    
     
     private RepositoryService repoService;
     private RuntimeService runtimeService;
@@ -188,7 +170,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     
     private DictionaryService dictionaryService;
     private NodeService nodeService;
-    private SearchService unprotectedSearchService;
     private PersonService personService;
     private ActivitiTypeConverter typeConverter;
     private ActivitiPropertyConverter propertyConverter;
@@ -199,10 +180,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private MessageService messageService;
     private TenantService tenantService;
     private NamespaceService namespaceService;
-    
-    private String companyHomePath;
-    private StoreRef companyHomeStore;
-    
+    private Repository repositoryHelper;
     
     public ActivitiWorkflowEngine()
     {
@@ -330,11 +308,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          {
              String resourceName = GUID.generate() + BpmnDeployer.BPMN_RESOURCE_SUFFIXES[0];
              
-             if(tenantService.isEnabled())
-             {
-                 name = tenantService.getName(name);
-             }
-             
              Deployment deployment = repoService.createDeployment()
                  .addInputStream(resourceName, workflowDefinition)
                  .name(name)
@@ -344,7 +317,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
              // not exposed
              return typeConverter.convert(deployment);
          } 
-         catch(ActivitiException ae) 
+         catch(Exception ae) 
          {
              String msg = messageService.getMessage(ERR_DEPLOY_WORKFLOW);
              throw new WorkflowException(msg, ae);
@@ -433,8 +406,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try 
         {
-            List<ProcessDefinition> definitions = repoService.createProcessDefinitionQuery().list();
-            return getValidWorkflowDefinitions(definitions);
+        	ProcessDefinitionQuery query = repoService.createProcessDefinitionQuery();
+        	if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault()) 
+        	{
+        		query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "%");
+        	}
+        	return getValidWorkflowDefinitions(query.list());
         } 
         catch (ActivitiException ae)
         {
@@ -454,7 +431,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             List<ProcessDefinition> definitions = repoService.createProcessDefinitionQuery()
                 .processDefinitionKey(key)
                 .list();
-            return typeConverter.convert(definitions);          
+            return getValidWorkflowDefinitions(definitions);          
         }
         catch (ActivitiException ae)
         {
@@ -490,6 +467,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             ProcessDefinition procDef = repoService.createProcessDefinitionQuery()
                 .processDefinitionId(localId )
                 .singleResult();
+            
+            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && procDef != null)
+            {
+            	factory.checkDomain(procDef.getKey());
+        	}
+            
             return typeConverter.convert(procDef);
         }
         catch (ActivitiException ae)
@@ -506,11 +489,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try 
         {
-            String key =factory.getDomainProcessKey(workflowName);
-            ProcessDefinition definition = repoService.createProcessDefinitionQuery()
-                .processDefinitionKey(key)
-                .latestVersion()
-                .singleResult();
+            String key = factory.getLocalEngineId(workflowName);
+            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+            {
+            	key = factory.getDomainProcessKey(workflowName);
+            }
+            ProcessDefinition definition = activitiUtil.getProcessDefinitionByKey(key);
             return typeConverter.convert(definition);
         }
         catch (ActivitiException ae)
@@ -568,10 +552,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         try 
         {
-            List<ProcessDefinition> definitions = repoService.createProcessDefinitionQuery()
-                .latestVersion()
-                .list();
-            return getValidWorkflowDefinitions(definitions);
+        	ProcessDefinitionQuery query = repoService.createProcessDefinitionQuery().latestVersion();
+        	if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault()) 
+        	{
+        		query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "%");
+        	}
+        	return getValidWorkflowDefinitions(query.list());
         }
         catch (ActivitiException ae)
         {
@@ -657,7 +643,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         try
         {
             // Extract the Activiti ID from the path
-            String executionId = getExecutionIdFromPath(pathId);
+            String executionId = createLocalId(pathId);
             if (executionId == null)
             {
                 throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_INVALID, pathId));
@@ -670,11 +656,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_NULL, pathId));
             }
 
+            String processInstanceId = execution.getProcessInstanceId();
+            ArrayList<WorkflowTask> resultList = new ArrayList<WorkflowTask>();
+            if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && false == typeConverter.isCorrectTenantRuntime(processInstanceId))
+            {
+                return resultList; //Wrong tenant
+            }
             // Check if workflow's start task has been completed. If not, return
             // the virtual task
             // Otherwise, just return the runtime Activiti tasks
-            String processInstanceId = execution.getProcessInstanceId();
-            ArrayList<WorkflowTask> resultList = new ArrayList<WorkflowTask>();
             if (typeConverter.isStartTaskActive(processInstanceId))
             {
                 resultList.add(typeConverter.getVirtualStartTask(processInstanceId, true));
@@ -696,19 +686,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
     }
 
-    protected String getExecutionIdFromPath(String workflowPath) 
-    {
-        if(workflowPath != null) 
-        {
-            String[] parts = workflowPath.split(WORKFLOW_TOKEN_SEPERATOR);
-            if(parts.length != 2) 
-            {
-                throw new WorkflowException(messageService.getMessage(ERR_GET_WORKFLOW_TOKEN_INVALID, workflowPath));
-            }
-            return parts[1];
-        }
-        return null;
-    }
 
     /**
     * {@inheritDoc}
@@ -867,24 +844,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     */
     public boolean isDefinitionDeployed(InputStream workflowDefinition, String mimetype)
     {
-        String key = null;
         try
         {
-            key = getProcessKey(workflowDefinition);
+            String key = getProcessKey(workflowDefinition);
+            return null != activitiUtil.getProcessDefinitionByKey(key);
         }
-        catch (Exception e) 
-        {
-            throw new WorkflowException(e.getMessage(), e);
-        }
-        
-        try 
-        {           
-            long count = repoService.createProcessDefinitionQuery()
-                .processDefinitionKey(key )
-                .count();
-            return count>0;
-        }
-        catch (ActivitiException ae)
+        catch (Exception ae)
         {
             String msg = messageService.getMessage(ERR_IS_WORKFLOW_DEPLOYED);
             throw new WorkflowException(msg, ae);
@@ -910,8 +875,16 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             {
                 throw new IllegalAccessError("The process definition does not have an id!");
             }
-            String key = idAttrib.getNodeValue();
-            return factory.getDomainProcessKey(key);
+            
+            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+            {
+            	// Workflow-definition is deployed tenant-aware, key should be altered
+            	return factory.getDomainProcessKey(idAttrib.getNodeValue());
+            }
+            else
+            {
+            	return idAttrib.getNodeValue();
+            }
         }
         finally
         {
@@ -966,6 +939,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 {
                     variables.put(WorkflowConstants.PROP_INITIATOR_HOME, nodeConverter.convertNode(initiatorHome));
                 }
+            }
+            
+            if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled()) 
+            {
+            	// Specify which tenant domain the workflow was started in using a variable
+            	variables.put(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
             
             // Start the process-instance
@@ -1137,7 +1116,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             }
         });
     }
-    
+
     /**
      * Gets the Company Home
      * 
@@ -1145,30 +1124,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      */
     private NodeRef getCompanyHome()
     {
-        if (tenantService.isEnabled())
-        {
-            try
-            {
-                return tenantService.getRootNode(nodeService, unprotectedSearchService, namespaceService,
-                            companyHomePath, nodeService.getRootNode(companyHomeStore));
-            }
-            catch (RuntimeException re)
-            {
-                String msg = messageService.getMessage(ERR_GET_COMPANY_HOME_INVALID, companyHomePath);
-                throw new IllegalStateException(msg, re);
-            }
-        }
-        else
-        {
-            List<NodeRef> refs = unprotectedSearchService.selectNodes(nodeService.getRootNode(companyHomeStore),
-                        companyHomePath, null, namespaceService, false);
-            if (refs.size() != 1)
-            {
-                String msg = messageService.getMessage(ERR_GET_COMPANY_HOME_MULTIPLE, companyHomePath, refs.size());
-                throw new IllegalStateException(msg);
-            }
-            return refs.get(0);
-        }
+        return repositoryHelper.getCompanyHome();
     }
     
     /**
@@ -1219,35 +1175,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-     * Sets the Company Home Path
-     * 
-     * @param companyHomePath
+     * @param repositoryHelper the repositoryHelper to set
      */
-    public void setCompanyHomePath(String companyHomePath)
+    public void setRepositoryHelper(Repository repositoryHelper)
     {
-        this.companyHomePath = companyHomePath;
-    }
-
-    /**
-     * Sets the Company Home Store
-     * 
-     * @param companyHomeStore
-     */
-    public void setCompanyHomeStore(String companyHomeStore)
-    {
-        this.companyHomeStore = new StoreRef(companyHomeStore);
-    }
-    
-    /**
-     * Set the unprotected search service - so we can find the node ref for
-     * company home when folk do not have read access to company home TODO:
-     * review use with DC
-     * 
-     * @param unprotectedSearchService
-     */
-    public void setUnprotectedSearchService(SearchService unprotectedSearchService)
-    {
-        this.unprotectedSearchService = unprotectedSearchService;
+        this.repositoryHelper = repositoryHelper;
     }
     
     /**
@@ -1395,9 +1327,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             if(state == WorkflowTaskState.IN_PROGRESS)
             {
-                List<Task> tasks = taskService.createTaskQuery()
-                    .taskAssignee(authority)
-                    .list();
+            	TaskQuery taskQuery = taskService.createTaskQuery()
+                	.taskAssignee(authority);
+            	
+            	if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+            	{
+            		taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+            	}
+                List<Task> tasks = taskQuery.list();
                 
                 List<WorkflowTask> resultingTasks = new ArrayList<WorkflowTask>();
                 for(Task task : tasks) {
@@ -1416,10 +1353,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             }
             else
             {
-                List<HistoricTaskInstance> historicTasks = historyService.createHistoricTaskInstanceQuery()
-                    .taskAssignee(authority)
-                    .finished()
-                    .list();
+            	HistoricTaskInstanceQuery taskQuery = historyService.createHistoricTaskInstanceQuery()
+	                .taskAssignee(authority)
+	                .finished();
+            	
+            	if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+            	{
+            		taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+            	}
+                List<HistoricTaskInstance> historicTasks =taskQuery.list();
                 
                 List<WorkflowTask> resultingTasks = new ArrayList<WorkflowTask>();
                 for(HistoricTaskInstance historicTask : historicTasks) {
@@ -1614,6 +1556,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             // Add task name
             TaskQuery taskQuery = taskService.createTaskQuery();
+            
+            if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+            {
+            	// Filter by tenant domain.
+                taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+            }
+            
             if (query.getTaskName() != null)
             {
                 // Task 'key' is stored as variable on task
@@ -1688,10 +1637,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     	 for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
          {
              String name =factory.mapQNameToName(customProperty.getKey());
-             
-             // Perform minimal property conversions
-             Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
-             taskQuery.processVariableValueEquals(name, converted);
+
+             // Exclude the special "VAR_TENANT_DOMAIN" variable, this cannot be queried by users
+             if(name != ActivitiConstants.VAR_TENANT_DOMAIN)
+             {
+            	 // Perform minimal property conversions
+            	 Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+            	 taskQuery.processVariableValueEquals(name, converted);
+             }
          }
      }
      
@@ -1819,6 +1772,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      private List<WorkflowTask> queryHistoricTasks(WorkflowTaskQuery query)
      {
         HistoricTaskInstanceQuery historicQuery = historyService.createHistoricTaskInstanceQuery().finished();
+        
+        if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+        {
+            // Filter by tenant domain
+            historicQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+        }
 
         if (query.getTaskId() != null)
         {
@@ -1915,9 +1874,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     	 {
     		 String name =factory.mapQNameToName(customProperty.getKey());
     		 
-    		 // Perform minimal property conversions
-             Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
-    		 taskQuery.processVariableValueEquals(name, converted);
+    		 // Exclude the special "VAR_TENANT_DOMAIN" variable, this cannot be queried by users
+             if(name != ActivitiConstants.VAR_TENANT_DOMAIN)
+             {
+            	 // Perform minimal property conversions
+            	 Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+            	 taskQuery.processVariableValueEquals(name, converted);
+             }
     	 }
      }
      
@@ -2189,7 +2152,6 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private List<WorkflowInstance> getWorkflowsInternal(WorkflowInstanceQuery workflowInstanceQuery, boolean isActive)
     {
         String processDefId = workflowInstanceQuery.getWorkflowDefinitionId() == null ? null : createLocalId(workflowInstanceQuery.getWorkflowDefinitionId());
-        LinkedList<WorkflowInstance> results = new LinkedList<WorkflowInstance>();
 
         HistoricProcessInstanceQuery query;
         if (isActive)
@@ -2312,10 +2274,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             }
         }
 
-            List<HistoricProcessInstance> completedInstances = query.list();
-            List<WorkflowInstance> completedResults = typeConverter.convert(completedInstances);
-            results.addAll(completedResults);
-        return results;
+        List<HistoricProcessInstance> completedInstances = query.list();
+        return typeConverter.convert(completedInstances);
     }
 
     /**

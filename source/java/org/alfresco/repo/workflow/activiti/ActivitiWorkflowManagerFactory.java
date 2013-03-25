@@ -21,6 +21,7 @@ package org.alfresco.repo.workflow.activiti;
 
 import org.activiti.engine.ProcessEngine;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
@@ -34,7 +35,6 @@ import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -51,19 +51,18 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     private TenantService tenantService;
     private MessageService messageService;
     private ServiceRegistry serviceRegistry;
-    private SearchService unprotectedSearchService;
     private BPMEngineRegistry bpmEngineRegistry;
     private AuthorityDAO authorityDAO;
     private NamespaceService namespaceService;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private PersonService personService;
-
+    private Repository repositoryHelper;
+    
     private ProcessEngine processEngine;
     
     private String engineId;
-    private String companyHomePath;
-    private String companyHomeStore;
+    private boolean deployWorkflowsInTenant;
     
     /**
     * {@inheritDoc}
@@ -94,16 +93,14 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         WorkflowAuthorityManager authorityManager = new WorkflowAuthorityManager(authorityDAO);
         QName defaultStartTaskType = WorkflowModel.TYPE_ACTIVTI_START_TASK;
         WorkflowObjectFactory factory = new WorkflowObjectFactory(qNameConverter, tenantService, messageService, dictionaryService, engineId, defaultStartTaskType);
-        ActivitiUtil activitiUtil = new ActivitiUtil(processEngine);
+        ActivitiUtil activitiUtil = new ActivitiUtil(processEngine, deployWorkflowsInTenant);
         ActivitiPropertyConverter propertyConverter = new ActivitiPropertyConverter(activitiUtil, factory, handlerRegistry, authorityManager, messageService, nodeConverter);
-        ActivitiTypeConverter typeConverter = new ActivitiTypeConverter(processEngine, factory, propertyConverter);
+        ActivitiTypeConverter typeConverter = new ActivitiTypeConverter(processEngine, factory, propertyConverter, deployWorkflowsInTenant);
         
         ActivitiWorkflowEngine workflowEngine = new ActivitiWorkflowEngine();
         workflowEngine.setActivitiUtil(activitiUtil);
         workflowEngine.setAuthorityManager(authorityManager);
         workflowEngine.setBPMEngineRegistry(bpmEngineRegistry);
-        workflowEngine.setCompanyHomePath(companyHomePath);
-        workflowEngine.setCompanyHomeStore(companyHomeStore);
         workflowEngine.setEngineId(engineId);
         workflowEngine.setFactory(factory);
         workflowEngine.setMessageService(messageService);
@@ -115,7 +112,7 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         workflowEngine.setPropertyConverter(propertyConverter);
         workflowEngine.setTenantService(tenantService);
         workflowEngine.setTypeConverter(typeConverter);
-        workflowEngine.setUnprotectedSearchService(unprotectedSearchService);
+        workflowEngine.setRepositoryHelper(repositoryHelper);
         return new ActivitiWorkflowManager(workflowEngine, propertyConverter, handlerRegistry, nodeConverter, authorityManager);
     }
 
@@ -143,13 +140,6 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         this.serviceRegistry = serviceRegistry;
     }
 
-    /**
-     * @param unprotectedSearchService the unprotectedSearchService to set
-     */
-    public void setUnprotectedSearchService(SearchService unprotectedSearchService)
-    {
-        this.unprotectedSearchService = unprotectedSearchService;
-    }
 
     /**
      * @param bpmEngineRegistry the bpmEngineRegistry to set
@@ -176,21 +166,13 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
 
     /**
-     * @param companyHomePath the companyHomePath to set
+     * @param repositoryHelper the repositoryHelper to set
      */
-    public void setCompanyHomePath(String companyHomePath)
+    public void setRepositoryHelper(Repository repositoryHelper)
     {
-        this.companyHomePath = companyHomePath;
+        this.repositoryHelper = repositoryHelper;
     }
-
-    /**
-     * @param companyHomeStore the companyHomeStore to set
-     */
-    public void setCompanyHomeStore(String companyHomeStore)
-    {
-        this.companyHomeStore = companyHomeStore;
-    }
-
+    
     /**
      * @param authorityDAO
      *            the authorityDAO to set
@@ -249,4 +231,11 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     {
         this.personService = personService;
     }
+    
+    /**
+     * @param wether or not to deploy workflows in multi-tenant context.
+     */
+	public void setDeployWorkflowsInTenant(boolean deployWorkflowsInTenant) {
+		this.deployWorkflowsInTenant = deployWorkflowsInTenant;
+	}
 }

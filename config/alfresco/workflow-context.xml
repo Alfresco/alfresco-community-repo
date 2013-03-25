@@ -37,6 +37,9 @@
       <property name="maxPooledTasks">
          <value>${system.workflow.maxPooledTasks}</value>
       </property>
+      <property name="multiTenantWorkflowDeploymentEnabled">
+         <value>${system.workflow.deployWorkflowsInTenant}</value>
+      </property>
    </bean>
 
    <bean id="workflowPackageImpl" class="org.alfresco.repo.workflow.WorkflowPackageImpl">

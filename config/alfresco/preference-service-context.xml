@@ -43,8 +43,8 @@
         <property name="personService" ref="PersonService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="authenticationContext" ref="authenticationContext"/>
-        <property name="authorityService" ref="AuthorityService"/>
         <property name="siteService" ref="SiteService"/>
+        <property name="authorityService" ref="AuthorityService"/>
     </bean>
     
     <bean id="preferenceServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.preference.script.ScriptPreferenceService">

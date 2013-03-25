@@ -658,6 +658,13 @@
                 <value>cm:expiryDate</value>
                 <!-- MNT-181 -->
                 <value>sys:clientVisibilityMask</value>
+                <value>cm:lastThumbnailModification</value>
+                <value>cm:likesRatingSchemeTotal</value>
+                <value>cm:likesRatingSchemeCount</value>
+                <value>cm:fiveStarRatingSchemeCount</value>
+                <value>cm:fiveStarRatingSchemeTotal</value>
+                <!-- ALF-12205 - do not version on comments -->
+                <value>fm:commentCount</value>
             </list>
         </property>
         <property name="enableAutoVersioning" value="${version.store.enableAutoVersioning}" />

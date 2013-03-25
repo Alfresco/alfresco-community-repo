@@ -15,6 +15,11 @@
         </property>        
     </bean>
     
+    <!-- Use the same datasource for ID-generation -->
+    <alias name="dataSource" alias="baseDefaultDataSource"/>
+    
+    <alias name="NodeService" alias="nodeService"/>
+    
     <bean id="ServiceRegistry" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.service.ServiceRegistry" />
     </bean>
@@ -23,9 +28,7 @@
         <constructor-arg value="org.alfresco.repo.i18n.MessageService" />
     </bean>
 
-    <bean id="tenantService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value=" org.alfresco.repo.tenant.TenantService" />
-    </bean>
+    <bean id="tenantService" class="org.alfresco.repo.tenant.SingleTServiceImpl" />
 
     <bean id="NamespaceService" class="org.alfresco.service.namespace.NamespaceServiceMemoryImpl" />
 
@@ -59,6 +62,14 @@
     
     <bean id="workflowAdminService" class="org.mockito.Mockito" factory-method="mock">
       <constructor-arg value="org.alfresco.service.cmr.workflow.WorkflowAdminService" />
+    </bean>
+    
+    <bean id="repositoryHelper" class="org.mockito.Mockito" factory-method="mock">
+      <constructor-arg value="org.alfresco.repo.model.Repository" />
+    </bean>
+    
+    <bean id="workflowNotification" class="org.mockito.Mockito" factory-method="mock">
+      <constructor-arg value="org.alfresco.repo.workflow.WorkflowNotificationUtils" />
     </bean>
 
    <bean id="baseWorkflowEngineStatus" class="org.alfresco.repo.workflow.WorkflowEngineStatus" abstract="true" />

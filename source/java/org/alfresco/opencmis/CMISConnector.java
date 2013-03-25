@@ -71,7 +71,6 @@ import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
@@ -260,7 +259,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private RenditionService renditionService;
     private FileFolderService fileFolderService;
     private TenantAdminService tenantAdminService;
-    private TenantService tenantService;
     private TransactionService transactionService;
     private AuthenticationService authenticationService;
     private PermissionService permissionService;
@@ -307,15 +305,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     private ObjectFilter objectFilter;
 
+    // --------------------------------------------------------------
+    // Configuration
+    // --------------------------------------------------------------
+
     public void setObjectFilter(ObjectFilter objectFilter)
     {
 		this.objectFilter = objectFilter;
 	}
 
-    // --------------------------------------------------------------
-    // Configuration
-    // --------------------------------------------------------------
-    
     /**
      * Sets the root store.
      * 
@@ -340,11 +338,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 	public ActivityPoster getActivityPoster()
 	{
 		return activityPoster;
-	}
-
-	public void setTenantService(TenantService tenantService)
-	{
-		this.tenantService = tenantService;
 	}
 
 	public void setHiddenAspect(HiddenAspect hiddenAspect)

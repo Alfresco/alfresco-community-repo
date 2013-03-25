@@ -63,6 +63,8 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
     
     public static final int MAX_FILTER_SORT_PROPS = 3;
     
+    private static final int MAX_EXPECTED_ADMINS = 5; // TODO refine non-admin paging
+    
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
     private CannedQueryDAO cannedQueryDAO;
@@ -190,31 +192,51 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
         filterSortPropCnt = setFilterSortParams(sortFilterProps, sortAsc, params);
         
         // filtered and/or sorted - note: permissions not applicable for getPeople
-        final List<NodeRef> result = new ArrayList<NodeRef>(100);
+        List<NodeRef> result = new ArrayList<NodeRef>(100);
         final PersonQueryCallback c = new DefaultPersonQueryCallback(result, paramBean.getIncludeAdministrators());
         PersonResultHandler resultHandler = new PersonResultHandler(c);
         
         int offset = parameters.getPageDetails().getSkipResults();
         int totalResultCountMax = parameters.getTotalResultCountMax();
-        int limit = totalResultCountMax > 0 ? totalResultCountMax : parameters.getPageDetails().getPageSize();
-        if (limit != Integer.MAX_VALUE)
+        
+        int origOffset = offset;
+        int origLimit = totalResultCountMax > 0 ? totalResultCountMax : parameters.getPageDetails().getPageSize();
+        
+        long newLimit = (long)origLimit;
+        
+        // to enable hasMore flag
+        newLimit++;
+        
+        boolean excludeAdmins = (! paramBean.getIncludeAdministrators());
+        if (excludeAdmins)
         {
-            // to enable hasMore flag
-            limit++;
-            
-            if ((! paramBean.getIncludeAdministrators()) && (limit != Integer.MAX_VALUE))
-            {
-                // TODO - only works in case where there is only 1 default admin
-                limit++;
-            }
+            // TODO refine - non-admin paging
+            offset = 0;
+            newLimit = offset + (long)newLimit + MAX_EXPECTED_ADMINS;
         }
         
-        cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_PEOPLE, params, offset, limit, resultHandler);
+        if (newLimit > Integer.MAX_VALUE)
+        {
+            newLimit = Integer.MAX_VALUE;
+        }
+        
+        cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_PEOPLE, params, offset, (int)newLimit, resultHandler);
         resultHandler.done();
         
         if (start != null)
         {
             logger.debug("Base query: "+result.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+        }
+        
+        if (excludeAdmins)
+        {
+            // TODO refine - non-admin paging
+            long max = origOffset + (long)origLimit;
+            if (max > result.size())
+            {
+                max = result.size();
+            }
+            result = result.subList(origOffset, (int)max);
         }
         
         return result;
@@ -296,7 +318,9 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
     @Override
     protected Pair<Integer, Integer> getTotalResultCount(List<NodeRef> results)
     {
-        return super.getTotalResultCount(results);
+        int offset = super.getParameters().getPageDetails().getSkipResults();
+        Integer size = offset + results.size();
+        return new Pair<Integer, Integer>(size, size);
     }
     
     protected interface PersonQueryCallback
@@ -318,9 +342,7 @@ public class GetPeopleCannedQuery extends AbstractCannedQuery<NodeRef>
         @Override
         public boolean handle(NodeRef personRef)
         {
-            // TODO refine
-            // - return username as part of query
-            // - can break paging if more than one admin
+            // TODO refine - return username as part of query
             if (includeAdministrators == false)
             {
                 String userName = (String) nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);

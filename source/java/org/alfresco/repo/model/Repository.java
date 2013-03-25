@@ -181,6 +181,7 @@ public class Repository implements ApplicationContextAware
         @Override
         protected void onShutdown(ApplicationEvent event)
         {
+            //NOOP
         }
     }
     
@@ -204,7 +205,7 @@ public class Repository implements ApplicationContextAware
     }
     
     /**
-     * Gets the Company Home
+     * Gets the Company Home. Note this is tenant-aware if the correct Cache is supplied.
      *  
      * @return  company home node ref
      */

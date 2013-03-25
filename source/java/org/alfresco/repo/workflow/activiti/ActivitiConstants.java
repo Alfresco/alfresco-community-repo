@@ -35,7 +35,6 @@ public interface ActivitiConstants
 
     public static final String DEFAULT_TRANSITION_NAME = "Next";
     public static final String DEFAULT_TRANSITION_DESCRIPTION = "Default Transition";
-    public static final String START_TASK_PROPERTY_PREFIX = "_start_";
 
     public static final String USER_TASK_NODE_TYPE = "userTask";
     public static final String PROP_TASK_FORM_KEY = "taskFormKey";
@@ -46,4 +45,7 @@ public interface ActivitiConstants
     public static final String SERVICE_REGISTRY_BEAN_KEY = "services";
 
     public static final String PROCESS_INSTANCE_IMAGE_FORMAT = "png";
+    
+    public static final String VAR_TENANT_DOMAIN = "_tenant_domain";
+    
 }

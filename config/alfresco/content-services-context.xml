@@ -367,7 +367,7 @@
          <ref bean="transformerConfig" />
       </property>
    </bean>
- 
+   
    <!-- Abstract bean definition defining base definition for all complex transformers -->
    <bean id="baseComplexContentTransformer"
          class="org.alfresco.repo.content.transform.ComplexContentTransformer"

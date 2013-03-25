@@ -89,6 +89,7 @@ public class WorkflowServiceImpl implements WorkflowService
     private WorkflowAdminService workflowAdminService;
     private int maxAuthoritiesForPooledTasks = 100;
     private int maxPooledTasks = -1;
+    private boolean deployWorkflowsInTenant = false;
     
     /**
      * Sets the Authority Service
@@ -591,6 +592,16 @@ public class WorkflowServiceImpl implements WorkflowService
         }        
         return result;
     }
+    
+    public void setMultiTenantWorkflowDeploymentEnabled(boolean deployWorkflowsInTenant) 
+    {
+		this.deployWorkflowsInTenant = deployWorkflowsInTenant;
+	}
+    
+    public boolean isMultiTenantWorkflowDeploymentEnabled() 
+    {
+		return deployWorkflowsInTenant;
+	}
 
     private Map<String, List<String>> batchByEngineId(List<String> workflowIds)
     {

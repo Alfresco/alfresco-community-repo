@@ -38,6 +38,8 @@ import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.RepoAdminService;
@@ -330,6 +332,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         try
         {
             final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            final String tenantDomain = TenantUtil.getCurrentDomain();
 
             // process the feeds using the batch processor {@link BatchProcessor}
 	        BatchProcessor.BatchProcessWorker<PersonInfo> worker = new BatchProcessor.BatchProcessWorker<PersonInfo>()
@@ -355,14 +358,22 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 	            	final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
                     txHelper.setMaxRetries(0);
 
-                    txHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+                    TenantUtil.runAsTenant(new TenantRunAsWork<Void>()
                     {
-                        public Void execute() throws Throwable
+                        @Override
+                        public Void doWork() throws Exception
                         {
-			            	processInternal(person);
-			            	return null;
+                            txHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+                            {
+                                public Void execute() throws Throwable
+                                {
+                                    processInternal(person);
+                                    return null;
+                                }
+                            }, false, true);
+                            return null;
                         }
-                    }, false, true);
+                    }, tenantDomain);
 	            }
 	            
                 private void processInternal(final PersonInfo person) throws Exception

@@ -31,6 +31,7 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.form.StartFormData;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.impl.RepositoryServiceImpl;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.impl.pvm.ReadOnlyProcessDefinition;
@@ -38,6 +39,8 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
+import org.alfresco.repo.tenant.TenantUtil;
 
 /**
  * @author Nick Smith
@@ -51,8 +54,9 @@ public class ActivitiUtil
     private final TaskService taskService;
     private final FormService formService;
     private final ManagementService managementService;
+	private boolean deployWorkflowsInTenant;
 
-    public ActivitiUtil(ProcessEngine engine)
+    public ActivitiUtil(ProcessEngine engine, boolean deployWorkflowsInTenant)
     {
         this.repoService = engine.getRepositoryService();
         this.runtimeService = engine.getRuntimeService();
@@ -60,16 +64,31 @@ public class ActivitiUtil
         this.historyService = engine.getHistoryService();
         this.formService = engine.getFormService();
         this.managementService = engine.getManagementService();
+        this.deployWorkflowsInTenant = deployWorkflowsInTenant;
     }
     
     public ProcessDefinition getProcessDefinition(String definitionId)
     {
-        ProcessDefinition procDef = repoService.createProcessDefinitionQuery()
+        return repoService.createProcessDefinitionQuery()
             .processDefinitionId(definitionId)
             .singleResult();
-        return procDef;
     }
 
+    public ProcessDefinition getProcessDefinitionByKey(String processKey)
+    {
+        return repoService.createProcessDefinitionQuery()
+            .processDefinitionKey(processKey)
+            .latestVersion()
+            .singleResult();
+    }
+
+    public ProcessDefinition getProcessDefinitionForDeployment(String deploymentId)
+    {
+        return repoService.createProcessDefinitionQuery()
+            .deploymentId(deploymentId)
+            .singleResult();
+    }
+    
     public ProcessInstance getProcessInstance(String id)
     {
         return runtimeService.createProcessInstanceQuery()
@@ -79,7 +98,11 @@ public class ActivitiUtil
     
     public Task getTaskInstance(String taskId)
     {
-        return taskService.createTaskQuery().taskId(taskId).singleResult();
+        TaskQuery taskQuery = taskService.createTaskQuery().taskId(taskId);
+        if(!deployWorkflowsInTenant) {
+        	taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+        }
+        return taskQuery.singleResult();
     }
     
     public HistoricProcessInstance getHistoricProcessInstance(String id)
@@ -183,6 +206,16 @@ public class ActivitiUtil
      */
     public HistoricTaskInstance getHistoricTaskInstance(String localId)
     {
-        return historyService.createHistoricTaskInstanceQuery().taskId(localId).singleResult();
+        HistoricTaskInstanceQuery taskQuery =  historyService.createHistoricTaskInstanceQuery()
+            .taskId(localId);
+        if(!deployWorkflowsInTenant) {
+        	taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+        }
+        return taskQuery.singleResult();
     }
+    
+    public boolean isMultiTenantWorkflowDeploymentEnabled() 
+    {
+		return deployWorkflowsInTenant;
+	}
 }

@@ -124,11 +124,11 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource
         
         super.afterPropertiesSet(); // to update resolved data sources
     }
-    
+
     @Override
     public Logger getParentLogger() throws SQLFeatureNotSupportedException
     {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 }
 

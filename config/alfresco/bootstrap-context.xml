@@ -835,4 +835,10 @@
            <ref bean="transactionService"/>
        </property>
     </bean>
+    
+     <!-- Activiti Jobexecutor -->
+    <bean id="activitiEngineInitializer" depends-on="dynamicExporter"
+        class="org.alfresco.repo.workflow.activiti.ActivitiEngineInitializer">
+        <property name="workflowAdminService" ref="workflowAdminService" />
+    </bean>
 </beans>

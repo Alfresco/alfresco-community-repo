@@ -203,9 +203,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         nodeService.deleteNode(nodeWithFreeMarkerContent);
         nodeService.deleteNode(testTargetFolder);
     }
-
-    //TODO Fix this failing test.
-    public void off_testRenderFreeMarkerTemplate() throws Exception
+    
+    public void testRenderFreeMarkerTemplate() throws Exception
     {
         this.setComplete();
         this.endTransaction();

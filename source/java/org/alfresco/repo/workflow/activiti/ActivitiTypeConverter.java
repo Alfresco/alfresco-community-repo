@@ -19,6 +19,9 @@
 
 package org.alfresco.repo.workflow.activiti;
 
+import static org.alfresco.repo.workflow.activiti.ActivitiConstants.DEFAULT_TRANSITION_DESCRIPTION;
+import static org.alfresco.repo.workflow.activiti.ActivitiConstants.DEFAULT_TRANSITION_NAME;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,12 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.alfresco.repo.workflow.activiti.ActivitiConstants.DEFAULT_TRANSITION_NAME;
-import static org.alfresco.repo.workflow.activiti.ActivitiConstants.DEFAULT_TRANSITION_DESCRIPTION;
 import org.activiti.engine.FormService;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.form.StartFormData;
 import org.activiti.engine.form.TaskFormData;
@@ -56,6 +56,7 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.workflow.WorkflowObjectFactory;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
@@ -81,8 +82,6 @@ public class ActivitiTypeConverter
     private static final String TRANSITION_SUFFIX= ".transition";
     private static final String DEFAULT_TRANSITION_KEY= "bpm_businessprocessmodel.transition";
     
-    
-    private final RepositoryService repoService;
     private final RuntimeService runtimeService;
     private final FormService formService;
     private final HistoryService historyService;
@@ -93,15 +92,14 @@ public class ActivitiTypeConverter
     
     public ActivitiTypeConverter(ProcessEngine processEngine, 
                 WorkflowObjectFactory factory,
-                ActivitiPropertyConverter propertyConverter)
+                ActivitiPropertyConverter propertyConverter, boolean deployWorkflowsInTenant)
     {
-        this.repoService = processEngine.getRepositoryService();
         this.runtimeService = processEngine.getRuntimeService();
         this.formService = processEngine.getFormService();
         this.historyService = processEngine.getHistoryService();
         this.factory = factory;
         this.propertyConverter =propertyConverter;
-        this.activitiUtil = new ActivitiUtil(processEngine);
+        this.activitiUtil = new ActivitiUtil(processEngine, deployWorkflowsInTenant);
     }
     
     public <F, T> List<T> filterByDomainAndConvert(List<F> values, Function<F, String> processKeyGetter)
@@ -120,10 +118,7 @@ public class ActivitiTypeConverter
         if(deployment == null)
             return null;
         
-        List<ProcessDefinition> processDefs = repoService.createProcessDefinitionQuery()
-            .deploymentId(deployment.getId())
-            .list();
-        ProcessDefinition processDef = processDefs.get(0);
+        ProcessDefinition processDef = activitiUtil.getProcessDefinitionForDeployment(deployment.getId());
         WorkflowDefinition wfDef = convert(processDef);
         return factory.createDeployment(wfDef);
     }
@@ -144,7 +139,7 @@ public class ActivitiTypeConverter
         String defaultTitle = definition.getName();
         
         String startTaskName = null;
-        StartFormData startFormData = formService.getStartFormData(definition.getId());
+        StartFormData startFormData = getStartFormData(defId, defName);
         if(startFormData != null) 
         {
             startTaskName = startFormData.getFormKey();
@@ -157,6 +152,11 @@ public class ActivitiTypeConverter
         return factory.createDefinition(defId,
                     defName, version, defaultTitle,
                     null, startTask);
+    }
+
+    private StartFormData getStartFormData(final String definitionId, String processKey)
+    {
+       return formService.getStartFormData(definitionId);
     }
     
     public WorkflowTaskDefinition getTaskDefinition(PvmActivity activity, String taskFormKey, String processKey, boolean isStart)
@@ -495,6 +495,12 @@ public class ActivitiTypeConverter
     private WorkflowTask getVirtualStartTask(ProcessInstance processInstance, boolean inProgress)
     {
         String processInstanceId = processInstance.getId();
+
+        if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !isCorrectTenantRuntime(processInstanceId))
+        {
+            return null;
+        }
+        
         String id = ActivitiConstants.START_TASK_PREFIX + processInstanceId;
         
         WorkflowTaskState state = null;
@@ -510,10 +516,12 @@ public class ActivitiTypeConverter
         WorkflowPath path  = convert((Execution)processInstance);
         
         // Convert start-event to start-task Node
-        ReadOnlyProcessDefinition procDef = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
+        String definitionId = processInstance.getProcessDefinitionId();
+        ReadOnlyProcessDefinition procDef = activitiUtil.getDeployedProcessDefinition(definitionId);
         WorkflowNode startNode = convert(procDef.getInitial(), true);
         
-        StartFormData startFormData = formService.getStartFormData(processInstance.getProcessDefinitionId());
+        String key = ((ProcessDefinition)procDef).getKey();
+        StartFormData startFormData = getStartFormData(definitionId, key);
         String taskDefId = null;
         if(startFormData != null) 
         {
@@ -524,7 +532,7 @@ public class ActivitiTypeConverter
         // Add properties based on HistoricProcessInstance
         HistoricProcessInstance historicProcessInstance = historyService
             .createHistoricProcessInstanceQuery()
-            .processInstanceId(processInstance.getId())
+            .processInstanceId(processInstanceId)
             .singleResult();
         
         Map<QName, Serializable> properties = propertyConverter.getStartTaskProperties(historicProcessInstance, taskDefId, !inProgress);
@@ -536,6 +544,38 @@ public class ActivitiTypeConverter
         return factory.createTask(id,
                     taskDef, taskDef.getId(), defaultTitle, defaultDescription, state, path, properties);
     }
+
+    public boolean isCorrectTenantRuntime(String processInstanceId, boolean isRuntime)
+    {
+    	// Runtime domain only applicable in case tenant-aware deployment is turned off
+    	if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled()) {
+    		if (isRuntime)
+    		{
+    			return isCorrectTenantRuntime(processInstanceId); 
+    		}
+    		else
+    		{
+    			return isCorrectTenantHistoric(processInstanceId); 
+    		}
+    	}
+    	return true;
+    }
+    
+    public boolean isCorrectTenantRuntime(String processInstanceId)
+    {
+        return runtimeService.createProcessInstanceQuery()
+            .processInstanceId(processInstanceId)
+            .variableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain())
+            .count()>0;
+    }
+
+    public boolean isCorrectTenantHistoric(String processInstanceId)
+    {
+        return historyService.createHistoricProcessInstanceQuery()
+            .processInstanceId(processInstanceId)
+            .variableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain())
+            .count()>0;
+    }
     
     private WorkflowTask getVirtualStartTask(HistoricProcessInstance historicProcessInstance)
     {
@@ -543,8 +583,13 @@ public class ActivitiTypeConverter
         {
             return null;
         }
-        
         String processInstanceId = historicProcessInstance.getId();
+
+        if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && false == isCorrectTenantHistoric(processInstanceId))
+        {
+            return null;
+        }
+        
         String id = ActivitiConstants.START_TASK_PREFIX + processInstanceId;
         
         // Since the process instance is complete the Start Task must be complete!

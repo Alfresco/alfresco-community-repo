@@ -28,6 +28,7 @@ import org.activiti.engine.impl.jobexecutor.TimerExecuteNestedActivityJobHandler
 import org.activiti.engine.impl.variable.SerializableType;
 import org.activiti.engine.impl.variable.VariableType;
 import org.activiti.spring.SpringProcessEngineConfiguration;
+import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * @author Nick Smith
@@ -37,6 +38,7 @@ import org.activiti.spring.SpringProcessEngineConfiguration;
 public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfiguration
 {
     private List<VariableType> customTypes;
+    private NodeService unprotectedNodeService;
     
     @Override
     protected void initVariableTypes()
@@ -60,7 +62,7 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
 
         // Wrap timer-job handler to handle authentication
         JobHandler timerJobHandler = jobHandlers.get(TimerExecuteNestedActivityJobHandler.TYPE);
-        JobHandler wrappingTimerJobHandler = new AuthenticatedTimerJobHandler(timerJobHandler);
+        JobHandler wrappingTimerJobHandler = new AuthenticatedTimerJobHandler(timerJobHandler, unprotectedNodeService);
         jobHandlers.put(TimerExecuteNestedActivityJobHandler.TYPE, wrappingTimerJobHandler);
         
         // Wrap async-job handler to handle authentication
@@ -78,5 +80,10 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
     public void setCustomTypes(List<VariableType> customTypes)
     {
         this.customTypes = customTypes;
+    }
+    
+    public void setUnprotectedNodeService(NodeService unprotectedNodeService)
+    {
+        this.unprotectedNodeService = unprotectedNodeService;
     }
 }

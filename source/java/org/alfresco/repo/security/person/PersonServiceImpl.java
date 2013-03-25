@@ -433,14 +433,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     /**
      * {@inheritDoc}
      */
-    public NodeRef getPersonOrNull(String userName)
-    {
-        return getPersonImpl(userName, false, false);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
     public PersonInfo getPerson(NodeRef personRef) throws NoSuchPersonException
     {
         Map<QName, Serializable> props = null;
@@ -453,9 +445,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             throw new NoSuchPersonException(personRef.toString());
         }
         
-        // belts-and-braces
         String username  = (String)props.get(ContentModel.PROP_USERNAME);
-        if (getPersonOrNull(username) == null)
+        if (username == null)
         {
             throw new NoSuchPersonException(personRef.toString());
         }
@@ -469,10 +460,19 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     /**
      * {@inheritDoc}
      */
+    public NodeRef getPersonOrNull(String userName)
+    {
+        return getPersonImpl(userName, false, false);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public NodeRef getPerson(final String userName, final boolean autoCreateHomeFolderAndMissingPersonIfAllowed)
     {
         return getPersonImpl(userName, autoCreateHomeFolderAndMissingPersonIfAllowed, true);
     }
+    
     
     private NodeRef getPersonImpl(
             final String userName,
@@ -513,7 +513,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public boolean personExists(String caseSensitiveUserName)
     {
-        NodeRef person = getPersonOrNull(caseSensitiveUserName); 
+        NodeRef person = getPersonOrNullImpl(caseSensitiveUserName); 
         if (person != null)
         {
             // re: THOR-293

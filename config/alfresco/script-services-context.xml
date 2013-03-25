@@ -277,8 +277,10 @@
         <property name="propertyNames">
             <set>
                 <value>cm:content</value>
+                <value>sys:locale</value>
                 <value>sys:node-uuid</value>
                 <value>sys:store-protocol</value>
+                <value>sys:node-dbid</value>
                 <value>sys:store-identifier</value>
             </set>
         </property>

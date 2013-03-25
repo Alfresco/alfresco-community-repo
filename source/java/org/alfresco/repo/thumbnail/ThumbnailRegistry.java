@@ -244,6 +244,58 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         return result;
     }
     
+    public List<ThumbnailDefinition> getThumbnailDefinitions(String sourceUrl, String mimetype, long sourceSize)
+    {
+        List<ThumbnailDefinitionLimits> thumbnailDefinitionsLimitsForMimetype = this.mimetypeMap.get(mimetype);
+        
+        if (thumbnailDefinitionsLimitsForMimetype == null)
+        {
+            boolean foundAtLeastOneTransformer = false;
+            thumbnailDefinitionsLimitsForMimetype = new ArrayList<ThumbnailDefinitionLimits>(7);
+            
+            for (ThumbnailDefinition thumbnailDefinition : this.thumbnailDefinitions.values())
+            {
+                if (isThumbnailDefinitionAvailable(sourceUrl, mimetype, sourceSize, thumbnailDefinition))
+                {
+                    long maxSourceSizeBytes = getMaxSourceSizeBytes(mimetype, thumbnailDefinition);
+                    if (maxSourceSizeBytes != 0)
+                    {
+                        thumbnailDefinitionsLimitsForMimetype.add(new ThumbnailDefinitionLimits(thumbnailDefinition, maxSourceSizeBytes));
+                        foundAtLeastOneTransformer = true;
+                    }
+                }
+            }
+            
+            // If we have found no transformers for the given MIME type then we do
+            // not cache the empty list. We prevent this because we want to allow for
+            // transformers only coming online *during* system operation - as opposed
+            // to coming online during startup.
+            //
+            // An example of such a transient transformer would be those that use OpenOffice.org.
+            // It is possible that the system might start without OOo-based transformers
+            // being available. Therefore we must not cache an empty list for the relevant
+            // MIME types - otherwise this class would hide the fact that OOo (soffice) has
+            // been launched and that new transformers are available.
+            if (foundAtLeastOneTransformer)
+            {
+                this.mimetypeMap.put(mimetype, thumbnailDefinitionsLimitsForMimetype);
+            }
+        }
+        
+        // Only return ThumbnailDefinition for this specific source - may be limited on size.
+        List<ThumbnailDefinition> result = new ArrayList<ThumbnailDefinition>(thumbnailDefinitionsLimitsForMimetype.size());
+        for (ThumbnailDefinitionLimits thumbnailDefinitionLimits: thumbnailDefinitionsLimitsForMimetype)
+        {
+            long maxSourceSizeBytes = thumbnailDefinitionLimits.getMaxSourceSizeBytes();
+            if (sourceSize <= 0 || maxSourceSizeBytes < 0 || maxSourceSizeBytes >= sourceSize)
+            {
+                result.add(thumbnailDefinitionLimits.getThumbnailDefinition());
+            }
+        }
+        
+        return result;
+    }
+    
     /**
      * 
      * @param mimetype
@@ -290,6 +342,34 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         }
     }
     
+    /**
+     * Checks to see if at this moment in time, the specified {@link ThumbnailDefinition}
+     *  is able to thumbnail the source mimetype. Typically used with Thumbnail Definitions
+     *  retrieved by name, and/or when dealing with transient {@link ContentTransformer}s.
+     * @param sourceUrl The URL of the source (optional)
+     * @param sourceMimeType The source mimetype
+     * @param sourceSize the size (in bytes) of the source. Use -1 if unknown.
+     * @param thumbnailDefinition The {@link ThumbnailDefinition} to check for
+     */
+    public boolean isThumbnailDefinitionAvailable(String sourceUrl, String sourceMimeType, long sourceSize, ThumbnailDefinition thumbnailDefinition)
+    {
+        // Log the following getTransform() as trace so we can see the wood for the trees
+        boolean orig = TransformerDebug.setDebugOutput(false);
+        try
+        {
+            return this.contentService.getTransformer(
+                    sourceUrl, 
+                    sourceMimeType,
+                    sourceSize, 
+                    thumbnailDefinition.getMimetype(), thumbnailDefinition.getTransformationOptions()
+              ) != null;
+        }
+        finally
+        {
+            TransformerDebug.setDebugOutput(orig);
+        }
+    }
+
     /**
      * Returns the maximum source size of any content that may transformed between the supplied
      * sourceMimetype and thumbnailDefinition's targetMimetype using its transformation options.

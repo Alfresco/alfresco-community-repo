@@ -20,27 +20,21 @@ package org.alfresco.repo.workflow.activiti;
 
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.impl.ProcessEngineImpl;
-import org.alfresco.repo.domain.schema.SchemaAvailableEvent;
 import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
- * Class that waits for an {@link SchemaAvailableEvent} to start the activiti
- * job executor.
+ * Bean that starts up the Activiti job executor as part of the
+ * bootstrap process.
  *
  * @author Frederik Heremans
  * @since 4.0
  */
-public class ActivitiEngineInitializer implements ApplicationListener<ApplicationEvent>
+public class ActivitiEngineInitializer extends AbstractLifecycleBean
 {
     private ProcessEngine processEngine;
     private WorkflowAdminService workflowAdminService;
-    
-    public void setProcessEngine(ProcessEngine processEngine)
-    {
-        this.processEngine = processEngine;
-    }
     
     public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
     {
@@ -48,13 +42,22 @@ public class ActivitiEngineInitializer implements ApplicationListener<Applicatio
     }
     
     @Override
-    public void onApplicationEvent(ApplicationEvent event)
-    {
-        if (event instanceof SchemaAvailableEvent && processEngine instanceof ProcessEngineImpl &&
-            workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID)) 
-        {
-            // Start the job-executor
-            ((ProcessEngineImpl)processEngine).getProcessEngineConfiguration().getJobExecutor().start();
-        }
+    protected void onBootstrap(ApplicationEvent event) {
+    	
+    	this.processEngine = getApplicationContext().getBean(ProcessEngine.class);
+    	
+    	if (workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID)) 
+    	{
+    		((ProcessEngineImpl)processEngine).getProcessEngineConfiguration().getJobExecutor().start();
+    	}
     }
+
+	@Override
+	protected void onShutdown(ApplicationEvent event) {
+		if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID) && 
+				((ProcessEngineImpl)processEngine).getProcessEngineConfiguration().getJobExecutor().isActive())
+		{
+			((ProcessEngineImpl)processEngine).getProcessEngineConfiguration().getJobExecutor().shutdown();
+		}
+	}
 }

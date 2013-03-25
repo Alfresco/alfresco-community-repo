@@ -46,7 +46,6 @@ public class ApplicationContextHelper extends BaseApplicationContextHelper
         return BaseApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
     }
     
-   
     public static void main(String ... args)
     {
         ClassPathXmlApplicationContext ctx = (ClassPathXmlApplicationContext) getApplicationContext();

@@ -27,8 +27,8 @@ import java.util.Map;
 
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.jscript.ScriptNode;
-import org.alfresco.repo.tenant.MultiTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -370,10 +370,18 @@ public class WorkflowObjectFactory
             {
                 processKey = getLocalEngineId(defName);
             }
-            tenantService.checkDomain(processKey);
+            if(tenantService.isTenantName(processKey))
+            {
+                tenantService.checkDomain(processKey);
+            }
         }
     }
 
+    public boolean isDefaultDomain()
+    {
+        return TenantService.DEFAULT_DOMAIN.equals(tenantService.getCurrentUserDomain());
+    }
+    
     public <T extends Object> List<T> filterByDomain(Collection<T> values, final Function<T, String> processKeyGetter)
     {
         final String currentDomain = tenantService.getCurrentUserDomain();
@@ -382,8 +390,8 @@ public class WorkflowObjectFactory
             public Boolean apply(T value)
             {
                 String key = processKeyGetter.apply(value);
-                String domain = MultiTServiceImpl.getMultiTenantDomainName(key);
-                return (currentDomain.equals(domain));
+                String domain = TenantUtil.getTenantDomain(key);
+                return currentDomain.equals(domain) || domain.equals(TenantService.DEFAULT_DOMAIN);
             }
         });
     }

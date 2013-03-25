@@ -50,11 +50,11 @@ public class MailActionExecuterTest {
     public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
     
     // Rules to create 2 test users.
-    public static AlfrescoPerson AUSTRALIAN_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "EnglishUser");
-    public static AlfrescoPerson BRITISH_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "EnglishUser");
-    public static AlfrescoPerson FRENCH_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "FrenchUser");
-    public static AlfrescoPerson UNKNOWN_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, "UnknownUser1");
-    public static AlfrescoPerson UNKNOWN_USER2 = new AlfrescoPerson(APP_CONTEXT_INIT, "UnknowUser2");    
+    public static AlfrescoPerson AUSTRALIAN_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "AustralianUser@test.com");
+    public static AlfrescoPerson BRITISH_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "EnglishUser@test.com");
+    public static AlfrescoPerson FRENCH_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "FrenchUser@test.com");
+    public static AlfrescoPerson UNKNOWN_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, "UnknownUser1@test.com");
+    public static AlfrescoPerson UNKNOWN_USER2 = new AlfrescoPerson(APP_CONTEXT_INIT, "UnknowUser2@test.com");    
 
     // Tie them together in a static Rule Chain
     @ClassRule public static RuleChain ruleChain = RuleChain.outerRule(APP_CONTEXT_INIT)
@@ -94,7 +94,7 @@ public class MailActionExecuterTest {
     	
     	preferences.clear();
     	preferences.put("locale", "en_AU");
-    	PREFERENCE_SERVICE.setPreferences(BRITISH_USER.getUsername(), preferences);
+    	PREFERENCE_SERVICE.setPreferences(AUSTRALIAN_USER.getUsername(), preferences);
 
     }
     
@@ -161,7 +161,7 @@ public class MailActionExecuterTest {
     	
     	MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
     	Assert.assertNotNull(message);
-    	Assert.assertEquals("G'Day Jan 1, 1970", (String)message.getContent());
+    	Assert.assertEquals("G'Day 01/01/1970", (String)message.getContent());
     }
 
 }

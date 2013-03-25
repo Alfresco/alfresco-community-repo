@@ -575,7 +575,7 @@
          <ref bean="tenantEntitySharedCache" />
       </property>
       <property name="name">
-         <value>org.alfresco.tenantsTransactionalCache</value>
+         <value>org.alfresco.cache.tenantEntityTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="1000" />
       <property name="mutable" value="true" />

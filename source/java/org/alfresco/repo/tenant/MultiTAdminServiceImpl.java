@@ -579,10 +579,13 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 tenantDeployer.onEnableTenant();
             }
             
-            // bootstrap workflows
-            for (WorkflowDeployer workflowDeployer : workflowDeployers)
+            // bootstrap workflows, if needed
+            if(workflowService.isMultiTenantWorkflowDeploymentEnabled()) 
             {
-                workflowDeployer.init();
+            	for (WorkflowDeployer workflowDeployer : workflowDeployers)
+            	{
+            		workflowDeployer.init();
+            	}
             }
             
             // bootstrap modules (if any)
@@ -773,14 +776,17 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 {
                     public Object doWork()
                     {
-                        List<WorkflowDefinition> workflowDefs = workflowService.getDefinitions();
-                        if (workflowDefs != null)
-                        {
-                            for (WorkflowDefinition workflowDef : workflowDefs)
-                            {
-                                workflowService.undeployDefinition(workflowDef.getId());
-                            }
-                        }
+                    	// Only undeploy tenant-workflows when MT-workflow deployment is enabled
+                    	if(workflowService.isMultiTenantWorkflowDeploymentEnabled()) {
+                    		List<WorkflowDefinition> workflowDefs = workflowService.getDefinitions();
+                    		if (workflowDefs != null)
+                    		{
+                    			for (WorkflowDefinition workflowDef : workflowDefs)
+                    			{
+                    				workflowService.undeployDefinition(workflowDef.getId());
+                    			}
+                    		}
+                    	}
                         
                         List<String> messageResourceBundles = repoAdminService.getMessageBundles();
                         if (messageResourceBundles != null)

@@ -199,7 +199,6 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         List<WorkflowTask> tasks = workflowService.queryTasks(taskQuery);
         assertNotNull(tasks);
         
-        // Activiti doesn't return start-task when no process/task id is set in query, so only 2 tasks will be returned
         assertEquals(3, tasks.size());
         
         taskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);

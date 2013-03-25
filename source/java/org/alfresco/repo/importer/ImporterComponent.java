@@ -775,6 +775,12 @@ public class ImporterComponent implements ImporterService
                 String contentUrl = contentData.getContentUrl();
                 if (contentUrl != null && contentUrl.length() > 0)
                 {
+                    Map<QName, Serializable> propsBefore = null;
+                    if (contentUsageImpl != null && contentUsageImpl.getEnabled())
+                    {
+                        propsBefore = nodeService.getProperties(nodeRef);
+                    }
+
                     if (contentCache != null)
                     {
                         // import content from source
@@ -783,27 +789,20 @@ public class ImporterComponent implements ImporterService
                     }
                     else
                     {
-                        // import the content from the url
+                        // import the content from the import source file
                         InputStream contentStream = streamHandler.importStream(contentUrl);
                         ContentWriter writer = contentService.getWriter(nodeRef, propertyName, true);
                         writer.setEncoding(contentData.getEncoding());
                         writer.setMimetype(contentData.getMimetype());
-                        
-                        Map<QName, Serializable> propsBefore = null;
-                        if (contentUsageImpl != null && contentUsageImpl.getEnabled())
-                        {
-                            propsBefore = nodeService.getProperties(nodeRef);
-                        }
-                        
                         writer.putContent(contentStream);
-                        
-                        if (contentUsageImpl != null && contentUsageImpl.getEnabled())
-                        {
-                            // Since behaviours for content nodes have all been disabled,
-                            // it is necessary to update the user's usage stats.
-                            Map<QName, Serializable> propsAfter = nodeService.getProperties(nodeRef);
-                            contentUsageImpl.onUpdateProperties(nodeRef, propsBefore, propsAfter);
-                        }
+                    }
+                                        
+                    if (contentUsageImpl != null && contentUsageImpl.getEnabled())
+                    {
+                        // Since behaviours for content nodes have all been disabled,
+                        // it is necessary to update the user's usage stats.
+                        Map<QName, Serializable> propsAfter = nodeService.getProperties(nodeRef);
+                        contentUsageImpl.onUpdateProperties(nodeRef, propsBefore, propsAfter);
                     }
                     
                     reportContentCreated(nodeRef, contentUrl);

@@ -50,6 +50,7 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
     private TaskListener      createTaskListener;
     private ExecutionListener processCreateListener;
     private TenantService     tenantService;
+    private boolean           multiTenancyEnabled = true;
 
     @Override
     public void parseUserTask(Element userTaskElement, ScopeImpl scope, ActivityImpl activity)
@@ -140,7 +141,7 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
     @Override
     public void parseCallActivity(Element callActivityElement, ScopeImpl scope, ActivityImpl activity)
     {
-    	if (tenantService.isEnabled())
+    	if (multiTenancyEnabled && tenantService.isEnabled())
         {
     		ActivityBehavior activityBehavior = activity.getActivityBehavior();
         	if(activityBehavior instanceof CallActivityBehavior)
@@ -196,11 +197,12 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
         for (ProcessDefinitionEntity processDefinition : arg1)
         {
             processDefinition.addExecutionListener(ExecutionListener.EVENTNAME_START, processCreateListener);
-            if (tenantService.isEnabled())
-            {
-                String key = tenantService.getName(processDefinition.getKey());
-                processDefinition.setKey(key);
-            }
+            
+             if (multiTenancyEnabled && tenantService.isEnabled())
+             {
+                 String key = tenantService.getName(processDefinition.getKey());
+                 processDefinition.setKey(key);
+             }
         }
     }
 
@@ -234,6 +236,14 @@ public class AlfrescoBpmnParseListener implements BpmnParseListener
     {
         this.tenantService = tenantService;
     }
+    
+    /**
+     * @param deployInTenant whether or not workflows should be deployed as a tenant-only workflow
+     * when it's deployed IF the tenantService is enabled and a tenant-context is currently active.
+     */
+    public void setDeployWorkflowsInTenant(boolean deployInTenant) {
+		this.multiTenancyEnabled = deployInTenant;
+	}
 
 	@Override
 	public void parseInclusiveGateway(Element inclusiveGwElement,

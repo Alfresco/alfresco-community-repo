@@ -156,6 +156,8 @@ public class ActivitiPropertyConverter
     public Map<QName, Serializable> getPathProperties(String executionId)
     {
         Map<String, Object> variables = activitiUtil.getExecutionVariables(executionId);
+        variables.remove(ActivitiConstants.VAR_TENANT_DOMAIN);
+        
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(variables.size());
         for (Entry<String, Object> entry: variables.entrySet())
         {

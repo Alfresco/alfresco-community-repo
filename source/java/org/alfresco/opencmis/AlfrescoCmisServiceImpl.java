@@ -19,6 +19,8 @@
 package org.alfresco.opencmis;
 
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -69,6 +71,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
+import org.alfresco.util.TempFileProvider;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Acl;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
@@ -154,78 +157,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         this.connector = connector;
         nodeInfoMap = new HashMap<String, CMISNodeInfo>();
         objectInfoMap = new HashMap<String, ObjectInfo>();
-    }
-
-    @Override
-    public void beforeCall()
-    {
-        AuthenticationUtil.pushAuthentication();
-        if (authentication != null)
-        {
-            // Use the previously-obtained authentication
-            AuthenticationUtil.setFullAuthentication(authentication);
-        }
-        else
-        {
-            if (context == null)
-            {
-                // Service not opened, yet
-                return;
-            }
-            // Sticky sessions?
-            if (connector.openHttpSession())
-            {
-                // create a session -> set a cookie
-                // if the CMIS client supports cookies that might help in clustered environments
-                ((HttpServletRequest) getContext().get(CallContext.HTTP_SERVLET_REQUEST)).getSession();
-            }
-            
-            // Authenticate
-            if (authentication != null)
-            {
-                // We have already authenticated; just reuse the authentication
-                AuthenticationUtil.setFullAuthentication(authentication);
-            }
-            else
-            {
-                // First check if we already are authenticated
-                if (AuthenticationUtil.getFullyAuthenticatedUser() == null)
-                {
-                    // We have to go to the repo and authenticate
-                    String user = getContext().getUsername();
-                    String password = getContext().getPassword();
-                    Authorization auth = new Authorization(user, password);
-                    if (auth.isTicket())
-                    {
-                        connector.getAuthenticationService().validate(auth.getTicket());
-                    }
-                    else
-                    {
-                        connector.getAuthenticationService().authenticate(auth.getUserName(), auth.getPasswordCharArray());
-                    }
-                }
-                this.authentication = AuthenticationUtil.getFullAuthentication();
-            }
-            
-//            // TODO: How is the proxy user working.
-//            //       Until we know what it is meant to do, it's not available
-//            String currentUser = connector.getAuthenticationService().getCurrentUserName();
-//            String user = getContext().getUsername();
-//            String password = getContext().getPassword();
-//            if (currentUser != null && currentUser.equals(connector.getProxyUser()))
-//            {
-//                if (user != null && user.length() > 0)
-//                {
-//                    AuthenticationUtil.setFullyAuthenticatedUser(user);
-//                }
-//            }
-        }
-    }
-
-    @Override
-    public void afterCall()
-    {
-        AuthenticationUtil.popAuthentication();
     }
 
     @Override
@@ -571,10 +502,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             {
                 try
                 {
-                	if(connector.filter(child.getNodeRef()))
-                	{
-                		continue;
-                	}
+                    if(connector.filter(child.getNodeRef()))
+                    {
+                        continue;
+                    }
 
                     // create a child CMIS object
                     CMISNodeInfo ni = createNodeInfo(child.getNodeRef());
@@ -711,19 +642,19 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 
                 if(isFolder && type.getAlfrescoClass().equals(ContentModel.TYPE_SYSTEM_FOLDER))
                 {
-                	continue;
+                    continue;
                 }
                 
-            	if(connector.isHidden(child.getChildRef()))
-            	{
-            		continue;
-            	}
+                if(connector.isHidden(child.getChildRef()))
+                {
+                    continue;
+                }
 
-            	if(connector.filter(child.getChildRef()))
-            	{
-            		continue;
-            	}
-            	
+                if(connector.filter(child.getChildRef()))
+                {
+                    continue;
+                }
+                
                 // create a child CMIS object
                 ObjectInFolderDataImpl object = new ObjectInFolderDataImpl();
                 CMISNodeInfo ni = createNodeInfo(child.getChildRef());
@@ -1000,11 +931,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             for (NodeRef nodeRef : nodeRefs)
             {
-            	// TODO - perhaps filter by path in the query instead?
-            	if(connector.filter(nodeRef))
-            	{
-            		continue;
-            	}
+                // TODO - perhaps filter by path in the query instead?
+                if(connector.filter(nodeRef))
+                {
+                    continue;
+                }
 
                 if (skipCounter > 0)
                 {
@@ -1197,7 +1128,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisConstraintException("This document type is not versionable!");
         }
 
-        final Charset encoding = getEncoding(contentStream);
+        // copy stream to temp file
+        // OpenCMIS does this for us ....
+        final File tempFile = copyToTempFile(contentStream);
+        final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
 
         FileInfo fileInfo = connector.getFileFolderService().create(
                 parentInfo.getNodeRef(), name, type.getAlfrescoClass());
@@ -1214,7 +1148,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             String mimeType = stripEncoding(contentStream.getMimeType());
             writer.setMimetype(mimeType);
             writer.setEncoding(encoding.name());
-            writer.putContent(contentStream.getStream());
+            writer.putContent(tempFile);
         }
 
         connector.extractMetadata(nodeRef);
@@ -1223,6 +1157,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         connector.createThumbnails(nodeRef, Collections.singleton("doclib"));
 
         connector.applyVersioningState(nodeRef, versioningState);
+
+        removeTempFile(tempFile);
 
         String objectId = connector.createObjectId(nodeRef);
 
@@ -1406,12 +1342,21 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisInvalidArgumentException("No content!");
         }
 
-        final Charset encoding = getEncoding(contentStream);
+        // copy stream to temp file
+        final File tempFile = copyToTempFile(contentStream);
+        final Charset encoding = getEncoding(tempFile, contentStream.getMimeType());
 
-        ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-        writer.setMimetype(contentStream.getMimeType());
-        writer.setEncoding(encoding.name());
-        writer.putContent(contentStream.getStream());
+        try
+        {
+            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
+            writer.setMimetype(contentStream.getMimeType());
+            writer.setEncoding(encoding.name());
+            writer.putContent(tempFile);
+        }
+        finally
+        {
+            removeTempFile(tempFile);
+        }
 
         objectId.setValue(connector.createObjectId(nodeRef));
 
@@ -1583,9 +1528,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
             if(info.hasPWC())
             {
-            	// is a checked out document. If a delete, don't allow unless checkout is canceled. If a cancel
-            	// checkout, not allowed.
-            	throw new CmisConstraintException(
+                // is a checked out document. If a delete, don't allow unless checkout is canceled. If a cancel
+                // checkout, not allowed.
+                throw new CmisConstraintException(
                 "Could not delete/cancel checkout on the original checked out document");
             }
 
@@ -1936,7 +1881,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         final NodeRef nodeRef = info.getNodeRef();
         final TypeDefinitionWrapper type = info.getType();
 
-        final Charset encoding = getEncoding(contentStream);
+        // copy stream to temp file
+        final File tempFile = copyToTempFile(contentStream);
+        final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
 
         // check in
         // update PWC
@@ -1952,7 +1899,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
             writer.setMimetype(contentStream.getMimeType());
             writer.setEncoding(encoding.name());
-            writer.putContent(contentStream.getStream());
+            writer.putContent(tempFile);
         }
 
         // check aspect
@@ -1979,6 +1926,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), newNodeRef);
 
         objectId.setValue(connector.createObjectId(newNodeRef));
+
+        removeTempFile(tempFile);
     }
 
     @Override
@@ -2454,15 +2403,15 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
     protected String getGuid(String nodeId)
     {
-    	int idx = nodeId.lastIndexOf("/");
-    	if(idx != -1)
-    	{
-    		return nodeId.substring(idx+1);
-    	}
-    	else
-    	{
-    		return nodeId;
-    	}
+        int idx = nodeId.lastIndexOf("/");
+        if(idx != -1)
+        {
+            return nodeId.substring(idx+1);
+        }
+        else
+        {
+            return nodeId;
+        }
     }
 
     /**
@@ -2693,25 +2642,137 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
     }
 
-    private Charset getEncoding(ContentStream stream)
+    private Charset getEncoding(File tempFile, String mimeType)
     {
         Charset encoding = null;
 
-        if(stream != null)
+        try
         {
-	        try
-	        {
-	        	String mimeType = stream.getMimeType();
-	            InputStream tfis = new BufferedInputStream(stream.getStream());
-	            ContentCharsetFinder charsetFinder = connector.getMimetypeService().getContentCharsetFinder();
-	            encoding = charsetFinder.getCharset(tfis, mimeType);
-	            tfis.close();
-	        } catch (Exception e)
-	        {
-	            throw new CmisStorageException("Unable to read content: " + e.getMessage(), e);
-	        }
+            InputStream tfis = new BufferedInputStream(new FileInputStream(tempFile));
+            ContentCharsetFinder charsetFinder = connector.getMimetypeService().getContentCharsetFinder();
+            encoding = charsetFinder.getCharset(tfis, mimeType);
+            tfis.close();
+        } catch (Exception e)
+        {
+            throw new CmisStorageException("Unable to read content: " + e.getMessage(), e);
         }
 
         return encoding;
+    }
+
+    private File copyToTempFile(ContentStream contentStream)
+    {
+        if (contentStream == null)
+        {
+            return null;
+        }
+
+        File result = null;
+        try
+        {
+            result = TempFileProvider.createTempFile(contentStream.getStream(), "cmis", "content");
+        }
+        catch (Exception e)
+        {
+            throw new CmisStorageException("Unable to store content: " + e.getMessage(), e);
+        }
+
+        if ((contentStream.getLength() > -1) && (result == null || contentStream.getLength() != result.length()))
+        {
+            removeTempFile(result);
+            throw new CmisStorageException("Expected " + contentStream.getLength() + " bytes but retrieved " +
+                    (result == null ? -1 :result.length()) + " bytes!");
+        }
+
+        return result;
+    }
+
+    private void removeTempFile(File tempFile)
+    {
+        if (tempFile == null)
+        {
+            return;
+        }
+
+        try
+        {
+            tempFile.delete();
+        }
+        catch (Exception e)
+        {
+            // ignore - file will be removed by TempFileProvider
+        }
+    }
+
+    @Override
+    public void beforeCall()
+    {
+        AuthenticationUtil.pushAuthentication();
+        if (authentication != null)
+        {
+            // Use the previously-obtained authentication
+            AuthenticationUtil.setFullAuthentication(authentication);
+        }
+        else
+        {
+            if (context == null)
+            {
+                // Service not opened, yet
+                return;
+            }
+            // Sticky sessions?
+            if (connector.openHttpSession())
+            {
+                // create a session -> set a cookie
+                // if the CMIS client supports cookies that might help in clustered environments
+                ((HttpServletRequest) getContext().get(CallContext.HTTP_SERVLET_REQUEST)).getSession();
+            }
+            
+            // Authenticate
+            if (authentication != null)
+            {
+                // We have already authenticated; just reuse the authentication
+                AuthenticationUtil.setFullAuthentication(authentication);
+            }
+            else
+            {
+                // First check if we already are authenticated
+                if (AuthenticationUtil.getFullyAuthenticatedUser() == null)
+                {
+                    // We have to go to the repo and authenticate
+                    String user = context.getUsername();
+                    String password = context.getPassword();
+                    Authorization auth = new Authorization(user, password);
+                    if (auth.isTicket())
+                    {
+                        connector.getAuthenticationService().validate(auth.getTicket());
+                    }
+                    else
+                    {
+                        connector.getAuthenticationService().authenticate(auth.getUserName(), auth.getPasswordCharArray());
+                    }
+                }
+                this.authentication = AuthenticationUtil.getFullAuthentication();
+            }
+            
+//            // TODO: How is the proxy user working.
+//            //       Until we know what it is meant to do, it's not available
+//            String currentUser = connector.getAuthenticationService().getCurrentUserName();
+//            String user = getContext().getUsername();
+//            String password = getContext().getPassword();
+//            if (currentUser != null && currentUser.equals(connector.getProxyUser()))
+//            {
+//                if (user != null && user.length() > 0)
+//                {
+//                    AuthenticationUtil.setFullyAuthenticatedUser(user);
+//                }
+//            }
+        }
+    }
+
+    @Override
+    public void afterCall()
+    {
+        AuthenticationUtil.popAuthentication();
     }
 }

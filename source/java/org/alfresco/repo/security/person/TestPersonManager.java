@@ -79,6 +79,15 @@ public class TestPersonManager
 
     private NodeRef makePersonNode(String userName)
     {
+        PropertyMap personProps = makePersonProperties(userName);
+        
+        NodeRef person = personService.createPerson(personProps);
+        people.put(userName, person);
+        return person;
+    }
+
+    public static PropertyMap makePersonProperties(String userName)
+    {
         PropertyMap personProps = new PropertyMap();
         personProps.put(ContentModel.PROP_USERNAME, userName);
         personProps.put(ContentModel.PROP_FIRSTNAME, userName+FIRST_NAME_SUFFIX);
@@ -86,10 +95,7 @@ public class TestPersonManager
         personProps.put(ContentModel.PROP_EMAIL, userName+EMAIL_SUFFIX);
         personProps.put(ContentModel.PROP_JOBTITLE, userName+JOB_SUFFIX);
         personProps.put(ContentModel.PROP_JOBTITLE, userName+ORGANISATION_SUFFIX);
-        
-        NodeRef person = personService.createPerson(personProps);
-        people.put(userName, person);
-        return person;
+        return personProps;
     }
     
     public NodeRef get(String userName)

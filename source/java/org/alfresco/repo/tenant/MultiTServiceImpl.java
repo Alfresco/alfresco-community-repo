@@ -482,8 +482,8 @@ public class MultiTServiceImpl implements TenantService
         ParameterCheck.mandatory("RootPath", rootPath);  
         ParameterCheck.mandatory("RootNodeRef", rootNodeRef); 
         
-        String username = AuthenticationUtil.getFullyAuthenticatedUser();
-        StoreRef storeRef = getName(username, rootNodeRef.getStoreRef());
+        //String username = AuthenticationUtil.getFullyAuthenticatedUser();
+        StoreRef storeRef = rootNodeRef.getStoreRef();
         
         AuthenticationUtil.RunAsWork<NodeRef> action = new GetRootNode(nodeService, searchService, namespaceService, rootPath, rootNodeRef, storeRef);
         return getBaseName(AuthenticationUtil.runAs(action, AuthenticationUtil.getSystemUserName()));

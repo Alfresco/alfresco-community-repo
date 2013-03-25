@@ -16,6 +16,9 @@
     -->
     <import resource="classpath:alfresco/application-context-highlevel.xml" />
 
+    <!--  Import remote API hooks if present -->
+    <import resource="classpath*:alfresco/remote-api-context.xml" />
+
     <!--
          Import activation extensions for Multi-Tenancy.
     -->

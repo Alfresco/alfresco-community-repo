@@ -23,8 +23,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.action.ExtendedActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionConditionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionDefinition;
+import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
 
 /**
  * An abstract class for the java backed webscripts to get the filtered action definition list.
@@ -32,8 +36,15 @@ import org.alfresco.service.cmr.action.ActionDefinition;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class AbstractActionDefinitionsGet extends AbstractRuleWebScript
+public class AbstractActionDefinitionsGet extends DeclarativeWebScript
 {
+    private ActionService actionService;
+    
+    public void setActionService(ActionService actionService)
+    {
+        this.actionService = actionService;
+    }
+    
     /**
      * Returns a model with the filtered action definitions
      *
@@ -50,6 +61,21 @@ public class AbstractActionDefinitionsGet extends AbstractRuleWebScript
 
         return model;
     }
+    
+    /**
+     * 
+     * @param removeRmDefs
+     * @return
+     */
+    protected Map<String, Object> getModelWithFilteredActionConditionDefinitions(boolean removeRmDefs)
+    {
+        List<ActionConditionDefinition> defs = filterActionConditionDefinitons(actionService.getActionConditionDefinitions(), removeRmDefs);
+
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("actionconditiondefinitions", defs);
+
+        return model;
+    }
 
     /**
      * Filters the action definition list
@@ -62,11 +88,29 @@ public class AbstractActionDefinitionsGet extends AbstractRuleWebScript
     {
         for (Iterator<ActionDefinition> iterator = actionDefinitions.iterator(); iterator.hasNext();)
         {
-            if ((iterator.next() instanceof ExtendedActionDefinition) == removeRmRelatedActionDefs)
+            if ((iterator.next() instanceof RecordsManagementActionDefinition) == removeRmRelatedActionDefs)
             {
                 iterator.remove();
             }
         }
         return actionDefinitions;
+    }
+    
+    /**
+     * 
+     * @param defs
+     * @param removeRmRelated
+     * @return
+     */
+    private List<ActionConditionDefinition> filterActionConditionDefinitons(List<ActionConditionDefinition> defs, boolean removeRmRelated)
+    {
+        for (Iterator<ActionConditionDefinition> iterator = defs.iterator(); iterator.hasNext();)
+        {
+            if ((iterator.next() instanceof RecordsManagementActionConditionDefinition) == removeRmRelated)
+            {
+                iterator.remove();
+            }
+        }
+        return defs;
     }
 }

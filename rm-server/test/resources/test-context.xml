@@ -95,7 +95,7 @@
          <ref bean="rmDelegateAction"/>
       </property>
    </bean>
-   <bean id="rmDelegateAction" class="org.alfresco.module.org_alfresco_module_rm.action.RMDelegateAction" parent="rmAction">
+   <bean id="rmDelegateAction" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction" parent="rmAction">
       <property name="publicAction" value="true"/>
       <property name="delegateAction" ref="testDMAction" />
       <property name="applicableKinds">

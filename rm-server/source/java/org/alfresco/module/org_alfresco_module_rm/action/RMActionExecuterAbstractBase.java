@@ -42,7 +42,6 @@ import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
-import org.alfresco.repo.action.ExtendedActionDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
@@ -284,7 +283,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     @Override
     protected ActionDefinition createActionDefinition(String name)
     {
-        return new ExtendedActionDefinitionImpl(name);
+        return new RecordsManagementActionDefinitionImpl(name);
     }
     
     /**
@@ -294,7 +293,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     public ActionDefinition getActionDefinition()
     {
         ActionDefinition actionDefinition = super.getActionDefinition();        
-        ((ExtendedActionDefinitionImpl)this.actionDefinition).setApplicableKinds(applicableKinds);        
+        ((RecordsManagementActionDefinitionImpl)this.actionDefinition).setApplicableKinds(applicableKinds);        
         return actionDefinition;
     }
 

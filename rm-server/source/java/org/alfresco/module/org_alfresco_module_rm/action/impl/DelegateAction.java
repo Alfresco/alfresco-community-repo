@@ -16,10 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.action;
+package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.util.List;
 
+import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -33,7 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RMDelegateAction extends RMActionExecuterAbstractBase
+public class DelegateAction extends RMActionExecuterAbstractBase
 {
     /** Delegate action executer*/
     private ActionExecuter delegateActionExecuter;

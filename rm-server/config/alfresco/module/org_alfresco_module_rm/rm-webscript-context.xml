@@ -2,6 +2,7 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
+
    <!-- REST impl for RM Action Service -->
    <bean id="webscript.org.alfresco.rma.rmaction.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.RmActionPost"
@@ -509,20 +510,32 @@
       <property name="customEmailMappingService" ref="CustomEmailMappingService" />
    </bean>
 
-   <!-- Abstract parent bean for the RM and DM action definition beans -->
-   <bean id="abstractActionDefinitionsGet"
-      parent="abstractRuleWebScript"
-      abstract="true" />
-
-   <!-- REST impl for GET Action Defitions for RM -->
-   <bean id="webscript.org.alfresco.repository.rule.rm-actiondefinitions.get"
-      class="org.alfresco.repo.web.scripts.rule.RmActionDefinitionsGet"
-      parent="abstractActionDefinitionsGet" />
-
-   <!-- REST impl for GET Action Defitions for DM -->
-   <bean id="webscript.org.alfresco.repository.rule.dm-actiondefinitions.get"
-      class="org.alfresco.repo.web.scripts.rule.DmActionDefinitionsGet"
-      parent="abstractActionDefinitionsGet" />
+ 	<!-- REST impl for GET Action Defitions for RM -->
+ 	<bean id="webscript.org.alfresco.repository.rule.rm-actiondefinitions.get"
+ 	      class="org.alfresco.repo.web.scripts.rule.RmActionDefinitionsGet"
+ 	   	  parent="webscript">
+ 	   <property name="actionService" ref="ActionService"/>   	  
+ 	</bean>
+ 	 
+	<!-- REST impl for GET Action Defitions for DM -->
+ 	<bean id="webscript.org.alfresco.repository.rule.dm-actiondefinitions.get"
+ 	      class="org.alfresco.repo.web.scripts.rule.DmActionDefinitionsGet"
+ 	 	  parent="webscript">
+ 	   <property name="actionService" ref="ActionService"/>
+	</bean>
+      
+    <!-- REST impl for GET Action Condition Defitions for RM -->
+    <bean id="webscript.org.alfresco.repository.rule.rm-actionconditiondefinitions.get"
+          class="org.alfresco.repo.web.scripts.rule.RmActionConditionDefinitionsGet"
+          parent="webscript">
+ 	   <property name="actionService" ref="ActionService"/>
+ 	</bean>
+      
+    <bean id="webscript.org.alfresco.repository.rule.dm-actionconditiondefinitions.get"
+ 	      class="org.alfresco.repo.web.scripts.rule.DmActionConditionDefinitionsGet"			
+ 	 	  parent="webscript">
+ 	   <property name="actionService" ref="ActionService"/>
+ 	 </bean>
 
    <!-- REST impl for GET Class Definitions for RM/DM -->
    <bean id="webscript.org.alfresco.repository.dictionary.rm-classes.get"

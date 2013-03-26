@@ -66,17 +66,6 @@ public interface RecordsManagementAction
      * @param parameters            action parameters
      */
     public RecordsManagementActionResult execute(NodeRef filePlanComponent, Map<String, Serializable> parameters);
-    
-    
-    /**
-     * Can this action be executed?
-     * Does it meet all of its entry requirements - EXCEPT permission checks.
-     * 
-     * @param filePlanComponent     file plan component the action is executed upon
-     * @param parameters            action parameters
-     * @return
-     */
-   // public boolean isExecutable(NodeRef filePlanComponent, Map<String, Serializable> parameters);
 
     /**
      * Some admin-related rmActions execute against a target nodeRef which is not provided

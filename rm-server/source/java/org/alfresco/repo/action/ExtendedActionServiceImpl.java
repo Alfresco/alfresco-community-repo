@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -71,11 +72,11 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl
             // check each action definition
             for (ActionDefinition actionDefinition : actionDefinitions)
             {
-                if (actionDefinition instanceof ExtendedActionDefinition)
+                if (actionDefinition instanceof RecordsManagementActionDefinition)
                 {
                     if (kind != null)
                     {                        
-                        Set<FilePlanComponentKind> applicableKinds = ((ExtendedActionDefinition)actionDefinition).getApplicableKinds();
+                        Set<FilePlanComponentKind> applicableKinds = ((RecordsManagementActionDefinition)actionDefinition).getApplicableKinds();
                         if (applicableKinds == null || applicableKinds.size() == 0 || applicableKinds.contains(kind))
                         {
                             // an RM action can only act on a RM artifact
@@ -95,14 +96,5 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl
         }
         
         return result;
-    }
-    
-    /**
-     * @see org.alfresco.repo.action.ActionServiceImpl#postCommit()
-     */
-    @Override
-    public void postCommit()
-    {
-        super.postCommit();
     }
 }

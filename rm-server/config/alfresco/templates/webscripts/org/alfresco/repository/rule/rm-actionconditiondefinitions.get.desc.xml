@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Get action condition definition collection for RM</shortname>
+  <description>Gets a collection of the available action condition definitions in RM.</description>
+  <url>/api/rm/rm-actionconditiondefinitions</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

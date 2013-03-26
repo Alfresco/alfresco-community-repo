@@ -16,22 +16,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.action;
-
-import java.util.Set;
-
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
+package org.alfresco.module.org_alfresco_module_rm.action;
 
 /**
- * Extended action definition interface.
+ * Records management condition definition.
+ * 
+ * Primarily used as a marker interface.
  * 
  * @author Roy Wetherall
  * @since 2.1
  */
-public interface ExtendedActionDefinition
+public interface RecordsManagementActionConditionDefinition
 {
-    /**
-     * @return  list of applicable file plan component kinds
-     */
-    Set<FilePlanComponentKind> getApplicableKinds();
 }

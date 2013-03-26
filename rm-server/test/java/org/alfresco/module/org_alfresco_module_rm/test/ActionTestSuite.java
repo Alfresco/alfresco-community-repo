@@ -25,6 +25,8 @@ import org.alfresco.module.org_alfresco_module_rm.test.action.CreateRecordAction
 import org.alfresco.module.org_alfresco_module_rm.test.action.FileToActionTest;
 import org.alfresco.module.org_alfresco_module_rm.test.action.HideRecordActionTest;
 import org.alfresco.module.org_alfresco_module_rm.test.action.RejectActionTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedActionServiceTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementActionServiceImplTest;
 
 
 /**
@@ -43,6 +45,8 @@ public class ActionTestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
+        suite.addTestSuite(RecordsManagementActionServiceImplTest.class);
+        suite.addTestSuite(ExtendedActionServiceTest.class);
         suite.addTestSuite(CreateRecordActionTest.class);
         suite.addTestSuite(HideRecordActionTest.class);
         suite.addTestSuite(RejectActionTest.class);

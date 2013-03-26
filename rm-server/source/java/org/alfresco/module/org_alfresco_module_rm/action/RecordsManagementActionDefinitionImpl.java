@@ -16,11 +16,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.action;
+package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
+import org.alfresco.repo.action.ActionDefinitionImpl;
 
 /**
  * Extended action definition implementation.
@@ -28,7 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ExtendedActionDefinitionImpl extends ActionDefinitionImpl implements ExtendedActionDefinition
+public class RecordsManagementActionDefinitionImpl extends ActionDefinitionImpl implements RecordsManagementActionDefinition
 {
     /** generated serial version id */
     private static final long serialVersionUID = -5226538434707253206L;
@@ -41,7 +42,7 @@ public class ExtendedActionDefinitionImpl extends ActionDefinitionImpl implement
      * 
      * @param name  action definition name
      */
-    public ExtendedActionDefinitionImpl(String name)
+    public RecordsManagementActionDefinitionImpl(String name)
     {
         super(name);
     }
@@ -55,7 +56,7 @@ public class ExtendedActionDefinitionImpl extends ActionDefinitionImpl implement
     }
     
     /**
-     * @see org.alfresco.repo.action.ExtendedActionDefinition#getApplicableKinds()
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionDefinition#getApplicableKinds()
      */
     @Override
     public Set<FilePlanComponentKind> getApplicableKinds()

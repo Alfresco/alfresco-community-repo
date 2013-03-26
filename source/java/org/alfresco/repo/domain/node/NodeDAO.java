@@ -96,6 +96,8 @@ public interface NodeDAO extends NodeBulkLoader
      */
     public List<Pair<Long, StoreRef>> getStores();
     
+    public Pair<Long, StoreRef> getStorePair(StoreRef storeRef);
+    
     /**
      * Find out if a store exists or not
      * 

@@ -733,6 +733,19 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
     
+    public Pair<Long, StoreRef> getStorePair(StoreRef storeRef)
+    {
+        Pair<StoreRef, Node> rootNodePair = rootNodesCache.getByKey(storeRef);
+        if (rootNodePair == null)
+        {
+            throw new InvalidStoreRefException(storeRef);
+        }
+        else
+        {
+            return new Pair<Long, StoreRef>(rootNodePair.getSecond().getStore().getId(), rootNodePair.getFirst());
+        }
+    }
+    
     public boolean exists(StoreRef storeRef)
     {
         Pair<StoreRef, Node> rootNodePair = rootNodesCache.getByKey(storeRef);

@@ -97,11 +97,15 @@ public abstract class AbstractAuthorityBridgeDAO implements AuthorityBridgeDAO
         }
 
         // Get tenenat specifc store id
-        Long storeId = Long.MIN_VALUE;
         StoreRef tenantSpecificStoreRef = tenantService.getName(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        Long storeId = Long.MIN_VALUE;
         if (tenantSpecificStoreRef != null)
         {
-            storeId = nodeDAO.getStore(tenantSpecificStoreRef).getFirst();
+            Pair<Long, StoreRef> storePair = nodeDAO.getStore(tenantSpecificStoreRef);
+            if (storePair != null)
+            {
+                storeId = storePair.getFirst();
+            }
         }
 
         return selectAuthorityBridgeLinks(authorityContainerTypeQNameId, memberAssocQNameId, authorityNameQNameId, storeId);
@@ -137,11 +141,15 @@ public abstract class AbstractAuthorityBridgeDAO implements AuthorityBridgeDAO
         }
 
         // Get tenenat specifc store id
-        Long storeId = Long.MIN_VALUE;
         StoreRef tenantSpecificStoreRef = tenantService.getName(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        Long storeId = Long.MIN_VALUE;
         if (tenantSpecificStoreRef != null)
         {
-            storeId = nodeDAO.getStore(tenantSpecificStoreRef).getFirst();
+            Pair<Long, StoreRef> storePair = nodeDAO.getStore(tenantSpecificStoreRef);
+            if (storePair != null)
+            {
+                storeId = storePair.getFirst();
+            }
         }
 
         Pair<Long, NodeRef> pair = (authRef == null) ? null : nodeDAO.getNodePair(tenantService.getName(authRef));

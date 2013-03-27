@@ -697,7 +697,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Pair<StoreRef, Node> rootNodePair = rootNodesCache.getByKey(storeRef);
         if (rootNodePair == null)
         {
-            throw new InvalidStoreRefException(storeRef);
+            return null;
         }
         else
         {

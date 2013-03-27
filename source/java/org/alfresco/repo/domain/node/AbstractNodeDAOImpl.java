@@ -733,25 +733,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
     
-    public Pair<Long, StoreRef> getStorePair(StoreRef storeRef)
-    {
-        Pair<StoreRef, Node> rootNodePair = rootNodesCache.getByKey(storeRef);
-        if (rootNodePair == null)
-        {
-            throw new InvalidStoreRefException(storeRef);
-        }
-        else
-        {
-            return new Pair<Long, StoreRef>(rootNodePair.getSecond().getStore().getId(), rootNodePair.getFirst());
-        }
-    }
-    
+    @Override
     public boolean exists(StoreRef storeRef)
     {
         Pair<StoreRef, Node> rootNodePair = rootNodesCache.getByKey(storeRef);
         return rootNodePair != null;
     }
 
+    @Override
     public Pair<Long, NodeRef> getRootNode(StoreRef storeRef)
     {
         Pair<StoreRef, Node> rootNodePair = rootNodesCache.getByKey(storeRef);
@@ -765,6 +754,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
     
+    @Override
     public Set<NodeRef> getAllRootNodes(StoreRef storeRef)
     {
         Set<NodeRef> rootNodes = allRootNodesCache.get(storeRef);
@@ -807,6 +797,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return rootNodes;
     }
 
+    @Override
     public Pair<Long, NodeRef> newStore(StoreRef storeRef)
     {
         // Create the store
@@ -989,6 +980,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return nodeTxnId.equals(currentTxnId);
     }
 
+    @Override
     public Status getNodeRefStatus(NodeRef nodeRef)
     {
         Node node = new NodeEntity(nodeRef);
@@ -1004,6 +996,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
     
+    @Override
     public Status getNodeIdStatus(Long nodeId)
     {
         Pair<Long, Node> nodePair = nodesCache.getByKey(nodeId);
@@ -1018,6 +1011,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
+    @Override
     public Pair<Long, NodeRef> getNodePair(NodeRef nodeRef)
     {
         NodeEntity node = new NodeEntity(nodeRef);
@@ -1111,6 +1105,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         });
     }
 
+    @Override
     public Pair<Long, NodeRef> getNodePair(Long nodeId)
     {
         Pair<Long, Node> pair = nodesCache.getByKey(nodeId);
@@ -1184,6 +1179,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
+    @Override
     public QName getNodeType(Long nodeId)
     {
         Node node = getNodeNotNull(nodeId, false);
@@ -1191,6 +1187,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return qnameDAO.getQName(nodeTypeQNameId).getSecond();
     }
 
+    @Override
     public Long getNodeAclId(Long nodeId)
     {
         Node node = getNodeNotNull(nodeId, true);
@@ -1420,6 +1417,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return node;
     }
 
+    @Override
     public Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveNode(
             final Long childNodeId,
             final Long newParentNodeId,
@@ -1903,6 +1901,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return true;
     }
     
+    @Override
     public void setNodeAclId(Long nodeId, Long aclId)
     {
         Node oldNode = getNodeNotNull(nodeId, true);
@@ -2060,6 +2059,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return props;
     }
 
+    @Override
     public Serializable getNodeProperty(Long nodeId, QName propertyQName)
     {
         Serializable value = null;
@@ -2358,6 +2358,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return updated;
     }
 
+    @Override
     public boolean setNodeProperties(Long nodeId, Map<QName, Serializable> properties)
     {
         // Merge with current values
@@ -2367,6 +2368,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return modified;
     }
     
+    @Override
     public boolean addNodeProperty(Long nodeId, QName qname, Serializable value)
     {
         // Copy inbound values
@@ -2379,6 +2381,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return modified;
     }
 
+    @Override
     public boolean addNodeProperties(Long nodeId, Map<QName, Serializable> properties)
     {
         // Merge with current values
@@ -2388,6 +2391,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return modified;
     }
 
+    @Override
     public boolean removeNodeProperties(Long nodeId, Set<QName> propertyQNames)
     {
         propertyQNames = new HashSet<QName>(propertyQNames);
@@ -2553,6 +2557,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Aspects
      */
 
+    @Override
     public Set<QName> getNodeAspects(Long nodeId)
     {
         Set<QName> nodeAspects = getNodeAspectsCached(nodeId);
@@ -2563,6 +2568,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return nodeAspects;
     }
 
+    @Override
     public boolean hasNodeAspect(Long nodeId, QName aspectQName)
     {
         if (aspectQName.equals(ContentModel.ASPECT_REFERENCEABLE))
@@ -2579,6 +2585,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return nodeAspects.contains(aspectQName);
     }
     
+    @Override
     public boolean addNodeAspects(Long nodeId, Set<QName> aspectQNames)
     {
         if (aspectQNames.size() == 0)
@@ -2662,6 +2669,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return deleteCount > 0;
     }
 
+    @Override
     public boolean removeNodeAspects(Long nodeId, Set<QName> aspectQNames)
     {
         if (aspectQNames.size() == 0)
@@ -2708,6 +2716,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return deleteCount > 0;
     }
 
+    @Override
     public void getNodesWithAspects(
             Set<QName> aspectQNames,
             Long minNodeId, Long maxNodeId,
@@ -2860,6 +2869,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
+    @Override
     public int removeNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName)
     {
         Pair<Long, QName> assocTypeQNamePair = qnameDAO.getQName(assocTypeQName);
@@ -2974,6 +2984,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
     
+    @Override
     public Pair<Long, AssociationRef> getNodeAssoc(Long assocId)
     {
         Pair<Long, AssociationRef> ret = getNodeAssocOrNull(assocId);
@@ -3084,6 +3095,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return assoc;
     }
 
+    @Override
     public Pair<Long, ChildAssociationRef> newChildAssoc(
             Long parentNodeId,
             Long childNodeId,
@@ -3105,6 +3117,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return assoc.getPair(qnameDAO);
     }
 
+    @Override
     public void deleteChildAssoc(Long assocId)
     {
         ChildAssocEntity assoc = selectChildAssoc(assocId);
@@ -3133,6 +3146,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         setParentAssocsCached(childNodeId, parentAssocInfo);
     }
 
+    @Override
     public int setChildAssocIndex(Long parentNodeId, Long childNodeId, QName assocTypeQName, QName assocQName, int index)
     {
         int count = updateChildAssocIndex(parentNodeId, childNodeId, assocTypeQName, assocQName, index);
@@ -3147,6 +3161,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /**
      * TODO: See about pulling automatic cm:name update logic into this DAO
      */
+    @Override
     public void setChildAssocsUniqueName(final Long childNodeId, final String childName)
     {
         RetryingCallback<Integer> callback = new RetryingCallback<Integer>()
@@ -3210,6 +3225,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
+    @Override
     public Pair<Long, ChildAssociationRef> getChildAssoc(Long assocId)
     {
         ChildAssocEntity assoc = selectChildAssoc(assocId);
@@ -3220,11 +3236,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return assoc.getPair(qnameDAO);
     }
 
+    @Override
     public List<NodeIdAndAclId> getPrimaryChildrenAcls(Long nodeId)
     {
         return selectPrimaryChildAcls(nodeId);
     }
     
+    @Override
     public Pair<Long, ChildAssociationRef> getChildAssoc(
             Long parentNodeId,
             Long childNodeId,
@@ -3344,6 +3362,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }                               
     }
 
+    @Override
     public void getChildAssocs(
             Long parentNodeId,
             Long childNodeId,
@@ -3375,6 +3394,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
 
+    @Override
     public void getChildAssocs(Long parentNodeId, Set<QName> assocTypeQNames, ChildAssocRefQueryCallback resultsCallback)
     {
         switch (assocTypeQNames.size())
@@ -3403,6 +3423,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      *       avoid clustering the cache, we instead watch the node child version,
      *       which relies on a cache that is already clustered.
      */
+    @Override
     public Pair<Long, ChildAssociationRef> getChildAssoc(Long parentNodeId, QName assocTypeQName, String childName)
     {
         ChildByNameKey key = new ChildByNameKey(parentNodeId, assocTypeQName, childName);
@@ -3450,6 +3471,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return assoc == null ? null : assoc.getPair(qnameDAO);
     }
 
+    @Override
     public void getChildAssocs(
             Long parentNodeId,
             QName assocTypeQName,
@@ -3461,6 +3483,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
     
+    @Override
     public void getChildAssocsByPropertyValue(
             Long parentNodeId,
             QName propertyQName,
@@ -3492,6 +3515,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
     }
 
+    @Override
     public void getChildAssocsByChildTypes(
             Long parentNodeId,
             Set<QName> childNodeTypeQNames,
@@ -3502,6 +3526,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
 
+    @Override
     public void getChildAssocsWithoutParentAssocsOfType(
             Long parentNodeId,
             QName assocTypeQName,
@@ -3512,6 +3537,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     new ChildAssocRefBatchingQueryCallback(resultsCallback));
     }
 
+    @Override
     public Pair<Long, ChildAssociationRef> getPrimaryParentAssoc(Long childNodeId)
     {
         ChildAssocEntity childAssocEntity = getPrimaryParentAssocImpl(childNodeId);
@@ -3533,6 +3559,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     
     private static final int PARENT_ASSOCS_CACHE_FILTER_THRESHOLD = 2000;
     
+    @Override
     public void getParentAssocs(
             Long childNodeId,
             QName assocTypeQName,
@@ -3591,6 +3618,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * 
      * @param nodeId                    the node to start with
      */
+    @Override
     public void cycleCheck(Long nodeId)
     {
         CycleCallBack callback = new CycleCallBack();
@@ -3657,6 +3685,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     };
 
 
+    @Override
     public List<Path> getPaths(Pair<Long, NodeRef> nodePair, boolean primaryOnly) throws InvalidNodeRefException
     {
         // create storage for the paths - only need 1 bucket if we are looking for the primary path
@@ -4428,6 +4457,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * <p/>
      * Loads properties, aspects, parent associations and the ID-noderef cache.
      */
+    @Override
     public void cacheNodes(List<NodeRef> nodeRefs)
     {
         /*
@@ -4619,6 +4649,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * <p/>
      * Simply clears out all the node-related caches.
      */
+    @Override
     public void clear()
     {
         clearCaches();
@@ -4634,21 +4665,25 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return (txn == null ? null : txn.getId());
     }
 
+    @Override
     public int getTransactionCount()
     {
         return selectTransactionCount();
     }
 
+    @Override
     public Transaction getTxnById(Long txnId)
     {
         return selectTxnById(txnId);
     }
 
+    @Override
     public List<NodeRef.Status> getTxnChanges(Long txnId)
     {
         return getTxnChangesForStore(null, txnId);
     }
 
+    @Override
     public List<NodeRef.Status> getTxnChangesForStore(StoreRef storeRef, Long txnId)
     {
         Long storeId = (storeRef == null) ? null : getStoreNotNull(storeRef).getId();
@@ -4664,6 +4699,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return nodeStatuses;
     }
 
+    @Override
     public List<Transaction> getTxnsByCommitTimeAscending(
             Long fromTimeInclusive,
             Long toTimeExclusive,
@@ -4676,6 +4712,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return selectTxns(fromTimeInclusive, toTimeExclusive, count, null, excludeTxnIds, serverId, Boolean.TRUE);
     }
 
+    @Override
     public List<Transaction> getTxnsByCommitTimeDescending(
             Long fromTimeInclusive,
             Long toTimeExclusive,
@@ -4688,16 +4725,19 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return selectTxns(fromTimeInclusive, toTimeExclusive, count, null, excludeTxnIds, serverId, Boolean.FALSE);
     }
 
+    @Override
     public List<Transaction> getTxnsByCommitTimeAscending(List<Long> includeTxnIds)
     {
         return selectTxns(null, null, null, includeTxnIds, null, null, Boolean.TRUE);
     }
 
+    @Override
     public List<Long> getTxnsUnused(Long minTxnId, long maxCommitTime, int count)
     {
         return selectTxnsUnused(minTxnId, maxCommitTime, count);
     }
     
+    @Override
     public void purgeTxn(Long txnId)
     {
         deleteTransaction(txnId);
@@ -4705,30 +4745,35 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     
     public static final Long LONG_ZERO = 0L;
 
+    @Override
     public Long getMinTxnCommitTime()
     {
         Long time = selectMinTxnCommitTime();
         return (time == null ? LONG_ZERO : time);
     }
 
+    @Override
     public Long getMaxTxnCommitTime()
     {
         Long time = selectMaxTxnCommitTime();
         return (time == null ? LONG_ZERO : time);
     }
     
+    @Override
     public Long getMinTxnId()
     {
         Long id = selectMinTxnId();
         return (id == null ? LONG_ZERO : id);
     }
     
+    @Override
     public Long getMinUnusedTxnCommitTime()
     {
         Long id = selectMinUnusedTxnCommitTime();
         return (id == null ? LONG_ZERO : id);
     }
 
+    @Override
     public Long getMaxTxnId()
     {
         Long id = selectMaxTxnId();

@@ -490,6 +490,7 @@
       <property name="maxCacheSize" value="1000" />
       <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="tenantAware" value="false" />
    </bean>
    
    
@@ -505,6 +506,7 @@
       <property name="maxCacheSize" value="1000" />
       <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="tenantAware" value="false" />
    </bean>
    
    
@@ -520,6 +522,7 @@
       <property name="maxCacheSize" value="1000" />
       <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="tenantAware" value="false" />
    </bean>
    
    

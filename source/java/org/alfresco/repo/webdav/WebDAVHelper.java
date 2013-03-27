@@ -402,7 +402,7 @@ public class WebDAVHelper
      * @param path          the string to split
      * @return              an array of all the path components
      */
-    public final List<String> splitAllPaths(String path)
+    public List<String> splitAllPaths(String path)
     {
         if (path == null || path.length() == 0)
         {
@@ -463,7 +463,7 @@ public class WebDAVHelper
      * @throws FileNotFoundException
      *                          if the path doesn't refer to a valid node
      */
-    public final FileInfo getNodeForPath(NodeRef rootNodeRef, String path) throws FileNotFoundException
+    public FileInfo getNodeForPath(NodeRef rootNodeRef, String path) throws FileNotFoundException
     {
         if (rootNodeRef == null)
         {

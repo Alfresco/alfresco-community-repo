@@ -1956,7 +1956,7 @@
 
     <!-- BEGIN: Download -->
 
-    <bean id="org.alfresco.repository.download.abstract" class="org.alfresco.repo.web.scripts.download.AbstractDownloadWebScript" abstract="true">
+    <bean id="org.alfresco.repository.download.abstract" class="org.alfresco.repo.web.scripts.download.AbstractDownloadWebscript" abstract="true">
         <property name="downloadService" ref="DownloadService"/>   
     </bean>
 

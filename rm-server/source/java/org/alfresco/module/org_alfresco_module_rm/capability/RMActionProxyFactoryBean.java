@@ -18,11 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
-import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.repo.action.RuntimeActionService;
-import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.springframework.aop.framework.ProxyFactoryBean;
 
@@ -60,10 +58,10 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
         {
             public Void doWork() throws Exception
             {
-                if (((RMActionExecuterAbstractBase)getTargetSource().getTarget()).isPublicAction() == true)             
-                {
-                    runtimeActionService.registerActionExecuter((ActionExecuter) getObject());
-                }
+              //  if (((RMActionExecuterAbstractBase)getTargetSource().getTarget()).isPublicAction() == true)             
+              //  {
+              //      runtimeActionService.registerActionExecuter((ActionExecuter) getObject());
+              //  }
                 recordsManagementActionService.register((RecordsManagementAction) getObject());
                 return null;
             }

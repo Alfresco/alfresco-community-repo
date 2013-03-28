@@ -296,6 +296,15 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         ((RecordsManagementActionDefinitionImpl)this.actionDefinition).setApplicableKinds(applicableKinds);        
         return actionDefinition;
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getRecordsManagementActionDefinition()
+     */
+    @Override
+    public RecordsManagementActionDefinition getRecordsManagementActionDefinition()
+    {
+        return (RecordsManagementActionDefinition)getActionDefinition();
+    }
 
     /**
      * Init method
@@ -322,6 +331,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      * 
      * @return  boolean true if public, false otherwise
      */
+    @Override
     public boolean isPublicAction()
     {
         return publicAction;
@@ -631,4 +641,6 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         
         return eligible;
     }
+    
+    
 }

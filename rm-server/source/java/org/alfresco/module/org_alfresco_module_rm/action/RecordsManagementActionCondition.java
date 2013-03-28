@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,21 +18,46 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action;
 
-import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
-import org.alfresco.service.cmr.action.ActionDefinition;
 
 /**
- * Extended action definition interface.
+ * Record Management Action Condition
  * 
  * @author Roy Wetherall
  * @since 2.1
  */
-public interface RecordsManagementActionDefinition extends ActionDefinition
+public interface RecordsManagementActionCondition
 {
     /**
-     * @return  list of applicable file plan component kinds
+     * Get the name of the action condition
+     * 
+     * @return  String  action condition name
      */
-    Set<FilePlanComponentKind> getApplicableKinds();
+    public String getName();
+    
+    /**
+     * Get the label of the action condition
+     * 
+     * @return  String  action condition label
+     */
+    public String getLabel();
+    
+    /**
+     * Get the description of the action condition
+     * 
+     * @return  String  action condition description 
+     */
+    public String getDescription();
+    
+    /**
+     * 
+     * @return
+     */
+    public RecordsManagementActionConditionDefinition getRecordsManagementActionConditionDefinition();
+    
+    /**
+     * 
+     * @return
+     */
+    public boolean isPublicCondition();
 }

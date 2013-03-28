@@ -17,7 +17,9 @@
    <bean id="rmCapabilityConditionEvaluator" 
          parent="action-condition-evaluator" 
          abstract="true" 
-         class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.CapabilityConditionEvaluator"/>
+         class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.CapabilityConditionEvaluator">
+      <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+   </bean>
    
    <bean id="isDeclared" parent="rmCapabilityConditionEvaluator">
       <property name="capabilityCondition" ref="capabilityCondition.declared"/>

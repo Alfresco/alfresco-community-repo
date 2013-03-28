@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>Get action condition definition collection for DM</shortname>
-  <description>Gets a collection of the available action condition definitions in DM.</description>
-  <url>/api/rm/dm-actionconditiondefinitions</url>
-  <format default="json">argument</format>
-  <authentication>user</authentication>
-  <transaction allow="readonly">required</transaction>
-</webscript>

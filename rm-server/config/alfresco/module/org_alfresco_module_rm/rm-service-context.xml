@@ -764,6 +764,7 @@
             <value>
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getRecordsManagementActions=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getRecordsManagementActionConditions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getDispositionActions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getRecordsManagementAction=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getDispositionAction=RM_ALLOW

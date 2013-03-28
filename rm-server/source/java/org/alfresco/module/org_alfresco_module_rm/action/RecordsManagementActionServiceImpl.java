@@ -55,7 +55,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     private static Log logger = LogFactory.getLog(RecordsManagementActionServiceImpl.class);
 
     /** Registered records management actions */
-    private Map<String, RecordsManagementAction> rmActions = new HashMap<String, RecordsManagementAction>(6);
+    private Map<String, RecordsManagementAction> rmActions = new HashMap<String, RecordsManagementAction>(13);
+    private Map<String, RecordsManagementActionCondition> rmConditions = new HashMap<String, RecordsManagementActionCondition>(13);
     private Map<String, RecordsManagementAction> dispositionActions = new HashMap<String, RecordsManagementAction>(4);
     
     /** Policy component */
@@ -114,6 +115,14 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         }
     }
     
+    public void register(RecordsManagementActionCondition rmCondition)
+    {
+        if (rmConditions.containsKey(rmCondition.getName()) == false)
+        {
+            rmConditions.put(rmCondition.getName(), rmCondition);
+        }
+    }
+    
     /**
      * Invoke beforeRMActionExecution policy
      * 
@@ -153,6 +162,17 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     {
         List<RecordsManagementAction> result = new ArrayList<RecordsManagementAction>(this.rmActions.size());
         result.addAll(this.rmActions.values());
+        return Collections.unmodifiableList(result);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getRecordsManagementActionConditions()
+     */
+    @Override
+    public List<RecordsManagementActionCondition> getRecordsManagementActionConditions()
+    {
+        List<RecordsManagementActionCondition> result = new ArrayList<RecordsManagementActionCondition>(rmConditions.size());
+        result.addAll(rmConditions.values());
         return Collections.unmodifiableList(result);
     }
 

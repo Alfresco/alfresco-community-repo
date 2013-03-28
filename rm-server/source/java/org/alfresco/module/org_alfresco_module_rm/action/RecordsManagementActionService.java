@@ -40,6 +40,13 @@ public interface RecordsManagementActionService
     List<RecordsManagementAction> getRecordsManagementActions();
     
     /**
+     * 
+     * @return
+     * @since 2.1
+     */
+    List<RecordsManagementActionCondition> getRecordsManagementActionConditions();
+    
+    /**
      * Get a list of the available disposition actions.  A disposition action is a records
      * management action that can be used when defining disposition instructions.
      * 
@@ -112,4 +119,11 @@ public interface RecordsManagementActionService
      * @param rmAction  records management action
      */
     void register(RecordsManagementAction rmAction);
+    
+    /**
+     * 
+     * @param rmCondition
+     * @since 2.1
+     */
+    void register(RecordsManagementActionCondition rmCondition);
 }

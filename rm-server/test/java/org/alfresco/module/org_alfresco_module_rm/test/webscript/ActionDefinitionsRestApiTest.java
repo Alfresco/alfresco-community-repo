@@ -40,8 +40,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 public class ActionDefinitionsRestApiTest extends BaseRMWebScriptTestCase
 {
     /** URL for the REST APIs */
-    private static final String RM_ACTIONDEFINITIONS_URL = "/api/rm/rm-actiondefinitions";
-    private static final String DM_ACTIONDEFINITIONS_URL = "/api/rm/dm-actiondefinitions";
+    private static final String RM_ACTIONDEFINITIONS_URL = "/api/rm/rm-actiondefinitions";    
 
     /**
      * Test the REST API to retrieve the list of rm action definitions
@@ -76,41 +75,6 @@ public class ActionDefinitionsRestApiTest extends BaseRMWebScriptTestCase
             assertFalse(dmActionDefinitions.contains(name));
         }
         assertTrue(rmActionDefinitions.containsAll(getRmActionDefinitions()));
-    }
-
-    /**
-     * Test the REST API to retrieve the list of dm action definitions
-     *
-     * @throws IOException
-     * @throws JSONException
-     */
-    public void testDmGetActionDefinitions() throws IOException, JSONException
-    {
-        // Send request
-        Response response = sendRequest(new GetRequest(DM_ACTIONDEFINITIONS_URL), Status.STATUS_OK);
-
-        // Check the content from the response
-        String contentAsString = response.getContentAsString();
-        assertNotNull(contentAsString);
-
-        // Convert the response to json and check the data
-        JSONObject contentAsJson = new JSONObject(contentAsString);
-        JSONArray data = contentAsJson.getJSONArray("data");
-        assertNotNull(data);
-
-        // Get a (sub)list of available rm action definitions
-        List<String> rmActionDefinitions = getRmActionDefinitions();
-
-        // Get the list of dm action definitions from the response and check it
-        List<String> dmActionDefinitions = new ArrayList<String>();
-        for (int i = 0; i < data.length(); i++)
-        {
-            String name = data.getJSONObject(i).getString("name");
-            assertNotNull(name);
-            dmActionDefinitions.add(name);
-            assertFalse(rmActionDefinitions.contains(name));
-        }
-        assertTrue(dmActionDefinitions.containsAll(getDmActionDefinitions()));
     }
 
     /**

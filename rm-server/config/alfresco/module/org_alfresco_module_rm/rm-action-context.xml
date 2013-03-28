@@ -7,7 +7,7 @@
    <bean id="rmActionResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
       <property name="resourceBundles">
          <list>
-            <value>alfresco.module.org_alfresco_module_rm.rm-actions</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.rm-actions</value>
          </list>
       </property>
    </bean>

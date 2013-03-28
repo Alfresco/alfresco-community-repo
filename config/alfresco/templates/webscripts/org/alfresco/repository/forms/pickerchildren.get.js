@@ -261,7 +261,7 @@ function findUsers(filterTerm, maxResults, results)
 {
    var paging = utils.createPaging(maxResults, -1);
    
-   var personRefs = people.getPeople(filterTerm, paging, "lastName", true);
+   var personRefs = people.getPeoplePaging(filterTerm, paging, "lastName", true);
    
    // create person object for each result
    for each(var personRef in personRefs)

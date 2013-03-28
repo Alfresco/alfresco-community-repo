@@ -536,10 +536,10 @@ public class People extends BaseScopableProcessorExtension implements Initializi
      */
     public Scriptable getPeople(String filter, int maxResults, String sortBy, boolean sortAsc)
     {
-        return getPeople(filter, new ScriptPagingDetails(maxResults, 0), null, null);
+        return getPeoplePaging(filter, new ScriptPagingDetails(maxResults, 0), null, null);
     }
     
-    public Scriptable getPeople(String filter, ScriptPagingDetails pagingRequest, String sortBy, Boolean sortAsc)
+    public Scriptable getPeoplePaging(String filter, ScriptPagingDetails pagingRequest, String sortBy, Boolean sortAsc)
     {
         List<PersonInfo> persons = getPeopleImpl(filter, pagingRequest, sortBy, sortAsc);
         

@@ -31,9 +31,21 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.ws.security</groupId>
             <artifactId>wss4j</artifactId>
             <version>1.5.12</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>axis</groupId>
@@ -60,6 +72,11 @@
                     <groupId>xml-apis</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.extensions.surf</groupId>
+            <artifactId>spring-cmis-framework</artifactId>
+            <version>${dependency.surf.version}</version>
         </dependency>
         <dependency>
             <groupId>com.facebook.api</groupId>
@@ -116,11 +133,7 @@
             <artifactId>rome</artifactId>
             <version>0.9</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.extensions.surf</groupId>
-            <artifactId>spring-cmis-framework</artifactId>
-            <version>${dependency.surf.version}</version>
-        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -143,6 +156,12 @@
             <groupId>org.apache.chemistry</groupId>
             <artifactId>chemistry-tck-atompub</artifactId>
             <version>0.1-incubating-unreleased</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-test-tck</artifactId>
+            <version>0.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

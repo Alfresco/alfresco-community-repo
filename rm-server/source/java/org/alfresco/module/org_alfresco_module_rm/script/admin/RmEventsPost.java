@@ -25,33 +25,29 @@ import java.util.Map;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * 
- * 
+ * Records management event POST web script
+ *
  * @author Roy Wetherall
  */
-public class RmEventsPost extends DeclarativeWebScript
+public class RmEventsPost extends RMEventBase
 {
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(RmEventsPost.class);
-    
-    /** Reccords management event service */
+    /** Records management event service */
     private RecordsManagementEventService rmEventService;
-    
+
     /**
      * Set the records management event service
-     * 
+     *
      * @param rmEventService
      */
     public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
@@ -59,57 +55,41 @@ public class RmEventsPost extends DeclarativeWebScript
         this.rmEventService = rmEventService;
     }
 
-
+    /**
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *      org.springframework.extensions.webscripts.Status,
+     *      org.springframework.extensions.webscripts.Cache)
+     */
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>();        
+        ParameterCheck.mandatory("req", req);
+
+        Map<String, Object> model = new HashMap<String, Object>();
         JSONObject json = null;
         try
         {
+            // Convert the request content to JSON
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
-            String eventName = null;
-            if (json.has("eventName") == true)
-            {
-                eventName = json.getString("eventName");
-            }
-            
-            if (eventName == null || eventName.length() == 0)
-            {
-                // Generate the event name
-                eventName = GUID.generate();
-            }
-            
-            String eventDisplayLabel = null;
-            if (json.has("eventDisplayLabel") == true)
-            {
-                eventDisplayLabel = json.getString("eventDisplayLabel");
-            }
-            if (eventDisplayLabel == null || eventDisplayLabel.length() == 0)
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "No event display label provided.");
-            }
-            if (rmEventService.existsEventDisplayLabel(eventDisplayLabel))
-            {
-               throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                     "Cannot create event. The event display label '"
-                           + eventDisplayLabel + "' already exists.");
-            }
-            
-            String eventType = null;
-            if (json.has("eventType") == true)
-            {
-                eventType = json.getString("eventType");
-            }
-            if (eventType == null || eventType.length() == 0)
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "No event type provided.");
-            }
-            
+
+            // Get the event name
+            String eventName = getEventName(json);
+
+            // Check the event display label
+            String eventDisplayLabel = getValue(json, "eventDisplayLabel");
+            doCheck(eventDisplayLabel, "No event display label was provided.");
+
+            // Check if the event can be created
+            canCreateEvent(eventDisplayLabel, eventName);
+
+            // Check the event type
+            String eventType = getValue(json, "eventType");
+            doCheck(eventType, "No event type was provided.");
+
+            // Create event
             RecordsManagementEvent event = rmEventService.addEvent(eventType, eventName, eventDisplayLabel);
+
             model.put("event", event);
-            
         }
         catch (IOException iox)
         {
@@ -121,7 +101,48 @@ public class RmEventsPost extends DeclarativeWebScript
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                         "Could not parse JSON from req.", je);
         }
-        
+
         return model;
+    }
+
+    /**
+     * Helper method for getting the event name
+     *
+     * @param json The request content as JSON object
+     * @return String The event name. A generated GUID if it doesn't exist
+     * @throws JSONException If there is no string value for the key
+     */
+    private String getEventName(JSONObject json) throws JSONException
+    {
+        String eventName = getValue(json, "eventName");
+
+        if (StringUtils.isBlank(eventName))
+        {
+            // Generate the event name
+            eventName = GUID.generate();
+        }
+
+        return eventName;
+    }
+
+    /**
+     * Helper method for checking if an event can be created or not. Throws an
+     * error if the event already exists.
+     *
+     * @param eventDisplayLabel The display label of the event
+     * @param eventName The name of the event
+     */
+    private boolean canCreateEvent(String eventDisplayLabel, String eventName)
+    {
+        boolean canCreateEvent = true;
+
+        if (rmEventService.canCreateEvent(eventDisplayLabel, eventName) == false)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                    "Cannot create event. An event with the display label '"
+                          + eventDisplayLabel + "' already exists.");
+        }
+
+        return canCreateEvent;
     }
 }

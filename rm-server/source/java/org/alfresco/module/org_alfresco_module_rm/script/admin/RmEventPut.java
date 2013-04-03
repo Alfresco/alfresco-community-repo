@@ -79,14 +79,14 @@ public class RmEventPut extends RMEventBase
             String eventDisplayLabel = getValue(json, "eventDisplayLabel");
             doCheck(eventDisplayLabel, "No event display label was provided.");
 
+            // Check the event type
+            String eventType = getValue(json, "eventType");
+            doCheck(eventType, "No event type was provided.");
+
             // Check if the event can be edited or not
             RecordsManagementEvent event = null;
-            if (canEditEvent(eventDisplayLabel, eventName) == true)
+            if (canEditEvent(eventDisplayLabel, eventName, eventType) == true)
             {
-                // Check the event type
-                String eventType = getValue(json, "eventType");
-                doCheck(eventType, "No event type was provided.");
-
                 // Create event
                 event = rmEventService.addEvent(eventType, eventName, eventDisplayLabel);
             }
@@ -118,15 +118,16 @@ public class RmEventPut extends RMEventBase
      *
      * @param eventDisplayLabel The display label of the event
      * @param eventName The name of the event
+     * @param eventType The type of the event
      * @return true if the event can be edited, false otherwise
      */
-    private boolean canEditEvent(String eventDisplayLabel, String eventName)
+    private boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType)
     {
         boolean canEditEvent;
 
         try
         {
-           canEditEvent = rmEventService.canEditEvent(eventDisplayLabel, eventName);
+           canEditEvent = rmEventService.canEditEvent(eventDisplayLabel, eventName, eventType);
         }
         catch (AlfrescoRuntimeException are)
         {

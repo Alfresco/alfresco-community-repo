@@ -87,9 +87,10 @@ public interface RecordsManagementEventService
      *
      * @param eventDisplayLabel event display label
      * @param eventName event name
+     * @param eventType event type
      * @return true if the event can be edited, false otherwise
      */
-    boolean canEditEvent(String eventDisplayLabel, String eventName);
+    boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType);
 
     /**
      * Add an event

@@ -145,7 +145,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
             for (Iterator iterator = getEventMap().values().iterator(); iterator.hasNext();)
             {
                 RecordsManagementEvent recordsManagementEvent = (RecordsManagementEvent) iterator.next();
-                if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel))
+                if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel) == true)
                 {
                     canCreateEvent = false;
                     break;
@@ -157,13 +157,14 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canEditEvent(java.lang.String, java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canEditEvent(java.lang.String, java.lang.String, java.lang.String)
      */
     @SuppressWarnings("rawtypes")
-    public boolean canEditEvent(String eventDisplayLabel, String eventName)
+    public boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType)
     {
         ParameterCheck.mandatoryString("eventDisplayLabel", eventDisplayLabel);
         ParameterCheck.mandatoryString("eventName", eventName);
+        ParameterCheck.mandatoryString("eventType", eventType);
 
         boolean canEditEvent = true;
 
@@ -175,11 +176,18 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
         for (Iterator iterator = getEventMap().values().iterator(); iterator.hasNext();)
         {
             RecordsManagementEvent recordsManagementEvent = (RecordsManagementEvent) iterator.next();
-            if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel))
+            if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel) == true)
             {
-                if (recordsManagementEvent.getName().equalsIgnoreCase(eventName))
+                if (recordsManagementEvent.getName().equalsIgnoreCase(eventName) == true)
                 {
-                    canEditEvent = false;
+                    if (recordsManagementEvent.getType().equalsIgnoreCase(eventType) == false)
+                    {
+                        canEditEvent = true;
+                    }
+                    else
+                    {
+                        canEditEvent = false;
+                    }
                 }
                 else
                 {

@@ -167,6 +167,5 @@ public class RMv21CapabilityPatch extends AbstractModuleComponent
                 }
             }            
         }
-    }
-    
+    }    
 }

@@ -48,10 +48,6 @@
           "ReOpenFolders",
           "CycleVitalRecords",
           "PlanningReviewCycles",
-          "UpdateClassificationDates",
-          "CreateModifyDestroyClassificationGuides",
-          "UpgradeDowngradeAndDeclassifyRecords",
-          "UpdateExemptionCategories",
           "RequestRecordInformation"
       ]
    },
@@ -92,7 +88,6 @@
           "UndeclareRecords",
           "DeclareAuditAsRecord",
           "DeleteAudit",
-          "CreateModifyDestroyTimeframes",
           "AuthorizeNominatedTransfers",
           "EditSelectionLists",
           "AuthorizeAllTransfers",
@@ -114,11 +109,6 @@
           "AccessAudit",
           "ExportAudit",
           "CreateModifyDestroyReferenceTypes",
-          "UpdateClassificationDates",
-          "CreateModifyDestroyClassificationGuides",
-          "UpgradeDowngradeAndDeclassifyRecords",
-          "UpdateExemptionCategories",
-          "MapClassificationGuideMetadata",
           "RequestRecordInformation"
       ]
    },
@@ -159,7 +149,6 @@
           "UndeclareRecords",
           "DeclareAuditAsRecord",
           "DeleteAudit",
-          "CreateModifyDestroyTimeframes",
           "AuthorizeNominatedTransfers",
           "EditSelectionLists",
           "AuthorizeAllTransfers",
@@ -181,11 +170,6 @@
           "AccessAudit",
           "ExportAudit",
           "CreateModifyDestroyReferenceTypes",
-          "UpdateClassificationDates",
-          "CreateModifyDestroyClassificationGuides",
-          "UpgradeDowngradeAndDeclassifyRecords",
-          "UpdateExemptionCategories",
-          "MapClassificationGuideMetadata",
           "ManageAccessControls",
           "ManageRules",
           "RequestRecordInformation"

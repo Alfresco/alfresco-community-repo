@@ -46,19 +46,6 @@
       <property name="index" value="20" />
    </bean>
 
-   <bean id="rmMoveRecordFolderCapability"
-      parent="compositeCapability">
-      <property name="name" value="MoveRecordFolder"/>
-      <property name="private" value="true"/>
-      <property name="undetermined" value="true"/>
-      <property name="capabilities">
-         <list>
-            <ref bean="rmCreateModifyDestroyFoldersCapability"/>
-         </list>
-      </property>
-      <property name="targetCapability" ref="rmCreateModifyDestroyFoldersCapability"/>
-   </bean>
-
    <bean id="rmReOpenFoldersCapability"
       parent="declarativeCapability">
       <property name="name" value="ReOpenFolders"/>
@@ -78,5 +65,20 @@
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>
       <property name="index" value="40" />
+   </bean>
+   
+   <!--  Unassignable -->
+
+   <bean id="rmMoveRecordFolderCapability"
+      parent="compositeCapability">
+      <property name="name" value="MoveRecordFolder"/>
+      <property name="private" value="true"/>
+      <property name="undetermined" value="true"/>
+      <property name="capabilities">
+         <list>
+            <ref bean="rmCreateModifyDestroyFoldersCapability"/>
+         </list>
+      </property>
+      <property name="targetCapability" ref="rmCreateModifyDestroyFoldersCapability"/>
    </bean>
 </beans>

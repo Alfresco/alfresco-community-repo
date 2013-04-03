@@ -16,7 +16,7 @@
             <ref bean="rmCreateModifyDestroyUnfiledRecordContainerCapability"/>
          </list>
       </property>
-      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
+      <property name="group"><ref bean="configGroup"/></property>
       <property name="index" value="30" />
    </bean>
 

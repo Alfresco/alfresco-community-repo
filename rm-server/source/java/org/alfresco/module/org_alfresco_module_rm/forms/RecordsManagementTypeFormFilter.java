@@ -102,9 +102,6 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
                 addCustomRMProperties(aspect, form);
             }
         }
-        
-        // Group fields
-       // groupFields(form); 
     }
 
     /**
@@ -144,41 +141,4 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     {
     }
     
-    /**
-     * Puts all fields in a group to workaround ALF-6089.
-     * 
-     * @param form The form being generated
-     */
-//    protected void groupFields(Form form)
-//    {
-//        // to control the order of the fields add the name, title and description fields to
-//        // a field group containing just that field, all other fields that are not already 
-//        // in a group go into an "other" field group. The client config can then declare a 
-//        // client side set with the same id and order them correctly.
-//        
-//        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-//        for (FieldDefinition fieldDef : fieldDefs)
-//        {
-//            FieldGroup group = fieldDef.getGroup();
-//            if (group == null)
-//            {
-//                if (fieldDef.getName().equals(ContentModel.PROP_NAME.toPrefixString(this.namespaceService)))
-//                {
-//                    fieldDef.setGroup(NAME_FIELD_GROUP);
-//                }
-//                else if (fieldDef.getName().equals(ContentModel.PROP_TITLE.toPrefixString(this.namespaceService)))
-//                {
-//                    fieldDef.setGroup(TITLE_FIELD_GROUP);
-//                }
-//                else if (fieldDef.getName().equals(ContentModel.PROP_DESCRIPTION.toPrefixString(this.namespaceService)))
-//                {
-//                    fieldDef.setGroup(DESC_FIELD_GROUP);
-//                }
-//                else
-//                {
-//                    fieldDef.setGroup(OTHER_FIELD_GROUP);
-//                }
-//            }
-//        }
-//    }
 }

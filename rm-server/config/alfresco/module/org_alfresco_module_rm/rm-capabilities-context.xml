@@ -28,114 +28,6 @@
       parent="rmBaseCapability"
       class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.CompositeCapability" />
 
-   <bean id="rmAddModifyEventDatesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="AddModifyEventDates"/>
-      <property name="permission" value="AddModifyEventDates"/>
-      <property name="kinds">
-         <list>
-            <value>RECORD_FOLDER</value>
-            <value>RECORD</value>
-         </list>
-      </property>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.filling" value="true"/>
-            <entry key="capabilityCondition.frozen" value="false"/>
-            <entry key="capabilityCondition.hasEvents" value="true"/>
-         </map>
-      </property>
-      <property name="group"><ref bean="eventsGroup"/></property>
-      <property name="index" value="10" />
-   </bean>
-
-   <bean id="rmAttachRulesToMetadataPropertiesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="AttachRulesToMetadataProperties"/>
-      <property name="permission" value="AttachRulesToMetadataProperties"/>
-      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
-      <property name="index" value="10" />
-   </bean>
-
-   <bean id="rmChangeOrDeleteReferencesCapability"
-      parent="rmBaseCapability"
-      class="org.alfresco.module.org_alfresco_module_rm.capability.impl.ChangeOrDeleteReferencesCapability">
-      <property name="name" value="ChangeOrDeleteReferences"/>
-      <property name="permission" value="ChangeOrDeleteReferences"/>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.filling" value="true"/>
-            <entry key="capabilityCondition.frozen" value="false"/>
-         </map>
-      </property>
-      <property name="group"><ref bean="referencesAndLinksGroup"/></property>
-      <property name="index" value="10" />
-   </bean>
-
-   <bean id="rmCreateModifyDestroyClassificationGuidesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="CreateModifyDestroyClassificationGuides"/>
-      <property name="permission" value="CreateModifyDestroyClassificationGuides"/>
-      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
-      <property name="index" value="10" />
-   </bean>
-
-   <bean id="rmCreateModifyDestroyEventsCapability"
-      parent="declarativeCapability">
-      <property name="name" value="CreateModifyDestroyEvents" />
-      <property name="permission" value="CreateModifyDestroyEvents" />
-      <property name="group"><ref bean="eventsGroup"/></property>
-      <property name="index" value="20" />
-   </bean>
-
-   <bean id="rmCreateModifyDestroyFileplanTypesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="CreateModifyDestroyFileplanTypes" />
-      <property name="permission" value="CreateModifyDestroyFileplanTypes" />
-      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
-      <property name="index" value="40" />
-   </bean>
-
-   <bean id="rmCreateModifyDestroyRecordTypesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="CreateModifyDestroyRecordTypes" />
-      <property name="permission" value="CreateModifyDestroyRecordTypes" />
-      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
-      <property name="index" value="50" />
-   </bean>
-
-   <bean id="rmCreateModifyDestroyReferenceTypesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="CreateModifyDestroyReferenceTypes" />
-      <property name="permission" value="CreateModifyDestroyReferenceTypes" />
-      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
-      <property name="index" value="60" />
-   </bean>
-
-   <bean id="rmCreateModifyDestroyRolesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="CreateModifyDestroyRoles" />
-      <property name="permission" value="CreateModifyDestroyRoles" />
-      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
-      <property name="index" value="10" />
-   </bean>
-
-   <bean id="rmCreateModifyDestroyTimeframesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="CreateModifyDestroyTimeframes" />
-      <property name="permission" value="CreateModifyDestroyTimeframes" />
-      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
-      <property name="index" value="20" />
-   </bean>
-
-   <bean id="rmCreateModifyDestroyUsersAndGroupsCapability"
-      parent="declarativeCapability">
-      <property name="name" value="CreateModifyDestroyUsersAndGroups" />
-      <property name="permission" value="CreateModifyDestroyUsersAndGroups" />
-      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
-      <property name="index" value="20" />
-   </bean>
-
    <bean id="rmCycleVitalRecordsCapability"
       parent="declarativeCapability">
       <property name="name" value="CycleVitalRecords"/>
@@ -158,84 +50,6 @@
       </property>
       <property name="group"><ref bean="vitalRecordsGroup"/></property>
       <property name="index" value="10" />
-   </bean>
-
-   <bean id="rmDeleteLinksCapability"
-      parent="rmBaseCapability"
-      class="org.alfresco.module.org_alfresco_module_rm.capability.impl.DeleteLinksCapability">
-      <property name="name" value="DeleteLinks"/>
-      <property name="permission" value="DeleteLinks"/>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.filling" value="true"/>
-            <entry key="capabilityCondition.cutoff" value="false"/>
-            <entry key="capabilityCondition.frozen" value="false"/>
-         </map>
-      </property>
-      <property name="group"><ref bean="referencesAndLinksGroup"/></property>
-      <property name="index" value="20" />
-   </bean>
-
-   <bean id="rmDisplayRightsReportCapability"
-      parent="declarativeCapability">
-      <property name="name" value="DisplayRightsReport" />
-      <property name="permission" value="DisplayRightsReport" />
-      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
-      <property name="index" value="30" />
-   </bean>
-
-   <bean id="rmMakeOptionalPropertiesMandatoryCapability"
-      parent="declarativeCapability">
-      <property name="name" value="MakeOptionalParametersMandatory" />
-      <property name="permission" value="MakeOptionalParametersMandatory" />
-      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
-      <property name="index" value="80" />
-   </bean>
-
-   <bean id="rmManageAccessControlsCapability"
-      parent="declarativeCapability">
-      <property name="name" value="ManageAccessControls" />
-      <property name="permission" value="ManageAccessControls" />
-      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
-      <property name="index" value="40" />
-   </bean>
-
-   <bean id="rmManageAccessRightsCapability"
-      parent="declarativeCapability">
-      <property name="name" value="ManageAccessRights"/>
-      <property name="permission" value="ManageAccessRights"/>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.frozen" value="false"/>
-            <entry key="capabilityCondition.filling" value="true"/>
-         </map>
-      </property>
-      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
-      <property name="index" value="50" />
-   </bean>
-
-   <bean id="rmMapClassificationGuideMetadataCapability"
-      parent="declarativeCapability">
-      <property name="name" value="MapClassificationGuideMetadata" />
-      <property name="permission" value="MapClassificationGuideMetadata" />
-      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
-      <property name="index" value="30" />
-   </bean>
-
-   <bean id="rmMapEmailMetadataCapability"
-      parent="declarativeCapability">
-      <property name="name" value="MapEmailMetadata" />
-      <property name="permission" value="MapEmailMetadata" />
-      <property name="group"><ref bean="filePlanMetadataListsAndEmailGroup"/></property>
-      <property name="index" value="90" />
-   </bean>
-
-   <bean id="rmPasswordControlCapability"
-      parent="declarativeCapability">
-      <property name="name" value="PasswordControl" />
-      <property name="permission" value="PasswordControl" />
-      <property name="group"><ref bean="rolesAndAccessRightsGroup"/></property>
-      <property name="index" value="60" />
    </bean>
 
    <bean id="rmPlanningReviewCyclesCapability"
@@ -274,22 +88,7 @@
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
       <property name="index" value="70" />
    </bean>
-
-   <bean id="rmUpdateClassificationDatesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="UpdateClassificationDates" />
-      <property name="permission" value="UpdateClassificationDates" />
-      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
-      <property name="index" value="40" />
-   </bean>
-
-   <bean id="rmUpdateExemptionCategoriesCapability"
-      parent="declarativeCapability">
-      <property name="name" value="UpdateExemptionCategories" />
-      <property name="permission" value="UpdateExemptionCategories" />
-      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
-      <property name="index" value="50" />
-   </bean>
+   
 
    <bean id="rmUpdateTriggerDatesCapability"
       parent="declarativeCapability">
@@ -335,13 +134,22 @@
    <!-- Audit capabilities -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-audit-context.xml"/>
 
-   <!-- List capabilities -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-list-context.xml"/>
-
    <!-- Group capabilities -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-group-context.xml"/>
    
    <!-- Rule capabilities -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-rule-context.xml"/>
+   
+   <!--  Config capabilities -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-config-context.xml"/>
+   
+   <!--  Event capabilities -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-event-context.xml"/>
+   
+   <!--  Reference capabilities -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-reference-context.xml"/>
+   
+   <!--  Security capabilities -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/capability/rm-capabilities-security-context.xml"/>
 
 </beans>

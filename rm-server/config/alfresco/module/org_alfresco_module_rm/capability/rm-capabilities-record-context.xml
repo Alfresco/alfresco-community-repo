@@ -250,19 +250,6 @@
       <property name="index" value="40" />
    </bean>
 
-   <bean id="rmUpgradeDowngradeAndDeclassifyRecordsCapability"
-      parent="declarativeCapability">
-      <property name="name" value="UpgradeDowngradeAndDeclassifyRecords"/>
-      <property name="permission" value="UpgradeDowngradeAndDeclassifyRecords"/>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.frozen" value="false"/>
-         </map>
-      </property>
-      <property name="group"><ref bean="classifiedRecordsGroup"/></property>
-      <property name="index" value="60" />
-   </bean>
-
    <bean id="rmRejectRecordsCapability"
       parent="declarativeCapability">
       <property name="name" value="RejectRecords"/>

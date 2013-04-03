@@ -22,12 +22,6 @@
       <property name="index" value="10" />
    </bean>
 
-   <bean id="classifiedRecordsGroup"
-      parent="groupBase">
-      <property name="id" value="classifiedRecords"/>
-      <property name="index" value="20"/>
-   </bean>
-
    <bean id="cutoffGroup"
       parent="groupBase">
       <property name="id" value="cutoff"/>
@@ -46,9 +40,9 @@
       <property name="index" value="50"/>
    </bean>
 
-   <bean id="filePlanMetadataListsAndEmailGroup"
+   <bean id="configGroup"
       parent="groupBase">
-      <property name="id" value="filePlanMetadataListsAndEmail"/>
+      <property name="id" value="config"/>
       <property name="index" value="60"/>
    </bean>
 
@@ -70,15 +64,15 @@
       <property name="index" value="90"/>
    </bean>
 
-   <bean id="referencesAndLinksGroup"
+   <bean id="referencesGroup"
       parent="groupBase">
-      <property name="id" value="referencesAndLinks"/>
+      <property name="id" value="references"/>
       <property name="index" value="110"/>
    </bean>
 
-   <bean id="rolesAndAccessRightsGroup"
+   <bean id="securityGroup"
       parent="groupBase">
-      <property name="id" value="rolesAndAccessRights"/>
+      <property name="id" value="security"/>
       <property name="index" value="120"/>
    </bean>
 

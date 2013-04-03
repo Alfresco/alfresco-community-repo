@@ -7,7 +7,7 @@
       parent="declarativeCapability">
       <property name="name" value="ManageRules" />
       <property name="permission" value="ManageRules" />
-      <property name="group"><ref bean="rulesGroup"/></property>
+      <property name="group" ref="rulesGroup"/>
       <property name="index" value="10" />
       <property name="conditions">
          <map>

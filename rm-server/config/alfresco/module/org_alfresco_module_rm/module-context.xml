@@ -98,7 +98,7 @@
    <!-- Import the RM action's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-action-context.xml"/>
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/action-context.xml"/>
-   
+
    <!--  Import the deprecated beans -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-deprecated-context.xml"/>
 
@@ -110,6 +110,9 @@
 
    <!--  Import disposition properties -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-disposition-properties-context.xml"/>
+
+   <!--  Import workflows -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-workflow-context.xml"/>
 
    <!-- RM Script API -->
 
@@ -203,7 +206,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementNodeFormFilter">
       <property name="filterRegistry" ref="nodeFilterRegistry" />
       <property name="dictionaryService" ref="DictionaryService" />
-      <property name="dispositionService" ref="dispositionService"/>      
+      <property name="dispositionService" ref="dispositionService"/>
    </bean>
 
    <bean id="rmTypeFormFilter"

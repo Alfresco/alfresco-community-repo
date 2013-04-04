@@ -723,4 +723,15 @@
       <property name="capability" value="ManageRules"/>
    </bean>
 
+   <bean id="jsonConversionComponent.requestInfo"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="requestInfo"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+         </set>
+      </property>
+      <property name="capability" value="RequestRecordInformation"/>
+   </bean>
+
 </beans>

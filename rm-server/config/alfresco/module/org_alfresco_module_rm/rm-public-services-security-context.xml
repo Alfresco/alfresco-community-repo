@@ -93,10 +93,7 @@
           lazy-init="false" 
           parent="RMSecurityCommon"
           depends-on="CapabilityService">
-        <!-- Services -->
         <property name="namespacePrefixResolver" ref="namespaceService"/>
-        <property name="dictionaryService" ref="dictionaryService"/>
-        <property name="dispositionService" ref="dispositionService"/>
         <property name="capabilityService" ref="capabilityService"/>
         
     </bean>

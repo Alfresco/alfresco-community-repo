@@ -178,7 +178,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
                 assertNotNull(vitalRecordCapabilities);
 
                 vitalRecordCapabilitiesSize = vitalRecordCapabilities.size();
-                assertEquals(1, vitalRecordCapabilitiesSize);
+                assertTrue(vitalRecordCapabilitiesSize > 0);
 
                 return null;
             }

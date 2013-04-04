@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import java.util.List;
+
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
@@ -25,10 +27,14 @@ import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -219,5 +225,126 @@ public class RMSecurityCommon
             return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED); 
         }
 
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected NodeRef getTestNode(MethodInvocation invocation, Class[] params, int position, boolean parent)
+    {
+        NodeRef testNodeRef = null;
+        if (position < 0)
+        {
+            // Test against the fileplan root node
+            List<NodeRef> rmRoots = rmService.getFilePlans();
+            if (rmRoots.size() != 0)
+            {
+                // TODO for now we can take the first one as we only support a single rm site
+                testNodeRef = rmRoots.get(0);
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("\tPermission test against the rm root node " + nodeService.getPath(testNodeRef));
+                }
+            }
+        }
+        else if (StoreRef.class.isAssignableFrom(params[position]))
+        {
+            if (invocation.getArguments()[position] != null)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("\tPermission test against the store - using permissions on the root node");
+                }
+                StoreRef storeRef = (StoreRef) invocation.getArguments()[position];
+                if (nodeService.exists(storeRef))
+                {
+                    testNodeRef = nodeService.getRootNode(storeRef);
+                }
+            }
+        }
+        else if (NodeRef.class.isAssignableFrom(params[position]))
+        {
+            testNodeRef = (NodeRef) invocation.getArguments()[position];
+            if (parent)
+            {
+                testNodeRef = nodeService.getPrimaryParent(testNodeRef).getParentRef();
+                if (logger.isDebugEnabled())
+                {
+                    if (nodeService.exists(testNodeRef))
+                    {
+                        logger.debug("\tPermission test for parent on node " + nodeService.getPath(testNodeRef));
+                    }
+                    else
+                    {
+                        logger.debug("\tPermission test for parent on non-existing node " + testNodeRef);
+                    }
+                    logger.debug("\tPermission test for parent on node " + nodeService.getPath(testNodeRef));
+                }
+            }
+            else
+            {
+                if (logger.isDebugEnabled())
+                {
+                    if (nodeService.exists(testNodeRef))
+                    {
+                        logger.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                    }
+                    else
+                    {
+                        logger.debug("\tPermission test on non-existing node " + testNodeRef);
+                    }
+                }
+            }
+        }
+        else if (ChildAssociationRef.class.isAssignableFrom(params[position]))
+        {
+            if (invocation.getArguments()[position] != null)
+            {
+                if (parent)
+                {
+                    testNodeRef = ((ChildAssociationRef) invocation.getArguments()[position]).getParentRef();
+                }
+                else
+                {
+                    testNodeRef = ((ChildAssociationRef) invocation.getArguments()[position]).getChildRef();
+                }
+                if (logger.isDebugEnabled())
+                {
+                    if (nodeService.exists(testNodeRef))
+                    {
+                        logger.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                    }
+                    else
+                    {
+                        logger.debug("\tPermission test on non-existing node " + testNodeRef);
+                    }
+                }
+            }
+        }
+        else if (AssociationRef.class.isAssignableFrom(params[position]))
+        {
+            if (invocation.getArguments()[position] != null)
+            {
+                if (parent)
+                {
+                    testNodeRef = ((AssociationRef) invocation.getArguments()[position]).getSourceRef();
+                }
+                else
+                {
+                    testNodeRef = ((AssociationRef) invocation.getArguments()[position]).getTargetRef();
+                }
+                if (logger.isDebugEnabled())
+                {
+                    if (nodeService.exists(testNodeRef))
+                    {
+                        logger.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                    }
+                    else
+                    {
+                        logger.debug("\tPermission test on non-existing node " + testNodeRef);
+                    }
+                }
+            }
+        }
+        return testNodeRef;
     }
 }

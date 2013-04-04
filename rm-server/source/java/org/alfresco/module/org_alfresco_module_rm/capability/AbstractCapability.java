@@ -41,9 +41,6 @@ public abstract class AbstractCapability extends RMSecurityCommon
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(AbstractCapability.class);
 
-    /** RM entry voter */
-    protected RMEntryVoter voter;
-
     /** Capability service */
     protected CapabilityService capabilityService;
 
@@ -62,14 +59,6 @@ public abstract class AbstractCapability extends RMSecurityCommon
 
     /** Indicates whether this is a private capability or not */
     protected boolean isPrivate = false;
-
-    /**
-     * @param voter     RM entry voter
-     */
-    public void setVoter(RMEntryVoter voter)
-    {
-        this.voter = voter;
-    }
 
     /**
      * @param capabilityService capability service

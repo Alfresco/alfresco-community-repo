@@ -14,7 +14,6 @@
       abstract="true"
       parent="RMSecurityCommon"
       init-method="init">
-      <property name="voter" ref="rmEntryVoter"/>
       <property name="capabilityService" ref="CapabilityService"/>
    </bean>
 

@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+	<bean id="basePolicy" abstract="true" parent="RMSecurityCommon" init-method="init">
+		<property name="capabilityService" ref="capabilityService" />
+		<property name="rmEntryVoter" ref="rmEntryVoter" />		
+	</bean>	
+		
+	<bean id="readPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.ReadPolicy">
+		<property name="name" value="Read"/>
+	</bean>
+
+	<bean id="createPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.CreatePolicy">
+		<property name="name" value="Create"/>
+	</bean>
+		
+	<bean id="movePolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.MovePolicy">
+		<property name="name" value="Move"/>
+	</bean>
+	
+	<bean id="updatePolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.UpdatePolicy">
+		<property name="name" value="Update"/>
+	</bean>
+	
+	<bean id="deletePolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.DeletePolicy">
+		<property name="name" value="Delete"/>
+	</bean>
+	
+	<bean id="updatePropertiesPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.UpdatePropertiesPolicy">
+		<property name="name" value="UpdateProperties"/>
+	</bean>
+	
+	<bean id="assocPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.AssocPolicy">
+		<property name="name" value="Assoc"/>
+	</bean>
+	
+	<bean id="writeContentPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.WriteContentPolicy">
+		<property name="name" value="WriteContent"/>
+	</bean>
+	
+	<bean id="capabilityPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.CapabilityPolicy">
+		<property name="name" value="Capability"/>
+	</bean>
+	
+	<bean id="declarePolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.DeclarePolicy">
+		<property name="name" value="Declare"/>
+	</bean>
+	
+	<bean id="readPropertyPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.ReadPropertyPolicy">
+		<property name="name" value="ReadProperty"/>
+	</bean>
+
+</beans>

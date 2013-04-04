@@ -15,6 +15,6 @@
 
 	<bean id="rm-method-security-post-processor" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityPostProcessor">
 		<property name="properties" ref="rm-method-security-properties"/>		
-	</bean>	
+	</bean>
 
 </beans>

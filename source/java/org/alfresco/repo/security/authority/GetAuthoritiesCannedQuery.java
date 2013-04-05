@@ -118,10 +118,18 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
         {
             return null;
         }
-        
-        // Escapes: \ with \\     and     . with \.
-        // Replaces ? with .      and     * with .*
-        searchValue = "^"+searchValue.replaceAll("\\\\", "\\\\\\\\").replaceAll("\\.", "\\\\.").replaceAll("\\?", ".").replaceAll("\\*", ".*");
+
+        // Escape characters of regex expressions
+        searchValue = 
+                "^" +
+                searchValue.replaceAll("\\\\", "\\\\\\\\")
+                .replaceAll("\\.", "\\\\.")
+                .replaceAll("\\?", ".")
+                .replaceAll("\\*", ".*")
+                .replaceAll("\\{", "\\\\{")
+                .replaceAll("\\}", "\\\\}")
+                .replaceAll("\\[", "\\\\[")
+                .replaceAll("\\]", "\\\\]");
         return Pattern.compile(searchValue, Pattern.CASE_INSENSITIVE);
     }
     

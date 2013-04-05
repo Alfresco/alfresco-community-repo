@@ -29,6 +29,8 @@ import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.notification.NotificationContext;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.ParameterCheck;
 
 /**
@@ -50,9 +52,7 @@ public class RequestInfoNotifier implements TaskListener
         ParameterCheck.mandatory("delegateTask", delegateTask);
 
         // Set the workflow description for the task
-        // FIXME: I18N!!!
-        // FIXME: Record name!!!
-        delegateTask.setVariable("bpm_workflowDescription", "Information provided for record '" + "test.doc" + "'");
+        delegateTask.setVariable("bpm_workflowDescription", getWorkflowDescription(delegateTask));
 
         // Assign the task to the initiator
         String initiator = getInitiator(delegateTask);
@@ -90,6 +90,20 @@ public class RequestInfoNotifier implements TaskListener
             userName = AuthenticationUtil.getAdminUserName();
         }
         return userName;
+    }
+
+    private String getWorkflowDescription(DelegateTask delegateTask)
+    {
+        // FIXME: I18N!!!
+        return "Information provided for record '" + getRecordName(delegateTask) + "'";
+    }
+
+    private String getRecordName(DelegateTask delegateTask)
+    {
+        ActivitiScriptNode scriptNode = (ActivitiScriptNode) delegateTask.getVariable("bpm_package");
+        NodeService nodeService = getServiceRegistry().getNodeService();
+        NodeRef docRef= nodeService.getChildAssocs(scriptNode.getNodeRef()).get(0).getChildRef();
+        return (String) nodeService.getProperty(docRef, ContentModel.PROP_NAME);
     }
 
     //FIXME: Is there a better way to call services?

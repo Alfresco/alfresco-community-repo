@@ -28,8 +28,6 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import junit.framework.Assert;
-
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
@@ -38,6 +36,7 @@ import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -162,6 +161,27 @@ public class MailActionExecuterTest {
     	MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
     	Assert.assertNotNull(message);
     	Assert.assertEquals("G'Day 01/01/1970", (String)message.getContent());
+    }
+
+    @Test public void testSendingTestMessageWithNoCurrentUser()
+    {
+        try
+        {
+            // run with no current user
+            AuthenticationUtil.clearCurrentSecurityContext();
+
+            Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TO, "some.body@eaxmple.com");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "This is a test message.");
+
+            ACTION_EXECUTER.executeImpl(mailAction, null);
+        }
+        finally
+        {
+            // restore system user as current user
+            AuthenticationUtil.setRunAsUserSystem();
+        }
     }
 
 }

@@ -38,6 +38,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.template.DateCompareMethod;
 import org.alfresco.repo.template.HasAspectMethod;
 import org.alfresco.repo.template.I18NMessageMethod;
@@ -389,13 +391,20 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         super.init();
         if (sendTestMessage && testMessageTo != null)
         {
-            Map<String, Serializable> params = new HashMap<String, Serializable>();
-            params.put(PARAM_TO, testMessageTo);
-            params.put(PARAM_SUBJECT, testMessageSubject);
-            params.put(PARAM_TEXT, testMessageText);
-            
-            Action ruleAction = serviceRegistry.getActionService().createAction(NAME, params);
-            executeImpl(ruleAction, null);
+            AuthenticationUtil.runAs(new RunAsWork<Object>()
+            {
+                public Object doWork() throws Exception
+                {
+                    Map<String, Serializable> params = new HashMap<String, Serializable>();
+                    params.put(PARAM_TO, testMessageTo);
+                    params.put(PARAM_SUBJECT, testMessageSubject);
+                    params.put(PARAM_TEXT, testMessageText);
+
+                    Action ruleAction = serviceRegistry.getActionService().createAction(NAME, params);
+                    executeImpl(ruleAction, null);
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName());
         }
     }
 
@@ -926,7 +935,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             if (! authService.isCurrentUserTheSystemUser())
             {
                 String currentUserName = authService.getCurrentUserName();
-                if (personExists(currentUserName))
+                if (currentUserName != null && personExists(currentUserName))
                 {
                     fromPersonName = currentUserName;
                     locale = getLocaleForUser(fromPersonName);

@@ -24,17 +24,12 @@ import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.activiti.engine.impl.context.Context;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNodeList;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * An assignment handler for the request info workflow.
@@ -56,7 +51,7 @@ public class RequestInfoAssignmentHandler implements TaskListener
         ParameterCheck.mandatory("delegateTask", delegateTask);
 
         // Set the workflow description for the task
-        delegateTask.setVariable("bpm_workflowDescription", getWorkflowDescription(delegateTask));
+        delegateTask.setVariable("bpm_workflowDescription", getWorkflowDescription(RequestInfoUtils.getRecordName(delegateTask)));
 
         // Get the list of user(s) and/or group(s)
         ActivitiScriptNodeList usersAndGroups = (ActivitiScriptNodeList) delegateTask.getVariable("rmwf_mixedAssignees");
@@ -115,42 +110,20 @@ public class RequestInfoAssignmentHandler implements TaskListener
         }
     }
 
-    private String getWorkflowDescription(DelegateTask delegateTask)
-    {
-        // FIXME: I18N!!!
-        return "Information requested for record '" + getRecordName(delegateTask) + "'";
-    }
-
-    private String getRecordName(DelegateTask delegateTask)
-    {
-        ActivitiScriptNode scriptNode = (ActivitiScriptNode) delegateTask.getVariable("bpm_package");
-        NodeService nodeService = getServiceRegistry().getNodeService();
-        NodeRef docRef= nodeService.getChildAssocs(scriptNode.getNodeRef()).get(0).getChildRef();
-        return (String) nodeService.getProperty(docRef, ContentModel.PROP_NAME);
-    }
-
-    //FIXME: Is there a better way to call services?
-
     /**
-     * Helper method for getting the service registry in order to call services
+     * Helper method for building the workflow description
      *
-     * @return Returns the service registry
+     * @param recordName The name of the record
+     * @return Returns the workflow description
      */
-    private ServiceRegistry getServiceRegistry()
+    private String getWorkflowDescription(String recordName)
     {
-        ProcessEngineConfigurationImpl config = Context.getProcessEngineConfiguration();
-        if (config != null)
-        {
-            // Fetch the registry that is injected in the activiti spring-configuration
-            ServiceRegistry registry = (ServiceRegistry) config.getBeans().get(ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
-            if (registry == null)
-            {
-                throw new RuntimeException(
-                        "Service-registry not present in ProcessEngineConfiguration beans, expected ServiceRegistry with key" +
-                                ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
-            }
-            return registry;
-        }
-        throw new IllegalStateException("No ProcessEngineCOnfiguration found in active context");
+        StringBuilder sb = new StringBuilder();
+        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.info.requested"));
+        sb.append(" '");
+        sb.append(recordName);
+        sb.append("'");
+        return  sb.toString();
     }
+
 }

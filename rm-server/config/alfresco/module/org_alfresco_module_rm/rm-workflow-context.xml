@@ -18,13 +18,10 @@
             <value>alfresco/workflow/rmWorkflowModel.xml</value>
          </list>
       </property>
-      <!-- FIXME: Use labels -->
-      <!--
       <property name="labels">
          <list>
-            <value>alfresco/workflow/workflow-messages</value>
+            <value>alfresco/workflow/rm-workflow-messages</value>
          </list>
       </property>
-      -->
    </bean>
 </beans>

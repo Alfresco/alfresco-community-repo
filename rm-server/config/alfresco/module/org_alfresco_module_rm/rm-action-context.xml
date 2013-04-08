@@ -11,23 +11,23 @@
          </list>
       </property>
    </bean>
-   
+
    <!--  Conditions -->
-   
-   <bean id="rmCapabilityConditionEvaluator" 
-         parent="action-condition-evaluator" 
-         abstract="true" 
+
+   <bean id="rmCapabilityConditionEvaluator"
+         parent="action-condition-evaluator"
+         abstract="true"
          class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.CapabilityConditionEvaluator">
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
    </bean>
-   
+
    <bean id="isDeclared" parent="rmCapabilityConditionEvaluator">
       <property name="capabilityCondition" ref="capabilityCondition.declared"/>
    </bean>
-   
+
    <bean id="isRecordFiled" parent="rmCapabilityConditionEvaluator">
    	  <property name="capabilityCondition" ref="capabilityCondition.recordFiled"/>
-   </bean>   
+   </bean>
 
    <!-- Actions -->
 
@@ -721,5 +721,20 @@
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>
+
+   <!--
+   <bean id="requestInfo_proxy" parent="rmProxyAction">
+      <property name="target" ref="requestInfo"/>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="allow_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="requestInfo" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RequestInfoAction" parent="rmAction">
+      <property name="publicAction" value="true"/>
+   </bean>
+   -->
 
 </beans>

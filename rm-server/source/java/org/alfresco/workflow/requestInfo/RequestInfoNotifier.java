@@ -20,18 +20,11 @@ package org.alfresco.workflow.requestInfo;
 
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.activiti.engine.impl.context.Context;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.notification.EMailNotificationProvider;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.workflow.activiti.ActivitiConstants;
-import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.notification.NotificationContext;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Request info workflow notifier.
@@ -51,11 +44,14 @@ public class RequestInfoNotifier implements TaskListener
     {
         ParameterCheck.mandatory("delegateTask", delegateTask);
 
+        // Get the record name
+        String recordName = RequestInfoUtils.getRecordName(delegateTask);
+
         // Set the workflow description for the task
-        delegateTask.setVariable("bpm_workflowDescription", getWorkflowDescription(delegateTask));
+        delegateTask.setVariable("bpm_workflowDescription", getWorkflowDescription(recordName));
 
         // Assign the task to the initiator
-        String initiator = getInitiator(delegateTask);
+        String initiator = RequestInfoUtils.getInitiator(delegateTask);
         delegateTask.setAssignee(initiator);
 
         // Create the context and send an email to the initiator
@@ -63,71 +59,62 @@ public class RequestInfoNotifier implements TaskListener
         notificationContext.setAsyncNotification(true);
         notificationContext.setIgnoreNotificationFailure(true);
         notificationContext.addTo(initiator);
-        // FIXME: I18N!!! and get the record name and the user name who provided the information
-        notificationContext.setSubject("Information provided for the record '" + "" + "'.");
-        notificationContext.setBody("The user '" + "' has provided the needed information for the record '" + "" + "'.");
+        notificationContext.setSubject(getEmailSubject(recordName));
+        notificationContext.setBody(getEmailBody(recordName));
 
         // Send the email
-        getServiceRegistry().getNotificationService().sendNotification(EMailNotificationProvider.NAME, notificationContext);
+        RequestInfoUtils.getServiceRegistry().getNotificationService().sendNotification(EMailNotificationProvider.NAME, notificationContext);
     }
 
     /**
-     * Helper method to extract the initiator from the task
+     * Helper method for building the workflow description
      *
-     * @param delegateTask  The delegate task
-     * @return Returns the initiator of the workflow. If the initiator does not exist the admin user will be returned.
+     * @param recordName The name of the record
+     * @return Returns the workflow description
      */
-    private String getInitiator(DelegateTask delegateTask)
+    private String getWorkflowDescription(String recordName)
     {
-        String userName = null;
-        ActivitiScriptNode initiator = (ActivitiScriptNode) delegateTask.getVariable("initiator");
-        if (initiator.exists())
-        {
-            userName = (String) initiator.getProperties().get(ContentModel.PROP_USERNAME.toString());
-        }
-        else
-        {
-            userName = AuthenticationUtil.getAdminUserName();
-        }
-        return userName;
+        StringBuilder sb = new StringBuilder();
+        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.info.provided"));
+        sb.append(" '");
+        sb.append(recordName);
+        sb.append("'");
+        return  sb.toString();
     }
-
-    private String getWorkflowDescription(DelegateTask delegateTask)
-    {
-        // FIXME: I18N!!!
-        return "Information provided for record '" + getRecordName(delegateTask) + "'";
-    }
-
-    private String getRecordName(DelegateTask delegateTask)
-    {
-        ActivitiScriptNode scriptNode = (ActivitiScriptNode) delegateTask.getVariable("bpm_package");
-        NodeService nodeService = getServiceRegistry().getNodeService();
-        NodeRef docRef= nodeService.getChildAssocs(scriptNode.getNodeRef()).get(0).getChildRef();
-        return (String) nodeService.getProperty(docRef, ContentModel.PROP_NAME);
-    }
-
-    //FIXME: Is there a better way to call services?
 
     /**
-     * Helper method for getting the service registry in order to call services
+     * Helper method for building the email subject
      *
-     * @return Returns the service registry
+     * @param recordName The name of the record
+     * @return Returns the email subject
      */
-    private ServiceRegistry getServiceRegistry()
+    private String getEmailSubject(String recordName)
     {
-        ProcessEngineConfigurationImpl config = Context.getProcessEngineConfiguration();
-        if (config != null)
-        {
-            // Fetch the registry that is injected in the activiti spring-configuration
-            ServiceRegistry registry = (ServiceRegistry) config.getBeans().get(ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
-            if (registry == null)
-            {
-                throw new RuntimeException(
-                        "Service-registry not present in ProcessEngineConfiguration beans, expected ServiceRegistry with key" +
-                                ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
-            }
-            return registry;
-        }
-        throw new IllegalStateException("No ProcessEngineCOnfiguration found in active context");
+        StringBuilder sb = new StringBuilder();
+        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.subject"));
+        sb.append(" '");
+        sb.append(recordName);
+        sb.append("'");
+        return sb.toString();
+    }
+
+    /**
+     * Helper method for building the email body
+     *
+     * @param recordName The name of the record
+     * @return Returns the email body
+     */
+    private String getEmailBody(String recordName)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.body1"));
+        sb.append(" '");
+        sb.append(AuthenticationUtil.getFullyAuthenticatedUser());
+        sb.append("' ");
+        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.body2"));
+        sb.append(" '");
+        sb.append(recordName);
+        sb.append("'.");
+        return  sb.toString();
     }
 }

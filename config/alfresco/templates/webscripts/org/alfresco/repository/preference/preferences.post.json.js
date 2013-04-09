@@ -27,7 +27,7 @@ function main()
 
       // determine if the exception was UnauthorizedAccessException, if so
       // return 401 status code
-      if (msg.indexOf("UnauthorizedAccessException") != -1)
+      if (msg.indexOf("AccessDeniedException") != -1)
       {
          status.setCode(status.STATUS_UNAUTHORIZED, msg);
       }

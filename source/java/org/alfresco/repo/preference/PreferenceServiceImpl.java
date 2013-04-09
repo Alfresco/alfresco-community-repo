@@ -39,6 +39,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -205,7 +206,7 @@ public class PreferenceServiceImpl implements PreferenceService
         {
             // The current user does not have sufficient permissions to get
             // the preferences for this user
-            throw new UnauthorizedAccessException("The current user " + currentUserName
+            throw new AccessDeniedException("The current user " + currentUserName
                     + " does not have sufficient permissions to get the preferences of the user " + userName);
         }
         
@@ -391,7 +392,7 @@ public class PreferenceServiceImpl implements PreferenceService
         {
             // The current user does not have sufficient permissions to update
             // the preferences for this user
-            throw new UnauthorizedAccessException("The current user " + AuthenticationUtil.getFullyAuthenticatedUser()
+            throw new AccessDeniedException("The current user " + AuthenticationUtil.getFullyAuthenticatedUser()
                     + " does not have sufficient permissions to update the preferences of the user " + userName);
         }
     }
@@ -481,7 +482,7 @@ public class PreferenceServiceImpl implements PreferenceService
         {
             // The current user does not have sufficient permissions to update
             // the preferences for this user
-            throw new UnauthorizedAccessException("The current user " + AuthenticationUtil.getFullyAuthenticatedUser()
+            throw new AccessDeniedException("The current user " + AuthenticationUtil.getFullyAuthenticatedUser()
                     + " does not have sufficient permissions to update the preferences of the user " + userName);
         }
     }

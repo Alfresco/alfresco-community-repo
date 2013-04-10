@@ -18,25 +18,46 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * FIXME
+ * Request info action for starting a workflow to request more information for an undeclared record
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
 public class RequestInfoAction extends RMActionExecuterAbstractBase
 {
+    /** Parameter names */
+    public static final String PARAM_REQUESTED_INFO = "requestedInfo";
+    public static final String PARAM_ASSIGNEES = "assignees";
+
     /** Action name */
     public static final String NAME = "requestInfo";
 
+    /**
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         // FIXME
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
+     */
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_REQUESTED_INFO, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_REQUESTED_INFO)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_ASSIGNEES, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_ASSIGNEES)));
+    }
 }

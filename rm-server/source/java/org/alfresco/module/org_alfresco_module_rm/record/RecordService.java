@@ -96,4 +96,13 @@ public interface RecordService
     * @param reason    The reason for rejection
     */
    void rejectRecord(NodeRef nodeRef, String reason);
+   
+   /**
+    * Indicates whether a property of a record is editable for the current user or not.
+    * 
+    * @param record     record
+    * @param property   property
+    * @return boolean   true if editable, false otherwise.
+    */
+   boolean isPropertyEditable(NodeRef record, QName property);
 }

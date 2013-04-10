@@ -454,8 +454,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
                 assertNotNull(unfiledContainer);
             }
-        },
-        AuthenticationUtil.getAdminUserName());
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**
@@ -566,6 +565,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             {
                 filePlanPermissionService.setPermission(filePlan, user, FILING);
                 filePlanPermissionService.setPermission(rmContainer, user, FILING);
+                filePlanPermissionService.setPermission(rmFolder, user, FILING);
                 filePlanPermissionService.setPermission(unfiledContainer, user, FILING);
             }
         }

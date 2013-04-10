@@ -1101,6 +1101,7 @@
         <property name="filePlanService" ref="FilePlanService" />
         <property name="ownableService" ref="OwnableService" />
         <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
+        <property name="capabilityService" ref="CapabilityService" />
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1149,6 +1150,7 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isFiled=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.hideRecord=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isPropertyEditable=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>

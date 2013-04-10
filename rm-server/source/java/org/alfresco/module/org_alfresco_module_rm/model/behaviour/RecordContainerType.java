@@ -128,7 +128,7 @@ public class RecordContainerType implements RecordsManagementModel,
     @Override
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean isNewNode)
     {   
-        filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork() throws Exception

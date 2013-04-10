@@ -38,6 +38,7 @@ import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.repo.forms.processor.node.FieldUtils;
 import org.alfresco.repo.forms.processor.node.FormFieldConstants;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -91,9 +92,10 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         this.dispositionService = dispositionService;
     }
 
-    /*
+    /**
      * @see org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form, java.util.Map)
      */
+    @Override
     public void afterGenerate(
             NodeRef nodeRef, 
             List<String> fields, 
@@ -117,6 +119,9 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                 
                 // add the supplemental marking list property
                 forceSupplementalMarkingListProperty(form, nodeRef);
+                
+                // protect uneditable properties
+                protectRecordProperties(form, nodeRef);
                 
                 // if the record is the result of an email we need to 'protect' some fields
                 if (this.nodeService.hasAspect(nodeRef, ImapModel.ASPECT_IMAP_CONTENT))
@@ -147,6 +152,11 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         }
     }
     
+    /**
+     * 
+     * @param form
+     * @param nodeRef
+     */
     protected void addCustomPropertyFieldsToGroup(Form form, NodeRef nodeRef)
     {
         Set<QName> customisables = rmAdminService.getCustomisable(nodeRef);
@@ -165,6 +175,11 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         }
     }
     
+    /**
+     * 
+     * @param form
+     * @param nodeRef
+     */
     protected void addRecordMetadataPropertyFieldsToGroup(Form form, NodeRef nodeRef)
     {
         Set<QName> aspects = recordService.getRecordMetaDataAspects();
@@ -210,7 +225,11 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         }
     }
 
-    
+    /**
+     * 
+     * @param form
+     * @param nodeRef
+     */
     protected void addTransientProperties(Form form, NodeRef nodeRef)
     {
         if (recordService.isRecord(nodeRef) == true)
@@ -239,6 +258,13 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         }        
     }
     
+    /**
+     * 
+     * @param form
+     * @param name
+     * @param type
+     * @param value
+     */
     protected void addTransientPropertyField(Form form, String name, QName type, Object value)
     {
         String dataKeyName = FormFieldConstants.PROP_DATA_PREFIX + name;
@@ -249,6 +275,47 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         declaredField.setDataKeyName(dataKeyName);
         form.addFieldDefinition(declaredField);
         form.addData(dataKeyName, value);
+    }
+    
+    /**
+     * 
+     * @param form
+     * @param nodeRef
+     */
+    protected void protectRecordProperties(Form form, NodeRef nodeRef)
+    {
+        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            if (fieldDef.isProtectedField() == false)
+            {
+                String name = fieldDef.getName();
+                String prefixName = null;
+                if ("size".equals(name) || "mimetype".equals(name) || "encoding".equals(name))
+                {
+                    prefixName = "cm:content";
+                }
+                else
+                {                
+                    prefixName = fieldDef.getName();
+                }
+                
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("Checking property " + prefixName + " is editable by user " + AuthenticationUtil.getFullyAuthenticatedUser());
+                }
+                
+                QName qname = QName.createQName(prefixName, namespaceService);
+                if (recordService.isPropertyEditable(nodeRef, qname) == false)
+                {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug("   ... protected property");
+                    }
+                    fieldDef.setProtectedField(true);
+                }
+            }
+        }        
     }
     
     /**

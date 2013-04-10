@@ -26,6 +26,8 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -43,14 +45,29 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstractBase
 {
+    private FilePlanAuthenticationService filePlanAuthenticationService;
+    
+    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
+    {
+        this.filePlanAuthenticationService = filePlanAuthenticationService;
+    }
+    
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
      *      org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+    protected void executeImpl(Action action, final NodeRef actionedUponNodeRef)
     {
-        this.propagateChangeToChildrenOf(actionedUponNodeRef);
+        filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                propagateChangeToChildrenOf(actionedUponNodeRef);
+                return null;
+            }
+        });        
     }
 
     /**

@@ -481,8 +481,11 @@
       </property>
    </bean>
 
-   <bean id="broadcastVitalRecordDefinition" class="org.alfresco.module.org_alfresco_module_rm.vital.BroadcastVitalRecordDefinitionAction"
-                                            parent="rmAction" />
+   <bean id="broadcastVitalRecordDefinition" 
+         class="org.alfresco.module.org_alfresco_module_rm.vital.BroadcastVitalRecordDefinitionAction"
+         parent="rmAction">
+      <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
+   </bean>
 
    <!-- broadcast disposition action definition update -->
    <!-- bound to policy: allow -->

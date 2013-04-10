@@ -18,14 +18,24 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.workflow.WorkflowService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.workflow.RMWorkflowModel;
+import org.apache.axis.utils.StringUtils;
 
 /**
  * Request info action for starting a workflow to request more information for an undeclared record
@@ -42,13 +52,34 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     /** Action name */
     public static final String NAME = "requestInfo";
 
+    /** Workflow definition name */
+    private static final String REQUEST_INFO_WORKFLOW_DEFINITION_NAME = "activiti$activitiRequestForInformation";
+
+    /** Workflow service */
+    private WorkflowService workflowService;
+
+    /**
+     * @param workflowService   workflow service
+     */
+    public void setWorkflowService(WorkflowService workflowService)
+    {
+        this.workflowService = workflowService;
+    }
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        // FIXME
+        String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
+        Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
+
+        parameters.put(WorkflowModel.ASSOC_PACKAGE, getWorkflowPackage(action, actionedUponNodeRef));
+        parameters.put(RMWorkflowModel.RM_MIXED_ASSIGNEES, getAssignees(action));
+        parameters.put(RMWorkflowModel.RM_REQUESTED_INFORMATION, getRequestedInformation(action));
+
+        workflowService.startWorkflow(workflowDefinitionId, parameters);
     }
 
     /**
@@ -60,4 +91,50 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_REQUESTED_INFO, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_REQUESTED_INFO)));
         paramList.add(new ParameterDefinitionImpl(PARAM_ASSIGNEES, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_ASSIGNEES)));
     }
+
+    /**
+     * Helper method for creating a workflow package to contain the actioned upon nodeRef
+     *
+     * @param action The request info action
+     * @param actionedUponNodeRef The actioned upon nodeRef
+     * @return Returns a workflow package containing the actioned upon nodeRef
+     */
+    private NodeRef getWorkflowPackage(Action action, NodeRef actionedUponNodeRef)
+    {
+        NodeRef workflowPackage = (NodeRef) action.getParameterValue(WorkflowModel.ASSOC_PACKAGE.toPrefixString(namespaceService));
+        workflowPackage = workflowService.createPackage(workflowPackage);
+        ChildAssociationRef childAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
+        nodeService.addChild(workflowPackage, actionedUponNodeRef, WorkflowModel.ASSOC_PACKAGE_CONTAINS, childAssoc.getQName());
+        return workflowPackage;
+    }
+
+    /**
+     * Helper method for getting the assignees from the action
+     *
+     * @param action The request info action
+     * @return Returns a list of {@link NodeRef}s each representing the assignee
+     */
+    private Serializable getAssignees(Action action)
+    {
+        List<NodeRef> assigneesList = new ArrayList<NodeRef>();
+        String assigneesAsString = (String) action.getParameterValue(PARAM_ASSIGNEES);
+        String[] assignees = StringUtils.split(assigneesAsString, ',');
+        for (String assignee : assignees)
+        {
+            assigneesList.add(new NodeRef(assignee));
+        }
+        return (Serializable) assigneesList;
+    }
+
+    /**
+     * Helper method for getting the requested information from the action
+     *
+     * @param action The request info action
+     * @return  Return the requested information
+     */
+    private Serializable getRequestedInformation(Action action)
+    {
+        return action.getParameterValue(PARAM_REQUESTED_INFO);
+    }
+
 }

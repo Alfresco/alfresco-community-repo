@@ -481,7 +481,7 @@
       </property>
    </bean>
 
-   <bean id="broadcastVitalRecordDefinition" 
+   <bean id="broadcastVitalRecordDefinition"
          class="org.alfresco.module.org_alfresco_module_rm.vital.BroadcastVitalRecordDefinitionAction"
          parent="rmAction">
       <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
@@ -725,7 +725,6 @@
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>
 
-   <!--
    <bean id="requestInfo_proxy" parent="rmProxyAction">
       <property name="target" ref="requestInfo"/>
       <property name="interceptorNames">
@@ -737,7 +736,7 @@
 
    <bean id="requestInfo" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RequestInfoAction" parent="rmAction">
       <property name="publicAction" value="true"/>
+      <property name="workflowService" ref="WorkflowService"/>
    </bean>
-   -->
 
 </beans>

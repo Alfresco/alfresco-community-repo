@@ -270,12 +270,12 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
-                        RMPermissionModel.EDIT_RECORD_METADATA));
+                        RMPermissionModel.EDIT_NON_RECORD_METADATA));
 
                 Capability filling = capabilityService.getCapability("FileRecords");
                 assertEquals(AccessStatus.DENIED, filling.hasPermission(dmDocument));
 
-                Capability editRecordMetadata = capabilityService.getCapability("EditRecordMetadata");
+                Capability editRecordMetadata = capabilityService.getCapability("EditNonRecordMetadata");
                 assertEquals(AccessStatus.ALLOWED, editRecordMetadata.hasPermission(dmDocument));
 
                 Capability updateProperties = capabilityService.getCapability("UpdateProperties");
@@ -308,12 +308,12 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
-                        RMPermissionModel.EDIT_RECORD_METADATA));
+                        RMPermissionModel.EDIT_NON_RECORD_METADATA));
 
                 Capability filling = capabilityService.getCapability("FileRecords");
                 assertEquals(AccessStatus.DENIED, filling.hasPermission(dmDocument));
 
-                Capability editRecordMetadata = capabilityService.getCapability("EditRecordMetadata");
+                Capability editRecordMetadata = capabilityService.getCapability("EditNonRecordMetadata");
                 assertEquals(AccessStatus.DENIED, editRecordMetadata.hasPermission(dmDocument));
 
                 Capability updateProperties = capabilityService.getCapability("UpdateProperties");

@@ -343,8 +343,21 @@ public class RecordServiceImpl implements RecordService,
                         {
                             afterValue = after.get(property);
                         }
+                        
+                        boolean propertyUnchanged = false;
+                        if (beforeValue != null && afterValue != null && 
+                            beforeValue instanceof Date && afterValue instanceof Date)
+                        {
+                            // deal with date values
+                            propertyUnchanged = (((Date)beforeValue).compareTo((Date)afterValue) == 0);
+                        }
+                        else
+                        {
+                            // otherwise
+                            propertyUnchanged = EqualsHelper.nullSafeEquals(beforeValue, afterValue);
+                        }
     
-                        if (EqualsHelper.nullSafeEquals(beforeValue, afterValue) == false &&
+                        if (propertyUnchanged == false &&
                             isPropertyEditable(nodeRef, property) == false)
                         {
                             // the user can't edit the record property

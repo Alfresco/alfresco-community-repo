@@ -183,35 +183,38 @@
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
-            <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.frozen" value="false"/>
             <entry key="capabilityCondition.declared" value="true"/>
          </map>
       </property>
-      <property name="group"><ref bean="metadataControlGroup"/></property>
+      <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="10" />
    </bean>
 
-   <!-- TODO .. this is being used for the wrong thing! ... should indicate that the use can edit the non-record meta-data of a record -->
-   <!-- TODO .. may need some kind of 'prep' record capability you get with file? .. I think this is what this is being used for atm -->
    <bean id="rmEditNonRecordMetadataCapability"
-      parent="declarativeCapability"
-      class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditCapability">
+      parent="declarativeCapability">
       <property name="name" value="EditNonRecordMetadata"/>
       <property name="permission" value="EditNonRecordMetadata"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>
+         </list>
+      </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.fileable" value="true"/>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.frozen" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+            <entry key="capabilityCondition.declared" value="false"/>
          </map>
       </property>
-      <property name="group"><ref bean="metadataControlGroup"/></property>
+      <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="20" />
    </bean>
 
-   <bean id="rmEditRecordMetadataCapability"
-      parent="rmBaseCapability"
-      class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditCapability">
+   <bean id="rmEditRecordMetadataCapability"      
+      parent="declarativeCapability">
       <property name="name" value="EditRecordMetadata"/>
       <property name="permission" value="EditRecordMetadata"/>
       <property name="kinds">
@@ -228,7 +231,7 @@
             <entry key="capabilityCondition.declared" value="false"/>
          </map>
       </property>
-      <property name="group"><ref bean="metadataControlGroup"/></property>
+      <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="30" />
    </bean>
 
@@ -246,7 +249,7 @@
          </map>
       </property>
       <property name="targetCapability" ref="rmFileRecordsCapability"/>
-      <property name="group"><ref bean="metadataControlGroup"/></property>
+      <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="40" />
    </bean>
 

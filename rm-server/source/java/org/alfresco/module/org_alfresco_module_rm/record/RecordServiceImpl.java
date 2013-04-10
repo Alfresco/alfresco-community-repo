@@ -31,11 +31,16 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
@@ -48,31 +53,80 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- * Record service implementation
+ * Record service implementation.
  *
  * @author Roy Wetherall
  * @since 2.1
  */
 public class RecordServiceImpl implements RecordService,
                                           RecordsManagementModel,
+                                          RecordsManagementCustomModel,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
+                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
                                           ApplicationContextAware
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
+    
+    /** Always edit property array */
+    private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]
+    {
+       ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA
+    };
+    
+    private static final String[] ALWAYS_EDIT_URIS = new String[]
+    {
+        NamespaceService.SECURITY_MODEL_1_0_URI,
+        NamespaceService.SYSTEM_MODEL_1_0_URI,
+        NamespaceService.WORKFLOW_MODEL_1_0_URI,
+        NamespaceService.APP_MODEL_1_0_URI,
+        NamespaceService.DATALIST_MODEL_1_0_URI,
+        NamespaceService.DICTIONARY_MODEL_1_0_URI,
+        NamespaceService.BPM_MODEL_1_0_URI,
+        NamespaceService.RENDITION_MODEL_1_0_URI
+     }; 
+    
+    private static final String[] RECORD_MODEL_URIS = new String[]
+    {
+       RM_URI,
+       RM_CUSTOM_URI,
+       DOD5015Model.DOD_URI
+    };
+    
+    private static final String[] NON_RECORD_MODEL_URIS = new String[]
+    {
+        NamespaceService.AUDIO_MODEL_1_0_URI,
+        NamespaceService.CONTENT_MODEL_1_0_URI,
+        NamespaceService.EMAILSERVER_MODEL_URI,
+        NamespaceService.EXIF_MODEL_1_0_URI,
+        NamespaceService.FORUMS_MODEL_1_0_URI,
+        NamespaceService.LINKS_MODEL_1_0_URI,
+        NamespaceService.REPOSITORY_VIEW_1_0_URI
+
+    };
+    
     /** Application context */
     private ApplicationContext applicationContext;
 
@@ -108,15 +162,22 @@ public class RecordServiceImpl implements RecordService,
 
     /** Ownable service */
     private OwnableService ownableService;
+    
+    /** Capability service */
+    private CapabilityService capabilityService;
 
     /** List of available record meta-data aspects */
-    private Set<QName> recordMetaDataAspects;
+    private Set<QName> recordMetaDataAspects;    
 
     /** Behaviours */
     private JavaBehaviour onCreateChildAssociation = new JavaBehaviour(
                                                             this,
                                                             "onCreateChildAssociation",
                                                             NotificationFrequency.FIRST_EVENT);
+    private JavaBehaviour onUpdateProperties = new JavaBehaviour(
+                                                            this,
+                                                            "onUpdateProperties",
+                                                            NotificationFrequency.EVERY_EVENT);
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
@@ -211,6 +272,14 @@ public class RecordServiceImpl implements RecordService,
     {
         this.ownableService = ownableService;
     }
+    
+    /**
+     * @param capabilityService capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
+    }
 
     /**
      * Init method
@@ -222,6 +291,10 @@ public class RecordServiceImpl implements RecordService,
                 TYPE_RECORD_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
                 onCreateChildAssociation);
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME, 
+                ASPECT_RECORD, 
+                onUpdateProperties);
     }
 
     /**
@@ -239,6 +312,56 @@ public class RecordServiceImpl implements RecordService,
             file(nodeRef);
         }
     }
+    
+    /**
+     * Ensure that the user only updates record properties that they have permission to.
+     * 
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+     */
+    @Override
+    public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
+    {
+        onUpdateProperties.disable();
+        try
+        {
+            if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
+                AuthenticationUtil.isRunAsUserTheSystemUser() == false &&
+                nodeService.exists(nodeRef) == true)
+            {
+                if (isRecord(nodeRef) == true)
+                {
+                    for (QName property : after.keySet())
+                    {
+                        Serializable beforeValue = null;
+                        if (before != null)
+                        {
+                            beforeValue = before.get(property);
+                        }
+                        
+                        Serializable afterValue = null;
+                        if (after != null)
+                        {
+                            afterValue = after.get(property);
+                        }
+    
+                        if (EqualsHelper.nullSafeEquals(beforeValue, afterValue) == false &&
+                            isPropertyEditable(nodeRef, property) == false)
+                        {
+                            // the user can't edit the record property
+                            throw new ModelAccessDeniedException(
+                                "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
+                                " does not have the permission to edit the record property " + property.toString() +
+                                " on the node " + nodeRef.toString());
+                        }
+                    }
+                }
+            }
+        }
+        finally
+        {
+            onUpdateProperties.enable();
+        }
+    }    
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects()
@@ -578,5 +701,121 @@ public class RecordServiceImpl implements RecordService,
                 return null;
             }
         });
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isPropertyEditable(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public boolean isPropertyEditable(NodeRef record, QName property)
+    {
+        ParameterCheck.mandatory("record", record);
+        ParameterCheck.mandatory("property", property);
+        
+        if (isRecord(record) == false)
+        {
+            throw new AlfrescoRuntimeException("Can not check if the property " + property.toString() + " is editable, because node reference is not a record.");
+        }
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug("Checking whether property " + property.toString() + " is editable for user " + AuthenticationUtil.getRunAsUser());
+        }
+        
+        boolean result = alwaysEditProperty(property);
+        if (result == false)
+        {
+            boolean allowRecordEdit = false;
+            boolean allowNonRecordEdit = false;
+
+            AccessStatus accessNonRecord = capabilityService.getCapabilityAccessState(record, RMPermissionModel.EDIT_NON_RECORD_METADATA);
+            AccessStatus accessDeclaredRecord = capabilityService.getCapabilityAccessState(record, RMPermissionModel.EDIT_DECLARED_RECORD_METADATA);
+            AccessStatus accessRecord = capabilityService.getCapabilityAccessState(record, RMPermissionModel.EDIT_RECORD_METADATA);
+            
+            if (AccessStatus.ALLOWED.equals(accessNonRecord) == true)
+            {
+                allowNonRecordEdit = true;
+            }
+            
+            if (AccessStatus.ALLOWED.equals(accessRecord) == true ||
+                AccessStatus.ALLOWED.equals(accessDeclaredRecord) == true)
+            {
+                allowRecordEdit = true;
+            }
+            
+            if (allowNonRecordEdit == true && allowRecordEdit == true)
+            {
+                result = true;
+            }
+            else if (allowNonRecordEdit == true && allowRecordEdit == false)
+            {
+                // can only edit non record properties
+                if (isRecordMetadata(property) == false)                    
+                {
+                    result = true;
+                }
+            }
+            else if (allowNonRecordEdit == false && allowRecordEdit == true)
+            {
+                // can only edit record properties
+                if (isRecordMetadata(property) == true)
+                {
+                    result = true;
+                }            
+            }
+            // otherwise we can't edit any properties so just return the empty set
+        }
+        return result;
+    }
+    
+    private boolean isRecordMetadata(QName property)
+    {
+        boolean result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());
+        
+        if (result == false && ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()) == false)
+        {
+            PropertyDefinition def = dictionaryService.getProperty(property);
+            if (def != null)
+            {
+                ClassDefinition parent = def.getContainerClass();
+                if (parent != null && parent.isAspect() == true)
+                {
+                    result = getRecordMetaDataAspects().contains(parent.getName());
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Determines whether the property should always be allowed to be edited or not.
+     * 
+     * @param property
+     * @return
+     */
+    private boolean alwaysEditProperty(QName property)
+    {
+        return (ArrayUtils.contains(ALWAYS_EDIT_URIS, property.getNamespaceURI()) ||
+                ArrayUtils.contains(ALWAYS_EDIT_PROPERTIES, property) ||
+                isProtectedProperty(property));
+    }
+    
+    /**
+     * Helper method to determine whether a property is protected at a dictionary definition
+     * level.
+     * 
+     * @param property  property qualified name
+     * @return booelan  true if protected, false otherwise
+     */
+    private boolean isProtectedProperty(QName property)
+    {
+        boolean result = false;        
+        PropertyDefinition def = dictionaryService.getProperty(property);
+        if (def != null)
+        {
+            result = def.isProtected();
+        }        
+        return result;
     }
 }

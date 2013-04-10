@@ -7,16 +7,23 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -38,6 +45,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
 	private ContentService contentService;
 	private RecordsManagementActionService actionService;
 	private ModelSecurityService modelSecurityService;
+	private FilePlanRoleService filePlanRoleService;
+	private CapabilityService capabilityService;
 	
     /** test values */
     public static final String DEFAULT_DISPOSITION_AUTHORITY = "disposition authority";
@@ -54,6 +63,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
 		contentService = (ContentService)applicationContext.getBean("ContentService");
 		actionService = (RecordsManagementActionService)applicationContext.getBean("RecordsManagementActionService");
 		modelSecurityService = (ModelSecurityService)applicationContext.getBean("ModelSecurityService");
+		filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
+		capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
 	}
 	
     /**
@@ -230,5 +241,21 @@ public class CommonRMTestUtils implements RecordsManagementModel
             }
             
         }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    public Role createRole(NodeRef filePlan, String roleName, String ... capabilityNames)
+    {
+        Set<Capability> capabilities = new HashSet<Capability>(capabilityNames.length);
+        for (String name : capabilityNames)
+        {
+            Capability capability = capabilityService.getCapability(name);
+            if (capability == null)
+            {
+                throw new AlfrescoRuntimeException("capability " + name + " not found.");
+            }
+            capabilities.add(capability);
+        }
+        
+        return filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
     }
 }

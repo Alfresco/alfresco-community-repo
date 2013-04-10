@@ -30,6 +30,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -59,7 +60,7 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
     */
    @Override
-   protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+   protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
    {
       if (recordService.isRecord(actionedUponNodeRef) == true)
       {
@@ -75,8 +76,16 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
                declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
                this.nodeService.addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
 
-               // remove all owner related rights 
-               this.ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
+               AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+               {
+                  @Override
+                  public Void doWork() throws Exception
+                  {
+                      // remove all owner related rights 
+                      ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
+                      return null;
+                   }
+                });
             }
             else
             {

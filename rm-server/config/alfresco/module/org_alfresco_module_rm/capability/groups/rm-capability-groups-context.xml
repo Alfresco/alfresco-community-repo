@@ -58,12 +58,6 @@
       <property name="index" value="80"/>
    </bean>
 
-   <bean id="metadataControlGroup"
-      parent="groupBase">
-      <property name="id" value="metadataControl"/>
-      <property name="index" value="90"/>
-   </bean>
-
    <bean id="referencesGroup"
       parent="groupBase">
       <property name="id" value="references"/>

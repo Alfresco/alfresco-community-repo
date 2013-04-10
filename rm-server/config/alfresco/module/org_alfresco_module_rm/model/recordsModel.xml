@@ -255,7 +255,6 @@
             <aspect>rma:recordComponentIdentifier</aspect>
             <aspect>rma:commonRecordDetails</aspect>
             <aspect>rma:filePlanComponent</aspect>
-        <!-- <aspect>rma:vitalRecordDefinition</aspect> -->
          </mandatory-aspects>
 
       </type>
@@ -590,6 +589,7 @@
             <property name="rma:rootNodeRef">
                <title>Root node reference</title>
                <type>d:noderef</type>
+               <protected>true</protected>
             </property>
        	</properties>
       </aspect>
@@ -659,6 +659,7 @@
             <property name="rma:identifier">
                <title>Record Component Identifier</title>
                <type>d:text</type>
+               <protected>true</protected>
                <mandatory>true</mandatory>
                <index enabled="true">
 		          <atomic>true</atomic>
@@ -837,9 +838,11 @@
       	<properties>
       		<property name="rma:readers">
       			<type>d:any</type>
+      			<protected>true</protected>
       		</property>
       		<property name="rma:writers">
       			<type>d:any</type>
+      			<protected>true</protected>
       		</property>
       	</properties>
       </aspect>
@@ -857,6 +860,7 @@
             <property name="rma:notificationIssued">
                <title>Indicates whether a notification that this record is due for review has been issued</title>
                <type>d:boolean</type>
+      		   <protected>true</protected>
                <mandatory>false</mandatory>
                <default>false</default>
             </property>
@@ -1025,9 +1029,11 @@
          <properties>
             <property name="rma:recordSearchHasDispositionSchedule">
                <type>d:boolean</type>
+      			<protected>true</protected>
             </property>
             <property name="rma:recordSearchDispositionActionName">
                <type>d:text</type>
+      			<protected>true</protected>
                <index enabled="true">
 		          <atomic>true</atomic>
 		          <stored>false</stored>
@@ -1036,37 +1042,43 @@
             </property>
             <property name="rma:recordSearchDispositionActionAsOf">
                <type>d:date</type>
+      			<protected>true</protected>
             </property>
             <property name="rma:recordSearchDispositionPeriod">
-               <type>d:text</type>
-               <index enabled="true">
+               	<type>d:text</type>
+      			<protected>true</protected>
+               	<index enabled="true">
 		          <atomic>true</atomic>
 		          <stored>false</stored>
 		          <tokenised>false</tokenised>
-		       </index>
+		       	</index>
             </property>
             <property name="rma:recordSearchDispositionPeriodExpression">
-               <type>d:text</type>
-               <index enabled="true">
+               	<type>d:text</type>
+      			<protected>true</protected>
+               	<index enabled="true">
 		          <atomic>true</atomic>
 		          <stored>false</stored>
 		          <tokenised>false</tokenised>
-		       </index>
+		       	</index>
             </property>
             <property name="rma:recordSearchDispositionEventsEligible">
-               <type>d:boolean</type>
+               	<type>d:boolean</type>
+      			<protected>true</protected>
             </property>
             <property name="rma:recordSearchDispositionEvents">
-               <type>d:text</type>
-               <multiple>true</multiple>
-               <index enabled="true">
+               	<type>d:text</type>
+      			<protected>true</protected>
+               	<multiple>true</multiple>
+               	<index enabled="true">
 		          <atomic>true</atomic>
 		          <stored>false</stored>
 		          <tokenised>false</tokenised>
-		       </index>
+		       	</index>
             </property>
             <property name="rma:recordSearchDispositionAuthority">
-               <type>d:text</type>
+                <type>d:text</type>
+      			<protected>true</protected>
                 <index enabled="true">
                     <atomic>true</atomic>
                     <stored>false</stored>
@@ -1075,12 +1087,15 @@
             </property>
             <property name="rma:recordSearchDispositionInstructions">
                <type>d:text</type>
+      			<protected>true</protected>
             </property>
             <property name="rma:recordSearchHoldReason">
                <type>d:text</type>
+      			<protected>true</protected>
             </property>
             <property name="rma:recordSearchVitalRecordReviewPeriod">
                <type>d:text</type>
+      			<protected>true</protected>
                <index enabled="true">
 		          <atomic>true</atomic>
 		          <stored>false</stored>
@@ -1089,6 +1104,7 @@
             </property>
             <property name="rma:recordSearchVitalRecordReviewPeriodExpression">
                <type>d:text</type>
+      			<protected>true</protected>
                <index enabled="true">
 		          <atomic>true</atomic>
 		          <stored>false</stored>
@@ -1147,13 +1163,16 @@
          <title>The originating details of a record</title>
          <properties>
             <property name="rma:recordOriginatingUserId">
-               <type>d:text</type>
+               	<type>d:text</type>
+      			<protected>true</protected>
             </property>
             <property name="rma:recordOriginatingCreationDate">
-               <type>d:date</type>
+               	<type>d:date</type>
+      			<protected>true</protected>
             </property>
             <property name="rma:recordOriginatingLocation">
-               <type>d:any</type>
+               	<type>d:any</type>
+      			<protected>true</protected>
             </property>
          </properties>
       </aspect>
@@ -1163,13 +1182,16 @@
          <title>The rejection details of a record</title>
          <properties>
             <property name="rma:recordRejectionUserId">
-               <type>d:text</type>
+               	<type>d:text</type>
+      			<protected>true</protected>
             </property>
             <property name="rma:recordRejectionDate">
-               <type>d:date</type>
+               	<type>d:date</type>
+      			<protected>true</protected>
             </property>
             <property name="rma:recordRejectionReason">
-               <type>d:text</type>
+               	<type>d:text</type>
+      			<protected>true</protected>
             </property>
          </properties>
       </aspect>

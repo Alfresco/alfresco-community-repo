@@ -481,7 +481,7 @@ public class HiddenAspect
      */
     public void hideNode(NodeRef nodeRef, int clientVisibilityMask)
     {
-        addHiddenAspect(nodeRef, clientVisibilityMask, true);
+        addHiddenAspect(nodeRef, clientVisibilityMask, false);
         addIndexControlAspect(nodeRef);
     }
     

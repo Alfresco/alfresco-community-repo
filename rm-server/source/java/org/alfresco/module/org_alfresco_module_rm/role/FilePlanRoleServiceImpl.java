@@ -194,7 +194,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                     // set the capabilities
                     permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
-                    permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.EDIT_RECORD_METADATA, true);
+                    permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.EDIT_NON_RECORD_METADATA, true);
                     
                     // Create the unfiled record container
                     return filePlanService.createUnfiledContainer(rmRootNode);

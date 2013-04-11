@@ -39,4 +39,7 @@ public interface RMWorkflowModel
 
     // Requested Information
     public static QName RM_REQUESTED_INFORMATION = QName.createQName(RM_WORKFLOW_URI, "requestedInformation");
+
+    // Rule creator
+    public static QName RM_RULE_CREATOR = QName.createQName(RM_WORKFLOW_URI, "ruleCreator");
 }

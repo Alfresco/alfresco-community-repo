@@ -48,6 +48,7 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     /** Parameter names */
     public static final String PARAM_REQUESTED_INFO = "requestedInfo";
     public static final String PARAM_ASSIGNEES = "assignees";
+    public static final String PARAM_RULE_CREATOR = "ruleCreator";
 
     /** Action name */
     public static final String NAME = "requestInfo";
@@ -78,6 +79,7 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
         parameters.put(WorkflowModel.ASSOC_PACKAGE, getWorkflowPackage(action, actionedUponNodeRef));
         parameters.put(RMWorkflowModel.RM_MIXED_ASSIGNEES, getAssignees(action));
         parameters.put(RMWorkflowModel.RM_REQUESTED_INFORMATION, getRequestedInformation(action));
+        parameters.put(RMWorkflowModel.RM_RULE_CREATOR, getRuleCreator(action));
 
         workflowService.startWorkflow(workflowDefinitionId, parameters);
     }
@@ -90,6 +92,7 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_REQUESTED_INFO, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_REQUESTED_INFO)));
         paramList.add(new ParameterDefinitionImpl(PARAM_ASSIGNEES, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_ASSIGNEES)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_RULE_CREATOR, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_RULE_CREATOR)));
     }
 
     /**
@@ -130,11 +133,22 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
      * Helper method for getting the requested information from the action
      *
      * @param action The request info action
-     * @return  Return the requested information
+     * @return Returns the requested information
      */
     private Serializable getRequestedInformation(Action action)
     {
         return action.getParameterValue(PARAM_REQUESTED_INFO);
+    }
+
+    /**
+     * Helper method for getting the rule creator
+     *
+     * @param action The request info action
+     * @return Returns the rule creator
+     */
+    private Serializable getRuleCreator(Action action)
+    {
+        return action.getParameterValue(PARAM_RULE_CREATOR);
     }
 
 }

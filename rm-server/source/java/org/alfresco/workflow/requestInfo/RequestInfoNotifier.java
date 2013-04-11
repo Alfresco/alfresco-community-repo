@@ -54,6 +54,9 @@ public class RequestInfoNotifier implements TaskListener
         String initiator = RequestInfoUtils.getInitiator(delegateTask);
         delegateTask.setAssignee(initiator);
 
+        // FIXME: Is sending an email required?
+        // At the moment we do not use email templates
+        /*
         // Create the context and send an email to the initiator
         NotificationContext notificationContext = new NotificationContext();
         notificationContext.setAsyncNotification(true);
@@ -64,6 +67,7 @@ public class RequestInfoNotifier implements TaskListener
 
         // Send the email
         RequestInfoUtils.getServiceRegistry().getNotificationService().sendNotification(EMailNotificationProvider.NAME, notificationContext);
+        */
     }
 
     /**

@@ -97,22 +97,36 @@ public class RequestInfoUtils
      * Helper method to extract the initiator from the task
      *
      * @param delegateTask  The delegate task
-     * @return Returns the initiator of the workflow. If the initiator does not exist the admin user name will be returned.
+     * @return Returns the initiator of the workflow. First it will be checked if
+     * a rule creator exists, which means the the workflow was started via rule.
+     * In this case the creator of the rule will receive the review task.
+     * If a rule creator cannot be found the code will try to find the initiator
+     * of the workflow. If also this is not the case the admin user will be returned.
      */
     public static String getInitiator(DelegateTask delegateTask)
     {
         ParameterCheck.mandatory("delegateTask", delegateTask);
 
         String userName = null;
-        ActivitiScriptNode initiator = (ActivitiScriptNode) delegateTask.getVariable("initiator");
-        if (initiator.exists())
+
+        String ruleCreator = (String) delegateTask.getVariable("rmwf_ruleCreator");
+        if (StringUtils.isBlank(ruleCreator) == true)
         {
-            userName = (String) initiator.getProperties().get(ContentModel.PROP_USERNAME.toString());
+            ActivitiScriptNode initiator = (ActivitiScriptNode) delegateTask.getVariable("initiator");
+            if (initiator.exists())
+            {
+                userName = (String) initiator.getProperties().get(ContentModel.PROP_USERNAME.toString());
+            }
+            else
+            {
+                userName = AuthenticationUtil.getAdminUserName();
+            }
         }
         else
         {
-            userName = AuthenticationUtil.getAdminUserName();
+            userName = ruleCreator;
         }
+
         return userName;
     }
 

@@ -36,6 +36,8 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.workflow.RMWorkflowModel;
 import org.apache.axis.utils.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Request info action for starting a workflow to request more information for an undeclared record
@@ -45,6 +47,9 @@ import org.apache.axis.utils.StringUtils;
  */
 public class RequestInfoAction extends RMActionExecuterAbstractBase
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(RequestInfoAction.class);
+
     /** Parameter names */
     public static final String PARAM_REQUESTED_INFO = "requestedInfo";
     public static final String PARAM_ASSIGNEES = "assignees";
@@ -73,15 +78,22 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
-        Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
+        if (recordService.isRecord(actionedUponNodeRef) == true)
+        {
+            String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
+            Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
 
-        parameters.put(WorkflowModel.ASSOC_PACKAGE, getWorkflowPackage(action, actionedUponNodeRef));
-        parameters.put(RMWorkflowModel.RM_MIXED_ASSIGNEES, getAssignees(action));
-        parameters.put(RMWorkflowModel.RM_REQUESTED_INFORMATION, getRequestedInformation(action));
-        parameters.put(RMWorkflowModel.RM_RULE_CREATOR, getRuleCreator(action));
+            parameters.put(WorkflowModel.ASSOC_PACKAGE, getWorkflowPackage(action, actionedUponNodeRef));
+            parameters.put(RMWorkflowModel.RM_MIXED_ASSIGNEES, getAssignees(action));
+            parameters.put(RMWorkflowModel.RM_REQUESTED_INFORMATION, getRequestedInformation(action));
+            parameters.put(RMWorkflowModel.RM_RULE_CREATOR, getRuleCreator(action));
 
-        workflowService.startWorkflow(workflowDefinitionId, parameters);
+            workflowService.startWorkflow(workflowDefinitionId, parameters);
+        }
+        else
+        {
+            logger.info("The node '" + actionedUponNodeRef.toString() + "' is not a record so a workflow will not be started for it." );
+        }
     }
 
     /**

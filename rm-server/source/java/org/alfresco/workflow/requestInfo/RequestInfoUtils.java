@@ -42,8 +42,6 @@ import org.apache.commons.lang.StringUtils;
  */
 public class RequestInfoUtils
 {
-    //FIXME: Is there a better way to call services?
-
     /**
      * Helper method to get the service registry in order to call services
      *

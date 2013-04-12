@@ -20,9 +20,7 @@ package org.alfresco.workflow.requestInfo;
 
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
-import org.alfresco.repo.notification.EMailNotificationProvider;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.notification.NotificationContext;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -32,7 +30,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * get a task to verify the information. The initiator will also receive an email.
  *
  * @author Tuna Aksoy
- * @since v2.1
+ * @since 2.1
  */
 public class RequestInfoNotifier implements TaskListener
 {

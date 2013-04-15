@@ -24,8 +24,6 @@ import org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.StringUtils;
 
 /**
  * Records management action condition evaluator abstract base implementation.
@@ -77,6 +75,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     public void setBeanName(String name)
     {
         this.name = name;
+        super.setBeanName(name);
     }
     
     /**
@@ -92,31 +91,15 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
      */
     public String getLabel()
     {
-        String label = I18NUtil.getMessage(this.getTitleKey());
-        
-        if (label == null)
-        {
-            // default to the name of the action with first letter capitalised
-            label = StringUtils.capitalize(this.name);
-        }
-        
-        return label;
+        return getActionConditionDefintion().getTitle();
     }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getDescription()
      */
     public String getDescription()
-    {
-        String desc = I18NUtil.getMessage(this.getDescriptionKey());
-        
-        if (desc == null)
-        {
-            // default to the name of the action with first letter capitalised
-            desc = StringUtils.capitalize(this.name);
-        }
-        
-        return desc;
+    {        
+        return getActionConditionDefintion().getDescription();
     }
     
     /**

@@ -627,6 +627,8 @@
         <property name="recordService" ref="recordService"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="recordsManagementService" ref="recordsManagementService"/>
+        <property name="filePlanService" ref="filePlanService" />
+        <property name="filePlanRoleService" ref="filePlanRoleService" />
     </bean>
 
     <bean id="ExtendedSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">

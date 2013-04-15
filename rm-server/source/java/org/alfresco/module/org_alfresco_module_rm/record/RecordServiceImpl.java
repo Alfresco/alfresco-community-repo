@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -42,6 +43,8 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomM
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -59,6 +62,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -735,8 +739,69 @@ public class RecordServiceImpl implements RecordService,
             logger.debug("Checking whether property " + property.toString() + " is editable for user " + AuthenticationUtil.getRunAsUser());
         }
         
+        // DEBUG ...
+        FilePlanService fps = (FilePlanService)applicationContext.getBean("filePlanService");
+        FilePlanRoleService fprs = (FilePlanRoleService)applicationContext.getBean("filePlanRoleService");
+        PermissionService ps = (PermissionService)applicationContext.getBean("permissionService");
+        
+        NodeRef filePlan = fps.getFilePlan(record); 
+        Set<Role> roles = fprs.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug(" ... users roles");
+        }
+        
+        for (Role role : roles)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("     ... user has role " + role.getName() + " with capabilities ");
+            }
+            
+            for (Capability cap : role.getCapabilities())
+            {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("         ... " + cap.getName());
+                }
+            }       
+        }
+        
+        if (logger.isDebugEnabled() == true)
+        {
+            logger.debug(" ... user has the following set permissions on the file plan");
+        }
+        Set<AccessPermission> perms = ps.getAllSetPermissions(filePlan);
+        for (AccessPermission perm : perms)
+        {
+            if (logger.isDebugEnabled() == true && 
+                (perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA) ||
+                 perm.getPermission().contains(RMPermissionModel.EDIT_RECORD_METADATA)))
+            {
+                logger.debug("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
+            }           
+        }
+        
+        if (ps.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED))
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug(" ... user has the edit non record metadata permission on the file plan");
+            }
+        }
+        
+        // END DEBUG ...
+        
         boolean result = alwaysEditProperty(property);
-        if (result == false)
+        if (result == true)
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug(" ... property marked as always editable.");
+            }
+        }
+        else
         {
             boolean allowRecordEdit = false;
             boolean allowNonRecordEdit = false;
@@ -747,17 +812,32 @@ public class RecordServiceImpl implements RecordService,
             
             if (AccessStatus.ALLOWED.equals(accessNonRecord) == true)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug(" ... user has edit nonrecord metadata capability");
+                }
+                
                 allowNonRecordEdit = true;
             }
             
             if (AccessStatus.ALLOWED.equals(accessRecord) == true ||
                 AccessStatus.ALLOWED.equals(accessDeclaredRecord) == true)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug(" ... user has edit record or declared metadata capability");
+                }
+                
                 allowRecordEdit = true;
             }
             
             if (allowNonRecordEdit == true && allowRecordEdit == true)
             {
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug(" ... so all properties can be edited.");
+                }
+                
                 result = true;
             }
             else if (allowNonRecordEdit == true && allowRecordEdit == false)
@@ -765,7 +845,19 @@ public class RecordServiceImpl implements RecordService,
                 // can only edit non record properties
                 if (isRecordMetadata(property) == false)                    
                 {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug(" ... property is not considered record metadata so editable.");
+                    }
+                    
                     result = true;
+                }
+                else
+                {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug(" ... property is considered record metadata so not editable.");
+                    }
                 }
             }
             else if (allowNonRecordEdit == false && allowRecordEdit == true)
@@ -773,8 +865,20 @@ public class RecordServiceImpl implements RecordService,
                 // can only edit record properties
                 if (isRecordMetadata(property) == true)
                 {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug(" ... property is considered record metadata so editable.");
+                    }
+                    
                     result = true;
-                }            
+                }  
+                else
+                {
+                    if (logger.isDebugEnabled() == true)
+                    {
+                        logger.debug(" ... property is not considered record metadata so not editable.");
+                    }
+                }
             }
             // otherwise we can't edit any properties so just return the empty set
         }

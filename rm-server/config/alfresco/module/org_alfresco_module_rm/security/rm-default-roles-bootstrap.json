@@ -1,5 +1,24 @@
 [
    {
+      "name" : "ExtendedReaders",
+      "displayLabel" : "In-Place Readers",
+      "isAdmin" : false,
+      "capabilities" :
+      [
+         "ViewRecords"
+      ]
+   },
+   {
+      "name" : "ExtendedWriters",
+      "displayLabel" : "In-Place Writers",
+      "isAdmin" : false,
+      "capabilities" :
+      [
+         "ViewRecords",
+         "EditNonRecordMetadata"
+      ]
+   },
+   {
       "name" : "User",
       "displayLabel" : "Records Management User",
       "isAdmin" : false,

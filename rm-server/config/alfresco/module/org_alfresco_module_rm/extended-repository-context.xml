@@ -107,8 +107,8 @@
          <list>
             <ref bean="ownerDynamicAuthority" />
             <ref bean="lockOwnerDynamicAuthority" />
-            <ref bean="extendedReaderDynamicAuthority" />
             <ref bean="extendedWriterDynamicAuthority" />
+            <ref bean="extendedReaderDynamicAuthority" />
          </list>
       </property>
    </bean>

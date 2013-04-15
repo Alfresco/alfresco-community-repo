@@ -37,6 +37,8 @@ public interface FilePlanRoleService
     public static final String ROLE_SECURITY_OFFICER    = "SecurityOfficer";
     public static final String ROLE_RECORDS_MANAGER     = "RecordsManager";
     public static final String ROLE_ADMIN               = "Administrator";
+    public static final String ROLE_EXTENDED_READERS    = "ExtendedReaders";
+    public static final String ROLE_EXTENDED_WRITERS    = "ExtendedWriters";
     
     /**
      * Returns the name of the container group for all roles of a specified file

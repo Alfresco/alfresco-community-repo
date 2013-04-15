@@ -49,7 +49,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * The filter also ensures that any custom properties defined for the records
  * management type are provided as part of the Form.
  * </p>
- * 
+ *
  * @author Gavin Cornwell
  */
 public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter<TypeDefinition> implements RecordsManagementModel
@@ -66,10 +66,10 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     protected static final FieldGroup TITLE_FIELD_GROUP = new FieldGroup(TITLE_FIELD_GROUP_ID, null, false, false, null);
     protected static final FieldGroup DESC_FIELD_GROUP = new FieldGroup(DESC_FIELD_GROUP_ID, null, false, false, null);
     protected static final FieldGroup OTHER_FIELD_GROUP = new FieldGroup(OTHER_FIELD_GROUP_ID, null, false, false, null);
-    
+
     /** Identifier service */
     protected IdentifierService identifierService;
-    
+
     /**
      * @param identifierService identifier service
      */
@@ -77,7 +77,7 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     {
         this.identifierService = identifierService;
     }
-    
+
     /*
      * @see
      * org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object,
@@ -87,12 +87,12 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     public void afterGenerate(TypeDefinition type, List<String> fields, List<String> forcedFields, Form form,
                 Map<String, Object> context)
     {
-        QName typeName = type.getName();        
+        QName typeName = type.getName();
         if (rmAdminService.isCustomisable(typeName) == true)
         {
-        	addCustomRMProperties(typeName, form);        	       	
+        	addCustomRMProperties(typeName, form);
         }
-        
+
         // What about any mandatory aspects?
         Set<QName> aspects = type.getDefaultAspectNames();
         for (QName aspect : aspects)
@@ -107,7 +107,7 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     /**
      * Adds a property definition for each of the custom properties for the
      * given RM type to the given form.
-     * 
+     *
      * @param rmTypeCustomAspect Enum representing the RM type to add custom
      *            properties for
      * @param form The form to add the properties to
@@ -116,20 +116,20 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     {
         ParameterCheck.mandatory("customisableType", customisableType);
         ParameterCheck.mandatory("form", form);
-                
+
         Map<QName, PropertyDefinition> customProps = rmAdminService.getCustomPropertyDefinitions(customisableType);
-        
+
         if (customProps != null)
         {
 	        if (logger.isDebugEnabled() == true)
 	        {
 	            logger.debug("Found " + customProps.size() + " custom properties for customisable type " + customisableType);
 	        }
-	
+
 	        // setup field definition for each custom property
 	        Collection<PropertyDefinition> properties = customProps.values();
 	        FieldGroup group = new FieldGroup(CUSTOM_RM_FIELD_GROUP_ID, null, false, false, null);
-	        List<Field> fields = FieldUtils.makePropertyFields(properties, group, namespaceService);
+	        List<Field> fields = FieldUtils.makePropertyFields(properties, group, namespaceService, dictionaryService);
 	        form.addFields(fields);
         }
     }
@@ -140,5 +140,5 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     public void afterPersist(TypeDefinition item, FormData data, final NodeRef nodeRef)
     {
     }
-    
+
 }

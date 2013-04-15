@@ -26,6 +26,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * This class provides the implementation for the customrefs.get webscript.
- * 
+ *
  * @author Neil McErlean
  */
 public class CustomRefsGet extends AbstractRmWebScript
@@ -56,22 +57,28 @@ public class CustomRefsGet extends AbstractRmWebScript
     private static final String CUSTOM_REFS_TO = "customRefsTo";
     private static final String NODE_NAME = "nodeName";
     private static final String NODE_TITLE = "nodeTitle";
-    
+
     private static Log logger = LogFactory.getLog(CustomRefsGet.class);
     private RecordsManagementAdminService rmAdminService;
-    
+    private DictionaryService dictionaryService;
+
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
         this.rmAdminService = rmAdminService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> ftlModel = new HashMap<String, Object>();
-        
+
         NodeRef node = parseRequestForNodeRef(req);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Getting custom reference instances for " + node);
@@ -79,27 +86,27 @@ public class CustomRefsGet extends AbstractRmWebScript
 
         // All the references that come 'out' from this node.
         List<Map<String, String>> listOfOutwardReferenceData = new ArrayList<Map<String, String>>();
-        
+
         List<AssociationRef> assocsFromThisNode = this.rmAdminService.getCustomReferencesFrom(node);
         addBidirectionalReferenceData(listOfOutwardReferenceData, assocsFromThisNode);
-        
+
         List<ChildAssociationRef> childAssocs = this.rmAdminService.getCustomChildReferences(node);
         addParentChildReferenceData(listOfOutwardReferenceData, childAssocs);
-        
+
         // All the references that come 'in' to this node.
         List<Map<String, String>> listOfInwardReferenceData = new ArrayList<Map<String, String>>();
-        
+
         List<AssociationRef> toAssocs = this.rmAdminService.getCustomReferencesTo(node);
         addBidirectionalReferenceData(listOfInwardReferenceData, toAssocs);
-        
+
         List<ChildAssociationRef> parentAssocs = this.rmAdminService.getCustomParentReferences(node);
         addParentChildReferenceData(listOfInwardReferenceData, parentAssocs);
-        
+
     	if (logger.isDebugEnabled())
     	{
     		logger.debug("Retrieved custom reference instances: " + assocsFromThisNode);
     	}
-    	
+
         ftlModel.put(NODE_NAME, nodeService.getProperty(node, ContentModel.PROP_NAME));
         ftlModel.put(NODE_TITLE, nodeService.getProperty(node, ContentModel.PROP_TITLE));
         ftlModel.put(CUSTOM_REFS_FROM, listOfOutwardReferenceData);
@@ -112,7 +119,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      * This method goes through the associationRefs specified and constructs a Map<String, String>
      * for each assRef. FTL-relevant data are added to that map. The associationRefs must all be
      * parent/child references.
-     * 
+     *
      * @param listOfReferenceData
      * @param assocs
      */
@@ -124,23 +131,23 @@ public class CustomRefsGet extends AbstractRmWebScript
     		Map<String, String> data = new HashMap<String, String>();
 
     		QName typeQName = childAssRef.getTypeQName();
-    		
+
     		data.put(CHILD_REF, childAssRef.getChildRef().toString());
     		data.put(PARENT_REF, childAssRef.getParentRef().toString());
 
             AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
-            
+
             if (assDef != null)
             {
-                String compoundTitle = assDef.getTitle();
-    
+                String compoundTitle = assDef.getTitle(dictionaryService);
+
                 data.put(REF_ID, typeQName.getLocalName());
-    
+
                 String[] sourceAndTarget = rmAdminService.splitSourceTargetId(compoundTitle);
                 data.put(SOURCE, sourceAndTarget[0]);
                 data.put(TARGET, sourceAndTarget[1]);
                 data.put(REFERENCE_TYPE, CustomReferenceType.PARENT_CHILD.toString());
-                
+
                 listOfReferenceData.add(data);
             }
     	}
@@ -150,7 +157,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      * This method goes through the associationRefs specified and constructs a Map<String, String>
      * for each assRef. FTL-relevant data are added to that map. The associationRefs must all be
      * bidirectional references.
-     * 
+     *
      * @param listOfReferenceData
      * @param assocs
      */
@@ -163,15 +170,15 @@ public class CustomRefsGet extends AbstractRmWebScript
 
     		QName typeQName = assRef.getTypeQName();
             AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
-            
+
             if (assDef != null)
             {
-                data.put(LABEL, assDef.getTitle());
+                data.put(LABEL, assDef.getTitle(dictionaryService));
                 data.put(REF_ID, typeQName.getLocalName());
                 data.put(REFERENCE_TYPE, CustomReferenceType.BIDIRECTIONAL.toString());
                 data.put(SOURCE_REF, assRef.getSourceRef().toString());
                 data.put(TARGET_REF, assRef.getTargetRef().toString());
-                
+
                 listOfReferenceData.add(data);
             }
         }

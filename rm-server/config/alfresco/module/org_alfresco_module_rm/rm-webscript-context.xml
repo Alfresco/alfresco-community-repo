@@ -68,6 +68,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet"
       parent="webscript">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <!-- REST impl for PUT Custom Reference Definitions -->
@@ -89,6 +90,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefsGet"
       parent="rmBaseWebscript">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <!-- REST impl for POST Custom Reference Instance -->
@@ -155,6 +157,7 @@
       parent="webscript">
       <property name="dispositionService" ref="DispositionService" />
       <property name="namespaceService" ref="NamespaceService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <!--  REST impl for GET Records MetaData aspects -->
@@ -514,7 +517,7 @@
  	<bean id="webscript.org.alfresco.repository.rule.rm-actiondefinitions.get"
  	      class="org.alfresco.repo.web.scripts.rule.RmActionDefinitionsGet"
  	   	  parent="webscript">
- 	   <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>     	  
+ 	   <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
  	</bean>
 
     <!-- REST impl for GET Action Condition Defitions for RM -->
@@ -522,7 +525,7 @@
           class="org.alfresco.repo.web.scripts.rule.RmActionConditionDefinitionsGet"
           parent="webscript">
  	   <property name="actionService" ref="ActionService"/>
- 	   <property name="recordsManagementActionService" ref="RecordsManagementActionService"/> 
+ 	   <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
  	</bean>
 
    <!-- REST impl for GET Class Definitions for RM/DM -->

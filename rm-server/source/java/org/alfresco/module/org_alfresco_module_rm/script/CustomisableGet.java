@@ -39,7 +39,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * This class provides the implementation for the customisable.get webscript.
- * 
+ *
  * @author Roy Wetherall
  */
 public class CustomisableGet extends DeclarativeWebScript
@@ -47,16 +47,16 @@ public class CustomisableGet extends DeclarativeWebScript
 	/** Logger */
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(CustomisableGet.class);
-    
+
     /** Records management admin service */
     private RecordsManagementAdminService rmAdminService;
-    
+
     /** Dictionary service */
     private DictionaryService dictionaryService;
-    
+
     /** Namespace service */
     private NamespaceService namespaceService;
-    
+
     /**
      * @param rmAdminService	records management admin service
      */
@@ -64,11 +64,11 @@ public class CustomisableGet extends DeclarativeWebScript
     {
         this.rmAdminService = rmAdminService;
     }
-    
+
     /**
      * @param namespaceService	namespace service
      */
-    public void setNamespaceService(NamespaceService namespaceService) 
+    public void setNamespaceService(NamespaceService namespaceService)
     {
 		this.namespaceService = namespaceService;
 	}
@@ -76,7 +76,7 @@ public class CustomisableGet extends DeclarativeWebScript
     /**
      * @param dictionaryService dictionary service
      */
-    public void setDictionaryService(DictionaryService dictionaryService) 
+    public void setDictionaryService(DictionaryService dictionaryService)
     {
 		this.dictionaryService = dictionaryService;
 	}
@@ -87,7 +87,7 @@ public class CustomisableGet extends DeclarativeWebScript
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         Set<QName> qnames = rmAdminService.getCustomisable();
         ArrayList<Item> items = new ArrayList<Item>(qnames.size());
         for (QName qname : qnames)
@@ -96,17 +96,17 @@ public class CustomisableGet extends DeclarativeWebScript
             if (definition != null)
             {
                 String name = qname.toPrefixString(namespaceService);
-                String title = definition.getTitle();
+                String title = definition.getTitle(dictionaryService);
                 if (title == null || title.length() == 0)
                 {
                     title = qname.getLocalName();
                 }
                 boolean isAspect = definition.isAspect();
-                
+
                 items.add(new Item(name, isAspect, title));
             }
         }
-    	
+
         // Sort the customisable types and aspects by title
         Collections.sort(items, new Comparator<Item>()
         {
@@ -115,11 +115,11 @@ public class CustomisableGet extends DeclarativeWebScript
             {
                 return o1.title.compareToIgnoreCase(o2.title);
             }});
-        
-        model.put("items", items);        
+
+        model.put("items", items);
         return model;
     }
-    
+
     /**
      * Model items
      */
@@ -128,36 +128,36 @@ public class CustomisableGet extends DeclarativeWebScript
         private String name;
         private boolean isAspect;
         private String title;
-        
+
         public Item(String name, boolean isAspect, String title)
         {
             this.name = name;
             this.isAspect = isAspect;
             this.title = title;
         }
-        
+
         public String getName()
         {
             return name;
         }
-        
+
         public boolean getIsAspect()
         {
             return isAspect;
         }
-        
+
         public String getTitle()
         {
             return title;
         }
-        
+
         @Override
         public int hashCode()
         {
             int var_code = (null == name ? 0 : name.hashCode());
             return 31 + var_code;
         }
-        
+
         @Override
         public boolean equals(Object obj)
         {
@@ -170,5 +170,5 @@ public class CustomisableGet extends DeclarativeWebScript
                 return this.name.equals(((Item)obj).name);
             }
         }
-    }    
+    }
 }

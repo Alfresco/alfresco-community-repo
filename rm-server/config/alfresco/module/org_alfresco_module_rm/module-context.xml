@@ -199,6 +199,7 @@
       <property name="recordsManagementService" ref="recordsManagementService"/>
       <property name="recordService" ref="recordService"/>
       <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <bean id="rmNodeFormFilter"

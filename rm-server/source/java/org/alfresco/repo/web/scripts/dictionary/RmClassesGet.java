@@ -196,7 +196,7 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
         }
 
         List<ClassDefinition> classDefinitions = new ArrayList<ClassDefinition>(classdef.values());
-        Collections.sort(classDefinitions, new DictionaryComparators.ClassDefinitionComparator());
+        Collections.sort(classDefinitions, new DictionaryComparators.ClassDefinitionComparator(dictionaryservice));
         model.put(MODEL_PROP_KEY_CLASS_DEFS, classDefinitions);
         model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
         model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());

@@ -48,5 +48,5 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     protected Set<String> getAuthorites(NodeRef nodeRef) 
     {
         return getExtendedSecurityService().getExtendedReaders(nodeRef);
-    }    
+    }
 }

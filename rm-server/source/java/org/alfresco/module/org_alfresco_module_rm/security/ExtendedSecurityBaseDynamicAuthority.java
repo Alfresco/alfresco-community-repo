@@ -51,7 +51,7 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     private NodeService nodeService;
     
     /** Application context */
-    private ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
     
     // NOTE: we get the services directly from the application context in this way to avoid
     //       cyclic relationships and issues when loading the application context

@@ -25,7 +25,9 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.GUID;
 
 /**
  * Records management security service test.
@@ -67,8 +69,25 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         moveRecordFolder = rmService.createRecordFolder(moveRecordCategory, "moveRecordFolder");
     }
     
+    private String createTestUser()
+    {
+        return doTestInTransaction(new Test<String>()
+        {
+            public String run()
+            {   
+                String userName = GUID.generate();
+                createPerson(userName);
+                return userName;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
     public void testExtendedSecurity()
     {
+        final String monkey = createTestUser();
+        final String elephant = createTestUser();
+        final String snake = createTestUser();
+        
         doTestInTransaction(new Test<Void>()
         {
             public Void run()
@@ -79,16 +98,17 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 assertFalse(extendedSecurityService.hasExtendedSecurity(record));
                 
                 assertNull(extendedSecurityService.getExtendedReaders(record));
+                assertNull(extendedSecurityService.getExtendedWriters(record));
                 
                 Set<String> extendedReaders = new HashSet<String>(2);
-                extendedReaders.add("monkey");
-                extendedReaders.add("elephant");
+                extendedReaders.add(monkey);
+                extendedReaders.add(elephant);
                 
                 extendedSecurityService.addExtendedSecurity(record, extendedReaders, null);
                 
                 Map<String, Integer> testMap = new HashMap<String, Integer>(2);
-                testMap.put("monkey", Integer.valueOf(1));
-                testMap.put("elephant", Integer.valueOf(1));
+                testMap.put(monkey, Integer.valueOf(1));
+                testMap.put(elephant, Integer.valueOf(1));
                 
                 checkExtendedReaders(filePlan, testMap);
                 checkExtendedReaders(rmContainer, testMap);
@@ -96,19 +116,19 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 checkExtendedReaders(record, testMap);
                 
                 Set<String> extendedReadersToo = new HashSet<String>(2);
-                extendedReadersToo.add("monkey");
-                extendedReadersToo.add("snake");
+                extendedReadersToo.add(monkey);
+                extendedReadersToo.add(snake);
                 
                 extendedSecurityService.addExtendedSecurity(recordToo, extendedReadersToo, null);
                 
                 Map<String, Integer> testMapToo = new HashMap<String, Integer>(2);
-                testMapToo.put("monkey", Integer.valueOf(1));
-                testMapToo.put("snake", Integer.valueOf(1));
+                testMapToo.put(monkey, Integer.valueOf(1));
+                testMapToo.put(snake, Integer.valueOf(1));
                 
                 Map<String, Integer> testMapThree = new HashMap<String, Integer>(3);
-                testMapThree.put("monkey", Integer.valueOf(2));
-                testMapThree.put("elephant", Integer.valueOf(1));
-                testMapThree.put("snake", Integer.valueOf(1));
+                testMapThree.put(monkey, Integer.valueOf(2));
+                testMapThree.put(elephant, Integer.valueOf(1));
+                testMapThree.put(snake, Integer.valueOf(1));
                 
                 checkExtendedReaders(filePlan, testMapThree);
                 checkExtendedReaders(rmContainer, testMapThree);
@@ -118,14 +138,14 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 // test remove (with no parent inheritance)
                 
                 Set<String> removeMap1 = new HashSet<String>(2);
-                removeMap1.add("elephant");
-                removeMap1.add("monkey");
+                removeMap1.add(elephant);
+                removeMap1.add(monkey);
                 
                 extendedSecurityService.removeExtendedSecurity(rmFolder, removeMap1, null, false);
                 
                 Map<String, Integer> testMapFour = new HashMap<String, Integer>(2);
-                testMapFour.put("monkey", Integer.valueOf(1));
-                testMapFour.put("snake", Integer.valueOf(1));
+                testMapFour.put(monkey, Integer.valueOf(1));
+                testMapFour.put(snake, Integer.valueOf(1));
                 
                 checkExtendedReaders(filePlan, testMapThree);
                 checkExtendedReaders(rmContainer, testMapThree);
@@ -135,13 +155,13 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 // test remove (apply to parents)
                 
                 Set<String> removeMap2 = new HashSet<String>(1);
-                removeMap2.add("snake");
+                removeMap2.add(snake);
                 
                 extendedSecurityService.removeExtendedSecurity(recordToo, removeMap2, null, true);
                 
-                testMapThree.remove("snake");
-                testMapFour.remove("snake");
-                testMapToo.remove("snake");
+                testMapThree.remove(snake);
+                testMapFour.remove(snake);
+                testMapToo.remove(snake);
                 
                 checkExtendedReaders(filePlan, testMapThree);
                 checkExtendedReaders(rmContainer, testMapThree);
@@ -155,14 +175,17 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
     
     public void testMove()
     {
+        final String monkey = createTestUser();
+        final String elephant = createTestUser();
+        
         doTestInTransaction(new Test<Void>()
         {
             Map<String, Integer> testMap = new HashMap<String, Integer>(2);
             
             public Void run() throws Exception
             {
-                testMap.put("monkey", Integer.valueOf(1));
-                testMap.put("elephant", Integer.valueOf(1));                
+                testMap.put(monkey, Integer.valueOf(1));
+                testMap.put(elephant, Integer.valueOf(1));                
                 
                 assertFalse(extendedSecurityService.hasExtendedSecurity(filePlan));
                 assertFalse(extendedSecurityService.hasExtendedSecurity(rmContainer));
@@ -174,8 +197,8 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 assertNull(extendedSecurityService.getExtendedReaders(record));
                 
                 Set<String> extendedReaders = new HashSet<String>(2);
-                extendedReaders.add("monkey");
-                extendedReaders.add("elephant");
+                extendedReaders.add(monkey);
+                extendedReaders.add(elephant);
                 
                 extendedSecurityService.addExtendedSecurity(record, extendedReaders, null);
                 

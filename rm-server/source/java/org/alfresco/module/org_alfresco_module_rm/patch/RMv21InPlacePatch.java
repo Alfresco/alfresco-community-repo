@@ -121,8 +121,8 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
             filePlanPermissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING);
             
             // set capabilities
-            permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
-            permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.EDIT_NON_RECORD_METADATA, true);
+            //permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
+           // permissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.EDIT_NON_RECORD_METADATA, true);
             
             // create unfiled container
             filePlanService.createUnfiledContainer(filePlan);            

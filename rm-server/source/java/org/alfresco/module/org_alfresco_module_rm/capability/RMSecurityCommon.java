@@ -190,8 +190,7 @@ public class RMSecurityCommon
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("\t\tAdmin access");
-                Thread.dumpStack();
+                logger.debug("\t\tAdmin user, access granted.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
             }
             return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_GRANTED);            
         }
@@ -200,8 +199,7 @@ public class RMSecurityCommon
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("\t\tPermission is denied");
-                Thread.dumpStack();
+                logger.debug("\t\tUser does not have read record permission on node, access denied.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
             }
             return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED); 
         }
@@ -210,8 +208,7 @@ public class RMSecurityCommon
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("\t\tPermission is denied");
-                Thread.dumpStack();
+                logger.debug("\t\tUser does not have view records capability permission on node, access denied. (filePlan=" + filePlan.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
             }
             return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED); 
         }

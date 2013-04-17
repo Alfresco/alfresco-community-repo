@@ -86,35 +86,38 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
         {
             NodeRef nextChild = nextAssoc.getChildRef();
 
-            // If the child is a record, then the VitalRecord aspect needs to be applied or updated
-            if (recordService.isRecord(nextChild))
+            if (recordsManagementService.isFilePlanComponent(nextChild) == true)
             {
-                if (parentVri)
+                // If the child is a record, then the VitalRecord aspect needs to be applied or updated
+                if (recordService.isRecord(nextChild))
                 {
-                    VitalRecordDefinition vrDefn = vitalRecordService.getVitalRecordDefinition(nextChild);
-                    Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>();
-                    aspectProps.put(PROP_REVIEW_AS_OF, vrDefn.getNextReviewDate());
-
-                    nodeService.addAspect(nextChild, RecordsManagementModel.ASPECT_VITAL_RECORD, aspectProps);
+                    if (parentVri)
+                    {
+                        VitalRecordDefinition vrDefn = vitalRecordService.getVitalRecordDefinition(nextChild);
+                        Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>();
+                        aspectProps.put(PROP_REVIEW_AS_OF, vrDefn.getNextReviewDate());
+    
+                        nodeService.addAspect(nextChild, RecordsManagementModel.ASPECT_VITAL_RECORD, aspectProps);
+                    }
+                    else
+                    {
+                        nodeService.removeAspect(nextChild, RecordsManagementModel.ASPECT_VITAL_RECORD);
+                    }
                 }
                 else
+                // copy the vitalRecordDefinition properties from the parent to the child
                 {
-                    nodeService.removeAspect(nextChild, RecordsManagementModel.ASPECT_VITAL_RECORD);
+                    Map<QName, Serializable> childProps = nodeService.getProperties(nextChild);
+                    childProps.put(PROP_REVIEW_PERIOD, parentReviewPeriod);
+                    childProps.put(PROP_VITAL_RECORD_INDICATOR, parentVri);
+                    nodeService.setProperties(nextChild, childProps);
                 }
-            }
-            else
-            // copy the vitalRecordDefinition properties from the parent to the child
-            {
-                Map<QName, Serializable> childProps = nodeService.getProperties(nextChild);
-                childProps.put(PROP_REVIEW_PERIOD, parentReviewPeriod);
-                childProps.put(PROP_VITAL_RECORD_INDICATOR, parentVri);
-                nodeService.setProperties(nextChild, childProps);
-            }
-
-            // Recurse down the containment hierarchy to all containers
-            if (recordService.isRecord(nextChild) == false)
-            {
-                this.propagateChangeToChildrenOf(nextChild);
+    
+                // Recurse down the containment hierarchy to all containers
+                if (recordService.isRecord(nextChild) == false)
+                {
+                    this.propagateChangeToChildrenOf(nextChild);
+                }
             }
         }
     }

@@ -761,8 +761,11 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         {
             public Void doWork() throws Exception
             {
-                String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));
-                authorityService.addAuthority(roleAuthority, authorityName);
+                if (getAllAssignedToRole(filePlan, role).contains(authorityName) == false)
+                {
+                    String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));
+                    authorityService.addAuthority(roleAuthority, authorityName);
+                }
                 return null;
 
             }

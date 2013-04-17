@@ -228,8 +228,22 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
             @Override
             public Object execute() throws Throwable
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                 setupTestDataImpl();
+                return null;
+            }
+        });
+        
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                // As system user
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, "rmadmin");
+
                 return null;
             }
         });

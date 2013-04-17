@@ -21,6 +21,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.action;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -64,6 +66,10 @@ public class CreateRecordActionTest extends BaseRMTestCase
         {
             public Void run()
             {
+                // Testing
+                AuthorityDAO authDao = (AuthorityDAO)applicationContext.getBean("authorityDAO");
+                assertTrue(authDao.authorityExists(AuthenticationUtil.getSystemUserName()));
+                
                 assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 

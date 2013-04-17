@@ -77,16 +77,18 @@ task resetDatabase << {
 test {
   dependsOn resetDatabase
 
-  include '**/*Test.class'
-  exclude '**/*SystemTest.class'
+  include '**/*CreateRecordActionTest.class'
+  
+  //include '**/*Test.class'
+  //exclude '**/*SystemTest.class'
   
   // temporarily exclude out of date tests
-  exclude '**/RMCaveatConfigServiceImplTest.class'
-  exclude '**/RMCaveatConfigScriptTest.class'
-  exclude '**/RmRestApiTest.class'
-  exclude '**/RmRestApiTest.class'
-  exclude '**/RoleRestApiTest.class'
-  exclude '**/CustomEMailMappingServiceImplTest.class'
+  //exclude '**/RMCaveatConfigServiceImplTest.class'
+  //exclude '**/RMCaveatConfigScriptTest.class'
+  //exclude '**/RmRestApiTest.class'
+  //exclude '**/RmRestApiTest.class'
+  //exclude '**/RoleRestApiTest.class'
+  //exclude '**/CustomEMailMappingServiceImplTest.class'
 
   testLogging.showStandardStreams = true
 

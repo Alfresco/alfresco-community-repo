@@ -80,7 +80,8 @@ test {
 		dependsOn resetDatabase
 	}
 
-	include '**/*CreateRecordActionTest.class'
+	scanForTestClasses = false
+	include '**/*ActionTestSuite.class'
 
 	testLogging.showStandardStreams = true
 	jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'
@@ -96,20 +97,5 @@ test {
 	beforeTest { descriptor ->
 		logger.lifecycle("Running test: " + descriptor)
 	}
-}
-
-task localTest << {   
-   test
-   {
-	   include '**/*CreateRecordActionTest.class'
-
-	  testLogging.showStandardStreams = true
-
-	  jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'
-
-	  beforeTest { descriptor ->
-		 logger.lifecycle("Running test: " + descriptor)
-	  }
-   }
 }
 

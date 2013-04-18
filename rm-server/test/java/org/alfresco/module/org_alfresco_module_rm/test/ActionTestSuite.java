@@ -22,8 +22,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.action.CreateRecordAction
 import org.alfresco.module.org_alfresco_module_rm.test.action.FileToActionTest;
 import org.alfresco.module.org_alfresco_module_rm.test.action.HideRecordActionTest;
 import org.alfresco.module.org_alfresco_module_rm.test.action.RejectActionTest;
-import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedActionServiceTest;
-import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementActionServiceImplTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -38,8 +36,6 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    RecordsManagementActionServiceImplTest.class,
-    ExtendedActionServiceTest.class,
     CreateRecordActionTest.class,
     HideRecordActionTest.class,
     RejectActionTest.class,

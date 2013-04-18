@@ -18,24 +18,25 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
-import org.alfresco.module.org_alfresco_module_rm.test.capabilities.CompositeCapabilityTest;
-import org.alfresco.module.org_alfresco_module_rm.test.capabilities.DeclarativeCapabilityTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 
 /**
- * RM test suite
- * 
+ * Convenience test suite that runs all the tests.
+ *
  * @author Roy Wetherall
+ * @since 2.1
  */
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    DeclarativeCapabilityTest.class,
-    CompositeCapabilityTest.class
+    ActionTestSuite.class,
+    CapabilitiesTestSuite.class,
+    ServicesTestSuite.class,
+    WebScriptTestSuite.class
 })
-public class CapabilitiesTestSuite
+public class AllTestSuite
 {
 }

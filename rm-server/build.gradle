@@ -81,7 +81,7 @@ test {
 	}
 
 	scanForTestClasses = false
-	include '**/*ActionTestSuite.class'
+	include '**/AllTestSuite.class'
 
 	testLogging.showStandardStreams = true
 	jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'

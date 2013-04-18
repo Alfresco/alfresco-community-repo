@@ -76,7 +76,7 @@ task resetDatabase << {
 
 test {
 
-	if (localBuild == false) {
+	if (localBuild == 'false') {
 		dependsOn resetDatabase
 	}
 
@@ -85,7 +85,7 @@ test {
 	testLogging.showStandardStreams = true
 	jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'
 
-	if (localBuild == false) {
+	if (localBuild == 'false') {
 		// Put systemProperty definition in a doFirst closure, otherwise it's executed before resetDatabase task
 		doFirst {
 			ant.property(name: "dir.root", value: System.getProperty("user.dir") + "/build/test_alf_data")
@@ -112,3 +112,4 @@ task localTest << {
 	  }
    }
 }
+

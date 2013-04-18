@@ -582,12 +582,20 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      * @param userName  user name
      * @return NodeRef  user node reference
      */
-    protected NodeRef createPerson(String userName)
+    protected NodeRef createPerson(String userName, boolean createAuth)
     {
-        authenticationService.createAuthentication(userName, "password".toCharArray());
+        if (createAuth == true)
+        {
+            authenticationService.createAuthentication(userName, "password".toCharArray());
+        }
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
         return personService.createPerson(properties);
+    }
+    
+    protected NodeRef createPerson(String userName)
+    {
+        return createPerson(userName, true);
     }
 
     /**

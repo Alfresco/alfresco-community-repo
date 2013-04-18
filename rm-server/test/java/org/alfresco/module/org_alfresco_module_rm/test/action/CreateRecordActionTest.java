@@ -65,8 +65,11 @@ public class CreateRecordActionTest extends BaseRMTestCase
     {
         // Testing
         AuthorityDAO authDao = (AuthorityDAO)applicationContext.getBean("authorityDAO");
-        assertTrue(authDao.authorityExists(AuthenticationUtil.getSystemUserName()));
-        assertFalse(true);
+        if (authDao.authorityExists(AuthenticationUtil.getSystemUserName()) == false)
+        {
+            createPerson(AuthenticationUtil.getSystemUserName(), false);
+        }
+        assertTrue("No person object for System available.", authDao.authorityExists(AuthenticationUtil.getSystemUserName()));
         
         super.setupTestDataImpl();
     }

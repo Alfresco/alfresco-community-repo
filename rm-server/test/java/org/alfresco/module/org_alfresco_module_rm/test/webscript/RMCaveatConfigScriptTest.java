@@ -26,6 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -419,7 +420,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             JSONObject obj = new JSONObject();
             obj.put("allowedValues", array);
             obj.put("constraintName", RM_LIST);
-            obj.put("constraintTitle", "this is the title");
+            obj.put("constraintTitle", GUID.generate());
         
             System.out.println(obj.toString());
         
@@ -458,7 +459,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
          * Now a constraint with a generated name
          */
         {
-            String title = "Generated title list";
+            String title = GUID.generate();
             JSONArray array = new JSONArray();
             array.put("Red");
             array.put("Blue");
@@ -506,7 +507,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             JSONObject obj = new JSONObject();
             obj.put("allowedValues", array);
             obj.put("constraintName", "rmc_whazoo");
-            obj.put("constraintTitle", "this is the title");
+            obj.put("constraintTitle", GUID.generate());
         
             System.out.println(obj.toString());
         

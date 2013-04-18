@@ -18,12 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.alfresco.module.org_alfresco_module_rm.test.service.CapabilityServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.DataSetServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.DispositionServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedActionServiceTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedSecurityServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FilePlanRoleServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FilePlanServiceImplTest;
@@ -34,8 +32,10 @@ import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagement
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementAdminServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementAuditServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementSearchServiceImplTest;
-import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.VitalRecordServiceImplTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 
 /**
@@ -43,32 +43,27 @@ import org.alfresco.module.org_alfresco_module_rm.test.service.VitalRecordServic
  *
  * @author Roy Wetherall
  */
-public class ServicesTestSuite extends TestSuite
+@RunWith(Suite.class)
+@SuiteClasses(
 {
-    /**
-     * Creates the test suite
-     *
-     * @return  the test suite
-     */
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(ExtendedSecurityServiceImplTest.class);
-        suite.addTestSuite(ModelSecurityServiceImplTest.class);
-        suite.addTestSuite(RecordsManagementServiceImplTest.class);
-        suite.addTestSuite(DispositionServiceImplTest.class);
-        suite.addTestSuite(RecordsManagementActionServiceImplTest.class);
-        suite.addTestSuite(RecordsManagementAdminServiceImplTest.class);
-        suite.addTestSuite(RecordsManagementAuditServiceImplTest.class);
-        //suite.addTestSuite(RecordsManagementEventServiceImplTest.class);
-        suite.addTestSuite(RecordsManagementSearchServiceImplTest.class);
-        suite.addTestSuite(VitalRecordServiceImplTest.class);
-        suite.addTestSuite(DataSetServiceImplTest.class);
-        suite.addTestSuite(FreezeServiceImplTest.class);
-        suite.addTestSuite(RecordServiceImplTest.class);
-        suite.addTestSuite(CapabilityServiceImplTest.class);
-        suite.addTestSuite(FilePlanRoleServiceImplTest.class);
-        suite.addTestSuite(FilePlanServiceImplTest.class);
-        return suite;
-    }
+    ExtendedSecurityServiceImplTest.class,
+    ModelSecurityServiceImplTest.class,
+    RecordsManagementActionServiceImplTest.class,
+    ExtendedActionServiceTest.class,
+    DispositionServiceImplTest.class,
+    RecordsManagementActionServiceImplTest.class,
+    RecordsManagementAdminServiceImplTest.class,
+    RecordsManagementAuditServiceImplTest.class,
+    //RecordsManagementEventServiceImplTest.class,
+    RecordsManagementSearchServiceImplTest.class,
+    VitalRecordServiceImplTest.class,
+    DataSetServiceImplTest.class,
+    FreezeServiceImplTest.class,
+    RecordServiceImplTest.class,
+    CapabilityServiceImplTest.class,
+    FilePlanRoleServiceImplTest.class,
+    FilePlanServiceImplTest.class
+})
+public class ServicesTestSuite 
+{
 }

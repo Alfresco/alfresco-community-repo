@@ -18,9 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.ActionDefinitionsRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.CapabilitiesRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.DataSetRestApiTest;
@@ -30,10 +27,10 @@ import org.alfresco.module.org_alfresco_module_rm.test.webscript.EmailMapScriptT
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.EventRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RMCaveatConfigScriptTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RMConstraintScriptTest;
-import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmClassesRestApiTest;
-import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmPropertiesRestApiTest;
-import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RoleRestApiTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 
 /**
@@ -41,29 +38,24 @@ import org.alfresco.module.org_alfresco_module_rm.test.webscript.RoleRestApiTest
  *
  * @author Roy Wetherall
  */
-public class WebScriptTestSuite extends TestSuite
+@RunWith(Suite.class)
+@SuiteClasses(
 {
-    /**
-     * Creates the test suite
-     *
-     * @return  the test suite
-     */
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(DispositionRestApiTest.class);
-        suite.addTestSuite(EventRestApiTest.class);
-        suite.addTestSuite(RMCaveatConfigScriptTest.class);
-        suite.addTestSuite(RMConstraintScriptTest.class);
-        suite.addTestSuite(RmRestApiTest.class);
-        suite.addTestSuite(RoleRestApiTest.class);
-        suite.addTestSuite(DataSetRestApiTest.class);
-        suite.addTestSuite(EmailMapScriptTest.class);
-        suite.addTestSuite(EmailMapKeysRestApiTest.class);
-        suite.addTestSuite(CapabilitiesRestApiTest.class);
-        suite.addTestSuite(ActionDefinitionsRestApiTest.class);
-        suite.addTestSuite(RmClassesRestApiTest.class);
-        suite.addTestSuite(RmPropertiesRestApiTest.class);
-        return suite;
-    }
+    DispositionRestApiTest.class,
+    EventRestApiTest.class,
+    RMCaveatConfigScriptTest.class,
+    RMConstraintScriptTest.class,
+    //RmRestApiTest.class,
+    RoleRestApiTest.class,
+    DataSetRestApiTest.class,
+    EmailMapScriptTest.class,
+    EmailMapKeysRestApiTest.class,
+    CapabilitiesRestApiTest.class,
+    ActionDefinitionsRestApiTest.class
+    //RmClassesRestApiTest.class,
+    //RmPropertiesRestApiTest.class
+
+})
+public class WebScriptTestSuite
+{
 }

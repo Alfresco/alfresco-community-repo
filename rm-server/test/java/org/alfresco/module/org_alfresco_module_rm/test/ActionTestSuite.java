@@ -18,15 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.alfresco.module.org_alfresco_module_rm.test.action.CreateRecordActionTest;
 import org.alfresco.module.org_alfresco_module_rm.test.action.FileToActionTest;
 import org.alfresco.module.org_alfresco_module_rm.test.action.HideRecordActionTest;
 import org.alfresco.module.org_alfresco_module_rm.test.action.RejectActionTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedActionServiceTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagementActionServiceImplTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 
 /**
@@ -35,22 +35,16 @@ import org.alfresco.module.org_alfresco_module_rm.test.service.RecordsManagement
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ActionTestSuite extends TestSuite
+@RunWith(Suite.class)
+@SuiteClasses(
 {
-    /**
-     * Creates the test suite
-     *
-     * @return  the test suite
-     */
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(RecordsManagementActionServiceImplTest.class);
-        suite.addTestSuite(ExtendedActionServiceTest.class);
-        suite.addTestSuite(CreateRecordActionTest.class);
-        suite.addTestSuite(HideRecordActionTest.class);
-        suite.addTestSuite(RejectActionTest.class);
-        suite.addTestSuite(FileToActionTest.class);
-        return suite;
-    }
+    RecordsManagementActionServiceImplTest.class,
+    ExtendedActionServiceTest.class,
+    CreateRecordActionTest.class,
+    HideRecordActionTest.class,
+    RejectActionTest.class,
+    FileToActionTest.class
+})
+public class ActionTestSuite
+{
 }

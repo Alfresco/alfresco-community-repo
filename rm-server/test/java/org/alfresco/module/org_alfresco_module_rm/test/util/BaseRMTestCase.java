@@ -44,6 +44,7 @@ import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionSer
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -462,6 +463,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void setupTestDataImpl()
     {
+        AuthorityDAO authDao = (AuthorityDAO)applicationContext.getBean("authorityDAO");
+        if (authDao.authorityExists(AuthenticationUtil.getSystemUserName()) == false)
+        {
+            createPerson(AuthenticationUtil.getSystemUserName(), false);
+        }
+        assertTrue("No person object for System available.", authDao.authorityExists(AuthenticationUtil.getSystemUserName()));
+        
         storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         rootNodeRef = nodeService.getRootNode(storeRef);
 

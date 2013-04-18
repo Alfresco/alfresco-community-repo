@@ -44,63 +44,71 @@ eclipse {
 
 task resetDatabase << {
 	
-      // Loading the properties in all possible locations
-	  ant.property(file: System.properties.getProperty('DB_PROPERTIES') )
-	  ant.property(file: System.properties.getProperty('user.home')+'/alfresco/extension/repository.properties' )
-	  ant.property(resource: 'alfresco/domain/transaction.properties', classpath: configurations.compile.asPath )
-	  ant.property(resource: 'alfresco/version.properties', classpath: configurations.compile.asPath )
-	  ant.property(resource: 'alfresco/repository.properties', classpath: configurations.compile.asPath )
+	// Loading the properties in all possible locations
+	ant.property(file: System.properties.getProperty('DB_PROPERTIES') )
+	ant.property(file: System.properties.getProperty('user.home')+'/alfresco/extension/repository.properties' )
+	ant.property(resource: 'alfresco/domain/transaction.properties', classpath: configurations.compile.asPath )
+	ant.property(resource: 'alfresco/version.properties', classpath: configurations.compile.asPath )
+	ant.property(resource: 'alfresco/repository.properties', classpath: configurations.compile.asPath )
 
-	  // Set default values if nothing was found (remember Ant props are 'first set wins')
-	  ant.property(name: "db.name", value: "alfresco")
-	  ant.property(name: "db.url", value: "jdbc:postgresql:alfresco")
-	  ant.property(name: "db.master.url", value: "jdbc:postgresql:template1")
-	  ant.property(name: "db.username", value: "alfresco")
-	  ant.property(name: "db.password", value: "alfresco")
+	// Set default values if nothing was found (remember Ant props are 'first set wins')
+	ant.property(name: "db.name", value: "alfresco")
+	ant.property(name: "db.url", value: "jdbc:postgresql:alfresco")
+	ant.property(name: "db.master.url", value: "jdbc:postgresql:template1")
+	ant.property(name: "db.username", value: "alfresco")
+	ant.property(name: "db.password", value: "alfresco")
 
-	  println "Recreating database " + ant.getProperty("db.name") + " as user " + ant.getProperty("db.username")
-	  ant.sql(driver: 'org.postgresql.Driver',
-			url: ant.getProperty("db.master.url"),
-			userid: ant.getProperty("db.username"),
-			password: ant.getProperty("db.password"),
-			print: 'true',
-			autocommit: 'true',
-			classpath: configurations.compile.asPath,
-			'drop database if exists ' + ant.getProperty("db.name") + '; create database ' + ant.getProperty("db.name") + ';')
+	println "Recreating database " + ant.getProperty("db.name") + " as user " + ant.getProperty("db.username")
+	ant.sql(driver: 'org.postgresql.Driver',
+		url: ant.getProperty("db.master.url"),
+		userid: ant.getProperty("db.username"),
+		password: ant.getProperty("db.password"),
+		print: 'true',
+		autocommit: 'true',
+		classpath: configurations.compile.asPath,
+		'drop database if exists ' + ant.getProperty("db.name") + '; create database ' + ant.getProperty("db.name") + ';')
 
-      if (ant.getProperties().containsKey("dir.root")) {
-          println "Deleting content store in " + ant.getProperty("dir.root")
-          ant.delete(includeEmptyDirs: 'true', dir: ant.getProperty("dir.root"))
-      }
+	if (ant.getProperties().containsKey("dir.root")) {
+		println "Deleting content store in " + ant.getProperty("dir.root")
+		ant.delete(includeEmptyDirs: 'true', dir: ant.getProperty("dir.root"))
+	}
 }
 
 test {
-  dependsOn resetDatabase
 
-  include '**/*CreateRecordActionTest.class'
-  
-  //include '**/*Test.class'
-  //exclude '**/*SystemTest.class'
-  
-  // temporarily exclude out of date tests
-  //exclude '**/RMCaveatConfigServiceImplTest.class'
-  //exclude '**/RMCaveatConfigScriptTest.class'
-  //exclude '**/RmRestApiTest.class'
-  //exclude '**/RmRestApiTest.class'
-  //exclude '**/RoleRestApiTest.class'
-  //exclude '**/CustomEMailMappingServiceImplTest.class'
+	if (localBuild == false) {
+		dependsOn resetDatabase
+	}
 
-  testLogging.showStandardStreams = true
+	include '**/*CreateRecordActionTest.class'
 
-  jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'
+	testLogging.showStandardStreams = true
+	jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'
 
-  // Put systemProperty definition in a doFirst closure, otherwise it's executed before resetDatabase task
-  doFirst {
-    ant.property(name: "dir.root", value: System.getProperty("user.dir") + "/build/test_alf_data")
-    systemProperties = ant.getProperties()
-  }
+	if (localBuild == false) {
+		// Put systemProperty definition in a doFirst closure, otherwise it's executed before resetDatabase task
+		doFirst {
+			ant.property(name: "dir.root", value: System.getProperty("user.dir") + "/build/test_alf_data")
+			systemProperties = ant.getProperties()
+		}
+	}
 
-  beforeTest { descriptor ->
-     logger.lifecycle("Running test: " + descriptor)
-  }
+	beforeTest { descriptor ->
+		logger.lifecycle("Running test: " + descriptor)
+	}
+}
+
+task localTest << {   
+   test
+   {
+	   include '**/*CreateRecordActionTest.class'
+
+	  testLogging.showStandardStreams = true
+
+	  jvmArgs '-Xms256M', '-Xmx1024M', '-XX:MaxPermSize=256M'
+
+	  beforeTest { descriptor ->
+		 logger.lifecycle("Running test: " + descriptor)
+	  }
+   }
 }

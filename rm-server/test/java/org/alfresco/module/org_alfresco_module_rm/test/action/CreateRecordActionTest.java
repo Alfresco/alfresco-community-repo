@@ -60,16 +60,23 @@ public class CreateRecordActionTest extends BaseRMTestCase
         return true;
     }
     
+    @Override
+    protected void setupTestDataImpl()
+    {
+        // Testing
+        AuthorityDAO authDao = (AuthorityDAO)applicationContext.getBean("authorityDAO");
+        assertTrue(authDao.authorityExists(AuthenticationUtil.getSystemUserName()));
+        assertFalse(true);
+        
+        super.setupTestDataImpl();
+    }
+    
     public void testCreateRecordAction()
     {
         doTestInTransaction(new Test<Void>()
         {
             public Void run()
-            {
-                // Testing
-                AuthorityDAO authDao = (AuthorityDAO)applicationContext.getBean("authorityDAO");
-                assertTrue(authDao.authorityExists(AuthenticationUtil.getSystemUserName()));
-                
+            {   
                 assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, dmPermissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 

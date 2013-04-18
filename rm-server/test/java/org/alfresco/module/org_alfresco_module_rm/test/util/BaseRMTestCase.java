@@ -44,7 +44,6 @@ import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionSer
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -478,24 +477,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
               containerProps).getChildRef();
         assertNotNull("Could not create base folder", folder);
 
-        siteInfo = AuthenticationUtil.runAs(new RunAsWork<SiteInfo>()
-        {
-            @Override
-            public SiteInfo doWork() throws Exception
-            {
-             // Create the site
-                return siteService.createSite(
+        siteInfo = siteService.createSite(
                         "rm-site-dashboard", 
                         SITE_ID, 
                         "title", 
                         "descrition", 
                         SiteVisibility.PUBLIC, 
-                        RecordsManagementModel.TYPE_RM_SITE);
-            }
-            
-        }, AuthenticationUtil.getAdminUserName());
-        
-        
+                        RecordsManagementModel.TYPE_RM_SITE);           
         
         filePlan = siteService.getContainer(SITE_ID, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
         assertNotNull("Site document library container was not created successfully.", filePlan);

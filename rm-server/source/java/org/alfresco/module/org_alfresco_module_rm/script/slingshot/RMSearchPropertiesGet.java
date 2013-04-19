@@ -38,17 +38,17 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * RM serach properties GET web script
- *
+ * 
  * @author Roy Wetherall
  */
 public class RMSearchPropertiesGet extends DeclarativeWebScript
 {
     /** Services */
-    private RecordsManagementAdminService adminService;
-    private RecordService recordService;
-    private DictionaryService dictionaryService;
+    private RecordsManagementAdminService adminService;    
+    private RecordService recordService;    
+    private DictionaryService dictionaryService;    
     private NamespaceService namespaceService;
-
+   
     /**
      * @param adminService  records management admin service
      */
@@ -56,7 +56,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     {
         this.adminService = adminService;
     }
-
+    
     /**
      * @param recordService     record service
      */
@@ -64,7 +64,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     {
         this.recordService = recordService;
     }
-
+    
     /**
      * @param dictionaryService dictionary service
      */
@@ -72,7 +72,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     {
         this.dictionaryService = dictionaryService;
     }
-
+    
     /**
      * @param namespaceService  namespace service
      */
@@ -80,7 +80,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     {
         this.namespaceService = namespaceService;
     }
-
+    
     /**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
@@ -88,9 +88,9 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>(13);
-
+        
         List<Group> groups = new ArrayList<Group>(5);
-
+        
         Set<QName> aspects = recordService.getRecordMetaDataAspects();
         for (QName aspect : aspects)
         {
@@ -103,9 +103,9 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
                 propObjs[index] = propObj;
                 index ++;
             }
-
+            
             AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
-            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(dictionaryService), propObjs);
+            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(), propObjs);    
             groups.add(group);
         }
 
@@ -118,74 +118,74 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
             propObjs[index] = propObj;
             index ++;
         }
-
-        Group group = new Group("rmcustom", "Custom", propObjs);
+        
+        Group group = new Group("rmcustom", "Custom", propObjs);    
         groups.add(group);
-
+        
         model.put("groups", groups);
         return model;
     }
-
+    
     public class Group
-    {
+    {        
         private String id;
         private String label;
         private Property[] properties;
-
+        
         public Group(String id, String label, Property[] properties)
         {
             this.id = id;
             this.label = label;
             this.properties = properties;
         }
-
+        
         public String getId()
         {
             return id;
         }
-
+        
         public String getLabel()
         {
             return label;
         }
-
+        
         public Property[] getProperties()
         {
             return properties;
-        }
+        }       
     }
-
+    
     public class Property
     {
         private String prefix;
         private String shortName;
         private String label;
         private String type;
-
+        
         public Property(PropertyDefinition propertyDefinition)
         {
             QName qName = propertyDefinition.getName().getPrefixedQName(namespaceService);
             this.prefix = QName.splitPrefixedQName(qName.toPrefixString())[0];
             this.shortName = qName.getLocalName();
-            this.label = propertyDefinition.getTitle(dictionaryService);
+            this.label = propertyDefinition.getTitle();
             this.type = propertyDefinition.getDataType().getName().getLocalName();
         }
-
+        
         public String getPrefix()
         {
             return prefix;
         }
-
+        
         public String getShortName()
         {
             return shortName;
         }
-
+        
         public String getLabel()
         {
             return label;
         }
-
+        
         public String getType()
         {
             return type;

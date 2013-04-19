@@ -49,7 +49,7 @@ import org.springframework.util.StringUtils;
 /**
  * Implementation for Java backed webscript to return lists
  * of values for various records management services.
- *
+ * 
  * @author Gavin Cornwell
  */
 public class ListOfValuesGet extends DeclarativeWebScript
@@ -61,50 +61,50 @@ public class ListOfValuesGet extends DeclarativeWebScript
     protected DispositionService dispositionService;
     protected DictionaryService ddService;
     protected NamespaceService namespaceService;
-
+    
     /**
      * Sets the RecordsManagementService instance
-     *
+     * 
      * @param rmService The RecordsManagementService instance
      */
     public void setRecordsManagementService(RecordsManagementService rmService)
     {
         this.rmService = rmService;
     }
-
+    
     /**
      * Sets the RecordsManagementActionService instance
-     *
+     * 
      * @param rmActionService The RecordsManagementActionService instance
      */
     public void setRecordsManagementActionService(RecordsManagementActionService rmActionService)
     {
         this.rmActionService = rmActionService;
     }
-
+    
     /**
      * Sets the RecordsManagementAuditService instance
-     *
+     * 
      * @param rmAuditService The RecordsManagementAuditService instance
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService)
     {
         this.rmAuditService = rmAuditService;
     }
-
+    
     /**
      * Sets the RecordsManagementEventService instance
-     *
+     * 
      * @param rmEventService The RecordsManagementEventService instance
      */
     public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
     {
         this.rmEventService = rmEventService;
     }
-
+    
     /**
      * Sets the disposition service
-     *
+     * 
      * @param dispositionService    the disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
@@ -114,24 +114,24 @@ public class ListOfValuesGet extends DeclarativeWebScript
 
     /**
      * Sets the DictionaryService instance
-     *
+     * 
      * @param ddService The DictionaryService instance
      */
     public void setDictionaryService(DictionaryService ddService)
     {
         this.ddService = ddService;
     }
-
+    
     /**
      * Sets the NamespaceService instance
-     *
+     * 
      * @param namespaceService The NamespaceService instance
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-
+    
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
@@ -146,16 +146,16 @@ public class ListOfValuesGet extends DeclarativeWebScript
         listsModel.put("periodTypes", createPeriodTypesModel(requestUrl));
         listsModel.put("periodProperties", createPeriodPropertiesModel(requestUrl));
         listsModel.put("auditEvents", createAuditEventsModel(requestUrl));
-
+        
         // create model object with the lists model
         Map<String, Object> model = new HashMap<String, Object>(1);
         model.put("lists", listsModel);
         return model;
     }
-
+    
     /**
      * Creates the model for the list of disposition actions.
-     *
+     * 
      * @param baseUrl The base URL of the service
      * @return model of disposition actions list
      */
@@ -171,18 +171,18 @@ public class ListOfValuesGet extends DeclarativeWebScript
             item.put("value", dispositionAction.getName());
             items.add(item);
         }
-
+        
         // create the model
         Map<String, Object> model = new HashMap<String, Object>(2);
         model.put("url", baseUrl + "/dispositionactions");
         model.put("items", items);
-
+        
         return model;
     }
-
+    
     /**
      * Creates the model for the list of events.
-     *
+     * 
      * @param baseUrl The base URL of the service
      * @return model of events list
      */
@@ -196,22 +196,22 @@ public class ListOfValuesGet extends DeclarativeWebScript
             Map<String, Object> item = new HashMap<String, Object>(3);
             item.put("label", event.getDisplayLabel());
             item.put("value", event.getName());
-            item.put("automatic",
+            item.put("automatic", 
                         this.rmEventService.getEventType(event.getType()).isAutomaticEvent());
             items.add(item);
         }
-
+        
         // create the model
         Map<String, Object> model = new HashMap<String, Object>(2);
         model.put("url", baseUrl + "/events");
         model.put("items", items);
-
+        
         return model;
     }
-
+    
     /**
      * Creates the model for the list of period types.
-     *
+     * 
      * @param baseUrl The base URL of the service
      * @return model of period types list
      */
@@ -231,18 +231,18 @@ public class ListOfValuesGet extends DeclarativeWebScript
                 items.add(item);
             }
         }
-
+        
         // create the model
         Map<String, Object> model = new HashMap<String, Object>(2);
         model.put("url", baseUrl + "/periodtypes");
         model.put("items", items);
-
+        
         return model;
     }
-
+    
     /**
      * Creates the model for the list of period properties.
-     *
+     * 
      * @param baseUrl The base URL of the service
      * @return model of period properties list
      */
@@ -255,11 +255,11 @@ public class ListOfValuesGet extends DeclarativeWebScript
         {
             PropertyDefinition propDef = dispositionProperty.getPropertyDefinition();
             QName propName = dispositionProperty.getQName();
-
+            
             if (propDef != null)
             {
                 Map<String, String> item = new HashMap<String, String>(2);
-                String propTitle = propDef.getTitle(ddService);
+                String propTitle = propDef.getTitle();
                 if (propTitle == null || propTitle.length() == 0)
                 {
                     propTitle = StringUtils.capitalize(propName.getLocalName());
@@ -269,18 +269,18 @@ public class ListOfValuesGet extends DeclarativeWebScript
                 items.add(item);
             }
         }
-
+        
         // create the model
         Map<String, Object> model = new HashMap<String, Object>(2);
         model.put("url", baseUrl + "/periodproperties");
         model.put("items", items);
-
+        
         return model;
     }
-
+    
     /**
      * Creates the model for the list of audit events.
-     *
+     * 
      * @param baseUrl The base URL of the service
      * @return model of audit events list
      */
@@ -296,12 +296,12 @@ public class ListOfValuesGet extends DeclarativeWebScript
             item.put("value", event.getName());
             items.add(item);
         }
-
+        
         // create the model
         Map<String, Object> model = new HashMap<String, Object>(2);
         model.put("url", baseUrl + "/auditevents");
         model.put("items", items);
-
+        
         return model;
     }
 }

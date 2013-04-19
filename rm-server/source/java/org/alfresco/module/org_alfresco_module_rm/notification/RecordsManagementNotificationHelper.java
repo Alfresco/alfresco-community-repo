@@ -245,7 +245,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
                 notificationContext.setAsyncNotification(false);
                 notificationContext.setIgnoreNotificationFailure(true);
 
-                notificationContext.setBodyTemplate(getDueForReviewTemplate().toString());
+                notificationContext.setBodyTemplate(getDueForReviewTemplate());
                 Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
                 args.put("records", (Serializable)records);
                 args.put("site", getSiteName(root));
@@ -286,7 +286,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             notificationContext.setAsyncNotification(false);
             notificationContext.setIgnoreNotificationFailure(true);
 
-            notificationContext.setBodyTemplate(supersededTemplate.toString());
+            notificationContext.setBodyTemplate(supersededTemplate);
             Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
             args.put("record", record);
             args.put("site", getSiteName(root));
@@ -331,13 +331,13 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             args.put("rejectDate", rejectDate);
             args.put("recordId", recordId);
             args.put("recordName", recordName);
-
+            
             NotificationContext notificationContext = new NotificationContext();
             notificationContext.setAsyncNotification(true);
             notificationContext.setIgnoreNotificationFailure(true);
             notificationContext.addTo(recordCreator);
             notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORD_REJECTED));
-            notificationContext.setBodyTemplate(getRejectedTemplate().toString());
+            notificationContext.setBodyTemplate(getRejectedTemplate());
             notificationContext.setTemplateArgs(args);
 
             notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);

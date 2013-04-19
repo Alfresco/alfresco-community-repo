@@ -42,20 +42,20 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
     protected RecordService recordService;
-
+    
     /**
      * Set the dictionary service instance
-     *
+     * 
      * @param dictionaryService the {@link DictionaryService} instance
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-
+    
     /**
      * Sets the {@link NamespaceService} instance
-     *
+     * 
      * @param namespaceService The {@link NamespaceService} instance
      */
     public void setNamespaceService(NamespaceService namespaceService)
@@ -70,7 +70,7 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
     {
         this.recordService = recordService;
     }
-
+    
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
@@ -78,30 +78,30 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // Get the details of all the aspects
-        Set<QName> aspectQNames = recordService.getRecordMetaDataAspects();
+        Set<QName> aspectQNames = recordService.getRecordMetaDataAspects();        
         List<Map<String, Object>> aspects = new ArrayList<Map<String,Object>>(aspectQNames.size()+1);
         for (QName aspectQName : aspectQNames)
         {
-            // Get the prefix aspect and default the label to the localname
+            // Get the prefix aspect and default the label to the localname 
             String prefixString = aspectQName.toPrefixString(namespaceService);
             String label = aspectQName.getLocalName();
-
+             
             Map<String, Object> aspect = new HashMap<String, Object>(2);
             aspect.put("id", prefixString);
-
-            // Try and get the aspect definition
+            
+            // Try and get the aspect definition 
             AspectDefinition aspectDefinition = dictionaryService.getAspect(aspectQName);
             if (aspectDefinition != null)
             {
                 // Fet the label from the aspect definition
-                label = aspectDefinition.getTitle(dictionaryService);
-            }
+                label = aspectDefinition.getTitle();
+            }            
             aspect.put("value", label);
-
+            
             // Add the aspect details to the aspects list
             aspects.add(aspect);
         }
-
+        
         // create model object with the lists model
         Map<String, Object> model = new HashMap<String, Object>(1);
         model.put("aspects", aspects);

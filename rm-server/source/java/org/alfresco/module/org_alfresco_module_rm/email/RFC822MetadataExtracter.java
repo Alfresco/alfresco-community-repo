@@ -33,17 +33,17 @@ import org.alfresco.service.namespace.QName;
 /**
  * Extended RFC822 Metadata Extractor that is sensitive to whether we are in a RM
  * site or not.
- *
+ * 
  * @author Roy Wetherall
  */
 public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.RFC822MetadataExtracter
 {
     /** Reference to default properties */
-    private static final String PROPERTIES_URL = "alfresco/metadata/RFC822MetadataExtracter.properties";
-
+    private static final String PROPERTIES_URL = "org/alfresco/repo/content/metadata/RFC822MetadataExtracter.properties";    
+    
     /** Node service */
     private NodeService nodeService;
-
+    
     /**
      * Sets the node service
      * @param nodeService   node service
@@ -52,7 +52,7 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
     {
         this.nodeService = nodeService;
     }
-
+    
     /**
      * @see org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter#filterSystemProperties(java.util.Map, java.util.Map)
      */
@@ -73,7 +73,7 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
             }
         }
     }
-
+    
     /**
      * @see org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter#getDefaultMapping()
      */
@@ -82,7 +82,7 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
         // Attempt to load the properties
         return readMappingProperties(PROPERTIES_URL);
     }
-
+    
     /**
      * Given a set of properties, try and retrieve the node reference
      * @param properties    node properties
@@ -91,21 +91,21 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
     private NodeRef getNodeRef(Map<QName, Serializable> properties)
     {
         NodeRef result = null;
-
+       
         // Get the elements of the node reference
         String storeProto = (String)properties.get(ContentModel.PROP_STORE_PROTOCOL);
         String storeId = (String)properties.get(ContentModel.PROP_STORE_IDENTIFIER);
         String nodeId = (String)properties.get(ContentModel.PROP_NODE_UUID);
-
+        
         if (storeProto != null && storeProto.length() != 0 &&
             storeId != null && storeId.length() != 0 &&
             nodeId != null && nodeId.length() != 0)
-
+            
         {
             // Create the node reference
             result = new NodeRef(new StoreRef(storeProto, storeId), nodeId);
         }
-
+        
         return result;
     }
 }

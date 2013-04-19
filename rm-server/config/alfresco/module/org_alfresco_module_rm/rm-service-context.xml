@@ -440,7 +440,7 @@
 	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
         <!--  NOTE:  for some reason we need to grab these references within the class to avoid cyclic Spring issues! -->
-        <!-- <property name="permissionService" ref="permissionService"/> -->
+        <!-- <property name="permissionService" ref="permissionService"/> -->        
         <!-- <property name="nodeDAO" ref="nodeDAO"/> -->
         <!-- <property name="internalNodeService" ref="nodeService"/> -->
         <!-- <property name="siteService" ref="SiteService" />  -->
@@ -1158,9 +1158,9 @@
             </value>
         </property>
     </bean>
-
+    
     <!--  File Plan Authentication Service -->
-
+    
     <bean id="filePlanAuthenticationService"
           class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl">
      	<property name="rmAdminUserName" value="${bootstrap.rmadmin.name}" />
@@ -1399,7 +1399,6 @@
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="nodeDAO" ref="nodeDAO"/>
-        <property name="nodeService" ref="nodeService"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="localeDAO" ref="localeDAO"/>
         <property name="contentDataDAO" ref="contentDataDAO"/>

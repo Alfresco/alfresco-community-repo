@@ -32,7 +32,6 @@ import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.processor.AbstractFilter;
 import org.alfresco.repo.forms.processor.node.FieldUtils;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -44,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Abstract base class for records management related form filter
  * implementations.
- *
+ * 
  * @author Gavin Cornwell
  */
 public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilter<ItemType, NodeRef>
@@ -61,11 +60,10 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
     protected RecordsManagementService rmService;
     protected RecordsManagementAdminService rmAdminService;
     protected RecordService recordService;
-    protected DictionaryService dictionaryService;
 
     /**
      * Sets the NamespaceService instance
-     *
+     * 
      * @param namespaceService The NamespaceService instance
      */
     public void setNamespaceService(NamespaceService namespaceService)
@@ -75,7 +73,7 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
 
     /**
      * Sets the node service
-     *
+     * 
      * @param nodeService The NodeService instance
      */
     public void setNodeService(NodeService nodeService)
@@ -85,17 +83,17 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
 
     /**
      * Sets the RecordsManagementServiceRegistry instance
-     *
+     * 
      * @param rmServiceRegistry The RecordsManagementServiceRegistry instance
      */
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry rmServiceRegistry)
     {
         this.rmServiceRegistry = rmServiceRegistry;
     }
-
+    
     /**
      * Sets the RecordsManagementService instance
-     *
+     * 
      * @param rmService The RecordsManagementService instance
      */
     public void setRecordsManagementService(RecordsManagementService rmService)
@@ -105,14 +103,14 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
 
     /**
      * Sets the RecordsManagementAdminService instance
-     *
+     * 
      * @param rmAdminService The RecordsManagementAdminService instance
      */
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
         this.rmAdminService = rmAdminService;
     }
-
+    
     /**
      * @param recordService record service
      */
@@ -120,18 +118,10 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
     {
         this.recordService = recordService;
     }
-
-    /**
-     * @param dictionaryService dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
+    
     /**
      * Add property fields to group
-     *
+     * 
      * @param form
      * @param props
      * @param setId
@@ -143,17 +133,17 @@ public abstract class RecordsManagementFormFilter<ItemType> extends AbstractFilt
             for (Map.Entry<QName, PropertyDefinition> entry : props.entrySet())
             {
                 PropertyDefinition prop = entry.getValue();
-
+                
                 String id = form.getItem().getId();
                 id = id.replaceFirst("/", "://");
                 NodeRef nodeRef = new NodeRef(id);
                 Serializable value = nodeService.getProperty(nodeRef, entry.getKey());
-
+                
                 FieldGroup group = new FieldGroup(setId, null, false, false, null);
-                Field field = FieldUtils.makePropertyField(prop, value, group, namespaceService, dictionaryService);
-
+                Field field = FieldUtils.makePropertyField(prop, value, group, namespaceService);
+                
                 form.addField(field);
-
+                
                 if (logger.isDebugEnabled() == true)
                 {
                     logger.debug("Adding custom property .. " + prop.getName().toString() + " .. with value " + value + ".. to group .. " + setId);

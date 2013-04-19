@@ -56,9 +56,9 @@ import org.springframework.util.FileCopyUtils;
 
 /**
  * Split Email Action
- *
+ * 
  * Splits the attachments for an email message out to independent records.
- *
+ * 
  * @author Mark Rogers
  */
 public class SplitEmailAction extends RMActionExecuterAbstractBase
@@ -67,30 +67,30 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     private static final String MSG_NO_READ_MIME_MESSAGE = "rm.action.no-read-mime-message";
     private static final String MSG_EMAIL_DECLARED = "rm.action.email-declared";
     private static final String MSG_EMAIL_NOT_RECORD = "rm.action.email-not-record";
-
+    
     /** Relationship Labels */
     private static final String REL_FROM = "Message";
     private static final String REL_TO = "Attachment";
-
+    
     /** Logger */
     private static Log logger = LogFactory.getLog(SplitEmailAction.class);
 
     private QName relationshipQName;
-
+    
     public void bootstrap()
     {
-        String compoundId = recordsManagementAdminService.getCompoundIdFor(REL_FROM, REL_TO);
-
+        String compoundId = recordsManagementAdminService.getCompoundIdFor(REL_FROM, REL_TO);   
+        
         Map<QName, AssociationDefinition> map = recordsManagementAdminService.getCustomReferenceDefinitions();
         for (Map.Entry<QName, AssociationDefinition> entry : map.entrySet())
         {
-            if (compoundId.equals(entry.getValue().getTitle(dictionaryService)) == true)
+            if (compoundId.equals(entry.getValue().getTitle()) == true)
             {
                 relationshipQName = entry.getKey();
                 break;
             }
         }
-
+        
         if (relationshipQName == null)
         {
             relationshipQName = recordsManagementAdminService.addCustomChildAssocDefinition(REL_FROM, REL_TO);
@@ -106,7 +106,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     {
         // get node type
         nodeService.getType(actionedUponNodeRef);
-
+        
         if (logger.isDebugEnabled() == true)
         {
             logger.debug("split email:" + actionedUponNodeRef);
@@ -117,8 +117,8 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
             if (recordService.isDeclared(actionedUponNodeRef) == false)
             {
                 ChildAssociationRef parent = nodeService.getPrimaryParent(actionedUponNodeRef);
-
-                /**
+                
+                /** 
                  * Check whether the email message has already been split - do nothing if it has already been split
                  */
                 List<AssociationRef> refs = nodeService.getTargetAssocs(actionedUponNodeRef, ImapModel.ASSOC_IMAP_ATTACHMENT);
@@ -130,7 +130,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                     }
                     return;
                 }
-
+                
                 /**
                  * Get the content and if its a mime message then create atachments for each part
                  */
@@ -152,12 +152,12 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                                 createAttachment(actionedUponNodeRef, parent.getParentRef(), part);
                             }
                         }
-                    }
-                }
+                    } 
+                } 
                 catch (Exception e)
                 {
                     throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NO_READ_MIME_MESSAGE, e.toString()), e);
-                }
+                }                
            }
             else
             {
@@ -169,7 +169,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EMAIL_NOT_RECORD, actionedUponNodeRef.toString()));
         }
     }
-
+    
     /**
      * Create attachment from Mime Message Part
      * @param messageNodeRef - the node ref of the mime message
@@ -192,7 +192,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                 logger.warn("Cannot decode file name '" + fileName + "'", e);
             }
         }
-
+        
         Map<QName, Serializable> messageProperties = nodeService.getProperties(messageNodeRef);
         String messageTitle = (String)messageProperties.get(ContentModel.PROP_NAME);
         if(messageTitle == null)
@@ -201,24 +201,24 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         }
         else
         {
-            messageTitle = messageTitle + " - " + fileName;
+            messageTitle = messageTitle + " - " + fileName; 
         }
 
         ContentType contentType = new ContentType(part.getContentType());
-
+  
         Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
         docProps.put(ContentModel.PROP_NAME, messageTitle + " - " + fileName);
         docProps.put(ContentModel.PROP_TITLE, fileName);
-
+        
         /**
          * Create an attachment node in the same folder as the message
          */
-        ChildAssociationRef attachmentRef = nodeService.createNode(parentNodeRef,
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
+        ChildAssociationRef attachmentRef = nodeService.createNode(parentNodeRef, 
+                        ContentModel.ASSOC_CONTAINS, 
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName), 
                         ContentModel.TYPE_CONTENT,
                         docProps);
-
+        
         /**
          * Write the content into the new attachment node
          */
@@ -226,18 +226,18 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         writer.setMimetype(contentType.getBaseType());
         OutputStream os = writer.getContentOutputStream();
         FileCopyUtils.copy(part.getInputStream(), os);
-
+        
         /**
          * Create a link from the message to the attachment
-         */
+         */       
         createRMReference(messageNodeRef, attachmentRef.getChildRef());
-
-
+                
+        
     }
-
+    
     /**
      * Create a link from the message to the attachment
-     */
+     */       
     private void createRMReference(final NodeRef parentRef, final NodeRef childRef)
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -246,16 +246,16 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
             public Void doWork() throws Exception
             {
                 // add the relationship
-                recordsManagementAdminService.addCustomReference(parentRef, childRef, relationshipQName);
-
+                recordsManagementAdminService.addCustomReference(parentRef, childRef, relationshipQName);      
+       
                 // add the IMAP attachment aspect
                 nodeService.createAssociation(
                         parentRef,
                         childRef,
                         ImapModel.ASSOC_IMAP_ATTACHMENT);
-
+                
                 return null;
-            }
+            }            
         });
-    }
+    }    
 }

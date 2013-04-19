@@ -36,7 +36,7 @@ import org.json.simple.JSONObject;
 
 /**
  * Extend JSON conversion component to include RM specifics.
- *
+ * 
  * @author Roy Wetherall
  */
 public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONConversionComponent
@@ -162,7 +162,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         if (unfiledRecordContainer != null)
         {
             rmNodeValues.put("unfiledRecordContainer", unfiledRecordContainer.toString());
-            rmNodeValues.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
+            rmNodeValues.put("properties", propertiesToJSON(unfiledRecordContainer, useShortQName));
             QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
             rmNodeValues.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
         }

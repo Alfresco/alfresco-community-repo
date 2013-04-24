@@ -23,6 +23,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.service.DataSetServiceImp
 import org.alfresco.module.org_alfresco_module_rm.test.service.DispositionServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedActionServiceTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.ExtendedSecurityServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.service.FilePlanPermissionServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FilePlanRoleServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FilePlanServiceImplTest;
 import org.alfresco.module.org_alfresco_module_rm.test.service.FreezeServiceImplTest;
@@ -62,7 +63,8 @@ import org.junit.runners.Suite.SuiteClasses;
     RecordServiceImplTest.class,
     CapabilityServiceImplTest.class,
     FilePlanRoleServiceImplTest.class,
-    FilePlanServiceImplTest.class
+    FilePlanServiceImplTest.class,
+    FilePlanPermissionServiceImplTest.class
 })
 public class ServicesTestSuite 
 {

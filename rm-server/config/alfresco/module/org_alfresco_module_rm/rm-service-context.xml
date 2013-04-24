@@ -491,6 +491,7 @@
         <property name="policyComponent" ref="policyComponent"/>
         <property name="recordsManagementService" ref="RecordsManagementService"/>
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="recordService" ref="RecordService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">

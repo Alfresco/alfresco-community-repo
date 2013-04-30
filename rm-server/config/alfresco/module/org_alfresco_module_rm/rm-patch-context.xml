@@ -58,10 +58,10 @@
        <property name="description" value="Patches the existing RM data for the RM v2.1 InPlace features."/>
        <property name="sinceVersion" value="2.1"/>
        <property name="appliesFromVersion" value="2.1"/>
-       <property name="permissionService" ref="PermissionService" />
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
+	   <property name="filePlanRoleService" ref="FilePlanRoleService"/>
        <property name="filePlanPermissionService" ref="FilePlanPermissionService"/>
        <property name="filePlanService" ref="FilePlanService"/>
+       <property name="capabilityService" ref="CapabilityService"/>
    </bean>
    
    <bean id="org_alfresco_module_rm_RMv21CapabilityPatch"
@@ -72,7 +72,7 @@
        <property name="description" value="Patches the existing RM data for the RM v2.1 updated capabilities."/>
        <property name="sinceVersion" value="2.1"/>
        <property name="appliesFromVersion" value="2.1"/>
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
+       <property name="filePlanService" ref="FilePlanService"/>
        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
        <property name="capabilityService" ref="CapabilityService"/>
    </bean>
@@ -85,12 +85,27 @@
        <property name="description" value="Adds the global RM admin user to all existing file plans."/>
        <property name="sinceVersion" value="2.1"/>
        <property name="appliesFromVersion" value="2.1"/>
-       <property name="recordsManagementService" ref="RecordsManagementService"/>
+       <property name="filePlanService" ref="FilePlanService"/>
        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
        <property name="authenticationService" ref="AuthenticationService" />
        <property name="personService" ref="PersonService" />
        <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
        <property name="password" value="${bootstrap.rmadmin.pwd}" />
+   </bean>
+   
+   <bean id="org_alfresco_module_rm_RMv21RecordInheritancePatch"
+         parent="module.baseComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.RMv21RecordInheritancePatch">
+       <property name="moduleId" value="org_alfresco_module_rm"/>
+       <property name="name" value="org_alfresco_module_rm_RMv21RecordInheritancePatch"/>
+       <property name="description" value="Adjust record permission inheritance."/>
+       <property name="sinceVersion" value="2.1"/>
+       <property name="appliesFromVersion" value="2.1"/>
+       <property name="patchDAO" ref="patchDAO"/>
+       <property name="nodeDAO" ref="nodeDAO" />
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="nodeService" ref="nodeService"/>
+       <property name="filePlanPermissionServiceImpl" ref="filePlanPermissionService"/>
    </bean>
 
 </beans>

@@ -265,16 +265,18 @@ public class FilePlanPermissionServiceImpl implements FilePlanPermissionService,
     }
     
     /**
-     * Initialise the record permissions for the given record folder.
+     * Initialise the record permissions for the given parent.
+     * 
+     * NOTE: method is public so it can be accessed via the associated patch bean.
      * 
      * @param record        record 
-     * @param recordFolder  record folder
+     * @param parent        records permission parent
      */
-    private void initialiseRecordPermissions(NodeRef record, NodeRef recordFolder)
+    public void initialiseRecordPermissions(NodeRef record, NodeRef parent)
     {
         setUpPermissions(record);
         
-        Set<AccessPermission> perms = permissionService.getAllSetPermissions(recordFolder);
+        Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
         for (AccessPermission perm : perms)
         {
             if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&

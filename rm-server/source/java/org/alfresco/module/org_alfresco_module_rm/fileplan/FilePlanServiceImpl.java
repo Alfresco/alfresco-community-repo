@@ -237,7 +237,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         {
             throw new AlfrescoRuntimeException("Unable to get unfiled conatiner.");
         }
-        else
+        else if (assocs.size() == 1)
         {
             result = assocs.get(0).getChildRef();
         }

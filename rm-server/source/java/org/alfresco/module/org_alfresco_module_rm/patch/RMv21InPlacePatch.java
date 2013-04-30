@@ -18,19 +18,21 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -44,35 +46,42 @@ import org.springframework.beans.factory.BeanNameAware;
 public class RMv21InPlacePatch extends AbstractModuleComponent 
                                implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
+    /** Extended reader and writer role details */
+    private static final String ROLE_READERS = "ExtendedReaders";
+    private static final String ROLE_READERS_LABEL = "In-Place Readers";
+    private static final String[] ROLE_READERS_CAPABILITIES = new String[]
+    {
+       "ViewRecords"
+    };
+    private static final String ROLE_WRITERS = "ExtendedWriters";
+    private static final String ROLE_WRITERS_LABEL = "In-Place Writers";
+    private static final String[] ROLE_WRITERS_CAPABILITIES = new String[]
+    {
+       "ViewRecords",
+       "EditNonRecordMetadata"
+    };
+    
     /** Logger */
     private static Log logger = LogFactory.getLog(RMv21InPlacePatch.class);  
     
-    /** Permission service */
-    private PermissionService permissionService;
+    /** file plan role service */
+    private FilePlanRoleService filePlanRoleService;
     
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
+    /** file plan service */
+    private FilePlanService filePlanService;
     
     /** File plan permission service */
     private FilePlanPermissionService filePlanPermissionService;
     
-    /** File plan service */
-    private FilePlanService filePlanService;
+    /** capability service */
+    private CapabilityService capabilityService;
     
     /**
-     * @param permissionService permission service
+     * @param filePlanRoleService   file plan role service
      */
-    public void setPermissionService(PermissionService permissionService)
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        this.permissionService = permissionService;
-    }
-    
-    /**
-     * @param recordsManagementService  records management service
-     */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
-    {
-        this.recordsManagementService = recordsManagementService;
+        this.filePlanRoleService = filePlanRoleService;
     }
     
     /**
@@ -92,6 +101,14 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
     }
     
     /**
+     * @param capabilityService capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
+    }
+    
+    /**
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
@@ -102,7 +119,7 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
             logger.debug("RM module: RMv21InPlacePatch executing ...");
         }
         
-        List<NodeRef> filePlans = recordsManagementService.getFilePlans();
+        Set<NodeRef> filePlans = filePlanService.getFilePlans();
         
         if (logger.isDebugEnabled() == true)
         {
@@ -111,21 +128,24 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
         
         for (NodeRef filePlan : filePlans)
         {
-            if (logger.isDebugEnabled() == true)
+            if (filePlanService.getUnfiledContainer(filePlan) == null)
             {
-                logger.debug("  ... updating file plan " + filePlan.toString());
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("  ... updating file plan " + filePlan.toString());
+                }
+                
+                // set permissions
+                filePlanPermissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
+                filePlanPermissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING);
+                            
+                // create unfiled container
+                filePlanService.createUnfiledContainer(filePlan);            
+                
+                // add the inplace roles
+                filePlanRoleService.createRole(filePlan, ROLE_READERS, ROLE_READERS_LABEL, getCapabilities(ROLE_READERS_CAPABILITIES));
+                filePlanRoleService.createRole(filePlan, ROLE_WRITERS, ROLE_WRITERS_LABEL, getCapabilities(ROLE_WRITERS_CAPABILITIES));
             }
-            
-            // set permissions
-            filePlanPermissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
-            filePlanPermissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING);
-            
-            // set capabilities
-            //permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
-           // permissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.EDIT_NON_RECORD_METADATA, true);
-            
-            // create unfiled container
-            filePlanService.createUnfiledContainer(filePlan);            
         }
         
         if (logger.isDebugEnabled() == true)
@@ -134,5 +154,13 @@ public class RMv21InPlacePatch extends AbstractModuleComponent
         }
     }   
     
-    
+    private Set<Capability> getCapabilities(String[] capabilityNames)
+    {
+        Set<Capability> capabilities = new HashSet<Capability>(3);
+        for (String capabilityName : capabilityNames)
+        {
+            capabilities.add(capabilityService.getCapability(capabilityName));
+        }
+        return capabilities;
+    }
 }

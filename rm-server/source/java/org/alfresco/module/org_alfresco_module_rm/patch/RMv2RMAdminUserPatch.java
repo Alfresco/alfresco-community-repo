@@ -20,11 +20,11 @@ package org.alfresco.module.org_alfresco_module_rm.patch;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl;
@@ -47,43 +47,67 @@ public class RMv2RMAdminUserPatch extends AbstractModuleComponent implements Bea
     /** Logger */
     private static Log logger = LogFactory.getLog(RMv2RMAdminUserPatch.class);
 
+    /** default rm admin password */
     private String password = FilePlanAuthenticationServiceImpl.DEFAULT_RM_ADMIN_PWD;
     
+    /** mutable authenticaiton service */
     private MutableAuthenticationService authenticationService;
     
+    /** person service */
     private PersonService personService;
     
-    private RecordsManagementService recordsManagementService;
+    /** file plan service */
+    private FilePlanService filePlanService;
     
+    /** file plan role service */
     private FilePlanRoleService filePlanRoleService;
     
+    /** file plan authentication service */
     private FilePlanAuthenticationService filePlanAuthenticationService;
     
+    /**
+     * @param password  rm admin password
+     */
     public void setPassword(String password)
     {
         this.password = password;
     }
     
+    /**     
+     * @param personService person service
+     */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
     
+    /**
+     * @param authenticationService mutable authentication service
+     */
     public void setAuthenticationService(MutableAuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
     
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    /**
+     * @param filePlanService   file plan service
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-        this.recordsManagementService = recordsManagementService;
+        this.filePlanService = filePlanService;
     }
 
+    /**
+     * @param filePlanRoleService   file plan role service
+     */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
         this.filePlanRoleService = filePlanRoleService;
     }
     
+    /**
+     * @param filePlanAuthenticationService file plan authentication service
+     */
     public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
@@ -118,7 +142,7 @@ public class RMv2RMAdminUserPatch extends AbstractModuleComponent implements Bea
                 logger.debug("   ... assigning RM Admin user to file plans");
             }
             
-            List<NodeRef> filePlans = recordsManagementService.getFilePlans();
+            Set<NodeRef> filePlans = filePlanService.getFilePlans();
             for (NodeRef filePlan : filePlans)
             {
                 filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, user);

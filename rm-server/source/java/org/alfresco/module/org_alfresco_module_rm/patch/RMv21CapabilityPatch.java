@@ -18,14 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch;
 
-import java.util.List;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
@@ -47,8 +46,8 @@ public class RMv21CapabilityPatch extends AbstractModuleComponent
     /** Logger */
     private static Log logger = LogFactory.getLog(RMv21CapabilityPatch.class);  
     
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
+    /** file plan service */
+    private FilePlanService filePlanService;
     
     /** File plan role service */
     private FilePlanRoleService filePlanRoleService;
@@ -57,11 +56,11 @@ public class RMv21CapabilityPatch extends AbstractModuleComponent
     private CapabilityService capabilityService;
     
     /**
-     * @param recordsManagementService  records management service
+     * @param filePlanService   file plan service
      */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-        this.recordsManagementService = recordsManagementService;
+        this.filePlanService = filePlanService;
     }
 
     /**
@@ -91,7 +90,7 @@ public class RMv21CapabilityPatch extends AbstractModuleComponent
             logger.debug("RM module: RMv21CapabilityPatch executing ...");
         }
         
-        List<NodeRef> filePlans = recordsManagementService.getFilePlans();
+        Set<NodeRef> filePlans = filePlanService.getFilePlans();
         
         if (logger.isDebugEnabled() == true)
         {

@@ -116,28 +116,31 @@ public class RMv21RecordInheritancePatch extends AbstractModuleComponent
         }
         
         Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_RECORD);
-        List<Long> records = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
-
-        if (logger.isDebugEnabled() == true)
+        if (aspectPair != null)
         {
-            logger.debug("  ... updating " + records.size() + " records" );
-        }
-        
-        for (Long record : records)
-        {
-            Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(record);
-            NodeRef recordNodeRef = recordPair.getSecond();
-            
+            List<Long> records = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
+    
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug("  ... updating record " + recordNodeRef.toString());
+                logger.debug("  ... updating " + records.size() + " records" );
+            }
+            
+            for (Long record : records)
+            {
+                Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(record);
+                NodeRef recordNodeRef = recordPair.getSecond();
                 
-                // get the primary parent
-                ChildAssociationRef assoc = nodeService.getPrimaryParent(recordNodeRef);
-                NodeRef parent = assoc.getParentRef();
-                if (parent != null)
-                {                
-                    filePlanPermissionServiceImpl.initialiseRecordPermissions(recordNodeRef, parent);
+                if (logger.isDebugEnabled() == true)
+                {
+                    logger.debug("  ... updating record " + recordNodeRef.toString());
+                    
+                    // get the primary parent
+                    ChildAssociationRef assoc = nodeService.getPrimaryParent(recordNodeRef);
+                    NodeRef parent = assoc.getParentRef();
+                    if (parent != null)
+                    {                
+                        filePlanPermissionServiceImpl.initialiseRecordPermissions(recordNodeRef, parent);
+                    }
                 }
             }
         }

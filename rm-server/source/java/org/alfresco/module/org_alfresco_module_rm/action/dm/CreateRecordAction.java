@@ -128,7 +128,7 @@ public class CreateRecordAction extends ActionExecuterAbstractBase
                 logger.debug("Can not create record, because " + actionedUponNodeRef.toString() + " does not exist.");
             }
         }
-        else if (dictionaryService.isSubClass(ContentModel.TYPE_CONTENT, nodeService.getType(actionedUponNodeRef)) == false)
+        else if (dictionaryService.isSubClass(nodeService.getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) == false)
         {
             // TODO eventually we should support other types .. either as record folders or as composite records
             if (logger.isDebugEnabled() == true)

@@ -1105,6 +1105,7 @@
         <property name="ownableService" ref="OwnableService" />
         <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
         <property name="capabilityService" ref="CapabilityService" />
+        <property name="ruleService" ref="RuleService" />
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

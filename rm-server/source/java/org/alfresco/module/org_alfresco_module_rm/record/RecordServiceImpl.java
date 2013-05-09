@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
@@ -169,6 +170,9 @@ public class RecordServiceImpl implements RecordService,
     
     /** Capability service */
     private CapabilityService capabilityService;
+    
+    /** Rule service */
+    private RuleService ruleService;
 
     /** List of available record meta-data aspects */
     private Set<QName> recordMetaDataAspects;    
@@ -283,6 +287,14 @@ public class RecordServiceImpl implements RecordService,
     public void setCapabilityService(CapabilityService capabilityService)
     {
         this.capabilityService = capabilityService;
+    }
+    
+    /**
+     * @param ruleService   rule service
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
     }
 
     /**
@@ -663,57 +675,65 @@ public class RecordServiceImpl implements RecordService,
             @Override
             public Void doWork() throws Exception
             {
-                // take note of the record id
-                String recordId = (String)nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
-                
-                // take node of the original document owner
-                String documentOwner = (String) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_USER_ID);
-                
-                // first remove the secondary link association
-                NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
-                List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
-                for (ChildAssociationRef childAssociationRef : parentAssocs)
-                {
-                    if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originatingLocation))
+                ruleService.disableRules();
+                try
+                {                
+                    // take note of the record id
+                    String recordId = (String)nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
+                    
+                    // take node of the original document owner
+                    String documentOwner = (String) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_USER_ID);
+                    
+                    // first remove the secondary link association
+                    NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
+                    List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+                    for (ChildAssociationRef childAssociationRef : parentAssocs)
                     {
-                        nodeService.removeChildAssociation(childAssociationRef);
-                        break;
+                        if (childAssociationRef.isPrimary() == false && childAssociationRef.getParentRef().equals(originatingLocation))
+                        {
+                            nodeService.removeChildAssociation(childAssociationRef);
+                            break;
+                        }
                     }
-                }
-                
-                // remove all RM related aspects from the node
-                Set<QName> aspects = nodeService.getAspects(nodeRef);
-                for (QName aspect : aspects)
-                {
-                    if (RM_URI.equals(aspect.getNamespaceURI()) == true)
+                    
+                    // remove all RM related aspects from the node
+                    Set<QName> aspects = nodeService.getAspects(nodeRef);
+                    for (QName aspect : aspects)
                     {
-                        // remove the aspect
-                        nodeService.removeAspect(nodeRef, aspect);
+                        if (RM_URI.equals(aspect.getNamespaceURI()) == true)
+                        {
+                            // remove the aspect
+                            nodeService.removeAspect(nodeRef, aspect);
+                        }
                     }
+                    
+                    // get the records primary parent association
+                    ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
+    
+                    // move the record into the collaboration site
+                    nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
+                   
+                    // save the information about the rejection details
+                    Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
+                    aspectProperties.put(PROP_RECORD_REJECTION_USER_ID, userId);
+                    aspectProperties.put(PROP_RECORD_REJECTION_DATE, new Date());
+                    aspectProperties.put(PROP_RECORD_REJECTION_REASON, reason);
+                    nodeService.addAspect(nodeRef, ASPECT_RECORD_REJECTION_DETAILS, aspectProperties);
+    
+                    // Restore the owner of the document                
+                    if (StringUtils.isBlank(documentOwner))
+                    {
+                        throw new AlfrescoRuntimeException("Unable to find the creator of document.");
+                    }
+                    ownableService.setOwner(nodeRef, documentOwner);
+    
+                    // send an email to the record creator
+                    notificationHelper.recordRejectedEmailNotification(nodeRef, recordId, documentOwner);
                 }
-                
-                // get the records primary parent association
-                ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
-
-                // move the record into the collaboration site
-                nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-               
-                // save the information about the rejection details
-                Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
-                aspectProperties.put(PROP_RECORD_REJECTION_USER_ID, userId);
-                aspectProperties.put(PROP_RECORD_REJECTION_DATE, new Date());
-                aspectProperties.put(PROP_RECORD_REJECTION_REASON, reason);
-                nodeService.addAspect(nodeRef, ASPECT_RECORD_REJECTION_DETAILS, aspectProperties);
-
-                // Restore the owner of the document                
-                if (StringUtils.isBlank(documentOwner))
+                finally
                 {
-                    throw new AlfrescoRuntimeException("Unable to find the creator of document.");
+                    ruleService.enableRules();
                 }
-                ownableService.setOwner(nodeRef, documentOwner);
-
-                // send an email to the record creator
-                notificationHelper.recordRejectedEmailNotification(nodeRef, recordId, documentOwner);               
 
                 return null;
             }

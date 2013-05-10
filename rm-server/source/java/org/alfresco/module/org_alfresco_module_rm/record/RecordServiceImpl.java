@@ -319,14 +319,24 @@ public class RecordServiceImpl implements RecordService,
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
+    public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, final boolean bNew)
     {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) == true)
+
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            // create and file the content as a record
-            file(nodeRef);
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                NodeRef nodeRef = childAssocRef.getChildRef();
+                if (nodeService.exists(nodeRef) == true)
+                {
+                    // create and file the content as a record
+                    file(nodeRef);
+                }
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**

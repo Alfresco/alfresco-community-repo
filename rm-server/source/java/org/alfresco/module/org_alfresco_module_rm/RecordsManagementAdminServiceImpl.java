@@ -54,10 +54,12 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Namespace;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -245,6 +247,12 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         policy.beforeRemoveReference(fromNodeRef, toNodeRef, reference);
     }
     
+    /**
+     * 
+     * @param fromNodeRef
+     * @param toNodeRef
+     * @param reference
+     */
     protected void invokeOnRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // get qnames to invoke against
@@ -254,51 +262,89 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         policy.onRemoveReference(fromNodeRef, toNodeRef, reference);
     }
 
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
     @Override
-    public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
+    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        if (nodeService.exists(nodeRef) == true &&
-            isCustomisable(aspectTypeQName) == true)
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            QName customPropertyAspect = getCustomAspect(aspectTypeQName);
-            nodeService.addAspect(nodeRef, customPropertyAspect, null);
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.exists(nodeRef) == true &&
+                    isCustomisable(aspectTypeQName) == true)
+                {
+                    QName customPropertyAspect = getCustomAspect(aspectTypeQName);
+                    nodeService.addAspect(nodeRef, customPropertyAspect, null);
+                }
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
     @Override
-    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
+    public void onRemoveAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        if (nodeService.exists(nodeRef) == true &&
-            isCustomisable(aspectTypeQName) == true)
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            QName customPropertyAspect = getCustomAspect(aspectTypeQName);
-            nodeService.removeAspect(nodeRef, customPropertyAspect);  
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.exists(nodeRef) == true &&
+                    isCustomisable(aspectTypeQName) == true)
+                {
+                    QName customPropertyAspect = getCustomAspect(aspectTypeQName);
+                    nodeService.removeAspect(nodeRef, customPropertyAspect);  
+                }
+                
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
+    /**
+     * Make sure any custom property aspects are applied to newly created nodes.
+     * 
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
     @Override
-    public void onCreateNode(ChildAssociationRef childAssocRef)
+    public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        QName type = nodeService.getType(nodeRef);
-        while (type != null && ContentModel.TYPE_CMOBJECT.equals(type) == false)
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            if (isCustomisable(type) == true)
+            @Override
+            public Void doWork() throws Exception
             {
-                QName customPropertyAspect = getCustomAspect(type);
-                nodeService.addAspect(nodeRef, customPropertyAspect, null);  
-            }
-            
-            TypeDefinition def = dictionaryService.getType(type);
-            if (def != null)
-            {
-                type = def.getParentName();
-            }
-            else
-            {
-                type = null;
-            }
-        }        
+                NodeRef nodeRef = childAssocRef.getChildRef();
+                QName type = nodeService.getType(nodeRef);
+                while (type != null && ContentModel.TYPE_CMOBJECT.equals(type) == false)
+                {
+                    if (isCustomisable(type) == true)
+                    {
+                        QName customPropertyAspect = getCustomAspect(type);
+                        nodeService.addAspect(nodeRef, customPropertyAspect, null);  
+                    }
+                    
+                    TypeDefinition def = dictionaryService.getType(type);
+                    if (def != null)
+                    {
+                        type = def.getParentName();
+                    }
+                    else
+                    {
+                        type = null;
+                    }
+                }    
+                
+                return null;
+            }           
+        }, AuthenticationUtil.getSystemUserName());           
     }
     
     /**

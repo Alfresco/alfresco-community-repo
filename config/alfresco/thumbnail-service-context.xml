@@ -55,6 +55,153 @@
         <property name="renditionService" ref="renditionService" />
     </bean>
     
+    <bean id="baseThumbnailDefinition"
+        class="org.alfresco.repo.thumbnail.ThumbnailDefinition"
+        abstract="true"
+        init-method="register">
+        <property name="thumbnailRegistry">
+            <ref bean="thumbnailRegistry" />
+        </property>
+    </bean>
+    
+    <bean id="defaultImageResizeOptions" 
+        class="org.alfresco.repo.content.transform.magick.ImageResizeOptions" 
+        abstract="true">
+        <property name="maintainAspectRatio" value="true"/>
+        <property name="resizeToThumbnail" value="true" />
+    </bean>
+    
+    <bean id="defaultImageTransformationOptions" 
+        class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions"
+        abstract="true">
+        <property name="timeoutMs" value="${system.thumbnail.definition.default.timeoutMs}" />
+        <property name="readLimitTimeMs" value="${system.thumbnail.definition.default.readLimitTimeMs}" />
+        <property name="maxSourceSizeKBytes" value="${system.thumbnail.definition.default.maxSourceSizeKBytes}" />
+        <property name="readLimitKBytes" value="${system.thumbnail.definition.default.readLimitKBytes}" />
+        <property name="pageLimit" value="${system.thumbnail.definition.default.pageLimit}" />
+        <property name="maxPages" value="${system.thumbnail.definition.default.maxPages}" />
+    </bean>
+    
+    <!-- Small image thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionMedium" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="medium" />
+        <property name="mimetype" value="image/jpeg"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="100"/>
+                        <property name="height" value="100"/>
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_medium.jpg" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- Slingshot Document Library image thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionDoclib" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="doclib" />
+        <property name="mimetype" value="image/png"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="100"/>
+                        <property name="height" value="100"/>
+                        <property name="allowEnlargement" value="false" />
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_doclib.png" />
+        <property name="mimeAwarePlaceHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_doclib{0}.png" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- Image preview thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionImgpreview" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="imgpreview" />
+        <property name="mimetype" value="image/jpeg"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="960"/>
+                        <property name="height" value="960"/>
+                        <property name="allowEnlargement" value="false" />
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_256.png" />
+        <property name="mimeAwarePlaceHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_256{0}.png" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- User avatar 64x64 image thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionAvatar" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="avatar" />
+        <property name="mimetype" value="image/png"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="64"/>
+                        <property name="height" value="64"/>
+                        <property name="allowEnlargement" value="false" />
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_avatar.png" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- User avatar 32x32 image thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionAvatar32" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="avatar32" />
+        <property name="mimetype" value="image/png"/>
+        <property name="transformationOptions">
+            <bean parent="defaultImageTransformationOptions">
+                <property name="resizeOptions">
+                    <bean parent="defaultImageResizeOptions">
+                        <property name="width" value="32"/>
+                        <property name="height" value="32"/>
+                        <property name="allowEnlargement" value="false" />
+                    </bean> 
+                </property>
+            </bean>
+        </property>
+        <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_avatar32.png" />
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
+    <!-- Web Preview thumbnail options -->
+    <!-- Note that this will auto-register with parent="baseThumbnailDefinition" in the future -->
+    <bean id="thumbnailDefinitionWebpreview" class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
+        <property name="name" value="webpreview" />
+        <property name="mimetype" value="application/x-shockwave-flash"/>
+        <property name="transformationOptions">
+            <bean class="org.alfresco.repo.content.transform.swf.SWFTransformationOptions">
+                <property name="flashVersion" value="9"/>
+            </bean>
+        </property>
+        <property name="runAs" value="System"/>
+        <property name="failureHandlingOptions" ref="standardFailureOptions"/>
+    </bean>
+    
     <!-- Thumbnail Register -->
     <bean id="thumbnailRegistry" parent="baseThumbnailRegistry" class="org.alfresco.repo.thumbnail.ThumbnailRegistry" />
     
@@ -66,136 +213,12 @@
         <property name="redeployStaticDefsOnStartup" value="${system.thumbnail.redeployStaticDefsOnStartup}" />
         <property name="thumbnailDefinitions">
             <list>
-               <!-- Small image thumbnail options -->
-                <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-                    <property name="name" value="medium" />
-                    <property name="mimetype" value="image/jpeg"/>
-                    <property name="transformationOptions">
-                        <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-                            <property name="resizeOptions">
-                                <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-                                    <property name="width" value="100"/>
-                                    <property name="height" value="100"/>
-                                    <property name="maintainAspectRatio" value="true"/>
-                                    <property name="resizeToThumbnail" value="true" />
-                                </bean> 
-                            </property>
-                        </bean>
-                    </property>
-                    <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_medium.jpg" />
-                    <property name="runAs" value="System"/>
-                    <property name="failureHandlingOptions" ref="standardFailureOptions"/>
-                </bean>
-    
-                <!-- Slingshot Document Library image thumbnail options -->
-                <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-                    <property name="name" value="doclib" />
-                    <property name="mimetype" value="image/png"/>
-                    <property name="transformationOptions">
-                        <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-                            <property name="resizeOptions">
-                                <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-                                    <property name="width" value="100"/>
-                                    <property name="height" value="100"/>
-                                    <property name="maintainAspectRatio" value="true"/>
-                                    <property name="resizeToThumbnail" value="true" />
-                                    <property name="allowEnlargement" value="false" />
-                                </bean> 
-                            </property>
-                            <property name="timeoutMs" value="${system.thumbnail.definition.doclib.timeoutMs}" />
-                            <property name="readLimitTimeMs" value="${system.thumbnail.definition.doclib.readLimitTimeMs}" />
-                            <property name="maxSourceSizeKBytes" value="${system.thumbnail.definition.doclib.maxSourceSizeKBytes}" />
-                            <property name="readLimitKBytes" value="${system.thumbnail.definition.doclib.readLimitKBytes}" />
-                            <property name="pageLimit" value="${system.thumbnail.definition.doclib.pageLimit}" />
-                            <property name="maxPages" value="${system.thumbnail.definition.doclib.maxPages}" />
-                        </bean>
-                    </property>
-                    <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_doclib.png" />
-                    <property name="mimeAwarePlaceHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_doclib{0}.png" />
-                    <property name="runAs" value="System"/>
-                    <property name="failureHandlingOptions" ref="standardFailureOptions"/>
-                </bean>
-
-
-
-
-                <!-- Web Preview thumbnail options -->
-                <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-                   <property name="name" value="webpreview" />
-                    <property name="mimetype" value="application/x-shockwave-flash"/>
-                    <property name="transformationOptions">
-                        <bean class="org.alfresco.repo.content.transform.swf.SWFTransformationOptions">
-                            <property name="flashVersion" value="9"/>
-                        </bean>
-                    </property>
-                    <property name="runAs" value="System"/>
-                    <property name="failureHandlingOptions" ref="standardFailureOptions"/>
-                </bean>
-            
-                <!-- Image preview thumbnail options -->
-                <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-                    <property name="name" value="imgpreview" />
-                    <property name="mimetype" value="image/jpeg"/>
-                    <property name="transformationOptions">
-                        <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-                            <property name="resizeOptions">
-                                <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-                                    <property name="width" value="960"/>
-                                    <property name="height" value="960"/>
-                                    <property name="maintainAspectRatio" value="true"/>
-                                    <property name="resizeToThumbnail" value="true" />
-                                    <property name="allowEnlargement" value="false" />
-                                </bean>
-                            </property>
-                        </bean>
-                    </property>
-                    <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_imgpreview.png" />
-                    <property name="runAs" value="System"/>
-                    <property name="failureHandlingOptions" ref="standardFailureOptions"/>
-                </bean>
-                
-
-                <!-- User avatar 64x64 image thumbnail options -->
-                <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-                    <property name="name" value="avatar" />
-                    <property name="mimetype" value="image/png"/>
-                    <property name="transformationOptions">
-                        <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-                            <property name="resizeOptions">
-                                <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-                                    <property name="width" value="64"/>
-                                    <property name="height" value="64"/>
-                                    <property name="maintainAspectRatio" value="true"/>
-                                    <property name="resizeToThumbnail" value="true" />
-                                </bean> 
-                            </property>
-                        </bean>
-                    </property>
-                    <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_avatar.png" />
-                    <property name="runAs" value="System"/>
-                    <property name="failureHandlingOptions" ref="standardFailureOptions"/>
-                </bean>
-
-                <!-- User avatar 32x32 image thumbnail options -->
-                <bean class="org.alfresco.repo.thumbnail.ThumbnailDefinition">
-                    <property name="name" value="avatar32" />
-                    <property name="mimetype" value="image/png"/>
-                    <property name="transformationOptions">
-                        <bean class="org.alfresco.repo.content.transform.magick.ImageTransformationOptions">
-                            <property name="resizeOptions">
-                                <bean class="org.alfresco.repo.content.transform.magick.ImageResizeOptions">
-                                    <property name="width" value="32"/>
-                                    <property name="height" value="32"/>
-                                    <property name="maintainAspectRatio" value="true"/>
-                                    <property name="resizeToThumbnail" value="true" />
-                                </bean> 
-                            </property>
-                        </bean>
-                    </property>
-                    <property name="placeHolderResourcePath" value="alfresco/thumbnail/thumbnail_placeholder_avatar32.png" />
-                    <property name="runAs" value="System"/>
-                    <property name="failureHandlingOptions" ref="standardFailureOptions"/>
-                </bean>
+                <ref bean="thumbnailDefinitionMedium" />
+                <ref bean="thumbnailDefinitionDoclib" />
+                <ref bean="thumbnailDefinitionImgpreview" />
+                <ref bean="thumbnailDefinitionAvatar" />
+                <ref bean="thumbnailDefinitionAvatar32" />
+                <ref bean="thumbnailDefinitionWebpreview" />
             </list>
         </property>
         <property name="thumbnailRenditionConvertor" ref="thumbnailRenditionConvertor" />

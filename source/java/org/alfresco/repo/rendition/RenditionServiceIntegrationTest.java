@@ -1413,9 +1413,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
                 // 4. "imgpreview"
                 parameterValues.clear();
-                parameterValues.put(AbstractRenderingEngine.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_IMAGE_PNG);
-                parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, 480);
-                parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, 480);
+                parameterValues.put(AbstractRenderingEngine.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_IMAGE_JPEG);
+                parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, 960);
+                parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, 960);
                 parameterValues.put(ImageRenderingEngine.PARAM_MAINTAIN_ASPECT_RATIO, true);
                 parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL, true);
                 parameterValues.put(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT, false);

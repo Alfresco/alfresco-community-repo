@@ -56,7 +56,7 @@ import org.json.JSONObject;
 
 /**
  * Role service implementation
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -65,7 +65,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 {
     /** Capability service */
     private CapabilityService capabilityService;
-    
+
     /** Authority service */
     private AuthorityService authorityService;
 
@@ -74,13 +74,13 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** Policy component */
     private PolicyComponent policyComponent;
-    
+
     /** File plan service */
     private FilePlanService filePlanService;
 
     /** Node service */
     private NodeService nodeService;
-    
+
     /** File plan authentication service */
     private FilePlanAuthenticationService filePlanAuthenticationService;
 
@@ -89,7 +89,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** Logger */
     private static Log logger = LogFactory.getLog(FilePlanRoleServiceImpl.class);
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -97,7 +97,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * @param authorityService  authority service
      */
@@ -105,7 +105,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.authorityService = authorityService;
     }
-    
+
     /**
      * @param permissionService permission service
      */
@@ -113,7 +113,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * @param policyComponent   policy component
      */
@@ -121,7 +121,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -129,7 +129,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -137,7 +137,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param filePlanAuthenticationService file plan authentication service
      */
@@ -145,7 +145,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
-    
+
     /**
      * Initialisation method
      */
@@ -160,7 +160,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 TYPE_FILE_PLAN,
                 new JavaBehaviour(this, "onDeleteRootNode", NotificationFrequency.TRANSACTION_COMMIT));
     }
-    
+
     /**
      * Create root node behaviour
      *
@@ -195,7 +195,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     // set the capabilities
                    // permissionService.setPermission(rmRootNode, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.VIEW_RECORDS, true);
                   //  permissionService.setPermission(rmRootNode, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.EDIT_NON_RECORD_METADATA, true);
-                    
+
                     // Create the unfiled record container
                     return filePlanService.createUnfiledContainer(rmRootNode);
                 }
@@ -236,7 +236,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Get all the roles by short name
      *
@@ -249,7 +249,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * 
+     *
      * @param rmRootNode
      * @param unfiledContainer
      */
@@ -345,7 +345,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                             // Add the creating user to the administration group
                             String user = AuthenticationUtil.getFullyAuthenticatedUser();
                             authorityService.addAuthority(role.getRoleGroupName(), user);
-                            
+
                             if (filePlanAuthenticationService.getRmAdminUserName().equals(user) == false)
                             {
                                 // add the dynamic admin authority
@@ -441,10 +441,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, roleAuthority, false);
                     if (users.contains(user) == true)
                     {
-                        String name = getShortRoleName(authorityService.getShortName(roleAuthority), rmRootNode);
+                        String groupShortName = authorityService.getShortName(roleAuthority);
+                        String name = getShortRoleName(groupShortName, rmRootNode);
                         String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
-                        
-                        Role role = new Role(name, displayLabel, getCapabilitiesImpl(rmRootNode, roleAuthority), roleAuthority);
+                        Set<Capability> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
+
+                        Role role = new Role(name, displayLabel, capabilities, roleAuthority, groupShortName);
                         result.add(role);
                     }
                 }
@@ -612,22 +614,22 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                 // TODO .. we should be creating a permission set containing all the capabilities and then assigning that
                 //         single permission group to the file plan .. would be tidier
-                
+
                 // Assign the various capabilities to the group on the root records management node
                 if (capabilities != null)
                 {
                     for (Capability capability : capabilities)
                     {
                         permissionService.setPermission(rmRootNode, roleGroup, capability.getName(), true);
-                    }                
+                    }
                 }
 
                 return new Role(role, roleDisplayLabel, capabilities, roleGroup);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
-    
+
+
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#updateRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, java.util.Set)
@@ -642,7 +644,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 {
                     throw new AlfrescoRuntimeException("Unable to update role " + role + ", because it does not exist.");
                 }
-                
+
                 String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, rmRootNode));
 
                 // Reset the role display name
@@ -672,10 +674,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         // ensure that we are not trying to delete the admin role
         if (ROLE_ADMIN.equals(role) == true)
-        { 
+        {
             throw new AlfrescoRuntimeException("Can not delete the records management administration role.");
         }
-        
+
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Boolean doWork() throws Exception
@@ -687,7 +689,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getUsersAssignedToRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
@@ -696,13 +698,13 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("roleName", roleName);
-        
+
         return getAuthoritiesAssignedToRole(filePlan, roleName, AuthorityType.USER);
     }
-    
+
     /**
      * Gets all the authorities of a given type directly assigned to the given role in the file plan.
-     * 
+     *
      * @param filePlan          file plan
      * @param roleName          role name
      * @param authorityType     authority type
@@ -714,17 +716,17 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         {
             public Set<String> doWork() throws Exception
             {
-                Role role = getRole(filePlan, roleName);      
+                Role role = getRole(filePlan, roleName);
                 if (role == null)
                 {
                     throw new AlfrescoRuntimeException("Can not get authorities for role " + roleName + ", because it does not exist. (filePlan=" + filePlan.toString() + ")");
                 }
-                return authorityService.getContainedAuthorities(authorityType, role.getRoleGroupName(), false);                
+                return authorityService.getContainedAuthorities(authorityType, role.getRoleGroupName(), false);
             }
         }, AuthenticationUtil.getSystemUserName());
-        
+
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getGroupsAssignedToRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
@@ -733,10 +735,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("roleName", roleName);
-        
+
         return getAuthoritiesAssignedToRole(filePlan, roleName, AuthorityType.GROUP);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getAllAssignedToRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
@@ -745,7 +747,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("roleName", role);
-        
+
         Set<String> result = new HashSet<String>(21);
         result.addAll(getUsersAssignedToRole(filePlan, role));
         result.addAll(getGroupsAssignedToRole(filePlan, role));
@@ -771,7 +773,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#unassignRoleFromAuthority(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
      */

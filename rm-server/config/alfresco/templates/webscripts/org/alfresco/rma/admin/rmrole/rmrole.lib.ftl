@@ -30,6 +30,9 @@
       }<#if group_has_next>,</#if>
    </#list>
    ]
+   <#if role.groupShortName??>
+   ,"groupShortName": "${role.groupShortName}"
+   </#if>
    </#if>
 }
 </#escape>

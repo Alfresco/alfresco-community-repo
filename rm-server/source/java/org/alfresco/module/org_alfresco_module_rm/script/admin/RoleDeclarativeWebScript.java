@@ -35,7 +35,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Base declarative web script for role API.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -43,13 +43,13 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
 {
     /** File plan service */
     protected FilePlanService filePlanService;
-    
+
     /** File plan role service */
     protected FilePlanRoleService filePlanRoleService;
-    
+
     /** Authority service */
     protected AuthorityService authorityService;
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -57,7 +57,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param filePlanRoleService   file plan role service
      */
@@ -65,7 +65,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     {
         this.filePlanRoleService = filePlanRoleService;
     }
-    
+
     /**
      * @param authorityService  authority service
      */
@@ -73,10 +73,10 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     {
         this.authorityService = authorityService;
     }
-    
+
     /**
      * Utility method to get the file plan from the passed parameters.
-     * 
+     *
      * @param req
      * @return
      */
@@ -90,12 +90,12 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
         {
             filePlan = filePlanService.getFilePlanBySiteId(siteId);
         }
-        
+
         if (filePlan == null)
         {
-            String storeType = templateVars.get("store_type"); 
-            String storeId = templateVars.get("store_id"); 
-            String id = templateVars.get("id"); 
+            String storeType = templateVars.get("store_type");
+            String storeId = templateVars.get("store_id");
+            String id = templateVars.get("id");
 
             if (StringUtils.isEmpty(storeType) == false &&
                 StringUtils.isEmpty(storeId) == false &&
@@ -107,9 +107,9 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
                 {
                     filePlan = nodeRef;
                 }
-            }            
+            }
         }
-        
+
         if (filePlan == null)
         {
             // Assume we are in a legacy repository and we will grab the default file plan
@@ -118,10 +118,10 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
 
         return filePlan;
     }
-    
+
     /**
      * Create role items
-     * 
+     *
      * @param filePlan
      * @param roles
      * @return
@@ -130,10 +130,10 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     {
         return createRoleItems(filePlan, roles, false);
     }
-    
+
     /**
      * Create role items
-     * 
+     *
      * @param filePlan
      * @param roles
      * @param showAuths
@@ -147,7 +147,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
             RoleItem item = null;
             if (showAuths == true)
             {
-                item = new RoleItem(role, 
+                item = new RoleItem(role,
                                     createAuthorityItems(filePlanRoleService.getUsersAssignedToRole(filePlan, role.getName())),
                                     createAuthorityItems(filePlanRoleService.getGroupsAssignedToRole(filePlan, role.getName())));
             }
@@ -159,92 +159,99 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
         }
         return items;
     }
-    
+
     /**
      * Create authority items
-     * 
+     *
      * @param authorities
      * @return
      */
     private Set<AuthorityItem> createAuthorityItems(Set<String> authorities)
     {
         Set<AuthorityItem> result = new HashSet<AuthorityItem>(authorities.size());
-        
+
         for (String authority : authorities)
         {
             String displayLabel = authorityService.getAuthorityDisplayName(authority);
             result.add(new AuthorityItem(authority, displayLabel));
         }
-        
+
         return result;
     }
-    
+
     /**
      * Role Item Helper Class
-     * 
+     *
      * @author Roy Wetherall
      * @since 2.1
      */
     public class RoleItem
     {
         private String name;
+        private String groupShortName;
         private String displayLabel;
         private Set<Capability> capabilities;
         private boolean showAuths = false;
         private Set<AuthorityItem> assignedUsers;
         private Set<AuthorityItem> assignedGroups;
-        
+
         public RoleItem(Role role)
         {
             this.name = role.getName();
             this.displayLabel = role.getDisplayLabel();
             this.capabilities = role.getCapabilities();
         }
-        
+
         public RoleItem(Role role, Set<AuthorityItem> assignedUsers, Set<AuthorityItem> assignedGroups)
         {
             this.name = role.getName();
+            this.groupShortName = role.getGroupShortName();
             this.displayLabel = role.getDisplayLabel();
             this.capabilities = role.getCapabilities();
             this.showAuths = true;
             this.assignedUsers = assignedUsers;
             this.assignedGroups = assignedGroups;
         }
-        
+
         public String getName()
         {
             return name;
         }
-        
+
+        public String getGroupShortName()
+        {
+            return groupShortName;
+        }
+
         public String getDisplayLabel()
         {
             return displayLabel;
         }
-        
+
         public Set<Capability> getCapabilities()
         {
             return capabilities;
         }
-        
+
         public boolean getShowAuths()
         {
             return showAuths;
         }
-        
+
         public Set<AuthorityItem> getAssignedGroups()
         {
             return assignedGroups;
         }
-        
+
         public Set<AuthorityItem> getAssignedUsers()
         {
             return assignedUsers;
         }
     }
-    
+
     /**
      * Authority Item Helper Class
-     * 
+     *
      * @author Roy Wetherall
      * @since 2.1
      */
@@ -252,21 +259,21 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
     {
         private String name;
         private String displayLabel;
-        
+
         public AuthorityItem(String name, String displayLabel)
         {
             this.name = name;
             this.displayLabel = displayLabel;
         }
-        
+
         public String getName()
         {
             return name;
         }
-        
+
         public String getDisplayLabel()
         {
             return displayLabel;
-        }        
+        }
     }
 }

@@ -31,20 +31,24 @@ public class Role
 {
     /** Role name */
     private String name;
-    
+
     /** Role label */
     private String displayLabel;
-    
+
     /** Role capabilities */
     private Set<Capability> capabilities;
-    
+
     /** Role group name */
     private String roleGroupName;
+
+    /** Role group short name */
+    private String groupShortName;
 
     /**
      * @param name
      * @param displayLabel
      * @param capabilities
+     * @param roleGroupName
      */
     public Role(String name, String displayLabel, Set<Capability> capabilities, String roleGroupName)
     {
@@ -52,6 +56,19 @@ public class Role
         this.displayLabel = displayLabel;
         this.capabilities = capabilities;
         this.roleGroupName = roleGroupName;
+    }
+
+    /**
+     * @param name
+     * @param displayLabel
+     * @param capabilities
+     * @param roleGroupName
+     * @param groupShortName
+     */
+    public Role(String name, String displayLabel, Set<Capability> capabilities, String roleGroupName, String groupShortName)
+    {
+        this(name, displayLabel, capabilities, roleGroupName);
+        this.groupShortName = groupShortName;
     }
 
     /**
@@ -85,4 +102,13 @@ public class Role
     {
         return roleGroupName;
     }
+
+    /**
+     * @return the groupShortName
+     */
+    public String getGroupShortName()
+    {
+        return this.groupShortName;
+    }
+
 }

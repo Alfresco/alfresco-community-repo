@@ -412,10 +412,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 Set<String> roleAuthorities = authorityService.getAllAuthoritiesInZone(getZoneName(rmRootNode), AuthorityType.GROUP);
                 for (String roleAuthority : roleAuthorities)
                 {
-                    String name = getShortRoleName(authorityService.getShortName(roleAuthority), rmRootNode);
+                    String groupShortName = authorityService.getShortName(roleAuthority);
+                    String name = getShortRoleName(groupShortName, rmRootNode);
                     String displayLabel = authorityService.getAuthorityDisplayName(roleAuthority);
+                    Set<Capability> capabilities = getCapabilitiesImpl(rmRootNode, roleAuthority);
 
-                    Role role = new Role(name, displayLabel, getCapabilitiesImpl(rmRootNode, roleAuthority), roleAuthority);
+                    Role role = new Role(name, displayLabel, capabilities, roleAuthority, groupShortName);
                     result.add(role);
                 }
 

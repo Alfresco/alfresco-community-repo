@@ -27,6 +27,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.webscript.EmailMapScriptT
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.EventRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RMCaveatConfigScriptTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RMConstraintScriptTest;
+import org.alfresco.module.org_alfresco_module_rm.test.webscript.RmChildrenRestApiTest;
 import org.alfresco.module.org_alfresco_module_rm.test.webscript.RoleRestApiTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -51,10 +52,10 @@ import org.junit.runners.Suite.SuiteClasses;
     EmailMapScriptTest.class,
     EmailMapKeysRestApiTest.class,
     CapabilitiesRestApiTest.class,
-    ActionDefinitionsRestApiTest.class
+    ActionDefinitionsRestApiTest.class,
     //RmClassesRestApiTest.class,
-    //RmPropertiesRestApiTest.class
-
+    //RmPropertiesRestApiTest.class,
+    RmChildrenRestApiTest.class
 })
 public class WebScriptTestSuite
 {

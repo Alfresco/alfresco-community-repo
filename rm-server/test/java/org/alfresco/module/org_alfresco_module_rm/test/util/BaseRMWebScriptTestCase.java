@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -60,6 +61,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PropertyMap;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -228,12 +230,12 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
             @Override
             public Object execute() throws Throwable
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
                 setupTestDataImpl();
                 return null;
             }
         });
-        
+
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
             @Override
@@ -329,5 +331,41 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
                 taggingService);
 
         assertNotNull("Collaboration site document library component was not successfully created.", documentLibrary);
+    }
+
+    protected void createUser(String userName)
+    {
+        if (authenticationService.authenticationExists(userName) == false)
+        {
+            authenticationService.createAuthentication(userName, "PWD".toCharArray());
+
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+
+            personService.createPerson(ppOne);
+        }
+    }
+
+    protected void deleteUser(String userName)
+    {
+        personService.deletePerson(userName);
+    }
+
+    protected void createGroup(String groupName)
+    {
+        if (authorityService.authorityExists(groupName) == false)
+        {
+            authorityService.createAuthority(AuthorityType.GROUP, groupName);
+        }
+    }
+
+    protected void deleteGroup(String groupName)
+    {
+        authorityService.deleteAuthority(groupName, true);
     }
 }

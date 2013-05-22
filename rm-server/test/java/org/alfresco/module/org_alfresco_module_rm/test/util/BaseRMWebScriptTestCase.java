@@ -353,7 +353,10 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
     protected void deleteUser(String userName)
     {
-        personService.deletePerson(userName);
+        if (authenticationService.authenticationExists(userName) == true)
+        {
+            personService.deletePerson(userName);
+        }
     }
 
     protected void createGroup(String groupName)
@@ -366,6 +369,9 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
     protected void deleteGroup(String groupName)
     {
-        authorityService.deleteAuthority(groupName, true);
+        if (authorityService.authorityExists(groupName) == true)
+        {
+            authorityService.deleteAuthority(groupName, true);
+        }
     }
 }

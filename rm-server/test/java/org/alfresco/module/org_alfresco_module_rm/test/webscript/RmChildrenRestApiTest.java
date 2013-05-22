@@ -25,6 +25,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
@@ -58,18 +59,20 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
         String userName = "geshjsjuasftg";
         createUser(userName);
 
+        String name = authorityService.getName(AuthorityType.USER, userName);
+
         // Check if the user is already assigned to the role
-        assertFalse(getUsersAssignedToRole().contains(userName));
+        assertFalse(getUsersAssignedToRole().contains(name));
 
         // Format url and send request
-        String url = getFormattedUrlString(userName);
+        String url = getFormattedUrlString(name);
         Response response = postRequest(url);
 
         // Check the content from the response
         checkContent(response);
 
         // The user should be added to the role
-        assertTrue(getUsersAssignedToRole().contains(userName));
+        assertTrue(getUsersAssignedToRole().contains(name));
 
         // Remove the user from the role
         response = deleteRequest(url);
@@ -78,10 +81,10 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
         checkContent(response);
 
         // The user should be removed from the role
-        assertFalse(getUsersAssignedToRole().contains(userName));
+        assertFalse(getUsersAssignedToRole().contains(name));
 
         // Delete the user
-        deleteUser(userName);
+        deleteUser(name);
     }
 
     /**
@@ -96,18 +99,20 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
         String groupName = "arhweurawy";
         createGroup(groupName);
 
+        String name = authorityService.getName(AuthorityType.GROUP, groupName);
+
         // Check if the group is already assigned to the role
-        assertFalse(getGroupsAssignedToRole().contains(groupName));
+        assertFalse(getGroupsAssignedToRole().contains(name));
 
         // Format url and send request
-        String url = getFormattedUrlString(groupName);
+        String url = getFormattedUrlString(name);
         Response response = postRequest(url);
 
         // Check the content from the response
         checkContent(response);
 
         // The group should be added to the role
-        assertTrue(getGroupsAssignedToRole().contains(groupName));
+        assertTrue(getGroupsAssignedToRole().contains(name));
 
         // Remove the group from the role
         response = deleteRequest(url);
@@ -116,7 +121,7 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
         checkContent(response);
 
         // The user should be removed from the role
-        assertFalse(getGroupsAssignedToRole().contains(groupName));
+        assertFalse(getGroupsAssignedToRole().contains(name));
 
         // Delete the group
         deleteGroup(groupName);

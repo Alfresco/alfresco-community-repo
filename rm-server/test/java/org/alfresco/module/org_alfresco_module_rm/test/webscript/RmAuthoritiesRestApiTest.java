@@ -20,10 +20,15 @@ package org.alfresco.module.org_alfresco_module_rm.test.webscript;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.GUID;
@@ -48,6 +53,82 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     /** Constant for the content type */
     private static final String APPLICATION_JSON = "application/json";
 
+    /** Constant for users and groups */
+    private static final String USER_WITH_CAPABILITY = GUID.generate();
+    private static final String USER_WITHOUT_CAPABILITY = GUID.generate();
+    private static final String ROLE_INCLUDING_CAPABILITY = GUID.generate();
+    private static final String ROLE_NOT_INCLUDING_CAPABILITY = GUID.generate();
+    private static final String USER_TO_ADD_TO_ROLE = GUID.generate();
+    private static final String GROUP_TO_ADD_TO_ROLE = GUID.generate();
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase#setupTestData()
+     */
+    @Override
+    protected void setupTestData()
+    {
+        super.setupTestData();
+
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+
+                // Create test user WITH required capability
+                createUser(USER_WITH_CAPABILITY);
+                // Create test role
+                Set<Capability> capabilities = new HashSet<Capability>(2);
+                capabilities.add(capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS));
+                capabilities.add(capabilityService.getCapability(RMPermissionModel.CREATE_MODIFY_DESTROY_USERS_AND_GROUPS));
+                filePlanRoleService.createRole(filePlan, ROLE_INCLUDING_CAPABILITY, ROLE_INCLUDING_CAPABILITY, capabilities);
+                // Add user to the role
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_INCLUDING_CAPABILITY, USER_WITH_CAPABILITY);
+
+                // Create test user WITHOUT required capability
+                createUser(USER_WITHOUT_CAPABILITY);
+                // Create test role
+                filePlanRoleService.createRole(filePlan, ROLE_NOT_INCLUDING_CAPABILITY, ROLE_NOT_INCLUDING_CAPABILITY, new HashSet<Capability>(1));
+                // Add user to the role
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NOT_INCLUDING_CAPABILITY, USER_WITHOUT_CAPABILITY);
+
+                // Create a test user to add to role
+                createUser(USER_TO_ADD_TO_ROLE);
+
+                // Create a group to add to role
+                createGroup(GROUP_TO_ADD_TO_ROLE);
+
+                return null;
+            }
+        });
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase#tearDownImpl()
+     */
+    @Override
+    protected void tearDownImpl()
+    {
+        super.tearDownImpl();
+
+        // Delete test user WITH required capability
+        deleteUser(USER_WITH_CAPABILITY);
+        // Delete test role
+        filePlanRoleService.deleteRole(filePlan, ROLE_INCLUDING_CAPABILITY);
+
+        // Delete test user WITHOUT required capability
+        deleteUser(USER_WITHOUT_CAPABILITY);
+        // Add user to the role
+        filePlanRoleService.deleteRole(filePlan, ROLE_NOT_INCLUDING_CAPABILITY);
+
+        // Delete the user which was added to the role
+        deleteUser(getTestUserName());
+
+        // Delete the group which was added to the role
+        deleteGroup(getTestGroupName());
+    }
+
     /**
      * Test the REST API to add/remove a user to/from a role
      *
@@ -56,37 +137,33 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      */
     public void testRmAddRemoveUser() throws IOException, JSONException
     {
-        // Create a test user
-        String userName = GUID.generate();
-        createUser(userName);
+        // Do the positive test with a user with the needed capabilities
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_WITH_CAPABILITY);
 
-        // Get the name
-        String name = authorityService.getName(AuthorityType.USER, userName);
+        // Get the user name
+        String userName = getTestUserName();
 
         // Check if the user is already assigned to the role
-        assertFalse(getUsersAssignedToRole().contains(name));
+        assertFalse(getUsersAssignedToRole().contains(userName));
 
-        // Format url and send request
-        String url = getFormattedUrlString(name);
-        Response response = postRequestSuccess(url);
-
-        // Check the content from the response
-        checkContent(response);
+        // Format url, send the request and check the content
+        String url = getFormattedUrlString(userName);
+        checkContent(postRequestSuccess(url));
 
         // The user should be added to the role
-        assertTrue(getUsersAssignedToRole().contains(name));
+        assertTrue(getUsersAssignedToRole().contains(userName));
 
-        // Remove the user from the role
-        response = deleteRequestSuccess(url);
-
-        // Check the content from the response
-        checkContent(response);
+        // Remove the user from the role and check the content
+        checkContent(deleteRequestSuccess(url));
 
         // The user should be removed from the role
-        assertFalse(getUsersAssignedToRole().contains(name));
+        assertFalse(getUsersAssignedToRole().contains(userName));
 
-        // Delete the user
-        deleteUser(name);
+        // Do the negative test with a user without any capabilities
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_WITHOUT_CAPABILITY);
+
+        // Send a request. The expectation is an internal server error
+        postRequestFailure(url);
     }
 
     /**
@@ -97,37 +174,53 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
      */
     public void testRmAddRemoveGroup() throws IOException, JSONException
     {
-        // Create a group
-        String groupName = GUID.generate();
-        createGroup(groupName);
+        // Do the positive test with a user with the needed capabilities
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_WITH_CAPABILITY);
 
-        // Get the name
-        String name = authorityService.getName(AuthorityType.GROUP, groupName);
+        // Get the group name
+        String groupName = getTestGroupName();
 
         // Check if the group is already assigned to the role
-        assertFalse(getGroupsAssignedToRole().contains(name));
+        assertFalse(getGroupsAssignedToRole().contains(groupName));
 
-        // Format url and send request
-        String url = getFormattedUrlString(name);
-        Response response = postRequestSuccess(url);
-
-        // Check the content from the response
-        checkContent(response);
+        // Format url, send the request and check the content
+        String url = getFormattedUrlString(groupName);
+        checkContent(postRequestSuccess(url));
 
         // The group should be added to the role
-        assertTrue(getGroupsAssignedToRole().contains(name));
+        assertTrue(getGroupsAssignedToRole().contains(groupName));
 
-        // Remove the group from the role
-        response = deleteRequestSuccess(url);
-
-        // Check the content from the response
-        checkContent(response);
+        // Remove the group from the role and check the content
+        checkContent(deleteRequestSuccess(url));
 
         // The user should be removed from the role
-        assertFalse(getGroupsAssignedToRole().contains(name));
+        assertFalse(getGroupsAssignedToRole().contains(groupName));
 
-        // Delete the group
-        deleteGroup(name);
+        // Do the negative test with a user without any capabilities
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_WITHOUT_CAPABILITY);
+
+        // Send a request. The expectation is an internal server error
+        deleteRequestFailure(url);
+    }
+
+    /**
+     * Util method to get the user name which will be added/removed to/from the role
+     *
+     * @return Returns the user name which will be added/removed to/from the role
+     */
+    private String getTestUserName()
+    {
+        return authorityService.getName(AuthorityType.USER, USER_TO_ADD_TO_ROLE);
+    }
+
+    /**
+     * Util method to get the group name which will be added/removed to/from the role
+     *
+     * @return Returns the user group which will be added/removed to/from the role
+     */
+    private String getTestGroupName()
+    {
+        return authorityService.getName(AuthorityType.GROUP, GROUP_TO_ADD_TO_ROLE);
     }
 
     /**
@@ -184,7 +277,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     }
 
     /**
-     * Util method to send a post request
+     * Util method to send a post request. The expected status is success.
      *
      * @param url The url which should be used to make the post request
      * @return Returns the response from the server
@@ -197,7 +290,20 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     }
 
     /**
-     * Util method to send a delete request
+     * Util method to send a post request. The expected status is an internal server error.
+     *
+     * @param url The url which should be used to make the post request
+     * @return Returns the response from the server
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    private Response postRequestFailure(String url) throws UnsupportedEncodingException, IOException
+    {
+        return sendRequest(new PostRequest(url, new JSONObject().toString(), APPLICATION_JSON), Status.STATUS_INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * Util method to send a delete request. The expected status is success.
      *
      * @param url The url which should be used to make the delete request
      * @return Returns the response from the server
@@ -206,6 +312,18 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     private Response deleteRequestSuccess(String url) throws IOException
     {
         return sendRequest(new DeleteRequest(url), Status.STATUS_OK);
+    }
+
+    /**
+     * Util method to send a delete request. The expected status is an internal server error.
+     *
+     * @param url The url which should be used to make the delete request
+     * @return Returns the response from the server
+     * @throws IOException
+     */
+    private Response deleteRequestFailure(String url) throws IOException
+    {
+        return sendRequest(new DeleteRequest(url), Status.STATUS_INTERNAL_SERVER_ERROR);
     }
 
     /**

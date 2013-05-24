@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.web.scripts.groups;
+package org.alfresco.repo.web.scripts.roles;
 
 import java.util.Map;
 
@@ -34,7 +34,7 @@ import org.tuckey.web.filters.urlrewrite.utils.StringUtils;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RmChildrenAbstract extends RoleDeclarativeWebScript
+public class AbstractRmAuthorities extends RoleDeclarativeWebScript
 {
     /** Constants for the url parameters */
     private static final String ROLE_ID = "roleId";

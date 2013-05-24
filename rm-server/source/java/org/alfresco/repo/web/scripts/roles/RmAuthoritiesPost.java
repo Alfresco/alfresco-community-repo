@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.web.scripts.groups;
+package org.alfresco.repo.web.scripts.roles;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,12 +27,12 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Webscript for removing a user or a group from a role
+ * Webscript for adding a user or a group to a role
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RmChildrenDelete extends RmChildrenAbstract
+public class RmAuthoritiesPost extends AbstractRmAuthorities
 {
     /**
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
@@ -46,7 +46,7 @@ public class RmChildrenDelete extends RmChildrenAbstract
         String roleId = getRoleId(req);
         String authorityName = getAuthorityName(req);
 
-        filePlanRoleService.unassignRoleFromAuthority(filePlan, roleId, authorityName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, roleId, authorityName);
 
         return new HashMap<String, Object>();
     }

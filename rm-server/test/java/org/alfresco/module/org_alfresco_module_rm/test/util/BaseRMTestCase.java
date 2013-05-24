@@ -469,7 +469,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             createPerson(AuthenticationUtil.getSystemUserName(), false);
         }
         assertTrue("No person object for System available.", authDao.authorityExists(AuthenticationUtil.getSystemUserName()));
-        
+
         storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         rootNodeRef = nodeService.getRootNode(storeRef);
 
@@ -486,13 +486,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         assertNotNull("Could not create base folder", folder);
 
         siteInfo = siteService.createSite(
-                        "rm-site-dashboard", 
-                        SITE_ID, 
-                        "title", 
-                        "descrition", 
-                        SiteVisibility.PUBLIC, 
-                        RecordsManagementModel.TYPE_RM_SITE);           
-        
+                        "rm-site-dashboard",
+                        SITE_ID,
+                        "title",
+                        "descrition",
+                        SiteVisibility.PUBLIC,
+                        RecordsManagementModel.TYPE_RM_SITE);
+
         filePlan = siteService.getContainer(SITE_ID, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
         assertNotNull("Site document library container was not created successfully.", filePlan);
 
@@ -544,23 +544,23 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
         rmUserName = GUID.generate();
         rmUserPerson = createPerson(rmUserName);
-        filePlanRoleService.assignRoleToAuthority(filePlan, "User", rmUserName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_USER, rmUserName);
 
         powerUserName = GUID.generate();
         powerUserPerson = createPerson(powerUserName);
-        filePlanRoleService.assignRoleToAuthority(filePlan, "PowerUser", powerUserName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_POWER_USER, powerUserName);
 
         securityOfficerName = GUID.generate();
         securityOfficerPerson = createPerson(securityOfficerName);
-        filePlanRoleService.assignRoleToAuthority(filePlan, "SecurityOfficer", securityOfficerName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_SECURITY_OFFICER, securityOfficerName);
 
         recordsManagerName = GUID.generate();
         recordsManagerPerson = createPerson(recordsManagerName);
-        filePlanRoleService.assignRoleToAuthority(filePlan, "RecordsManager", recordsManagerName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, recordsManagerName);
 
         rmAdminName = GUID.generate();
         rmAdminPerson = createPerson(rmAdminName);
-        filePlanRoleService.assignRoleToAuthority(filePlan, "Administrator", rmAdminName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, rmAdminName);
 
         testUsers = new String[]
         {
@@ -600,7 +600,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         properties.put(ContentModel.PROP_USERNAME, userName);
         return personService.createPerson(properties);
     }
-    
+
     protected NodeRef createPerson(String userName)
     {
         return createPerson(userName, true);

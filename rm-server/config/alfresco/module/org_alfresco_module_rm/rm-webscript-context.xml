@@ -539,18 +539,18 @@
       <property name="siteService" ref="SiteService" />
    </bean>
 
-   <!-- REST impl for POST Children for RM -->
-   <bean id="webscript.org.alfresco.repository.groups.rm-children.post"
-      class="org.alfresco.repo.web.scripts.groups.RmChildrenPost"
+   <!-- REST impl for POST Authorities for RM -->
+   <bean id="webscript.org.alfresco.repository.roles.rm-authorities.post"
+      class="org.alfresco.repo.web.scripts.roles.RmAuthoritiesPost"
       parent="webscript">
       <property name="filePlanService" ref="FilePlanService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />
       <property name="authorityService" ref="AuthorityService" />
    </bean>
 
-   <!-- REST impl for DELETE Children for RM -->
-   <bean id="webscript.org.alfresco.repository.groups.rm-children.delete"
-      class="org.alfresco.repo.web.scripts.groups.RmChildrenDelete"
+   <!-- REST impl for DELETE Authorities for RM -->
+   <bean id="webscript.org.alfresco.repository.roles.rm-authorities.delete"
+      class="org.alfresco.repo.web.scripts.roles.RmAuthoritiesDelete"
       parent="webscript">
       <property name="filePlanService" ref="FilePlanService" />
       <property name="filePlanRoleService" ref="FilePlanRoleService" />

@@ -26,6 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.util.GUID;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
@@ -39,10 +40,10 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
+public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
 {
     /** URL for the REST APIs */
-    private static final String RM_CHILDREN_URL = "/api/rm/%s/role/%s/children/%s";
+    private static final String RM_CHILDREN_URL = "/api/rm/%s/roles/%s/authorities/%s";
 
     /** Constant for the content type */
     private static final String APPLICATION_JSON = "application/json";
@@ -56,9 +57,10 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
     public void testRmAddRemoveUser() throws IOException, JSONException
     {
         // Create a test user
-        String userName = "geshjsjuasftg";
+        String userName = GUID.generate();
         createUser(userName);
 
+        // Get the name
         String name = authorityService.getName(AuthorityType.USER, userName);
 
         // Check if the user is already assigned to the role
@@ -66,7 +68,7 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
 
         // Format url and send request
         String url = getFormattedUrlString(name);
-        Response response = postRequest(url);
+        Response response = postRequestSuccess(url);
 
         // Check the content from the response
         checkContent(response);
@@ -75,7 +77,7 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
         assertTrue(getUsersAssignedToRole().contains(name));
 
         // Remove the user from the role
-        response = deleteRequest(url);
+        response = deleteRequestSuccess(url);
 
         // Check the content from the response
         checkContent(response);
@@ -96,9 +98,10 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
     public void testRmAddRemoveGroup() throws IOException, JSONException
     {
         // Create a group
-        String groupName = "arhweurawy";
+        String groupName = GUID.generate();
         createGroup(groupName);
 
+        // Get the name
         String name = authorityService.getName(AuthorityType.GROUP, groupName);
 
         // Check if the group is already assigned to the role
@@ -106,7 +109,7 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
 
         // Format url and send request
         String url = getFormattedUrlString(name);
-        Response response = postRequest(url);
+        Response response = postRequestSuccess(url);
 
         // Check the content from the response
         checkContent(response);
@@ -115,7 +118,7 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
         assertTrue(getGroupsAssignedToRole().contains(name));
 
         // Remove the group from the role
-        response = deleteRequest(url);
+        response = deleteRequestSuccess(url);
 
         // Check the content from the response
         checkContent(response);
@@ -124,7 +127,7 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
         assertFalse(getGroupsAssignedToRole().contains(name));
 
         // Delete the group
-        deleteGroup(groupName);
+        deleteGroup(name);
     }
 
     /**
@@ -159,7 +162,7 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
         String storeId = storeRef.getIdentifier();
         String id = filePlan.getId();
 
-        StringBuffer sb = new StringBuffer();
+        StringBuffer sb = new StringBuffer(32);
         sb.append(storeType);
         sb.append("/");
         sb.append(storeId);
@@ -188,7 +191,7 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    private Response postRequest(String url) throws UnsupportedEncodingException, IOException
+    private Response postRequestSuccess(String url) throws UnsupportedEncodingException, IOException
     {
         return sendRequest(new PostRequest(url, new JSONObject().toString(), APPLICATION_JSON), Status.STATUS_OK);
     }
@@ -200,7 +203,7 @@ public class RmChildrenRestApiTest extends BaseRMWebScriptTestCase
      * @return Returns the response from the server
      * @throws IOException
      */
-    private Response deleteRequest(String url) throws IOException
+    private Response deleteRequestSuccess(String url) throws IOException
     {
         return sendRequest(new DeleteRequest(url), Status.STATUS_OK);
     }

@@ -1479,4 +1479,49 @@
         <property name="path" value="alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml" />
     </bean>
 
+    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.RMAuthorityDAOImpl" init-method="init">
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="searchService">
+            <ref bean="admSearchService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="authorityLookupCache">
+            <ref bean="authorityLookupCache" />
+        </property>
+        <property name="userAuthorityCache">
+            <ref bean="userToAuthorityCache" />
+        </property>
+        <property name="childAuthorityCache">
+            <ref bean="authorityToChildAuthorityCache" />
+        </property>
+        <property name="zoneAuthorityCache">
+            <ref bean="zoneToAuthorityCache" />
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+        <property name="cannedQueryRegistry">
+            <ref bean="cannedQueryRegistry" />
+        </property>
+        <property name="aclDAO">
+            <ref bean="aclDAO" />
+        </property>
+    </bean>
+
 </beans>

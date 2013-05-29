@@ -11,15 +11,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl;
@@ -69,8 +69,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /** Node service */
     private NodeService nodeService;
 
-    /** Records management service */
-    private RecordsManagementService recordsManagementService;
+    /** File plan service service */
+    private FilePlanService filePlanService;
 
     /** Permission service */
     private PermissionService permissionService;
@@ -130,13 +130,13 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     }
 
     /**
-     * Set records management service
+     * Set file plan service
      *
-     * @param recordsManagementService the records management service
+     * @param filePlanService the file plan service
      */
-    public void setRecordsManagementService(RecordsManagementService recordsManagementService)
+    public void setFilePlanService(FilePlanService filePlanService)
     {
-        this.recordsManagementService = recordsManagementService;
+        this.filePlanService = filePlanService;
     }
 
     /**
@@ -358,7 +358,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
         {
             public Object doWork() throws Exception
             {
-                java.util.List<NodeRef> rmRoots = recordsManagementService.getFilePlans();
+                Set<NodeRef> rmRoots = filePlanService.getFilePlans();
                 logger.info("Bootstraping " + rmRoots.size() + " rm roots ...");
                 for (NodeRef rmRoot : rmRoots)
                 {
@@ -368,7 +368,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                         permissionService.setInheritParentPermissions(rmRoot, false);
                     }
 
-                    String allRoleShortName = "AllRoles" + rmRoot.getId();
+                    String allRoleShortName = RMAuthority.ALL_ROLES_PREFIX + rmRoot.getId();
                     String allRoleGroupName = authorityService.getName(AuthorityType.GROUP, allRoleShortName);
 
                     if (authorityService.authorityExists(allRoleGroupName) == false)
@@ -377,7 +377,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
                         // Create "all" role group for root node
                         String allRoles = authorityService.createAuthority(AuthorityType.GROUP, allRoleShortName,
-                                "All Roles", new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
+                                RMAuthority.ALL_ROLES_DISPLAY_NAME, new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                         // Put all the role groups in it
                         Set<Role> roles = filePlanRoleService.getRoles(rmRoot);

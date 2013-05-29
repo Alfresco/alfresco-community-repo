@@ -247,7 +247,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      */
     private String getAllRolesGroupShortName(NodeRef rmRootNode)
     {
-        return "AllRoles" + rmRootNode.getId();
+        return RMAuthority.ALL_ROLES_PREFIX + rmRootNode.getId();
     }
 
     /**

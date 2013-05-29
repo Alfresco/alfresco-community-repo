@@ -253,7 +253,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                         permissionService.setInheritParentPermissions(rmRoot, false);
                     }
 
-                    String allRoleShortName = "AllRoles" + rmRoot.getId();
+                    String allRoleShortName = RMAuthority.ALL_ROLES_PREFIX + rmRoot.getId();
                     String allRoleGroupName = authorityService.getName(AuthorityType.GROUP, allRoleShortName);
 
                     if (authorityService.authorityExists(allRoleGroupName) == false)
@@ -263,7 +263,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                         // Create "all" role group for root node
                         String allRoles = authorityService.createAuthority(AuthorityType.GROUP,
                                                                            allRoleShortName,
-                                                                           "All Roles",
+                                                                           RMAuthority.ALL_ROLES_DISPLAY_NAME,
                                                                            new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                         // Put all the role groups in it

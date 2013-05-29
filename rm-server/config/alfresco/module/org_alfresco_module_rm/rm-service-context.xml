@@ -1414,7 +1414,7 @@
         <property name="importerService" ref="ImporterService"/>
         <property name="searchService" ref="SearchService"/>
         <property name="nodeService" ref="NodeService"/>
-        <property name="recordsManagementService" ref="RecordsManagementService"/>
+        <property name="filePlanService" ref="FilePlanService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="authorityService" ref="AuthorityService"/>
         <property name="filePlanRoleService" ref="FilePlanRoleService"/>

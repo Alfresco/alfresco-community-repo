@@ -29,7 +29,6 @@ import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -73,8 +72,8 @@ public class RMv21RolesPatch extends AbstractModuleComponent implements BeanName
                 addAuthorityToZone(roleGroupName);
                 if (parentAddedToZone == false)
                 {
-                    String allRolesGroup = authorityService.getName(AuthorityType.GROUP, "AllRoles" + filePlan.getId());
-                    addAuthorityToZone(allRolesGroup);
+                    String allRolesGroupName = filePlanRoleService.getAllRolesContainerGroup(filePlan);
+                    addAuthorityToZone(allRolesGroupName);
                     parentAddedToZone = true;
                 }
             }

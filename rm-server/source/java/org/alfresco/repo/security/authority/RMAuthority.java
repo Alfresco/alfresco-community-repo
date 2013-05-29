@@ -30,4 +30,14 @@ public interface RMAuthority
      * The default rm zone.
      */
     public static String ZONE_APP_RM = "APP.RM";
+
+    /**
+     * The constant for all roles display name
+     */
+    public static String ALL_ROLES_DISPLAY_NAME = "All Roles";
+
+    /**
+     * The constant for all roles prefix
+     */
+    public static String ALL_ROLES_PREFIX = "AllRoles";
 }

@@ -6,7 +6,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -374,7 +377,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
                         // Create "all" role group for root node
                         String allRoles = authorityService.createAuthority(AuthorityType.GROUP, allRoleShortName,
-                                "All Roles", null);
+                                "All Roles", new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                         // Put all the role groups in it
                         Set<Role> roles = filePlanRoleService.getRoles(rmRoot);

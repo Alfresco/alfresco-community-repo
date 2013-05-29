@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -184,7 +186,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 public NodeRef doWork()
                 {
                     // Create "all" role group for root node
-                    String allRoles = authorityService.createAuthority(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode), "All Roles", null);
+                    String allRoles = authorityService.createAuthority(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode), "All Roles", new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                     // Set the permissions
                     permissionService.setInheritParentPermissions(rmRootNode, false);
@@ -607,7 +609,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 // Create a group that relates to the records management role
                 Set<String> zones = new HashSet<String>(2);
                 zones.add(getZoneName(rmRootNode));
-                zones.add(AuthorityService.ZONE_APP_DEFAULT);
+                zones.add(RMAuthority.ZONE_APP_RM);
                 String roleGroup = authorityService.createAuthority(AuthorityType.GROUP, fullRoleName, roleDisplayLabel, zones);
 
                 // Add the roleGroup to the "all" role group

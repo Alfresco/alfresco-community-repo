@@ -26,6 +26,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.forms.Field;
+import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
@@ -84,8 +85,12 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
      * java.util.List, java.util.List, org.alfresco.repo.forms.Form,
      * java.util.Map)
      */
-    public void afterGenerate(TypeDefinition type, List<String> fields, List<String> forcedFields, Form form,
-                Map<String, Object> context)
+    public void afterGenerate(
+                    TypeDefinition type, 
+                    List<String> fields, 
+                    List<String> forcedFields, 
+                    Form form,
+                    Map<String, Object> context)
     {
         QName typeName = type.getName();        
         if (rmAdminService.isCustomisable(typeName) == true)
@@ -103,8 +108,17 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
             }
         }
         
-        // Group fields
-       // groupFields(form); 
+        // set the id 
+        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+        for (FieldDefinition fieldDef : fieldDefs)
+        {
+            String prefixName = fieldDef.getName();                       
+            if (prefixName.equals("rma:identifier"))
+            {
+                String defaultId = identifierService.generateIdentifier(typeName, null);                
+                fieldDef.setDefaultValue(defaultId);
+            }
+        }
     }
 
     /**
@@ -143,42 +157,4 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
     public void afterPersist(TypeDefinition item, FormData data, final NodeRef nodeRef)
     {
     }
-    
-    /**
-     * Puts all fields in a group to workaround ALF-6089.
-     * 
-     * @param form The form being generated
-     */
-//    protected void groupFields(Form form)
-//    {
-//        // to control the order of the fields add the name, title and description fields to
-//        // a field group containing just that field, all other fields that are not already 
-//        // in a group go into an "other" field group. The client config can then declare a 
-//        // client side set with the same id and order them correctly.
-//        
-//        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-//        for (FieldDefinition fieldDef : fieldDefs)
-//        {
-//            FieldGroup group = fieldDef.getGroup();
-//            if (group == null)
-//            {
-//                if (fieldDef.getName().equals(ContentModel.PROP_NAME.toPrefixString(this.namespaceService)))
-//                {
-//                    fieldDef.setGroup(NAME_FIELD_GROUP);
-//                }
-//                else if (fieldDef.getName().equals(ContentModel.PROP_TITLE.toPrefixString(this.namespaceService)))
-//                {
-//                    fieldDef.setGroup(TITLE_FIELD_GROUP);
-//                }
-//                else if (fieldDef.getName().equals(ContentModel.PROP_DESCRIPTION.toPrefixString(this.namespaceService)))
-//                {
-//                    fieldDef.setGroup(DESC_FIELD_GROUP);
-//                }
-//                else
-//                {
-//                    fieldDef.setGroup(OTHER_FIELD_GROUP);
-//                }
-//            }
-//        }
-//    }
 }

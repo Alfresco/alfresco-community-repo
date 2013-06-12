@@ -141,6 +141,5 @@
     			<ref bean="rmFileRecordsCapability"/>
     		</list>
     	</property>
-    </bean>
-
+    </bean> 
 </beans>

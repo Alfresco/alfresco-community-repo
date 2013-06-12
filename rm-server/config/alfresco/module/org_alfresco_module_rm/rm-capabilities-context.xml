@@ -169,17 +169,18 @@
 		<property name="permission" value="ManageAccessControls" />
 	</bean>
 
-    <bean id="rmManageAccessRightsCapability" 
-    	  parent="declarativeCapability">
-   		<property name="name" value="ManageAccessRights"/>
-   		<property name="permission" value="ManageAccessRights"/>   		
-   		<property name="conditions">
-   			<map>
-   				<entry key="capabilityCondition.frozen" value="false"/>   	
-   			</map>
-   		</property>
-    </bean>  
-    
+    <bean id="rmManageAccessRightsCapability"
+          parent="declarativeCapability">
+        <property name="name" value="ManageAccessRights"/>
+        <property name="permission" value="ManageAccessRights"/>
+        <property name="conditions">
+            <map>
+                <entry key="capabilityCondition.frozen" value="false"/>
+                <entry key="capabilityCondition.filling" value="true"/>
+            </map>
+        </property>
+    </bean>
+
     <bean id="rmMapClassificationGuideMetadataCapability" 
 		  parent="declarativeCapability">
 		<property name="name" value="MapClassificationGuideMetadata" />

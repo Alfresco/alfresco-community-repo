@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
@@ -36,7 +37,15 @@ import org.json.JSONObject;
  */
 @SuppressWarnings("serial")
 public class RecordsManagementSearchParameters
-{    
+{
+    /** Default sort order */
+    private static final List<SortItem> DEFAULT_SORT_ORDER = new ArrayList<SortItem>()
+    {
+        {
+            add(new SortItem(ContentModel.PROP_NAME, Boolean.TRUE));
+        }
+    };
+
     /** Default templates */
     private static final Map<String, String> DEFAULT_TEMPLATES = new HashMap<String, String>()
     {
@@ -63,24 +72,24 @@ public class RecordsManagementSearchParameters
             put("vitalRecordReviewPeriod", "%(rma:recordSearchVitalRecordReviewPeriod)");
         }
     };
-    
+
     /** Default included container types */
     private static final List<QName> DEFAULT_INCLUDED_CONTAINER_TYPES = Collections.emptyList();
-    
+
     /** Max items */
     private int maxItems = 500;
-    
+
     private boolean includeRecords = true;
     private boolean includeUndeclaredRecords = false;
     private boolean includeVitalRecords = false;
     private boolean includeRecordFolders = true;
     private boolean includeFrozen = false;
     private boolean includeCutoff = false;
-    
+
     private List<QName> includedContainerTypes = DEFAULT_INCLUDED_CONTAINER_TYPES;
-    private List<SortItem> sortOrder;
+    private List<SortItem> sortOrder = DEFAULT_SORT_ORDER;
     private Map<String, String> templates = DEFAULT_TEMPLATES;
-    
+
     private static final String JSON_MAXITEMS = "maxitems";
     private static final String JSON_RECORDS = "records";
     private static final String JSON_UNDECLAREDRECORDS = "undeclaredrecords";
@@ -92,9 +101,9 @@ public class RecordsManagementSearchParameters
     private static final String JSON_SORT = "sort";
     private static final String JSON_FIELD = "field";
     private static final String JSON_ASCENDING = "ascending";
-    
+
     /**
-     * {    
+     * {
      *    "maxItems" : 500,
      *    "records" : true,
      *    "undeclaredrecords" : false,
@@ -102,19 +111,19 @@ public class RecordsManagementSearchParameters
      *    "recordfolders" : false,
      *    "frozen" : false,
      *    "cutoff" : false,
-     *    "containertypes" : 
+     *    "containertypes" :
      *    [
      *       "rma:recordSeries",
      *       "rma:recordCategory"
      *    ]
-     *    "sort" :     
+     *    "sort" :
      *    [
      *       {
      *          "field" : "cm:name",
      *          "ascending" : true
      *       }
-     *    ]         
-     * }         
+     *    ]
+     * }
      */
     public static RecordsManagementSearchParameters createFromJSON(String json, NamespaceService namespaceService)
     {
@@ -128,9 +137,9 @@ public class RecordsManagementSearchParameters
             throw new AlfrescoRuntimeException("Unable to create records management search parameters from json string.  " + json, e);
         }
     }
-    
+
     /**
-     * 
+     *
      * @param jsonObject
      * @return
      */
@@ -139,7 +148,7 @@ public class RecordsManagementSearchParameters
         try
         {
             RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
-            
+
             // Get the search parameter properties
             if (jsonObject.has(JSON_MAXITEMS) == true)
             {
@@ -169,7 +178,7 @@ public class RecordsManagementSearchParameters
             {
                 searchParameters.setIncludeCutoff(jsonObject.getBoolean(JSON_CUTOFF));
             }
-            
+
             // Get container types
             if (jsonObject.has(JSON_CONTAINERTYPES) == true)
             {
@@ -182,7 +191,7 @@ public class RecordsManagementSearchParameters
                 }
                 searchParameters.setIncludedContainerTypes(containerTypes);
             }
-            
+
             // Get sort details
             if (jsonObject.has(JSON_SORT) == true)
             {
@@ -195,30 +204,30 @@ public class RecordsManagementSearchParameters
                         sortJSONObject.has(JSON_ASCENDING) == true)
                     {
                         sortOrder.add(new SortItem(
-                                QName.createQName(sortJSONObject.getString(JSON_FIELD), namespaceService), 
+                                QName.createQName(sortJSONObject.getString(JSON_FIELD), namespaceService),
                                 sortJSONObject.getBoolean(JSON_ASCENDING)));
                     }
-                }  
+                }
                 searchParameters.setSortOrder(sortOrder);
             }
-            
+
             return searchParameters;
         }
         catch (JSONException e)
         {
             throw new AlfrescoRuntimeException("Unable to create records management search parameters from json string.  " + jsonObject.toString(), e);
-        }        
+        }
     }
-    
+
     /**
-     * 
+     *
      * @return
      */
     public String toJSONString(NamespaceService namespaceService)
     {
         return toJSONObject(namespaceService).toString();
     }
-    
+
     public JSONObject toJSONObject(NamespaceService namespaceService)
     {
         try
@@ -231,7 +240,7 @@ public class RecordsManagementSearchParameters
             jsonObject.put(JSON_RECORDFOLDERES, includeRecordFolders);
             jsonObject.put(JSON_FROZEN, includeFrozen);
             jsonObject.put(JSON_CUTOFF, includeCutoff);
-            
+
             // Included containers
             JSONArray jsonArray = new JSONArray();
             for (QName containerType : includedContainerTypes)
@@ -239,7 +248,7 @@ public class RecordsManagementSearchParameters
                 jsonArray.put(containerType.toPrefixString(namespaceService));
             }
             jsonObject.put(JSON_CONTAINERTYPES, jsonArray);
-            
+
             // Sort
             JSONArray jsonSortArray = new JSONArray();
             for (SortItem entry : sortOrder)
@@ -250,7 +259,7 @@ public class RecordsManagementSearchParameters
                 jsonSortArray.put(jsonEntry);
             }
             jsonObject.put(JSON_SORT, jsonSortArray);
-            
+
             return jsonObject;
         }
         catch (JSONException e)
@@ -258,102 +267,102 @@ public class RecordsManagementSearchParameters
             throw new AlfrescoRuntimeException("Unable to generate json string for records management search parameters.", e);
         }
     }
-    
+
     public void setMaxItems(int maxItems)
     {
         this.maxItems = maxItems;
     }
-    
+
     public int getMaxItems()
     {
         return maxItems;
     }
-    
+
     public void setSortOrder(List<SortItem> sortOrder)
     {
         this.sortOrder = sortOrder;
     }
-    
+
     public List<SortItem> getSortOrder()
     {
         return sortOrder;
     }
-    
+
     public void setTemplates(Map<String, String> templates)
     {
         this.templates = templates;
     }
-    
+
     public Map<String, String> getTemplates()
     {
         return templates;
     }
-    
+
     public void setIncludeRecords(boolean includeRecords)
     {
         this.includeRecords = includeRecords;
     }
-    
+
     public boolean isIncludeRecords()
     {
         return includeRecords;
     }
-    
+
     public void setIncludeUndeclaredRecords(boolean includeUndeclaredRecords)
     {
         this.includeUndeclaredRecords = includeUndeclaredRecords;
     }
-    
+
     public boolean isIncludeUndeclaredRecords()
     {
         return includeUndeclaredRecords;
     }
-    
+
     public void setIncludeVitalRecords(boolean includeVitalRecords)
     {
         this.includeVitalRecords = includeVitalRecords;
     }
-    
+
     public boolean isIncludeVitalRecords()
     {
         return includeVitalRecords;
     }
-    
+
     public void setIncludeRecordFolders(boolean includeRecordFolders)
     {
         this.includeRecordFolders = includeRecordFolders;
     }
-    
+
     public boolean isIncludeRecordFolders()
     {
         return includeRecordFolders;
     }
-    
+
     public void setIncludeFrozen(boolean includeFrozen)
     {
         this.includeFrozen = includeFrozen;
     }
-    
+
     public boolean isIncludeFrozen()
     {
         return includeFrozen;
     }
-    
+
     public void setIncludeCutoff(boolean includeCutoff)
     {
         this.includeCutoff = includeCutoff;
     }
-    
+
     public boolean isIncludeCutoff()
     {
         return includeCutoff;
     }
-    
+
     public void setIncludedContainerTypes(List<QName> includedContainerTypes)
     {
         this.includedContainerTypes = includedContainerTypes;
     }
-    
+
     public List<QName> getIncludedContainerTypes()
     {
         return includedContainerTypes;

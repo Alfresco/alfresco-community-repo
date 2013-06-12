@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
@@ -38,14 +37,6 @@ import org.json.JSONObject;
 @SuppressWarnings("serial")
 public class RecordsManagementSearchParameters
 {    
-    /** Default sort order */
-    private static final Map<QName, Boolean> DEFAULT_SORT_ORDER = new HashMap<QName, Boolean>()
-    {
-        {
-            put(ContentModel.PROP_NAME, Boolean.TRUE);
-        }
-    };
-    
     /** Default templates */
     private static final Map<String, String> DEFAULT_TEMPLATES = new HashMap<String, String>()
     {
@@ -87,7 +78,7 @@ public class RecordsManagementSearchParameters
     private boolean includeCutoff = false;
     
     private List<QName> includedContainerTypes = DEFAULT_INCLUDED_CONTAINER_TYPES;
-    private Map<QName, Boolean> sortOrder = DEFAULT_SORT_ORDER;
+    private List<SortItem> sortOrder;
     private Map<String, String> templates = DEFAULT_TEMPLATES;
     
     private static final String JSON_MAXITEMS = "maxitems";
@@ -196,16 +187,16 @@ public class RecordsManagementSearchParameters
             if (jsonObject.has(JSON_SORT) == true)
             {
                 JSONArray jsonArray = jsonObject.getJSONArray(JSON_SORT);
-                Map<QName, Boolean> sortOrder = new HashMap<QName, Boolean>(jsonArray.length());
+                List<SortItem> sortOrder = new ArrayList<SortItem>(jsonArray.length());
                 for (int i = 0; i < jsonArray.length(); i++)
                 {
                     JSONObject sortJSONObject = jsonArray.getJSONObject(i);
                     if (sortJSONObject.has(JSON_FIELD) == true &&
                         sortJSONObject.has(JSON_ASCENDING) == true)
                     {
-                        sortOrder.put(
+                        sortOrder.add(new SortItem(
                                 QName.createQName(sortJSONObject.getString(JSON_FIELD), namespaceService), 
-                                Boolean.valueOf(sortJSONObject.getBoolean(JSON_ASCENDING)));
+                                sortJSONObject.getBoolean(JSON_ASCENDING)));
                     }
                 }  
                 searchParameters.setSortOrder(sortOrder);
@@ -251,11 +242,11 @@ public class RecordsManagementSearchParameters
             
             // Sort
             JSONArray jsonSortArray = new JSONArray();
-            for (Map.Entry<QName, Boolean> entry : sortOrder.entrySet())
+            for (SortItem entry : sortOrder)
             {
                 JSONObject jsonEntry = new JSONObject();
-                jsonEntry.put(JSON_FIELD, entry.getKey().toPrefixString(namespaceService));
-                jsonEntry.put(JSON_ASCENDING, entry.getValue().booleanValue());
+                jsonEntry.put(JSON_FIELD, entry.property.toPrefixString(namespaceService));
+                jsonEntry.put(JSON_ASCENDING, entry.assc);
                 jsonSortArray.put(jsonEntry);
             }
             jsonObject.put(JSON_SORT, jsonSortArray);
@@ -278,12 +269,12 @@ public class RecordsManagementSearchParameters
         return maxItems;
     }
     
-    public void setSortOrder(Map<QName, Boolean> sortOrder)
+    public void setSortOrder(List<SortItem> sortOrder)
     {
         this.sortOrder = sortOrder;
     }
     
-    public Map<QName, Boolean> getSortOrder()
+    public List<SortItem> getSortOrder()
     {
         return sortOrder;
     }

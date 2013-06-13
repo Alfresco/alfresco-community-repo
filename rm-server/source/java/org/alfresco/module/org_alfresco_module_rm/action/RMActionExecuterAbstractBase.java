@@ -496,7 +496,8 @@ public abstract class RMActionExecuterAbstractBase  extends ActionExecuterAbstra
                     
                     // Get the period properties value
                     QName periodProperty = nextDispositionActionDefinition.getPeriodProperty();
-                    if (periodProperty != null)
+                    if (periodProperty != null && 
+                        RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty) == false)
                     {
                         // doesn't matter if the period property isn't set ... the asOfDate will get updated later
                         // when the value of the period property is set

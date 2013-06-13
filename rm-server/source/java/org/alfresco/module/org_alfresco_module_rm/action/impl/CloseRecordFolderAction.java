@@ -18,10 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -31,16 +33,32 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(CloseRecordFolderAction.class);
+
     /** I18N */
     private static final String MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER = "rm.action.close-record-folder-not-folder";
     
+    /** Parameter names */
+    public static final String PARAM_CLOSE_PARENT = "closeParent";
+
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *      org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         // TODO check that the user in question has the correct permissions to close a records folder
+
+        if (recordService.isRecord(actionedUponNodeRef))
+        {
+            ChildAssociationRef assocRef = nodeService.getPrimaryParent(actionedUponNodeRef);
+            if (assocRef != null)
+            {
+                actionedUponNodeRef = assocRef.getParentRef();
+            }
+        }
         
         if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
         {
@@ -52,7 +70,8 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
         }
         else
         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, actionedUponNodeRef.toString()));
+            if (logger.isWarnEnabled())
+                logger.warn(I18NUtil.getMessage(MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER, actionedUponNodeRef.toString()));
         }
     }
 }

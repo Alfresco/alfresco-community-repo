@@ -21,11 +21,14 @@ package org.alfresco.repo.rule;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Extended rule service implementation.
@@ -38,6 +41,8 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     private boolean runAsRmAdmin = true;
 
     private FilePlanAuthenticationService filePlanAuthenticationService;
+
+    protected NodeService nodeService;
 
     private RecordsManagementService recordsManagementService;
 
@@ -54,6 +59,11 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     public void setRecordsManagementService(RecordsManagementService recordsManagementService)
     {
         this.recordsManagementService = recordsManagementService;
+    }
+
+    public void setNodeService2(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     @Override
@@ -81,23 +91,30 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     @Override
     public void executeRule(final Rule rule, final NodeRef nodeRef, final Set<ExecutedRuleData> executedRules)
     {
-        if (isFilePlanComponentRule(rule) == true && runAsRmAdmin == true)
+        QName typeQName = nodeService.getType(nodeRef);
+
+        // The dispositionSchedule node will not be executed by rules
+        if (recordsManagementService.isFilePlanComponent(nodeRef) == true
+                && typeQName.equals(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE) == false)
         {
-            String user = AuthenticationUtil.getFullyAuthenticatedUser();
-            try
+            if (isFilePlanComponentRule(rule) == true && runAsRmAdmin == true)
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(filePlanAuthenticationService.getRmAdminUserName());
-                ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+                String user = AuthenticationUtil.getFullyAuthenticatedUser();
+                try
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(filePlanAuthenticationService.getRmAdminUserName());
+                    ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+                }
+                finally
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(user);
+                }
             }
-            finally
+            else
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(user);
+                // just execute the rule as the current user
+                super.executeRule(rule, nodeRef, executedRules);
             }
-        }
-        else
-        {
-            // just execute the rule as the current user
-            super.executeRule(rule, nodeRef, executedRules);
         }
     }
 

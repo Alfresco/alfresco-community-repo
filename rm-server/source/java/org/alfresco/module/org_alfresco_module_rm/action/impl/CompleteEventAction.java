@@ -23,14 +23,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
+import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Complete event action
@@ -47,7 +49,18 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     public static final String PARAM_EVENT_COMPLETED_AT = "eventCompletedAt";
     
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
+     */
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_EVENT_NAME, DataTypeDefinition.TEXT, true,
+                getParamDisplayLabel(PARAM_EVENT_NAME), false, "rm-ac-manual-event"));
+    }
+
+    /**
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *      org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
@@ -55,7 +68,7 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
         String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
         String eventCompletedBy = (String)action.getParameterValue(PARAM_EVENT_COMPLETED_BY);
         Date eventCompletedAt = (Date)action.getParameterValue(PARAM_EVENT_COMPLETED_AT);
-        
+
         if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
         {
             // Get the next disposition action
@@ -66,6 +79,16 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
                 EventCompletionDetails event = getEvent(da, eventName);
                 if (event != null)
                 {
+                    if (eventCompletedAt == null)
+                    {
+                        eventCompletedAt = new Date();
+                    }
+
+                    if (eventCompletedBy == null)
+                    {
+                        eventCompletedBy = AuthenticationUtil.getRunAsUser();
+                    }
+
                     // Update the event so that it is complete
                     NodeRef eventNodeRef = event.getNodeRef();
                     Map<QName, Serializable> props = this.nodeService.getProperties(eventNodeRef);
@@ -80,7 +103,8 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
                 }
                 else
                 {
-                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EVENT_NO_DISP_LC, eventName));
+                    // RM-695: Commenting error handling out. If the current disposition stage does not define the event being completed nothing should happen.
+                    // throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_EVENT_NO_DISP_LC, eventName));
                 }
             }
         }

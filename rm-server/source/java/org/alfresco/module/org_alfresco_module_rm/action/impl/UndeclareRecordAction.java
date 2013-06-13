@@ -18,10 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -31,6 +32,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class UndeclareRecordAction extends RMActionExecuterAbstractBase
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(UndeclareRecordAction.class);
+
     /** I18N */
     private static final String MSG_RECORDS_ONLY_UNDECLARED = "rm.action.records_only_undeclared";
     
@@ -50,7 +54,10 @@ public class UndeclareRecordAction extends RMActionExecuterAbstractBase
         }
         else
         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORDS_ONLY_UNDECLARED));
+            if (logger.isWarnEnabled())
+            {
+                logger.warn(I18NUtil.getMessage(MSG_RECORDS_ONLY_UNDECLARED));
+            }
         }
     } 
 }

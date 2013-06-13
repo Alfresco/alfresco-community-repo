@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -96,7 +95,10 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
       }
       else
       {
-         throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, actionedUponNodeRef.toString()));
+            if (logger.isWarnEnabled())
+            {
+                logger.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, actionedUponNodeRef.toString()));
+            }
       }
    }
 

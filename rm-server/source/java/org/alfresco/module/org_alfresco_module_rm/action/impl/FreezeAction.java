@@ -18,8 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -32,6 +37,15 @@ public class FreezeAction extends RMActionExecuterAbstractBase
    /** Parameter names */
    public static final String PARAM_REASON = "reason";
 
+   /**
+    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
+    */
+   @Override
+   protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+   {
+       paramList.add(new ParameterDefinitionImpl(PARAM_REASON, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_REASON)));
+   }
+   
    /**
     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
     */

@@ -12,6 +12,27 @@
       </property>
    </bean>
 
+   <!--  Action parameter constraints -->
+
+   <bean id="rm-ac-manual-event" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.ManualEventParameterConstraint" parent="action-constraint">      
+      <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
+   </bean>
+   
+   <bean id="rm-ac-scripts" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="searchService" ref="searchService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="repository" ref="repositoryHelper" />
+      <property name="searchPath" value="/app:company_home/app:dictionary/cm:records_management/cm:records_management_scripts"/>
+      <property name="cacheAllowableValues" value="false" />
+      <property name="nodeInclusionFilter">
+         <list>
+            <value>js</value>
+         </list>
+      </property>
+   </bean>
+      
    <!--  Conditions -->
 
    <bean id="rmCapabilityConditionEvaluator"
@@ -90,7 +111,7 @@
          </value>
       </property>
    </bean>
-
+      
     <!-- Cutoff action -->
 
    <bean id="cutoff_proxy" parent="rmProxyAction" >
@@ -212,7 +233,9 @@
       </property>
    </bean>
 
-   <bean id="openRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.OpenRecordFolderAction" parent="rmAction" />
+   <bean id="openRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.OpenRecordFolderAction" parent="rmAction">
+      <property name="publicAction" value="true"/>
+   </bean>
 
    <!-- close record folder -->
 
@@ -237,7 +260,9 @@
       </property>
    </bean>
 
-   <bean id="closeRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CloseRecordFolderAction" parent="rmAction" />
+   <bean id="closeRecordFolder" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CloseRecordFolderAction" parent="rmAction">
+      <property name="publicAction" value="true"/>
+   </bean>
 
    <!-- reviewed -->
 
@@ -315,6 +340,7 @@
    </bean>
 
    <bean id="undeclareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UndeclareRecordAction" parent="rmAction">
+      <property name="publicAction" value="true"/>
    </bean>
 
    <!-- Freeze record -->
@@ -340,7 +366,9 @@
       </property>
    </bean>
 
-   <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability" />
+   <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability">
+      <property name="publicAction" value="true"/>
+   </bean>
 
    <!-- Unfreeze record -->
 
@@ -365,7 +393,9 @@
       </property>
    </bean>
 
-   <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction" />
+   <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction">
+      <property name="publicAction" value="true"/>
+   </bean>
 
    <!-- Relinquish Hold Action-->
 
@@ -542,6 +572,7 @@
    </bean>
 
    <bean id="completeEvent" class="org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction" parent="rmAction">
+      <property name="publicAction" value="true"/>
    </bean>
 
    <!-- undo event -->
@@ -725,6 +756,8 @@
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>
 
+    <!-- RequestInfo action -->
+
    <bean id="requestInfo_proxy" parent="rmProxyAction">
       <property name="target" ref="requestInfo"/>
       <property name="interceptorNames">
@@ -739,4 +772,40 @@
       <property name="workflowService" ref="WorkflowService"/>
    </bean>
 
+
+    <!-- ExecuteScript action -->
+
+   <bean id="executeScript_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean" parent="rmProxyAction" init-method="registerAction">
+      <property name="target">
+         <ref bean="executeScript"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="allow_security"/>
+         </list>
+      </property>
+   </bean>
+   <bean id="executeScript" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction">
+      <property name="publicAction" value="true"/>
+      <property name="delegateAction" ref="rmscript" />
+   </bean>
+   <bean id="rmscript" class="org.alfresco.module.org_alfresco_module_rm.action.dm.ExecuteScriptAction" parent="script">
+       <!-- The service registry is needed as ScriptAction needs it -->
+       <property name="serviceRegistry">
+           <ref bean="ServiceRegistry" />
+       </property>
+       <property name="personService">
+           <ref bean="personService" />
+       </property>
+       <property name="storeUrl">
+           <value>${spaces.store}</value>
+       </property>
+       <property name="companyHomePath">
+           <value>/${spaces.company_home.childname}</value>
+       </property>
+       <property name="sysAdminParams">
+           <ref bean="sysAdminParams" />
+       </property>
+   </bean>
+       
 </beans>

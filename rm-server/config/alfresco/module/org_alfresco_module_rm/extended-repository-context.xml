@@ -182,6 +182,7 @@
     
     <bean id="ruleService" class="org.alfresco.repo.rule.ExtendedRuleServiceImpl" init-method="init">
         <property name="nodeService" ref="NodeService"/>
+        <property name="nodeService2" ref="NodeService"/>
         <property name="runtimeNodeService" ref="nodeService"/>
         <property name="copyService" ref="copyService"/>
         <property name="actionService" ref="ActionService"/>

@@ -18,10 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -31,8 +33,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
 {
+    /** Logger */
+    private static Log logger = LogFactory.getLog(OpenRecordFolderAction.class);
+
     private static final String MSG_NO_OPEN_RECORD_FOLDER = "rm.action.no-open-record-folder";
     
+    /** Parameter names */
+    public static final String PARAM_OPEN_PARENT = "openParent";
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
      *      org.alfresco.service.cmr.repository.NodeRef)
@@ -42,6 +50,15 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
     {
         // TODO move re-open logic into a service method
         // TODO check that the user in question has the correct permission to re-open a records folder
+
+        if (recordService.isRecord(actionedUponNodeRef))
+        {
+            ChildAssociationRef assocRef = nodeService.getPrimaryParent(actionedUponNodeRef);
+            if (assocRef != null)
+            {
+                actionedUponNodeRef = assocRef.getParentRef();
+            }
+        }
 
         if (this.recordsManagementService.isRecordFolder(actionedUponNodeRef) == true)
         {
@@ -53,7 +70,8 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
         }
         else
         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NO_OPEN_RECORD_FOLDER, actionedUponNodeRef.toString()));
+            if (logger.isWarnEnabled())
+                logger.warn(I18NUtil.getMessage(MSG_NO_OPEN_RECORD_FOLDER, actionedUponNodeRef.toString()));
         }
     }
 }

@@ -237,5 +237,8 @@
 
    <!-- Import the RM webscript's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-webscript-context.xml"/>
+   
+   <!-- Import of installed demos -->
+   <import resource="classpath*:alfresco/module/org_alfresco_module_rm/demo/*/demo-context.xml"/> 
 
 </beans>

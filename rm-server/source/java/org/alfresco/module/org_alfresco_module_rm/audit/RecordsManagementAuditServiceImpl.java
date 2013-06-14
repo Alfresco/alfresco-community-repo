@@ -768,7 +768,7 @@ public class RecordsManagementAuditServiceImpl
      * @param reportFormat          Format to write the audit trail in, ignored if writer is <code>null</code>
      */
     private void getAuditTrailImpl(
-            RecordsManagementAuditQueryParameters params,
+            final RecordsManagementAuditQueryParameters params,
             final List<RecordsManagementAuditEntry> results,
             final Writer writer,
             final ReportFormat reportFormat)
@@ -810,6 +810,7 @@ public class RecordsManagementAuditServiceImpl
                 {
                     return false;
                 }
+                
                 
                 Date timestamp = new Date(time);
                 String eventName = null;
@@ -872,6 +873,22 @@ public class RecordsManagementAuditServiceImpl
                     return true;
                 }
                 
+                // filter out events if set
+                if (params.getEvent() != null &&
+                    params.getEvent().endsWith(eventName) == false)
+                {
+                    // skip it
+                    return true;
+                }
+                
+                
+                if (params.getProperty() != null &&
+                    getChangedProperties(beforeProperties, afterProperties).contains(params.getProperty()) == false)
+                {
+                    // skip it
+                    return false;
+                }
+                
                 // TODO: Refactor this to use the builder pattern
                 RecordsManagementAuditEntry entry = new RecordsManagementAuditEntry(
                         timestamp,
@@ -902,6 +919,32 @@ public class RecordsManagementAuditServiceImpl
                 
                 // Keep going
                 return true;
+            }
+            
+            private List<QName> getChangedProperties(Map<QName, Serializable> beforeProperties, Map<QName, Serializable> afterProperties)
+            {
+                List<QName> changedProperties = new ArrayList<QName>(21);
+                
+                if (beforeProperties != null && afterProperties != null)
+                {
+                    // add all the properties present before the audited action
+                    for (QName valuePropName : beforeProperties.keySet())
+                    {
+                        changedProperties.add(valuePropName);
+                    }
+                    
+                    // add all the properties present after the audited action that
+                    // have not already been added
+                    for (QName valuePropName : afterProperties.keySet())
+                    {
+                        if (!beforeProperties.containsKey(valuePropName))
+                        {
+                            changedProperties.add(valuePropName);
+                        }
+                    }
+                }
+                
+                return changedProperties;
             }
             
             private void writeEntryToFile(RecordsManagementAuditEntry entry)
@@ -947,8 +990,6 @@ public class RecordsManagementAuditServiceImpl
         Long fromTime = (params.getDateFrom() == null ? null : new Long(params.getDateFrom().getTime()));
         Long toTime = (params.getDateTo() == null ? null : new Long(params.getDateTo().getTime()));
         NodeRef nodeRef = params.getNodeRef();
-        String eventName = params.getEvent();
-        QName propertyQName = params.getProperty();
         int maxEntries = params.getMaxEntries();
         boolean forward = maxEntries > 0 ? false : true;        // Reverse order if the results are limited
         

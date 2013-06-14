@@ -99,3 +99,24 @@ test {
 	}
 }
 
+task deploydemo << {
+
+    def demoDir = "demo/${demo}"
+	def demoDirObj = file(demoDir)
+
+	explodedWebAppDir = new File("${tomcatRoot}/webapps/${webAppName}")
+	if (explodedWebAppDir.exists() == true) {
+	
+			if (demoDirObj.exists() == true) {
+				copy {
+					from(demoDir) 
+					into "${explodedWebAppDir}/WEB-INF/classes/alfresco/module/org_alfresco_module_rm/${demoDir}"
+					
+				}
+			}
+	}
+	else {
+		println "Exploded webapp directory ${explodedWebAppDir} does not exist."
+	}
+}
+

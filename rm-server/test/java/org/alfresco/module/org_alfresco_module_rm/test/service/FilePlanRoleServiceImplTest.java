@@ -51,10 +51,6 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
                 String allRolesGroup = filePlanRoleService.getAllRolesContainerGroup(filePlan);
                 assertNotNull(allRolesGroup);
                 
-                Set<String> allRoles = authorityService.getContainedAuthorities(AuthorityType.GROUP, allRolesGroup, true);
-                assertNotNull(allRoles);
-                assertTrue(allRoles.contains(filePlanRoleService.getRole(filePlan, ROLE_NAME_POWER_USER).getRoleGroupName()));                
-                
                 return null;
             }
         });        

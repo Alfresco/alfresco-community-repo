@@ -437,7 +437,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.DENIED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -556,7 +556,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.DENIED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -677,7 +677,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.DENIED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -814,7 +814,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, CREATE_MODIFY_DESTROY_EVENTS,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_METADATA,
-                                AccessStatus.DENIED);
+                                AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FILEPLAN_TYPES,
                                 AccessStatus.ALLOWED);
                         check(access, CREATE_MODIFY_DESTROY_FOLDERS,
@@ -1282,7 +1282,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.DENIED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -1404,7 +1404,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.DENIED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -1525,7 +1525,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.DENIED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -1648,7 +1648,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.DENIED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -2134,7 +2134,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.ALLOWED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -2263,7 +2263,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.ALLOWED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -2386,7 +2386,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.ALLOWED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);
@@ -2507,7 +2507,7 @@ public class CapabilitiesTest extends BaseRMTestCase implements
                         check(access, AUTHORIZE_NOMINATED_TRANSFERS,
                                 AccessStatus.DENIED);
                         check(access, CHANGE_OR_DELETE_REFERENCES,
-                                AccessStatus.UNDETERMINED);
+                                AccessStatus.DENIED);
                         check(access, CLOSE_FOLDERS, AccessStatus.ALLOWED);
                         check(access, CREATE_AND_ASSOCIATE_SELECTION_LISTS,
                                 AccessStatus.ALLOWED);

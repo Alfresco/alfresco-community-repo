@@ -55,7 +55,7 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_EVENT_NAME, DataTypeDefinition.TEXT, true,
-                getParamDisplayLabel(PARAM_EVENT_NAME), false, "rm-ac-manual-event"));
+                getParamDisplayLabel(PARAM_EVENT_NAME), false, "rm-ac-manual-events"));
     }
 
     /**

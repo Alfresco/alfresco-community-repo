@@ -27,9 +27,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPoliciesUtil;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRMActionExecution;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRMActionExecution;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPoliciesUtil;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -57,7 +57,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     /** Registered records management actions */
     private Map<String, RecordsManagementAction> rmActions = new HashMap<String, RecordsManagementAction>(13);
     private Map<String, RecordsManagementActionCondition> rmConditions = new HashMap<String, RecordsManagementActionCondition>(13);
-    private Map<String, RecordsManagementAction> dispositionActions = new HashMap<String, RecordsManagementAction>(4);
+
+    private Map<String, RecordsManagementAction> dispositionActions = new HashMap<String, RecordsManagementAction>(5);
     
     /** Policy component */
     PolicyComponent policyComponent;
@@ -104,13 +105,13 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      */
     public void register(RecordsManagementAction rmAction)
     {
-        if (this.rmActions.containsKey(rmAction.getName()) == false)
+        if (rmActions.containsKey(rmAction.getName()) == false)
         {
-            this.rmActions.put(rmAction.getName(), rmAction);
+            rmActions.put(rmAction.getName(), rmAction);
             
             if (rmAction.isDispositionAction() == true)
             {
-                this.dispositionActions.put(rmAction.getName(), rmAction);
+                dispositionActions.put(rmAction.getName(), rmAction);
             }
         }
     }
@@ -198,8 +199,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      */
     public List<RecordsManagementAction> getDispositionActions()
     {
-        List<RecordsManagementAction> result = new ArrayList<RecordsManagementAction>(this.rmActions.size());
-        result.addAll(this.dispositionActions.values());
+        List<RecordsManagementAction> result = new ArrayList<RecordsManagementAction>(dispositionActions.size());
+        result.addAll(dispositionActions.values());
         return Collections.unmodifiableList(result);
     }
     
@@ -208,7 +209,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      */
     public RecordsManagementAction getDispositionAction(String name)
     {
-        return this.dispositionActions.get(name);
+        return dispositionActions.get(name);
     }
 
     /*

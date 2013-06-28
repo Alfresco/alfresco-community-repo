@@ -162,6 +162,12 @@
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasAspectCapabilityCondition">
        <property name="aspectName" value="rma:recordRejectionDetails"/>
        <property name="namespaceService" ref="NamespaceService"/>
-    </bean>
+   </bean>
 
+   <bean id="capabilityCondition.isClassified"
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsClassifiedCapabilityCondition">
+    	<property name="dispositionService" ref="DispositionService"/>
+   </bean>
+   
 </beans>

@@ -68,6 +68,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet"
       parent="webscript">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <!-- REST impl for PUT Custom Reference Definitions -->
@@ -89,6 +90,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefsGet"
       parent="rmBaseWebscript">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <!-- REST impl for POST Custom Reference Instance -->
@@ -155,6 +157,7 @@
       parent="webscript">
       <property name="dispositionService" ref="DispositionService" />
       <property name="namespaceService" ref="NamespaceService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <!--  REST impl for GET Records MetaData aspects -->

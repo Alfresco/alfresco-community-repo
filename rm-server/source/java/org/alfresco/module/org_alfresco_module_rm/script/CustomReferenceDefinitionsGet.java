@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,7 +41,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * This class provides the implementation for the customrefdefinitions.get webscript.
- * 
+ *
  * @author Neil McErlean
  */
 public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
@@ -52,23 +53,29 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
     private static final String TARGET = "target";
     private static final String CUSTOM_REFS = "customRefs";
     private static Log logger = LogFactory.getLog(CustomReferenceDefinitionsGet.class);
-    
+
     private RecordsManagementAdminService rmAdminService;
+    private DictionaryService dictionaryService;
 
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
         this.rmAdminService = rmAdminService;
     }
 
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String refId = templateVars.get(REF_ID);
-        
-        
+
+
     	if (logger.isDebugEnabled())
     	{
     		logger.debug("Getting custom reference definitions with refId: " + String.valueOf(refId));
@@ -81,7 +88,7 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
         if (refId != null)
         {
             QName qn = rmAdminService.getQNameForClientId(refId);
-        	
+
         	AssociationDefinition assDef = currentCustomRefs.get(qn);
         	if (assDef == null)
         	{
@@ -100,20 +107,20 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
         }
 
         List<Map<String, String>> listOfReferenceData = new ArrayList<Map<String, String>>();
-        
+
         for (Entry<QName, AssociationDefinition> entry : currentCustomRefs.entrySet())
         {
     		Map<String, String> data = new HashMap<String, String>();
 
     		AssociationDefinition nextValue = entry.getValue();
-    		
+
     		CustomReferenceType referenceType = nextValue instanceof ChildAssociationDefinition ?
     				CustomReferenceType.PARENT_CHILD : CustomReferenceType.BIDIRECTIONAL;
-    		
+
 			data.put(REFERENCE_TYPE, referenceType.toString());
 
 			// It is the title which stores either the label, or the source and target.
-			String nextTitle = nextValue.getTitle();
+			String nextTitle = nextValue.getTitle(dictionaryService);
             if (CustomReferenceType.PARENT_CHILD.equals(referenceType))
             {
                 if (nextTitle != null)
@@ -136,10 +143,10 @@ public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
             {
                 throw new WebScriptException("Unsupported custom reference type: " + referenceType);
             }
-        	
+
     		listOfReferenceData.add(data);
         }
-        
+
     	if (logger.isDebugEnabled())
     	{
     		logger.debug("Retrieved custom reference definitions: " + listOfReferenceData.size());

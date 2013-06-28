@@ -1397,11 +1397,12 @@
     </bean>
 
     <!--  Site service work around (see https://issues.alfresco.com/jira/browse/RM-387) -->
-     <bean name="siteGetChildrenCannedQueryFactory" class="org.alfresco.module.org_alfresco_module_rm.site.GetChildrenCannedQueryFactory">
+    <bean name="siteGetChildrenCannedQueryFactory" class="org.alfresco.module.org_alfresco_module_rm.site.GetChildrenCannedQueryFactory">
         <property name="registry" ref="siteCannedQueryRegistry"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="nodeService" ref="nodeService"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="localeDAO" ref="localeDAO"/>
         <property name="contentDataDAO" ref="contentDataDAO"/>
@@ -1514,6 +1515,9 @@
         <property name="zoneAuthorityCache">
             <ref bean="zoneToAuthorityCache" />
         </property>
+        <property name="singletonCache">
+            <ref bean="immutableSingletonCache" />
+        </property>
         <property name="policyComponent">
             <ref bean="policyComponent"/>
         </property>
@@ -1522,6 +1526,15 @@
         </property>
         <property name="aclDAO">
             <ref bean="aclDAO" />
+        </property>
+        <property name="authorityBridgeDAO">
+            <ref bean="authorityBridgeDAO" />
+        </property>
+        <property name="authorityBridgeTableCache">
+            <ref bean="authorityBridgeTableCache" />
+        </property>
+        <property name="useBridgeTable">
+            <value>${authority.useBridgeTable}</value>
         </property>
     </bean>
 

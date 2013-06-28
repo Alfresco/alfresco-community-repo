@@ -147,7 +147,7 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
         }
 
         // Order property definitions by title
-        Collections.sort(props, new DictionaryComparators.PropertyDefinitionComparator());
+        Collections.sort(props, new DictionaryComparators.PropertyDefinitionComparator(dictionaryservice));
 
         // Pass list of property definitions to template
         Map<String, Object> model = new HashMap<String, Object>();

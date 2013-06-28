@@ -1291,7 +1291,7 @@ public class RecordsManagementAuditServiceImpl
         PropertyDefinition propDef = this.dictionaryService.getProperty(property);
         if (propDef != null)
         {
-            label = propDef.getTitle();
+            label = propDef.getTitle(dictionaryService);
         }
 
         if (label == null)

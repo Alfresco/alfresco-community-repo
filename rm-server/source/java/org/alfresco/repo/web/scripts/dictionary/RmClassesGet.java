@@ -200,6 +200,7 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
         model.put(MODEL_PROP_KEY_CLASS_DEFS, classDefinitions);
         model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());
         model.put(MODEL_PROP_KEY_ASSOCIATION_DETAILS, assocdef.values());
+        model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, dictionaryservice);
 
         return model;
     }

@@ -56,7 +56,7 @@ public class RmClassesRestApiTest extends BaseRMWebScriptTestCase
      * @throws IOException
      * @throws JSONException
      */
-    public void disableTestRmGetAspectDefinitions() throws IOException, JSONException
+    public void testRmGetAspectDefinitions() throws IOException, JSONException
     {
         // Format url and send request
         String url = String.format(RM_ASPECTS_URL, "aspect", SITE_ID);
@@ -140,7 +140,7 @@ public class RmClassesRestApiTest extends BaseRMWebScriptTestCase
             "bpm:assignees",
             "cm:likesRatingSchemeRollups",
             "wcmwf:submission",
-            "gd:googleEditable"
+            "sys:localized"
         });
     }
 }

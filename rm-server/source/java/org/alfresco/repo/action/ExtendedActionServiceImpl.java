@@ -25,8 +25,12 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionDefinition;
+import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
+import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Extended action service implementation.
@@ -34,11 +38,19 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ExtendedActionServiceImpl extends ActionServiceImpl
+public class ExtendedActionServiceImpl extends ActionServiceImpl implements ApplicationContextAware
 {
     /** Records management service */
     private RecordsManagementService recordsManagementService;
     
+    private ApplicationContext extendedApplicationContext;
+
+    public void setApplicationContext(ApplicationContext applicationContext)
+    {
+        super.setApplicationContext(applicationContext);
+        extendedApplicationContext = applicationContext;
+    }
+
     /**
      * @param recordsManagementService  records management service
      */
@@ -47,6 +59,19 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl
         this.recordsManagementService = recordsManagementService;
     }
     
+    public ActionConditionDefinition getActionConditionDefinition(String name)
+    {
+        // get direct access to action condition definition (i.e. ignoring public flag of executer)
+        ActionConditionDefinition definition = null;
+        Object bean = extendedApplicationContext.getBean(name);
+        if (bean != null && bean instanceof ActionConditionEvaluator)
+        {
+            ActionConditionEvaluator evaluator = (ActionConditionEvaluator) bean;
+            definition = evaluator.getActionConditionDefintion();
+        }
+        return definition;
+    }
+
     /**
      * @see org.alfresco.repo.action.ActionServiceImpl#getActionDefinitions(org.alfresco.service.cmr.repository.NodeRef)
      */

@@ -13,16 +13,39 @@
    </bean>
 
    <!--  Action parameter constraints -->
+   <bean id="rm-ac-is-kind-kinds" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.CustomParameterConstraint" parent="action-constraint">
+      <property name="parameterValues">
+         <list>
+            <value>FILE_PLAN</value>
+            <value>RECORD_CATEGORY</value>
+            <value>RECORD_FOLDER</value>
+            <value>RECORD</value>
+         </list>
+      </property>
+   </bean>   
 
-   <bean id="rm-ac-manual-event" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.ManualEventParameterConstraint" parent="action-constraint">      
-      <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
+   <bean id="rm-ac-disposition-action-relative-positions" class="org.alfresco.repo.action.constraint.EnumParameterConstraint" parent="action-constraint">
+      <property name="enumClassName" value="org.alfresco.module.org_alfresco_module_rm.DispositionActionRelativePositions" />
+   </bean>   
+
+   <bean id="rm-ac-disposition-actions" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.DispositionActionParameterConstraint" parent="action-constraint">
+      <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
+   </bean>   
+
+   <bean id="rm-ac-record-types" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.RecordTypeParameterConstraint" parent="action-constraint">
+      <property name="recordService" ref="RecordService"/>
+      <property name="dictionaryService" ref="DictionaryService"/>
+   </bean>   
+   
+   <bean id="rm-ac-manual-events" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.ManualEventParameterConstraint" parent="action-constraint">      
+      <property name="recordsManagementEventService" ref="RecordsManagementEventService"/>
    </bean>
    
    <bean id="rm-ac-scripts" class="org.alfresco.repo.action.constraint.FolderContentsParameterConstraint" parent="action-constraint">      
-      <property name="dictionaryService" ref="dictionaryService"/>
-      <property name="searchService" ref="searchService"/>
-      <property name="nodeService" ref="nodeService"/>
-      <property name="namespaceService" ref="namespaceService" />
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="namespaceService" ref="NamespaceService" />
       <property name="repository" ref="repositoryHelper" />
       <property name="searchPath" value="/app:company_home/app:dictionary/cm:records_management/cm:records_management_scripts"/>
       <property name="cacheAllowableValues" value="false" />
@@ -34,7 +57,6 @@
    </bean>
       
    <!--  Conditions -->
-
    <bean id="rmCapabilityConditionEvaluator"
          parent="action-condition-evaluator"
          abstract="true"
@@ -42,12 +64,53 @@
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
    </bean>
 
+   <bean id="isKind" 
+         parent="action-condition-evaluator" 
+         class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.IsKindEvaluator">
+      <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+      <property name="recordsManagementService" ref="RecordsManagementService" />
+   </bean>
+
+   <bean id="hasDispositionAction" 
+         parent="action-condition-evaluator" 
+         class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.HasDispositionActionEvaluator">
+      <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+      <property name="dispositionService" ref="DispositionService" />
+   </bean>
+
+   <bean id="isRecordType" 
+         parent="action-condition-evaluator" 
+         class="org.alfresco.module.org_alfresco_module_rm.action.evaluator.IsRecordTypeEvaluator">
+      <property name="recordsManagementActionService" ref="recordsManagementActionService" />
+      <property name="nodeService" ref="NodeService" />
+   </bean>
+   
+   <bean id="isCutoff" parent="rmCapabilityConditionEvaluator">
+      <property name="capabilityCondition" ref="capabilityCondition.cutoff"/>
+   </bean>
+
+   <bean id="isClassified" parent="rmCapabilityConditionEvaluator">
+      <property name="capabilityCondition" ref="capabilityCondition.isClassified"/>
+   </bean>
+
    <bean id="isDeclared" parent="rmCapabilityConditionEvaluator">
       <property name="capabilityCondition" ref="capabilityCondition.declared"/>
    </bean>
 
+   <bean id="isFrozen" parent="rmCapabilityConditionEvaluator">
+      <property name="capabilityCondition" ref="capabilityCondition.frozen"/>
+   </bean>
+   
    <bean id="isRecordFiled" parent="rmCapabilityConditionEvaluator">
    	  <property name="capabilityCondition" ref="capabilityCondition.recordFiled"/>
+   </bean>
+
+   <bean id="isRecordFolderClosed" parent="rmCapabilityConditionEvaluator">
+   	  <property name="capabilityCondition" ref="capabilityCondition.closed"/>
+   </bean>
+
+   <bean id="isVital" parent="rmCapabilityConditionEvaluator">
+      <property name="capabilityCondition" ref="capabilityCondition.vitalRecordOrFolder"/>
    </bean>
 
    <!-- Actions -->
@@ -795,7 +858,7 @@
            <ref bean="ServiceRegistry" />
        </property>
        <property name="personService">
-           <ref bean="personService" />
+           <ref bean="PersonService" />
        </property>
        <property name="storeUrl">
            <value>${spaces.store}</value>

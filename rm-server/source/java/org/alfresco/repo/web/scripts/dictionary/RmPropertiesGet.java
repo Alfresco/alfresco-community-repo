@@ -152,6 +152,8 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
         // Pass list of property definitions to template
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, props);
+        model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, dictionaryservice);
+
         return model;
     }
 

@@ -222,7 +222,7 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
 
             // Check if the user is authenticated, if not then prompt again
             
-            if ( user == null && !WebDAV.METHOD_OPTIONS.equalsIgnoreCase(httpReq.getMethod()))
+            if (user == null)
             {
                 if (logger.isDebugEnabled())
                     logger.debug("No user/ticket, force the client to prompt for logon details.");

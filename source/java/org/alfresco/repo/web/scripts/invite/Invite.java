@@ -21,7 +21,7 @@ package org.alfresco.repo.web.scripts.invite;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
@@ -268,6 +268,10 @@ public class Invite extends DeclarativeWebScript
             catch(InvitationExceptionForbidden fe)
             {
                 throw new WebScriptException(Status.STATUS_FORBIDDEN, "Unable to cancel workflow" , fe);
+            }
+            catch(AccessDeniedException ade)
+            {
+                throw new WebScriptException(Status.STATUS_FORBIDDEN, "Unable to cancel workflow" , ade);
             }
         }
         // handle action not recognised

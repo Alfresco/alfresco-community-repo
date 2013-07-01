@@ -18,6 +18,7 @@
  */
 
 const DEFAULT_MAX_RESULTS = 250;
+const DEFAULT_PAGE_SIZE = 50;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
 const DISCUSSION_QNAMEPATH = "/fm:discussion";
 const COMMENT_QNAMEPATH = DISCUSSION_QNAMEPATH + "/cm:Comments";
@@ -87,7 +88,7 @@ function checkProcessedCache(key)
 /**
  * Returns an item outside of a site in the main repository.
  */
-function getRepositoryItem(folderPath, node)
+function getRepositoryItem(folderPath, node, populate)
 {
    // check whether we already processed this document
    if (checkProcessedCache("" + node.nodeRef.toString()))
@@ -102,6 +103,7 @@ function getRepositoryItem(folderPath, node)
    {
       if (node.isContainer || node.isDocument)
       {
+         if (!populate) return {};
          item =
          {
             nodeRef: node.nodeRef.toString(),
@@ -138,7 +140,7 @@ function getRepositoryItem(folderPath, node)
 /**
  * Returns an item of the document library component.
  */
-function getDocumentItem(siteId, containerId, pathParts, node)
+function getDocumentItem(siteId, containerId, pathParts, node, populate)
 {
    // PENDING: how to handle comments? the document should
    //          be returned instead
@@ -156,6 +158,7 @@ function getDocumentItem(siteId, containerId, pathParts, node)
    {
       if (node.isContainer || node.isDocument)
       {
+         if (!populate) return {};
          item =
          {
             site: getSiteData(siteId),
@@ -191,7 +194,7 @@ function getDocumentItem(siteId, containerId, pathParts, node)
    return item;
 }
 
-function getBlogPostItem(siteId, containerId, pathParts, node)
+function getBlogPostItem(siteId, containerId, pathParts, node, populate)
 {
    /**
     * Investigate the rest of the path. the first item is the blog post, ignore everything that follows
@@ -225,6 +228,7 @@ function getBlogPostItem(siteId, containerId, pathParts, node)
    }
    
    // child is our blog post
+   if (!populate) return {};
    var item, t = null;
    item =
    {
@@ -247,7 +251,7 @@ function getBlogPostItem(siteId, containerId, pathParts, node)
    return item;
 }
 
-function getForumPostItem(siteId, containerId, pathParts, node)
+function getForumPostItem(siteId, containerId, pathParts, node, populate)
 {
    // try to find the first fm:topic node, that's what we return as search result
    var topicNode = node;
@@ -271,6 +275,7 @@ function getForumPostItem(siteId, containerId, pathParts, node)
    var postNode = topicNode.childAssocs["cm:contains"][0];
    
    // child is our forum post
+   if (!populate) return {};
    var item = t = null;
    item =
    {
@@ -294,7 +299,7 @@ function getForumPostItem(siteId, containerId, pathParts, node)
    return item;
 }
 
-function getCalendarItem(siteId, containerId, pathParts, node)
+function getCalendarItem(siteId, containerId, pathParts, node, populate)
 {
    // only process nodes of the correct type
    if (node.type != "{http://www.alfresco.org/model/calendar}calendarEvent")
@@ -308,6 +313,7 @@ function getCalendarItem(siteId, containerId, pathParts, node)
       return null;
    }
    
+   if (!populate) return {};
    var item, t = null;
    item =
    {
@@ -331,7 +337,7 @@ function getCalendarItem(siteId, containerId, pathParts, node)
    return item;
 }
 
-function getWikiItem(siteId, containerId, pathParts, node)
+function getWikiItem(siteId, containerId, pathParts, node, populate)
 {
    // only process documents
    if (!node.isDocument)
@@ -345,6 +351,7 @@ function getWikiItem(siteId, containerId, pathParts, node)
       return null;
    }
    
+   if (!populate) return {};
    var item, t = null;
    item =
    {
@@ -368,7 +375,7 @@ function getWikiItem(siteId, containerId, pathParts, node)
    return item;
 }
 
-function getLinkItem(siteId, containerId, pathParts, node)
+function getLinkItem(siteId, containerId, pathParts, node, populate)
 {
    // only process documents
    if (!node.isDocument)
@@ -386,6 +393,7 @@ function getLinkItem(siteId, containerId, pathParts, node)
    if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1 &&
        !(node.qnamePath.match(DISCUSSION_QNAMEPATH+"$") == DISCUSSION_QNAMEPATH))
    {
+      if (!populate) return {};
       item =
       {
          site: getSiteData(siteId),
@@ -409,7 +417,7 @@ function getLinkItem(siteId, containerId, pathParts, node)
    return item;
 }
 
-function getDataItem(siteId, containerId, pathParts, node)
+function getDataItem(siteId, containerId, pathParts, node, populate)
 {
    // make sure we haven't already added this item
    if (checkProcessedCache("" + node.nodeRef.toString()))
@@ -422,6 +430,7 @@ function getDataItem(siteId, containerId, pathParts, node)
    // data item can be either ba containing dl:dataList or any dl:dataListItem subtype
    if (node.type == "{http://www.alfresco.org/model/datalist/1.0}dataList")
    {
+      if (!populate) return {};
       // found a data list
       item =
       {
@@ -444,6 +453,7 @@ function getDataItem(siteId, containerId, pathParts, node)
    }
    else if (node.isSubType("{http://www.alfresco.org/model/datalist/1.0}dataListItem"))
    {
+      if (!populate) return {};
       // found a data list item
       item =
       {
@@ -471,37 +481,37 @@ function getDataItem(siteId, containerId, pathParts, node)
  * Delegates the extraction to the correct extraction function
  * depending on containerId.
  */
-function getItem(siteId, containerId, pathParts, node)
+function getItem(siteId, containerId, pathParts, node, populate)
 {
    var item = null;
    if (siteId == null)
    {
-      item = getRepositoryItem(pathParts, node);
+      item = getRepositoryItem(pathParts, node, populate);
    }
    else
    {
-      switch ("" + containerId)
+      switch ("" + containerId.toLowerCase())
       {
-         case "documentLibrary":
-            item = getDocumentItem(siteId, containerId, pathParts, node);
+         case "documentlibrary":
+            item = getDocumentItem(siteId, containerId, pathParts, node, populate);
             break;
          case "blog":
-            item = getBlogPostItem(siteId, containerId, pathParts, node);
+            item = getBlogPostItem(siteId, containerId, pathParts, node, populate);
             break;
          case "discussions":
-            item = getForumPostItem(siteId, containerId, pathParts, node);
+            item = getForumPostItem(siteId, containerId, pathParts, node, populate);
             break;
          case "calendar":
-            item = getCalendarItem(siteId, containerId, pathParts, node);
+            item = getCalendarItem(siteId, containerId, pathParts, node, populate);
             break;
          case "wiki":
-            item = getWikiItem(siteId, containerId, pathParts, node);
+            item = getWikiItem(siteId, containerId, pathParts, node, populate);
             break;
          case "links":
-            item = getLinkItem(siteId, containerId, pathParts, node);
+            item = getLinkItem(siteId, containerId, pathParts, node, populate);
             break;
-         case "dataLists":
-            item = getDataItem(siteId, containerId, pathParts, node);
+         case "datalists":
+            item = getDataItem(siteId, containerId, pathParts, node, populate);
             break;
       }
    }
@@ -560,35 +570,42 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath)
  * 
  * @return the final search results object
  */
-function processResults(nodes, maxResults, rootNode)
+function processResults(nodes, maxPageResults, startIndex, rootNode)
 {
    // empty cache state
    processedCache = {};
    var results = [],
-      added = 0,
+      added = processed = failed = 0,
       parts,
       item,
-      failed = 0,
       rootNodeDisplayPath = rootNode ? utils.displayPath(rootNode).split("/") : null,
       rootNodeQNamePath = rootNode ? rootNode.qnamePath : null;
    
    if (logger.isLoggingEnabled())
       logger.log("Processing resultset of length: " + nodes.length);
    
-   for (var i = 0, j = nodes.length; i < j && added < maxResults; i++)
+   startIndex = startIndex ? startIndex : 0;
+   for (var i = 0, j = nodes.length; i < j; i++)
    {
-      /**
-       * For each node we extract the site/container qname path and then
-       * let the per-container helper function decide what to do.
-       */
+      // For each node we extract the site/container qname path and then
+      // let the per-container helper function decide what to do.
       try
       {
+         // We only want to populate node return structures if we are going to add the items to the results,
+         // so we skip (process, but don't populate or add to results) until we have reached the startIndex
+         // then we populate and add items up to the maxPageResults - after that we still need to process
+         // (but don't populate or add to results) each item to correctly calculate the totalRecordsUpper.
+         var populate = (processed >= startIndex && added < maxPageResults);
          parts = splitQNamePath(nodes[i], rootNodeDisplayPath, rootNodeQNamePath);
-         item = getItem(parts[0], parts[1], parts[2], nodes[i]);
+         item = getItem(parts[0], parts[1], parts[2], nodes[i], populate);
          if (item !== null)
          {
-            results.push(item);
-            added++;
+            processed++;
+            if (populate)
+            {
+               results.push(item);
+               added++;
+            }
          }
          else
          {
@@ -613,6 +630,12 @@ function processResults(nodes, maxResults, rootNode)
    
    return (
    {
+      paging:
+      {
+         totalRecords: results.length,
+         totalRecordsUpper: nodes.length - failed,
+         startIndex: startIndex
+      },
       items: results
    });
 }
@@ -893,6 +916,7 @@ function getSearchResults(params)
                      formQuery += (first ? '(' : ' AND (');
                      formQuery += processMultiValue(propName, propValue, modePropValue, false);
                      formQuery += ')';
+                     first = false;
                   }
                   else
                   {
@@ -1031,7 +1055,7 @@ function getSearchResults(params)
       nodes = [];
    }
    
-   return processResults(nodes, params.maxResults, rootNode);
+   return processResults(nodes, params.pageSize < params.maxResults ? params.pageSize : params.maxResults, params.startIndex, rootNode);
 }
 
 /**

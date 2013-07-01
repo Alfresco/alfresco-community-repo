@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.repo.web.scripts.TenantWebScriptServlet;
-import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 
 /**
  * Default generator for OpenCMIS paths based on the repositoryId and binding.
@@ -32,16 +31,17 @@ import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
  */
 public class DefaultPathGenerator implements PathGenerator
 {
-	public void generatePath(HttpServletRequest req, UrlBuilder url, String repositoryId, Binding binding)
+	public void generatePath(HttpServletRequest req, StringBuilder url, String repositoryId, Binding binding)
 	{
-	    url.addPathSegment(binding.toString());
+	    url.append(binding.toString());
+	    url.append("/");
 	    if(repositoryId != null)
 	    {
-	        url.addPathSegment(repositoryId);
+	        url.append(repositoryId);
 	    }
 	    else
 	    {
-	        url.addPathSegment(TenantWebScriptServlet.DEFAULT_TENANT);
+	        url.append(TenantWebScriptServlet.DEFAULT_TENANT);
 	    }
 	}
 

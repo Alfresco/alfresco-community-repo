@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.webdav;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -409,12 +410,23 @@ public class LockMethod extends WebDAVMethod
         {
             if (createExclusive)
             {
+                if (lockInfo.isLocked() && lockInfo.isShared())
+                {
+                    // http://www.webdav.org/specs/rfc2518.html#rfc.section.8.10.6
+                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+                }
+
                 // Lock the node
                 lockInfo.setTimeoutSeconds(getLockTimeout());
                 lockInfo.setExclusiveLockToken(lockToken);
             }
             else
             {
+                if (lockInfo.isLocked() && lockInfo.isExclusive())
+                {
+                    // http://www.webdav.org/specs/rfc2518.html#rfc.section.8.10.6
+                    throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
+                }
                 lockInfo.addSharedLockToken(lockToken);
             }
 

@@ -1,0 +1,19 @@
+<webscript>
+  <shortname>Alfresco Audit Service Entry Delete</shortname>
+  <description>Delete audit entry with the specified id</description>
+  <url>/api/audit/entries/{id}</url>
+  <format default="json" />
+  <authentication>admin</authentication>
+  <transaction>required</transaction>
+  <family>Audit</family>
+  <lifecycle>internal</lifecycle>
+  <args>
+    <arg>
+      <name>id</name>
+      <description>The audit entry id</description>
+    </arg> 
+  </args>
+  <!--  turn off the multipart formdata processing -->
+  <formdata multipart-processing="false" />
+
+</webscript>

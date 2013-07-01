@@ -15,7 +15,20 @@ function main()
 	}
 	
 	// Remove the user from the site
-	site.removeMembership(userName);
+	try
+	{
+	   site.removeMembership(userName);
+	}
+	catch (e)
+	{
+	   // for a SiteServiceException - ensure it is not wrapped further
+	   var msg = e.message;
+	   if (msg.indexOf("SiteServiceException") != -1)
+      {
+         status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, msg);
+      }
+      else throw error;
+	}
 }
 
 main();

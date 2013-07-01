@@ -184,7 +184,7 @@ public abstract class AbstractJettyComponent
 	    		}
 	    		catch(Throwable t)
 	    		{
-	    			logger.error("Failed to start Jetty server");
+	    			logger.error("Failed to start Jetty server: " + t);
 	    			throw new RuntimeException(t);
 	    		}
 	    	}

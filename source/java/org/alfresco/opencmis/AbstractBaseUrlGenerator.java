@@ -21,7 +21,7 @@ package org.alfresco.opencmis;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
-import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
+import org.alfresco.repo.web.scripts.TenantWebScriptServlet;
 
 /**
  * Generates an OpenCMIS base url based on the request, repository id and binding.
@@ -46,10 +46,30 @@ public abstract class AbstractBaseUrlGenerator implements BaseUrlGenerator
 	{
 		this.overrideContext = overrideContext;
 	}
+	
+	private String fixup(String urlSegment)
+	{
+		StringBuilder sb = new StringBuilder();
+		int beginIndex = 0;
+		int endIndex = urlSegment.length();
+		if(urlSegment != null)
+		{
+			if(!urlSegment.equals("") && !urlSegment.startsWith("/"))
+			{
+				sb.append("/");
+			}
+			if(urlSegment.endsWith("/"))
+			{
+				endIndex -= 1;
+			}
+		}
+		sb.append(urlSegment.substring(beginIndex, endIndex));
+		return sb.toString();
+	}
 
 	public void setContextOverride(String contextOverride)
 	{
-		this.contextOverride = contextOverride;
+		this.contextOverride = fixup(contextOverride);
 	}
 
 	public void setOverrideServletPath(boolean overrideServletPath)
@@ -59,12 +79,12 @@ public abstract class AbstractBaseUrlGenerator implements BaseUrlGenerator
 
 	public void setServletPathOverride(String servletPathOverride)
 	{
-		this.servletPathOverride = servletPathOverride;
+		this.servletPathOverride = fixup(servletPathOverride);
 	}
     
     protected abstract String getServerPath(HttpServletRequest request);
 
-	protected String getContextPath(HttpServletRequest httpReq)
+	public String getContextPath(HttpServletRequest httpReq)
 	{
 		if(overrideContext)
 		{
@@ -76,7 +96,7 @@ public abstract class AbstractBaseUrlGenerator implements BaseUrlGenerator
 		}
 	}
 
-	protected String getServletPath(HttpServletRequest req)
+	public String getServletPath(HttpServletRequest req)
 	{
 		if(overrideServletPath)
 		{
@@ -87,26 +107,77 @@ public abstract class AbstractBaseUrlGenerator implements BaseUrlGenerator
 			return req.getServletPath();
 		}
 	}
-
+	
 	@Override
-    public UrlBuilder getBaseUrl(HttpServletRequest req, String repositoryId, Binding binding)
+    public String getRequestURI(HttpServletRequest req, String repositoryId, String operation)
     {
-        UrlBuilder url = new UrlBuilder(getServerPath(req));
+        StringBuilder url = new StringBuilder();
 
         String contextPath = getContextPath(req);
         if(contextPath != null && !contextPath.equals(""))
         {
-        	url.addPathSegment(contextPath);
+    		url.append(contextPath);
         }
 
         String servletPath = getServletPath(req);
         if(servletPath != null && !servletPath.equals(""))
         {
-        	url.addPathSegment(servletPath);
+    		url.append(servletPath);
+        	url.append("/");
+        }
+        
+        if(url.length() == 0 || url.charAt(0) != '/')
+        {
+        	url.append("/");
+        }
+
+		if(repositoryId != null)
+		{
+			url.append(repositoryId == null ? TenantWebScriptServlet.DEFAULT_TENANT : repositoryId);
+			url.append("/");
+		}
+		
+		if(operation != null)
+		{
+			url.append(operation);
+		}
+		
+		int length = url.length();
+		if(length > 0 && url.charAt(length - 1) == '/')
+		{
+			url.deleteCharAt(length - 1);
+		}
+
+        return url.toString();
+    }
+
+	@Override
+    public String getBaseUrl(HttpServletRequest req, String repositoryId, Binding binding)
+    {
+        StringBuilder url = new StringBuilder();
+		String serverPath = getServerPath(req);
+		url.append(serverPath);
+
+        String contextPath = getContextPath(req);
+        if(contextPath != null && !contextPath.equals(""))
+        {
+    		url.append(contextPath);
+        }
+
+        String servletPath = getServletPath(req);
+        if(servletPath != null && !servletPath.equals(""))
+        {
+    		url.append(servletPath);
+        	url.append("/");
+        }
+        
+        if(url.length() > 0 && url.charAt(url.length() - 1) != '/')
+        {
+        	url.append("/");
         }
 
         pathGenerator.generatePath(req, url, repositoryId, binding);
-        
-        return url;
+
+        return url.toString();
     }
 }

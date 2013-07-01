@@ -113,6 +113,11 @@ public class LockInfoImpl implements Serializable, LockInfo
     @Override
     public void setExclusiveLockToken(String token)
     {
+        if (isShared())
+        {
+            throw new IllegalStateException("Cannot add exclusive lock token [" + token +
+                        "] to shared lock [" + toString() + "]");
+        }
         this.exclusiveLockToken = token;
     }
 
@@ -124,7 +129,6 @@ public class LockInfoImpl implements Serializable, LockInfo
     @Override
     public String getExclusiveLockToken()
     {
-        checkLockState();
         return exclusiveLockToken;
     }
 
@@ -180,7 +184,6 @@ public class LockInfoImpl implements Serializable, LockInfo
     @Override
     public Set<String> getSharedLockTokens()
     {
-        checkLockState();
         return sharedLockTokens;
     }
 
@@ -192,6 +195,11 @@ public class LockInfoImpl implements Serializable, LockInfo
     @Override
     public void setSharedLockTokens(Set<String> sharedLockTokens)
     {
+        if (isExclusive())
+        {
+            throw new IllegalStateException("Cannot add shared lock tokens [" + sharedLockTokens +
+                        "] to exclusive lock [" + toString() + "]");
+        }
         this.sharedLockTokens.clear();
         this.sharedLockTokens.addAll(sharedLockTokens);
     }
@@ -204,6 +212,11 @@ public class LockInfoImpl implements Serializable, LockInfo
     @Override
     public void addSharedLockToken(String token)
     {
+        if (isExclusive())
+        {
+            throw new IllegalStateException("Cannot add shared lock token [" + token +
+                        "] to exclusive lock [" + toString() + "]");
+        }
         sharedLockTokens.add(token);
     }
 
@@ -337,17 +350,6 @@ public class LockInfoImpl implements Serializable, LockInfo
             Date now = dateNow();
             long timeout = ((expires.getTime() - now.getTime()) / 1000);
             return timeout;
-        }
-    }
-
-    /**
-     * Sanity check the state of this LockInfo.
-     */
-    private void checkLockState()
-    {
-        if (isShared() && isExclusive())
-        {
-            throw new IllegalStateException("Lock cannot be both shared and exclusive: " + toString());
         }
     }
 

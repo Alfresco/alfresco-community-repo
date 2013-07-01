@@ -21,9 +21,7 @@ package org.alfresco.opencmis;
 import javax.servlet.http.HttpServlet;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
-import org.apache.chemistry.opencmis.server.impl.atompub.AtomPubUtils;
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Dispatches OpenCMIS requests to the OpenCMIS AtomPub servlet.
@@ -33,24 +31,17 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class AtomPubCMISDispatcher extends CMISServletDispatcher
 {
-	private AtomPubUtils atomPubUtils;
-
-    public void setAtomPubUtils(AtomPubUtils atomPubUtils)
-    {
-		this.atomPubUtils = atomPubUtils;
-	}
-
 	public void init()
 	{
 		super.init();
 		registry.registerDispatcher(getBinding(), this);
 	}
 	
-	@Override
-	protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
-	{
-		return super.getHttpRequest(req);
-	}
+//	@Override
+//	protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
+//	{
+//		return super.getHttpRequest(req);
+//	}
 
     @Override
     protected Binding getBinding()
@@ -62,15 +53,5 @@ public class AtomPubCMISDispatcher extends CMISServletDispatcher
 	{
 		HttpServlet servlet = new CmisAtomPubServlet();
 		return servlet;
-	}
-
-	protected Object getServletAttribute(String attrName)
-	{
-		if(attrName.equals("atomPubUtils"))
-		{
-			return atomPubUtils;
-		}
-
-		return super.getServletAttribute(attrName);
 	}
 }

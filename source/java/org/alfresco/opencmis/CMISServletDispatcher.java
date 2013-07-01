@@ -57,7 +57,13 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
     protected HttpServlet servlet;
 	protected CMISDispatcherRegistry registry;
 	protected String serviceName;
+	protected BaseUrlGenerator baseUrlGenerator;
 	
+	public void setBaseUrlGenerator(BaseUrlGenerator baseUrlGenerator)
+	{
+		this.baseUrlGenerator = baseUrlGenerator;
+	}
+
 	public void setRegistry(CMISDispatcherRegistry registry)
 	{
 		this.registry = registry;
@@ -118,11 +124,11 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 			throw new AlfrescoRuntimeException("Failed to initialise CMIS webscript", e);
 		}
 	}
-	
+
 	protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
 	{
 		String serviceName = getServiceName();
-		CMISHttpServletRequest httpReqWrapper = new CMISHttpServletRequest(req, serviceName);
+		CMISHttpServletRequest httpReqWrapper = new CMISHttpServletRequest(req, serviceName, baseUrlGenerator, getBinding());
     	return httpReqWrapper;
 	}
 

@@ -24,7 +24,7 @@
       },
       "uri" : "${result.uri}",
       "allday" : "${result.allday?string}",
-      "tags" : [<#list result.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>,
+      "tags" : [<#list result.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
       "docfolder": "${result.docfolder}"
    }
    

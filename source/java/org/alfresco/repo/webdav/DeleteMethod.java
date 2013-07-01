@@ -19,10 +19,14 @@
 package org.alfresco.repo.webdav;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -30,6 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.webdav.WebDavService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.FileFilterMode;
 
 /**
  * Implements the WebDAV DELETE method
@@ -68,6 +73,11 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
     }
 
     /**
+     * @deprecated Hack for MNT-8704: WebDAV:Content does not disappear after being deleted
+     */
+    @Deprecated
+    private static final Timer deleteHackTimer = new Timer();
+    /**
      * Execute the request
      * 
      * @exception WebDAVServerException
@@ -79,7 +89,7 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
             logger.debug("WebDAV DELETE: " + getPath());
         }
         
-        FileFolderService fileFolderService = getFileFolderService();
+        final FileFolderService fileFolderService = getFileFolderService();
 
         NodeRef rootNodeRef = getRootNodeRef();
 
@@ -102,12 +112,63 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
 
         checkNode(fileInfo);
 
-        NodeService nodeService = getNodeService();
-        NodeRef nodeRef = fileInfo.getNodeRef();
+        final NodeService nodeService = getNodeService();
+        final NodeRef nodeRef = fileInfo.getNodeRef();
+        // As this content will be deleted, we need to extract some info before it's no longer available.
+        String siteId = getSiteId();
+        NodeRef deletedNodeRef = fileInfo.getNodeRef();
+        FileInfo parentFile = getDAVHelper().getParentNodeForPath(getRootNodeRef(), path);
+        
+        // Don't post activity data for hidden files, resource forks etc.
+        if (!getDAVHelper().isRenameShuffle(path))
+        {
+             postActivity(parentFile, fileInfo, siteId);
+        }
+        
         // MNT-181: working copies and versioned nodes are hidden rather than deleted
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
         {
+            // Mark content as hidden.  This breaks many contracts and will be fixed for "ALF-18619 WebDAV/SPP file shuffles" 
             fileFolderService.setHidden(nodeRef, true);
+            {
+                // Workaround for MNT-8704: WebDAV:Content does not disappear after being deleted
+                // Get the current user
+                final String deleteHackUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                // Add a timed task to really delete the file
+                TimerTask deleteHackTask = new TimerTask()
+                {
+                    @Override
+                    public void run()
+                    {
+                        RunAsWork<Void> deleteHackRunAs = new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork() throws Exception
+                            {
+                            	 // Ignore if it is NOT hidden: the shuffle may have finished; the operation may have failed
+                                if (!nodeService.exists(nodeRef) || !fileFolderService.isHidden(nodeRef))
+                                {
+                                    return null;
+                                }
+                            	
+                                // Since this will run in a different thread, the client thread-local must be set
+                                // or else unhiding the node will not unhide it for WebDAV.
+                                FileFilterMode.setClient(FileFilterMode.Client.webdav);
+                                
+                                // Unhide the node, e.g. for archiving
+                                fileFolderService.setHidden(nodeRef, false);
+                                
+                                // This is the transaction-aware service
+                                fileFolderService.delete(nodeRef);
+                                return null;
+                            }
+                        };
+                        AuthenticationUtil.runAs(deleteHackRunAs, deleteHackUser);
+                    }
+                };
+                // Schedule a real delete 5 seconds after the current time
+                deleteHackTimer.schedule(deleteHackTask, 5000L);
+            }
             getDAVLockService().unlock(nodeRef);
         }
         // We just ensure already-hidden nodes are left unlocked
@@ -118,17 +179,8 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
         // A 'real' delete
         else
         {
-            // As this content will be deleted, we need to extract some info before it's no longer available.
-            String siteId = getSiteId();
-            NodeRef deletedNodeRef = fileInfo.getNodeRef();
-            FileInfo parentFile = getDAVHelper().getParentNodeForPath(getRootNodeRef(), path);
             // Delete it
             fileFolderService.delete(deletedNodeRef);
-            // Don't post activity data for hidden files, resource forks etc.
-            if (!getDAVHelper().isRenameShuffle(path))
-            {
-                 postActivity(parentFile, fileInfo, siteId);
-            }
         }
     }
 

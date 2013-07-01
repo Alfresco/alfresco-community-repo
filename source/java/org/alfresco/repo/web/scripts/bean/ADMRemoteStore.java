@@ -436,28 +436,14 @@ public class ADMRemoteStore extends BaseRemoteStore
         }
     }
     
-    private void writeDocument(final String path, final InputStream content)
+    protected void writeDocument(final String path, final InputStream content)
     {
         final String encpath = encodePath(path);
         final int off = encpath.lastIndexOf('/');
         if (off != -1)
         {
             // check we actually are the user we are creating a user specific path for
-            String runAsUser = AuthenticationUtil.getFullyAuthenticatedUser();
-            String userId = null;
-            Matcher matcher;
-            if ((matcher = USER_PATTERN_1.matcher(path)).matches())
-            {
-                userId = matcher.group(1);
-            }
-            else if ((matcher = USER_PATTERN_2.matcher(path)).matches())
-            {
-                userId = matcher.group(1);
-            }
-            if (userId != null && userId.equals(runAsUser))
-            {
-                runAsUser = AuthenticationUtil.getSystemUserName();
-            }
+            final String runAsUser = getPathRunAsUser(path);
             AuthenticationUtil.runAs(new RunAsWork<Void>()
             {
                 @SuppressWarnings("synthetic-access")
@@ -496,6 +482,33 @@ public class ADMRemoteStore extends BaseRemoteStore
                 }
             }, runAsUser);
         }
+    }
+    
+    /**
+     * Get the RunAs user need to execute a Write operation on the given path.
+     * 
+     * @param path  Document path
+     * @return runas user - will be the Full Authenticated User or System as required
+     */
+    protected String getPathRunAsUser(final String path)
+    {
+        // check we actually are the user we are creating a user specific path for
+        String runAsUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String userId = null;
+        Matcher matcher;
+        if ((matcher = USER_PATTERN_1.matcher(path)).matches())
+        {
+            userId = matcher.group(1);
+        }
+        else if ((matcher = USER_PATTERN_2.matcher(path)).matches())
+        {
+            userId = matcher.group(1);
+        }
+        if (userId != null && userId.equals(runAsUser))
+        {
+            runAsUser = AuthenticationUtil.getSystemUserName();
+        }
+        return runAsUser;
     }
 
     /**
@@ -916,7 +929,7 @@ public class ADMRemoteStore extends BaseRemoteStore
                     rootRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_FOLDER, properties);
             surfConfigRef = ref.getChildRef();
             // surf-config needs to be hidden - applies index control aspect as part of the hidden aspect
-            hiddenAspect.hideNode(ref.getChildRef());
+            hiddenAspect.hideNode(ref.getChildRef(), false, false, false);
         }
         return surfConfigRef;
     }

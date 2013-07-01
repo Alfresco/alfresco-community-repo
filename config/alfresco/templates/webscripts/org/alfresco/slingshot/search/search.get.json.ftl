@@ -1,5 +1,8 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
+	"totalRecords": ${data.paging.totalRecords?c},
+	"totalRecordsUpper": ${data.paging.totalRecordsUpper?c},
+	"startIndex": ${data.paging.startIndex?c},
 	"items":
 	[
 		<#list data.items as item>

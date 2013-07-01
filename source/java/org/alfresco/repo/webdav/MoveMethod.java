@@ -105,15 +105,15 @@ public class MoveMethod extends HierarchicalMethod
 
         // check for the existence of the destination node
         FileInfo destInfo = null;
-        boolean destExists = false;
+        boolean destNotHidden = false;
         try
         {
             destInfo = getDAVHelper().getNodeForPath(rootNodeRef, destPath);
             if (!destInfo.getNodeRef().equals(sourceInfo.getNodeRef()))
             {
-                // ALF-7079 fix, if destInfo is a hidden shuffle target then pretend it's not there
-                destExists = !getFileFolderService().isHidden(destInfo.getNodeRef());
-                if (!hasOverWrite() && destExists)
+                // ALF-7079 (MNT-1601) fix, if destInfo is a hidden shuffle target then pretend it's not there
+                destNotHidden = !getFileFolderService().isHidden(destInfo.getNodeRef());
+                if (!hasOverWrite() && destNotHidden)
                 {
                     if (logger.isDebugEnabled())
                     {
@@ -139,7 +139,7 @@ public class MoveMethod extends HierarchicalMethod
         moveOrCopy(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);
 
         // Set the response status
-        if (!destExists)
+        if (!destNotHidden)
         {
             m_response.setStatus(HttpServletResponse.SC_CREATED);
         }
@@ -200,7 +200,7 @@ public class MoveMethod extends HierarchicalMethod
         // this is a move
         if (destFileInfo != null)
         {
-            copyContentOnly(sourceNodeRef, destFileInfo, fileFolderService);
+            copyContentOnly(sourceFileInfo, destFileInfo, fileFolderService);
             fileFolderService.setHidden(destFileInfo.getNodeRef(), false);
             if (isMove)
             {
@@ -228,7 +228,7 @@ public class MoveMethod extends HierarchicalMethod
         else if (getDAVHelper().isRenameShuffle(destPath) && !getDAVHelper().isRenameShuffle(sourcePath))
         {
             destFileInfo = fileFolderService.create(destParentNodeRef, name, ContentModel.TYPE_CONTENT);
-            copyContentOnly(sourceNodeRef, destFileInfo, fileFolderService);
+            copyContentOnly(sourceFileInfo, destFileInfo, fileFolderService);
             fileFolderService.setHidden(sourceNodeRef, true);
 
             // As per the WebDAV spec, we make sure the node is unlocked once moved
@@ -267,11 +267,24 @@ public class MoveMethod extends HierarchicalMethod
         }
     }
     
-    private void copyContentOnly(NodeRef sourceNodeRef, FileInfo destFileInfo, FileFolderService fileFolderService)
+    private void copyContentOnly(FileInfo sourceFileInfo, FileInfo destFileInfo, FileFolderService fileFolderService) throws WebDAVServerException
     {
     	ContentService contentService = getContentService();
-        ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
-        ContentWriter contentWriter = contentService.getWriter(destFileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
-        contentWriter.putContent(reader);
+        ContentReader reader = contentService.getReader(sourceFileInfo.getNodeRef(), ContentModel.PROP_CONTENT);
+        if (reader == null)
+        {
+            // There is no content for the node if it is a folder
+            if (!sourceFileInfo.isFolder())
+            {
+                // Non-folders should have content available.
+                logger.error("Unable to get ContentReader for source node " + sourceFileInfo.getNodeRef());
+                throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
+            }
+        }
+        else
+        {
+            ContentWriter contentWriter = contentService.getWriter(destFileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+            contentWriter.putContent(reader);
+        }
     }
 }

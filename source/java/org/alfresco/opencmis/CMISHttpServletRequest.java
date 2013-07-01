@@ -35,10 +35,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.web.scripts.TenantWebScriptServlet;
 import org.alfresco.repo.web.scripts.TenantWebScriptServletRequest;
 import org.apache.chemistry.opencmis.commons.impl.Constants;
+import org.apache.chemistry.opencmis.server.shared.Dispatcher;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -56,11 +58,15 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	protected String repositoryId;
 	protected String operation;
 	protected String serviceName;
+	protected BaseUrlGenerator baseUrlGenerator;
+	protected Binding binding;
 
-	public CMISHttpServletRequest(WebScriptRequest req, String serviceName)
+	public CMISHttpServletRequest(WebScriptRequest req, String serviceName, BaseUrlGenerator baseUrlGenerator, Binding binding)
 	{
 		this.req = req;
 		this.serviceName = serviceName;
+		this.baseUrlGenerator = baseUrlGenerator;
+		this.binding = binding;
 
 		String pathInfo = req.getPathInfo();
 		WebScriptRequest baseReq = getBaseRequest(req);
@@ -111,13 +117,41 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public Object getAttribute(String arg0)
 	{
-		return httpReq.getAttribute(arg0);
+		if(arg0.equals(Dispatcher.BASE_URL_ATTRIBUTE))
+		{
+			return baseUrlGenerator.getBaseUrl(this, repositoryId, binding);	
+		}
+		else
+		{
+			return httpReq.getAttribute(arg0);
+		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Enumeration getAttributeNames()
 	{
-		return httpReq.getAttributeNames();
+		Enumeration e = httpReq.getAttributeNames();
+		List attrNames = new ArrayList();
+		while(e.hasMoreElements())
+		{
+			attrNames.add(e.nextElement());
+		}
+		attrNames.add(Dispatcher.BASE_URL_ATTRIBUTE);
+		final Iterator it = attrNames.iterator();
+
+	    return new Enumeration()
+	    {
+	        public boolean hasMoreElements()
+	        {
+	            return it.hasNext();
+	        }
+
+	        public Object nextElement()
+	        {
+	            return it.next();
+	        }
+	    };
 	}
 
 	@Override
@@ -248,6 +282,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 		return httpReq.getReader();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public String getRealPath(String arg0)
 	{
@@ -329,7 +364,8 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getContextPath()
 	{
-		return httpReq.getContextPath();
+		String contextPath = baseUrlGenerator.getContextPath(httpReq);
+		return contextPath;
 	}
 
 	@Override
@@ -396,7 +432,23 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getQueryString()
 	{
-		return httpReq.getQueryString();
+		String queryString = httpReq.getQueryString();
+		StringBuilder queryStringBuilder = new StringBuilder();
+		if(queryString != null)
+		{
+			queryStringBuilder.append(queryString);
+		}
+		if(this.repositoryId != null)
+		{
+			if(queryString != null && queryString.length() > 0)
+			{
+				queryStringBuilder.append("&");
+			}
+			queryStringBuilder.append(Constants.PARAM_REPOSITORY_ID);
+			queryStringBuilder.append("=");
+			queryStringBuilder.append(this.repositoryId);
+		}
+		return queryStringBuilder.toString();
 	}
 
 	@Override
@@ -406,8 +458,10 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	}
 
 	@Override
-	public String getRequestURI() {
-		return httpReq.getRequestURI();
+	public String getRequestURI()
+	{
+		String requestURI = baseUrlGenerator.getRequestURI(httpReq, repositoryId, operation);
+		return requestURI;
 	}
 
 	@Override
@@ -425,7 +479,8 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getServletPath()
 	{
-		return httpReq.getServletPath();
+		String servletPath = baseUrlGenerator.getServletPath(httpReq);
+		return servletPath;
 	}
 
 	@Override

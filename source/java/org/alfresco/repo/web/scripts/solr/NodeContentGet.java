@@ -178,7 +178,7 @@ public class NodeContentGet extends StreamContent
             transformerDebug.pushAvailable(reader.getContentUrl(), reader.getMimetype(), MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
             long sourceSize = reader.getSize();
             List<ContentTransformer> transformers = contentService.getActiveTransformers(reader.getMimetype(), sourceSize, MimetypeMap.MIMETYPE_TEXT_PLAIN, options);
-            transformerDebug.availableTransformers(transformers, sourceSize, "NodeContentGet");
+            transformerDebug.availableTransformers(transformers, sourceSize, options, "NodeContentGet");
 
             if (transformers.isEmpty())
             {

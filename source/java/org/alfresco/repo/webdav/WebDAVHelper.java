@@ -55,6 +55,7 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.EqualsHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
@@ -496,6 +497,12 @@ public class WebDAVHelper
                     "   result: " + fileInfo);
         }
         return fileInfo;
+    }
+    
+    public boolean isRootPath(String path, String servletPath)
+    {
+        // Check for the root path
+        return( path.length() == 0 || path.equals(PathSeperator) || EqualsHelper.nullSafeEquals(path, servletPath));
     }
     
     public final FileInfo getParentNodeForPath(NodeRef rootNodeRef, String path) throws FileNotFoundException
@@ -999,7 +1006,7 @@ public class WebDAVHelper
         }
         
         // Ensure the prefix ends in the path separator.
-        if (urlStr.charAt(urlStr.length() - 1) != PathSeperatorChar)
+        if (urlStr.length() == 0 || urlStr.charAt(urlStr.length() - 1) != PathSeperatorChar)
         {
             urlStr.append(PathSeperator);
         }

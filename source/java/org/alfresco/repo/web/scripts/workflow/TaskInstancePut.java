@@ -27,9 +27,11 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
+import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
@@ -63,31 +65,23 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
             WorkflowTask workflowTask = workflowService.getTaskById(taskId);
             String currentUser = authenticationService.getCurrentUserName();
 
-            // if the the current user is able to edit, updating the task is allowed
-            if (this.workflowService.isTaskEditable(workflowTask, currentUser))
+            // read request json            
+            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+                
+            // update task properties
+            workflowTask = workflowService.updateTask(taskId, parseTaskProperties(json, workflowTask), null, null);
+                
+            // task was not found -> return 404
+            if (workflowTask == null)
             {
-                // read request json            
-                json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-                
-                // update task properties
-                workflowTask = workflowService.updateTask(taskId, parseTaskProperties(json, workflowTask), null, null);
-                
-                // task was not found -> return 404
-                if (workflowTask == null)
-                {
-                    throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Failed to find workflow task with id: " + taskId);
-                }
-                
-                // build the model for ftl
-                Map<String, Object> model = new HashMap<String, Object>();
-                model.put("workflowTask", modelBuilder.buildDetailed(workflowTask));
-                
-                return model;
+                throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Failed to find workflow task with id: " + taskId);
             }
-            else
-            {
-                throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Failed to update workflow task with id: " + taskId);
-            }
+                
+            // build the model for ftl
+            Map<String, Object> model = new HashMap<String, Object>();
+            model.put("workflowTask", modelBuilder.buildDetailed(workflowTask));
+                
+            return model;
         }
         catch (IOException iox)
         {
@@ -96,6 +90,14 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from request.", je);
+        }
+        catch (AccessDeniedException ade)
+        {
+            throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Failed to update workflow task with id: " + taskId, ade);
+        }
+        catch (WorkflowException we)
+        {
+            throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Failed to update workflow task with id: " + taskId, we);
         }
     }
     

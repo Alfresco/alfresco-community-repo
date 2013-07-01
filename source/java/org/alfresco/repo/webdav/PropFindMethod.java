@@ -194,9 +194,9 @@ public class PropFindMethod extends WebDAVMethod
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
         }
         
-        // A node hidden during a 'shuffle' operation - send a 404 error back to the client, as some Mac clients need
-        // this
-        if (getFileFolderService().isHidden(pathNodeInfo.getNodeRef()))
+        // A node hidden during a 'shuffle' operation - send a 404 error back to the client, as some Mac clients need this
+        // Note the null check, as root node may be null in cloud.
+        if (pathNodeInfo.getNodeRef() != null && getFileFolderService().isHidden(pathNodeInfo.getNodeRef()))
         {
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);            
         }

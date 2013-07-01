@@ -530,18 +530,6 @@
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
    
-   <!--  Remote Store service - Share resources -->
-   <bean id="webscript.org.alfresco.repository.store.remoteshareresource.get" class="org.alfresco.repo.web.scripts.bean.ShareResourceStore" parent="webscript">
-      <property name="repositoryHelper" ref="repositoryHelper"/>
-      <property name="nodeService" ref="NodeService" />
-      <property name="unprotectedNodeService" ref="nodeService" />
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="fileFolderService" ref="FileFolderService"/>
-      <property name="contentService" ref="ContentService"/>
-      <property name="siteService" ref="SiteService" />
-      <property name="hiddenAspect" ref="hiddenAspect" />
-   </bean>
-   
    <!--  Authenticated Web Framework AVM Store service -->
    <bean id="webscript.org.alfresco.webframework.avmstore.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
       <property name="mimetypeService" ref="MimetypeService" />
@@ -886,12 +874,8 @@
     
     
     <!-- GET IMAP SERVER STATUS -->
-    <bean id="webscript.org.alfresco.repository.imap.imap-enabled.get" class="org.alfresco.repo.imap.scripts.ServerStatusWebScript" parent="webscript">
-        <property name="imapService">
-            <ref bean="ImapService" />
-        </property>
-    </bean>
-
+    <bean id="webscript.org.alfresco.repository.imap.imap-enabled.get" class="org.alfresco.repo.imap.scripts.ServerStatusWebScript" parent="webscript"/>
+    
     <!--  Comment API supporting bean -->
     <bean id="commentServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.web.scripts.comment.ScriptCommentService">
         <property name="extensionName">
@@ -1304,6 +1288,12 @@
           class="org.alfresco.repo.web.scripts.audit.AuditClearPost"
           parent="abstractAuditWebScript">
     </bean>
+    
+    <!-- Delete audit entries -->
+    <bean id="webscript.org.alfresco.repository.audit.entry.delete"
+          class="org.alfresco.repo.web.scripts.audit.AuditEntryDelete"
+          parent="abstractAuditWebScript">
+    </bean>
 
     <!-- Query for audit entries for an application (time ranges, id ranges, user, forward/reverse, limit) -->
     <bean id="webscript.org.alfresco.repository.audit.query.get"
@@ -1583,7 +1573,7 @@
       <property name="nodeLocatorService" ref="nodeLocatorService"/>
    </bean>
 
-   <!--  Google Doc API -->
+   <!--  GoogleDocsV1 status API -->
    <bean id="webscript.org.alfresco.repository.googledocs.status.get"
          class="org.alfresco.repo.web.scripts.googledocs.Status"
          parent="webscript">

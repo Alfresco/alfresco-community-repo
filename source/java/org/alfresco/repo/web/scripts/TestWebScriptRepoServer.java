@@ -148,7 +148,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
         }
         
         // Check if we need to start/restart the context
-        if (TestWebScriptRepoServer.ctx == null)
+        if (TestWebScriptRepoServer.ctx == null || (TestWebScriptRepoServer.ctx != null && !TestWebScriptRepoServer.ctx.isActive()))
         {
             // Restart it
             final String[] configLocations;

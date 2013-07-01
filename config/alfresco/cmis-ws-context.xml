@@ -13,6 +13,7 @@
         implementorClass="org.alfresco.repo.cmis.ws.DMRepositoryServicePort">
         <jaxws:inInterceptors>
             <ref local="saajInInterceptor" />
+            <ref local="checkPasswordTypeInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
@@ -42,6 +43,7 @@
         implementorClass="org.alfresco.repo.cmis.ws.DMNavigationServicePort">
         <jaxws:inInterceptors>
             <ref local="saajInInterceptor" />
+            <ref local="checkPasswordTypeInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
@@ -70,6 +72,7 @@
     <jaxws:endpoint address="/ObjectService" implementor="#dmObjectService" implementorClass="org.alfresco.repo.cmis.ws.DMObjectServicePort">
         <jaxws:inInterceptors>
             <ref local="saajInInterceptor" />
+            <ref local="checkPasswordTypeInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
@@ -100,6 +103,7 @@
         implementorClass="org.alfresco.repo.cmis.ws.DMMultiFilingServicePort">
         <jaxws:inInterceptors>
             <ref local="saajInInterceptor" />
+            <ref local="checkPasswordTypeInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
@@ -129,6 +133,7 @@
         implementorClass="org.alfresco.repo.cmis.ws.DMVersioningServicePort">
         <jaxws:inInterceptors>
             <ref local="saajInInterceptor" />
+            <ref local="checkPasswordTypeInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
@@ -158,6 +163,7 @@
         implementorClass="org.alfresco.repo.cmis.ws.DMDiscoveryServicePort">
         <jaxws:inInterceptors>
             <ref local="saajInInterceptor" />
+            <ref local="checkPasswordTypeInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
@@ -187,6 +193,7 @@
         implementorClass="org.alfresco.repo.cmis.ws.DMRelationshipServicePort">
         <jaxws:inInterceptors>
             <ref local="saajInInterceptor" />
+            <ref local="checkPasswordTypeInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
@@ -215,6 +222,7 @@
     <jaxws:endpoint address="/PolicyService" implementor="#dmPolicyService" implementorClass="org.alfresco.repo.cmis.ws.DMPolicyServicePort">
         <jaxws:inInterceptors>
             <ref local="saajInInterceptor" />
+            <ref local="checkPasswordTypeInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
@@ -244,6 +252,7 @@
         implementorClass="org.alfresco.repo.cmis.ws.DMAclServicePort">
         <jaxws:inInterceptors>
             <ref local="saajInInterceptor" />
+            <ref local="checkPasswordTypeInterceptor" />
             <ref local="wss4jInInterceptor" />
             <ref local="authenticationInterceptor" />
         </jaxws:inInterceptors>
@@ -370,6 +379,8 @@
     <bean id="saajInInterceptor" class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor" />
 
     <bean id="saajOutInterceptor" class="org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor" />
+
+    <bean id="checkPasswordTypeInterceptor" class="org.alfresco.repo.cmis.ws.PasswordTypeInterceptor" />
 
     <bean id="wss4jInInterceptor" class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
         <constructor-arg>

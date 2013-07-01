@@ -33,7 +33,7 @@ public interface CMISDispatcherRegistry
 	 */
 	public static enum Binding
 	{
-		atom;
+		atom, browser;
 	};
 
 	public void registerDispatcher(Binding binding, CMISDispatcher dispatcher);

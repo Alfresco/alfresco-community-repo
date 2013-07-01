@@ -20,6 +20,7 @@ package org.alfresco.repo.webdav;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
@@ -84,6 +85,45 @@ public class LockInfoImplTest
         assertEquals(7, lockInfo.getRemainingTimeoutSeconds());
     }
     
+    @Test(expected=IllegalStateException.class)
+    public void cannotChangeSharedLockToExclusive()
+    {
+        LockInfoImpl lockInfo = new LockInfoImpl();
+        lockInfo.addSharedLockToken("shared-token");
+        
+        // Not allowed
+        lockInfo.setExclusiveLockToken("token");
+    }
+    
+    @Test(expected=IllegalStateException.class)
+    public void cannotChangeExclusiveLockToShared()
+    {
+        LockInfoImpl lockInfo = new LockInfoImpl();
+        lockInfo.setExclusiveLockToken("token");
+
+        // Not allowed
+        lockInfo.addSharedLockToken("shared-token");
+    }
+    
+    public void canSetShared()
+    {
+        LockInfoImpl lockInfo = new LockInfoImpl();
+        lockInfo.setExclusiveLockToken("exc-token");
+        
+        assertEquals("exc-token", lockInfo.getExclusiveLockToken());
+    }
+    
+    public void canSetExclusive()
+    {
+        LockInfoImpl lockInfo = new LockInfoImpl();
+        lockInfo.addSharedLockToken("shared1");
+        lockInfo.addSharedLockToken("shared2");
+        
+        assertEquals(2, lockInfo.getSharedLockTokens().size());
+        assertTrue(lockInfo.getSharedLockTokens().contains("shared1"));
+        assertTrue(lockInfo.getSharedLockTokens().contains("shared2"));
+    }
+
     public static class LockInfoImplEx extends LockInfoImpl
     {
         public static final Date DATE_NOW = new Date(86400000);

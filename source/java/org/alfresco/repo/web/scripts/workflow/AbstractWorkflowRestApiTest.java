@@ -709,7 +709,9 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         // Finish the start-task
         workflowService.endTask(startTask.getId(), null);
         
-        Response getResponse = sendRequest(new GetRequest(URL_TASKS + "/" + startTask.getId()), 200);
+        WorkflowTask firstTask = workflowService.getTasksForWorkflowPath(adhocPath.getId()).get(0);
+        
+        Response getResponse = sendRequest(new GetRequest(URL_TASKS + "/" + firstTask.getId()), 200);
 
         JSONObject jsonProperties = new JSONObject(getResponse.getContentAsString()).getJSONObject("data").getJSONObject("properties");
 

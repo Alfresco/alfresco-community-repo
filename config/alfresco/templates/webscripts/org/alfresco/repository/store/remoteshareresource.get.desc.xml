@@ -1,9 +1,0 @@
-<webscript>
-  <shortname>Remote Share Resource Store</shortname>
-  <description>Remote service mirroring the Store interface - to an store for retrieving web resources for Share</description>
-  <url>/remote/share/resource/{method}</url>
-  <url>/remote/share/resource/{method}/{path}</url>
-  <authentication>none</authentication>
-  <transaction allow="readonly">required</transaction>
-  <format default="">argument</format>
-</webscript>

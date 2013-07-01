@@ -16,8 +16,7 @@ function main()
    var shortName = json.get("shortName");
    
    // See if the shortName is available
-   var site = siteService.getSite(shortName);
-   if (site != null)
+   if (siteService.hasSite(shortName))
    {
       status.setCode(status.STATUS_BAD_REQUEST, "error.duplicateShortName");
       return;
@@ -45,7 +44,7 @@ function main()
    var sitetype = null;
    if (json.has("type") == true)
    {
-	   sitetype = json.get("type");
+      sitetype = json.get("type");
    }
    
    // Use the visibility flag before the isPublic flag
@@ -68,14 +67,14 @@ function main()
    }
    
    // Create the site 
-   var site = null;   
+   var site = null;
    if (sitetype == null)
    {
-	   site = siteService.createSite(sitePreset, shortName, title, description, visibility);
+      site = siteService.createSite(sitePreset, shortName, title, description, visibility);
    }
    else
    {
-	   site = siteService.createSite(sitePreset, shortName, title, description, visibility, sitetype);
+      site = siteService.createSite(sitePreset, shortName, title, description, visibility, sitetype);
    }
    
    // Put the created site into the model

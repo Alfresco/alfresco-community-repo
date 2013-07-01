@@ -63,6 +63,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     public static final String JSON_KEY_NAME = "name";
     public static final String JSON_KEY_PATH = "path";
     public static final String JSON_KEY_CLEARED = "cleared";
+    public static final String JSON_KEY_DELETED = "deleted";
     
     public static final String JSON_KEY_ENTRY_COUNT = "count";
     public static final String JSON_KEY_ENTRIES = "entries";
@@ -115,6 +116,33 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
             return app;
         }
     }
+    
+    /**
+     * Get the entry id from the request.
+     * 
+     * @return Returns the id or <tt>null</tt> if not present
+     */
+    protected Long getId(WebScriptRequest req)
+    {
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String id = templateVars.get("id");
+        if (id == null || id.length() == 0)
+        {
+            return null;
+        }
+        else
+        {
+            try
+            {
+                return Long.parseLong(id);
+            }
+            catch (NumberFormatException e)
+            {
+                return null;
+            }
+        }
+    }
+    
     /**
      * Get the path from the request.
      * 

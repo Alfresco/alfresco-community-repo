@@ -455,7 +455,7 @@ public class GetMethod extends WebDAVMethod
                 rootURL = rootURL + WebDAVHelper.encodeURL(fileInfo.getName(), m_userAgent) + WebDAVHelper.PathSeperator;
             }
             // Start with a link to the parent folder so we can navigate back up, unless we are at the root level
-            if (fileInfo.getNodeRef().equals(getRootNodeRef()) == false)
+            if (! getDAVHelper().isRootPath(getPath(), getServletPath()))
             {
                 writer.write("<tr class='rowOdd'>");
                 writer.write("<td colspan='4' class='textData'><a href=\"");

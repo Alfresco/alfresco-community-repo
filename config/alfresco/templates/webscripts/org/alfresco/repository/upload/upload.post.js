@@ -338,13 +338,13 @@ function main()
          var newFile;
          if (contentType !== null)
          {
-        	newFile = destNode.createFile(filename, contentType);
+            newFile = destNode.createFile(filename, contentType);
          }
          else
          {
-        	 newFile = destNode.createFile(filename);
+            newFile = destNode.createFile(filename);
          }
-         // Use a the appropriate write() method so that the mimetype already guessed from the original filename is
+         // Use the appropriate write() method so that the mimetype already guessed from the original filename is
          // maintained - as upload may have been via Flash - which always sends binary mimetype and would overwrite it.
          // Also perform the encoding guess step in the write() method to save an additional Writer operation.
          newFile.properties.content.write(content, false, true);
@@ -374,7 +374,7 @@ function main()
       }
       
       // final cleanup of temporary resources created during request processing
- 	 	formdata.cleanup();
+      formdata.cleanup();
    }
    catch (e)
    {

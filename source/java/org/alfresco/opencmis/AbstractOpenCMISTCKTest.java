@@ -25,7 +25,7 @@ import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
 import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.crud.CRUDTestGroup;
-import org.apache.chemistry.opencmis.tck.tests.filing.UnfilingTest;
+import org.apache.chemistry.opencmis.tck.tests.filing.FilingTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.query.ContentChangesSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.query.QueryLikeTest;
 import org.apache.chemistry.opencmis.tck.tests.query.QuerySmokeTest;
@@ -69,7 +69,7 @@ public abstract class AbstractOpenCMISTCKTest
 	//@Test
 	public void testCMISTCKFiling() throws Exception
 	{
-		OverrideFilingTestGroup filingTestGroup = new OverrideFilingTestGroup();
+		FilingTestGroup filingTestGroup = new FilingTestGroup();
 		filingTestGroup.init(clientContext.getCMISParameters());
 		JUnitHelper.run(filingTestGroup);
 	}
@@ -95,20 +95,20 @@ public abstract class AbstractOpenCMISTCKTest
 	 * 
 	 * Override to OpenCMIS FilingTestGroup to allow me to disable failing tests.
 	 */
-	class OverrideFilingTestGroup extends AbstractSessionTestGroup
-	{
-	    @Override
-	    public void init(Map<String, String> parameters) throws Exception
-	    {
-	        super.init(parameters);
-
-	        setName("Filing Test Group");
-	        setDescription("Multifiling anf Unfiling tests.");
-
-	        //addTest(new MultifilingTest());
-	        addTest(new UnfilingTest());
-	    }
-	}
+//	class OverrideFilingTestGroup extends AbstractSessionTestGroup
+//	{
+//	    @Override
+//	    public void init(Map<String, String> parameters) throws Exception
+//	    {
+//	        super.init(parameters);
+//
+//	        setName("Filing Test Group");
+//	        setDescription("Multifiling anf Unfiling tests.");
+//
+//	        //addTest(new MultifilingTest());
+//	        addTest(new UnfilingTest());
+//	    }
+//	}
 	
 	/**
 	 * Override to OpenCMIS QueryTestGroup to allow me to disable failing tests.

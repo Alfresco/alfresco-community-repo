@@ -143,18 +143,6 @@ public class InviteServiceTest extends BaseWebScriptTest
         // This MailExecutorAction bean is named "test-mail" but is in all other respects equivalent to the
         // 'real' executer bean. It is automatically included during OutboundSMTP subsystem startup.
 
-        // redeploy invite process definition in case it has been modified
-        WorkflowDefinition inviteWfDefinition = this.workflowService.getDefinitionByName(
-                "jbpm$" + WorkflowModelNominatedInvitation.WF_PROCESS_INVITE.toPrefixString(this.namespaceService));
-        this.workflowService.undeployDefinition(inviteWfDefinition.id);
-        ClassPathResource inviteWfResource = new ClassPathResource(
-                "alfresco/workflow/invitation-nominated_processdefinition.xml");
-        workflowService.deployDefinition(
-                JBPMEngine.ENGINE_ID, inviteWfResource.getInputStream(), MimetypeMap.MIMETYPE_XML);
-        
-        // Create new invitee email address list
-        this.inviteeEmailAddrs = new ArrayList<String>();
-
         this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
 
             @Override
@@ -167,6 +155,18 @@ public class InviteServiceTest extends BaseWebScriptTest
                 {
                     public Object doWork() throws Exception
                     {
+                        // redeploy invite process definition in case it has been modified
+                        WorkflowDefinition inviteWfDefinition = workflowService.getDefinitionByName(
+                                "jbpm$" + WorkflowModelNominatedInvitation.WF_PROCESS_INVITE.toPrefixString(namespaceService));
+                        workflowService.undeployDefinition(inviteWfDefinition.id);
+                        ClassPathResource inviteWfResource = new ClassPathResource(
+                                "alfresco/workflow/invitation-nominated_processdefinition.xml");
+                        workflowService.deployDefinition(
+                                JBPMEngine.ENGINE_ID, inviteWfResource.getInputStream(), MimetypeMap.MIMETYPE_XML);
+                        
+                        // Create new invitee email address list
+                        inviteeEmailAddrs = new ArrayList<String>();
+
                         // Create inviter person
                         createPerson(PERSON_FIRSTNAME, PERSON_LASTNAME, USER_INVITER, INVITER_EMAIL);
                         
